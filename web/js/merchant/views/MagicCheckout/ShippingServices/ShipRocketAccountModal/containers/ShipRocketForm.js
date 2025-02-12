@@ -71,7 +71,7 @@ const ShipRocketForm = ({ step, setStep, createProviders, displayNotification, c
       <div className="link-account-instruction">
         <div className="row">
           <div className="filter-item">
-            <label for="email" className="color-black">
+            <label htmlFor="email" className="color-black">
               API User Email ID <sup className="magic-checkout-color-red"> *</sup>
             </label>
             <Input
@@ -86,7 +86,7 @@ const ShipRocketForm = ({ step, setStep, createProviders, displayNotification, c
             />
           </div>
           <div className="filter-item link-account-instruction">
-            <label for="password" className="color-black">
+            <label htmlFor="password" className="color-black">
               API User Password <sup className="magic-checkout-color-red"> *</sup>
             </label>
             <Input

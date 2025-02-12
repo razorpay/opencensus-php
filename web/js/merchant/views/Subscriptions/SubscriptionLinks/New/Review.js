@@ -42,8 +42,8 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
   const selectedOffer = props.offers.find(({ id }) => id === fields.offer_id) || {};
 
   return (
-    <div class="Subscription--New-review">
-      <div class="plan-details">
+    <div className="Subscription--New-review">
+      <div className="plan-details">
         <h4>Plan</h4>
         <p>{selectedPlan.item.name}</p>
         <p>
@@ -56,11 +56,11 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
         </p>
       </div>
 
-      <div class="Payments">
+      <div className="Payments">
         {/* authorization payment */}
-        <div class="Payments--item">
-          <div class="Payments--item-inner">
-            <p class="small">First Payment</p>
+        <div className="Payments--item">
+          <div className="Payments--item-inner">
+            <p className="small">First Payment</p>
             <p>
               <strong>Authorization Payment:</strong>{' '}
               <Amount
@@ -91,9 +91,9 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
           </div>
         </div>
 
-        <div class="Payments--item">
-          <div class="Payments--item-inner">
-            <p class="small">{intervalCycle} after the first payment</p>
+        <div className="Payments--item">
+          <div className="Payments--item-inner">
+            <p className="small">{intervalCycle} after the first payment</p>
             <p>
               <strong>Recurring Payments:</strong>{' '}
               <Amount
@@ -112,13 +112,13 @@ export default function NewSubscriptionLinkReview({ fields, internals, ...props 
         </div>
 
         {selectedOffer.id && (
-          <div class="Payments--item offer-details">
-            <div class="Payments--item-inner">
-              <div class="heading">Offer Applied</div>
+          <div className="Payments--item offer-details">
+            <div className="Payments--item-inner">
+              <div className="heading">Offer Applied</div>
 
-              <div class="display_text">{selectedOffer.display_text}</div>
+              <div className="display_text">{selectedOffer.display_text}</div>
 
-              <div class="terms">{selectedOffer.terms}</div>
+              <div className="terms">{selectedOffer.terms}</div>
             </div>
           </div>
         )}

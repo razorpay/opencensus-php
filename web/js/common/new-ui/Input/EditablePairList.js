@@ -134,13 +134,13 @@ export default class EditablePairsList extends React.PureComponent {
     return (
       <ErrorBoundary>
         <div
-          class={classList(
+          className={classList(
             inputClass(this),
             !!this.state.pairs.length && 'isExpanded'
           )}
         >
           <Label text={this.props.label} />
-          <div class="Input-content">
+          <div className="Input-content">
             {!!this.state.pairs.length &&
               this.state.pairs.map((pair, idx) => (
                 <PairDecider
@@ -160,7 +160,7 @@ export default class EditablePairsList extends React.PureComponent {
             this.state.pairs.length < this.state.maxAllowedPairs ? (
               <Button.Transparent
                 type="button"
-                class="Btn--Link"
+                className="Btn--Link"
                 onClick={this.onAddNew}
               >
                 + Add New
@@ -316,16 +316,16 @@ class InputEditablePair extends React.Component {
     const { name, idx, handleSave } = this.props;
 
     return (
-      <div class="pair--editable">
+      <div className="pair--editable">
         <div
-          class={classList(
+          className={classList(
             'Input-pair',
             (this.state.focusDesc || this.state.focusTitle) && 'is-focused'
           )}
         >
-          <div class="Input-elWrapper">
+          <div className="Input-elWrapper">
             <input
-              class="Input-el Input-el--after"
+              className="Input-el Input-el--after"
               name={`${name}[${idx}][key]`}
               placeholder="Title (key)"
               data-id={idx}
@@ -336,10 +336,10 @@ class InputEditablePair extends React.Component {
             />
           </div>
 
-          <div class="Input-pair-separator" />
-          <div class="Input-elWrapper">
+          <div className="Input-pair-separator" />
+          <div className="Input-elWrapper">
             <textarea
-              class="Input-el"
+              className="Input-el"
               name={`${name}[${idx}][value]`}
               placeholder="Description (value)"
               data-id={idx}
@@ -352,14 +352,14 @@ class InputEditablePair extends React.Component {
         </div>
         <div style={{ textAlign: 'right', marginBottom: 12 }}>
           <Button.Transparent
-            class="Button--Link"
+            className="Button--Link"
             onClick={this.handleCancelClick}
           >
             Cancel
           </Button.Transparent>
 
           <AsyncBtn.Primary
-            class="Button--small"
+            className="Button--small"
             disabled={!this.state.pair['key'] && !this.state.pair['value']}
             data-id={idx}
             style={{ marginRight: 0, marginLeft: 16 }}
@@ -389,14 +389,14 @@ class PairView extends React.Component {
     } = this.props;
 
     return (
-      <div class="pair--view">
-        <div class="title">{pair.key}</div>
-        <div class="description">{pair.value}</div>
+      <div className="pair--view">
+        <div className="title">{pair.key}</div>
+        <div className="description">{pair.value}</div>
 
         {isRoleAllowedEdit && (
           <Button.Transparent
             type="button"
-            class="Btn--Link"
+            className="Btn--Link"
             onClick={() => {
               makeEditable();
               this.props.trackerFn('Edit Notes');
@@ -408,7 +408,7 @@ class PairView extends React.Component {
         {isRoleAllowedEdit && (
           <Button.Transparent
             type="button"
-            class="Btn--Link"
+            className="Btn--Link"
             onClick={() => deletePair(idx)}
           >
             Delete

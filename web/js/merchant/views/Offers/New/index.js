@@ -1,6 +1,7 @@
 import { withFormik } from 'formik';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
@@ -26,14 +27,6 @@ const FORMS = {
   subscription: Subscription,
 };
 
-@connect((state) => state.session, {
-  showNotification,
-  openModal,
-  closeModal,
-  luminateRow,
-  appendOfferInReduxList,
-})
-@RTracking(() => window.rzpQ.component('CreateOfferWizard'))
 // eslint-disable-next-line no-undef
 class CreateOfferWizard extends React.Component {
   constructor(props) {
@@ -181,7 +174,7 @@ class CreateOfferWizard extends React.Component {
     const showSelectionView = this.CURRENT_FORM === BaseFormKey;
     const Form = FORMS[this.CURRENT_FORM];
     return (
-      <StyledOfferModal class="Offers--Create">
+      <StyledOfferModal className="Offers--Create">
         {showSelectionView && (
           <OfferTypeSelector
             selectTemplate={this.handleSelectTemplate}
@@ -197,7 +190,17 @@ class CreateOfferWizard extends React.Component {
   }
 }
 
-export default withRouter(
+export default compose(
+  connect((state) => state.session, {
+    showNotification,
+    openModal,
+    closeModal,
+    luminateRow,
+    appendOfferInReduxList,
+  }),
+  rTracking(() => window.rzpQ.component('CreateOfferWizard')),
+  withRouter,
+)(
   withFormik({
     mapPropsToValues: () => ({}),
     validate: () => {

@@ -74,10 +74,10 @@ export default class TimedSlider extends React.PureComponent {
     };
 
     return (
-      <div class="TimedSlider">
+      <div className="TimedSlider">
         {BeforeFrame && <BeforeFrame {...frameProps} />}
 
-        <div class="TimedSlider-frame">
+        <div className="TimedSlider-frame">
           {this.props.children[curStoryIndex]}
         </div>
 
@@ -98,7 +98,7 @@ export class TimedSliderTabs extends React.PureComponent {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'TimedSliderTabs',
           className && 'TimedSliderTabs--' + className
         )}
@@ -126,7 +126,7 @@ const TimedSliderTab = ({
   duration,
 }) => (
   <div
-    class={classList(
+    className={classList(
       'TimedSliderTab',
       className && 'TimedSliderTab--' + className,
       isActive && 'active'
@@ -139,4 +139,4 @@ const TimedSliderTab = ({
   </div>
 );
 
-export const TimedSlide = ele => <div class="TimedSlide">{ele.children}</div>;
+export const TimedSlide = ele => <div className="TimedSlide">{ele.children}</div>;

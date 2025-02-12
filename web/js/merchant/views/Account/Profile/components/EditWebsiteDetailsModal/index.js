@@ -1,27 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import ModalHeader from 'common/ui/ModalHeader';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import User from 'merchant/models/User';
+import { updateSession } from 'merchant/reducers/session';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import EditWebsite from './components/EditWebsite';
 import SuccessModalContent from './components/SuccessModalContent';
 
-import User from 'merchant/models/User';
-import { autoPrefixUrls } from 'common/utils/rzp-utils';
-import { merchantFetch } from 'merchant/utils/ajax';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { updateSession } from 'merchant/reducers/session';
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-  }),
-  {
-    updateSession,
-    showNotification,
-  },
-)
 class EditWebsiteDetails extends Component {
   onSubmit = (form) => {
     // eslint-disable-next-line no-shadow
@@ -75,9 +65,9 @@ class EditWebsiteDetails extends Component {
     const { business_website } = this.props.user;
 
     return (
-      <div class="edit-website-modal">
+      <div className="edit-website-modal">
         <ModalHeader title="Add Website/App Details" onCloseClick={this.props.onClose} />
-        <div class="modal-body">
+        <div className="modal-body">
           {business_website ? (
             <SuccessModalContent onClose={this.props.onClose} />
           ) : (
@@ -89,4 +79,15 @@ class EditWebsiteDetails extends Component {
   }
 }
 
-export default EditWebsiteDetails;
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+    }),
+    {
+      updateSession,
+      showNotification,
+    },
+  ),
+)(EditWebsiteDetails);

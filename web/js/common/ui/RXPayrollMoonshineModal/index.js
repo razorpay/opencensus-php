@@ -27,8 +27,8 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
 
   return (
     <div id="hubspot-ca-form-modal">
-      <button type="button" class="close" onClick={hideModal}>
-        <i class="i i-close" />
+      <button type="button" className="close" onClick={hideModal}>
+        <i className="i i-close" />
       </button>
       <div className="razorpayx-announcement-details">
         <div className="section">
@@ -53,7 +53,7 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
                 href="http://payroll.razorpay.com/sso?utm_source=moonshine&utm_medium=pgdashboard"
                 target="_blank"
                 rel="noreferrer noopener"
-                class="btn btn-primary Button--primary Button"
+                className="btn btn-primary Button--primary Button"
                 onClick={trackCTAClick}
               >
                 Sign up for free

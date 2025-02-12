@@ -1,16 +1,17 @@
 import { Component } from 'react';
-import { compose } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
-import ModalHeader from 'common/ui/ModalHeader';
+
 import Alert from 'common/ui/Forms/Alert';
+import ModalHeader from 'common/ui/ModalHeader';
+import { analyticsTrack } from 'common/utils/analytics';
+import fileDownload from 'common/utils/file-download';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import ajax from 'merchant/utils/ajax';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import ajax from 'merchant/utils/ajax';
-import fileDownload from 'common/utils/file-download';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 // eslint-disable-next-line react/no-unsafe
 class NewKey extends Component {
@@ -87,40 +88,45 @@ class NewKey extends Component {
 
         <Alert type="error" message={this.state.errors} />
 
-        <form class="form-horizontal payment-link-form" onSubmit={handleSubmit(this.save)}>
-          <div class="modal-body">
-            <div class="form-group">
-              <label class="col-md-3 control-label">
+        <form className="form-horizontal payment-link-form" onSubmit={handleSubmit(this.save)}>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="col-md-3 control-label">
                 <div>Key Id</div>
               </label>
-              <div class="col-md-8">
-                <Field name="keyId" component="input" class="form-control" readOnly="readonly" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-3 control-label">
-                <div>Key Secret</div>
-              </label>
-              <div class="col-md-8">
+              <div className="col-md-8">
                 <Field
-                  name="keySecret"
+                  name="keyId"
                   component="input"
-                  class="form-control"
+                  className="form-control"
                   readOnly="readonly"
                 />
               </div>
             </div>
-            <div class="form-group">
-              <div class="col-md-8 col-md-offset-3">
-                <button class="btn-link no-padding" onClick={this.handleDownloadToken}>
+            <div className="form-group">
+              <label className="col-md-3 control-label">
+                <div>Key Secret</div>
+              </label>
+              <div className="col-md-8">
+                <Field
+                  name="keySecret"
+                  component="input"
+                  className="form-control"
+                  readOnly="readonly"
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <div className="col-md-8 col-md-offset-3">
+                <button className="btn-link no-padding" onClick={this.handleDownloadToken}>
                   Download Key Details
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" onClick={handleSubmit(this.save)}>
+          <div className="modal-footer">
+            <button type="submit" className="btn btn-primary" onClick={handleSubmit(this.save)}>
               OK
             </button>
           </div>

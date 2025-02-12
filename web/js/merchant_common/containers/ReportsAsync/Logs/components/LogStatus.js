@@ -2,7 +2,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 
 export default function LogStatus(props) {
   return (
-    <div class="LogStatus">
+    <div className="LogStatus">
       <strong data-testid="log-status-text">{renderActionBasedOnStatus(props)}</strong>
     </div>
   );
@@ -29,7 +29,7 @@ function DownloadButton(props) {
       onClick={props.onDownloadClick}
       pendingState="Downloading"
       type="button"
-      class="Btn--link"
+      className="Btn--link"
       data-file-id={props.fileId}
       data-consumer-id={props.consumerId}
     >

@@ -74,8 +74,8 @@ export default class extends React.Component {
     const { queryParams = {} } = this.state;
 
     return (
-      <div class="list-container">
-        <Form onSubmit={this.applyFilters} class="filters">
+      <div className="list-container">
+        <Form onSubmit={this.applyFilters} className="filters">
           <Field
             label="Feature Id"
             name="feature_id"
@@ -121,10 +121,10 @@ export default class extends React.Component {
             postSelectionValue={val => val.startOf('day')}
           />
 
-          <button class="btn btn--primary field">Search</button>
+          <button className="btn btn--primary field">Search</button>
           <button
             type="button"
-            class="btn btn--link field"
+            className="btn btn--link field"
             onClick={this.resetFilters}
           >
             Clear
@@ -153,7 +153,7 @@ const experimentFields = [
     item => (
       <object>
         <Link to={`/features_flags/${item.feature_id}`}>
-          <span class="link">{item.feature_id}</span>
+          <span className="link">{item.feature_id}</span>
         </Link>
       </object>
     ),

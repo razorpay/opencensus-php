@@ -1,39 +1,28 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import ActivationForm from 'merchant/containers/Activation';
-import Spinner from 'common/ui/Spinner';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { ModalMask } from 'common/new-ui/Modal';
+import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { AccountStatusDetailsView as AccountStatus } from './components/AccountStatusLabel';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { ToggleField } from 'merchant/views/Marketplace/Accounts/components/AccountsList';
+import Spinner from 'common/ui/Spinner';
+import { isExperimentActive } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+import ActivationForm from 'merchant/containers/Activation';
 import { fetchBalance } from 'merchant/reducers/credits';
 import * as AccountActions from 'merchant/reducers/marketplace/accounts';
+import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
+import { ToggleField } from 'merchant/views/Marketplace/Accounts/components/AccountsList';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { withSplitzService } from 'common/splitz';
-import { isExperimentActive } from 'common/utils/rzp-utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    showNotification,
-    ...AccountActions,
-    ...ModalActions,
-  },
-)
+import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
+import { AccountStatusDetailsView as AccountStatus } from './components/AccountStatusLabel';
+
 class Details extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -275,24 +264,24 @@ class Details extends Component {
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               {onClose && (
-                <button type="button" class="close close-secondary" onClick={onClose}>
-                  <i class="i i-arrow-back" />
-                  <i class="i i-close" />
+                <button type="button" className="close close-secondary" onClick={onClose}>
+                  <i className="i i-arrow-back" />
+                  <i className="i i-close" />
                 </button>
               )}
               Account ID: <strong>{id}</strong>
             </div>
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 <EntityDetailRow label="Email">
                   {noLAEmail ? (
                     <span>
@@ -304,7 +293,7 @@ class Details extends Component {
                         </Popover>
                       )}
                       <button
-                        class="btn btn-link no-padding"
+                        className="btn btn-link no-padding"
                         onClick={this.showEditAccountModal(account, true)}
                         disabled={isCreationDisabled}
                       >
@@ -313,7 +302,7 @@ class Details extends Component {
                     </span>
                   ) : (
                     <span>
-                      <span class="p-r">{account.email}</span>
+                      <span className="p-r">{account.email}</span>
                       <span>
                         {isCreationDisabled && (
                           <Popover align="top" theme="dark">
@@ -323,7 +312,7 @@ class Details extends Component {
                           </Popover>
                         )}
                         <button
-                          class="btn btn-link no-padding"
+                          className="btn btn-link no-padding"
                           onClick={this.showEditAccountModal(account, true)}
                           title="Edit Email"
                           disabled={isCreationDisabled}
@@ -368,8 +357,8 @@ class Details extends Component {
                     label={
                       <span>
                         Allow Customer Refund
-                        <small class="help-content" style={{ paddingLeft: '4px' }}>
-                          <i class="i i-help" />
+                        <small className="help-content" style={{ paddingLeft: '4px' }}>
+                          <i className="i i-help" />
                           <Popover align="right" theme="dark">
                             <PopoverBody>
                               <div style={{ textAlign: 'left' }}>
@@ -395,8 +384,8 @@ class Details extends Component {
                 {user.isDirectTransferEnabled && (
                   <>
                     <br />
-                    <NavLink class="Button m-l" to="/route/transfers/direct_transfer">
-                      <i class="i i-plus" />
+                    <NavLink className="Button m-l" to="/route/transfers/direct_transfer">
+                      <i className="i i-plus" />
                       Create Direct Transfer
                     </NavLink>
                   </>
@@ -409,7 +398,7 @@ class Details extends Component {
           <ModalMask
             maskClosable={true}
             onClose={this.showActivationForm}
-            class="Account-Activation"
+            className="Account-Activation"
           >
             <ActivationForm
               onClose={this.showActivationForm}
@@ -432,10 +421,24 @@ class Details extends Component {
 }
 
 const HelpText = ({ msg, ...restProps }) => (
-  <div class="help-text" {...restProps}>
-    <i class="i i-info-outline" />
+  <div className="help-text" {...restProps}>
+    <i className="i i-info-outline" />
     <div>{msg}</div>
   </div>
 );
 
-export default withSplitzService(Details);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+      };
+    },
+    {
+      showNotification,
+      ...AccountActions,
+      ...ModalActions,
+    },
+  ),
+  withSplitzService,
+)(Details);

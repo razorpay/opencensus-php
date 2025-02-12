@@ -54,7 +54,7 @@ const PlansListModal = ({ openModal, closeModal }) => {
     contentBody = (
       <>
         <br />
-        <div class="plan-card plan-card--option">
+        <div className="plan-card plan-card--option">
           <Spinner />
         </div>
       </>
@@ -63,7 +63,7 @@ const PlansListModal = ({ openModal, closeModal }) => {
     contentBody = (
       <>
         <br />
-        <div class="text-danger">Failed to fetch plans. Please try again later.</div>
+        <div className="text-danger">Failed to fetch plans. Please try again later.</div>
       </>
     );
   } else {
@@ -71,12 +71,12 @@ const PlansListModal = ({ openModal, closeModal }) => {
       return (
         <Fragment key={plan.id}>
           <br />
-          <div class="plan-card plan-card--option">
+          <div className="plan-card plan-card--option">
             <div>
-              <div class="highlight">
+              <div className="highlight">
                 <b>Pay for {plan.name}</b>
               </div>
-              <div class="text-grey">
+              <div className="text-grey">
                 <b>₹{getFormattedNumber(plan.metadata.plan_amount)}</b>{' '}
                 {plan.metadata.per_month_amount !== plan.metadata.plan_amount && (
                   <span>&nbsp;(₹{getFormattedNumber(plan.metadata.per_month_amount)}/month)</span>
@@ -84,13 +84,13 @@ const PlansListModal = ({ openModal, closeModal }) => {
               </div>
               {!!plan.metadata.discount && (
                 <div>
-                  <span class="badge bg-success">SAVE {plan.metadata.discount}%</span>
+                  <span className="badge bg-success">SAVE {plan.metadata.discount}%</span>
                 </div>
               )}
             </div>
             <span>
               <Button.Primary onClick={() => handleSelectPlan(plan)}>
-                Select Plan <i class="i i-arrow-forward" />
+                Select Plan <i className="i i-arrow-forward" />
               </Button.Primary>
             </span>
           </div>
@@ -101,8 +101,8 @@ const PlansListModal = ({ openModal, closeModal }) => {
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Pick a plan to connect your domain
         </div>

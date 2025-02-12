@@ -1,11 +1,11 @@
 import { connect } from 'react-redux';
-import ReversalsListFilter from 'merchantLA/components/Marketplace/ReversalsListFilter';
-import DataTable from 'common/ui/Table/DataTable';
-import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
-import { fetchReversals as fetchAll } from 'merchantLA/reducers/collection';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import DataTable from 'common/ui/Table/DataTable';
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import ListContainer from 'merchant/containers/ListContainer';
+import ReversalsListFilter from 'merchantLA/components/Marketplace/ReversalsListFilter';
+import { fetchReversals as fetchAll } from 'merchantLA/reducers/collection';
 import {
   reversalId,
   transferId,
@@ -18,13 +18,6 @@ import setGaTrack from './ga';
 
 const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
-@connect(
-  (state) => ({
-    ...state.reversals,
-    user: state.session.user,
-  }),
-  { fetchAll },
-)
 class ReversalsTable extends ListContainer {
   onSearchAnalytics = (params) => {
     const { pathname } = this.props.location;
@@ -46,7 +39,7 @@ class ReversalsTable extends ListContainer {
   render() {
     const isRefundsAllowed = this.props.user.isAllowedLARefunds;
     return (
-      <div class="revsersals-list-container content-wrapper">
+      <div className="revsersals-list-container content-wrapper">
         <ReversalsListFilter
           form="reversalsListFilter"
           count={this.state.count}
@@ -73,4 +66,10 @@ class ReversalsTable extends ListContainer {
   }
 }
 
-export default withRouter(ReversalsTable);
+export default connect(
+  (state) => ({
+    ...state.reversals,
+    user: state.session.user,
+  }),
+  { fetchAll },
+)(withRouter(ReversalsTable));

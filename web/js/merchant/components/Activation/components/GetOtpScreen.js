@@ -305,7 +305,7 @@ const GetOtpScreen = ({
         name="aadhar_number"
         type="text"
         value={aadharNumber}
-        class="Input--small Input--vTop is-mature"
+        className="Input--small Input--vTop is-mature"
         label={() => (
           <>
             Aadhaar Verification <br /> ( via OTP )

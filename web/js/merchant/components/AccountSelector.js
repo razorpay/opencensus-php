@@ -1,13 +1,13 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { TypeAhead } from 'react-power-select';
 
 import debounce from 'common/utils/debounce';
 import { titleCase } from 'common/utils/rzp-utils';
-
+import { compose } from 'redux';
 import { fetchAccountsApi, fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
-@connect((state) => ({ accounts: state.accounts }), { fetchAccounts })
-export default class AccountSelector extends React.Component {
+class AccountSelector extends React.Component {
   state = {
     accountsList: null,
   };
@@ -69,12 +69,12 @@ export default class AccountSelector extends React.Component {
     return (
       <>
         <Label required={props.required} text={props.label} />
-        <div class="custom-select auto-complete-search" style={{ position: 'relative' }}>
+        <div className="custom-select auto-complete-search" style={{ position: 'relative' }}>
           <TypeAhead
             showClear={props.showClear}
             options={accountsList}
             disabled={!accountsList}
-            class="ps-in-modal"
+            className="ps-in-modal"
             searchIndices={['id', 'name', 'email']}
             placeholder={`${
               !accountsList ? 'Loading...' : 'Search by account ID, name, email address'
@@ -83,7 +83,7 @@ export default class AccountSelector extends React.Component {
             selectedOptionLabelPath="name"
             optionComponent={({ option }) => {
               return (
-                <div class="custom-powerselect-options">
+                <div className="custom-powerselect-options">
                   <div>
                     <b>{titleCase(option.name)}</b> ({option.code || option.id})
                   </div>
@@ -91,14 +91,14 @@ export default class AccountSelector extends React.Component {
                 </div>
               );
             }}
-            beforeOptionsComponent={() => <div class="heading">Recent</div>}
+            beforeOptionsComponent={() => <div className="heading">Recent</div>}
             onChange={this.handleSelect}
             onKeyDown={this.handleKeyDown}
           />
-          <div class="typeAheadSkin" ref={(cmp) => (this.typeAheadSkin = cmp)}>
+          <div className="typeAheadSkin" ref={(cmp) => (this.typeAheadSkin = cmp)}>
             {props.selectedAccount ? (
               <div>
-                <b class="option-title">{props.selectedAccount.name}</b>
+                <b className="option-title">{props.selectedAccount.name}</b>
                 <span> - {props.selectedAccount.id} </span>
               </div>
             ) : null}
@@ -113,8 +113,12 @@ function Label({ text, required }) {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
 
   return (
-    <div class="pair-label">
-      <label class={classes}>{text}</label>
+    <div className="pair-label">
+      <label className={classes}>{text}</label>
     </div>
   );
 }
+
+export default compose(connect((state) => ({ accounts: state.accounts }), { fetchAccounts }))(
+  AccountSelector,
+);

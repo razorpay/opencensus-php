@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
+import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import ModalHeader from 'common/ui/ModalHeader';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import AsyncButton from 'react-async-button';
+
 import CreditPullModal from '../index';
 
-@connect(state => ({ user: state.session.user }), {
-  closeModal,
-  openModal,
-})
-export default class CreditPullClose extends Component {
+class CreditPullClose extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -18,8 +17,7 @@ export default class CreditPullClose extends Component {
   titleGenerator = () => {
     return (
       <span>
-        <i className="i i-error" />{' '}
-        {this.props.closeTitle ? this.props.closeTitle : 'Oops!'}
+        <i className="i i-error" /> {this.props.closeTitle ? this.props.closeTitle : 'Oops!'}
       </span>
     );
   };
@@ -37,8 +35,8 @@ export default class CreditPullClose extends Component {
         <div className="try-button">
           <AsyncButton
             type="submit"
-            class="btn btn-primary"
-            text={'Try Again'}
+            className="btn btn-primary"
+            text="Try Again"
             onClick={() => {
               this.props.openModal({
                 component: <CreditPullModal fromWhere="Retry attempt" />,
@@ -51,3 +49,10 @@ export default class CreditPullClose extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    closeModal,
+    openModal,
+  }),
+)(CreditPullClose);

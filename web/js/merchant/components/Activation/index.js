@@ -43,7 +43,7 @@ import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
 } from './AccountActivationFormMap';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { updateSession } from 'merchant/reducers/session';
 import {
   rxCaExp,
@@ -112,6 +112,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { withSplitzService } from 'common/splitz';
 
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
+import { compose } from 'redux';
 
 /*
  *             Main-form        LA-form
@@ -138,28 +139,6 @@ let FORM_TABS, // Maintains naming of the tabs
 const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 const WEBSITE_COMPLIANCE_URLS = ['appstore_url', 'playstore_url', 'business_website'];
 
-@connect(
-  (state) => ({
-    session: state.session,
-    websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
-    isAdminAsMerchant: state.profile.isAdminAsMerchant,
-  }),
-  {
-    showNotification,
-    updateSession,
-    showInstantActivationSuccessModal,
-    showKYCDetailsModal,
-    showPANStatusModal,
-    showFraudDetectionModal,
-    submitL1Form,
-    submitL1FormSuccess,
-    showKYCStatusModal,
-    setCurrentTab,
-    trackEventsAction,
-    fetchIsAdminAsMerchant,
-  },
-)
-@RTracking(() => window.rzpQ.component('ActivationWizard'))
 class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
@@ -1031,31 +1010,77 @@ class ActivationWizard extends React.Component {
     this.props
       .save(reqData)
       .then((data) => {
-      if (this.unMounted) {
-        return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
-      }
-
-      this.markTabIfActive(savingWhichTab); // Re-evaluate tab being saved tab.
-
-      // After updating 'Business type' detail, now update dependent field on FE.
-      // Can loop and re-evaluate all tabs, IF more dependent fields are there. But this is for optimization.
-      if (DOCUMENT_UPLOAD_STEP && savingWhichTab === BUSINESS_TYPE_FORM_STEP) {
-        if (this.state.dirty.business_type) {
-          // Document fields are only dependent on business_type field.
-          this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-        }
-      }
-
-      if (data.errors) {
-        cb && cb(false, data.errors);
-
-        // Track session for any error on submission
-        if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
-          window.hj('tagRecording', ['activation_form_save_error']);
+        if (this.unMounted) {
+          return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
         }
 
-        // TODO: This is to avoid too many api calls and consequent ERROR even when user is not intending to save.
-        if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
+        this.markTabIfActive(savingWhichTab); // Re-evaluate tab being saved tab.
+
+        // After updating 'Business type' detail, now update dependent field on FE.
+        // Can loop and re-evaluate all tabs, IF more dependent fields are there. But this is for optimization.
+        if (DOCUMENT_UPLOAD_STEP && savingWhichTab === BUSINESS_TYPE_FORM_STEP) {
+          if (this.state.dirty.business_type) {
+            // Document fields are only dependent on business_type field.
+            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+          }
+        }
+
+        if (data.errors) {
+          cb && cb(false, data.errors);
+
+          // Track session for any error on submission
+          if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
+            window.hj('tagRecording', ['activation_form_save_error']);
+          }
+
+          // TODO: This is to avoid too many api calls and consequent ERROR even when user is not intending to save.
+          if (savingWhichTab && savingWhichTab !== this.state.activeTab) {
+            const latestDirty = { ...this.state.dirty };
+            Object.keys(savingDataOfWhichTab).forEach((key) => {
+              if (
+                savingDataOfWhichTab.hasOwnProperty(key) &&
+                savingDataOfWhichTab[key] == this.state.dirty[key]
+              ) {
+                /*
+                 * Remove only those set of fields whose api request failed, while retaining changes of new form edits(latest state.dirty).
+                 * Also, handles case where user edited same field whose request failed. But it's treated as fresh value.
+                 * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
+                 * */
+
+                delete latestDirty[key];
+              }
+            });
+
+            // Don't set dirty = {}, cuz internet might be slow and user has already edited some other fields.
+            this.setState({
+              dirty: latestDirty,
+            });
+          }
+
+          /*
+           * We're not doing any change on dirty, if it's SAME tab.
+           * Bcoz, for 1 api-errored field, all other fields must be retained for Saving again.
+           * */
+
+          this.setState({
+            isSaving: LOADING.ERROR,
+          });
+
+          this.removeLoader();
+
+          // Track abrupt state change
+          if (this.state.isSaving !== LOADING.PENDING) {
+            if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
+              window.hj('tagRecording', ['activation_form_save_abrupt']);
+            }
+          }
+        } else {
+          cb && cb(true);
+
+          const prefix = isL1Completed(this) ? 'l2_' : 'l1_';
+
+          updateHubSpotContactsProperties(reqData, {}, prefix);
+
           const latestDirty = { ...this.state.dirty };
           Object.keys(savingDataOfWhichTab).forEach((key) => {
             if (
@@ -1063,81 +1088,35 @@ class ActivationWizard extends React.Component {
               savingDataOfWhichTab[key] == this.state.dirty[key]
             ) {
               /*
-               * Remove only those set of fields whose api request failed, while retaining changes of new form edits(latest state.dirty).
-               * Also, handles case where user edited same field whose request failed. But it's treated as fresh value.
+               * Remove only those set of fields whose api request is success, while retaining changes of new form edits(latest state.dirty).
+               * Also, handles case where user edited same field whose request is success. But it's treated as fresh value.
                * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
                * */
-
               delete latestDirty[key];
             }
           });
 
-          // Don't set dirty = {}, cuz internet might be slow and user has already edited some other fields.
+          // Don't set dirty = {}, cuz internet might be slow and user has already edited some other field.
           this.setState({
             dirty: latestDirty,
+            isSaving: LOADING.SUCCESS,
           });
+
+          this.removeLoader(3000);
+
+          // Track abrupt state change (non-LA account)
+          if (this.state.isSaving !== LOADING.PENDING) {
+            if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
+              window.hj('tagRecording', ['activation_form_save_abrupt']);
+            }
+          }
         }
-
-        /*
-         * We're not doing any change on dirty, if it's SAME tab.
-         * Bcoz, for 1 api-errored field, all other fields must be retained for Saving again.
-         * */
-
+      })
+      .catch(() => {
         this.setState({
           isSaving: LOADING.ERROR,
         });
-
-        this.removeLoader();
-
-        // Track abrupt state change
-        if (this.state.isSaving !== LOADING.PENDING) {
-          if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
-            window.hj('tagRecording', ['activation_form_save_abrupt']);
-          }
-        }
-      } else {
-        cb && cb(true);
-
-        const prefix = isL1Completed(this) ? 'l2_' : 'l1_';
-
-        updateHubSpotContactsProperties(reqData, {}, prefix);
-
-        const latestDirty = { ...this.state.dirty };
-        Object.keys(savingDataOfWhichTab).forEach((key) => {
-          if (
-            savingDataOfWhichTab.hasOwnProperty(key) &&
-            savingDataOfWhichTab[key] == this.state.dirty[key]
-          ) {
-            /*
-             * Remove only those set of fields whose api request is success, while retaining changes of new form edits(latest state.dirty).
-             * Also, handles case where user edited same field whose request is success. But it's treated as fresh value.
-             * Also, otherwise if deleted from state.dirty, DOM form view will display a value that's not present in state.dirty.
-             * */
-            delete latestDirty[key];
-          }
-        });
-
-        // Don't set dirty = {}, cuz internet might be slow and user has already edited some other field.
-        this.setState({
-          dirty: latestDirty,
-          isSaving: LOADING.SUCCESS,
-        });
-
-        this.removeLoader(3000);
-
-        // Track abrupt state change (non-LA account)
-        if (this.state.isSaving !== LOADING.PENDING) {
-          if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
-            window.hj('tagRecording', ['activation_form_save_abrupt']);
-          }
-        }
-      }
-    })
-    .catch(() => {
-      this.setState({
-        isSaving: LOADING.ERROR,
       });
-    });
   };
 
   /*
@@ -2683,15 +2662,15 @@ class ActivationWizard extends React.Component {
           >
             <div className={this.props.location.pathname === '/kyc' ? 'content-container' : ''}>
               {this.state.showInfoHeader && (
-                <div class="activation-info-container">
+                <div className="activation-info-container">
                   For your business type, we need a few more details for activation
                 </div>
               )}
               {/* Active tab title */}
-              <main-title class="main-title">
+              <main-title className="main-title">
                 {activeTab != 0 && (
                   <Button
-                    class="device--mobile btn--back"
+                    className="device--mobile btn--back"
                     iconBefore="arrow-back"
                     onClick={this.prev}
                   />
@@ -3200,17 +3179,17 @@ export function ActivationField(field) {
         <div className="ndc-reasons">
           {rest.reasons.map((r, i) => (
             <>
-              <div class="reason-container">
-                <div key={i} class="reason-wrapper">
+              <div className="reason-container">
+                <div key={i} className="reason-wrapper">
                   <i className="i i-info-circle" />
                   <div>{r}</div>
                 </div>
-                <button class="add-comment" onClick={(e) => this.handleComment(e, key)}>
+                <button className="add-comment" onClick={(e) => this.handleComment(e, key)}>
                   Add Comment
                 </button>
               </div>
               {this.state.commentlist.hasOwnProperty(key) && (
-                <div class="comment-box">
+                <div className="comment-box">
                   <input
                     type="text"
                     className="form-control input-elm"
@@ -3220,7 +3199,10 @@ export function ActivationField(field) {
                     maxlength="200"
                     onBlur={(e) => this.onCommentBlur(e, key)}
                   />
-                  <button class="delete-button" onClick={(e) => this.handleComment(e, key, true)}>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => this.handleComment(e, key, true)}
+                  >
                     <i className="i i-delete" />
                   </button>
                 </div>
@@ -3467,4 +3449,29 @@ function matcher({ option, searchTerm = '', searchIndices }) {
   return true;
 }
 
-export default withSplitzService(withRouter(ActivationWizard));
+export default compose(
+  connect(
+    (state) => ({
+      session: state.session,
+      websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+      isAdminAsMerchant: state.profile.isAdminAsMerchant,
+    }),
+    {
+      showNotification,
+      updateSession,
+      showInstantActivationSuccessModal,
+      showKYCDetailsModal,
+      showPANStatusModal,
+      showFraudDetectionModal,
+      submitL1Form,
+      submitL1FormSuccess,
+      showKYCStatusModal,
+      setCurrentTab,
+      trackEventsAction,
+      fetchIsAdminAsMerchant,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('ActivationWizard')),
+  withRouter,
+  withSplitzService,
+)(ActivationWizard);

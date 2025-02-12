@@ -20,12 +20,12 @@ export default class ListToggler extends Component {
     } = this.props;
 
     return (
-      <div class="list-table">
-        <span class="list-label">
+      <div className="list-table">
+        <span className="list-label">
           <b>{label}</b> {subLabel}
         </span>
 
-        <span class="primary-link pull-right">
+        <span className="primary-link pull-right">
           {!loading &&
             limit &&
             limit < totalItems && (
@@ -35,8 +35,8 @@ export default class ListToggler extends Component {
             )}
         </span>
 
-        <div class="panel-body" style={{ padding: '15px 0' }}>
-          <div class="list-group detail-row-container">
+        <div className="panel-body" style={{ padding: '15px 0' }}>
+          <div className="list-group detail-row-container">
             {this.props.children}
           </div>
         </div>

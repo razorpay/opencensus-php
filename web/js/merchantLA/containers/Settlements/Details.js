@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 import SettlementDetails from 'merchantLA/components/Settlements/Details';
 import * as SettlementActions from 'merchantLA/reducers/settlements/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import { compose } from 'redux';
 
-@connect(state => state.settlement, SettlementActions)
-export default class SettlementDetailsContainer extends Component {
+class SettlementDetailsContainer extends Component {
   UNSAFE_componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
@@ -16,7 +16,7 @@ export default class SettlementDetailsContainer extends Component {
     }
   }
 
-  fetchBreakupDetails = settlement => {
+  fetchBreakupDetails = (settlement) => {
     return this.props.fetchBreakupDetails(settlement);
   };
 
@@ -64,3 +64,7 @@ export default class SettlementDetailsContainer extends Component {
     );
   }
 }
+
+export default compose(connect((state) => state.settlement, SettlementActions))(
+  SettlementDetailsContainer,
+);

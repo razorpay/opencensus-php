@@ -9,6 +9,21 @@ module.exports = {
     'jsx-a11y/no-autofocus': [2, { ignoreNonDOM: true }],
     'no-shadow': 'off',
     '@typescript-eslint/naming-convention': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'BindExpression',
+        message: 'The `::` operator is not allowed. Use bind if really needed',
+      },
+      {
+        selector: 'DoExpression',
+        message: 'The `do` expression is not allowed in JSX.',
+      },
+      {
+        selector: 'ExportDefaultSpecifier',
+        message: "Use 'export { default } from' instead of 'export default from'.",
+      },
+    ],
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-shadow': 'off',

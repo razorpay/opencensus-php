@@ -18,17 +18,17 @@ export default function NewSubscriptionLinkAddOnDetails(props) {
   const filteredAddOns = items.items.filter((item) => item.currency === currency);
 
   return (
-    <div class="Subscription--New-addons">
+    <div className="Subscription--New-addons">
       <Input.Check
         data-name="_addOnPresent"
         fieldLabel="I want to add an upfront amount"
-        class="Input--noMarginLeft"
+        className="Input--noMarginLeft"
         checked={internals._addOnPresent}
         onBlur={() => {
           analytics.track('subscription.create.addon', cloneOptions);
         }}
       />
-      <ol class="list">
+      <ol className="list">
         {addons.map((addon, index) => (
           <li key={`${index}-${Math.random()}`}>
             <AddOnItem
@@ -45,20 +45,20 @@ export default function NewSubscriptionLinkAddOnDetails(props) {
               cloneOptions={cloneOptions}
             />
             <span
-              class="remove-btn"
+              className="remove-btn"
               onClick={(...options) => {
                 analytics.track('subscription.create.addon_deselect', cloneOptions);
                 removeAddOn(index)(...options);
               }}
             >
-              <i class="i i-close" />
+              <i className="i i-close" />
             </span>
           </li>
         ))}
         {isPresent(addons) && isPresent(addons[addons.length - 1]) && (
-          <li class="no-counter">
+          <li className="no-counter">
             <button
-              class="btn btn-link"
+              className="btn btn-link"
               onClick={() => {
                 analytics.track('subscription.create.addon', cloneOptions);
                 onAddAddon();

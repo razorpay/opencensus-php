@@ -224,7 +224,7 @@ export default function NewReconciliationRun() {
                       </Text>
                       <input
                         type="file"
-                        class="hide"
+                        className="hide"
                         ref={(element) => (inputRef.current[index] = element)}
                         onChange={(e) => handleChange(e, index)}
                         accept={allowedExtensions.join(', ')}

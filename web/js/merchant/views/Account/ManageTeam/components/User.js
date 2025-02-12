@@ -5,36 +5,18 @@ import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
 import { without } from 'common/utils/rzp-utils';
-import {
-  updateUser,
-  removeUser,
-  fetchTeamDetails,
-} from 'merchant/reducers/team';
+import { updateUser, removeUser, fetchTeamDetails } from 'merchant/reducers/team';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { compose } from 'redux';
 
-@connect(
-  state => {
-    return {
-      merchantId: state.session.user.current,
-      session: state.session,
-    };
-  },
-  {
-    fetchTeamDetails,
-    updateUser,
-    removeUser,
-    ...NotificationsActions,
-  }
-)
-@reduxForm({})
-export default class EditUser extends Component {
+class EditUser extends Component {
   UNSAFE_componentWillMount() {
     this.props.initialize({
       role: this.props.user.role,
     });
   }
 
-  updateUser = fieldProps => {
+  updateUser = (fieldProps) => {
     return this.props
       .updateUser(this.props.user.id, fieldProps)
       .then(() => {
@@ -46,7 +28,7 @@ export default class EditUser extends Component {
           message: "Team member's role has been changed successfully",
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -66,7 +48,7 @@ export default class EditUser extends Component {
           message: 'Team member has been removed successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -97,10 +79,7 @@ export default class EditUser extends Component {
       }
     }
 
-    let ROLES =
-      user.role === rolesList.OWNER
-        ? allRoles
-        : without(allRoles, rolesList.OWNER);
+    let ROLES = user.role === rolesList.OWNER ? allRoles : without(allRoles, rolesList.OWNER);
     return (
       <tr>
         <td>{user.email}</td>
@@ -110,10 +89,10 @@ export default class EditUser extends Component {
           <Field
             name="role"
             component="select"
-            class="form-control"
+            className="form-control"
             disabled={!(isAllowedUpdate || isAllowedRemove)}
           >
-            {Object.keys(ROLES).map(role => (
+            {Object.keys(ROLES).map((role) => (
               <option key={role} value={role}>
                 {ROLES[role].label}
               </option>
@@ -122,10 +101,10 @@ export default class EditUser extends Component {
         </td>
 
         <td>
-          <div class="btn-toolbar">
+          <div className="btn-toolbar">
             {isAllowedUpdate && (
               <AsyncButton
-                class="btn btn-sm btn-success"
+                className="btn btn-sm btn-success"
                 text="Update"
                 data-tip="Updates the user's role"
                 onClick={handleSubmit(this.updateUser)}
@@ -133,7 +112,7 @@ export default class EditUser extends Component {
             )}
             {isAllowedRemove && (
               <AsyncButton
-                class="btn btn-sm btn-danger"
+                className="btn btn-sm btn-danger"
                 text="Remove"
                 data-tip="Removes user from your team"
                 onClick={handleSubmit(this.removeUser)}
@@ -145,3 +124,21 @@ export default class EditUser extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        merchantId: state.session.user.current,
+        session: state.session,
+      };
+    },
+    {
+      fetchTeamDetails,
+      updateUser,
+      removeUser,
+      ...NotificationsActions,
+    },
+  ),
+  reduxForm({}),
+)(EditUser);

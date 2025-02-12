@@ -103,7 +103,7 @@ const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }
           <AsyncButton
             type="submit"
             disabled={!tncAccepted && showPricing}
-            class="btn btn-primary"
+            className="btn btn-primary"
             text="Yes, enable"
             onClick={handleWidgetEnable}
           />

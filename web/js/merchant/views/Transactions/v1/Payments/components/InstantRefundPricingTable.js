@@ -43,30 +43,30 @@ class InstantRefundPricingTable extends Component {
     const rules = this.props.pricing.rules;
 
     return (
-      <div class="instant-refund-fee-modal">
-        <div class="panel panel-default refund-fee-structure">
-          <div class="panel-heading grey" style={{ fontWeight: 600, color: '#515978' }}>
+      <div className="instant-refund-fee-modal">
+        <div className="panel panel-default refund-fee-structure">
+          <div className="panel-heading grey" style={{ fontWeight: 600, color: '#515978' }}>
             We charge minimal fee on each refund
           </div>
-          <div class="panel-body" style={{ paddingBottom: '8px' }}>
+          <div className="panel-body" style={{ paddingBottom: '8px' }}>
             {!this.props.pricing.custom_pricing ? (
-              <div class="instant-breakup">
-                <div class="flex">
-                  <div style={{ marginBottom: '5px' }} class="w50 text-left t-heading">
+              <div className="instant-breakup">
+                <div className="flex">
+                  <div style={{ marginBottom: '5px' }} className="w50 text-left t-heading">
                     Refund Amount
                   </div>
-                  <div style={{ marginBottom: '5px' }} class="w50 text-right t-heading">
+                  <div style={{ marginBottom: '5px' }} className="w50 text-right t-heading">
                     Processing Fees
                   </div>
                 </div>
                 {rules.map((r, i) => (
-                  <div key={i} class="flex">
-                    <div class="text-left amt" style={{ flexGrow: 1 }}>
+                  <div key={i} className="flex">
+                    <div className="text-left amt" style={{ flexGrow: 1 }}>
                       ₹ {i > 0 ? r.amount_range_min / 100 + 1 : r.amount_range_min / 100}{' '}
                       {i == rules.length - 1 ? 'and' : '-'}{' '}
                       {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
                     </div>
-                    <div class="text-right" style={{ flexGrow: 1 }}>
+                    <div className="text-right" style={{ flexGrow: 1 }}>
                       <Amount
                         value={r.fixed_rate}
                         currency="INR"
@@ -77,12 +77,12 @@ class InstantRefundPricingTable extends Component {
                 ))}{' '}
               </div>
             ) : (
-              <div class="flex">
+              <div className="flex">
                 <div style={{ color: '#515978' }}>
                   To know your pricing, please{' '}
                   <a>
                     <strong
-                      class="pointer"
+                      className="pointer"
                       onClick={() => {
                         window.rzpAnalytics?.({
                           eventCategory: 'Dashboard - Instant Refund',

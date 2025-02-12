@@ -9,7 +9,7 @@ jest.mock('common/ui/Pager', () => () => {
 
 jest.mock('common/ui/TableLoader', () => ({ colSpan }) => (
   <tr>
-    <td class="text-center empty-table" colSpan={colSpan}>
+    <td className="text-center empty-table" colSpan={colSpan}>
       <span>Loading List</span>
     </td>
   </tr>

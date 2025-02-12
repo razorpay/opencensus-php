@@ -31,6 +31,7 @@ import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import { NOT_SKIP } from 'merchant/constants/payments';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { withSplitzService } from 'common/splitz';
+import { compose } from 'redux';
 
 export const LANDING_PAGE_DESC = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
@@ -44,19 +45,6 @@ export const HERO_IMAGE_MAP = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: i18nHeroMain,
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    org: state.session.org,
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
-  }),
-  {
-    handleProductQuickGuide,
-  },
-)
-@OnBoarding({
-  feature: RZPFeatures.PP,
-})
 class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     const { abExperiments } = this.props.splitz || {
@@ -124,7 +112,7 @@ class PaymentPagesOnBoarding extends React.Component {
     const heroMainImag =
       HERO_IMAGE_MAP[org.custom_code] || HERO_IMAGE_MAP[ORG_CUSTOM_CODE_MAP.RAZORPAY];
     return (
-      <OnBoardingWrapper class="PaymentPages">
+      <OnBoardingWrapper className="PaymentPages">
         <Slider
           active={active}
           afterSlide={getOnBoardingSliderDots({
@@ -210,4 +198,20 @@ export function getIsPaymentPagesEnabled({ user, paymentPages, loading }) {
   return false;
 }
 
-export default withSplitzService(withRouter(PaymentPagesOnBoarding));
+export default compose(
+  withSplitzService,
+  withRouter,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      org: state.session.org,
+      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
+    }),
+    {
+      handleProductQuickGuide,
+    },
+  ),
+  OnBoarding({
+    feature: RZPFeatures.PP,
+  }),
+)(PaymentPagesOnBoarding);

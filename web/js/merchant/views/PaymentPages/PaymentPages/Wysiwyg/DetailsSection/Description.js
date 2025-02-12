@@ -1,13 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { classList } from 'common/utils/rzp-utils';
+
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import debounce from 'common/utils/debounce';
+import { classList } from 'common/utils/rzp-utils';
+import { validateEmbeddedVideoUrl, isUrlLenient } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 // eslint-disable-next-line import/no-named-as-default
-import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { uploadImageInDescription } from '../../model';
-import { validateEmbeddedVideoUrl, isUrlLenient } from 'common/utils/validators';
 import track from '../track/';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
@@ -39,8 +40,7 @@ const QUILL_OPTIONS = {
   scrollingContainer: 'body',
 };
 
-@connect(null, { showNotification })
-export default class WysiwygDescription extends React.PureComponent {
+class WysiwygDescription extends React.PureComponent {
   state = { isFocused: false };
 
   constructor(props) {
@@ -275,8 +275,8 @@ export default class WysiwygDescription extends React.PureComponent {
 
   render() {
     return (
-      <div id="description" class={classList(this.state.isFocused && 'is-focused')}>
-        <span class="help-content">
+      <div id="description" className={classList(this.state.isFocused && 'is-focused')}>
+        <span className="help-content">
           <div id="description-container">
             <span id="description-quill" />
           </div>
@@ -292,12 +292,14 @@ export default class WysiwygDescription extends React.PureComponent {
 function customizeIcons() {
   const icons = window.Quill.import('ui/icons');
 
-  icons.bold = '<i class="i i-bold" />';
-  icons.italic = '<i class="i i-italics" />';
-  icons.underline = '<i class="i i-underline" />';
-  icons.link = '<i class="i i-link" />';
-  icons.image = '<i class="i i-image" />';
-  icons.video = '<i class="i i-video" />';
-  icons.list.bullet = '<i class="i i-ul-list" />';
-  icons.list.ordered = '<i class="i i-ol-list" />';
+  icons.bold = '<i className="i i-bold" />';
+  icons.italic = '<i className="i i-italics" />';
+  icons.underline = '<i className="i i-underline" />';
+  icons.link = '<i className="i i-link" />';
+  icons.image = '<i className="i i-image" />';
+  icons.video = '<i className="i i-video" />';
+  icons.list.bullet = '<i className="i i-ul-list" />';
+  icons.list.ordered = '<i className="i i-ol-list" />';
 }
+
+export default connect(null, { showNotification })(WysiwygDescription);

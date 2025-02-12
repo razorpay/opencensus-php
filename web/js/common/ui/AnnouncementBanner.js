@@ -237,14 +237,14 @@ class Announcement extends Component {
 
         {fullPage && (
           <Fragment>
-            <div class="skew-pattern skew-pattern-left" style={titleStyle} />
-            <div class="skew-pattern skew-pattern-right" style={titleStyle} />
+            <div className="skew-pattern skew-pattern-left" style={titleStyle} />
+            <div className="skew-pattern skew-pattern-right" style={titleStyle} />
           </Fragment>
         )}
 
         <div className="content">{this.props.children}</div>
         {onClose && (
-          <div class="close-btn" onClick={this.handleClose}>
+          <div className="close-btn" onClick={this.handleClose}>
             &times;
           </div>
         )}

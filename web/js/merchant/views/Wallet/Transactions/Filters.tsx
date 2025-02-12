@@ -31,7 +31,7 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
         <Field
           name="transaction_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           data-testid="id"
         />
       </div>

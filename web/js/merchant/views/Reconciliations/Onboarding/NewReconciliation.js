@@ -287,7 +287,7 @@ function NewReconciliation({ fileConfigs, reconType, handleCtaClick, showNotific
                   </Text>
                   <input
                     type="file"
-                    class="hide"
+                    className="hide"
                     ref={(element) => (inputRefs.current[index] = element)}
                     onChange={handleChange}
                     accept={allowedExtensions.join(', ')}

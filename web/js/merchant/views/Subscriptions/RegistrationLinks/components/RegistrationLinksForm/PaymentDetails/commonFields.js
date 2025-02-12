@@ -48,11 +48,11 @@ export const BankDetails = ({
 }) => (
   <Input.Group
     label="Bank Details"
-    class="InputGroup--inline"
+    className="InputGroup--inline"
     disabled={disabled}
     required={required}
   >
-    <div class="Input-content">
+    <div className="Input-content">
       {!hideBankName && (
         <Input.Select
           name="bankName"
@@ -90,7 +90,7 @@ export const AccountDetails = ({
 }) => (
   <Input.Group
     label="Account Details"
-    class="InputGroup--vTop"
+    className="InputGroup--vTop"
     disabled={disabled}
     required={required}
   >

@@ -69,8 +69,8 @@ const PropagationStatusModal = ({ status, closeModal }) => {
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <i className={`i ${staticData.iconClass}`} />
           {staticData.title}
         </div>
@@ -82,7 +82,7 @@ const PropagationStatusModal = ({ status, closeModal }) => {
           <br />
         </main>
         <footer>
-          <Button.Primary class="Save-btn" type="submit">
+          <Button.Primary className="Save-btn" type="submit">
             {staticData.buttonText}
           </Button.Primary>
         </footer>

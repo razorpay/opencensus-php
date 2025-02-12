@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { withRouter } from 'common/deprecated/withRouter';
 
 import ProductWrapper from 'common/ui/ProductWrapper';
@@ -39,27 +39,8 @@ import { transformCatalog } from 'merchant/reducers/paymentPages/transformer';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getPaymentPagesTabs } from 'merchant/views/PaymentPages/PaymentPages/utils';
 import CategoryIcon from 'assets/payment_pages/categories.svg';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    ...state.paymentPagesProducts,
-    ...state.session,
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
-  }),
-  {
-    showNotification,
-    populateRPLReduxList,
-    handleProductQuickGuide,
-    fetchProducts,
-    fetchCategories,
-    updateProductsList,
-    deleteProductFromList,
-    deleteCategoryFromList,
-    updateCategoriesList,
-    addInCategoriesList,
-  },
-)
-@RTracking(() => window.rzpQ.component('Products'))
 class Products extends ListContainer {
   constructor(props) {
     super(props);
@@ -215,7 +196,7 @@ class Products extends ListContainer {
 
     if (products.loading) {
       content = (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -251,21 +232,21 @@ class Products extends ListContainer {
             </ShowWhen>
 
             <ShowWhen additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}>
-              <DocLink class="btn btn-link" href="PRODUCT_DOC_URL">
+              <DocLink className="btn btn-link" href="PRODUCT_DOC_URL">
                 Documentation&nbsp;
-                <i class="i i-external-link" />
+                <i className="i i-external-link" />
               </DocLink>
             </ShowWhen>
 
             {isRoleAllowedEdit && (
               <>
-                <a class="btn-link" onClick={() => this.toggleManageCategories(true)}>
+                <a className="btn-link" onClick={() => this.toggleManageCategories(true)}>
                   <img src={CategoryIcon} alt="category icon" style={{ marginRight: '5px' }} />
                   Manage Categories
                 </a>
-                <span class="cta-container m-l">
-                  <span class="btn btn-primary" onClick={this.handleAddProduct}>
-                    <i class="i i-plus" />
+                <span className="cta-container m-l">
+                  <span className="btn btn-primary" onClick={this.handleAddProduct}>
+                    <i className="i i-plus" />
                     <span>Add a new product</span>
                   </span>
                 </span>
@@ -275,7 +256,7 @@ class Products extends ListContainer {
         }
       >
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <TestModeBanner />
             <ListFilter
               form="PaymentPagesPaymentListFilter"
@@ -283,23 +264,23 @@ class Products extends ListContainer {
               onSearchAnalytics={this.onSearchAnalytics}
               onClearAnalytics={this.onClearAnalytics}
             >
-              <div class="form-group list-filter-item">
+              <div className="form-group list-filter-item">
                 <label>Product name</label>
                 <Field
                   name="product_name"
                   component="input"
-                  class="form-control input-sm"
+                  className="form-control input-sm"
                   // onBlur={track.searchTitle}
                 />
               </div>
 
               {/* Backend does not support this as of now , hence commented this out */}
-              {/* <div class="form-group list-filter-item">
+              {/* <div className="form-group list-filter-item">
                 <label>Category</label>
                 <Field
                   name="category"
                   component="select"
-                  class="form-control input-sm"
+                  className="form-control input-sm"
                   // onChange={track.searchStatus}
                 >
                   <option value="">All</option>
@@ -314,9 +295,9 @@ class Products extends ListContainer {
                 </Field>
               </div> */}
 
-              <div class="form-group list-filter-item">
+              <div className="form-group list-filter-item">
                 <label>Status</label>
-                <Field name="status" component="select" class="form-control input-sm">
+                <Field name="status" component="select" className="form-control input-sm">
                   <option value="">All</option>
                   <option value="in_stock,unlimited">Available</option>
                   <option value="out_of_stock">Out of Stock</option>
@@ -367,4 +348,26 @@ const EmptyComponent = () => (
   />
 );
 
-export default withRouter(Products);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.paymentPagesProducts,
+      ...state.session,
+      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
+    }),
+    {
+      showNotification,
+      populateRPLReduxList,
+      handleProductQuickGuide,
+      fetchProducts,
+      fetchCategories,
+      updateProductsList,
+      deleteProductFromList,
+      deleteCategoryFromList,
+      updateCategoriesList,
+      addInCategoriesList,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('Products')),
+)(Products);

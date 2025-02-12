@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import ComingSoon from 'merchant/components/ComingSoon';
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -9,24 +9,10 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import featuresList from './features';
 import track from './track';
+import { compose } from 'redux';
+import React from 'react';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      isTestMode: state.session.mode === 'test',
-      onboarding: state.onboarding,
-    };
-  },
-  {
-    saveOnboarding,
-    updateFeatures,
-    showNotification,
-    handleProductQuickGuide,
-  },
-)
-@RTracking(() => window.rzpQ.component('QRComingSoonContainer'))
-export default class QRComingSoonContainer extends React.Component {
+class QRComingSoonContainer extends React.Component {
   componentDidMount() {
     track.init({
       track: this.props.tracking.trackEvent,
@@ -50,9 +36,28 @@ export default class QRComingSoonContainer extends React.Component {
         title="Razorpay QR Codes"
         description="Adopt contactless payments through customized UPI & Bharat QR Codes"
         features={featuresList}
-        previewURL={require("assets/qr_code/product_preview.gif")}
+        previewURL={require('assets/qr_code/product_preview.gif')}
         interestClicked={this.handleEnableFeature}
       />
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        isTestMode: state.session.mode === 'test',
+        onboarding: state.onboarding,
+      };
+    },
+    {
+      saveOnboarding,
+      updateFeatures,
+      showNotification,
+      handleProductQuickGuide,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('QRComingSoonContainer')),
+)(QRComingSoonContainer);

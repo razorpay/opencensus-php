@@ -71,13 +71,13 @@ const InternationalStatusLabel = ({ status, isIERevamp = false }) => {
     )
   ) : (
     <span
-      class={`status-label label ${statusMap[status.toLowerCase()]}`}
+      className={`status-label label ${statusMap[status.toLowerCase()]}`}
       data-testid="international-status-label"
     >
       {titleCase(status)}&nbsp;
       {description && (
         <span>
-          <i class="i i-info-circle" />
+          <i className="i i-info-circle" />
           <Popover theme="dark" align="bottom">
             <PopoverBody>
               <div>{description}</div>

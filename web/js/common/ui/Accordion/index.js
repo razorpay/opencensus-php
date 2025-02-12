@@ -47,7 +47,7 @@ export default class Accordion extends Component {
     const { children, className } = this.props;
 
     return (
-      <div class={`Accordion ${className}`}>
+      <div className={`Accordion ${className}`}>
         {Children.map(children, (child, index) =>
           cloneElement(child, {
             uuid: index,
@@ -76,7 +76,7 @@ export const AccordionItem = ({
   }
 
   return (
-    <div class={classList('Accordion__item', className, status)}>
+    <div className={classList('Accordion__item', className, status)}>
       {cloneElement(title, { onClick, uuid, cantBeOpened })}
       {cloneElement(content, { cantBeOpened })}
     </div>
@@ -96,10 +96,10 @@ export const AccordionItemTitle = ({ className = '', children, onClick, cantBeOp
   return (
     <div {...props}>
       {children}
-      {!cantBeOpened && <div class="accordion__arrow" data-uuid={props['data-uuid']} />}
+      {!cantBeOpened && <div className="accordion__arrow" data-uuid={props['data-uuid']} />}
     </div>
   );
 };
 export const AccordionItemContent = ({ className = '', cantBeOpened, children }) => {
-  return cantBeOpened ? null : <div class={`Accordion__content ${className}`}>{children}</div>;
+  return cantBeOpened ? null : <div className={`Accordion__content ${className}`}>{children}</div>;
 };

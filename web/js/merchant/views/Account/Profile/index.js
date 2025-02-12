@@ -312,12 +312,10 @@ class Profile extends Component {
       });
   };
 
-  @RTracking(() =>
+  openChangePasswordModal = () => {
     window.rzpQ.onbr().initiated('dash.my_account_actions', {
       action: 'Change_Password_Initiated',
-    }),
-  )
-  openChangePasswordModal = () => {
+    });
     const { user } = this.props;
     selfServeTrackInitiate({
       selfServeAction: 'Password Updated',

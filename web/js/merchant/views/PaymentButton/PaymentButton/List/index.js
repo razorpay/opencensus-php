@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 import { buttonTitle, itemName, unitsSold, createdAt } from 'common/ui/item/pair';
@@ -27,6 +27,7 @@ import track from './track';
 import EmptyListImageRzp from 'assets/payment_button/empty-list.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import EmptyListImageCurlec from 'assets/payment_button/sidebar-display-curlec.svg';
+import { compose } from 'redux';
 
 const PAYMENT_BTN_EMPTYLIST_IMG = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: EmptyListImageRzp,
@@ -45,7 +46,7 @@ const getActions = (openGetCodeModal) => ({
   title: 'Actions',
   columnClass: 'action-col',
   value: (item) => (
-    <a class="get-code-btn" onClick={() => openGetCodeModal(item)}>
+    <a className="get-code-btn" onClick={() => openGetCodeModal(item)}>
       GET BUTTON CODE
     </a>
   ),
@@ -68,30 +69,22 @@ const emptyComponent = (org) => {
     PAYMENT_BTN_EMPTYLIST_IMG[customCode] ||
     PAYMENT_BTN_EMPTYLIST_IMG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
   return () => (
-    <div class="PaymentButton-empty-list">
+    <div className="PaymentButton-empty-list">
       <img src={emptyListImage} width="280px" />
 
-      <div class="description">
+      <div className="description">
         <h4>It’s Lonely Here!</h4>
         <div>Create a Payment Button to get Started</div>
         <br />
         Not sure where to start? See our getting{' '}
         <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/">
-          started guide <i class="i i-external-link" />
+          started guide <i className="i i-external-link" />
         </DocLink>
       </div>
     </div>
   );
 };
 
-@connect(
-  (state) => ({
-    ...state.paymentbuttons,
-    ...state.session,
-  }),
-  { fetchAll, openModal, closeModal, handleProductQuickGuide },
-)
-@RTracking(() => window.rzpQ.component('PaymentButtonsList'))
 class PaymentButtonsList extends ListContainer {
   state = {
     isPaymentButtonOpen: false,
@@ -185,9 +178,9 @@ class PaymentButtonsList extends ListContainer {
             <DocsLink url="CREATE_PAYMENT_BUTTON_DOC_URL" />
 
             {isRoleAllowedEdit && user.isPaymentButtonEnabledByRazorX && (
-              <span class="cta-container">
-                <span class="btn btn-primary" onClick={this.openPaymentButtonsNewPage}>
-                  <i class="i i-plus" />
+              <span className="cta-container">
+                <span className="btn btn-primary" onClick={this.openPaymentButtonsNewPage}>
+                  <i className="i i-plus" />
                   <span>Create Payment Button</span>
                 </span>
               </span>
@@ -196,7 +189,7 @@ class PaymentButtonsList extends ListContainer {
         }
       >
         <content>
-          <div class="PaymentButtons--ListingPage content-wrapper">
+          <div className="PaymentButtons--ListingPage content-wrapper">
             <TestModeBanner />
             {/* an example of passing custom value to the filter length for mobile for ListFilter Component */}
             <ListFilter
@@ -229,4 +222,14 @@ class PaymentButtonsList extends ListContainer {
   }
 }
 
-export default withRouter(PaymentButtonsList);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.paymentbuttons,
+      ...state.session,
+    }),
+    { fetchAll, openModal, closeModal, handleProductQuickGuide },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentButtonsList')),
+)(PaymentButtonsList);

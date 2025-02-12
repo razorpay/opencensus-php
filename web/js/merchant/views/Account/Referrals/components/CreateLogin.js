@@ -1,19 +1,13 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-@connect(
-  state => {
-    return {
-      ...state.session,
-    };
-  },
-  { closeModal, ...NotificationsActions }
-)
-export default class CreateLogin extends Component {
+class CreateLogin extends Component {
   save = () => {
     const { id } = this.props.referral;
     return this.props
@@ -38,31 +32,24 @@ export default class CreateLogin extends Component {
 
     return (
       <div>
-        <ModalHeader
-          title="Invite to Login"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Invite to Login" onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
-            The merchant <strong>{referral.name}</strong> (Merchant ID -{' '}
-            <code>{referral.id}</code>), will receive an email with the sign-in
-            link. They will have complete access to their dashboard
+            The merchant <strong>{referral.name}</strong> (Merchant ID - <code>{referral.id}</code>
+            ), will receive an email with the sign-in link. They will have complete access to their
+            dashboard
           </p>
         </div>
 
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-default"
-            onClick={this.props.closeModal}
-          >
+        <div className="modal-footer">
+          <button type="button" className="btn btn-default" onClick={this.props.closeModal}>
             No, Cancel
           </button>
 
           <AsyncButton
             type="submit"
-            class="btn btn-primary"
+            className="btn btn-primary"
             text="Yes, Invite"
             pendingText="Inviting Merchant..."
             onClick={this.save}
@@ -72,3 +59,14 @@ export default class CreateLogin extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+      };
+    },
+    { closeModal, ...NotificationsActions },
+  ),
+)(CreateLogin);

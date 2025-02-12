@@ -8,12 +8,12 @@ export default ({ user }) => {
       {!user.isOrgRZP && (
         <img
           src={PoweredByRzp}
-          class="rzp-branding-logo"
+          className="rzp-branding-logo"
           alt="Powered by Razorpay"
           style={{ marginLeft: 14 }}
         />
       )}
-      <footer class="pagefooter">
+      <footer className="pagefooter">
         © {user.isOrgRZP ? '2017' : '2018'} Copyright Razorpay ·{' '}
         <u>
           <a

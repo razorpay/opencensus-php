@@ -172,7 +172,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
                   },
                 ]}
                 value={formState.flowType}
-                class="InputGroup--vTop"
+                className="InputGroup--vTop"
                 onChange={handleInputChange}
               />
             </Box>
@@ -213,7 +213,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
                 />
               </div>
               <Input
-                class="Input--vTop"
+                className="Input--vTop"
                 value={formState.themeColor}
                 onChange={handleInputChange}
                 name="themeColor"
@@ -270,7 +270,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
           <Box width="50%">Cart Selector</Box>
           <Box width="50%">
             <Input
-              class="Input--vTop"
+              className="Input--vTop"
               value={formState.cartSelector}
               onChange={handleInputChange}
               placeholder="Enter cart selector"
@@ -282,7 +282,7 @@ const Form = ({ settings, showNotification, updateSopcMetafields, updateMagicSet
           <Box width="50%">Product Selector</Box>
           <Box width="50%">
             <Input
-              class="Input--vTop"
+              className="Input--vTop"
               value={formState.productSelector}
               onChange={handleInputChange}
               placeholder="Enter product selector"

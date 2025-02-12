@@ -2,7 +2,7 @@ import { Component, Suspense } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
@@ -32,26 +32,12 @@ import { trackAcceptedInvitesClick, trackAllInvitesClick } from './analytics';
 import { INVITE_MERCHANT_STEPS } from './components/InviteMerchantModal/constants';
 import InviteNavLinks from './components/InviteNavLinks';
 import DocsLink from 'merchant/components/DocsLink';
+import { compose } from 'redux';
 
 const AllInvitesTable = lazy(() =>
   import(/* webpackChunkName: "AllInvitesTable" */ './components/AllInvitesTable'),
 );
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    org: state.session.org,
-    isMobileResolution: state.app.isMobileResolution,
-    ...state.submerchants,
-  }),
-  {
-    openModal,
-    closeModal,
-    showNotification,
-  },
-)
-@RTracking(() => window.rzpQ.component('SubMerchantsList'))
 class SubMerchantsList extends Component {
   static contextType = TwoFactorVerificationContext;
 
@@ -436,4 +422,24 @@ class SubMerchantsList extends Component {
     );
   }
 }
-export default withPartnerDashboardExperiments(withRouter(withI18Service(SubMerchantsList)));
+
+export default compose(
+  withPartnerDashboardExperiments,
+  withRouter,
+  withI18Service,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      org: state.session.org,
+      isMobileResolution: state.app.isMobileResolution,
+      ...state.submerchants,
+    }),
+    {
+      openModal,
+      closeModal,
+      showNotification,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('SubMerchantsList')),
+)(SubMerchantsList);

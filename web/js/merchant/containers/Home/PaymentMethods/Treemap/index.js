@@ -2,18 +2,16 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'common/ui/Tooltip';
+import { getI18nifyFormattedNumber } from 'common/utils/numerals';
 import { globalGroupTitleMap as groupTitleMap } from 'common/utils/pokedex';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import { getI18nifyFormattedNumber } from 'common/utils/numerals';
 import { bankNames } from 'merchant/containers/Home/PaymentMethods/data';
 
 import renderTreemap from './renderTreemap';
 
 let timer = null;
 
-// eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ user: state.session.user }), null)
-export default class Treemap extends Component {
+class Treemap extends Component {
   constructor(props) {
     super(props);
 
@@ -31,10 +29,10 @@ export default class Treemap extends Component {
     this.treemapApi = null;
     this.componentMounted = false;
 
-    this.onTransition = ::this.onTransition;
-    this.handleResize = ::this.handleResize;
-    this.onShowTooltip = ::this.onShowTooltip;
-    this.onHideTooltip = ::this.onHideTooltip;
+    this.onTransition = this.onTransition.bind(this);
+    this.handleResize = this.handleResize.bind(this);
+    this.onShowTooltip = this.onShowTooltip.bind(this);
+    this.onHideTooltip = this.onHideTooltip.bind(this);
   }
 
   showTooltip({ amount, percent, label, canBeZoomed }) {
@@ -164,3 +162,5 @@ export default class Treemap extends Component {
     );
   }
 }
+
+export default connect((state) => ({ user: state.session.user }), null)(Treemap);

@@ -1,4 +1,4 @@
-import { createLineData, timeScale } from 'common/utils/chart/index.js';
+import { timeScale } from 'common/utils/chart/index.js';
 import { Line } from 'react-chartjs-2';
 import LoaderDots from 'common/ui/LoaderDots';
 
@@ -7,24 +7,24 @@ export default ({ title, data, loading, error, yLabel, xLabel }) => {
     error = true;
   }
 
+  const renderMessage = () => {
+    if (loading) {
+      return <LoaderDots />;
+    }
+
+    if (error) {
+      return <div className="text-danger">Error occurred in loading data!</div>;
+    }
+
+    return <div className="text-muted">No data available for the selected time period</div>;
+  };
+
   return (
-    <div class="panel">
-      <div class="panel-body">
-        <h4 class="text-muted">{title}</h4>
+    <div className="panel">
+      <div className="panel-body">
+        <h4 className="text-muted">{title}</h4>
         {loading || error || !data.datasets[0].data.length ? (
-          <div class="centered">
-            {do {
-              if (loading) {
-                <LoaderDots />;
-              } else if (error) {
-                <div class="text-danger">Error occurred in loading data!</div>;
-              } else {
-                <div class="text-muted">
-                  No data available for the selected time period
-                </div>;
-              }
-            }}
-          </div>
+          <div className="centered">{renderMessage()}</div>
         ) : (
           <Line options={timeScale({ yLabel, xLabel })} data={data} />
         )}

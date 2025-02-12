@@ -84,7 +84,7 @@ class OrdersListContainer extends ListContainer {
     const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
     const updatedItems = this.getUpdatedReceipt();
     return (
-      <div class="content-wrapper" data-testId="orders-list">
+      <div className="content-wrapper" data-testId="orders-list">
         <OrdersListFilter
           form="orderListFilter"
           count={this.state.count}

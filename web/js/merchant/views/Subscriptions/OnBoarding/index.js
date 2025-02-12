@@ -23,6 +23,7 @@ import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { ONBOARDING_SUBSCRIPTIONS_DESCRIPTION } from 'merchant/views/Subscriptions/constants';
 import imgSubscriptionCurlec from 'assets/product_onboarding/subscription_curlec.svg';
+import { compose } from 'redux';
 
 const ORG_FEATURE_DATA = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: [
@@ -38,19 +39,7 @@ const ORG_ONBOARDING_IMG = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: imgSubscriptionCurlec,
 };
 
-@connect((state) => ({
-  user: state.session.user,
-  org: state.session.org,
-  subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
-    state,
-    RZPFeatures.SUBSCRIPTIONS,
-  ),
-}))
-@OnBoarding({
-  feature: RZPFeatures.SUBSCRIPTIONS,
-})
-@RTracking(() => window.rzpQ.component('SubscriptionOnBoarding'))
-export default class SubscriptionOnBoarding extends React.Component {
+class SubscriptionOnBoarding extends React.Component {
   closeOnboarding = () => {
     if (!this.props.subscriptionProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.SUBSCRIPTIONS, false);
@@ -126,7 +115,7 @@ export default class SubscriptionOnBoarding extends React.Component {
     const orgBusinessName = org.business_name;
     const onboardingIMGUrl = ORG_ONBOARDING_IMG[customCode] || ORG_ONBOARDING_IMG.rzp;
     return (
-      <OnBoardingWrapper class="Subscription">
+      <OnBoardingWrapper className="Subscription">
         <Slider
           active={this.props.active}
           afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
@@ -194,3 +183,18 @@ export const getIsAllowedResetSubscriptionBoarding = ({ plans, subscriptions }) 
 
   return getIsAllowedResetBoarding(RZPFeatures.SUBSCRIPTIONS);
 };
+
+export default compose(
+  connect((state) => ({
+    user: state.session.user,
+    org: state.session.org,
+    subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
+      state,
+      RZPFeatures.SUBSCRIPTIONS,
+    ),
+  })),
+  OnBoarding({
+    feature: RZPFeatures.SUBSCRIPTIONS,
+  }),
+  RTracking(() => window.rzpQ.component('SubscriptionOnBoarding')),
+)(SubscriptionOnBoarding);

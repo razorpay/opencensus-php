@@ -71,7 +71,7 @@ export default class EditStock extends React.Component {
           })
         )}
         {isRoleAllowedEdit && (
-          <Button.Transparent onClick={this.makeEditable} class="Button--Link pull-right">
+          <Button.Transparent onClick={this.makeEditable} className="Button--Link pull-right">
             Update Stock
           </Button.Transparent>
         )}
@@ -80,7 +80,7 @@ export default class EditStock extends React.Component {
 
     if (this.state.isEditableMode) {
       content = (
-        <div class="InputGroup Input" style={{ maxWidth: 260 }}>
+        <div className="InputGroup Input" style={{ maxWidth: 260 }}>
           <Input.Check
             fieldLabel="No Limit"
             name="hasNoStockLimit"
@@ -106,7 +106,7 @@ export default class EditStock extends React.Component {
           <Input
             name="stock"
             ref={this.setRef}
-            class="Input"
+            className="Input"
             placeholder="Total Stock"
             value={this.state.totalStock}
             disabled={this.state.hasNoStockLimit === '1'}
@@ -144,7 +144,7 @@ export default class EditStock extends React.Component {
             }}
           >
             <Button.Transparent
-              class="Button--Link"
+              className="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
               }}
@@ -153,7 +153,7 @@ export default class EditStock extends React.Component {
             </Button.Transparent>
 
             <AsyncBtn.Primary
-              class="Button--small"
+              className="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={
                 !isStorefrontPage

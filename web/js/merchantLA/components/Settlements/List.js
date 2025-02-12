@@ -25,7 +25,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick, user }) => {
         <SettlementStatusLabel status={settlement.status} />
       </td>
       <td>
-        <button class="btn btn-xs btn-primary" onClick={handleBreakupClick}>
+        <button className="btn btn-xs btn-primary" onClick={handleBreakupClick}>
           Breakup
         </button>
       </td>
@@ -43,8 +43,8 @@ export default (props) => {
   let { settlements, isLoading, showBreakup } = props;
 
   return (
-    <div class="table-responsive">
-      <table class="table table-hover">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Settlement Id</th>

@@ -132,7 +132,7 @@ class MembersActions extends Component {
       component: (
         <>
           <ModalHeader title="Update Member" onCloseClick={this.props.closeModal} />
-          <div class="modal-body">
+          <div className="modal-body">
             <NewInvitation
               visibleFields={visibleFields}
               defaults={{ ...defaults }}

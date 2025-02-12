@@ -245,9 +245,6 @@ importers:
         specifier: 3.1.2
         version: 3.1.2(react@17.0.2)
     devDependencies:
-      '@babel/plugin-proposal-function-bind':
-        specifier: 7.8.3
-        version: 7.8.3(@babel/core@7.17.8)
       '@tanstack/query-core':
         specifier: 4.33.0
         version: 4.33.0
@@ -357,9 +354,6 @@ importers:
         specifier: 3.1.2
         version: 3.1.2(react@17.0.2)
     devDependencies:
-      '@babel/plugin-proposal-function-bind':
-        specifier: 7.8.3
-        version: 7.8.3(@babel/core@7.17.8)
       '@playwright/test':
         specifier: 1.45.3
         version: 1.45.3
@@ -496,9 +490,6 @@ importers:
         specifier: 3.1.2
         version: 3.1.2(react@17.0.2)
     devDependencies:
-      '@babel/plugin-proposal-function-bind':
-        specifier: 7.8.3
-        version: 7.8.3(@babel/core@7.17.8)
       '@playwright/test':
         specifier: 1.45.3
         version: 1.45.3
@@ -1004,12 +995,6 @@ importers:
         specifier: 7.16.7
         version: 7.16.7(@babel/core@7.17.8)
       '@babel/plugin-proposal-decorators':
-        specifier: 7.8.3
-        version: 7.8.3(@babel/core@7.17.8)
-      '@babel/plugin-proposal-do-expressions':
-        specifier: 7.8.3
-        version: 7.8.3(@babel/core@7.17.8)
-      '@babel/plugin-proposal-function-bind':
         specifier: 7.8.3
         version: 7.8.3(@babel/core@7.17.8)
       '@babel/plugin-syntax-import-assertions':
@@ -1528,11 +1513,6 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
-  '@babel/plugin-proposal-do-expressions@7.8.3':
-    resolution: {integrity: sha512-NoMcN+0+SS1DVswjDCfz+Jfm9ViOYuFtv1lm0QInEugbEXK2iH3jeSq38WmIiTP+2QKqo2zt8xku77gqHINZkw==}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
   '@babel/plugin-proposal-dynamic-import@7.18.6':
     resolution: {integrity: sha512-1auuwmK+Rz13SJj36R+jqFPMJWyKEDd7lLSdOj4oJK0UTgGueSAtkrCvz9ewmgyU/P941Rv2fQwZJN8s6QruXw==}
     engines: {node: '>=6.9.0'}
@@ -1567,11 +1547,6 @@ packages:
   '@babel/plugin-proposal-export-namespace-from@7.8.3':
     resolution: {integrity: sha512-WKK+9jz6TWUTX1uej9/EUVOmM1sK7aHv6bZyxbUV3NJjbiIZRqJITeXGMo7D631J72PEnIORh5VOlFCSlrLicg==}
     deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-export-namespace-from instead.
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
-  '@babel/plugin-proposal-function-bind@7.8.3':
-    resolution: {integrity: sha512-6q7VAHJQa9x4P6Lm6h6KHoJUEhx2r1buFKseHICe0ogb1LWxducO4tsQp3hd/7BVBo485YBsn6tJnpuwWm/9cA==}
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
@@ -1701,12 +1676,6 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
-  '@babel/plugin-syntax-do-expressions@7.24.1':
-    resolution: {integrity: sha512-l5ZJA2DB2s/pM3SQzwf1ykWOiBaqN6Eb07EoZ/mH8dUR5RnaWlmPLoav6y4OT8A9Pkl615osBMZOedFbErdOOA==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
   '@babel/plugin-syntax-dynamic-import@7.8.3':
     resolution: {integrity: sha512-5gdGbFon+PszYzqs83S3E5mpi7/y/8M9eC90MRTZfduQOYW76ig6SOSPNe41IG5LoP3FGBn2N0RjVDSQiS94kQ==}
     peerDependencies:
@@ -1736,12 +1705,6 @@ packages:
 
   '@babel/plugin-syntax-flow@7.24.1':
     resolution: {integrity: sha512-sxi2kLTI5DeW5vDtMUsk4mTPwvlUDbjOnoWayhynCwrw4QXRld4QEYwqzY8JmQXaJUtgUuCIurtSRH5sn4c7mA==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-
-  '@babel/plugin-syntax-function-bind@7.24.1':
-    resolution: {integrity: sha512-7K+uzNJ5ZuL6g4Ud/UhbIxghwN2FAj8NBrzEO+eM0g9YddjOv+BD81ar/N7Es5sH+G8z9tnTYcfCu6EaPrkSDw==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
@@ -2722,7 +2685,7 @@ packages:
   '@gorhom/portal@1.0.14':
     resolution: {integrity: sha512-MXyL4xvCjmgaORr/rtryDNFy3kU4qUbKlwtQqqsygd0xX3mhKjOLn6mQK8wfu0RkoE0pBE0nAasRoHua+/QZ7A==}
     peerDependencies:
-      react: '*'
+      react: 17.0.2
       react-native: '*'
 
   '@graphql-typed-document-node/core@3.2.0':
@@ -3896,6 +3859,11 @@ packages:
       react-native-svg: ^12.3.0
       react-native-tab-view: ^3.5.2
       styled-components: ^5
+    peerDependenciesMeta:
+      react-native:
+        optional: true
+      react-native-reanimated:
+        optional: true
 
   '@razorpay/blade@11.40.3':
     resolution: {integrity: sha512-flHID26u0pcf1l1aCWT1Z4yEzu+RfUXiy8gTDxwpuLEQaXHG1fnA9wCJM2D8t1FAGrftvgkf3OZKJkr99i2elg==, tarball: https://npm.pkg.github.com/download/@razorpay/blade/11.40.3/3f9ccb803bcca1c9650957c4f327c2b85e3f49b8}
@@ -16302,7 +16270,7 @@ packages:
   react-native-svg@12.5.1:
     resolution: {integrity: sha512-c374ENsq2MWCfr+7jC7TGwSeOAuC1Dp0osh2pw8PjpYFxmmB/toFIwcnCLz+SgBd6iLJClRhbATealqM05HOGg==}
     peerDependencies:
-      react: '*'
+      react: 17.0.2
       react-native: '>=0.50.0'
 
   react-native-tab-view@2.15.1:
@@ -20682,12 +20650,6 @@ snapshots:
       '@babel/helper-plugin-utils': 7.24.0
       '@babel/plugin-syntax-decorators': 7.24.1(@babel/core@7.17.8)
 
-  '@babel/plugin-proposal-do-expressions@7.8.3(@babel/core@7.17.8)':
-    dependencies:
-      '@babel/core': 7.17.8
-      '@babel/helper-plugin-utils': 7.24.0
-      '@babel/plugin-syntax-do-expressions': 7.24.1(@babel/core@7.17.8)
-
   '@babel/plugin-proposal-dynamic-import@7.18.6(@babel/core@7.12.9)':
     dependencies:
       '@babel/core': 7.12.9
@@ -20735,12 +20697,6 @@ snapshots:
       '@babel/core': 7.12.9
       '@babel/helper-plugin-utils': 7.24.0
       '@babel/plugin-syntax-export-namespace-from': 7.8.3(@babel/core@7.12.9)
-
-  '@babel/plugin-proposal-function-bind@7.8.3(@babel/core@7.17.8)':
-    dependencies:
-      '@babel/core': 7.17.8
-      '@babel/helper-plugin-utils': 7.24.0
-      '@babel/plugin-syntax-function-bind': 7.24.1(@babel/core@7.17.8)
 
   '@babel/plugin-proposal-json-strings@7.18.6(@babel/core@7.12.9)':
     dependencies:
@@ -20937,11 +20893,6 @@ snapshots:
       '@babel/core': 7.24.4
       '@babel/helper-plugin-utils': 7.24.0
 
-  '@babel/plugin-syntax-do-expressions@7.24.1(@babel/core@7.17.8)':
-    dependencies:
-      '@babel/core': 7.17.8
-      '@babel/helper-plugin-utils': 7.24.0
-
   '@babel/plugin-syntax-dynamic-import@7.8.3(@babel/core@7.12.9)':
     dependencies:
       '@babel/core': 7.12.9
@@ -20998,11 +20949,6 @@ snapshots:
       '@babel/helper-plugin-utils': 7.24.0
 
   '@babel/plugin-syntax-flow@7.24.1(@babel/core@7.17.8)':
-    dependencies:
-      '@babel/core': 7.17.8
-      '@babel/helper-plugin-utils': 7.24.0
-
-  '@babel/plugin-syntax-function-bind@7.24.1(@babel/core@7.17.8)':
     dependencies:
       '@babel/core': 7.17.8
       '@babel/helper-plugin-utils': 7.24.0
@@ -25283,10 +25229,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       styled-components: 5.1.1(@babel/core@7.17.8)(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2)
@@ -25294,6 +25238,9 @@ snapshots:
       ts-deepmerge: 6.2.0
       universal-base64: 2.1.0
       use-presence: 1.1.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 

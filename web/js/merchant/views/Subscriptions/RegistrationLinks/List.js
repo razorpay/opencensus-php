@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 // eslint-disable-next-line no-restricted-imports
@@ -15,6 +15,7 @@ import analytics from 'merchant/views/Subscriptions/analytics';
 import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 
 import RegistrationLinksListFilter from './components/ListFilter';
+import { compose } from 'redux';
 
 const id = {
   title: 'Link ID',
@@ -39,8 +40,6 @@ const createdAt = {
   value: getTime('created_at', 'll'),
 };
 
-@connect((state) => state.registrationLinks, { fetchAll })
-@RTracking(() => window.rzpQ.component('RegistrationLinksList'))
 class RegistrationLinksListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'registrationlink.search' });
@@ -62,12 +61,12 @@ class RegistrationLinksListContainer extends ListContainer {
 
   render() {
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <span className="cta-container">
-              <NavLink class="btn btn-primary" to="/registration_links/new">
-                <i class="i i-plus" />
+              <NavLink className="btn btn-primary" to="/registration_links/new">
+                <i className="i i-plus" />
                 <span>Create New Link</span>
               </NavLink>
             </span>
@@ -101,4 +100,8 @@ class RegistrationLinksListContainer extends ListContainer {
   }
 }
 
-export default withRouter(RegistrationLinksListContainer);
+export default compose(
+  withRouter,
+  connect((state) => state.registrationLinks, { fetchAll }),
+  rTracking(() => window.rzpQ.component('RegistrationLinksList')),
+)(RegistrationLinksListContainer);

@@ -59,8 +59,8 @@ export const funnelCustomTooltip = (tooltipModel, ctx) => {
 
   const { dataPoints, labelColors, title } = tooltipModel;
   let innerHTML = `
-      <div class="magic-tooltip-wrapper">
-      <div class="tooltip-date">${title[0].split('(')[0]}</div>
+      <div className="magic-tooltip-wrapper">
+      <div className="tooltip-date">${title[0].split('(')[0]}</div>
       `;
   dataPoints?.forEach((item, index) => {
     const parsedValue = JSON.parse(item.value);
@@ -69,15 +69,15 @@ export const funnelCustomTooltip = (tooltipModel, ctx) => {
 
     const color = labelColors[index].backgroundColor;
     innerHTML += `
-        <div class="magic-tooltip-info">
-          <div class="magic-tooltip-visual">
-            <span class="tooltip-graph-color" style="background-color: ${color}"></span>
-             <p class="tooltip-graph-label"><span class="font-bold"> ${i18HumanReadableNumerals(
+        <div className="magic-tooltip-info">
+          <div className="magic-tooltip-visual">
+            <span className="tooltip-graph-color" style="background-color: ${color}"></span>
+             <p className="tooltip-graph-label"><span className="font-bold"> ${i18HumanReadableNumerals(
                quantity,
              )} users </span> of ${i18HumanReadableNumerals(MAX_VALUE)}
            </p>
           </div>
-          <div class="tooltip-graph-value"> ${value.toFixed(2)}%</div>
+          <div className="tooltip-graph-value"> ${value.toFixed(2)}%</div>
         </div>
         `;
   });

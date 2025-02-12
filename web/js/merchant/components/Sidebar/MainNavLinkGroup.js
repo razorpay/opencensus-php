@@ -13,7 +13,7 @@ export default function MainNavLinkGroup({
     <ShowWhen additionalCondition={additionalCondition}>
       <Collapsible
         title={<Title text={title} />}
-        class={classList('NavLinkGroup', props.value && 'NavLinkGroup--active')}
+        className={classList('NavLinkGroup', props.value && 'NavLinkGroup--active')}
         {...props}
       >
         {children}
@@ -23,5 +23,5 @@ export default function MainNavLinkGroup({
 }
 
 function Title({ text }) {
-  return <span class="NavLinkGroup--title">{text}</span>;
+  return <span className="NavLinkGroup--title">{text}</span>;
 }

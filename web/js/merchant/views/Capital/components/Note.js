@@ -36,7 +36,7 @@ function Note({
   };
 
   return (
-    <div class="process-note">
+    <div className="process-note">
       {message}
       {extraMessage && (
         <div className="instructions-wrapper">
@@ -46,12 +46,12 @@ function Note({
         </div>
       )}
       {showRazorpaySupportInstruction && (
-        <div class="instructions-wrapper">
-          <div class="instruction">
+        <div className="instructions-wrapper">
+          <div className="instruction">
             <div>
               <Button.Transparent onClick={raiseTicket}>Have questions?</Button.Transparent>
             </div>
-            <span class="description">Write to us!</span>
+            <span className="description">Write to us!</span>
           </div>
         </div>
       )}

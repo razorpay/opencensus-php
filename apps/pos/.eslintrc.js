@@ -16,6 +16,21 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'BindExpression',
+        message: 'The `::` operator is not allowed. Use bind if really needed',
+      },
+      {
+        selector: 'DoExpression',
+        message: 'The `do` expression is not allowed in JSX.',
+      },
+      {
+        selector: 'ExportDefaultSpecifier',
+        message: "Use 'export { default } from' instead of 'export default from'.",
+      },
+    ],
     // TODO: check with universe team
     'import/no-unresolved': [
       'error',

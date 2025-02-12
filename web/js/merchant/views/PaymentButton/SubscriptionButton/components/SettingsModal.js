@@ -1,17 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
-
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(null, {
-  openModal,
-  closeModal,
-  showNotification,
-})
-export default class SettingsModal extends React.Component {
+class SettingsModal extends React.Component {
   constructor(props) {
     super(props);
 
@@ -23,7 +18,7 @@ export default class SettingsModal extends React.Component {
     };
   }
 
-  handleCustomMessage = event => {
+  handleCustomMessage = (event) => {
     this.setState({
       paymentSuccessMessage: event.target.value,
       isUpdated: true,
@@ -50,7 +45,7 @@ export default class SettingsModal extends React.Component {
             : '',
         },
       })
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           isSending: false,
         });
@@ -61,7 +56,7 @@ export default class SettingsModal extends React.Component {
 
         this.props.closeModal();
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           isSending: false,
         });
@@ -70,7 +65,7 @@ export default class SettingsModal extends React.Component {
       });
   };
 
-  onCustomInputBlur = e => {
+  onCustomInputBlur = (e) => {
     // this.props.track && this.props.track.customMessage(e.target.value);
   };
 
@@ -81,21 +76,15 @@ export default class SettingsModal extends React.Component {
   };
 
   render() {
-    const {
-      isSending,
-      isUpdated,
-      paymentSuccessMessage,
-      showCustomMessage,
-    } = this.state;
+    const { isSending, isUpdated, paymentSuccessMessage, showCustomMessage } = this.state;
 
-    const isDisabled =
-      !isUpdated || isSending || paymentSuccessMessage.length < 5;
+    const isDisabled = !isUpdated || isSending || paymentSuccessMessage.length < 5;
 
     return (
-      <div class="ButtonSettingsModal">
+      <div className="ButtonSettingsModal">
         <ModalHeader title="Button Settings" />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <Input.Check
             fieldLabel="Show custom message after a payment"
             onChange={this.handleShowCustomMessage}
@@ -103,35 +92,30 @@ export default class SettingsModal extends React.Component {
           />
 
           <Input.Textarea
-            class="custom-message-input"
+            className="custom-message-input"
             disabled={!showCustomMessage}
             onChange={this.handleCustomMessage}
             defaultValue={paymentSuccessMessage}
             maxLength="80"
-            validator={value => {
+            validator={(value) => {
               if (value.length < 5) {
                 return 'Success message must contain at least 5 characters.';
               }
             }}
             description={
-              <span class="chars-pressed">
-                {(paymentSuccessMessage ? paymentSuccessMessage.length : '0') +
-                  ' / 80'}
+              <span className="chars-pressed">
+                {`${paymentSuccessMessage ? paymentSuccessMessage.length : '0'} / 80`}
               </span>
             }
             onBlur={this.onCustomInputBlur}
           />
         </div>
 
-        <div class="Modal__actions">
-          <button class="btn btn-link m-r" onClick={this.closeModal}>
+        <div className="Modal__actions">
+          <button className="btn btn-link m-r" onClick={this.closeModal}>
             Cancel
           </button>
-          <button
-            class="btn btn-primary"
-            disabled={isDisabled}
-            onClick={this.onClickSave}
-          >
+          <button className="btn btn-primary" disabled={isDisabled} onClick={this.onClickSave}>
             Save
           </button>
         </div>
@@ -139,3 +123,9 @@ export default class SettingsModal extends React.Component {
     );
   }
 }
+
+export default connect(null, {
+  openModal,
+  closeModal,
+  showNotification,
+})(SettingsModal);

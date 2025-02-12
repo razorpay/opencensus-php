@@ -1,30 +1,21 @@
 /* eslint-disable react/jsx-key */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { isLoanProduct, isPreceedingState } from '../utils';
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+
 import CircularProgress from 'common/new-ui/CircularProgress';
-import { getAcceptedOffer, fetchCreditOffers, changeActiveState } from 'merchant/reducers/capital';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getAcceptedOffer, fetchCreditOffers, changeActiveState } from 'merchant/reducers/capital';
+
 import {
   APPLICATION_STATES,
   TENURE_UNIT_LABELS,
   TOOLTIP_DESCRIPTIONS,
   GA_CATEGORY_BY_PRODUCT,
 } from './constants';
+import { isLoanProduct, isPreceedingState } from '../utils';
+import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    getAcceptedOffer,
-    fetchCreditOffers,
-    changeActiveState,
-  },
-)
 class ApplicationSummary extends Component {
   _getParentStepLabel = (step) => {
     const { meta } = this.props.loanApplicationDetails;
@@ -159,11 +150,8 @@ class ApplicationSummary extends Component {
   };
 
   getAcceptedOfferDetails = () => {
-    const {
-      accepted_offer_details,
-      credit_offer_details,
-      meta,
-    } = this.props.loanApplicationDetails;
+    const { accepted_offer_details, credit_offer_details, meta } =
+      this.props.loanApplicationDetails;
 
     if (credit_offer_details.data && !credit_offer_details.data.credit_offers) {
       this.props.getAcceptedOffer({
@@ -222,7 +210,7 @@ class ApplicationSummary extends Component {
         <p className="title">{creditOffer.loan_attributes.interest_rate / 100}%</p>
         <p className="sub-title">Interest Rate</p>
       </div>,
-      <div class="section-group">
+      <div className="section-group">
         <div className="section">
           <p className="title">
             <Amount value={creditOffer.installment.amount * 7} />
@@ -239,7 +227,7 @@ class ApplicationSummary extends Component {
             </small>
           </p>
         </div>
-        <div class="divider" />
+        <div className="divider" />
         <div className="section">
           <p className="title">
             <Amount value={creditOffer.installment.amount} />
@@ -269,11 +257,8 @@ class ApplicationSummary extends Component {
   };
 
   getAcceptedCashAdvanceOfferDetails = () => {
-    const {
-      accepted_offer_details,
-      credit_offer_details,
-      meta,
-    } = this.props.loanApplicationDetails;
+    const { accepted_offer_details, credit_offer_details, meta } =
+      this.props.loanApplicationDetails;
 
     if (credit_offer_details.data && !credit_offer_details.data.credit_offers) {
       this.props.getAcceptedOffer({
@@ -345,7 +330,7 @@ class ApplicationSummary extends Component {
             />
             <Popover align="top" theme="dark">
               <PopoverBody>
-                <div class="text-left">{TOOLTIP_DESCRIPTIONS.ca_internal_credit_limit}</div>
+                <div className="text-left">{TOOLTIP_DESCRIPTIONS.ca_internal_credit_limit}</div>
               </PopoverBody>
             </Popover>
           </small>
@@ -367,8 +352,8 @@ class ApplicationSummary extends Component {
     const { meta } = this.props.loanApplicationDetails;
 
     return (
-      <div class="summary__wrapper">
-        <div class="progress-container flex">
+      <div className="summary__wrapper">
+        <div className="progress-container flex">
           <CircularProgress
             progress={getApplicationProgressPercentage(
               meta.data.application.status,
@@ -384,4 +369,14 @@ class ApplicationSummary extends Component {
   }
 }
 
-export default ApplicationSummary;
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    getAcceptedOffer,
+    fetchCreditOffers,
+    changeActiveState,
+  },
+)(ApplicationSummary);

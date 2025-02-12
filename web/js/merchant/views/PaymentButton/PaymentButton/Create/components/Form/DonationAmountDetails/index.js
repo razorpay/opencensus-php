@@ -1,36 +1,25 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { Description } from 'common/new-ui/Input';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import Button from 'common/new-ui/Button';
-import MainAmountField from './Fields/MainAmountField';
-import PresetAmountField from './Fields/PresetAmountField';
-
+import { Description } from 'common/new-ui/Input';
 import { getCurrency } from 'common/ui/Amount';
-import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import debounce from 'common/utils/debounce';
-import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import {
   updateAmountField,
   deleteAmountField,
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
-
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
+import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    updateAmountField,
-    deleteAmountField,
-    updateStepReviewProgress,
-  },
-)
-export default class AmountDetails extends React.Component {
+import MainAmountField from './Fields/MainAmountField';
+import PresetAmountField from './Fields/PresetAmountField';
+
+class AmountDetails extends React.Component {
   maxItemsLimit = 5;
   state = {
     disableSubmit: false,
@@ -178,11 +167,11 @@ export default class AmountDetails extends React.Component {
 
     return (
       <div
-        class="Form"
+        className="Form"
         style={{ display: this.props.isHidden ? 'none' : '' }}
         ref={this.setRefFormContainer}
       >
-        <div class="PaymentButtonForm-AmountDetails PaymentButtonForm-AmountDetails--donation Form-content">
+        <div className="PaymentButtonForm-AmountDetails PaymentButtonForm-AmountDetails--donation Form-content">
           <MainAmountField
             field={amountFields[0]}
             currency={currency}
@@ -191,14 +180,14 @@ export default class AmountDetails extends React.Component {
             onChange={this.onChange}
           />
 
-          <div class="togglePresetsContainer">
+          <div className="togglePresetsContainer">
             <div>
               <SwitchField
                 type="prime round"
                 checked={hasPresetAmountFields}
                 onChange={this.toggleAddPresetAmountFields}
               />
-              <b class="m-l">Show presets for donation amount</b>
+              <b className="m-l">Show presets for donation amount</b>
             </div>
 
             <Description text="Your supporters can either choose to enter custom amount or pick a preset amount" />
@@ -233,7 +222,7 @@ export default class AmountDetails extends React.Component {
           )}
         </div>
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Transparent
             type="button"
             onClick={() => {
@@ -246,10 +235,21 @@ export default class AmountDetails extends React.Component {
           </Button.Transparent>
 
           <Button.Primary type="button" onClick={this.goNext} disabled={this.state.disableSubmit}>
-            Next <i class="i i-chevron-right" />
+            Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>
       </div>
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    updateAmountField,
+    deleteAmountField,
+    updateStepReviewProgress,
+  },
+)(AmountDetails);

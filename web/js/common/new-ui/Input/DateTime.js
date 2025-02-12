@@ -82,7 +82,7 @@ export default class DateTime extends React.Component {
         )}
         <Input.Group
           label={(required && label) || null}
-          class={classList(
+          className={classList(
             inputClass(this),
             !required && 'InputGroup--near',
             isInline ? 'InputGroup--inline' : 'Input--half_big',
@@ -90,7 +90,7 @@ export default class DateTime extends React.Component {
           )}
           disabled={disabled}
         >
-          <div class="Input-content" style={{ marginTop: required ? -8 : 0 }}>
+          <div className="Input-content" style={{ marginTop: required ? -8 : 0 }}>
             <Input.ToCalendar
               autoRender
               data-name="date"
@@ -100,7 +100,7 @@ export default class DateTime extends React.Component {
               readOnly={true}
               onChange={this.onDateChange}
               size={isInline ? 'half_small' : 'half'}
-              addonAfter={<i class="i i-date-range" />}
+              addonAfter={<i className="i i-date-range" />}
               placement="topLeft"
               allowToday={true}
               disablePastDates={true}
@@ -115,7 +115,7 @@ export default class DateTime extends React.Component {
                 readOnly={true}
                 onChange={this.onTimeChange}
                 size={isInline ? 'half_small' : 'half'}
-                addonAfter={<i class="i i-time" />}
+                addonAfter={<i className="i i-time" />}
                 required
               />
             )}

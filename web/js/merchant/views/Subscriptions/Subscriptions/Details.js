@@ -3,13 +3,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import Plan from 'merchant/models/Plan';
-import { withI18Service } from 'common/i18';
-
 import { deleteAddOn, fetchSubscriptionAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { fetchInvoice, fetchCreditNote } from 'merchant/reducers/invoices/details';
@@ -55,30 +55,6 @@ const scheduledChangesInitValue = {
   isLoading: false,
 };
 
-@connect(
-  (state) => ({
-    ...state.session,
-    ...state.subscription,
-    ...state.app,
-    offer: state.offer,
-  }),
-  {
-    fetchOffer,
-    fetchPlan,
-    fetchItem,
-    openModal,
-    closeModal,
-    fetchInvoice,
-    expandSlider,
-    compactSlider,
-    fetchInvoices,
-    fetchCustomer,
-    showNotification,
-    removeOffersOnSubscription,
-    pauseAndResumeSubscription,
-  },
-)
-@RTracking(() => window.rzpQ.component('SubscriptionDetailsContainer'))
 class SubscriptionDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -919,7 +895,7 @@ class SubscriptionDetailsContainer extends React.Component {
     }
 
     return (
-      <div class="multi-content">
+      <div className="multi-content">
         <SubscriptionDetails
           plan={plan}
           subscription={entity}
@@ -971,4 +947,31 @@ function makeErrorStatus(message) {
   return {};
 }
 
-export default withRouter(withI18Service(SubscriptionDetailsContainer));
+export default compose(
+  connect(
+    (state) => ({
+      ...state.session,
+      ...state.subscription,
+      ...state.app,
+      offer: state.offer,
+    }),
+    {
+      fetchOffer,
+      fetchPlan,
+      fetchItem,
+      openModal,
+      closeModal,
+      fetchInvoice,
+      expandSlider,
+      compactSlider,
+      fetchInvoices,
+      fetchCustomer,
+      showNotification,
+      removeOffersOnSubscription,
+      pauseAndResumeSubscription,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('SubscriptionDetailsContainer')),
+  withRouter,
+  withI18Service,
+)(SubscriptionDetailsContainer);

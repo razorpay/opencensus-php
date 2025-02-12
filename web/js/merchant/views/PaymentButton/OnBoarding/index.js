@@ -1,20 +1,12 @@
 /* eslint-disable react/no-this-in-sfc */
 import React from 'react';
-import { connect } from 'react-redux';
 import imgPaymentButtonRzp from 'assets/product_onboarding/payment_button.svg';
 import imgPaymentButtonCurlec from 'assets/product_onboarding/payment_button_curlec.svg';
-import { RZPFeatures } from 'merchant/helpers/data';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
-
-import Landing from 'merchant/components/OnBoarding/Slides/Landing';
-import Features from 'merchant/components/OnBoarding/Slides/Features';
-import OnBoarding, {
+import onBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
   SkipAndGetStartedButton,
@@ -22,31 +14,26 @@ import OnBoarding, {
   setOnBoardingDataInLocalState,
   getOnBoardingDataFromLocalState,
 } from 'merchant/components/OnBoarding';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import { NOT_SKIP } from 'merchant/constants/payments';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
+import track from 'merchant/views/PaymentButton/PaymentButton/List/track';
+import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 
 import { FEATURES_DATA_ORG, FEATURES_LINKS } from './data';
-import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
-import track from 'merchant/views/PaymentButton/PaymentButton/List/track';
-import { NOT_SKIP } from 'merchant/constants/payments';
 
 const ORG_ONBOARDING_IMG = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: imgPaymentButtonRzp,
   [ORG_CUSTOM_CODE_MAP.CURLEC]: imgPaymentButtonCurlec,
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    org: state.session.org,
-    paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
-  }),
-  { handleProductQuickGuide },
-)
-@OnBoarding({
-  feature: RZPFeatures.PB,
-})
-export default class PaymentButtonOnBoarding extends React.Component {
+class PaymentButtonOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
@@ -99,7 +86,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
       FEATURES_DATA_ORG[customCode] || FEATURES_DATA_ORG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
     return (
-      <OnBoardingWrapper class="PaymentButtons">
+      <OnBoardingWrapper className="PaymentButtons">
         <Slider
           active={active}
           afterSlide={getOnBoardingSliderDots({
@@ -182,3 +169,18 @@ export function getIsPaymentButtonsEnabled({ user, paymentbuttons: { items, load
 
   return getOnBoardingDataFromLocalState(RZPFeatures.PB).isEnabled;
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      org: state.session.org,
+      paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
+    }),
+    { handleProductQuickGuide },
+    onBoarding({
+      feature: RZPFeatures.PB,
+    }),
+  ),
+)(PaymentButtonOnBoarding);

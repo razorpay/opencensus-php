@@ -10,16 +10,6 @@ import { Modules } from 'common/constant/enums';
 import { PersonalProfileFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import AccountDetailsUpdate from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v2/AccountDetailsUpdate';
 
-@connect(
-  (state) => ({
-    ...pickProps(state.session.user.user, ['contact_mobile', 'email']),
-  }),
-  {
-    closeModal,
-    updateContactMobile,
-    showNotification: fnShowNotification,
-  },
-)
 class EditContactMobileForm extends React.Component {
   onCloseClick = () => {
     this.props.onClose?.();

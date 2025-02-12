@@ -50,46 +50,49 @@ export default ({ invoice, trackUpdateInvoice }) => {
 
   const cols = [_paymentId(trackUpdateInvoice), amount];
 
+  const renderPaymentSection = () => {
+    if (isPartiallyPaid || isPaid) {
+      return (
+        <div>
+          <dt>{payments.length > 1 ? 'Payments' : 'Payment Id'}</dt>
+          <Table
+            className="table-noborder table-inv_payments"
+            rows={payments}
+            columns={cols}
+            showHeaders={false}
+          />
+        </div>
+      );
+    }
+    return (
+      <div>
+        <dt>Payment Link</dt>
+        <dd>
+          <Clipboard value={invoice.short_url} />
+        </dd>
+      </div>
+    );
+  };
+
   return (
-    <div class="inv__info">
+    <div className="inv__info">
       <h4>Invoice - {titleCase(invoice.status)}</h4>
       <dl>
-        {do {
-          if (isPartiallyPaid || isPaid) {
-            <div>
-              <dt>{payments.length > 1 ? 'Payments' : 'Payment Id'}</dt>
-              <Table
-                class="table-noborder table-inv_payments"
-                rows={payments}
-                columns={cols}
-                showHeaders={false}
-              />
-            </div>;
-          } else {
-            <div>
-              <dt>Payment Link</dt>
-              <dd>
-                <Clipboard value={invoice.short_url} />
-              </dd>
-            </div>;
-          }
-        }}
-
+        {renderPaymentSection()}
         {invoice.email_status && (
           <div>
             <dt>Email Sent to</dt>
-            <dd class="text-ellipsis">
+            <dd className="text-ellipsis">
               {invoice.customer_details.customer_email}
               <span
                 style={{ marginLeft: '10px' }}
-                class={`${notificationClassMap[invoice.email_status]}`}
+                className={`${notificationClassMap[invoice.email_status]}`}
               >
                 {invoice.email_status ? `(${invoice.email_status})` : ''}
               </span>
             </dd>
           </div>
         )}
-
         {invoice.sms_status && (
           <div>
             <dt>SMS Sent to</dt>
@@ -97,7 +100,7 @@ export default ({ invoice, trackUpdateInvoice }) => {
               {invoice.customer_details.customer_contact}
               <span
                 style={{ marginLeft: '10px' }}
-                class={`${notificationClassMap[invoice.sms_status]}`}
+                className={`${notificationClassMap[invoice.sms_status]}`}
               >
                 {invoice.sms_status ? `(${invoice.sms_status})` : ''}
               </span>

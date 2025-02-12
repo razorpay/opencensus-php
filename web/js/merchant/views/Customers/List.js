@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
@@ -22,12 +23,6 @@ const CustomerCreation = lazy(() =>
   import(/* webpackChunkName: "CustomersNew" */ 'merchant/views/Customers/New'),
 );
 
-@connect((state) => ({ ...state.customers, mode: state.session.mode, user: state.session.user }), {
-  ...CustomerActions,
-  ...ModalActions,
-  ...NotificationActions,
-  luminateRow,
-})
 class CustomersListContainer extends ListContainer {
   fetchEntityList(params) {
     selfServeTrackInitiate({
@@ -109,7 +104,7 @@ class CustomersListContainer extends ListContainer {
     const { status } = this.state;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <TestModeBanner />
 
         <HeaderAction>
@@ -118,9 +113,12 @@ class CustomersListContainer extends ListContainer {
               (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('customers')
             }
           >
-            <div class="btn-toolbar">
-              <button class="pull-right btn btn-primary" onClick={() => this.showCustomerModal()}>
-                <i class="i i-plus" />
+            <div className="btn-toolbar">
+              <button
+                className="pull-right btn btn-primary"
+                onClick={() => this.showCustomerModal()}
+              >
+                <i className="i i-plus" />
                 <span>New Customer</span>
               </button>
             </div>
@@ -148,4 +146,12 @@ class CustomersListContainer extends ListContainer {
   }
 }
 
-export default withRouter(CustomersListContainer);
+export default compose(
+  withRouter,
+  connect((state) => ({ ...state.customers, mode: state.session.mode, user: state.session.user }), {
+    ...CustomerActions,
+    ...ModalActions,
+    ...NotificationActions,
+    luminateRow,
+  }),
+)(CustomersListContainer);

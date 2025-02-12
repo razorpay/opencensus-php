@@ -1,6 +1,6 @@
 export default ({ stats }) => (
-  <div class="stats-info">
-    <table class="table">
+  <div className="stats-info">
+    <table className="table">
       <tbody>
         {stats.map((items, statIdx) => (
           <tr key={statIdx}>
@@ -16,9 +16,9 @@ export default ({ stats }) => (
 
 function StatItem({ title, value, colSpan = 1 }) {
   return (
-    <td class="td-info" colSpan={colSpan}>
-      <span class="td-heading">{title}</span>
-      <span class="td-value">{value}</span>
+    <td className="td-info" colSpan={colSpan}>
+      <span className="td-heading">{title}</span>
+      <span className="td-value">{value}</span>
     </td>
   );
 }

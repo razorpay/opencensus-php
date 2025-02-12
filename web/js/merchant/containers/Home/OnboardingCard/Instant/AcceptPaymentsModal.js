@@ -8,15 +8,10 @@ import TransactionsModal from 'merchant/components/Home/TransactionsHelperModal'
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 
 import { trackTransactionsHelper, trackProductsModal } from './ga';
+import { compose } from 'redux';
 
 const showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
 
-@connect(
-  (state) => ({
-    showProducts: state.home.instantActivations.showProductsModal,
-  }),
-  { showProductsModal, hideProductsModal },
-)
 class AcceptPayments extends Component {
   constructor(props) {
     super(props);
@@ -104,7 +99,7 @@ class AcceptPayments extends Component {
     const { isKLA } = this.props;
 
     return (
-      <div class="accept-payments-modal">
+      <div className="accept-payments-modal">
         {showProducts && (
           <ProductsModal
             onClose={this.hideProductsModal}
@@ -126,4 +121,12 @@ class AcceptPayments extends Component {
   }
 }
 
-export default withRouter(AcceptPayments);
+export default compose(
+  connect(
+    (state) => ({
+      showProducts: state.home.instantActivations.showProductsModal,
+    }),
+    { showProductsModal, hideProductsModal },
+  ),
+  withRouter,
+)(AcceptPayments);

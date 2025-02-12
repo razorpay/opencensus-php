@@ -64,13 +64,13 @@ const QuickAdd = ({
 
   return (
     <div
-      class="quick-create"
+      className="quick-create"
       onClick={() => {
         onClick(select);
         select.actions.close && select.actions.close();
       }}
     >
-      <i class="i i-plus" />
+      <i className="i i-plus" />
       <span>
         {labelToShow}
         {appendSearchTerm && select.searchTerm && ` ${select.searchTerm}...`}

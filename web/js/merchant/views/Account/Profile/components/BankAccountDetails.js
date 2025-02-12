@@ -180,7 +180,7 @@ const BankAccountDetails = ({
         <DetailRow label="Account Number" value={bankAccount.account_number} />
         <DetailRow
           label={() => (
-            <div class="bank-account">
+            <div className="bank-account">
               <span>Beneficiary</span>
             </div>
           )}

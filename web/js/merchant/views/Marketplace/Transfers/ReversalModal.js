@@ -19,6 +19,7 @@ import {
 } from 'merchant/reducers/marketplace/transfers/details';
 
 import { closeModal } from 'merchant_common/reducers/modals';
+import { compose } from 'redux';
 
 // returns value in paise
 const getReversibleAmount = (transfer) => {
@@ -72,36 +73,8 @@ const ReversalType = (props) => {
 };
 
 const selector = formValueSelector('reversalModal');
-@connect(
-  (state) => {
-    const partial = selector(state, 'partial');
-    const amountEntered = selector(state, 'amount');
-    const notesEntered = selector(state, 'notes');
 
-    return {
-      ...state.session,
-      ...state.transfer,
-      user: state.session.user,
-      partial,
-      amountEntered,
-      notesEntered,
-    };
-  },
-  {
-    closeModal,
-    reverseTransfer,
-    fetchTransfer,
-    fetchReversals,
-    ...NotificationsActions,
-  },
-)
-@reduxForm({
-  form: 'reversalModal',
-  initialValues: {
-    notes: [{}],
-  },
-})
-export default class ReversalModal extends Component {
+class ReversalModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -195,25 +168,25 @@ export default class ReversalModal extends Component {
       <div>
         <ModalHeader title="Reverse Transfer" onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <form onSubmit={handleSubmit(this.save)}>
-            <div class="form-group">
-              <label class="label-required">Reversal Amount</label>
-              <div class="input-group">
-                <div class="input-group-addon">{transfer.currency}</div>
+            <div className="form-group">
+              <label className="label-required">Reversal Amount</label>
+              <div className="input-group">
+                <div className="input-group-addon">{transfer.currency}</div>
                 <Field
                   name="amount"
                   component={InputField}
                   type="number"
                   autoComplete="off"
-                  class="form-control"
+                  className="form-control"
                   placeholder="Enter the reversal amount"
                 />
               </div>
               {!!amountError ? (
-                <div class="InputField__ErrorText text-danger">{amountError}</div>
+                <div className="InputField__ErrorText text-danger">{amountError}</div>
               ) : (
-                <small class="help-block">
+                <small className="help-block">
                   This will be a{' '}
                   <b>
                     <ReversalType {...this.props} /> reversal
@@ -222,7 +195,7 @@ export default class ReversalModal extends Component {
                 </small>
               )}
             </div>
-            <div class="form-group">
+            <div className="form-group">
               <label>Internal Notes</label>
               <FieldArray
                 name="notes"
@@ -231,8 +204,8 @@ export default class ReversalModal extends Component {
                 customAddMsg="+ Add New"
               />
             </div>
-            <div class="Modal__actions">
-              <button class="btn btn-primary btn-block">
+            <div className="Modal__actions">
+              <button className="btn btn-primary btn-block">
                 Create <ReversalType {...this.props} isTitleCase={true} /> Reversal
               </button>
             </div>
@@ -242,3 +215,35 @@ export default class ReversalModal extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      const partial = selector(state, 'partial');
+      const amountEntered = selector(state, 'amount');
+      const notesEntered = selector(state, 'notes');
+
+      return {
+        ...state.session,
+        ...state.transfer,
+        user: state.session.user,
+        partial,
+        amountEntered,
+        notesEntered,
+      };
+    },
+    {
+      closeModal,
+      reverseTransfer,
+      fetchTransfer,
+      fetchReversals,
+      ...NotificationsActions,
+    },
+  ),
+  reduxForm({
+    form: 'reversalModal',
+    initialValues: {
+      notes: [{}],
+    },
+  }),
+)(ReversalModal);

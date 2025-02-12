@@ -1,9 +1,33 @@
 import './styles/error-alert.styl';
 import React from 'react';
+import { Alert as BladeAlert } from '@razorpay/blade/components';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { NavLink, Navigate } from 'react-router-dom';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import { Alert as BladeAlert } from '@razorpay/blade/components';
+import Alert from 'common/new-ui/Alert';
+import LoaderDots from 'common/ui/LoaderDots';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { getItem, removeItem } from 'common/utils/localStorage';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { fetchAccountProductConfig } from 'merchant/reducers/capital/accounts';
+import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
+import { fetchRepayments } from 'merchant/reducers/capital/repayments';
+import {
+  fetchSeedData,
+  fetchFunctionalWithdrawalConfigByMerchantID,
+  fetchWithdrawals,
+} from 'merchant/reducers/capital/withdrawals';
+import withEDIMigration from 'merchant/views/Capital/CashAdvance/withEDIMigration';
+import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
+import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+import LlDashboard from './LlDashboard';
+import Overview from './Overview';
+import Repayments from './Repayments/Repayments';
 import {
   CASH_ADVANCE_BASE_URL,
   CASH_ADVANCE_SECTIONS,
@@ -12,32 +36,12 @@ import {
   COLLECTIONS_PRODUCT_TYPES,
   REPAYMENT_FREQUENCY_TYPES,
 } from './constants';
+import { isADayAgo, isLenderLiquiloans, isMerchantNew, showSettings } from './utils';
+import Settings from './views/Settings';
 import Withdrawals from './withdrawals';
-import Overview from './Overview';
-import Repayments from './Repayments/Repayments';
-import {
-  fetchSeedData,
-  fetchFunctionalWithdrawalConfigByMerchantID,
-  fetchWithdrawals,
-} from 'merchant/reducers/capital/withdrawals';
-import { fetchAccountProductConfig } from 'merchant/reducers/capital/accounts';
-import { fetchRepayments } from 'merchant/reducers/capital/repayments';
-import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
-import LoaderDots from 'common/ui/LoaderDots';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+
 import LegalSignIcon from '../../../../../icons/merchant/legal.svg';
 import RoundTick from '../../../../../icons/merchant/tick-round.svg';
-import { getItem, removeItem } from 'common/utils/localStorage';
-import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import moment from 'moment';
-import Settings from './views/Settings';
-import { isADayAgo, isLenderLiquiloans, isMerchantNew, showSettings } from './utils';
-import Alert from 'common/new-ui/Alert';
-import LlDashboard from './LlDashboard';
-import withEDIMigration from 'merchant/views/Capital/CashAdvance/withEDIMigration';
 
 const Loader = () => {
   return (
@@ -47,37 +51,6 @@ const Loader = () => {
   );
 };
 
-@connect(
-  (state) => {
-    const {
-      session: { user },
-      withdrawals: { withdrawalConfiguration, list, seedData },
-      migrations: { merchantGromorEsignDetails },
-      repayments: { list: repaymentsList },
-      productConfig: { productConfig },
-    } = state;
-
-    return {
-      user,
-      withdrawalConfiguration,
-      list,
-      seedData,
-      merchantGromorEsignDetails,
-      repaymentsList,
-      productConfig,
-    };
-  },
-  {
-    fetchFunctionalWithdrawalConfigByMerchantID,
-    fetchSeedData,
-    fetchWithdrawals,
-    fetchRepayments,
-    fetchMerchantDetails,
-    fetchAccountProductConfig,
-    openModal,
-    closeModal,
-  },
-)
 class CashAdvance extends React.Component {
   constructor(props) {
     super(props);
@@ -238,7 +211,7 @@ class CashAdvance extends React.Component {
               rel="noopener noreferrer"
             >
               {'View & Sign Agreement'}
-              <i class="i i-arrow-forward" />
+              <i className="i i-arrow-forward" />
             </a>
           )}
         </AnnouncementBanner>
@@ -429,4 +402,38 @@ class CashAdvance extends React.Component {
 
 CashAdvance.propTypes = {};
 
-export default withEDIMigration(withRouter(CashAdvance));
+export default compose(
+  connect(
+    (state) => {
+      const {
+        session: { user },
+        withdrawals: { withdrawalConfiguration, list, seedData },
+        migrations: { merchantGromorEsignDetails },
+        repayments: { list: repaymentsList },
+        productConfig: { productConfig },
+      } = state;
+
+      return {
+        user,
+        withdrawalConfiguration,
+        list,
+        seedData,
+        merchantGromorEsignDetails,
+        repaymentsList,
+        productConfig,
+      };
+    },
+    {
+      fetchFunctionalWithdrawalConfigByMerchantID,
+      fetchSeedData,
+      fetchWithdrawals,
+      fetchRepayments,
+      fetchMerchantDetails,
+      fetchAccountProductConfig,
+      openModal,
+      closeModal,
+    },
+  ),
+  withEDIMigration,
+  withRouter,
+)(CashAdvance);

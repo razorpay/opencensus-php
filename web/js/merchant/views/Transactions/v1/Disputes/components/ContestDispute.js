@@ -160,7 +160,7 @@ const ContestDispute = (props) => {
   return (
     <div id="contest-dispute">
       <hr />
-      <div class="subheading p-l">Contest dispute</div>
+      <div className="subheading p-l">Contest dispute</div>
 
       <Form
         onSubmit={handleSubmit}
@@ -194,8 +194,8 @@ const ContestDispute = (props) => {
         </EntityDetailRow>
 
         <hr />
-        <div class="p-l bold">Supporting evidence</div>
-        <p class="m-t p-l">
+        <div className="p-l bold">Supporting evidence</div>
+        <p className="m-t p-l">
           Please upload supporting evidence like Invoice or Reciept / Proof of delivery / Customer
           signature, etc. The supported document types are: PDF, PNG and JPG. Click{' '}
           <a
@@ -216,12 +216,12 @@ const ContestDispute = (props) => {
         />
 
         {isDipsuteOpen && (
-          <div class="dispute-cta">
-            <button class="btn btn-primary" type="submit" disabled={!canUserTakeAction}>
+          <div className="dispute-cta">
+            <button className="btn btn-primary" type="submit" disabled={!canUserTakeAction}>
               Submit Evidence
             </button>
             <button
-              class="btn btn-outline"
+              className="btn btn-outline"
               type="button"
               disabled={!canUserTakeAction}
               onClick={() => {

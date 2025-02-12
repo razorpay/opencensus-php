@@ -221,7 +221,7 @@ export const Step1 = (props) => {
     <div>
       <div className="row gateway-section-row">
         <div className="col-xs-2">
-          <label for="description" className="title-left">
+          <label htmlFor="description" className="title-left">
             Gateway
           </label>
         </div>
@@ -237,7 +237,7 @@ export const Step1 = (props) => {
           ) : selectedProvider ? (
             <>
               <div className="selected-gateway-provider" data-testid="selected-gateway">
-                <div class="provider-img-holder">
+                <div className="provider-img-holder">
                   <img src={gatewayLogos?.[selectedProvider?.toLowerCase()]} alt="gateway-logo" />
                 </div>
                 <div className="gateway-provider-block--details">
@@ -255,12 +255,12 @@ export const Step1 = (props) => {
             </>
           ) : (
             <Input
-              addonBefore={<i class="i i-search" />}
+              addonBefore={<i className="i i-search" />}
               type="text"
               name="gateway"
               placeholder="Search Gateway"
               aria-label="Search Gateway"
-              class="Input--vLeft"
+              className="Input--vLeft"
               onChange={debounce(filterOnSearch, 300)}
             />
           )}
@@ -278,7 +278,7 @@ export const Step1 = (props) => {
       {showSeamlessNote && seamlessOptionExist && (
         <div className="row mt-1">
           <div className="col-xs-2">
-            <label for="description" className="title-left mt-1">
+            <label htmlFor="description" className="title-left mt-1">
               Integration type
             </label>
           </div>
@@ -312,7 +312,7 @@ export const Step1 = (props) => {
       {showAccountType && (
         <div className="row mt-1">
           <div className="col-xs-2">
-            <label for="account type" className="title-left mt-1">
+            <label htmlFor="account type" className="title-left mt-1">
               Account type
             </label>
           </div>
@@ -333,7 +333,7 @@ export const Step1 = (props) => {
       {showAccountType && isBankingVasAccount && (
         <div className="row mt-1">
           <div className="col-xs-2">
-            <label for="bank" className="title-left mt-1">
+            <label htmlFor="bank" className="title-left mt-1">
               Bank
             </label>
           </div>

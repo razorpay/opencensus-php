@@ -71,7 +71,7 @@ export default class Slider extends React.Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'Slider',
           this.props.className && `Slider--${this.props.className}`
         )}
@@ -93,7 +93,7 @@ export const SliderDots = props => {
     Dots.push(
       <div
         key={idx}
-        class={classList(
+        className={classList(
           'SliderDots-dot',
           active === idx && 'SliderDots-dot--active'
         )}
@@ -103,7 +103,7 @@ export const SliderDots = props => {
   }
 
   return (
-    <div class="SliderDots">
+    <div className="SliderDots">
       {Dots}
 
       <div>{props.children}</div>

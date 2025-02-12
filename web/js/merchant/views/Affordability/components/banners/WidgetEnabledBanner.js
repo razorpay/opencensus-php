@@ -19,7 +19,7 @@ const WidgetEnabledBanner = ({ trialDays }) => {
       title={trialDays ? `🎁 ${trialDays} Days free Trial` : 'Widget Live'}
       theme="success"
     >
-      <span class="display-inline">
+      <span className="display-inline">
         Affordability Widget is now enabled on your website.
         {trialDays ? (
           <>

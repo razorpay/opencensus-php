@@ -11,7 +11,7 @@ export default React.memo(({ title, canBeClosed, theme, key, id, message }) => {
       bannerKey={key}
       card_id={id}
     >
-      <span class="display-inline">{message}</span>
+      <span className="display-inline">{message}</span>
     </AnnouncementBanner>
   );
 });

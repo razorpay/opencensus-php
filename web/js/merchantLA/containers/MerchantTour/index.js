@@ -1,19 +1,15 @@
-import { Component, Children } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Tour, TourStep, TourStepTitle, TourStepBody } from 'common/ui/Tour';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import LocalStorageService from 'common/utils/localStorage';
-import scrollTo from 'common/utils/scrollTo';
 
+import { Tour, TourStep, TourStepTitle, TourStepBody } from 'common/ui/Tour';
+import { setItem } from 'common/utils/localStorage';
+import scrollTo from 'common/utils/scrollTo';
 import { showOrHideTour } from 'merchant/reducers/session';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 import { trackSkipTour, trackFinishTour } from './ga';
 
-@connect(state => state.session, {
-  showOrHideTour,
-  ...ModalActions,
-})
-export default class MerchantTour extends Component {
+class MerchantTour extends Component {
   state = {
     isTourActive: false,
     activeTourStep: 0,
@@ -30,7 +26,7 @@ export default class MerchantTour extends Component {
   showTour = () => {
     this.props.closeModal();
 
-    LocalStorageService.setItem('tour_shown', true);
+    setItem('tour_shown', true);
     this.setState({
       isTourActive: true,
       showOnboardingTour: true,
@@ -87,8 +83,8 @@ export default class MerchantTour extends Component {
           >
             <TourStepTitle>Overview of Payments</TourStepTitle>
             <TourStepBody>
-              This section shows an overview of your payments. You can click on
-              the cards to view detailed graphs.
+              This section shows an overview of your payments. You can click on the cards to view
+              detailed graphs.
             </TourStepBody>
           </TourStep>
           <TourStep to="#keymetrics-grouping" align="left">
@@ -99,19 +95,12 @@ export default class MerchantTour extends Component {
           </TourStep>
           <TourStep to="#keymetrics-download" align="left">
             <TourStepTitle>Quick Download</TourStepTitle>
-            <TourStepBody>
-              The charts can be downloaded as images or as CSV.
-            </TourStepBody>
+            <TourStepBody>The charts can be downloaded as images or as CSV.</TourStepBody>
           </TourStep>
-          <TourStep
-            to="#payment-methods-treemap"
-            align="top"
-            className="has-padded-lens"
-          >
+          <TourStep to="#payment-methods-treemap" align="top" className="has-padded-lens">
             <TourStepTitle>Payment Insights</TourStepTitle>
             <TourStepBody>
-              This chart shows you a detailed breakdown of payments by Payment
-              Methods.
+              This chart shows you a detailed breakdown of payments by Payment Methods.
             </TourStepBody>
           </TourStep>
           <TourStep to="#traffic-split" align="top">
@@ -123,16 +112,14 @@ export default class MerchantTour extends Component {
           {!isTourInterrupted ? (
             <TourStep to="#profile-dropdown" className="profile-dropdown-step">
               <TourStepTitle>Tour Complete!</TourStepTitle>
-              <TourStepBody>
-                You can always find the tour here for later reference.
-              </TourStepBody>
+              <TourStepBody>You can always find the tour here for later reference.</TourStepBody>
             </TourStep>
           ) : (
             <TourStep to="#profile-dropdown" className="profile-dropdown-step">
               <TourStepTitle>Tour incomplete!</TourStepTitle>
               <TourStepBody>
-                We reccommend that you complete the tour to make the most of the
-                new features. You can find it here when you want to take it.
+                We reccommend that you complete the tour to make the most of the new features. You
+                can find it here when you want to take it.
               </TourStepBody>
             </TourStep>
           )}
@@ -141,3 +128,8 @@ export default class MerchantTour extends Component {
     );
   }
 }
+
+export default connect((state) => state.session, {
+  showOrHideTour,
+  ...ModalActions,
+})(MerchantTour);

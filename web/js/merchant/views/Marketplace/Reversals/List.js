@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ProductWrapper from 'common/ui/ProductWrapper';
@@ -12,13 +13,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { fetchReversals as fetchAll } from 'merchant/reducers/collection';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
 import ReversalsListFilter from 'merchant/views/Marketplace/Reversals/components/ReversalsListFilter';
-@connect(
-  (state) => ({
-    ...state.reversals,
-    user: state.session.user,
-  }),
-  { fetchAll },
-)
+
 class ReversalsListContainer extends ListContainer {
   render() {
     const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
@@ -57,4 +52,13 @@ class ReversalsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(ReversalsListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.reversals,
+      user: state.session.user,
+    }),
+    { fetchAll },
+  ),
+)(ReversalsListContainer);

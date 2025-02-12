@@ -1,15 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Field } from 'redux-form';
 import { Link } from 'react-router-dom';
-
-import { findBy } from 'common/utils/rzp-utils';
+import { Field } from 'redux-form';
 
 import CheckBoxField from 'common/ui/Forms/CheckboxField';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-
+import { findBy } from 'common/utils/rzp-utils';
 import { fetchReminders } from 'merchant/reducers/reminders';
-
 import track from 'merchant/views/PaymentLinks/BatchUpload/track';
 import { BATCH_TYPE, NOTIFY_MESSAGE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
@@ -20,18 +17,7 @@ import { BATCH_TYPE, NOTIFY_MESSAGE } from 'merchant/views/PaymentPages/PaymentP
  */
 
 // TODO: Remove `paymentLinksRemindersSettings` setting to global level.
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      reminders: state.reminders.reminders,
-    };
-  },
-  {
-    fetchReminders,
-  },
-)
-export default class extends React.Component {
+class PaymentLinksForm extends React.Component {
   componentDidMount() {
     this.props.fetchReminders();
   }
@@ -51,14 +37,14 @@ export default class extends React.Component {
 
     if (paymentLinksRemindersSettings.active) {
       return (
-        <div class="checkbox rzpCheckbox next">
+        <div className="checkbox rzpCheckbox next">
           <Field
             name="config.reminder_enable"
             id="reminder_enable"
             component={CheckBoxField}
             onChange={this.handleChange('reminder_enable')}
           />
-          <label for="reminder_enable">Send auto reminders</label>
+          <label htmlFor="reminder_enable">Send auto reminders</label>
         </div>
       );
     }
@@ -78,10 +64,10 @@ export default class extends React.Component {
     const { BATCH_PAYMENT_PAGE, PAYMENT_LINK } = NOTIFY_MESSAGE;
     return (
       <div>
-        <div class="form-group send-links-form">
-          <label class="m-r">Notify</label>
+        <div className="form-group send-links-form">
+          <label className="m-r">Notify</label>
 
-          <div class="checkbox rzpCheckbox m-r">
+          <div className="checkbox rzpCheckbox m-r">
             <Field
               name="config.sms_notify"
               id="sms_notify"
@@ -91,12 +77,12 @@ export default class extends React.Component {
                 track.onSmSNotify && track.onSmSNotify();
               }}
             />
-            <label for="sms_notify" class="icon i-check">
+            <label htmlFor="sms_notify" className="icon i-check">
               via SMS
             </label>
           </div>
 
-          <div class="checkbox rzpCheckbox">
+          <div className="checkbox rzpCheckbox">
             <Field
               name="config.email_notify"
               id="email_notify"
@@ -106,7 +92,7 @@ export default class extends React.Component {
                 track.onEmailNotify && track.onEmailNotify();
               }}
             />
-            <label for="email_notify" class="icon i-check">
+            <label htmlFor="email_notify" className="icon i-check">
               via Email
             </label>
           </div>
@@ -120,11 +106,23 @@ export default class extends React.Component {
           </div>
         )}
 
-        <p class="m-t">
-          <i class="i i-info-circle m-r" />
+        <p className="m-t">
+          <i className="i i-info-circle m-r" />
           {batchType === BATCH_TYPE ? BATCH_PAYMENT_PAGE : PAYMENT_LINK}
         </p>
       </div>
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      reminders: state.reminders.reminders,
+    };
+  },
+  {
+    fetchReminders,
+  },
+)(PaymentLinksForm);

@@ -10,8 +10,8 @@ export default function ChooseEmail({
   return (
     <div>
       <ModalHeader title="Choose Email" onCloseClick={closeModal} />
-      <div class="modal-body">
-        <p class="text-muted">
+      <div className="modal-body">
+        <p className="text-muted">
           Select email addresses from below to which you want to send the
           reports.
         </p>

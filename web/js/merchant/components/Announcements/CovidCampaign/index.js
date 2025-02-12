@@ -41,7 +41,7 @@ export default ({ userId }) => {
           </a>
           &nbsp;or raise a support ticket.
         </div>
-        <button class="btn btn-outline" onClick={raiseTicket}>
+        <button className="btn btn-outline" onClick={raiseTicket}>
           Raise a ticket
           <i className="i i-chevron-right" />
         </button>

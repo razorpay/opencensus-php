@@ -2,17 +2,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
+import { compose } from 'redux';
 
 import { toggleMobileMenu } from 'merchantLA/reducers/app';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
-@connect(
-  (state) => ({
-    showMobileMenu: state.app.showMobileMenu,
-  }),
-  { toggleMobileMenu },
-)
+
 class Sidebar extends Component {
   constructor(props) {
     super(props);
@@ -39,8 +35,8 @@ class Sidebar extends Component {
 
     return (
       <React.Fragment>
-        <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
-          <section class="brand-logo">
+        <div className={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
+          <section className="brand-logo">
             <Link
               to="/dashboard"
               onClick={this.hideSidebar}
@@ -58,7 +54,7 @@ class Sidebar extends Component {
           </section>
           <nav>
             {!isMerchant ? null : (
-              <div class="nav">
+              <div className="nav">
                 <MainNavLink
                   label="Transfers"
                   icon="i i-transfers text-primary"
@@ -86,4 +82,12 @@ class Sidebar extends Component {
   }
 }
 
-export default withRouter(Sidebar);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      showMobileMenu: state.app.showMobileMenu,
+    }),
+    { toggleMobileMenu },
+  ),
+)(Sidebar);

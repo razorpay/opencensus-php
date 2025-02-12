@@ -8,12 +8,12 @@
   ]
 */
 export default ({ list }) => (
-  <div class="Stepper">
+  <div className="Stepper">
     {list.map((option, idx) => (
-      <div key={idx} class={`Stepper-item ${option.status}`}>
-        <span class="item-step">{option.type}</span>
+      <div key={idx} className={`Stepper-item ${option.status}`}>
+        <span className="item-step">{option.type}</span>
 
-        <span class="item-label">{option.label}</span>
+        <span className="item-label">{option.label}</span>
       </div>
     ))}
   </div>

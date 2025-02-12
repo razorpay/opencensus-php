@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -9,24 +9,8 @@ import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboa
 import { fetchUser } from 'merchant/reducers/session';
 import { setOnBoardingDataInLocalState } from './utils';
 import track from './track';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      isTestMode: state.session.mode === 'test',
-      onboarding: state.onboarding,
-    };
-  },
-  {
-    fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
-    saveOnboarding,
-    updateFeatures,
-    showNotification,
-    handleProductQuickGuide,
-  },
-)
-@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`))
 class FeatureEnableButton extends Component {
   state = {
     isSuccess: false,
@@ -98,7 +82,7 @@ class FeatureEnableButton extends Component {
   render() {
     return (
       <AsyncBtn
-        class={this.props.className}
+        className={this.props.className}
         onClick={this.handleEnableFeature}
         disabled={this.state.isSuccess}
       >
@@ -112,11 +96,29 @@ const primaryColor = (className) => classList(className, 'Button--primary');
 const transparentColor = (className) => classList(className, 'Button--transparent');
 
 FeatureEnableButton.Primary = (props) => (
-  <FeatureEnableButton {...props} class={primaryColor(props.className)} />
+  <FeatureEnableButton {...props} className={primaryColor(props.className)} />
 );
 
 FeatureEnableButton.Transparent = (props) => (
-  <FeatureEnableButton {...props} class={transparentColor(props.className)} />
+  <FeatureEnableButton {...props} className={transparentColor(props.className)} />
 );
 
-export default FeatureEnableButton;
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        isTestMode: state.session.mode === 'test',
+        onboarding: state.onboarding,
+      };
+    },
+    {
+      fetchUser: () => fetchUser(), // TODO: import fetchUser is not working
+      saveOnboarding,
+      updateFeatures,
+      showNotification,
+      handleProductQuickGuide,
+    },
+  ),
+  rTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`)),
+)(FeatureEnableButton);

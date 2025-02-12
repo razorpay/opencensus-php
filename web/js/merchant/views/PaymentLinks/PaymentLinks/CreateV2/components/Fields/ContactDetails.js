@@ -4,17 +4,17 @@ import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 const ContactDetails = (props) => {
   return (
     <Input.Group
-      class="InputGroup--inline InputGroup--vTop customer-details hidden-xs"
+      className="InputGroup--inline InputGroup--vTop customer-details hidden-xs"
       label="Customer Details"
       disabled={props.disabled}
     >
-      <div class="Input-content">
+      <div className="Input-content">
         <Input
           autoRender
           name="email"
           placeholder="john@example.com"
           type="email"
-          addonBefore={<i class="i i-email-outline" />}
+          addonBefore={<i className="i i-email-outline" />}
           defaultValue={props.defaultEmailAddress}
           onBlur={track.lj.fields.email}
         />
@@ -24,7 +24,7 @@ const ContactDetails = (props) => {
           name="contact"
           type="tel"
           placeholder={props.contactPlaceholder}
-          addonBefore={<i class="i i-phone-outline" />}
+          addonBefore={<i className="i i-phone-outline" />}
           defaultValue={props.defaultContactNumber}
           onBlur={track.lj.fields.contact}
         />

@@ -44,7 +44,7 @@ const EnableAutomatedWithdrawModal = ({
   return (
     <div className="enable-automated-withdrawal-modal">
       <div className="cross-btn" onClick={handleModalClose}>
-        <i class="i i-close" />
+        <i className="i i-close" />
       </div>
       <div className="enable-automated-withdrawal-modal--heading">Enable Automated Withdraw</div>
       <div className="enable-automated-withdrawal-modal--description">
@@ -79,7 +79,7 @@ const EnableAutomatedWithdrawModal = ({
           </div>
         </div>
         <button
-          class="btn btn-primary enable-withdrawals-btn"
+          className="btn btn-primary enable-withdrawals-btn"
           onClick={handleEnableAutomatedWithdrawalsClick}
         >
           Enable Automated Withdrawals

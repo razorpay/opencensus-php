@@ -49,7 +49,7 @@ export default class TextareaAutoResize extends React.PureComponent {
     return (
       <Input.Textarea
         {...restProps}
-        class={classList('Input--TextareaAutoResize', this.props.className)}
+        className={classList('Input--TextareaAutoResize', this.props.className)}
         setRef={this.setElRef}
         onInput={this.handleOnInput}
         onKeyPress={e => {

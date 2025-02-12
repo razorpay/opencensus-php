@@ -24,26 +24,8 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { withRouter } from 'common/deprecated/withRouter';
 import DocsLink from 'merchant/components/DocsLink';
+import { compose } from 'redux';
 
-@withRouter
-@connect(
-  (state) => ({
-    ...state.items,
-    user: state.session.user,
-    mode: state.session.mode,
-    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
-  }),
-  {
-    ...ItemActions,
-    ...ModalActions,
-    luminateRow,
-    handleProductQuickGuide,
-    fetchInvoices,
-  },
-)
-@reduxForm({
-  form: 'newItem',
-})
 class ItemsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics?.({
@@ -215,4 +197,24 @@ class ItemsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(ItemsListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.items,
+      user: state.session.user,
+      mode: state.session.mode,
+      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
+    }),
+    {
+      ...ItemActions,
+      ...ModalActions,
+      luminateRow,
+      handleProductQuickGuide,
+      fetchInvoices,
+    },
+  ),
+  reduxForm({
+    form: 'newItem',
+  }),
+)(ItemsListContainer);

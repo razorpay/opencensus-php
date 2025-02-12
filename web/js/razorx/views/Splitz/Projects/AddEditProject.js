@@ -147,7 +147,7 @@ class AddEditProject extends React.Component {
     ));
 
     return (
-      <ModalContent class="modal-features modal-json-edit" header={header}>
+      <ModalContent className="modal-features modal-json-edit" header={header}>
         {errorMessage && (
           <div className="sub-description whitelist-description">
             <i className="fa fa-exclamation-circle whitelist-description-text" />
@@ -156,7 +156,7 @@ class AddEditProject extends React.Component {
         )}
         <Form
           onSubmit={this.onSubmit}
-          class="full-span full-elements"
+          className="full-span full-elements"
           style={{ opacity: isSaving ? 0.5 : 1 }}
         >
           {isSaving && <div className="spinner center" />}

@@ -19,8 +19,8 @@ export default function Emandate({
   return (
     <>
       {showAmountField && (
-        <Input.Group class="InputGroup--inline" label="Amount">
-          <div class="Input-content">
+        <Input.Group className="InputGroup--inline" label="Amount">
+          <div className="Input-content">
             <Input
               required
               name="amount"
@@ -30,7 +30,7 @@ export default function Emandate({
               value={amount}
               validator={checkIfAmount}
               size="half_big"
-              class="Input--Amount"
+              className="Input--Amount"
               onBlur={onBlurElement}
               data-name="amount"
             />

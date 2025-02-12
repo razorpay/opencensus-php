@@ -161,7 +161,7 @@ const CreditOffer = ({
                   <i className="i i-info-outline" onMouseOver={() => trackMouseOver('tenure')} />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
-                      <div class="text-left">
+                      <div className="text-left">
                         {isCashAdvanceProduct(product)
                           ? TOOLTIP_DESCRIPTIONS.ca_tenure
                           : TOOLTIP_DESCRIPTIONS.tenure}
@@ -186,7 +186,7 @@ const CreditOffer = ({
                   <i className="i i-info-outline" onMouseOver={() => trackMouseOver('ewi')} />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
-                      <div class="text-left">{TOOLTIP_DESCRIPTIONS.ewi}</div>
+                      <div className="text-left">{TOOLTIP_DESCRIPTIONS.ewi}</div>
                     </PopoverBody>
                   </Popover>
                 </small>

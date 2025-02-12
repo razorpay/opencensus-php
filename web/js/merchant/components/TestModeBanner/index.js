@@ -1,13 +1,13 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { withI18Service } from 'common/i18';
-import { bindActionCreators } from 'redux';
+import { bindActionCreators, compose } from 'redux';
+import { setItem } from 'common/utils/localStorage';
 
 import Banner from 'common/ui/Banner';
 import { analyticsTrack } from 'common/utils/analytics';
-import { setItem } from 'common/utils/localStorage';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
@@ -17,7 +17,6 @@ import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { trackLinkClick } from './ga';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
-@RTracking(() => window.rzpQ.component('TestModeBanner'))
 class TestModeBanner extends Component {
   componentDidMount() {
     const { fetchIsAdminAsMerchant, isAdminAsMerchant } = this.props;
@@ -143,4 +142,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchIsAdminAsMerchant }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(withI18Service(TestModeBanner));
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  withI18Service,
+  rTracking(() => window.rzpQ.component('TestModeBanner')),
+)(TestModeBanner);

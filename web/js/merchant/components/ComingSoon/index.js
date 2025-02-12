@@ -5,8 +5,8 @@ import ProductInfo from './ProductInfo';
 // previewURL: in future if we need to show video, load video tag instead of img tag
 const ComingSoon = (props) => {
   return (
-    <div class={classList('ComingSoon', `ComingSoon--${props.product.replace(' ', '_')}`)}>
-      <div class="ComingSoon--Landing">
+    <div className={classList('ComingSoon', `ComingSoon--${props.product.replace(' ', '_')}`)}>
+      <div className="ComingSoon--Landing">
         <img src={props.previewURL} alt="landing-image" />
       </div>
 

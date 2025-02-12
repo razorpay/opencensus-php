@@ -25,6 +25,7 @@ import {
   StyledHeader,
   StyledLink,
 } from 'merchant/views/PartnerDashboard/Settings/configuration/styles';
+import { compose } from 'redux';
 
 const info = (user) => ({
   icon: `Your uploaded app icon will be shown to your users on ${
@@ -58,18 +59,6 @@ function readURL(input, self) {
   }
 }
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      applications: state.applications.items,
-    };
-  },
-  { ...ApplicationActions, ...NotificationActions, openModal, closeModal },
-)
-@reduxForm({
-  form: 'newApplicationForm',
-})
 class NewApplicationForm extends Component {
   state = {
     edit: false,
@@ -301,7 +290,7 @@ class NewApplicationForm extends Component {
       abExperiments.partnerships_oauth_phantom_configurator?.variables.result === 'on';
 
     return (
-      <div class="content-box new-application-form">
+      <div className="content-box new-application-form">
         {edit && isPartner ? (
           <>
             <header>
@@ -348,46 +337,46 @@ class NewApplicationForm extends Component {
             </StyledHeader>
           </header>
         )}
-        <form class="form-horizontal" onSubmit={handleSubmit(edit ? this.update : this.create)}>
+        <form className="form-horizontal" onSubmit={handleSubmit(edit ? this.update : this.create)}>
           <Fieldset>
-            <div class="form-group">
-              <label class="col-md-2 control-label label-required">Name</label>
-              <div class="col-md-10">
+            <div className="form-group">
+              <label className="col-md-2 control-label label-required">Name</label>
+              <div className="col-md-10">
                 <Field
                   name="name"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Test App"
                   validate={[required()]}
                 />
               </div>
             </div>
-            <div class="form-group">
-              <label class="col-md-2 control-label label-required">Website</label>
-              <div class="col-md-10">
+            <div className="form-group">
+              <label className="col-md-2 control-label label-required">Website</label>
+              <div className="col-md-10">
                 <Field
                   name="website"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="http://test-app.com/"
                   validate={[required(), lenientUrl('Please enter a valid URL')]}
                 />
               </div>
             </div>
 
-            <div class="form-group">
-              <div class="col-md-offset-2 upload-container col-md-1">
-                <div class="upload-inner">
+            <div className="form-group">
+              <div className="col-md-offset-2 upload-container col-md-1">
+                <div className="upload-inner">
                   <label htmlFor="logo-upload">
                     {this.state.details.logo_url === null ||
                     typeof this.state.details.logo_url === 'undefined' ? (
-                      <span class="upload-icon" style={{ fontWeight: 'normal' }}>
-                        <i class="fa fa-folder-open" />
+                      <span className="upload-icon" style={{ fontWeight: 'normal' }}>
+                        <i className="fa fa-folder-open" />
                         Upload App Icon
                       </span>
                     ) : (
                       <img
-                        class="media-object"
+                        className="media-object"
                         id="logo-url"
                         style={{ width: '100%' }}
                         src={this.state.details.logo_url}
@@ -397,7 +386,7 @@ class NewApplicationForm extends Component {
                       name="file"
                       id="logo-upload"
                       type="file"
-                      class="hide"
+                      className="hide"
                       onChange={(e) => {
                         this.props.change('file', e.target.files[0]);
                         readURL(e.target, this);
@@ -406,30 +395,30 @@ class NewApplicationForm extends Component {
                   </label>
                 </div>
               </div>
-              <small class="col-md-8 help-block">
-                <i class="i i-info-circle" />
+              <small className="col-md-8 help-block">
+                <i className="i i-info-circle" />
                 <span>{info(user).icon}</span>
               </small>
             </div>
 
             {this.state.edit && (
-              <div class="edit-details">
-                <div class="section-divide" />
+              <div className="edit-details">
+                <div className="section-divide" />
                 <AppDetails type="dev" user={user} />
-                <div class="section-divide" />
+                <div className="section-divide" />
                 <AppDetails type="prod" user={user} />
               </div>
             )}
 
             {this.state.edit && (
-              <div class="form-group">
-                <label class="col-md-2 control-label">Webhooks:</label>
+              <div className="form-group">
+                <label className="col-md-2 control-label">Webhooks:</label>
                 {user.isPartner('pure_platform') ? (
                   ['live', 'test'].map((mode, idx) => {
                     const webhook = this.state[`${mode}webhook`];
                     const webhookLoading = this.state[`${mode}webhookLoading`];
                     return (
-                      <div class="col-md-5" key={idx}>
+                      <div className="col-md-5" key={idx}>
                         <WebhookDetail
                           webhook={webhook}
                           webhookLoading={webhookLoading}
@@ -441,7 +430,7 @@ class NewApplicationForm extends Component {
                     );
                   })
                 ) : (
-                  <div class="col-md-10">
+                  <div className="col-md-10">
                     <WebhookDetail
                       webhook={this.state.webhook}
                       webhookLoading={this.state.webhookLoading}
@@ -452,12 +441,12 @@ class NewApplicationForm extends Component {
               </div>
             )}
 
-            <div class="section-divide" />
-            <div class="form-group">
-              <div class="col-md-offset-3 col-md-9">
-                <div class="btn-toolbar">
+            <div className="section-divide" />
+            <div className="form-group">
+              <div className="col-md-offset-3 col-md-9">
+                <div className="btn-toolbar">
                   <AsyncButton
-                    class="btn btn-primary pull-right"
+                    className="btn btn-primary pull-right"
                     text="Save"
                     type="submit"
                     pendingText="Saving..."
@@ -467,7 +456,7 @@ class NewApplicationForm extends Component {
                   {this.state.edit && (
                     <AsyncButton
                       type="button"
-                      class="btn btn-default pull-right m-r"
+                      className="btn btn-default pull-right m-r"
                       text="Preview OAuth Page"
                       onClick={this.openPreviewPage}
                     />
@@ -493,53 +482,55 @@ class AppDetails extends Component {
     const { type, user } = this.props;
     return (
       <>
-        <div class="col-md-offset-2 col-md-10">
-          <h4 class="form-header text-left">{type === 'dev' ? 'Development' : 'Production'}:</h4>
+        <div className="col-md-offset-2 col-md-10">
+          <h4 className="form-header text-left">
+            {type === 'dev' ? 'Development' : 'Production'}:
+          </h4>
         </div>
 
-        <div class="form-group">
-          <label class="col-md-2 control-label">Client ID</label>
-          <div class="col-md-4">
+        <div className="form-group">
+          <label className="col-md-2 control-label">Client ID</label>
+          <div className="col-md-4">
             <Field
               name={`client_details.${type}.id`}
               component={InputField}
               disabled={true}
-              class="form-control copy-field"
+              className="form-control copy-field"
               placeholder="Client ID"
             />
           </div>
-          <label class="col-md-2 control-label">Client Secret</label>
-          <div class="col-md-4">
+          <label className="col-md-2 control-label">Client Secret</label>
+          <div className="col-md-4">
             <Field
               name={`client_details.${type}.secret`}
               disabled={true}
               type={this.state.showSecret ? 'text' : 'password'}
               component={InputField}
-              class="form-control copy-field"
+              className="form-control copy-field"
               placeholder="Client Secret"
             />
             {!this.state.showSecret && (
-              <button class="btn btn-default btn-show-secret" onClick={this.showSecret}>
-                <i class="fa fa-eye" />
+              <button className="btn btn-default btn-show-secret" onClick={this.showSecret}>
+                <i className="fa fa-eye" />
               </button>
             )}
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="col-md-2 control-label">Redirect URIs</label>
-          <div class="col-md-10">
+        <div className="form-group">
+          <label className="col-md-2 control-label">Redirect URIs</label>
+          <div className="col-md-10">
             <Field
               name={`client_details.${type}.redirect_url`}
               component={TaggedInput}
-              class="form-control tagged-input"
+              className="form-control tagged-input"
               placeholder="http://test-app.com/"
               validator={flexibleDevUrl}
             />
           </div>
-          <div class="clearfix" />
-          <small class="col-md-offset-2 col-md-10 help-block">
-            <i class="i i-info-circle" />
+          <div className="clearfix" />
+          <small className="col-md-offset-2 col-md-10 help-block">
+            <i className="i i-info-circle" />
             <span>{info(user)[type]}</span>
           </small>
         </div>
@@ -560,7 +551,9 @@ function WebhookDetail({ webhookLoading, webhook, mode = '', showWebhookModal })
           </div>
           <div>
             <strong>Active: </strong>{' '}
-            <i class={`fa ${webhook.active ? 'fa-check text-success' : 'fa-close text-danger'}`} />
+            <i
+              className={`fa ${webhook.active ? 'fa-check text-success' : 'fa-close text-danger'}`}
+            />
           </div>
           <div>
             <strong>Total Events: </strong>
@@ -570,11 +563,26 @@ function WebhookDetail({ webhookLoading, webhook, mode = '', showWebhookModal })
       ) : (
         <p>No {mode} webhook created</p>
       )}
-      <button class="btn btn-default webhook-btn m-t" onClick={showWebhookModal} type="button">
+      <button className="btn btn-default webhook-btn m-t" onClick={showWebhookModal} type="button">
         Manage {mode && titleCase(mode)} Webhook
       </button>
     </div>
   );
 }
 
-export default withSplitzService(withRouter(NewApplicationForm));
+export default compose(
+  withSplitzService,
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        applications: state.applications.items,
+      };
+    },
+    { ...ApplicationActions, ...NotificationActions, openModal, closeModal },
+  ),
+  reduxForm({
+    form: 'newApplicationForm',
+  }),
+)(NewApplicationForm);

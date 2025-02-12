@@ -9,31 +9,17 @@ import { required, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { fetchUser } from 'merchant/reducers/session';
 import { luminateRow } from 'merchant/reducers/app';
+import { compose } from 'redux';
 
-@connect(
-  state => {
-    return {
-      ...state.session,
-    };
-  },
-  { fetchUser, luminateRow, closeModal, ...NotificationsActions }
-)
-@reduxForm({
-  form: 'createMerchant',
-  initialValues: {
-    name: '',
-    email: '',
-  },
-})
-export default class CreateMerchant extends Component {
+class CreateMerchant extends Component {
   state = {
     errors: null,
   };
 
-  save = props => {
+  save = (props) => {
     return this.props
       .onSave(props)
-      .then(referral => {
+      .then((referral) => {
         this.props.fetchUser();
         this.props.luminateRow(referral.id);
         this.props.showNotification({
@@ -55,41 +41,38 @@ export default class CreateMerchant extends Component {
 
     return (
       <div>
-        <ModalHeader
-          title="Create Merchant"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Create Merchant" onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <form onSubmit={handleSubmit(this.save)}>
-            <div class="form-group">
+            <div className="form-group">
               <label>Merchant Name</label>
               <Field
                 name="name"
                 id="name"
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 validate={required()}
                 placeholder="Acme Inc."
                 autoFocus={true}
               />
             </div>
 
-            <div class="form-group">
+            <div className="form-group">
               <label>Merchant Email</label>
               <Field
                 name="email"
                 id="email"
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 placeholder="Optional"
                 validate={email('Please provide a valid email')}
               />
             </div>
 
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
-                class="btn btn-primary btn-block"
+                className="btn btn-primary btn-block"
                 text="Create Merchant"
                 pendingText="Creating Merchant..."
                 onClick={handleSubmit(this.save)}
@@ -101,3 +84,21 @@ export default class CreateMerchant extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+      };
+    },
+    { fetchUser, luminateRow, closeModal, ...NotificationsActions },
+  ),
+  reduxForm({
+    form: 'createMerchant',
+    initialValues: {
+      name: '',
+      email: '',
+    },
+  }),
+)(CreateMerchant);

@@ -125,7 +125,7 @@ const StoresSettingsModal = (props) => {
               name="title"
               value={formData.title}
               label="Store Name"
-              class="Input--vTop"
+              className="Input--vTop"
               placeholder="My Store"
               required
               // maxLength="100"
@@ -164,7 +164,7 @@ const StoresSettingsModal = (props) => {
               name="shipping_fees"
               value={formData.shipping_fees}
               label="Shipping fee"
-              class="Input--vTop"
+              className="Input--vTop"
               placeholder="0.00"
               addonBefore="₹"
               type="number"
@@ -191,7 +191,7 @@ const StoresSettingsModal = (props) => {
               name="shipping_days"
               value={formData.shipping_days}
               label="Ships in"
-              class="Input--vTop"
+              className="Input--vTop"
               placeholder="0"
               addonAfter="days"
               type="number"
@@ -212,7 +212,7 @@ const StoresSettingsModal = (props) => {
               <div>Add Facebook Pixel / GA tracking ID to track your page metrics</div>
               <Button.Transparent
                 type="button"
-                class="Button--Link"
+                className="Button--Link"
                 onClick={openConfigurePluginsView}
               >
                 <b>{isPluginConfigured ? 'Update' : 'Configure'}</b>

@@ -10,13 +10,13 @@ const Growth = (props) => (
       <div className="rtb-feature-container">
         {props.features.map((feature) => {
           return (
-            <div class="rtb-feature col-lg-3" key={feature.title} data-testid="rtb-feature-item">
-              <img class="rtb-feature-icon" src={feature.icon} />
+            <div className="rtb-feature col-lg-3" key={feature.title} data-testid="rtb-feature-item">
+              <img className="rtb-feature-icon" src={feature.icon} />
               <div>
-                <div class="rtb-feature-title" data-testid="rtb-feature-title">
+                <div className="rtb-feature-title" data-testid="rtb-feature-title">
                   {feature.title}
                 </div>
-                <p class="rtb-feature-desc" data-testid="rtb-feature-desc">
+                <p className="rtb-feature-desc" data-testid="rtb-feature-desc">
                   {feature.desc}
                 </p>
               </div>

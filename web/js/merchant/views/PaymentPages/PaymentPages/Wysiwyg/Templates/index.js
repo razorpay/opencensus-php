@@ -1,15 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import ShowWhen from 'merchant/components/ShowWhen';
 import META from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Templates/meta';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import {
   trackGoBackDashboard,
   trackTemplateSelection,
   trackStartCreation,
 } from 'merchant/views/PaymentPages/PaymentPages/ga';
-import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 const createYourOwn = {
   card: {
@@ -19,8 +20,7 @@ const createYourOwn = {
   },
 };
 
-@connect((state) => ({ user: state.session.user }))
-export default class extends React.PureComponent {
+class WysiwygTemplate extends React.PureComponent {
   selectTemplate = (templateKey, label, quillPrefill, title) => {
     return () => {
       this.props.selectTemplate(quillPrefill, templateKey);
@@ -41,19 +41,19 @@ export default class extends React.PureComponent {
 
     const countryCode = user.merchant.country_code;
     return (
-      <ModalMask maskClosable={false} class="payment-pages-v2-templates view-1" isBlur={true}>
-        <Link class="back-btn" to="/paymentpages/" onClick={trackGoBackDashboard}>
-          <i class="i i-chevron-left" />
+      <ModalMask maskClosable={false} className="payment-pages-v2-templates view-1" isBlur={true}>
+        <Link className="back-btn" to="/paymentpages/" onClick={trackGoBackDashboard}>
+          <i className="i i-chevron-left" />
           Back to Dashboard
         </Link>
         <Modal showCloseBtn={false}>
           <ModalContent>
-            <div class="slide-in">
-              <div class="heading">Choose from the templates</div>
+            <div className="slide-in">
+              <div className="heading">Choose from the templates</div>
               <p>You can choose one of the templates from below</p>
             </div>
 
-            <div class="TemplateCard-list">
+            <div className="TemplateCard-list">
               <ShowWhen additionalCondition={() => showCustomTemplate}>
                 <TemplateCard
                   title={createYourOwn.card.title}
@@ -100,20 +100,22 @@ class TemplateCard extends React.PureComponent {
     const { title, description, img, selectTemplate } = this.props;
 
     return (
-      <div class="TemplateCard" onClick={selectTemplate}>
-        <div class="img-wrapper">
+      <div className="TemplateCard" onClick={selectTemplate}>
+        <div className="img-wrapper">
           <img src={img} alt={title} />
         </div>
-        <div class="TemplateCard-details">
+        <div className="TemplateCard-details">
           {title}
-          <div class="TemplateCard-desc">{description}</div>
+          <div className="TemplateCard-desc">{description}</div>
 
-          <div class="link">
+          <div className="link">
             <span>Use this template</span>
-            <i class="i i-arrow-forward" />
+            <i className="i i-arrow-forward" />
           </div>
         </div>
       </div>
     );
   }
 }
+
+export default connect((state) => ({ user: state.session.user }))(WysiwygTemplate);

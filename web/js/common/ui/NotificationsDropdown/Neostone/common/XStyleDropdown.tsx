@@ -20,7 +20,7 @@ const XStyleDropdown = ({
     <div className="nss-form__input-form__input-group__input">
       <label htmlFor="business_category">{label}</label>
       <Dropdown>
-        <DropdownTrigger class="dropdown-toggle">
+        <DropdownTrigger className="dropdown-toggle">
           {currentValue === '' ? 'Select' : getSelectValue()} <i className="i i-chevron-down" />
         </DropdownTrigger>
         <DropdownContent>

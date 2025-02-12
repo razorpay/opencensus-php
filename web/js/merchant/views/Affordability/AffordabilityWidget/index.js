@@ -69,7 +69,7 @@ const AffordabilityWidget = (props) => {
 
   if (loading) {
     return (
-      <div class="page-spinner-container">
+      <div className="page-spinner-container">
         <Spinner />
       </div>
     );

@@ -4,13 +4,13 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 export function AppDetailsLoader() {
   return (
-    <div class="application-details-container col-lg-6" data-testId="skeleton-loader">
-      <div class="application-details ">
-        <div class="app-icon-container">
+    <div className="application-details-container col-lg-6" data-testId="skeleton-loader">
+      <div className="application-details ">
+        <div className="app-icon-container">
           <PlaceholderLoader style={{ height: '100%', width: '100%', display: 'block' }} />
         </div>
 
-        <div class="app-details-container">
+        <div className="app-details-container">
           <PlaceholderLoader />
           <PlaceholderLoader style={{ display: 'block' }} />
           <PlaceholderLoader />
@@ -30,17 +30,17 @@ export default function AppDetails(props) {
   };
 
   return (
-    <div class="application-details-container col-lg-6">
-      <Comp class="application-details-inner" to={props.entityDetailLink}>
-        <div class="btn-container pull-right">
-          <button onClick={onClick} class="btn btn-default">
+    <div className="application-details-container col-lg-6">
+      <Comp className="application-details-inner" to={props.entityDetailLink}>
+        <div className="btn-container pull-right">
+          <button onClick={onClick} className="btn btn-default">
             {isConnected ? 'Revoke Access' : 'Delete Application'}
           </button>
         </div>
-        <div class={`application-details ${isConnected ? 'connected-app' : ''}`}>
-          <div class="app-icon-container">
+        <div className={`application-details ${isConnected ? 'connected-app' : ''}`}>
+          <div className="app-icon-container">
             <img
-              class="app-icon"
+              className="app-icon"
               src={
                 isConnected
                   ? props.isRevokeApplicationEnabled
@@ -51,8 +51,8 @@ export default function AppDetails(props) {
               alt=""
             />
           </div>
-          <div class="app-details-container">
-            <div class="app-name">
+          <div className="app-details-container">
+            <div className="app-name">
               <strong>
                 {isConnected
                   ? props.isRevokeApplicationEnabled
@@ -61,8 +61,8 @@ export default function AppDetails(props) {
                   : data.name}
               </strong>
             </div>
-            {!isConnected && <div class="app-id">App ID: {data.id}</div>}
-            <div class="app-created-on">
+            {!isConnected && <div className="app-id">App ID: {data.id}</div>}
+            <div className="app-created-on">
               {isConnected ? 'Approved' : 'Created'} on:{' '}
               <Time
                 value={props.isRevokeApplicationEnabled ? data.access_granted_at : data.created_at}

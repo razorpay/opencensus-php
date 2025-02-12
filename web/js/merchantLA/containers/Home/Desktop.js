@@ -2,31 +2,20 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
-import Sticky from 'common/ui/Sticky';
+import DateRangePicker from 'common/ui/DateRangePicker';
 import Group, { GroupItem } from 'common/ui/Group';
-import DateRangePicker, { customRangeText } from 'common/ui/DateRangePicker';
-import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
-import LocalStorageService from 'common/utils/localStorage';
-
+import Header from 'common/ui/Header';
+import Sticky from 'common/ui/Sticky';
+import { getItem, setItem } from 'common/utils/localStorage';
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
-import Traffic from 'merchantLA/containers/Home/Traffic';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
-import GenericPanel, { PanelBody } from 'merchantLA/components/Home/GenericPanel';
+import Traffic from 'merchantLA/containers/Home/Traffic';
 import { showOrHideTour } from 'merchantLA/reducers/session';
 
 import { trackPresetChange, trackSettlementsClick, trackViewTour } from './ga';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  { showOrHideTour },
-)
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -34,8 +23,7 @@ class AnalyticsDesktop extends Component {
     const { isAdmin, mode } = props;
 
     this.state = {
-      hasNewAnalyticsTour:
-        !isAdmin && mode === 'live' && !LocalStorageService.getItem('hide_new_analytics_banner'),
+      hasNewAnalyticsTour: !isAdmin && mode === 'live' && !getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
     };
 
@@ -53,7 +41,7 @@ class AnalyticsDesktop extends Component {
   }
 
   onHideNewAnalyticsBanner(cb) {
-    LocalStorageService.setItem('hide_new_analytics_banner', true);
+    setItem('hide_new_analytics_banner', true);
 
     this.setState(
       {
@@ -89,13 +77,6 @@ class AnalyticsDesktop extends Component {
       dateRangePresets,
       showGroupingByPtfm,
       scrollAmountToStickHeader,
-      showOnboardingBannerFirstStep,
-      expandOnboardingBanner,
-      payments,
-      showOnboardingBanner,
-
-      onHideOnboardingBanner,
-      onFirstStepClose,
       onDatesChange,
       onFetchTransfers,
       onExtraContentMount,
@@ -230,4 +211,11 @@ class AnalyticsDesktop extends Component {
   }
 }
 
-export default AnalyticsDesktop;
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  { showOrHideTour },
+)(AnalyticsDesktop);

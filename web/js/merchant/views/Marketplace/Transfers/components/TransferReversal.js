@@ -60,7 +60,7 @@ const ReversalsList = ({ reversals, transfer = {} }) => {
   return (
     <ContentToggler>
       <span>Reversal Details</span>
-      <div class="reversals-list full-width-item sub-entity-list">
+      <div className="reversals-list full-width-item sub-entity-list">
         <DataTable
           customClass="reversals-table"
           progressLoader={true}
@@ -89,7 +89,7 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
         <p>No reversals created</p>
         <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
           <button
-            class="btn btn-default"
+            className="btn btn-default"
             onClick={() => openTransferReversalModal(transfer)}
           >
             Create reversal
@@ -108,7 +108,7 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
 
   return (
     <div>
-      <div class="m-b">
+      <div className="m-b">
         <Definition>
           <span>
             <Amount value={reversedAmount} currency={transfer.currency} />{' '}
@@ -122,7 +122,7 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
       <p>
         <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
           <button
-            class="btn btn-default"
+            className="btn btn-default"
             onClick={() => openTransferReversalModal(transfer)}
           >
             Create Another Reversal

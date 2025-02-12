@@ -6,13 +6,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { switchToV2 } from '../model';
+import { compose } from 'redux';
 
 const DOCS_LINK = 'https://razorpay.com/docs/payment-links/api/new/';
 const DEPRECATION_DATE = '30 April, 2021';
 
-@connect((state) => ({ user: state.session.user }), {
-  showNotification,
-})
 class SwitchToPLV2Modal extends React.Component {
   static contextTypes = {
     // eslint-disable-next-line no-undef
@@ -76,7 +74,7 @@ class SwitchToPLV2Modal extends React.Component {
     this.context.confirm({
       header: (
         <span>
-          <i class="i-check-circle" /> &nbsp; Migrated to new API service
+          <i className="i-check-circle" /> &nbsp; Migrated to new API service
         </span>
       ),
       message: () => (
@@ -107,7 +105,7 @@ class SwitchToPLV2Modal extends React.Component {
       <div>
         <ModalHeader title="New APIs for Payment Link" />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <div>Switch to new Payment Link API to start enjoying new features like UPI PL, etc.</div>
           <br />
           <div>
@@ -138,4 +136,8 @@ class SwitchToPLV2Modal extends React.Component {
   }
 }
 
-export default SwitchToPLV2Modal;
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    showNotification,
+  }),
+)(SwitchToPLV2Modal);

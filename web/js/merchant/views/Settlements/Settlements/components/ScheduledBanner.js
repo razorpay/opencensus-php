@@ -40,7 +40,7 @@ class ScheduledBanner extends Component {
 
     return (
       <div>
-        <i class="i i-early-settlement scheduled-enable" />
+        <i className="i i-early-settlement scheduled-enable" />
         Get your settlements on the same day, automatically.
         <Button.Transparent
           className="enable-now-btn"

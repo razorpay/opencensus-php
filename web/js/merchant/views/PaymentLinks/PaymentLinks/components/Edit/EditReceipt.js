@@ -35,7 +35,7 @@ export default class EditReceipt extends React.Component {
         {isRoleAllowedEdit && (
           <Button.Transparent
             onClick={this.makeEditable}
-            class="Button--Link"
+            className="Button--Link"
             style={{ marginLeft: 12 }}
           >
             Change
@@ -50,7 +50,7 @@ export default class EditReceipt extends React.Component {
           <Input
             name="receipt_no"
             placeholder={isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}
-            class="Input--small"
+            className="Input--small"
             value={this.state.receipt}
             validator={maxLength(40)}
             required={this.props.required}
@@ -62,7 +62,7 @@ export default class EditReceipt extends React.Component {
           />
           <div style={{ textAlign: 'right', marginBottom: 12, width: 260 }}>
             <Button.Transparent
-              class="Button--Link"
+              className="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
                 cancelTrackerfn && cancelTrackerfn();
@@ -77,7 +77,7 @@ export default class EditReceipt extends React.Component {
             </Button.Transparent>
 
             <AsyncBtn.Primary
-              class="Button--small"
+              className="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               onClick={() => {
                 return this.props

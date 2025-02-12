@@ -17,22 +17,9 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { updateMerchantConfig } from 'merchantLA/reducers/profile';
 import { updateSession } from 'merchantLA/reducers/session';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    ...ModalActions,
-    showNotification,
-    fetchUser,
-    updateMerchantConfig,
-    updateSession,
-  },
-)
-export default class Profile extends Component {
+class Profile extends Component {
   state = {};
 
   componentDidMount() {
@@ -108,7 +95,7 @@ export default class Profile extends Component {
 
     if (!user.isAuthenticated) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -122,14 +109,14 @@ export default class Profile extends Component {
     };
 
     return (
-      <div class="content-wrapper content-sm">
-        <div class="profile-container">
+      <div className="content-wrapper content-sm">
+        <div className="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
-          <div class="panel panel-default">
+          <div className="panel panel-default">
             {user.current && (
-              <div class="panel-heading">
+              <div className="panel-heading">
                 Linked Account Details:
-                <a class="pull-right" onClick={this.openChangePasswordModal}>
+                <a className="pull-right" onClick={this.openChangePasswordModal}>
                   <b>Change Password</b>
                 </a>
               </div>
@@ -157,3 +144,20 @@ export default class Profile extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+      };
+    },
+    {
+      ...ModalActions,
+      showNotification,
+      fetchUser,
+      updateMerchantConfig,
+      updateSession,
+    },
+  ),
+)(Profile);

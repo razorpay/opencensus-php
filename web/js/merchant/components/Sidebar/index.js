@@ -2,7 +2,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 import styled from 'styled-components';
 
 import { withRouter } from 'common/deprecated/withRouter';
@@ -93,17 +94,6 @@ const StyledPartnerTitle = styled.div(
 `,
 );
 
-@withI18Service
-@connect(
-  (state) => ({
-    showMobileMenu: state.app.showMobileMenu,
-    showAcceptPayments: state.home.instantActivations.showAcceptPayments,
-    isNcEligibile: state.home.isNcEligibile,
-    org: state.session.org,
-  }),
-  { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal, ...EventsActions },
-)
-@RTracking(() => window.rzpQ.component('Sidebar'))
 class Sidebar extends Component {
   constructor(props) {
     super(props);
@@ -357,7 +347,20 @@ class Sidebar extends Component {
   }
 }
 
-export default withRouter(Sidebar);
+export default compose(
+  connect(
+    (state) => ({
+      showMobileMenu: state.app.showMobileMenu,
+      showAcceptPayments: state.home.instantActivations.showAcceptPayments,
+      isNcEligibile: state.home.isNcEligibile,
+      org: state.session.org,
+    }),
+    { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal, ...EventsActions },
+  ),
+  rTracking(() => window.rzpQ.component('Sidebar')),
+  withRouter,
+  withI18Service,
+)(Sidebar);
 
 class PartnerSidebarComponent extends Component {
   constructor(props) {

@@ -233,7 +233,7 @@ const WhiteLabelTheme = ({
             <div>
               <AsyncBtn.Primary
                 disabled={formik.dirty === false || formik.isValid === false}
-                class="btn btn-primary"
+                className="btn btn-primary"
                 onClick={formik.handleSubmit}
                 type="submit"
                 isPending={formik.isSubmitting}

@@ -93,25 +93,25 @@ class AddFundsForm extends Component {
             this.props.closeModal();
           }}
         />
-        <div class="modal-body">
-          <div class="form-group">
+        <div className="modal-body">
+          <div className="form-group">
             <Field
               component={InputField}
               type="text"
               placeholder="Enter Description"
               name="description"
-              class="form-control"
+              className="form-control"
               validate={required()}
               autoFocus={true}
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <Field
               component={InputField}
               type="text"
               placeholder="Enter Amount(INR)"
               name="amountInINR"
-              class="form-control"
+              className="form-control"
               validate={required()}
             />
           </div>
@@ -120,10 +120,10 @@ class AddFundsForm extends Component {
               <p>Note: Standard TDR charges applies on adding credits</p>
             </div>
           )}
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               text={text}
               pendingText="Adding..."
               onClick={handleSubmit(this.addFunds)}

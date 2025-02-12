@@ -3,15 +3,9 @@ import LoaderDots from 'common/ui/LoaderDots';
 
 export default ({ data, loading, error }) => {
   let methodBreakup = [null];
-  const methods = [
-    'CARD',
-    'EMI',
-    'NETBANKING',
-    'WALLET',
-    'UPI',
-    'EMANDATE',
-    'AEPS',
-  ].filter(method => data[method]);
+  const methods = ['CARD', 'EMI', 'NETBANKING', 'WALLET', 'UPI', 'EMANDATE', 'AEPS'].filter(
+    (method) => data[method],
+  );
   const total = methods.reduce((prev, cur) => {
     return prev + data[cur];
   }, 0);
@@ -21,50 +15,56 @@ export default ({ data, loading, error }) => {
       return {
         bg: colors[index],
         title: titleCase(method),
-        value: (100 * data[method] / total).toFixed(1).replace('.0', '') + '%',
+        value: ((100 * data[method]) / total).toFixed(1).replace('.0', '') + '%',
       };
     });
   }
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="centered">
+          <LoaderDots />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="centered">
+          <div className="text-danger">Error occurred in loading data!</div>
+        </div>
+      );
+    }
+
+    return methodBreakup.map((methodData, index) => (
+      <div key={index}>
+        {methodData ? (
+          <div>
+            <div>
+              <small className="pull-right">{methodData.value}</small>
+              <small>{titleCase(methodData.title)}</small>
+            </div>
+            <div className="progress-xs progress">
+              <div
+                className={'progress-bar progress-bar-' + methodData.bg}
+                style={{ width: methodData.value }}
+              />
+            </div>
+          </div>
+        ) : (
+          'No Data'
+        )}
+      </div>
+    ));
+  };
+
   return (
-    <div class="Transaction__Types WidgetContainer">
-      <div class="panel">
-        <div class="panel-body">
-          <h4 class="font-thin">Transaction Types</h4>
-          {do {
-            if (loading) {
-              <div class="centered">
-                <LoaderDots />
-              </div>;
-            } else if (error) {
-              <div class="centered">
-                <div class="text-danger">Error occurred in loading data!</div>
-              </div>;
-            } else {
-              methodBreakup.map((methodData, index) => {
-                return (
-                  <div key={index}>
-                    {methodData ? (
-                      <div>
-                        <div>
-                          <small class="pull-right">{methodData.value}</small>
-                          <small>{titleCase(methodData.title)}</small>
-                        </div>
-                        <div class="progress-xs progress">
-                          <div
-                            class={'progress-bar progress-bar-' + methodData.bg}
-                            style={{ width: methodData.value }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      'No Data'
-                    )}
-                  </div>
-                );
-              });
-            }
-          }}
+    <div className="Transaction__Types WidgetContainer">
+      <div className="panel">
+        <div className="panel-body">
+          <h4 className="font-thin">Transaction Types</h4>
+          {renderContent()}
         </div>
       </div>
     </div>

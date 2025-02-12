@@ -1,11 +1,11 @@
 const Feature = ({ icon, title, desc }) => (
-  <div class="Feature">
-    <img class="Feature-icon" src={icon} />
+  <div className="Feature">
+    <img className="Feature-icon" src={icon} />
 
     <div>
-      <div class="Feature-title">{title}</div>
+      <div className="Feature-title">{title}</div>
 
-      <p class="Feature-desc">{desc}</p>
+      <p className="Feature-desc">{desc}</p>
     </div>
   </div>
 );

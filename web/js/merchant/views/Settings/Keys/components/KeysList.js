@@ -69,9 +69,9 @@ const KeysListItem = (props) => {
         {expired_at ? (
           'None'
         ) : (
-          <div class="row-action">
-            <button class="btn btn-xs btn-primary" onClick={onRegenerateKeys}>
-              <i class="i i-refresh" />
+          <div className="row-action">
+            <button className="btn btn-xs btn-primary" onClick={onRegenerateKeys}>
+              <i className="i i-refresh" />
               <span data-test="regenerate-api-key">Regenerate {mode} Key</span>
             </button>
           </div>
@@ -136,8 +136,8 @@ export default connect(null, { openModal, closeModal })((props) => {
 
   return (
     <div>
-      <div class="table-responsive">
-        <table class="table table-hover">
+      <div className="table-responsive">
+        <table className="table table-hover">
           <thead>
             <tr data-test="key-id-header-row">
               <th>Key Id</th>
@@ -152,7 +152,7 @@ export default connect(null, { openModal, closeModal })((props) => {
             rows={keys}
             emptyTableRow={
               <tr>
-                <td class="text-center empty-table" colSpan={4}>
+                <td className="text-center empty-table" colSpan={4}>
                   {mode === 'Test' || hasKeyAccess ? (
                     <React.Fragment>
                       {!hasKeyAccess && (
@@ -164,7 +164,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                         </p>
                       )}
                       <button
-                        class="btn btn-primary"
+                        className="btn btn-primary"
                         onClick={handleKeyGeneration}
                         data-test="generate-api-key"
                       >
@@ -174,7 +174,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                   ) : !businessWebsite && !isWebsiteInWorkflow ? (
                     <div>
                       <p>{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
-                      <button class="btn btn-primary" onClick={handleAddUpdateCTA}>
+                      <button className="btn btn-primary" onClick={handleAddUpdateCTA}>
                         Add Website/App URL
                       </button>
                     </div>

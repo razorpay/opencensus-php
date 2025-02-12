@@ -27,7 +27,7 @@ class SubmitFormLayer extends React.Component {
       <div className="SubmitForm-modal">
         <main-title>
           <Button
-            class="device--mobile btn--back"
+            className="device--mobile btn--back"
             iconBefore="arrow-back"
             onClick={this.props.closeActivationForm}
           />

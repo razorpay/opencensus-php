@@ -69,12 +69,12 @@ export default class SideBar extends React.Component {
       : 0;
 
     return (
-      <div class="PaymentButton-Create-SideBar">
+      <div className="PaymentButton-Create-SideBar">
         <img src={SidebarImage} />
 
         {subscriptionButtonEntity && (
           <React.Fragment>
-            <div class="SideBar-title">
+            <div className="SideBar-title">
               {this.props.subscriptionButtonId ? 'Edit Progress' : 'Creation Progress'}
             </div>
 
@@ -84,7 +84,7 @@ export default class SideBar extends React.Component {
               onClick={track.lj.trackOnClickProgressBar}
             />
 
-            <ul class="SideBar-stepsList">
+            <ul className="SideBar-stepsList">
               <Step
                 title="Button Details"
                 isDone={this.isButtonDetailsDone}
@@ -131,26 +131,26 @@ export default class SideBar extends React.Component {
 
 const Step = ({ title, description, isDone, isDisabled, onClick }) => (
   <li
-    class={classList('step', isDone && 'step--done', isDisabled && 'step--disabled')}
+    className={classList('step', isDone && 'step--done', isDisabled && 'step--disabled')}
     onClick={onClick}
   >
-    <span class="step-dot">
-      <i class={`i ${isDisabled ? 'i-outline-lock' : 'i-check-circle'}`} />
+    <span className="step-dot">
+      <i className={`i ${isDisabled ? 'i-outline-lock' : 'i-check-circle'}`} />
     </span>
 
-    <span class="step-title">
+    <span className="step-title">
       {title}
-      <div class="step-description">{description}</div>
+      <div className="step-description">{description}</div>
     </span>
   </li>
 );
 
 const ProgressBar = ({ title, progressPercentage, onClick }) => (
-  <div class="ProgressBar" onClick={onClick}>
-    <div class="ProgressBar-title">{title}</div>
-    <div class="ProgressBar-meter">
+  <div className="ProgressBar" onClick={onClick}>
+    <div className="ProgressBar-title">{title}</div>
+    <div className="ProgressBar-meter">
       <div
-        class="ProgressBar-progress"
+        className="ProgressBar-progress"
         style={{ transform: `scale(${progressPercentage / 100}, 1)` }}
       />
     </div>

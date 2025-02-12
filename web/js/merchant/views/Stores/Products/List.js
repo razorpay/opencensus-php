@@ -1,16 +1,15 @@
 import { connect } from 'react-redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-
-import DataTable from 'common/ui/Table/DataTable';
 import Pager from 'common/ui/Pager';
-import ListContainer from 'merchant/containers/ListContainer';
-import ListFilter from './Filter';
-import { StoreProductsStatusLabel } from 'merchant/components/StatusLabel';
-
-import { fetchProducts as fetchAll } from 'merchant/reducers/storefront';
+import DataTable from 'common/ui/Table/DataTable';
 import { storeProductId } from 'common/ui/item/pair';
-
 import { paiseToRupees } from 'common/utils/rzp-utils';
+import { StoreProductsStatusLabel } from 'merchant/components/StatusLabel';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchProducts as fetchAll } from 'merchant/reducers/storefront';
+
+import ListFilter from './Filter';
 
 const productImage = {
   title: 'Image',
@@ -47,13 +46,10 @@ const name = {
   value: (item) => item.name,
 };
 
-@connect((state) => ({ ...state.storefront.products, ...state.session }), {
-  fetchAll,
-})
 class ProductsListContainer extends ListContainer {
   render() {
     return (
-      <div class="content-wrapper StoreProducts--List">
+      <div className="content-wrapper StoreProducts--List">
         <ListFilter
           form="StoreProductsListFilter"
           type="link"
@@ -82,4 +78,6 @@ class ProductsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(ProductsListContainer);
+export default connect((state) => ({ ...state.storefront.products, ...state.session }), {
+  fetchAll,
+})(withRouter(ProductsListContainer));

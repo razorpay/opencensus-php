@@ -28,7 +28,7 @@ export default class CircularProgressBar extends React.Component {
 
     return (
       <div
-        class="circular-progress"
+        className="circular-progress"
         style={{
           height: size,
           width: size,
@@ -58,7 +58,7 @@ export default class CircularProgressBar extends React.Component {
             strokeWidth={`${strokeWidth}px`}
           />
         </svg>
-        <div class="percentage-info">
+        <div className="percentage-info">
           {showPercentage && (
             <p className="percentage-text">{`${progress}%`}</p>
           )}

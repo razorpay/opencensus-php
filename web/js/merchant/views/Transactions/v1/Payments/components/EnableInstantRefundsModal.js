@@ -1,24 +1,25 @@
 import { Component } from 'react';
-import { compose, bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { formValueSelector } from 'redux-form';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import ModalHeader from 'common/ui/ModalHeader';
-import Amount from 'common/ui/Amount';
-import { updateConfig } from 'merchant/reducers/config';
 import RTracking from 'react-tracking';
+import { compose, bindActionCreators } from 'redux';
+import { formValueSelector } from 'redux-form';
+
+import Amount from 'common/ui/Amount';
+import ModalHeader from 'common/ui/ModalHeader';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { updateConfig } from 'merchant/reducers/config';
 import {
   refundPayment,
   fetchItem as fetchPayment,
   fetchRefunds,
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
-import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { closeModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const raiseTicket = () => {
   CreateTicketEmitter.emit('create-ticket', 'tickets');
@@ -154,7 +155,7 @@ class EnableInstantRefundsModal extends Component {
     const rules = this.props.pricing.rules;
 
     return (
-      <div class="enable-instant-refund-modal">
+      <div className="enable-instant-refund-modal">
         <ModalHeader
           onCloseClick={() => {
             if (this.props.speed === 'normal') {
@@ -192,14 +193,14 @@ class EnableInstantRefundsModal extends Component {
           }}
           title={
             <div>
-              {this.props.speed !== 'normal' ? <i class="i i-instant-refund" /> : null} Enable{' '}
+              {this.props.speed !== 'normal' ? <i className="i i-instant-refund" /> : null} Enable{' '}
               {this.props.speed === 'normal' ? 'Normal' : 'Instant'} Refund
             </div>
           }
         />
-        <div class="modal-body" style={{ paddingBottom: 0 }}>
+        <div className="modal-body" style={{ paddingBottom: 0 }}>
           <div>
-            <div style={{ margin: '10px 0' }} class="change-default-refund-speed">
+            <div style={{ margin: '10px 0' }} className="change-default-refund-speed">
               <div>
                 {this.props.speed == 'normal' ? (
                   <p>
@@ -214,13 +215,13 @@ class EnableInstantRefundsModal extends Component {
                 )}
                 &nbsp;
                 {this.props.speed !== 'normal' ? (
-                  <div class="panel panel-default refund-fee-structure">
-                    <div class="panel-heading">
-                      <div class="flex">
+                  <div className="panel panel-default refund-fee-structure">
+                    <div className="panel-heading">
+                      <div className="flex">
                         <div style={{ color: '#515978', width: '60%' }}>
                           Minimal fee on each refund
                         </div>
-                        <div class="w50 text-right" style={{ width: '40%' }}>
+                        <div className="w50 text-right" style={{ width: '40%' }}>
                           <span
                             onClick={() => {
                               const show_breakup = this.state.show_breakup;
@@ -239,11 +240,11 @@ class EnableInstantRefundsModal extends Component {
                                 );
                               }
                             }}
-                            class="show-fee-struct"
+                            className="show-fee-struct"
                           >
                             <b>{this.state.show_breakup ? 'Hide' : 'Show'} Pricing</b>{' '}
                             <i
-                              class={`i action-arrow i-chevron-${
+                              className={`i action-arrow i-chevron-${
                                 this.state.show_breakup ? 'up' : 'down'
                               }`}
                             >
@@ -254,26 +255,32 @@ class EnableInstantRefundsModal extends Component {
                       </div>
                     </div>
                     {this.state.show_breakup ? (
-                      <div class="panel-body" style={{ paddingBottom: '8px' }}>
+                      <div className="panel-body" style={{ paddingBottom: '8px' }}>
                         {!this.props.pricing.custom_pricing ? (
-                          <div class="instant-breakup">
-                            <div class="flex">
-                              <div style={{ marginBottom: '5px' }} class="w50 text-left t-heading">
+                          <div className="instant-breakup">
+                            <div className="flex">
+                              <div
+                                style={{ marginBottom: '5px' }}
+                                className="w50 text-left t-heading"
+                              >
                                 Refund Amount
                               </div>
-                              <div style={{ marginBottom: '5px' }} class="w50 text-right t-heading">
+                              <div
+                                style={{ marginBottom: '5px' }}
+                                className="w50 text-right t-heading"
+                              >
                                 Processing Fees
                               </div>
                             </div>
                             {rules.map((r, i) => (
-                              <div key={i} class="flex">
-                                <div class="text-left amt" style={{ flexGrow: 1 }}>
+                              <div key={i} className="flex">
+                                <div className="text-left amt" style={{ flexGrow: 1 }}>
                                   ₹{' '}
                                   {i > 0 ? r.amount_range_min / 100 + 1 : r.amount_range_min / 100}{' '}
                                   {i == rules.length - 1 ? 'and' : '-'}{' '}
                                   {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
                                 </div>
-                                <div class="text-right" style={{ flexGrow: 1 }}>
+                                <div className="text-right" style={{ flexGrow: 1 }}>
                                   <Amount
                                     value={r.fixed_rate}
                                     currency="INR"
@@ -284,12 +291,12 @@ class EnableInstantRefundsModal extends Component {
                             ))}
                           </div>
                         ) : (
-                          <div class="flex">
+                          <div className="flex">
                             <div style={{ color: '#515978' }}>
                               To know your pricing, please{' '}
                               <a>
                                 <strong
-                                  class="pointer"
+                                  className="pointer"
                                   onClick={() => {
                                     window.rzpAnalytics?.({
                                       eventCategory: 'Dashboard - Instant Refund',
@@ -313,7 +320,7 @@ class EnableInstantRefundsModal extends Component {
               </div>
             </div>
           </div>
-          <div class="confirm-note-info">
+          <div className="confirm-note-info">
             {this.props.speed == 'normal' ? (
               <div>
                 You can still issue instant refunds either from the Dashboard or using the refund
@@ -343,7 +350,7 @@ class EnableInstantRefundsModal extends Component {
                     this.analytics.learn_more = true;
                   }}
                 >
-                  <strong class="pointer" style={{ color: '#0B70E7' }}>
+                  <strong className="pointer" style={{ color: '#0B70E7' }}>
                     &nbsp; click here
                   </strong>
                 </a>
@@ -376,7 +383,7 @@ class EnableInstantRefundsModal extends Component {
                     this.analytics.learn_more = true;
                   }}
                 >
-                  <strong class="pointer" style={{ color: '#0B70E7' }}>
+                  <strong className="pointer" style={{ color: '#0B70E7' }}>
                     {' '}
                     &nbsp; click here
                   </strong>
@@ -386,10 +393,10 @@ class EnableInstantRefundsModal extends Component {
           </div>
         </div>
         <div>
-          <div class="Modal__actions" style={{ padding: '20px', paddingTop: 0 }}>
-            <div class="row flex" style={{ marginBottom: '5px' }}>
-              <div class="w100 change-default-speed-btn">
-                <button class="btn btn-primary btn-block" onClick={this.enableInstantRefunds}>
+          <div className="Modal__actions" style={{ padding: '20px', paddingTop: 0 }}>
+            <div className="row flex" style={{ marginBottom: '5px' }}>
+              <div className="w100 change-default-speed-btn">
+                <button className="btn btn-primary btn-block" onClick={this.enableInstantRefunds}>
                   Enable {this.props.speed == 'normal' ? 'Normal' : 'Instant'} Refund
                 </button>
               </div>

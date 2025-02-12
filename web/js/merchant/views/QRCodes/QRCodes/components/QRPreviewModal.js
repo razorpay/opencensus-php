@@ -20,16 +20,16 @@ const QRCodePreviewModal = React.memo(({ previewImg, closeModal, history, onDown
 
   return (
     <div>
-      <div class="heading">
-        <img src={DoneImage} class="m-r" /> QR Code Created Successfully
-        <button type="button" class="close" onClick={toToDashboard}>
-          <i class="i i-close" />
+      <div className="heading">
+        <img src={DoneImage} className="m-r" /> QR Code Created Successfully
+        <button type="button" className="close" onClick={toToDashboard}>
+          <i className="i i-close" />
         </button>
       </div>
-      <div class="content">
+      <div className="content">
         <img src={previewImg} alt="qr-code" download />
       </div>
-      <div class="footer">
+      <div className="footer">
         <Button.Secondary onClick={toToDashboard}>Back to Dashboard</Button.Secondary>
         <Button.Primary onClick={downloadQRCode}>Download QR Code</Button.Primary>
       </div>

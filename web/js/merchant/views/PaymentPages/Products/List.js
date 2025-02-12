@@ -12,7 +12,7 @@ const getQuantityInStock = ({ units, status }) => {
   if (status === 'unlimited') {
     return '';
   } else if (status === 'out_of_stock') {
-    return <span class="text-danger">0 pieces</span>;
+    return <span className="text-danger">0 pieces</span>;
   } else {
     return (
       <span>
@@ -49,8 +49,8 @@ export default ({ products, loading, handleEditProduct }) => {
   };
 
   return (
-    <StyledList class="table-responsive Table--PaymentpagesV3">
-      <table class="table table-hover table-striped">
+    <StyledList className="table-responsive Table--PaymentpagesV3">
+      <table className="table table-hover table-striped">
         <thead>
           <tr>
             <th />
@@ -67,7 +67,7 @@ export default ({ products, loading, handleEditProduct }) => {
             const showStrikethrough = shouldShowStrikethrough(item.discounted_amount, item.amount);
             return (
               <EntityItemRow id={item.id} key={item.id}>
-                <td class="text-right">
+                <td className="text-right">
                   {item.images[0]?.original && (
                     <img
                       src={item.images[0].original}

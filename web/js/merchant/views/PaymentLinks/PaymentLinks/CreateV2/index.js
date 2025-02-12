@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import {
@@ -42,6 +42,7 @@ import track from './track';
 import { getWhatsPLNotificationStatus } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/Utils/whatsAppUtils';
 import { fetchGenericFeatureStatus } from 'merchant/reducers/genericFeature';
 import { FEATURE_WHATSAPP_PL } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
+import { compose } from 'redux';
 
 const PAYMENT_LINKS_TYPES = {
   BASE: 'base',
@@ -61,28 +62,7 @@ export const CONTACT_PLACEHOLDER = {
 };
 
 // eslint-disable-next-line react/no-unsafe
-@connect(
-  (state) => ({
-    user: state.session.user,
-    isTestMode: state.session.mode === 'test',
-    reminders: state.reminders,
-    isMobileResolution: state.app.isMobileResolution,
-    paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
-    featureStatus: state.genericFeature,
-  }),
-  {
-    luminateRow,
-    updatePLInReduxList,
-    showNotification,
-    saveOnboarding,
-    updateFeatures,
-    updateUserFeatures,
-    fetchReminders,
-    fetchRemindersMerchantConfigs,
-    fetchGenericFeatureStatus,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentLinkCreateV2'))
+
 class PaymentLinkCreateV2 extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -530,4 +510,29 @@ class PaymentLinkCreateV2 extends React.Component {
   }
 }
 
-export default withRouter(withI18Service(PaymentLinkCreateV2));
+export default compose(
+  withRouter,
+  withI18Service,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      isTestMode: state.session.mode === 'test',
+      reminders: state.reminders,
+      isMobileResolution: state.app.isMobileResolution,
+      paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
+      featureStatus: state.genericFeature,
+    }),
+    {
+      luminateRow,
+      updatePLInReduxList,
+      showNotification,
+      saveOnboarding,
+      updateFeatures,
+      updateUserFeatures,
+      fetchReminders,
+      fetchRemindersMerchantConfigs,
+      fetchGenericFeatureStatus,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentLinkCreateV2')),
+)(PaymentLinkCreateV2);

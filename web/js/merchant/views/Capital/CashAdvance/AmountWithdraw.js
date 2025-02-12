@@ -3,8 +3,9 @@ import { Badge, Box, InfoIcon } from '@razorpay/blade/components';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
@@ -149,30 +150,6 @@ const checkIfFirstCashAdvanceLogin = () => {
   return JSON.parse(val);
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
-    seedData: state.withdrawals.seedData,
-    haveWithdrawals: state.withdrawals.list.data,
-    merchantGromorEsignDetails: state.migrations.merchantGromorEsignDetails,
-    fungibleData: state.withdrawals.cash_on_card.data,
-    productConfig: state.productConfig.productConfig,
-  }),
-  {
-    fetchWithdrawalConfiguration,
-    fetchSeedData,
-    fetchFunctionalWithdrawalConfigByMerchantID,
-    showNotification,
-    openModal,
-    closeModal,
-    fetchWithdrawals,
-    fetchInstallments,
-    fetchRepayments,
-    fetchMerchantDetails,
-    fetchCreditSummary,
-  },
-)
 class AmountWithdraw extends React.Component {
   constructor(props) {
     super(props);
@@ -1046,7 +1023,7 @@ class AmountWithdraw extends React.Component {
         ) : (
           <div className="flex">
             <AsyncBtn.Primary
-              class="btn btn-primary"
+              className="btn btn-primary"
               disabled={!this.canWithdraw()}
               onClick={this.withdraw}
             >
@@ -1473,15 +1450,15 @@ class AmountWithdraw extends React.Component {
       <div className="withdrawals__action-container card flex">
         {showFirstWithdrawalOffer ? (
           <React.Fragment>
-            <div class="cash-advance-first-withdrawal">
-              <i class="i i-offer2" />
+            <div className="cash-advance-first-withdrawal">
+              <i className="i i-offer2" />
               Doing your first withdrawal? Get 100% interest waived on withdrawal up to ₹50,000.
               <span>
                 {' '}
                 View offer details
                 <p>
                   <strong>
-                    <i class="i i-offer2" /> Cashback Offer
+                    <i className="i i-offer2" /> Cashback Offer
                   </strong>
                   <br />
                   <br />
@@ -1494,24 +1471,24 @@ class AmountWithdraw extends React.Component {
                 </p>
               </span>
             </div>
-            <div class="cash-advance-first-withdrawal-background" />
+            <div className="cash-advance-first-withdrawal-background" />
           </React.Fragment>
         ) : null}
-        <div class="no-margin full-width" style={{ position: 'relative' }}>
+        <div className="no-margin full-width" style={{ position: 'relative' }}>
           {isWithdrawlDisabled ? (
             this.withdrawOnholdReasonSection(
               ONHOLD_REASONS.DISABLE_LOC_POST_DPD,
               allowOutStandingAmountRepayment,
             )
           ) : isGromorAgreementLoading ? (
-            <div class="page-spinner-container" style={{ height: '100%' }}>
+            <div className="page-spinner-container" style={{ height: '100%' }}>
               <Spinner />
             </div>
           ) : isAggrementSigned ? (
             this.withdrawableSectionPostGromorAgreementDate()
           ) : isApplicationAtHold ? (
             isRepaymentLoading === 'LOADING' ? (
-              <div class="page-spinner-container" style={{ height: '100%' }}>
+              <div className="page-spinner-container" style={{ height: '100%' }}>
                 <Spinner />
               </div>
             ) : isApplicationKudosHold ? (
@@ -1594,7 +1571,7 @@ class AmountWithdraw extends React.Component {
       <div>
         <div className="flex end-align">
           <i
-            class="i i-done text-success"
+            className="i i-done text-success"
             style={{
               fontSize: 20,
             }}
@@ -1813,7 +1790,7 @@ class AmountWithdraw extends React.Component {
               )}
               <div className="flex">
                 <img
-                  src={require("assets/capital/calendar2.svg")}
+                  src={require('assets/capital/calendar2.svg')}
                   className="calendar-icon"
                   alt="calendar"
                 />
@@ -1904,7 +1881,7 @@ class AmountWithdraw extends React.Component {
         >
           <div>
             <div className="title-container">
-              <img height={16} src={require("assets/success-tick-green.svg")} alt="Loading icon" />
+              <img height={16} src={require('assets/success-tick-green.svg')} alt="Loading icon" />
               <h3 className="text--secondary">
                 <strong>Withdrawal Request Successful!</strong>
               </h3>
@@ -1954,7 +1931,7 @@ class AmountWithdraw extends React.Component {
               <strong>{moment(selectedDueDate).format('LL')}</strong>
             </span>
           </div>
-          <div class="withdrawal__repayable">
+          <div className="withdrawal__repayable">
             <p className="text--secondary no-margin">Repayable Amount</p>
             <span className="text--secondary">
               <strong>
@@ -2045,7 +2022,7 @@ class AmountWithdraw extends React.Component {
               <div className="automated-withdrawal-description">
                 <div style={{ marginRight: 12 }}>Automate your withdrawals</div>
                 <Button.Transparent
-                  class="enable-now-btn"
+                  className="enable-now-btn"
                   onClick={this.handleEnableNowClickForResults}
                 >
                   Enable Now
@@ -2099,7 +2076,7 @@ class AmountWithdraw extends React.Component {
           </div>
           <div className="withdrawal__ctas">
             <AsyncBtn.Primary
-              class="btn btn-primary retry-btn"
+              className="btn btn-primary retry-btn"
               disabled={!this.canWithdraw()}
               onClick={() => {
                 this.gaEventDispatcher({
@@ -2244,7 +2221,7 @@ class AmountWithdraw extends React.Component {
 
     return (
       <div
-        class={`withdrawals__top-summary${showRepaymentDetailsBreakup ? ' move-right' : ''}${
+        className={`withdrawals__top-summary${showRepaymentDetailsBreakup ? ' move-right' : ''}${
           showFirstWithdrawalOffer ? ' show-first-withdrawal-offer' : ''
         }`}
       >
@@ -2273,4 +2250,30 @@ class AmountWithdraw extends React.Component {
   }
 }
 
-export default withRouter(AmountWithdraw);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
+      seedData: state.withdrawals.seedData,
+      haveWithdrawals: state.withdrawals.list.data,
+      merchantGromorEsignDetails: state.migrations.merchantGromorEsignDetails,
+      fungibleData: state.withdrawals.cash_on_card.data,
+      productConfig: state.productConfig.productConfig,
+    }),
+    {
+      fetchWithdrawalConfiguration,
+      fetchSeedData,
+      fetchFunctionalWithdrawalConfigByMerchantID,
+      showNotification,
+      openModal,
+      closeModal,
+      fetchWithdrawals,
+      fetchInstallments,
+      fetchRepayments,
+      fetchMerchantDetails,
+      fetchCreditSummary,
+    },
+  ),
+  withRouter,
+)(AmountWithdraw);

@@ -87,8 +87,8 @@ class FileUploadButton extends Component {
     buttonText = buttonText || text;
 
     return (
-      <label class={`fileupload-btn btn ${labelClass}`} disabled={isDisabled}>
-        <i class="i i-folder" />
+      <label className={`fileupload-btn btn ${labelClass}`} disabled={isDisabled}>
+        <i className="i i-folder" />
         <span>{buttonText}</span>
 
         <input

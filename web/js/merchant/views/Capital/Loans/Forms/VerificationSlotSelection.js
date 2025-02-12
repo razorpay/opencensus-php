@@ -1,27 +1,20 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
-import { fetchLoanApplicationMeta, scheduleVerification } from 'merchant/reducers/capital';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import ToggleWithDescription from '../../components/ToggleWithDescription';
-import Input from 'common/new-ui/Input';
-import Form from 'common/new-ui/Form';
-import { states } from 'merchant/helpers/data';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, HOTJAR_TRIGGERS, VERIFICATION_TIME_SLOTS } from '../constants';
-import { isPreceedingState } from '../../utils';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    fetchLoanApplicationMeta,
-    scheduleVerification,
-    showNotification,
-  },
-)
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { states } from 'merchant/helpers/data';
+import { fetchLoanApplicationMeta, scheduleVerification } from 'merchant/reducers/capital';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
+import ToggleWithDescription from '../../components/ToggleWithDescription';
+import { isPreceedingState } from '../../utils';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS, VERIFICATION_TIME_SLOTS } from '../constants';
+
 class VerificationSlotSelection extends Component {
   constructor(props) {
     super(props);
@@ -180,11 +173,8 @@ class VerificationSlotSelection extends Component {
   }
 
   render() {
-    const {
-      business_details,
-      promoter_details,
-      schedule_details,
-    } = this.props.loanApplicationDetails;
+    const { business_details, promoter_details, schedule_details } =
+      this.props.loanApplicationDetails;
 
     if (business_details.loading || promoter_details.loading || schedule_details.loading)
       return <FormLoader />;
@@ -227,7 +217,7 @@ class VerificationSlotSelection extends Component {
             value={this.state.selected_date_slot}
             onChange={this.handleDateSlotSelection}
             size="half_small"
-            addonAfter={<i class="i i-date-range" />}
+            addonAfter={<i className="i i-date-range" />}
             placement="topLeft"
             allowToday={false}
             mature
@@ -267,7 +257,7 @@ class VerificationSlotSelection extends Component {
             <AsyncBtn.Primary
               disabled={this.isFormInValid()}
               type="submit"
-              class="btn btn-primary m-l"
+              className="btn btn-primary m-l"
               onClick={this.scheduleVerification}
             >
               Next
@@ -280,4 +270,13 @@ class VerificationSlotSelection extends Component {
   }
 }
 
-export default VerificationSlotSelection;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    fetchLoanApplicationMeta,
+    scheduleVerification,
+    showNotification,
+  },
+)(VerificationSlotSelection);

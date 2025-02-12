@@ -39,7 +39,7 @@ export default class Definition extends Component {
     const body = definition.slice(1);
 
     return (
-      <dl class={`rzp-definition ${customClass}`}>
+      <dl className={`rzp-definition ${customClass}`}>
         {heading && <dt>{heading}</dt>}
         {body.length > 0 ? body.map((item, key) => <dd key={key}>{item}</dd>) : <dd>&nbsp;</dd>}
       </dl>

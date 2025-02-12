@@ -108,8 +108,8 @@ class ApplicationContainer extends Component {
     const { isRevokeApplicationEnabled } = this.props.user;
     const { connectedAppsloading, tokens } = this.props.applications;
     return (
-      <div class="content-box">
-        <div class="content-header">
+      <div className="content-box">
+        <div className="content-header">
           <strong>Connected Applications</strong>
         </div>
         {connectedAppsloading ? (
@@ -127,7 +127,7 @@ class ApplicationContainer extends Component {
         ) : (
           <NoConnectedApps />
         )}
-        <div class="clearfix" />
+        <div className="clearfix" />
       </div>
     );
   };
@@ -136,15 +136,15 @@ class ApplicationContainer extends Component {
     const { items, createdAppsloading } = this.props.applications;
     const pathname = this.props.location.pathname;
     return (
-      <div class="application-index-page">
+      <div className="application-index-page">
         {['/applications', ROUTES_INFO.APPLICATIONS].includes(pathname) &&
           this.renderConnectedApplications()}
         {pathname === '/partners/applications' ? (
-          <div class="content-box">
-            <div class="content-header">
+          <div className="content-box">
+            <div className="content-header">
               <strong>Created Applications</strong>
             </div>
-            <div class="text-center content-body">
+            <div className="text-center content-body">
               <NewAppLink toNewApplication={`${pathname}/new`} />
               {items.map((data) => (
                 <AppDetails
@@ -155,7 +155,7 @@ class ApplicationContainer extends Component {
                 />
               ))}
               {createdAppsloading && <AppDetailsLoader />}
-              <div class="clearfix" />
+              <div className="clearfix" />
             </div>
           </div>
         ) : null}

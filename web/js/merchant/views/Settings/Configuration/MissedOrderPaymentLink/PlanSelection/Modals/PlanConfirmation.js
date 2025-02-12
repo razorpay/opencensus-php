@@ -30,12 +30,12 @@ const Header = ({ closeModal, planStatus }) => {
   return planStatus === PLAN_CONFIRMATION ? (
     <ModalHeader title="Confirm your plan" onCloseClick={closeModal} />
   ) : (
-    <div class="modal-header header-wrapper">
-      <i class="i i-done text-success icon-wrapper" />
+    <div className="modal-header header-wrapper">
+      <i className="i i-done text-success icon-wrapper" />
       <h3 className="modal-title">You have activated Failed Payments Recovery</h3>
       {closeModal && (
-        <button type="button" class="close" onClick={closeModal}>
-          <i class="i i-close" />
+        <button type="button" className="close" onClick={closeModal}>
+          <i className="i i-close" />
         </button>
       )}
     </div>

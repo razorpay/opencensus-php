@@ -1,26 +1,18 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
-import EditableDisplayField from './EditableDisplayField';
-
+import { fetchPlans } from 'merchant/reducers/plans';
 import {
   updateStepReviewProgress,
   filterSubscriptionPaymentItems,
 } from 'merchant/reducers/subscriptionButtons/create';
-import { fetchPlans } from 'merchant/reducers/plans';
+
+import EditableDisplayField from './EditableDisplayField';
 
 // import track from '../../../track';
 
-@connect(
-  (state) => ({
-    plans: state.plans,
-  }),
-  {
-    updateStepReviewProgress,
-    fetchPlans,
-  },
-)
-export default class PlansDetails extends React.Component {
+class PlansDetails extends React.Component {
   maxFieldsLimit = 5;
 
   componentDidMount() {
@@ -70,8 +62,8 @@ export default class PlansDetails extends React.Component {
     const { subscriptionButtonEntity } = this.props;
     const currency = subscriptionButtonEntity.currency;
 
-    const fields = this.planFields,
-      items = [];
+    const fields = this.planFields;
+    const items = [];
 
     fields.items.forEach((field, index) => {
       items.push(
@@ -86,13 +78,13 @@ export default class PlansDetails extends React.Component {
     });
 
     return (
-      <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
-        <div class="PaymentButtonForm-AmountDetails Form-content">
+      <div className="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
+        <div className="PaymentButtonForm-AmountDetails Form-content">
           {items}
           {this.maxFieldsLimit > fields.length && (
             <EditableDisplayField field={null} plansOptions={this.plans} currency={currency}>
               <Button
-                class="Button--primary--invert addFieldBtn"
+                className="Button--primary--invert addFieldBtn"
                 // onClick={track.lj.trackCustomerScreenInputField}
               >
                 <b>+ Add Plan Item</b>
@@ -121,3 +113,13 @@ export default class PlansDetails extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    plans: state.plans,
+  }),
+  {
+    updateStepReviewProgress,
+    fetchPlans,
+  },
+)(PlansDetails);

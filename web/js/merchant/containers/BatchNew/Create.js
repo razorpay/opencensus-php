@@ -43,12 +43,11 @@ class BatchCreate extends Component {
     return schedule;
   };
 
-  @RTracking(() =>
+  handleBatchCreate = ({ processing, scheduleDate, scheduleTime, ...props }) => {
     window.rzpQ.onbr().success('dash.pl_action', {
       action: 'Initiate_Batch_PL_Generation',
-    }),
-  )
-  handleBatchCreate = ({ processing, scheduleDate, scheduleTime, ...props }) => {
+    });
+
     const data = {
       file_id: this.props.batch.file_id,
       ...props,

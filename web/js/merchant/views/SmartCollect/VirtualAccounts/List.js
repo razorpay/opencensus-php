@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import {
   virtualAccountId,
@@ -43,6 +43,7 @@ import { Button, PlusIcon, Box } from '@razorpay/blade/components';
 import { NEW_CUSTOMER_IDENTIFER_URL } from 'merchant/constants/urls';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
+import { compose } from 'redux';
 
 const EmptyComponent = () => (
   <EmptyList
@@ -55,24 +56,6 @@ const EmptyComponent = () => (
   />
 );
 
-@connect(
-  (state) => {
-    return {
-      ...state.virtualaccounts,
-      user: state.session.user,
-      mode: state.session.mode,
-      VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
-      isVaEditBulkMid: state.virtualaccount.isVaEditBulkMid,
-    };
-  },
-  {
-    fetchAll,
-    openModal,
-    closeModal,
-    handleProductQuickGuide,
-  },
-)
-@RTracking(() => window.rzpQ.component('VirtualAccountsListContainer'))
 class VirtualAccountsListContainer extends ListContainer {
   constructor(props) {
     super(props);
@@ -285,7 +268,7 @@ class VirtualAccountsListContainer extends ListContainer {
         }
       >
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <TestModeBanner />
 
             <VirtualAccountsListFilter
@@ -321,4 +304,24 @@ class VirtualAccountsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(VirtualAccountsListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.virtualaccounts,
+        user: state.session.user,
+        mode: state.session.mode,
+        VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
+        isVaEditBulkMid: state.virtualaccount.isVaEditBulkMid,
+      };
+    },
+    {
+      fetchAll,
+      openModal,
+      closeModal,
+      handleProductQuickGuide,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('VirtualAccountsListContainer')),
+)(VirtualAccountsListContainer);

@@ -33,8 +33,8 @@ export default class AdvancedForm extends React.PureComponent {
     const { disableSubmit } = this.state;
 
     return (
-      <div class="CreatorModal-AdvancedForm-footer">
-        <Button type="button" class="Button--primary--invert" onClick={this.props.handleClose}>
+      <div className="CreatorModal-AdvancedForm-footer">
+        <Button type="button" className="Button--primary--invert" onClick={this.props.handleClose}>
           Cancel
         </Button>
 
@@ -78,8 +78,8 @@ export default class AdvancedForm extends React.PureComponent {
 
   render() {
     return (
-      <EditorModal class="CreatorModal-AdvancedForm" overElement>
-        <div class="CreatorModal-AdvancedForm-title">ADVANCED OPTIONS</div>
+      <EditorModal className="CreatorModal-AdvancedForm" overElement>
+        <div className="CreatorModal-AdvancedForm-title">ADVANCED OPTIONS</div>
 
         <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           {this.fieldsForFieldType}
@@ -181,8 +181,8 @@ class FieldWithPurchaseLimits extends React.Component {
         />
 
         {hasPurchaseLimits && (
-          <Input.Group class="InputGroup--inline Input--limits">
-            <div class="Input--limits-content">
+          <Input.Group className="InputGroup--inline Input--limits">
+            <div className="Input--limits-content">
               <Input
                 setRef={this.setRefMinPurchaseLimit}
                 name="min_purchase"
@@ -195,9 +195,9 @@ class FieldWithPurchaseLimits extends React.Component {
               />
             </div>
 
-            <span class="separator">-</span>
+            <span className="separator">-</span>
 
-            <div class="Input--limits-content">
+            <div className="Input--limits-content">
               <Input
                 setRef={this.setRefMaxPurchaseLimit}
                 name="max_purchase"
@@ -311,8 +311,8 @@ export class FieldWithAmountLimits extends React.Component {
       <Input.Group>
         {togglerContent}
         {hasAmountLimits && (
-          <Input.Group class="InputGroup--inline Input--limits">
-            <div class="Input--limits-content">
+          <Input.Group className="InputGroup--inline Input--limits">
+            <div className="Input--limits-content">
               <Input.CurrencySelect
                 defaultValue={currency}
                 disabled
@@ -331,9 +331,9 @@ export class FieldWithAmountLimits extends React.Component {
               />
             </div>
 
-            <span class="separator">-</span>
+            <span className="separator">-</span>
 
-            <div class="Input--limits-content">
+            <div className="Input--limits-content">
               <Input.CurrencySelect
                 defaultValue={currency}
                 disabled
@@ -407,7 +407,7 @@ class FieldWithStockLimit extends React.Component {
     return (
       <Input.Group>
         <Input.Check
-          class="Input--vTop"
+          className="Input--vTop"
           fieldLabel="Item has Limited stock"
           onChange={this.toggleAddStock}
           defaultChecked={hasStockLimit}

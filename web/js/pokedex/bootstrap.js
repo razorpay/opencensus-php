@@ -43,15 +43,12 @@ import fontconfig from '../../dashboard.font';
 import { I18ServiceProvider } from 'shell/I18Context';
 
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { compose } from 'redux';
 
 window.RZP = window.RZP || {};
 
 const merchantId = (pokeConfig.merchantId = window.rzp_user.id);
 
-@connect((state) => state.session, {
-  ...SessionActions,
-  ...NotificationActions,
-})
 class App extends Component {
   constructor(props) {
     super(props);
@@ -166,6 +163,13 @@ class App extends Component {
   }
 }
 
+const PokedexMain = compose(
+  connect((state) => state.session, {
+    ...SessionActions,
+    ...NotificationActions,
+  }),
+)(App);
+
 // TODO: Refactor all providers into one.
 render(
   <BladeProvider themeTokens={bladeTheme}>
@@ -180,7 +184,7 @@ render(
               >
                 <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
                   <I18ServiceProvider>
-                    <App />
+                    <PokedexMain />
                   </I18ServiceProvider>
                 </SplitzRoutesBasedService>
               </SpiltzServiceProvider>

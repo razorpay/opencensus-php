@@ -1,7 +1,19 @@
 import React, { Component } from 'react';
+import DoneLogo from 'assets/onboarding/done.png';
+import ParliamentLogo from 'assets/onboarding/parliament.svg';
+import PointLogo from 'assets/onboarding/points.svg';
+import ImgRxBgRight from 'assets/onboarding/rx-bg-right.svg';
 import { connect } from 'react-redux';
-import { updateUser } from 'merchant_common/reducers/user';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import Button from 'common/new-ui/Button';
+import Image from 'common/ui/Image';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import LocalStorageService from 'common/utils/localStorage';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { updateUser } from 'merchant_common/reducers/user';
+
 import {
   RX_HOTJAR_DATA,
   rxHomevisitedFlag,
@@ -10,24 +22,7 @@ import {
   caReqEventType,
   rxCaExp,
 } from '../data';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import Button from 'common/new-ui/Button';
-import LocalStorageService from 'common/utils/localStorage';
-import RTracking from 'react-tracking';
-import ImgRxBgRight from 'assets/onboarding/rx-bg-right.svg';
-import ParliamentLogo from 'assets/onboarding/parliament.svg';
-import DoneLogo from 'assets/onboarding/done.png';
-import PointLogo from 'assets/onboarding/points.svg';
-import Image from 'common/ui/Image';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    updateUser,
-  },
-)
 class RxCard extends Component {
   constructor(props) {
     super(props);
@@ -135,7 +130,7 @@ class RxCard extends Component {
         <div className="side" />
         <img className="right-bottom-img" src={ImgRxBgRight} alt="Right Bottom Logo" />
         <div className="cross" onClick={this.handleClose}>
-          <i class="i i-close" />
+          <i className="i i-close" />
         </div>
         <div className="left-container">
           <div>
@@ -158,7 +153,7 @@ class RxCard extends Component {
                   className="learn-more"
                 >
                   Learn more
-                  <i class="i i-external-link" />
+                  <i className="i i-external-link" />
                 </a>
               </>
             ) : (
@@ -194,7 +189,16 @@ class RxCard extends Component {
   }
 }
 
-// eslint-disable-next-line babel/new-cap
-export default RTracking({
-  page: 'RxCaInterestHome',
-})(RxCard);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+    }),
+    {
+      updateUser,
+    },
+  ),
+  rTracking({
+    page: 'RxCaInterestHome',
+  }),
+)(RxCard);

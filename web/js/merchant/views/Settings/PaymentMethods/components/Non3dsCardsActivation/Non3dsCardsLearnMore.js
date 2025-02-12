@@ -59,7 +59,7 @@ const Non3dsLearnMore = ({ open, status, onDisable, onEnable, onClose }) => {
           <div className="non-3ds-modal-header">
             <h3>Support for Non 3D Secure transactions</h3>
           </div>
-          <div class="non-3ds-modal-content">{description}</div>
+          <div className="non-3ds-modal-content">{description}</div>
         </ModalContent>
       </Modal>
     </ModalMask>

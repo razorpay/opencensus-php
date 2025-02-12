@@ -60,7 +60,7 @@ const DelhiveryForm = ({ closeModal, createProviders, showNotification, user }) 
       <div className="delhivery-form-content">
         <div className="row">
           <div className="filter-item">
-            <label for="token" className="color-black">
+            <label htmlFor="token" className="color-black">
               Production Authentication token <sup className="magic-checkout-color-red"> *</sup>
             </label>
             <Input

@@ -26,37 +26,37 @@ export default ({
   onAddNotesClick = () => {},
 }) => {
   return (
-    <ul class="list-unstyled notes">
+    <ul className="list-unstyled notes">
       {fields.map((note, index) => {
         return (
-          <li class="note" key={index}>
-            <div class="key">
+          <li className="note" key={index}>
+            <div className="key">
               {index > nonEditableUptilIndex && (
-                <i class="i i-close" onClick={() => fields.remove(index)} />
+                <i className="i i-close" onClick={() => fields.remove(index)} />
               )}
 
               <Field
                 name={`notes[${index}][key]`}
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 placeholder="Title (key)"
                 validate={required(index)}
                 disabled={index <= nonEditableUptilIndex}
               />
             </div>
 
-            <div class="value">
+            <div className="value">
               <Field
                 name={`notes[${index}][value]`}
                 component={AutoResizeTextarea}
                 rows="2"
-                class="form-control"
+                className="form-control"
                 placeholder="Description (value)"
                 disabled={index <= nonEditableUptilIndex}
               />
             </div>
             {showLinkedAccountOpt && (
-              <div class="checkbox rzpCheckbox">
+              <div className="checkbox rzpCheckbox">
                 <Field
                   name={`notes[${index}][also_linked_account]`}
                   id={`notes[${index}][also_linked_account]`}
@@ -64,8 +64,8 @@ export default ({
                   type="checkbox"
                 />
                 <label
-                  for={`notes[${index}][also_linked_account]`}
-                  class="icon i-check"
+                  htmlFor={`notes[${index}][also_linked_account]`}
+                  className="icon i-check"
                   style={{ lineHeight: '18px' }}
                 >
                   <span>Show note to Linked Account</span>
@@ -79,7 +79,7 @@ export default ({
       {fields.length < 10 ? (
         <li>
           <button
-            class="btn btn-link add-note"
+            className="btn btn-link add-note"
             type="button"
             onClick={() => {
               fields.push({});

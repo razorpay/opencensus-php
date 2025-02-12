@@ -8,26 +8,26 @@ import { connect } from 'react-redux';
 function QuickStepGuide(props) {
   const { user, isMobileResolution, className } = props;
   const i18NOrgClassName = user.isOrgCurlec && !isMobileResolution ? ' i18N-Org' : '';
-  return <StepGuide {...props} class={`${className} QuickGuide${i18NOrgClassName}`} />;
+  return <StepGuide {...props} className={`${className} QuickGuide${i18NOrgClassName}`} />;
 }
 
 export const QuickGuideTitle = ({ title = 'GET STARTED' }) => (
   <React.Fragment>
     {title}
 
-    <div class="divider" />
+    <div className="divider" />
   </React.Fragment>
 );
 
 export const QuickGuideCloseBtn = ({ isCompleted, onClick }) => (
   <Button.Transparent onClick={onClick}>
     {isCompleted ? (
-      <span class="done">
+      <span className="done">
         {' '}
-        <i class="i i-thumbs-up" /> Got It{' '}
+        <i className="i i-thumbs-up" /> Got It{' '}
       </span>
     ) : (
-      <i class="i i-close" />
+      <i className="i i-close" />
     )}
   </Button.Transparent>
 );

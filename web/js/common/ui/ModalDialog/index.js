@@ -110,7 +110,7 @@ class ModalDialog extends Component {
           onRequestClose={disableClose ? null : closeModal}
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={closeOnOverLay}
-          class={`${org?.custom_code} Modal ${size ? `Modal--${size}` : ''}${
+          className={`${org?.custom_code} Modal ${size ? `Modal--${size}` : ''}${
             className ? ` ${className}` : ''
           }`}
           contentLabel="Modal"

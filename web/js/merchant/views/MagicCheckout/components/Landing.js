@@ -145,7 +145,7 @@ const MagicCheckoutLanding = (props) => {
 
   const getHeadingComponent = ({ heading, icon_classes }) => (
     <div>
-      {icon_classes && <i class={icon_classes} />}
+      {icon_classes && <i className={icon_classes} />}
       <span>{heading}</span>
     </div>
   );

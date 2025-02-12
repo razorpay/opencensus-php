@@ -61,21 +61,21 @@ class VABatchDetails extends React.Component {
     const isLoading = this.state.loading;
     const { batchDetails } = this.state;
     return (
-      <div class="content-wrapper content-sm txn-details batch--details">
+      <div className="content-wrapper content-sm txn-details batch--details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              <i class="i i-plan text-main icon--formal" /> <strong>{batchDetails?.id}</strong>
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
+              <i className="i i-plan text-main icon--formal" /> <strong>{batchDetails?.id}</strong>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <div class="download-report-card">
-                  <span class="drc-label">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
+                <div className="download-report-card">
+                  <span className="drc-label">
                     Download the report containing Customer Identifiers data for this batch.
                   </span>
                   <span className="cta-container">
@@ -83,30 +83,30 @@ class VABatchDetails extends React.Component {
                       onClick={() => {
                         this.onDowloadClick(batchDetails.id);
                       }}
-                      class="btn btn-primary pull-right"
+                      className="btn btn-primary pull-right"
                     >
                       Download Report
                     </button>
                   </span>
                 </div>
                 <div>
-                  <table class="batch-process-details">
+                  <table className="batch-process-details">
                     <tbody>
                       <tr>
                         <td colSpan="2">
                           <div>Total Rows Processed</div>
-                          <div class="total-rows-processed-val">{batchDetails?.total_count}</div>
+                          <div className="total-rows-processed-val">{batchDetails?.total_count}</div>
                         </td>
                       </tr>
                       <tr>
                         <td>
                           <div>Expiry Date Updated</div>
-                          <div class="expiry-date-updated">{batchDetails?.success_count}</div>
+                          <div className="expiry-date-updated">{batchDetails?.success_count}</div>
                         </td>
                         <td>
                           {' '}
                           <div>Expiry Date Update Failed</div>
-                          <div class="expiry-date-update-failed">{batchDetails?.failure_count}</div>
+                          <div className="expiry-date-update-failed">{batchDetails?.failure_count}</div>
                         </td>
                       </tr>
                     </tbody>
@@ -121,7 +121,7 @@ class VABatchDetails extends React.Component {
 
                   <hr />
                   {batchDetails?.failure_count > 0 && (
-                    <p class="process-instant-batch">
+                    <p className="process-instant-batch">
                       {' '}
                       <img src="https://cdn.razorpay.com/static/assets/notifs/instant-refunds.svg" />{' '}
                       Some rows in this batch were not processed due to errors. Please &nbsp;{' '}

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import moment from 'moment';
 
 import Button from 'common/new-ui/Button';
@@ -21,6 +21,7 @@ import debounce from 'common/utils/debounce';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import FIELD_TYPES_MAP from './helpers/fieldTypes';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { compose } from 'redux';
 
 const sampleData = {
   tracker_type: 'donation_amount_based',
@@ -50,19 +51,7 @@ const sampleData2 = {
   },
 };
 
-@connect(
-  (state) => ({
-    currency: state.wysiwyg.paymentPageEntity?.currency || 'INR',
-    user: state.session.user,
-  }),
-  {
-    showNotification,
-    closeModal,
-    openModal,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
-export default class DonationGoalTracker extends React.PureComponent {
+class DonationGoalTracker extends React.PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -309,11 +298,11 @@ export default class DonationGoalTracker extends React.PureComponent {
             trigger={
               <>
                 <Button.Transparent
-                  class="btn-link btn-goal-tracker"
+                  className="btn-link btn-goal-tracker"
                   onClick={track.wysiwyg.addGoalTrackerBtn}
                 >
                   + Add a Goal Tracker <i className="i i-info-outline" />{' '}
-                  <span class="badge bg-success">NEW</span>
+                  <span className="badge bg-success">NEW</span>
                 </Button.Transparent>
                 <Popover className="rzp-tooltip-donation-tracking" align="top" theme="dark">
                   <PopoverBody>
@@ -326,7 +315,7 @@ export default class DonationGoalTracker extends React.PureComponent {
                     of your goals and existing supporters.
                   </PopoverBody>
                 </Popover>
-                <div class="title-underline" />
+                <div className="title-underline" />
               </>
             }
           />
@@ -395,7 +384,7 @@ export default class DonationGoalTracker extends React.PureComponent {
                 onDismiss={this.handleClose}
                 isBlocking={false}
               >
-                <div class="Modal-container--goal-tracker">
+                <div className="Modal-container--goal-tracker">
                   <ModalContent>
                     {tracker_type === 'donation_amount_based' ? (
                       <AmountBasedModalContent
@@ -456,3 +445,18 @@ function generateGoalTrackerMetadata(meta_data, key) {
     };
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      currency: state.wysiwyg.paymentPageEntity?.currency || 'INR',
+      user: state.session.user,
+    }),
+    {
+      showNotification,
+      closeModal,
+      openModal,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentButtonDetails')),
+)(DonationGoalTracker);

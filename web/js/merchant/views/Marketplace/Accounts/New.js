@@ -1,41 +1,35 @@
-import { Component } from 'react';
-import { connect } from 'react-redux';
-import { compose } from 'redux';
-import RTracking from 'react-tracking';
-import { Field, reduxForm, formValueSelector, change } from 'redux-form';
-import AsyncButton from 'react-async-button';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import InputField from 'common/ui/Forms/InputField';
-import ModalHeader from 'common/ui/ModalHeader';
+import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+import { Field, reduxForm, formValueSelector, change } from 'redux-form';
+
+import { withSplitzService } from 'common/splitz';
 import Alert from 'common/ui/Forms/Alert';
+import InputField from 'common/ui/Forms/InputField';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import ModalHeader from 'common/ui/ModalHeader';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { required } from 'common/utils/validators';
+import ShowWhen from 'merchant/components/ShowWhen';
 import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import SwitchField from 'common/ui/Forms/SwitchField';
-import ShowWhen from 'merchant/components/ShowWhen';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   triggerOtpOnEmail,
   triggerOtpOnSMS,
   triggerOtpOnBoth,
 } from 'merchant_common/reducers/twoFactor';
-import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { withSplitzService } from 'common/splitz';
 
 // Decorate with connect to read form values
 const selector = formValueSelector('newAccount');
 
-@reduxForm({
-  form: 'newAccount',
-  initialValues: {
-    account: true,
-  },
-})
-@RTracking(() => window.rzpQ.component('AddAccount'))
 class AddAccount extends Component {
   static contextTypes = {
     // eslint-disable-next-line
@@ -94,7 +88,7 @@ class AddAccount extends Component {
 
     return reqFunc(requestData)
       .then((account) => {
-        this.props.onSave(account);
+        this.props?.onSave?.(account);
         selfServeTrackSuccess({
           selfServeAction: accountData ? 'Email added' : 'Route Account created',
           page: 'Account',
@@ -127,7 +121,7 @@ class AddAccount extends Component {
         .confirm({
           header: 'Also Disable Customer Refunds?',
           message: () => (
-            <div class="text-semi-muted">
+            <div className="text-semi-muted">
               <p>
                 Disabling Dashboard Access will also disable the refund to customer to the Linked
                 Account.
@@ -158,7 +152,7 @@ class AddAccount extends Component {
         .confirm({
           header: 'Also enable Dashboard Access?',
           message: () => (
-            <div class="text-semi-muted">
+            <div className="text-semi-muted">
               <p>
                 Enabling Refund to customer will also enable Dashboard access to the Linked Account.
               </p>
@@ -231,7 +225,7 @@ class AddAccount extends Component {
           onResend={this.sendVerificationOtp(true)}
           title="Invite new member"
           renderMessage={() => (
-            <p class="m-b">
+            <p className="m-b">
               Inviting new member requires you to enter OTP sent over to your{' '}
               {hasOnlyEmail && (
                 <>
@@ -291,45 +285,45 @@ class AddAccount extends Component {
     }
 
     return (
-      <div class="accounts-edit-new">
+      <div className="accounts-edit-new">
         <ModalHeader
           title={!!accountData ? 'Edit Account' : 'Add Account'}
           onCloseClick={this.closeModal}
         />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <Alert type="error" message={this.state.errors} />
 
           <form onSubmit={handleSubmit(this.save)}>
-            <div class="form-group">
-              <label class="label-required">Account Name</label>
+            <div className="form-group">
+              <label className="label-required">Account Name</label>
               <div>
                 <Field
                   name="name"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   autoFocus={true}
                   validate={required()}
                   disabled={!!accountData}
                   onChange={(e) => this.setState({ name: e.target.value })}
                 />
-                <small class="help-block">
+                <small className="help-block">
                   The business/individual name for the account, which will appear on all reports
                 </small>
               </div>
             </div>
 
-            <div class="form-group">
+            <div className="form-group">
               <label>Account Email</label>
               <div>
                 <Field
                   name="email"
                   component="input"
-                  class="form-control"
+                  className="form-control"
                   value={this.state.email}
                   onChange={(e) => this.setState({ email: e.target.value })}
                 />
-                <small class="help-block">
+                <small className="help-block">
                   Your linked-account user can access their dashboard using this email id. You may
                   Add/Edit the email later.
                 </small>
@@ -337,20 +331,20 @@ class AddAccount extends Component {
             </div>
 
             {user.isRouteCodeSupportEnabled && (
-              <div class="form-group">
+              <div className="form-group">
                 <label>Account Code</label>
                 <div>
                   <Field
                     name="code"
                     component="input"
-                    class="form-control"
+                    className="form-control"
                     value={this.state.code}
                     onChange={(e) => this.setState({ code: e.target.value })}
                     maxLength={20}
                   />
-                  <small class="help-block">
-                    Maximum 20 characters. Alphanumeric and <span class="special-chars">_ . -</span>{' '}
-                    only
+                  <small className="help-block">
+                    Maximum 20 characters. Alphanumeric and{' '}
+                    <span className="special-chars">_ . -</span> only
                   </small>
                 </div>
               </div>
@@ -358,13 +352,13 @@ class AddAccount extends Component {
 
             {!accountData && (
               <ShowWhen additionalCondition={(user) => user.isAllowedEdit('accounts')}>
-                <div class="form-group">
+                <div className="form-group">
                   <EnableDashboardField isDisabled={noLAEmail}>
-                    <div class="rzpCheckbox">
-                      <label for="dashboard_access">
+                    <div className="rzpCheckbox">
+                      <label htmlFor="dashboard_access">
                         <span>Dashboard Access</span>
                       </label>
-                      <div class="pull-right">
+                      <div className="pull-right">
                         <SwitchField
                           name="dashboard_access"
                           id="dashboard_access"
@@ -375,11 +369,11 @@ class AddAccount extends Component {
                         />
                       </div>
                     </div>
-                    <div class="rzpCheckbox">
-                      <label for="allow_reversals">
+                    <div className="rzpCheckbox">
+                      <label htmlFor="allow_reversals">
                         <span>Allow customer Refunds</span>
                       </label>
-                      <div class="pull-right">
+                      <div className="pull-right">
                         <SwitchField
                           name="allow_reversals"
                           id="allow_reversals"
@@ -395,9 +389,9 @@ class AddAccount extends Component {
               </ShowWhen>
             )}
 
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
-                class="btn btn-primary btn-block"
+                className="btn btn-primary btn-block"
                 text={!!accountData ? 'Update' : 'Add'}
                 pendingText="Adding..."
                 onClick={handleSubmit(this.save)}
@@ -410,14 +404,10 @@ class AddAccount extends Component {
   }
 }
 
-AddAccount.defaultProps = {
-  onSave: () => {},
-};
-
 const EnableDashboardField = ({ children, isDisabled }) => {
   if (isDisabled) {
     return (
-      <small class="help-content">
+      <small className="help-content">
         {children}
         <Popover align="top" parentQuerySelector=".accounts-edit-new" theme="dark">
           <PopoverBody>
@@ -456,4 +446,13 @@ export default compose(
       showNotification,
     },
   ),
+  reduxForm({
+    form: 'newAccount',
+    initialValues: {
+      account: true,
+    },
+  }),
+  rTracking({
+    page: 'AddAccount',
+  }),
 )(AddAccount);

@@ -94,8 +94,8 @@ export default class NoCostEmiMethods extends React.Component {
       for (let duration in emiPlans.plans) {
         let text = `${duration} Months`;
         planFields.push(
-          <div class="offers-emi-options-row">
-            <div class="emi-checkfield">
+          <div className="offers-emi-options-row">
+            <div className="emi-checkfield">
               <Input.Check
                 fieldLabel={text}
                 onChange={this.onSelectTenure(duration)}
@@ -112,8 +112,8 @@ export default class NoCostEmiMethods extends React.Component {
       }
 
       planFields.unshift(
-        <div class="offers-emi-options-row" style={{ padding: '13px', fontWeight: 'bold' }}>
-          <div class="emi-checkfield">
+        <div className="offers-emi-options-row" style={{ padding: '13px', fontWeight: 'bold' }}>
+          <div className="emi-checkfield">
             <p>EMI tenure</p>
           </div>
           <p>Discount borne by merchant</p>
@@ -123,7 +123,7 @@ export default class NoCostEmiMethods extends React.Component {
     if (planFields.length > 0) {
       return (
         <Input.Group label="EMI Tenure">
-          <div class="offers-emi-options-container" required>
+          <div className="offers-emi-options-container" required>
             {planFields}
           </div>
         </Input.Group>

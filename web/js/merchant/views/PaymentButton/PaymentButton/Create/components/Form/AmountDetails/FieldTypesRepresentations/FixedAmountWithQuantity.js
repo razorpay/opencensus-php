@@ -10,8 +10,8 @@ export default class FixedAmountWithQuantity extends React.Component {
         {children}
 
         {/* Add dummy Counter */}
-        <div class="Input--counterTooltip">
-          <div class="Input-content Input--disabled">
+        <div className="Input--counterTooltip">
+          <div className="Input-content Input--disabled">
             <button type="button" disabled>
               -
             </button>

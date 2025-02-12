@@ -7,20 +7,14 @@ import InputField from 'common/ui/Forms/InputField';
 import { required } from 'common/utils/validators';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
 
-@connect(null, {
-  ...ModalActions,
-  ...NotificationsActions,
-})
-@reduxForm({
-  form: 'addInternalNote',
-})
-export default class AddInternalNote extends Component {
-  addInternalNote = props => {
+class AddInternalNote extends Component {
+  addInternalNote = (props) => {
     let notes = {};
     notes[props.key] = props.value;
 
-    return this.props.onSave(notes).then(invoice => {
+    return this.props.onSave(notes).then((invoice) => {
       this.props.showNotification({
         type: 'success',
         message: 'Internal Note added',
@@ -34,35 +28,32 @@ export default class AddInternalNote extends Component {
 
     return (
       <div>
-        <ModalHeader
-          title="Add Internal Note"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Add Internal Note" onCloseClick={this.props.closeModal} />
 
-        <form class="form-horizontal">
-          <div class="modal-body">
-            <p class="help-block">
-              Internal notes will only be visible on this dashboard or
-              accessible through the API. It won't be visible to the customer.
+        <form className="form-horizontal">
+          <div className="modal-body">
+            <p className="help-block">
+              Internal notes will only be visible on this dashboard or accessible through the API.
+              It won't be visible to the customer.
             </p>
 
-            <div class="form-group">
-              <div class="col-md-12">
+            <div className="form-group">
+              <div className="col-md-12">
                 <label>
                   <b>Title</b>
                 </label>
                 <Field
                   name="key"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   autoFocus={true}
                   validate={required()}
                 />
               </div>
             </div>
 
-            <div class="form-group">
-              <div class="col-md-12">
+            <div className="form-group">
+              <div className="col-md-12">
                 <label>
                   <b>Description</b>
                 </label>
@@ -70,16 +61,16 @@ export default class AddInternalNote extends Component {
                   name="value"
                   component={InputField}
                   tagName="textarea"
-                  class="form-control"
+                  className="form-control"
                   validate={required()}
                 />
               </div>
             </div>
 
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
                 type="submit"
-                class="btn btn-primary btn-block btn-lg"
+                className="btn btn-primary btn-block btn-lg"
                 text="Add Internal Note"
                 disabled={invalid}
                 onClick={handleSubmit(this.addInternalNote)}
@@ -91,3 +82,13 @@ export default class AddInternalNote extends Component {
     );
   }
 }
+
+export default compose(
+  connect(null, {
+    ...ModalActions,
+    ...NotificationsActions,
+  }),
+  reduxForm({
+    form: 'addInternalNote',
+  }),
+)(AddInternalNote);

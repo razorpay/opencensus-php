@@ -1,19 +1,19 @@
 import PropTypes from 'prop-types';
 
 const ModalHeader = (props) => (
-  <div class="modal-header">
+  <div className="modal-header">
     {props.onCloseClick && (
       <button
         type="button"
-        class="close"
+        className="close"
         onClick={props.onCloseClick}
         data-testid="modal-header-close-btn"
       >
-        <i class="i i-close" />
+        <i className="i i-close" />
       </button>
     )}
 
-    <h3 class={`modal-title ${props.extraClass}`}>{props.title}</h3>
+    <h3 className={`modal-title ${props.extraClass}`}>{props.title}</h3>
   </div>
 );
 

@@ -200,7 +200,7 @@ const GenerateTnCPage = ({ onCloseModal, openModal, tracking, updateSession, use
               onClick={() => triggerEvent({ eventName: 'sample_tnc_page', action: 'clicked' })}
             >
               <span style={{ paddingRight: '4px', fontSize: '12px' }}>View Sample Page</span>{' '}
-              <i class="i i-external-link" />
+              <i className="i i-external-link" />
             </a>
           </div>
           <Input

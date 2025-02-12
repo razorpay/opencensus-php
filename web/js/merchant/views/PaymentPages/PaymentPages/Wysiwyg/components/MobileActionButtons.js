@@ -15,7 +15,7 @@ export default function MobileActionButtons(props) {
   );
 
   return (
-    <div class="mobile-cta-container">
+    <div className="mobile-cta-container">
       {isDetailsView ? (
         <Button.Primary
           onClick={() => {
@@ -27,7 +27,7 @@ export default function MobileActionButtons(props) {
           }}
           disabled={isContinueButtonDisabled}
         >
-          Continue <i class="i i-chevron-right" />
+          Continue <i className="i i-chevron-right" />
         </Button.Primary>
       ) : (
         <>
@@ -40,9 +40,9 @@ export default function MobileActionButtons(props) {
               formView.classList.remove('slideup');
             }}
           >
-            <i class="i i-chevron-left" /> Previous
+            <i className="i i-chevron-left" /> Previous
           </Button.Transparent>
-          <div class="m-r" />
+          <div className="m-r" />
           <AsyncBtn.Primary onClick={props.handlePublishPage} pendingState="Publishing">
             Publish Page
           </AsyncBtn.Primary>

@@ -135,7 +135,7 @@ export default function PaymentDetailsForm(props) {
       <Input.PairList
         name="notes"
         label="Internal Notes"
-        class="Input--vTop"
+        className="Input--vTop"
         labelClass="Input-label"
         data-name="notes"
         onChange={handleNotesChange}
@@ -166,10 +166,10 @@ function PaymentMethod({
   if (availableMethods.length) {
     const optionsList = getPaymentMethodOptions(isEsignEnabled);
     return (
-      <div class="Input">
-        <div class="Input-label">Payment Method</div>
+      <div className="Input">
+        <div className="Input-label">Payment Method</div>
 
-        <div class="Input-content">
+        <div className="Input-content">
           <PowerSelect
             showClear={false}
             searchEnabled={false}
@@ -197,9 +197,9 @@ function PaymentMethod({
 
 function PaymentMethodPlaceHolder({ content }) {
   return (
-    <div class="Input Input--vTop">
-      <div class="Input-label">Payment Method</div>
-      <div class="Input-content">{content}</div>
+    <div className="Input Input--vTop">
+      <div className="Input-label">Payment Method</div>
+      <div className="Input-content">{content}</div>
     </div>
   );
 }
@@ -208,10 +208,10 @@ function paymentMethodSelected({ option }, optionsList) {
   const { icon, desc, method } = optionsList[option];
 
   return (
-    <div class="PaymentMethodOption">
-      <i class={`i i-${icon}`} />
-      <span class="method">{method}</span>
-      <span class="desc">{desc}</span>
+    <div className="PaymentMethodOption">
+      <i className={`i i-${icon}`} />
+      <span className="method">{method}</span>
+      <span className="desc">{desc}</span>
     </div>
   );
 }
@@ -220,10 +220,10 @@ function paymentMethodOption({ option }, optionsList) {
   const { icon, desc, method } = optionsList[option];
 
   return (
-    <div class="PaymentMethodOption">
-      <i class={`i i-${icon}`} />
+    <div className="PaymentMethodOption">
+      <i className={`i i-${icon}`} />
       <div className="title">
-        <span class="method">{method}</span>
+        <span className="method">{method}</span>
         <div className="desc">{desc}</div>
       </div>
     </div>

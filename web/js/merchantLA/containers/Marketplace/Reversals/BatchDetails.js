@@ -1,19 +1,18 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
-import BatchDetails from 'merchant/containers/BatchNew/Details';
-import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/reducers/batches';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
-
 import BatchStats from 'common/ui/StatsTable';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Time from 'common/ui/Time';
 import { status } from 'common/ui/item/pair';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+import BatchDetails from 'merchant/containers/BatchNew/Details';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/reducers/batches';
 
 const gaEvents = setGaTrack('Dashboard - LA Reversals - BU');
 
-const renderBatchDetails = props => {
+const renderBatchDetails = (props) => {
   const { batch } = props;
   const statsTable = getStatsTable({
     batch_total: batch.success_count,
@@ -22,10 +21,10 @@ const renderBatchDetails = props => {
 
   return (
     <Fragment>
-      <div class="equal-margin">
+      <div className="equal-margin">
         <BatchStats stats={statsTable} />
       </div>
-      <div class="equal-margin">
+      <div className="equal-margin">
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
         </EntityDetailRow>
@@ -37,10 +36,7 @@ const renderBatchDetails = props => {
   );
 };
 
-@connect(null, {
-  fetchBatchDetails,
-})
-export default class LARefundsBatchDetailsContainer extends Component {
+class LARefundsBatchDetailsContainer extends Component {
   render() {
     return (
       <BatchDetails
@@ -48,9 +44,7 @@ export default class LARefundsBatchDetailsContainer extends Component {
         fetchBatchDetails={this.props.fetchBatchDetails}
         renderDetails={renderBatchDetails}
         gaEvents={gaEvents}
-        downloadReportText={
-          'Download the report containing all Reversals data.'
-        }
+        downloadReportText="Download the report containing all Reversals data."
       />
     );
   }
@@ -65,3 +59,7 @@ function getStatsTable(stats) {
       ],
     ];
 }
+
+export default connect(null, {
+  fetchBatchDetails,
+})(LARefundsBatchDetailsContainer);

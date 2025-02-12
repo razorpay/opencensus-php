@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import CorporateCreditCards from 'assets/products/blue-theme/corporate-credit-cards.svg';
 import CurrentAccount from 'assets/products/blue-theme/current-account.svg';
@@ -13,6 +13,7 @@ import PrepayCod from 'assets/products/prepay-cod.svg';
 import Thirdwatch from 'assets/products/thirdwatch.svg';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { utmCampaignMap, utmMediumMap, utmSourceMap } from 'merchant/helpers/x/updateUtmCookie';
+import { compose } from 'redux';
 
 const closeButtonClass = 'close';
 
@@ -90,7 +91,6 @@ const appListLending = [
   },
 ];
 
-@RTracking(() => window.rzpQ.component('AppSwitcher'))
 class AppSwitcher extends Component {
   handleShow = () => {
     forceCheck();
@@ -191,4 +191,4 @@ class AppSwitcher extends Component {
   }
 }
 
-export default AppSwitcher;
+export default compose(rTracking(() => window.rzpQ.component('AppSwitcher')))(AppSwitcher);

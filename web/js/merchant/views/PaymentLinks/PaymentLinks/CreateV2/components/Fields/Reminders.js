@@ -9,9 +9,9 @@ const Reminders = ({ config, hasNoExpiry, ...extraProps }) => {
   if (!isEnabled) {
     const type = hasNoExpiry && 'no';
     return (
-      <div class="Input Input--vTop">
-        <div class="Input-label">Reminders</div>
-        <div class="Input-content">
+      <div className="Input Input--vTop">
+        <div className="Input-label">Reminders</div>
+        <div className="Input-content">
           Reminders is not set to payment links with {type} expiry date.
           <br />
           Set it up{' '}
@@ -31,7 +31,7 @@ const Reminders = ({ config, hasNoExpiry, ...extraProps }) => {
       fieldLabel="Send auto reminders"
       label="Reminders"
       description={description}
-      class="Input--vTop"
+      className="Input--vTop"
       labelClass="Input-label pb-8"
       onBlur={() => {
         track.lj.fields.reminders();

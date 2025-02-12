@@ -1,39 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import UpdateContactMobile from 'common/ui/UpdateContactMobile';
+import VerifyContactMobile from 'common/ui/VerifyContactMobile';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { checkPassword } from 'merchant/reducers/profile';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   triggerTwoFactorVerificationOtp,
   verifyTwoFactorOtp,
 } from 'merchant_common/reducers/twoFactor';
-import { checkPassword } from 'merchant/reducers/profile';
-import TwoFactorVerificationOTP from './TwoFactorVerificationOTP';
-import TwoFaVerificationContext from './TwoFactorVerificationContext';
-import TwoFactorVerificationSetup from './TwoFactorVerificationSetup';
-import SetPasswordModal from './SetPasswordModal';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import VerifyContactMobile from 'common/ui/VerifyContactMobile';
-import UpdateContactMobile from 'common/ui/UpdateContactMobile';
 
-@connect(
-  (state) => ({
-    twoFactorVerified: state.twoFactor.data.twoFactorVerified,
-    user: state.session.user,
-    modeOfApp: state.session.mode,
-    currentUser: state.session.user.user,
-  }),
-  {
-    openModal,
-    checkPassword,
-    closeModal,
-    verifyTwoFactorOtp,
-    showNotification,
-  },
-)
-@RTracking(() => window.rzpQ.component('TwoFaVerificationContextProvider'))
-export default class TwoFaVerificationContextProvider extends React.Component {
+import SetPasswordModal from './SetPasswordModal';
+import TwoFaVerificationContext from './TwoFactorVerificationContext';
+import TwoFactorVerificationOTP from './TwoFactorVerificationOTP';
+import TwoFactorVerificationSetup from './TwoFactorVerificationSetup';
+
+class TwoFaVerificationContextProvider extends React.Component {
   onOtpConfirm = (data) => {
     return this.props.verifyTwoFactorOtp({
       otp: data.otp,
@@ -85,13 +72,6 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.props.closeModal();
   };
 
-  @RTracking((props) => {
-    return props.tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('critical_action.2fa_verification', {
-        action: props.action,
-      }),
-    );
-  })
   criticalFlow = async ({
     onUserTwoFaVerified,
     onFlowTermination,
@@ -101,6 +81,11 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     isNewAccountAndSettingsPage = false,
     enforceVerifyOtp = false,
   }) => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('critical_action.2fa_verification', {
+        action: this.props.action,
+      }),
+    );
     this.onCloseCallback = onFlowTermination;
     this.onUserTwoFaVerifiedCallback = (...args) => {
       this.props.tracking.trackEvent(
@@ -220,11 +205,11 @@ export default class TwoFaVerificationContextProvider extends React.Component {
             title="2-Step Verification"
             renderMessage={() => (
               <>
-                <p class="m-b">
+                <p className="m-b">
                   The action you are trying to perform needs 2-step verification. An SMS with
                   6-digit OTP has been sent to {user.user.contact_mobile}{' '}
                 </p>
-                <p class="m-t m-b">OTP will expire in 5 mins</p>
+                <p className="m-t m-b">OTP will expire in 5 mins</p>
               </>
             )}
             isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
@@ -272,3 +257,24 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     );
   };
 }
+
+export default compose(
+  rTracking({
+    page: 'TwoFaVerificationContextProvider',
+  }),
+  connect(
+    (state) => ({
+      twoFactorVerified: state.twoFactor.data.twoFactorVerified,
+      user: state.session.user,
+      modeOfApp: state.session.mode,
+      currentUser: state.session.user.user,
+    }),
+    {
+      openModal,
+      checkPassword,
+      closeModal,
+      verifyTwoFactorOtp,
+      showNotification,
+    },
+  ),
+)(TwoFaVerificationContextProvider);

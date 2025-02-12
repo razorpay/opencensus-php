@@ -4,45 +4,25 @@ import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import ModalHeader from 'common/ui/ModalHeader';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { fetchCreditBalance } from 'merchant/reducers/credits';
-import {
-  reverseTransfer,
-  fetchTransfer,
-  fetchReversals,
-} from 'merchantLA/reducers/marketplace/transfer';
 import { rupeesToPaise, paiseToRupees } from 'common/utils/rzp-utils';
+import { fetchCreditBalance } from 'merchant/reducers/credits';
 import {
   amountValidation,
   isPartialPayment,
   RefundType,
 } from 'merchant/views/Transactions/v1/Payments/components/RefundModal';
+import {
+  reverseTransfer,
+  fetchTransfer,
+  fetchReversals,
+} from 'merchantLA/reducers/marketplace/transfer';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { trackClickCreateRefund } from './ga';
 
-@connect(
-  (state) => {
-    return {
-      payment: {
-        ...state.transfer.entity,
-        amount_reversed: state.transfer.entity.amount_reversed || 0,
-        amount_refunded: state.transfer.entity.amount_reversed || 0,
-      },
-    };
-  },
-  {
-    closeModal,
-    openModal,
-    reverseTransfer,
-    fetchReversals,
-    fetchTransfer,
-    fetchCreditBalance,
-    ...NotificationsActions,
-  },
-)
-export default class RefundToCustomerModal extends React.Component {
+class RefundToCustomerModal extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -172,16 +152,16 @@ export default class RefundToCustomerModal extends React.Component {
       <div className="refund-to-customer-modal">
         <ModalHeader title="Refund to Customer" onCloseClick={this.props.closeModal} />
         <div className="modal-body">
-          <form class="entity-container" onSubmit={this.save}>
-            <div class="form-group">
-              <label class="label-required">Amount</label>
-              <div class="input-group">
-                <div class="input-group-addon">{payment.currency}</div>
-                <div class="InputField">
+          <form className="entity-container" onSubmit={this.save}>
+            <div className="form-group">
+              <label className="label-required">Amount</label>
+              <div className="input-group">
+                <div className="input-group-addon">{payment.currency}</div>
+                <div className="InputField">
                   <input
                     name="amount"
                     type="number"
-                    class="form-control"
+                    className="form-control"
                     value={payable_amount}
                     onChange={this.handleAmout}
                     placeholder="Enter the refund amount"
@@ -189,9 +169,9 @@ export default class RefundToCustomerModal extends React.Component {
                 </div>
               </div>
               {!!amountError ? (
-                <div class="InputField__ErrorText text-danger">{amountError}</div>
+                <div className="InputField__ErrorText text-danger">{amountError}</div>
               ) : (
-                <small class="help-block">
+                <small className="help-block">
                   This will be reflected as a{' '}
                   <b>
                     <RefundType partial={partial} /> reversal
@@ -203,14 +183,14 @@ export default class RefundToCustomerModal extends React.Component {
             <Input.PairList
               name="notes"
               label="Internal Notes"
-              class="Input--vTop"
+              className="Input--vTop"
               defaultValue={[{}]}
               onChange={this.handleNotesChange}
             />
-            <Button.Primary class="form-control">
+            <Button.Primary className="form-control">
               {isLoading ? (
-                <span class="btn-pending">
-                  <span class="spin-btn white" />
+                <span className="btn-pending">
+                  <span className="spin-btn white" />
                 </span>
               ) : (
                 <React.Fragment>
@@ -224,3 +204,24 @@ export default class RefundToCustomerModal extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      payment: {
+        ...state.transfer.entity,
+        amount_reversed: state.transfer.entity.amount_reversed || 0,
+        amount_refunded: state.transfer.entity.amount_reversed || 0,
+      },
+    };
+  },
+  {
+    closeModal,
+    openModal,
+    reverseTransfer,
+    fetchReversals,
+    fetchTransfer,
+    fetchCreditBalance,
+    ...NotificationsActions,
+  },
+)(RefundToCustomerModal);

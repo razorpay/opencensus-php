@@ -79,8 +79,8 @@ export default class Precondition extends React.Component {
 
   render() {
     return (
-      <div class="precondition-div">
-        <div class="row" style={{ position: 'relative' }}>
+      <div className="precondition-div">
+        <div className="row" style={{ position: 'relative' }}>
           {this.props.readonly && this.props.precondition?.type == 'logical' ? (
             <div className={`col-xs-${this.props.parent === 'create-rule' ? 1 : 2}`} />
           ) : null}
@@ -112,7 +112,7 @@ export default class Precondition extends React.Component {
                   return (
                     <div
                       style={{ height: '54px' }}
-                      class={this.props.precondition.type == 'logical' ? 'expression-row-end' : ''}
+                      className={this.props.precondition.type == 'logical' ? 'expression-row-end' : ''}
                       key={index}
                     />
                   );
@@ -120,7 +120,7 @@ export default class Precondition extends React.Component {
               ) : (
                 <div
                   style={{ height: '54px' }}
-                  class={this.props.precondition.type == 'logical' ? 'expression-row-end' : ''}
+                  className={this.props.precondition.type == 'logical' ? 'expression-row-end' : ''}
                 />
               )}
             </div>
@@ -128,9 +128,9 @@ export default class Precondition extends React.Component {
           {this.props.precondition.type == 'logical' &&
           this.props.precondition.operands.length > 1 ? (
             !this.props.readonly ? (
-              <div class="operator-btn">
+              <div className="operator-btn">
                 <Select
-                  class="btn btn-primary operator-btn"
+                  className="btn btn-primary operator-btn"
                   type="button"
                   selected={logical_operators.filter(
                     (o) => o.value == this.props.precondition.value,
@@ -156,10 +156,10 @@ export default class Precondition extends React.Component {
         </div>
         {!this.props.readonly ? (
           <CSSTransition in={true} exit={true} timeout={1000} classNames="slide-down">
-            <div class="row">
+            <div className="row">
               <div className="col-xs-12">
                 <div onClick={this.addCondition} className="add-expression add-provider">
-                  <b class="pointer">Add Another Condition</b>
+                  <b className="pointer">Add Another Condition</b>
                 </div>
               </div>
             </div>

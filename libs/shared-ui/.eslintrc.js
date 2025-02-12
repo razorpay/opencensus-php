@@ -9,6 +9,21 @@ module.exports = {
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': ['error'],
     '@typescript-eslint/naming-convention': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'BindExpression',
+        message: 'The `::` operator is not allowed. Use bind if really needed',
+      },
+      {
+        selector: 'DoExpression',
+        message: 'The `do` expression is not allowed in JSX.',
+      },
+      {
+        selector: 'ExportDefaultSpecifier',
+        message: "Use 'export { default } from' instead of 'export default from'.",
+      },
+    ],
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
     // TODO: check with universe team

@@ -17,9 +17,9 @@ export default class ConfirmModalProvider extends Component {
       show: false,
       options: {},
     };
-    this.confirm = ::this.confirm;
-    this.affirm = ::this.affirm;
-    this.abort = ::this.abort;
+    this.confirm = this.confirm.bind(this);
+    this.affirm = this.affirm.bind(this);
+    this.abort = this.abort.bind(this);
   }
 
   componentDidMount() {

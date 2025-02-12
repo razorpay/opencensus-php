@@ -61,7 +61,7 @@ class InvitationsActions extends Component {
       component: (
         <>
           <ModalHeader title="Update Invitation" onCloseClick={closeModal} />
-          <div class="modal-body">
+          <div className="modal-body">
             <NewInvitation
               visibleFields={visibleFields}
               defaults={{ ...defaults }}

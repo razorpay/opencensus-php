@@ -88,10 +88,10 @@ class AddEditGroup extends React.Component {
     const isLoading = isSaving || isFetchingProjects;
 
     return (
-      <ModalContent class="modal-features modal-json-edit" header={header}>
+      <ModalContent className="modal-features modal-json-edit" header={header}>
         <Form
           onSubmit={this.onSubmit}
-          class="full-span full-elements"
+          className="full-span full-elements"
           style={{ opacity: isLoading ? 0.5 : 1 }}
         >
           <React.Fragment>

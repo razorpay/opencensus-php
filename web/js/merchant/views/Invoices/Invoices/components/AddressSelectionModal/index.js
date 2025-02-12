@@ -1,19 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+
+import { capitalize } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import List from './Screens/List';
 import New from './Screens/New';
-
-import { capitalize } from 'common/utils/rzp-utils';
 import { track } from '../../../ga';
 
-@connect(null, {
-  ...ModalActions,
-  ...NotificationsActions,
-})
-export default class AddressSelectionModal extends Component {
+class AddressSelectionModal extends Component {
   static propTypes = {
     /**
      * Customer object.
@@ -91,7 +87,7 @@ export default class AddressSelectionModal extends Component {
    * Method to be invoked when an address is selected.
    * @param {Object} address Address that was selected
    */
-  onSelect = address => {
+  onSelect = (address) => {
     /**
      * 1. Set the selected address.
      * 2. Invoke onSelect callback.
@@ -130,7 +126,7 @@ export default class AddressSelectionModal extends Component {
   /**
    * Callback for when an address is added.
    */
-  onSave = address => {
+  onSave = (address) => {
     this.props.onSave(address);
   };
 
@@ -157,7 +153,7 @@ export default class AddressSelectionModal extends Component {
       return null;
     }
 
-    let addressList = (
+    const addressList = (
       <List
         header={header}
         selected={selected}
@@ -192,3 +188,8 @@ export default class AddressSelectionModal extends Component {
     }
   }
 }
+
+export default connect(null, {
+  ...ModalActions,
+  ...NotificationsActions,
+})(AddressSelectionModal);

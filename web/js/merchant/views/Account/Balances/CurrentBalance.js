@@ -20,7 +20,7 @@ function CurrentBalance({ currentBalance, user }) {
       </CardHeader>
       <CardBody>
         <Box display="flex" alignItems="center">
-          {balance < 0 && <p class="negative-marker">-</p>}
+          {balance < 0 && <p className="negative-marker">-</p>}
           <Amount
             size="large"
             weight="semibold"

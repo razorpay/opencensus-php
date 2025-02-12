@@ -7,9 +7,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 import Overlay from 'common/ui/Overlay';
 import Spinner from 'common/ui/Spinner';
+import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 
 export function WarningSvg() {
   return (
@@ -41,16 +41,9 @@ class PanelTopbar extends Component {
   }
 
   render() {
-    const {
-      children,
-      className,
-      isLoading,
-      hasNoData,
-      error,
-      ...otherProps
-    } = this.props;
+    const { children, className, isLoading, hasNoData, error, ...otherProps } = this.props;
 
-    otherProps.className = `panel-topbar${className ? ' ' + className : ''}`;
+    otherProps.className = `panel-topbar${className ? ` ${className}` : ''}`;
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -60,10 +53,7 @@ class PanelTopbar extends Component {
  * The body of the panel, where actual content
  * goes
  */
-@connect(state => ({
-  windowWidth: state.app.windowWidth,
-}))
-class PanelBody extends Component {
+class PanelBodyComponent extends Component {
   constructor(props) {
     super(props);
   }
@@ -80,7 +70,7 @@ class PanelBody extends Component {
       ...otherProps
     } = this.props;
 
-    otherProps.className = `panel-body${className ? ' ' + className : ''}`;
+    otherProps.className = `panel-body${className ? ` ${className}` : ''}`;
 
     let noDataMsg = '';
 
@@ -90,10 +80,7 @@ class PanelBody extends Component {
       noDataMsg = (
         <NoDataMsg
           title="No data available."
-          subtitle={
-            `Tip:  You could try again by selecting ` +
-            `a different filter or date range.`
-          }
+          subtitle={`Tip:  You could try again by selecting ` + `a different filter or date range.`}
         />
       );
     }
@@ -111,6 +98,10 @@ class PanelBody extends Component {
   }
 }
 
+const PanelBody = connect((state) => ({
+  windowWidth: state.app.windowWidth,
+}))(PanelBodyComponent);
+
 /*
  * Footer of the Panel, useful to show stats and
  * info
@@ -121,16 +112,9 @@ class PanelFooter extends Component {
   }
 
   render() {
-    const {
-      children,
-      className,
-      isLoading,
-      hasNoData,
-      error,
-      ...otherProps
-    } = this.props;
+    const { children, className, isLoading, hasNoData, error, ...otherProps } = this.props;
 
-    otherProps.className = `panel-footer${className ? ' ' + className : ''}`;
+    otherProps.className = `panel-footer${className ? ` ${className}` : ''}`;
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -145,26 +129,17 @@ class Panel extends Component {
   }
 
   render() {
-    const {
-      className,
-      children,
-      isLoading,
-      hasNoData,
-      error,
-      ...otherProps
-    } = this.props;
+    const { className, children, isLoading, hasNoData, error, ...otherProps } = this.props;
 
-    otherProps.className = `card panel dasboard-home-panel${
-      className ? ' ' + className : ''
-    }`;
+    otherProps.className = `card panel dasboard-home-panel${className ? ` ${className}` : ''}`;
 
     const commonProps = { isLoading, hasNoData, error };
 
-    let panelTopbar = null,
-      panelBody = null,
-      panelFooter = null;
+    let panelTopbar = null;
+    let panelBody = null;
+    let panelFooter = null;
 
-    React.Children.forEach(children, child => {
+    React.Children.forEach(children, (child) => {
       if (!panelTopbar && isChildSameType(child, PanelTopbar)) {
         panelTopbar = child;
         return;
@@ -194,25 +169,17 @@ class Panel extends Component {
 
     return (
       <div {...otherProps}>
-        {panelTopbar && (
-          <panelTopbar.type {...panelTopbar.props} {...commonProps} />
-        )}
+        {panelTopbar && <panelTopbar.type {...panelTopbar.props} {...commonProps} />}
         {panelBody && <panelBody.type {...panelBody.props} {...commonProps} />}
-        {panelFooter && (
-          <panelFooter.type {...panelFooter.props} {...commonProps} />
-        )}
+        {panelFooter && <panelFooter.type {...panelFooter.props} {...commonProps} />}
       </div>
     );
   }
 }
 
 Panel.propTypes = {
-  children: props => {
-    return checkChildrenType(props.children, [
-      PanelTopbar,
-      PanelBody,
-      PanelFooter,
-    ]);
+  children: (props) => {
+    return checkChildrenType(props.children, [PanelTopbar, PanelBody, PanelFooter]);
   },
 };
 

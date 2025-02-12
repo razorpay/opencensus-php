@@ -69,11 +69,11 @@ class RollKey extends Component {
           }}
         />
 
-        <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
-          <div class="modal-body">
+        <form className="form-horizontal" onSubmit={handleSubmit(this.save)}>
+          <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
             <p>This is required to get a new key.</p>
-            <div class="radio rollkey" data-test="deactivate-immediately">
+            <div className="radio rollkey" data-test="deactivate-immediately">
               <Field
                 component={RadioButton}
                 name="delay_roll"
@@ -81,7 +81,7 @@ class RollKey extends Component {
                 label={() => <span>Deactivate old key immediately</span>}
               />
             </div>
-            <div class="radio">
+            <div className="radio">
               <Field
                 component={RadioButton}
                 name="delay_roll"
@@ -91,10 +91,10 @@ class RollKey extends Component {
             </div>
           </div>
 
-          <div class="modal-footer">
+          <div className="modal-footer">
             <button
               type="button"
-              class="btn btn-default"
+              className="btn btn-default"
               onClick={() => {
                 analyticsTrack({
                   objectName: 'regenerate key popup',
@@ -115,7 +115,7 @@ class RollKey extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary"
+              className="btn btn-primary"
               text="Confirm and deactivate"
               onClick={handleSubmit(this.save)}
             />

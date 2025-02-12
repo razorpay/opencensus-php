@@ -1,18 +1,20 @@
 import React from 'react';
-import RTracking from 'react-tracking';
+import isObject from 'is-object';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import { getNotificationTrackingProperties } from 'common/ui/WhatsNew/common';
+import { sendDataToSalesForce } from 'common/utils/common-api';
+import debounce from 'common/utils/debounce';
+import { classList } from 'common/utils/rzp-utils';
+import sanitizer, { customWhiteList } from 'common/utils/xss-sanitizer';
 import {
   popSlider as popSliderAsProp,
   emptySliderStack,
 } from 'merchant_common/reducers/multiSlider';
-import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
-import { classList } from 'common/utils/rzp-utils';
-import debounce from 'common/utils/debounce';
-import { connect } from 'react-redux';
-import { sendDataToSalesForce } from 'common/utils/common-api';
-import { getNotificationTrackingProperties } from 'common/ui/WhatsNew/common';
-import sanitizer, { customWhiteList } from 'common/utils/xss-sanitizer';
-import isObject from 'is-object';
 
 const getButtonClass = (type) => {
   switch (type) {
@@ -43,14 +45,6 @@ const getCustomWhiteList = () => {
   return l2WhiteList;
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    ...state.growthService.announcements,
-  }),
-  { popSlider: popSliderAsProp, emptySliderStack },
-)
-@RTracking(() => window.rzpQ.component('AnnouncementDetails'))
 class AnnouncementDetails extends React.Component {
   lazy = this.props.lazy || this.props.location?.state?.lazy || false;
 
@@ -251,4 +245,14 @@ class AnnouncementDetails extends React.Component {
   }
 }
 
-export default withRouter(AnnouncementDetails);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      ...state.growthService.announcements,
+    }),
+    { popSlider: popSliderAsProp, emptySliderStack },
+  ),
+  rTracking(() => window.rzpQ.component('AnnouncementDetails')),
+  withRouter,
+)(AnnouncementDetails);

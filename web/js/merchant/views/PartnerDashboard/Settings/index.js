@@ -2,30 +2,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
-import { fetchPartnerApplication } from 'merchant/reducers/applications';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
 import Spinner from 'common/ui/Spinner';
 import DetailRow from 'merchant/components/DetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { fetchPartnerApplication } from 'merchant/reducers/applications';
+import { trackSettingsEvents } from 'merchant/views/PartnerDashboard/ga';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import ManageWebhook from './ManageWebhook';
 import ViewCredentials from './ViewCredentials';
 
-import { trackSettingsEvents } from 'merchant/views/PartnerDashboard/ga';
-import ShowWhen from 'merchant/components/ShowWhen';
-
-@connect(
-  (state) => ({
-    isLoading: state.applications.loading,
-    application: state.applications.partnerApplication,
-  }),
-  {
-    fetchPartnerApplication,
-    closeModal,
-    openModal,
-  },
-)
-export default class SettingsContainer extends Component {
+class SettingsContainer extends Component {
   componentDidMount() {
     this.props.fetchPartnerApplication();
     trackSettingsEvents();
@@ -142,3 +129,15 @@ export default class SettingsContainer extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    isLoading: state.applications.loading,
+    application: state.applications.partnerApplication,
+  }),
+  {
+    fetchPartnerApplication,
+    closeModal,
+    openModal,
+  },
+)(SettingsContainer);

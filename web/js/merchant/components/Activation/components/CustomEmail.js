@@ -197,7 +197,7 @@ const CustomEmail = ({
       <>
         <Input
           label="Contact Email"
-          class="Input--small"
+          className="Input--small"
           defaultValue={contactEmail || email}
           style={{ border: '1px solid rgba(31, 137, 14, 0.54)' }}
           addonAfter={<i className="i i-check text-success" />}

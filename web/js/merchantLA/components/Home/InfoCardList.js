@@ -12,8 +12,8 @@ export default props => {
     settlements,
   } = props;
   return (
-    <div class="col-md-12 col-lg-6">
-      <div class="row row-sm text-center">
+    <div className="col-md-12 col-lg-6">
+      <div className="row row-sm text-center">
         <InfoCard
           loading={entity_totals.loading}
           content={
@@ -35,7 +35,7 @@ export default props => {
           title="Last Transaction"
         />
         <InfoCard
-          class="bg-info"
+          className="bg-info"
           loading={entity_totals.loading}
           content={
             entity_totals.data.transfer
@@ -46,7 +46,7 @@ export default props => {
           title="Total Transfers"
         />
         <InfoCard
-          class="bg-primary"
+          className="bg-primary"
           loading={entity_totals.loading}
           content={
             entity_totals.data.reversal

@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
@@ -15,23 +15,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Form from './Form';
 import track from './track';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    luminateRow,
-    showNotification,
-    saveQRCode,
-    saveUPIQRCode,
-    fetchFeatureStatus,
-    ...ModalActions,
-  },
-)
-@RTracking(() => window.rzpQ.component('CreateQRCode'))
 class CreateQRCode extends React.Component {
   state = {
     isUpiqr: false,
@@ -184,4 +169,22 @@ class CreateQRCode extends React.Component {
   }
 }
 
-export default withRouter(CreateQRCode);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+      };
+    },
+    {
+      luminateRow,
+      showNotification,
+      saveQRCode,
+      saveUPIQRCode,
+      fetchFeatureStatus,
+      ...ModalActions,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('CreateQRCode')),
+)(CreateQRCode);

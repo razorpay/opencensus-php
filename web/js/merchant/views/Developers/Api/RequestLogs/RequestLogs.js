@@ -2,25 +2,24 @@ import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
-import TableBody from 'common/ui/TableBody';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
-import Time from 'common/ui/Time';
 import Pager from 'common/ui/Pager';
-import * as ApiLogsActions from 'merchant/reducers/developers/apiLogs';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 import ListContainer from 'merchant/containers/ListContainer';
+import * as ApiLogsActions from 'merchant/reducers/developers/apiLogs';
+import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
+import { HTTP_STATUS_CODE_LIST } from 'merchant/views/Developers/constants';
 import {
   trackApiLogsSearchHttpStatusChanged,
   trackApiLogsSearched,
   trackApiLogsSearchKeywordChanged,
 } from 'merchant/views/Developers/events';
-import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
-import { HTTP_STATUS_CODE_LIST } from 'merchant/views/Developers/constants';
 
-@connect((state) => ({ ...state.apiLogs }), {
-  ...ApiLogsActions,
-})
 class RequestLogs extends ListContainer {
   constructor(props) {
     super(props);
@@ -195,4 +194,9 @@ class RequestLogs extends ListContainer {
   }
 }
 
-export default withRouter(RequestLogs);
+export default compose(
+  withRouter,
+  connect((state) => ({ ...state.apiLogs }), {
+    ...ApiLogsActions,
+  }),
+)(RequestLogs);

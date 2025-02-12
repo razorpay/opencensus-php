@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -76,6 +76,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { formatFormItems } from './helpers';
+import { compose } from 'redux';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 
@@ -108,34 +109,6 @@ const ERROR = {
   INVALID_ENTITY: 2,
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    org: state.session.org,
-    config: state.config.config,
-    isWebView: state.app.isWebView,
-    ...state.wysiwyg,
-  }),
-  {
-    refreshPageData,
-    updateData,
-    initDefaultFormItems,
-    fetchPaymentPage,
-    markDataSaved,
-    showNotification,
-    closeModal,
-    openModal,
-    updateTemplateType,
-    updateReceiptDetails,
-    replaceInFormItems,
-    setSettingsModal,
-    setShiprocketModal,
-    updateMagicData,
-    fetchPaymentPageBatches,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 class PaymentPagesWysiwyg extends React.PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -426,7 +399,7 @@ class PaymentPagesWysiwyg extends React.PureComponent {
     this.context.confirm({
       header: this.props.isPageDirty ? 'Discard Changes?' : 'Go back to Dashboard',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>
             {this.props.isPageDirty ? 'Unsaved changes will be lost. Do you want to continue?' : ''}
           </p>
@@ -524,13 +497,11 @@ class PaymentPagesWysiwyg extends React.PureComponent {
     this.props.updateReceiptDetails(data);
   };
 
-  // Handles both Create and Edit payment page.
-  @RTracking(() =>
+  handleSavePublish = (label) => {
     window.rzpQ.onbr().success('dash.pp_action', {
       action: 'Initiate_PP_Launch',
-    }),
-  )
-  handleSavePublish = (label) => {
+    });
+
     const isEditExistingId = !!this.props.id;
     const { paymentPageEntity, FORM_ITEMS, magicCheckout, user, showNotification } = this.props;
     const { isBatchPaymentPages } = this.state;
@@ -1358,7 +1329,7 @@ class PaymentPagesWysiwyg extends React.PureComponent {
               }}
               disabled={!isAllowedToSubmit || !isEntityLoaded}
               pendingState={isBatchPaymentPages ? 'Saving' : 'Publishing'}
-              class="hidden-xs"
+              className="hidden-xs"
             >
               {createButtonText}
             </AsyncBtn.Primary>
@@ -1389,11 +1360,13 @@ class PaymentPagesWysiwyg extends React.PureComponent {
     if (isPageLoadError) {
       if (isPageLoadError === ERROR.SCRIPT) {
         content = (
-          <div class="page-center">Some network error has occurred. Please reload the page.</div>
+          <div className="page-center">
+            Some network error has occurred. Please reload the page.
+          </div>
         );
       } else if (isPageLoadError === ERROR.INVALID_ENTITY) {
         content = (
-          <div class="page-center">
+          <div className="page-center">
             Payment page with id <b>{payment_page_id}</b> doesn&apos;t exist.
             <br />
             Go to <Link to="/paymentpages/">Payment Pages list</Link>{' '}
@@ -1417,7 +1390,7 @@ class PaymentPagesWysiwyg extends React.PureComponent {
     return (
       <div
         id="paymentpage-container"
-        class={classList(
+        className={classList(
           'payment-pages-v2',
           'payment-pages-v3',
           'paymentpage-container-goal-tracker',
@@ -1520,4 +1493,34 @@ function pruneGoalTracker(goal_tracker) {
   return newGoalTracker;
 }
 
-export default withRouter(PaymentPagesWysiwyg);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      org: state.session.org,
+      config: state.config.config,
+      isWebView: state.app.isWebView,
+      ...state.wysiwyg,
+    }),
+    {
+      refreshPageData,
+      updateData,
+      initDefaultFormItems,
+      fetchPaymentPage,
+      markDataSaved,
+      showNotification,
+      closeModal,
+      openModal,
+      updateTemplateType,
+      updateReceiptDetails,
+      replaceInFormItems,
+      setSettingsModal,
+      setShiprocketModal,
+      updateMagicData,
+      fetchPaymentPageBatches,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentPagesWysiwyg')),
+)(PaymentPagesWysiwyg);

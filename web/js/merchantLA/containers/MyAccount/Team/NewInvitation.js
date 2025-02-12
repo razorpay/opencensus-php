@@ -1,27 +1,22 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import InputField from 'common/ui/Forms/InputField';
-import { required, email } from 'common/utils/validators';
-import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
+
 import { withSplitzService } from 'common/splitz';
-import User from 'merchantLA/models/User';
-import { closeModal as close2faModal } from 'merchant_common/reducers/modals';
+import InputField from 'common/ui/Forms/InputField';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { required, email } from 'common/utils/validators';
 import { updateSession } from 'merchant/reducers/session';
+import User from 'merchantLA/models/User';
+import { sendInvitation, fetchTeamDetails } from 'merchantLA/reducers/team';
+import { closeModal as close2faModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 // eslint-disable-next-line no-unused-vars
 const selector = formValueSelector('newInvitation');
 
-@reduxForm({
-  form: 'newInvitation',
-  initialValues: {
-    email: '',
-    role: 'linked_account_admin',
-  },
-})
 class NewInvitation extends Component {
   state = {
     isProcessing: false,
@@ -94,13 +89,13 @@ class NewInvitation extends Component {
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
-        <div class="row">
-          <div class="col-md-5">
-            <div class="form-group">
+        <div className="row">
+          <div className="col-md-5">
+            <div className="form-group">
               <Field
                 name="email"
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 placeholder="Email address of the user"
                 autoFocus={true}
                 validate={[
@@ -117,12 +112,12 @@ class NewInvitation extends Component {
             </div>
           </div>
 
-          <div class="col-md-3">
-            <div class="form-group">
+          <div className="col-md-3">
+            <div className="form-group">
               <TwoFactorVerificationContext.Consumer>
                 {({ criticalFlow }) => (
                   <AsyncButton
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                     text="Send Invitation"
                     pendingText="Sending Invitation..."
                     disabled={isProcessing}
@@ -134,8 +129,8 @@ class NewInvitation extends Component {
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="alert alert-info text-center">
+        <div className="form-group">
+          <div className="alert alert-info text-center">
             Allows access to all views except access for Bank Details and Team Management
           </div>
         </div>
@@ -150,12 +145,20 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default withSplitzService(
+export default compose(
+  withSplitzService,
   connect(mapStateToProps, {
     sendInvitation,
     fetchTeamDetails,
     close2faModal,
     updateSession,
     ...NotificationsActions,
-  })(NewInvitation),
-);
+  }),
+  reduxForm({
+    form: 'newInvitation',
+    initialValues: {
+      email: '',
+      role: 'linked_account_admin',
+    },
+  }),
+)(NewInvitation);

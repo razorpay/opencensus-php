@@ -1,35 +1,33 @@
 import React from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
-import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
-import Spinner from 'common/ui/Spinner';
-import Alert from 'common/ui/Forms/Alert';
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
+import Alert from 'common/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import Tooltip from 'common/ui/Tooltip';
-import Button from 'common/new-ui/Button';
-
+import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-
-import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
-import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
-import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
 import SendLinkModal from 'merchant/components/SendLinkModal';
-
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import {
   notifyCustomer,
   fetchRegistrationLink,
   downloadSignedNACHFile,
   cancelRegistrationLink,
 } from 'merchant/reducers/registration_link';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
+import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
+import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
-import CopyLink from 'merchant/components/CopyLink';
 
 import {
   trackOpenAuthLink,
@@ -37,23 +35,7 @@ import {
   trackClickDownloadNACHForm,
   trackClickViewNACHForm,
 } from './gaAuth';
-import analytics from 'merchant/views/Subscriptions/analytics';
 
-@connect(
-  (state) => ({
-    ...state.registrationLink,
-    user: state.session.user,
-  }),
-  {
-    fetchRegistrationLink,
-    cancelRegistrationLink,
-    showNotification,
-    notifyCustomer,
-    openModal,
-    closeModal,
-  },
-)
-@RTracking(() => window.rzpQ.component('RegistrationLinkDetailsContainer'))
 class RegistrationLinkDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -154,7 +136,7 @@ class RegistrationLinkDetailsContainer extends React.Component {
       size: 'medium',
       component: (
         <SendLinkModal
-          class="alert-sm"
+          className="alert-sm"
           email={customer_details.customer_email}
           sms={customer_details.customer_contact}
           description="Are you sure you want to send the registration link again?"
@@ -177,7 +159,7 @@ class RegistrationLinkDetailsContainer extends React.Component {
     this.context.confirm({
       header: 'Cancel Link?',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>The Link will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
@@ -224,18 +206,18 @@ class RegistrationLinkDetailsContainer extends React.Component {
     const isResendAndCancelledAllowed = isSubscriptionRegistrationCreated && isIssued;
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel RegistrationLinks--Details">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel RegistrationLinks--Details">
+            <div className="panel-heading">
               {entity.id}
               {isResendAndCancelledAllowed && (
-                <div class="btn-toolbar pull-right">
-                  <button onClick={this.openResendLinkModal} class="btn Button--primary">
+                <div className="btn-toolbar pull-right">
+                  <button onClick={this.openResendLinkModal} className="btn Button--primary">
                     <Tooltip theme="dark">{isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}</Tooltip>
 
                     <i className="i i-send" />
@@ -245,16 +227,16 @@ class RegistrationLinkDetailsContainer extends React.Component {
             </div>
             <Alert type="error" message={error} />
             {!!Object.keys(entity).length && (
-              <div class="SliderPanel__Body">
-                <div class="panel-body">
-                  <div class="list-group details-row-container">
+              <div className="SliderPanel__Body">
+                <div className="panel-body">
+                  <div className="list-group details-row-container">
                     {/* status of Registration Link */}
                     <EntityDetailRow label="Status">
                       <InvoiceStatusLabel status={entity.status} />
 
                       {isResendAndCancelledAllowed && (
                         <Button.Transparent
-                          class="Button--Link cancel-link"
+                          className="Button--Link cancel-link"
                           onClick={this.cancelRegistrationLink}
                         >
                           Cancel Link
@@ -338,4 +320,21 @@ class RegistrationLinkDetailsContainer extends React.Component {
   }
 }
 
-export default withRouter(RegistrationLinkDetailsContainer);
+export default compose(
+  connect(
+    (state) => ({
+      ...state.registrationLink,
+      user: state.session.user,
+    }),
+    {
+      fetchRegistrationLink,
+      cancelRegistrationLink,
+      showNotification,
+      notifyCustomer,
+      openModal,
+      closeModal,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('RegistrationLinkDetailsContainer')),
+  withRouter,
+)(RegistrationLinkDetailsContainer);

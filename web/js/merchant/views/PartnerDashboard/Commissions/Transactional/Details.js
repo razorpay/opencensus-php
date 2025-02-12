@@ -16,15 +16,7 @@ import { isPresent, paiseToRupees } from 'common/utils/rzp-utils';
 import { fetchCommission } from 'merchant/reducers/commission';
 import { COMMISSION_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
-@connect(
-  (state) => ({
-    ...state.commission,
-    org: state.session.org,
-    user: state.session.user,
-  }),
-  { fetchCommission },
-)
-export default class CommissionEntityContainer extends Component {
+class CommissionEntityContainer extends Component {
   componentDidMount() {
     this.props.fetchCommission(this.props.id);
   }
@@ -43,21 +35,21 @@ export default class CommissionEntityContainer extends Component {
       source.entity === COMMISSION_TYPE.REFUND ? 'Refund Details' : 'Payment Details';
     return (
       <div
-        class="content-wrapper content-sm txn-details Commission--Detail"
+        className="content-wrapper content-sm txn-details Commission--Detail"
         data-testid="transactional-details-panel"
       >
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">Commission Id: {entity.id}</div>
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">Commission Id: {entity.id}</div>
             <Alert type="error" message={error} />
             {isPresent(entity) && (
-              <div class="SliderPanel__Body">
-                <div class="panel-body">
-                  <div class="list-group details-row-container">
+              <div className="SliderPanel__Body">
+                <div className="panel-body">
+                  <div className="list-group details-row-container">
                     {/* earnings breakup */}
                     {renderDetails({ ...entity, org, user, sourceType: source.entity })}
 
@@ -233,3 +225,12 @@ export function CommissionEarningBreakUp(props) {
     </Box>
   );
 }
+
+export default connect(
+  (state) => ({
+    ...state.commission,
+    org: state.session.org,
+    user: state.session.user,
+  }),
+  { fetchCommission },
+)(CommissionEntityContainer);

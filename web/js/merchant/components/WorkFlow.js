@@ -1,10 +1,10 @@
 export function WorkFlow(props) {
-  return <ul class="Workflow-list">{props.children}</ul>;
+  return <ul className="Workflow-list">{props.children}</ul>;
 }
 
 export function WorkSection({ heading, children }) {
   return (
-    <div class="Workflow-list--item">
+    <div className="Workflow-list--item">
       <p>
         <strong>{heading}:</strong>
       </p>

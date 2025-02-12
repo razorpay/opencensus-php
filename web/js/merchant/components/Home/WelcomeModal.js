@@ -143,14 +143,14 @@ const WelcomeModal = ({
         <React.Fragment>
           <h1 className="welcome-title">Congratulations on</h1>
           <h1 className="welcome-title welcome-subtitle">making the move to Razorpay.</h1>
-          <p class="welcome-para">We&apos;re excited to have you &amp; even more excited to help</p>
-          <p class="welcome-para">you grow your business this festive season.</p>
+          <p className="welcome-para">We&apos;re excited to have you &amp; even more excited to help</p>
+          <p className="welcome-para">you grow your business this festive season.</p>
           <br />
-          <p class="welcome-para">
+          <p className="welcome-para">
             You can now{' '}
             <span className="gold-highlight">accept payments for ₹2,00,000 for free.</span>
           </p>
-          <p class="welcome-para">Activate your account to continue.</p>
+          <p className="welcome-para">Activate your account to continue.</p>
         </React.Fragment>
       ) : isRecommendProduct ? (
         <React.Fragment>
@@ -222,7 +222,7 @@ const WelcomeModal = ({
       {hideCTAs ? (
         <React.Fragment>
           <br />
-          <p class="welcome-para">Opening activation form in a moment.</p>
+          <p className="welcome-para">Opening activation form in a moment.</p>
         </React.Fragment>
       ) : (
         <div className="welcome-modal-actions">

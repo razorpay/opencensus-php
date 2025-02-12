@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
-import Input from 'common/new-ui/Input';
-import Form from 'common/new-ui/Form';
-import { AsyncBtn } from 'common/new-ui/Button';
 import { connect } from 'react-redux';
+
+import { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
 import { updateFeatures } from 'merchant/reducers/config';
+
 import { ESTIMATED_AMOUNT_REQUIREMENTS } from './constants';
 
-@connect(state => ({ user: state.session.user }), {
-  updateFeatures,
-})
 class LeadDetails extends Component {
   constructor(props) {
     super(props);
@@ -18,7 +17,7 @@ class LeadDetails extends Component {
       ([volume, volume_label]) => ({
         label: volume_label,
         name: volume,
-      })
+      }),
     );
 
     this.state = {
@@ -32,9 +31,9 @@ class LeadDetails extends Component {
   }
 
   handleChange = ({ target }) => {
-    let fieldValue = target.value;
+    const fieldValue = target.value;
     const fieldName = target.name;
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       formValues: {
         ...prevState.formValues,
         [fieldName]: fieldValue,
@@ -66,12 +65,12 @@ class LeadDetails extends Component {
     const { name, contact, amount, purpose } = this.state.formValues;
 
     return (
-      <Form class="Form withdrawal-lead-form" onChange={this.handleChange}>
-        <div class="p-all">
+      <Form className="Form withdrawal-lead-form" onChange={this.handleChange}>
+        <div className="p-all">
           <div className="flex">
-            <div class="m-r Input--vTop Input--small">
+            <div className="m-r Input--vTop Input--small">
               <Input
-                label={'Your Name'}
+                label="Your Name"
                 key="name"
                 name="name"
                 value={name}
@@ -108,7 +107,7 @@ class LeadDetails extends Component {
             />
           </div>
           <Input.Textarea
-            class="Input--vTop m-b p-b"
+            className="Input--vTop m-b p-b"
             size="large"
             value={purpose}
             key="purpose"
@@ -116,7 +115,7 @@ class LeadDetails extends Component {
             name="purpose"
             placeholder="Use this space to describe the purpose of availing cash advance."
           />
-          <div class="m-t">
+          <div className="m-t">
             <AsyncBtn.Primary type="submit" onClick={this.createLead}>
               Start your application
             </AsyncBtn.Primary>
@@ -127,4 +126,6 @@ class LeadDetails extends Component {
   }
 }
 
-export default LeadDetails;
+export default connect((state) => ({ user: state.session.user }), {
+  updateFeatures,
+})(LeadDetails);

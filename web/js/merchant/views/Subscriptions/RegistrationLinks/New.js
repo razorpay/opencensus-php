@@ -2,7 +2,7 @@ import React from 'react';
 import { convertToMinorUnit, convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -48,6 +48,7 @@ import {
 import { isAmountLiesInRange, isMonthlyDebitPattern } from 'merchant/views/Subscriptions/utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -125,16 +126,6 @@ const getTokenDetailFields = (maxAmount, isNach = false) => [
   },
 ];
 
-// eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ user: state.session.user, org: state.session.org }), {
-  openModal,
-  closeModal,
-  saveInvoice,
-  showNotification,
-  luminateRow,
-  createRegistrationLink,
-})
-@RTracking(() => window.rzpQ.component('CreateNewRegistrationLinkContainer'))
 class NewRegistrationLink extends React.Component {
   constructor(props) {
     super(props);
@@ -880,7 +871,7 @@ class NewRegistrationLink extends React.Component {
     const isLastTab = currentTab === CAW_TABS.length - 1;
 
     return (
-      <div class="Links--Create RegistrationLinks--New Wizard">
+      <div className="Links--Create RegistrationLinks--New Wizard">
         <ModalAsideNav
           title="Create Registration Links"
           tabs={CAW_TABS}
@@ -891,13 +882,13 @@ class NewRegistrationLink extends React.Component {
         />
         {loading ? (
           <main>
-            <div class="page-center">
+            <div className="page-center">
               <Spinner />
             </div>
           </main>
         ) : (
           <>
-            <main class="form-container">
+            <main className="form-container">
               {(!this.isMobileDevice || isStandAlone) && (
                 <main-title>Create Registration Link</main-title>
               )}
@@ -908,8 +899,8 @@ class NewRegistrationLink extends React.Component {
             </main>
             <footer>
               {this.props.user.isCardRecurringPaymentsBlocked && (
-                <div class="card-blocked-banner">
-                  <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily
+                <div className="card-blocked-banner">
+                  <i className="i i-info-circle" /> Cards issued by Indian banks are temporarily
                   disabled for new registration links.{' '}
                   <DocsLink
                     url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
@@ -962,7 +953,7 @@ class NewRegistrationLink extends React.Component {
 
     if (isModalView) {
       return (
-        <Modal class="NewRegistrationLink animate-down" onClose={this.onClose} fullWidth>
+        <Modal className="NewRegistrationLink animate-down" onClose={this.onClose} fullWidth>
           <ModalContent header={this.isMobileDevice ? CAW_TABS[this.state.currentTab] : null}>
             {this.renderWizard(false)}
           </ModalContent>
@@ -970,8 +961,19 @@ class NewRegistrationLink extends React.Component {
       );
     }
 
-    return <div class="StandAloneContainer">{this.renderWizard(true)}</div>;
+    return <div className="StandAloneContainer">{this.renderWizard(true)}</div>;
   }
 }
 
-export default withRouter(NewRegistrationLink);
+export default compose(
+  withRouter,
+  connect((state) => ({ user: state.session.user, org: state.session.org }), {
+    openModal,
+    closeModal,
+    saveInvoice,
+    showNotification,
+    luminateRow,
+    createRegistrationLink,
+  }),
+  rTracking(() => window.rzpQ.component('CreateNewRegistrationLinkContainer')),
+)(NewRegistrationLink);

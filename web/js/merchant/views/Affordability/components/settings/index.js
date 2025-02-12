@@ -59,13 +59,13 @@ const SettingsDropdown = (props) => {
   };
   return (
     <Dropdown>
-      <DropdownTrigger class="dropdown-toggle switch-modes-toggle settings-dropdown">
+      <DropdownTrigger className="dropdown-toggle switch-modes-toggle settings-dropdown">
         <span className="btn btn-link">
-          <i class="i i-settings-outline" /> Settings
+          <i className="i i-settings-outline" /> Settings
         </span>
       </DropdownTrigger>
       <DropdownContent>
-        <ul class="dropdown-menu switch-modes-menu nav nav-stacked">
+        <ul className="dropdown-menu switch-modes-menu nav nav-stacked">
           <li data-test="Disable Widget">
             <a onClick={toggleDisableModal}>Disable Widget</a>
           </li>

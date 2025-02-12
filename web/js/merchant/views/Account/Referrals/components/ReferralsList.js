@@ -45,7 +45,7 @@ const ReferralsListItem = props => {
         props.showCreateLoginModal && (
           <td>
             <button
-              class="btn btn-xs btn-primary"
+              className="btn btn-xs btn-primary"
               onClick={() => {
                 props.showCreateLoginModal(props.referral);
               }}
@@ -72,8 +72,8 @@ export default props => {
 
   return (
     <div>
-      <div class="table-responsive">
-        <table class="table table-hover">
+      <div className="table-responsive">
+        <table className="table table-hover">
           <thead>
             <tr>
               <th>Merchant Id</th>
@@ -95,10 +95,10 @@ export default props => {
               }
               return (
                 <tr>
-                  <td class="text-center empty-table" colSpan={7}>
+                  <td className="text-center empty-table" colSpan={7}>
                     {showCreateMerchantModal ? (
                       <button
-                        class="btn btn-primary"
+                        className="btn btn-primary"
                         onClick={showCreateMerchantModal}
                       >
                         Create New Merchant

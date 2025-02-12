@@ -33,28 +33,28 @@ export default class ItemDetails extends React.Component {
 
     return (
       <TabsContainer
-        class="item-details"
+        className="item-details"
         tabNames={[
           <b key="1">{`Subscription Plans (${recurringPaymentsItems.length})`}</b>,
           <b key="2">{`One-Time Payments (${oneTimePaymentsItems.length})`}</b>,
         ]}
       >
         <div>
-          <div class="table-container">
+          <div className="table-container">
             {recurringPaymentsItems.map((pi, ix) => (
-              <div key={ix} class="table">
+              <div key={ix} className="table">
                 <div>
                   <b>{pi.item.name}</b>
                 </div>
                 <div>
-                  <div class="title">Plan Amount</div>
+                  <div className="title">Plan Amount</div>
                   <Amount
                     value={pi.total_amount_paid}
                     currency={subscriptionButtonEntity.currency}
                   />
                 </div>
                 <div>
-                  <div class="title">Billing Frequency</div>
+                  <div className="title">Billing Frequency</div>
                   <div>
                     {titleCase(
                       getPeriodLabel(
@@ -65,7 +65,7 @@ export default class ItemDetails extends React.Component {
                   </div>
                 </div>
                 <div>
-                  <div class="title">Total Billing Cycles</div>
+                  <div className="title">Total Billing Cycles</div>
                   <div>{pi.product_config.subscription_details.total_count}</div>
                 </div>
               </div>
@@ -74,22 +74,22 @@ export default class ItemDetails extends React.Component {
         </div>
 
         <div>
-          <div class="table-container">
+          <div className="table-container">
             {oneTimePaymentsItems.map((pi, ix) => (
-              <div key={ix} class="table">
+              <div key={ix} className="table">
                 <div>
                   <b>{pi.item.name}</b>
                 </div>
                 <div>
-                  <div class="title">Amount</div>
+                  <div className="title">Amount</div>
                   <Amount value={pi.item.amount} currency={subscriptionButtonEntity.currency} />
                 </div>
                 <div>
-                  <div class="title">Units sold</div>
+                  <div className="title">Units sold</div>
                   <div>{pi.quantity_sold}</div>
                 </div>
                 <div>
-                  <div class="title">Total Revenue</div>
+                  <div className="title">Total Revenue</div>
                   <Amount
                     value={pi.total_amount_paid}
                     currency={subscriptionButtonEntity.currency}

@@ -6,8 +6,8 @@ export default class Clipboard extends Component {
   constructor() {
     super(...arguments);
     this.state = {};
-    this.copyToClipboard = ::this.copyToClipboard;
-    this.selectValue = ::this.selectValue;
+    this.copyToClipboard = this.copyToClipboard.bind(this);
+    this.selectValue = this.selectValue.bind(this);
   }
 
   UNSAFE_componentWillMount() {
@@ -32,20 +32,20 @@ export default class Clipboard extends Component {
   render() {
     return (
       <div
-        class={`input-group Clipboard ${
+        className={`input-group Clipboard ${
           this.supported ? '' : 'Clipboard--unsupported'
         }`}
       >
         <input
           value={this.props.value}
-          class="form-control Clipboard__input"
+          className="form-control Clipboard__input"
           readOnly={true}
           ref={input => (this.input = input)}
           onFocus={this.selectValue}
         />
         {this.supported && (
           <span
-            class="input-group-addon"
+            className="input-group-addon"
             onClick={this.copyToClipboard}
             data-tip="Copied"
             data-event="active"

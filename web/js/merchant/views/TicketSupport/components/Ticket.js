@@ -1,22 +1,17 @@
-import { connect } from 'react-redux';
 import React from 'react';
 import moment from 'moment';
-import TicketStatus from './TicketStatus';
+import { connect } from 'react-redux';
+
+import sanitizer from 'common/utils/xss-sanitizer';
+
 import Attachment from './Attachment';
 import Message from './Message';
-import sanitizer from 'common/utils/xss-sanitizer';
+import TicketStatus from './TicketStatus';
 import { TICKET_STATUS_LABELS } from './data';
 import { sanitizeRaySubcategory } from '../utils';
 const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
-@connect((state) => {
-  return {
-    ...state.session,
-    ...state.config.config,
-    user: state.session.user,
-  };
-})
-export default class Ticket extends React.Component {
+class Ticket extends React.Component {
   constructor(props) {
     super(props);
 
@@ -213,3 +208,11 @@ export default class Ticket extends React.Component {
     return null;
   }
 }
+
+export default connect((state) => {
+  return {
+    ...state.session,
+    ...state.config.config,
+    user: state.session.user,
+  };
+})(Ticket);

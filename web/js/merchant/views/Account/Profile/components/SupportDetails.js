@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
@@ -15,13 +15,9 @@ import {
   UPDATE_SUPPORT_DETAILS,
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
-@connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
-  fetchSupportDetail,
-  openModal,
-  closeModal,
-})
-@RTracking(() => window.rzpQ.component('SupportDetails'))
-export default class SupportDetails extends Component {
+import { compose } from 'redux';
+
+class SupportDetails extends Component {
   componentDidMount() {
     this.props.fetchSupportDetail();
   }
@@ -112,3 +108,14 @@ export default class SupportDetails extends Component {
     );
   }
 }
+
+export default compose(
+  rTracking({
+    page: 'SupportDetails',
+  }),
+  connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
+    fetchSupportDetail,
+    openModal,
+    closeModal,
+  }),
+)(SupportDetails);

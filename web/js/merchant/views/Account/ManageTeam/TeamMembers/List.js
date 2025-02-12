@@ -44,7 +44,7 @@ class MembersListContainer extends ListContainer {
     value: (member) => (
       <>
         {member.name && <p>{member.name}</p>}
-        <p class="text-muted no-margin">{member.email}</p>
+        <p className="text-muted no-margin">{member.email}</p>
         {member.account_locked && (
           <AccountLocked
             unlockMember={this.props.unlockMember}
@@ -100,7 +100,7 @@ class MembersListContainer extends ListContainer {
           !loading && {
             title: (
               <>
-                Team Members (<small class="text-muted">{items.length}</small>)
+                Team Members (<small className="text-muted">{items.length}</small>)
               </>
             ),
           }
@@ -136,14 +136,14 @@ function AccountLocked({ unlockMember, memberId, showNotification }) {
   };
 
   return (
-    <span class="status-label label-pale-warning m-t">
-      <i class="i i-info-circle text-warning" /> Account blocked due to multiple wrong login
+    <span className="status-label label-pale-warning m-t">
+      <i className="i i-info-circle text-warning" /> Account blocked due to multiple wrong login
       attempts{' '}
       <AsyncButton
         text="Unlock"
         pendingText="Unlocking"
         onClick={unlock}
-        class="btn-link text-warning"
+        className="btn-link text-warning"
       />
     </span>
   );
@@ -244,10 +244,10 @@ function RaiseContactMobileLost({
   };
 
   return (
-    <span class="small">
+    <span className="small">
       <AsyncButton
         onClick={unverifyAfterConfirm}
-        class="btn-link no-padding"
+        className="btn-link no-padding"
         pendingText="Invalidating..."
       >
         Invalidate 2FA

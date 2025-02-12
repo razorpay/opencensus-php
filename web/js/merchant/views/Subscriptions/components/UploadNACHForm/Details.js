@@ -14,7 +14,7 @@ export default function UploadNachFormDetails({
   if (downloadSignedNACHFile) {
     return (
       <AsyncButton
-        class="btn btn-link nach-download-btn"
+        className="btn btn-link nach-download-btn"
         onClick={() => {
           trackClickViewNACHForm();
           return downloadSignedNACHFile();
@@ -22,7 +22,7 @@ export default function UploadNachFormDetails({
         target="_blank"
         rel="noreferrer noopener"
       >
-        <i class="i i-file-attach" /> View Signed NACH Form
+        <i className="i i-file-attach" /> View Signed NACH Form
       </AsyncButton>
     );
   }
@@ -36,7 +36,7 @@ export default function UploadNachFormDetails({
       />
 
       <Link
-        class="btn btn-primary"
+        className="btn btn-primary"
         to={`/registration_links/${registrationLinkId}/upload_nach`}
         onClick={trackClickUploadNACHForm}
       >
@@ -44,7 +44,7 @@ export default function UploadNachFormDetails({
       </Link>
 
       <a
-        class="btn btn-default m-l"
+        className="btn btn-default m-l"
         onClick={() => {
           window.location = preFilledNachFileURL;
 

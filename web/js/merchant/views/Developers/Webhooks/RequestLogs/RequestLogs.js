@@ -2,25 +2,24 @@ import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
-import TableBody from 'common/ui/TableBody';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
-import Time from 'common/ui/Time';
 import Pager from 'common/ui/Pager';
-import * as WebHooksLogsActions from 'merchant/reducers/developers/webhookLogs';
+import TableBody from 'common/ui/TableBody';
+import Time from 'common/ui/Time';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 import ListContainer from 'merchant/containers/ListContainer';
+import * as WebHooksLogsActions from 'merchant/reducers/developers/webhookLogs';
 import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
+import { HTTP_STATUS_CODE_LIST } from 'merchant/views/Developers/constants';
 import {
   trackWebhookLogsSearchHttpStatusChanged,
   trackWebhookLogsSearchKeywordChanged,
   trackWebhookLogsSearched,
 } from 'merchant/views/Developers/events';
-import { HTTP_STATUS_CODE_LIST } from 'merchant/views/Developers/constants';
 
-@connect((state) => ({ ...state.webhookLogs }), {
-  ...WebHooksLogsActions,
-})
 class RequestLogs extends ListContainer {
   constructor(props) {
     super(props);
@@ -109,7 +108,7 @@ class RequestLogs extends ListContainer {
           <div className="form-group list-filter-item">
             <label>Response Code</label>
             <select
-              class="form-control input-sm"
+              className="form-control input-sm"
               value={httpStatus === '' ? 'all' : httpStatus}
               onChange={(e) =>
                 this.setState({ httpStatus: e.target.value === 'all' ? '' : e.target.value })
@@ -124,8 +123,12 @@ class RequestLogs extends ListContainer {
               ))}
             </select>
           </div>
-          <div class="form-group list-filter-item btn-toolbar">
-            <button class="btn btn-primary btn-sm" type="button" onClick={this.handleSearchClick}>
+          <div className="form-group list-filter-item btn-toolbar">
+            <button
+              className="btn btn-primary btn-sm"
+              type="button"
+              onClick={this.handleSearchClick}
+            >
               Search
             </button>
             <button
@@ -143,8 +146,8 @@ class RequestLogs extends ListContainer {
         {status?.type && status?.message ? (
           <Alert type={status.type} message={status.message} />
         ) : null}
-        <div class="table-responsive">
-          <table class="table table-hover">
+        <div className="table-responsive">
+          <table className="table table-hover">
             <thead>
               <tr>
                 <th>Event ID</th>
@@ -159,7 +162,7 @@ class RequestLogs extends ListContainer {
               rows={webhookLogs}
               emptyTableRow={() => (
                 <tr>
-                  <td class="text-center empty-table" colSpan={4}>
+                  <td className="text-center empty-table" colSpan={4}>
                     <p>No webhook logs found for selected time range</p>
                   </td>
                 </tr>
@@ -197,4 +200,9 @@ class RequestLogs extends ListContainer {
   }
 }
 
-export default withRouter(RequestLogs);
+export default compose(
+  withRouter,
+  connect((state) => ({ ...state.webhookLogs }), {
+    ...WebHooksLogsActions,
+  }),
+)(RequestLogs);

@@ -2,9 +2,9 @@ import DetailRow from 'merchant/components/DetailRow';
 
 export default ({ bankAccount, isCountryIndia }) => {
   return (
-    <div class="panel panel-default">
-      <div class="panel-heading">Bank Account</div>
-      <div class="list-group details-row-container">
+    <div className="panel panel-default">
+      <div className="panel-heading">Bank Account</div>
+      <div className="list-group details-row-container">
         {isCountryIndia ? (
           <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
         ) : (

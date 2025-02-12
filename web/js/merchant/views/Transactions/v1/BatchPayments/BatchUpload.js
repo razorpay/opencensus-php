@@ -102,7 +102,7 @@ class BatchUploadContainer extends Component {
     // eslint-disable-next-line react/no-this-in-sfc
     const Header = ({ title }) => <ModalHeader title={title} onCloseClick={this.closeModal} />;
     const Loader = () => (
-      <div class="page-spinner-container">
+      <div className="page-spinner-container">
         <Spinner />
       </div>
     );
@@ -113,11 +113,11 @@ class BatchUploadContainer extends Component {
 
       case 'upload':
         return (
-          <div class="batch-upload-modal" data-testid="batch-upload-modal">
+          <div className="batch-upload-modal" data-testid="batch-upload-modal">
             {this.state.iFrameLoaded && <Header title="Batch Upload" />}
             <iframe
               src={`${iframeHost}/v1/batches/upload?token=${this.state.ott}`}
-              class={`
+              className={`
                 batch-payments-iframe
                 ${this.state.status === 'process' ? 'disabled' : ''}
                 ${this.state.iFrameLoaded ? 'enabled' : ''}
@@ -146,7 +146,7 @@ class BatchUploadContainer extends Component {
           name: this.state.files[0].name,
         };
         return (
-          <div class="batch-upload-modal create">
+          <div className="batch-upload-modal create">
             <Header title="Batch Upload" />
             <CreateModal
               parsedEntries={this.state.parsedEntries}
@@ -160,10 +160,10 @@ class BatchUploadContainer extends Component {
 
       case 'success':
         return (
-          <div class="batch-upload-modal success">
+          <div className="batch-upload-modal success">
             <Header title="" />
             <SuccessModal onModalClose={this.closeModal}>
-              <div class="text-center">
+              <div className="text-center">
                 <p>
                   All payments have queued for processing and output file will be available shortly.
                 </p>

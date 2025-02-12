@@ -21,16 +21,7 @@ import track from './track';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      issuableIdList: state.paymentBatchIds.issuableIdList,
-    };
-  },
-  { fetchAll, createBatch, validateBatch, openModal, showNotification },
-)
-export default class BatchListContainer extends Component {
+class BatchListContainer extends Component {
   constructor(props) {
     super(props);
     //hotjar integration
@@ -143,7 +134,7 @@ export default class BatchListContainer extends Component {
       return (
         <button
           key={item.id}
-          class="btn btn-xs btn-default"
+          className="btn btn-xs btn-default"
           onClick={() => this.sendAll(item)}
           disabled={!allowSendAll}
         >
@@ -239,3 +230,13 @@ function allowSendAllLinks(batch) {
   //disable for older batches
   return false;
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      issuableIdList: state.paymentBatchIds.issuableIdList,
+    };
+  },
+  { fetchAll, createBatch, validateBatch, openModal, showNotification },
+)(BatchListContainer);

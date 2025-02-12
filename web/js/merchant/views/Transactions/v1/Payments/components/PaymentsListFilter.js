@@ -59,7 +59,7 @@ export default ({ showBatchIdFilter, ...props }) => {
     >
       <div className="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
       <div className="form-group datepicker-group">
@@ -72,7 +72,7 @@ export default ({ showBatchIdFilter, ...props }) => {
       {showBatchIdFilter && (
         <div className="form-group list-filter-item">
           <label>Batch Id</label>
-          <Field name="batch_id" component="input" class="form-control input-sm" />
+          <Field name="batch_id" component="input" className="form-control input-sm" />
         </div>
       )}
 
@@ -81,7 +81,7 @@ export default ({ showBatchIdFilter, ...props }) => {
         <Field
           name="status"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={(...args) => {
             track({ type: 'filter', args });
           }}
@@ -97,7 +97,7 @@ export default ({ showBatchIdFilter, ...props }) => {
       <ShowWhen additionalCondition={() => !props?.isJKOrg}>
         <div className="form-group list-filter-item">
           <label>Email</label>
-          <Field name="email" component="input" type="email" class="form-control input-sm" />
+          <Field name="email" component="input" type="email" className="form-control input-sm" />
         </div>
 
         <div className="form-group list-filter-item">
@@ -146,7 +146,7 @@ export default ({ showBatchIdFilter, ...props }) => {
             name="notes"
             onChange={resetReceiverTypeValue}
             component="input"
-            class="form-control input-sm"
+            className="form-control input-sm"
           />
         </div>
       </ShowWhen>
@@ -157,7 +157,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           <Field
             name="txn_receiver_type"
             component="select"
-            class="form-control input-sm"
+            className="form-control input-sm"
             onChange={resetNotesFieldValue}
           >
             <option value="" selected>
@@ -171,7 +171,7 @@ export default ({ showBatchIdFilter, ...props }) => {
       <ShowWhen additionalCondition={() => props?.user?.isRRNSearchEnabled || props.isJKOrg}>
         <div className="form-group list-filter-item">
           <label className="payment-reference-label">Payment Reference Number</label>
-          <Field name="rrn" component="input" class="form-control input-sm" />
+          <Field name="rrn" component="input" className="form-control input-sm" />
         </div>
       </ShowWhen>
 
@@ -180,11 +180,11 @@ export default ({ showBatchIdFilter, ...props }) => {
       >
         <div className="form-group list-filter-item">
           <label>Bank Reference Number</label>
-          <Field name="va_transaction_id" component="input" class="form-control input-sm" />
+          <Field name="va_transaction_id" component="input" className="form-control input-sm" />
         </div>
       </ShowWhen>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -192,7 +192,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
 

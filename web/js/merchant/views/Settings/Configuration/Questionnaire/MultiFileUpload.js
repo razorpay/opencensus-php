@@ -40,7 +40,7 @@ const MultiFileUpload = ({
   };
 
   return (
-    <div class="file">
+    <div className="file">
       {files.map((file, idx) => {
         return (
           <DismissableInput
@@ -84,7 +84,7 @@ const MultiFileUpload = ({
             removeFileType={() => removeAdditionalFile(file.id)}
             fileName={
               <span
-                class="btn-link"
+                className="btn-link"
                 onClick={() => {
                   merchantFetch(`documents/${file.id}`)
                     .then((res) => {
@@ -110,7 +110,7 @@ const MultiFileUpload = ({
       })}
 
       {files.length < 3 && !rest.disabled && (
-        <span onClick={addAnotherFile} class="add-another">
+        <span onClick={addAnotherFile} className="add-another">
           + Add another file
         </span>
       )}
@@ -146,7 +146,7 @@ const DismissableInput = ({
   };
 
   return (
-    <div class="remove-wrapper">
+    <div className="remove-wrapper">
       <Input.File
         name={name}
         label={label}
@@ -160,7 +160,7 @@ const DismissableInput = ({
       />
       {!required && showRemove && (
         <span
-          class="remove icon i-close"
+          className="remove icon i-close"
           data-testid="btn-file-remove"
           onClick={handleRemoveFileType}
         />

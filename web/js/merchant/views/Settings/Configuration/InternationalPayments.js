@@ -52,7 +52,7 @@ export const getStatusMessage = (status) => {
             rel="noopener noreferrer"
             className={`support-link status-${getClassName(status)}`}
           >
-            PayPal customer support <i class="i i-external-link" />
+            PayPal customer support <i className="i i-external-link" />
           </a>{' '}
           team for any queries.
         </span>
@@ -73,13 +73,13 @@ const InternationalPayments = ({ mode, user, config, org, paypal_terminals }) =>
     }
   }, []);
   return (
-    <div ref={internationalSection} class="panel panel-default international-payments">
-      <div class="panel-heading">
-        <span class="title">International Payments</span>
+    <div ref={internationalSection} className="panel panel-default international-payments">
+      <div className="panel-heading">
+        <span className="title">International Payments</span>
         <a
           target="_blank"
           rel="noopener noreferrer"
-          class="know-more-link"
+          className="know-more-link"
           href={
             org.custom_code === 'axis'
               ? 'https://axisbank-docs.razorpay.com/payments/payments/international-payments/'
@@ -87,13 +87,13 @@ const InternationalPayments = ({ mode, user, config, org, paypal_terminals }) =>
           }
         >
           <span>Know more</span>
-          <i class="i i-external-link" />
+          <i className="i i-external-link" />
         </a>
-        <div class="description">
+        <div className="description">
           Accept international payments in nearly 100 foreign currencies from your customers
         </div>
       </div>
-      <div class="panel-body">
+      <div className="panel-body">
         <ol>
           {mode === 'live' && <InternationalCards />}
 
@@ -116,17 +116,17 @@ const PaypalWrapper = ({ terminals }) => {
     'pending',
   ].includes(status);
   return (
-    <div class="paypal-auto-onboarding" id="paypal-auto-onboarding">
-      <div class="heading">
-        <li class="title">
+    <div className="paypal-auto-onboarding" id="paypal-auto-onboarding">
+      <div className="heading">
+        <li className="title">
           PayPal{' '}
           <DocLink
-            class="highlight know-more-link"
+            className="highlight know-more-link"
             target="_blank"
             href="https://razorpay.com/docs/payment-methods/paypal"
           >
             <span>Know more</span>
-            <i class="i i-external-link" />
+            <i className="i i-external-link" />
           </DocLink>
           {showStatus ? (
             <a className={`status-pill status-pill-${getClassName(status)}`}>
@@ -160,9 +160,9 @@ const PaypalWrapper = ({ terminals }) => {
         <PaypalOnboardingButton isInternationalPayment={false} status={status} />
       </div>
 
-      <div class="body">
+      <div className="body">
         {terminals.length === 0 && (
-          <div class="description">
+          <div className="description">
             Accept international payments using PayPal on Razorpay Checkout.
           </div>
         )}
@@ -171,7 +171,7 @@ const PaypalWrapper = ({ terminals }) => {
           <h4>International Payments Only</h4>
           <p>Currently, you can only accept payments in international currencies using PayPal.</p>
           <p>
-            You <i>CANNOT</i> accept payments in <span class="inr">INR</span> using PayPal.
+            You <i>CANNOT</i> accept payments in <span className="inr">INR</span> using PayPal.
           </p>
         </div>
       </div>

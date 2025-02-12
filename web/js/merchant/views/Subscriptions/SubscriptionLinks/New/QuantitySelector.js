@@ -4,7 +4,7 @@ import Amount from 'common/ui/Amount';
 
 export default function QuantitySelector(props) {
   return (
-    <div class="Subscription--New-quant-select">
+    <div className="Subscription--New-quant-select">
       <Input
         label={
           <>
@@ -13,7 +13,7 @@ export default function QuantitySelector(props) {
               currency={props.currency}
               parentQuerySelector=".Modal-body .SubscriptionLinks--new"
             />
-            <span class="m-l">x</span>
+            <span className="m-l">x</span>
           </>
         }
         name={props.name || 'quantity'}
@@ -26,7 +26,7 @@ export default function QuantitySelector(props) {
         autoRender
       />
       <span>(Quantity)</span>
-      <div class="m-t">{props.informativeMessage(props.rate * props.quantity, props.currency)}</div>
+      <div className="m-t">{props.informativeMessage(props.rate * props.quantity, props.currency)}</div>
     </div>
   );
 }

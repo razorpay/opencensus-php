@@ -76,20 +76,20 @@ export default class PluginsAndAddOns extends React.Component {
 
     return (
       <ModalContent>
-        <div class="main-title">
-          <div class="heading">Plugins and Add-ons</div>
+        <div className="main-title">
+          <div className="heading">Plugins and Add-ons</div>
           <div>
             Add your Facebook Pixel or Google tracking ID below to track your page metrics.{' '}
           </div>
         </div>
         <Form onSubmit={this.handleSubmit}>
-          <div class="section-wrapper">
-            <div class="section">
-              <div class="section-title">
+          <div className="section-wrapper">
+            <div className="section">
+              <div className="section-title">
                 <img src={FbPixelImage} alt="FB Pixel Logo" />
                 Facebook Pixel
               </div>
-              <div class="section-body">
+              <div className="section-body">
                 <Input.Group label="Facebook Pixel ID">
                   <Input
                     autoRender
@@ -101,7 +101,7 @@ export default class PluginsAndAddOns extends React.Component {
                     onBlur={track.settings.enterFBPixel}
                   />
                 </Input.Group>
-                <span class="help-text">Tracking ID is a string like 1234567890.</span>
+                <span className="help-text">Tracking ID is a string like 1234567890.</span>
                 <Input.Group label="Metrics to track">
                   <Input.Check fieldLabel="Page Views" defaultValue="1" disabled />
                   <Input.Check
@@ -121,22 +121,22 @@ export default class PluginsAndAddOns extends React.Component {
                   />
                 </Input.Group>
                 <br />
-                <span class="help-text">
+                <span className="help-text">
                   To learn more about Pixel ID and how to create one using Facebook Ads manager
                   account,{' '}
                   <a href={FB_PIXEL_CTA_LINK} target="_blank" rel="noopener noreferrer">
                     click here.
-                    <i class="i i-external-link" />
+                    <i className="i i-external-link" />
                   </a>
                 </span>
               </div>
             </div>
-            <div class="section">
-              <div class="section-title">
+            <div className="section">
+              <div className="section-title">
                 <img src={GaImage} alt="GA Logo" />
                 Google Analytics
               </div>
-              <div class="section-body">
+              <div className="section-body">
                 <Input.Group label="Tracking ID">
                   <Input
                     autoRender
@@ -148,28 +148,28 @@ export default class PluginsAndAddOns extends React.Component {
                     onBlur={track.settings.enterGAPixel}
                   />
                 </Input.Group>
-                <span class="help-text">
+                <span className="help-text">
                   Tracking ID is a string like UA-000000-2 or G-0A1BC2DE.
                 </span>
                 <br />
                 <br />
-                <span class="help-text">
+                <span className="help-text">
                   To learn more about Tracking ID and how to create one using Google Analytics
                   account,{' '}
                   <a href={GA_CTA_LINK} target="_blank" rel="noopener noreferrer">
                     click here.
-                    <i class="i i-external-link" />
+                    <i className="i i-external-link" />
                   </a>
                 </span>
               </div>
             </div>
           </div>
           <footer>
-            <Button.Transparent class="Cancel-btn" type="button" onClick={this.props.closeModal}>
+            <Button.Transparent className="Cancel-btn" type="button" onClick={this.props.closeModal}>
               Cancel
             </Button.Transparent>
 
-            <Button.Primary class="Save-btn" type="submit">
+            <Button.Primary className="Save-btn" type="submit">
               Save
             </Button.Primary>
           </footer>

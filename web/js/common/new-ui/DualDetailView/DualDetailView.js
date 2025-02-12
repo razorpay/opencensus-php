@@ -40,7 +40,7 @@ class DualViewContainer extends Component {
     });
 
     if (secondaryView) {
-      return <div class="multi-content">{children}</div>;
+      return <div className="multi-content">{children}</div>;
     } else {
       return children;
     }

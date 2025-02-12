@@ -31,7 +31,7 @@ const PaymentRecoveryAnnouncment = ({ userId }) => {
       card_id="payment-recovery-banner"
       canBeClosed={true}
     >
-      <span class="display-inline">{bannerMessage}</span>
+      <span className="display-inline">{bannerMessage}</span>
     </AnnouncementBanner>
   );
 };

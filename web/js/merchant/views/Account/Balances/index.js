@@ -241,7 +241,7 @@ class AddFundsContainer extends Component {
     const { ticketGenerated } = this.state;
 
     return (
-      <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
+      <div className="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
         <Box display="flex" flexDirection="column" gap="spacing.8">
           <Box
             display="flex"

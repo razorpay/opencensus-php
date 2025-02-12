@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+
+import Button from 'common/new-ui/Button';
 import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
-import Button from 'common/new-ui/Button';
 
-@connect((state) => ({ user: state.session.user }), {
-  closeModal,
-})
-export default class CloseReasons extends Component {
+class CloseReasons extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -34,7 +33,7 @@ export default class CloseReasons extends Component {
     return (
       <div className="reasons-close-modal">
         <ModalHeader
-          class="header"
+          className="header"
           title="Reason"
           onCloseClick={() => {
             this.props.closeModal();
@@ -71,3 +70,9 @@ export default class CloseReasons extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    closeModal,
+  }),
+)(CloseReasons);

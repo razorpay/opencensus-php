@@ -1,24 +1,25 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Field } from 'redux-form';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
+import { Field } from 'redux-form';
 
-import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
-import ListFilter from 'merchant/components/ListFilter';
-import EmptyList from 'merchant/components/EmptyList';
-import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import DataTable from 'common/ui/Table/DataTable';
 import Amount from 'common/ui/Amount';
-import Time from 'common/ui/Time';
-import Pager from 'common/ui/Pager';
-import Alert from 'common/ui/Forms/Alert';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import Banner from 'common/ui/Banner';
-import ProcessInvoice from './ProcessInvoice';
-
-import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
+import Alert from 'common/ui/Forms/Alert';
+import Pager from 'common/ui/Pager';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import DataTable from 'common/ui/Table/DataTable';
+import Time from 'common/ui/Time';
 import { getCurrentFinancialYear } from 'common/utils/rzp-utils';
+import EmptyList from 'merchant/components/EmptyList';
+import ListFilter from 'merchant/components/ListFilter';
+import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
+
+import ProcessInvoice from './ProcessInvoice';
 
 const generateColumns = (user) => {
   const currency = user.merchant.currency;
@@ -43,7 +44,7 @@ const generateColumns = (user) => {
         <>
           <span>Amount &nbsp;</span>
           <small className="help-content">
-            <i class="i i-info-circle" />
+            <i className="i i-info-circle" />
             <Popover align="right" theme="dark">
               <PopoverBody>
                 <div>Amount will be paid after TDS has been deducted.</div>
@@ -70,12 +71,6 @@ const MONTHLY_COMMISSION_CURRENCY_NAME = {
   curlec: 'MYR',
 };
 
-@connect(
-  (state) => ({ ...state.commissionInvoices, user: state.session.user, org: state.session.org }),
-  {
-    fetchCommissionInvoices,
-  },
-)
 class CommissionInvoicesList extends ListContainer {
   updateParams = (params) => {
     const { user } = this.props;
@@ -115,11 +110,11 @@ class CommissionInvoicesList extends ListContainer {
             {currencyName}
           </Banner>
         </div>
-        <div class="content-wrapper">
+        <div className="content-wrapper">
           <ListFilter form="CommissionInvoicesListFilter" count={this.state.count}>
-            <div class="form-group list-filter-item">
+            <div className="form-group list-filter-item">
               <label>Invoice Status</label>
-              <Field name="status" component="select" class="form-control input-sm">
+              <Field name="status" component="select" className="form-control input-sm">
                 <option value="">All</option>
                 <option value="issued">Issued</option>
                 <option value="under_review">Under Review</option>
@@ -127,9 +122,9 @@ class CommissionInvoicesList extends ListContainer {
               </Field>
             </div>
 
-            <div class="form-group list-filter-item">
+            <div className="form-group list-filter-item">
               <label>Invoice Id</label>
-              <Field name="id" component="input" class="form-control input-sm" />
+              <Field name="id" component="input" className="form-control input-sm" />
             </div>
           </ListFilter>
 
@@ -176,4 +171,12 @@ function EmptyListComponent() {
   );
 }
 
-export default withRouter(CommissionInvoicesList);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({ ...state.commissionInvoices, user: state.session.user, org: state.session.org }),
+    {
+      fetchCommissionInvoices,
+    },
+  ),
+)(CommissionInvoicesList);

@@ -82,7 +82,7 @@ class DocumentsUpload extends React.Component {
               </div>
               <div className="Input-content">
                 {this.docHasMultipleUploadOptions(document) && (
-                  <div class="document-upload-options-wrapper">
+                  <div className="document-upload-options-wrapper">
                     {document.documentUploadOptions.map((uploadOption) => (
                       <ToggleWithDescription
                         key={uploadOption}

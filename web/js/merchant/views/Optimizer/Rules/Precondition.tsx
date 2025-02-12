@@ -156,7 +156,7 @@ export const Precondition = ({
           !readonly ? (
             <div className="operator-btn">
               <Select
-                class="btn btn-primary operator-btn"
+                className="btn btn-primary operator-btn"
                 selected={LOGICAL_OPERATORS.filter((o) => o.value == precondition.value)}
                 placeholder="Operator"
                 options={LOGICAL_OPERATORS}

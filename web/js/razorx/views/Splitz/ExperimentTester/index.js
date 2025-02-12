@@ -222,7 +222,7 @@ export default class ExperimentTester extends React.Component {
         </div>
         <div className="container-group">
           <div className="list-container">
-            <Form onSubmit={this.evaluateMerchant} class="filters">
+            <Form onSubmit={this.evaluateMerchant} className="filters">
               <div className="flex-column">
                 <div className="flex-row" style={{ alignItems: 'flex-end' }}>
                   <Field name="request_id" label="Entity ID" />

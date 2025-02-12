@@ -247,7 +247,7 @@ const contactFields = [
 ];
 
 const BlacklistedErr = () => (
-  <div class="warning-svg red">
+  <div className="warning-svg red">
     {WarningSvg()}
     <span>We do not have the support for your business category selected as of now.</span>
   </div>
@@ -471,7 +471,7 @@ const businessModel = [
           {
             label: 'Without website/app',
             description: (
-              <ul class="Input-desc-list">
+              <ul className="Input-desc-list">
                 <li>
                   Receive payments from your customers in under 5 minutes using Razorpay’s Payment
                   Links & Payment Pages
@@ -636,9 +636,9 @@ const businessModel = [
           We need to verify your website/app to provide you the live API keys. It should contain:
           <div className="bullet-list-container">
             <ul className="bullet-list bullet-list--left">
-              <li class="shallow"> About Us</li>
-              <li class="shallow"> Contact Us</li>
-              <li class="shallow"> Pricing</li>
+              <li className="shallow"> About Us</li>
+              <li className="shallow"> Contact Us</li>
+              <li className="shallow"> Pricing</li>
             </ul>
             <ul className="bullet-list bullet-list--right">
               <li>

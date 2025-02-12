@@ -2,28 +2,20 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
-import BaseForm from './BaseForm';
-
 import { getCurrency } from 'common/ui/Amount';
 import { classList, getFormattedAmount } from 'common/utils/rzp-utils';
-import { getPeriodLabel } from 'merchant/views/PaymentButton/SubscriptionButton/Create/constants/billingCycle';
-
 import {
   updatePaymentField,
   deletePaymentField,
   updatePaymentButtonData,
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
-
+import { getPeriodLabel } from 'merchant/views/PaymentButton/SubscriptionButton/Create/constants/billingCycle';
 import track from 'merchant/views/PaymentButton/SubscriptionButton/Create/track';
 
-@connect(null, {
-  updatePaymentField,
-  deletePaymentField,
-  updatePaymentButtonData,
-  updateStepReviewProgress,
-})
-export default class EditableDisplayField extends React.Component {
+import BaseForm from './BaseForm';
+
+class EditableDisplayField extends React.Component {
   state = {
     isEditModeOpened: false,
   };
@@ -101,7 +93,7 @@ export default class EditableDisplayField extends React.Component {
     return (
       <div
         onClick={!isEditModeOpened ? this.handleToggleEditMode : () => {}}
-        class={classList(
+        className={classList(
           'EditableUDF EditableDisplayField',
           children && 'EditableDisplayField--disabled',
           isEditModeOpened && 'EditableDisplayField--editMode',
@@ -109,14 +101,14 @@ export default class EditableDisplayField extends React.Component {
       >
         {children || (
           <React.Fragment>
-            <span class="btn btn-link edit-btn">
+            <span className="btn btn-link edit-btn">
               Click to Edit This Field
-              <i class="i i-edit" />
+              <i className="i i-edit" />
             </span>
 
             <Input
               label="Plan"
-              class="Input--vTop Input--dummy"
+              className="Input--vTop Input--dummy"
               value={field.item.name}
               description={descriptionOfPlanFrequency}
               readOnly
@@ -124,7 +116,7 @@ export default class EditableDisplayField extends React.Component {
 
             <Input
               label="No. of Billing Cycles"
-              class="Input--vTop Input--dummy"
+              className="Input--vTop Input--dummy"
               value={field.product_config.subscription_details.total_count}
               readOnly
             />
@@ -146,3 +138,10 @@ export default class EditableDisplayField extends React.Component {
     );
   }
 }
+
+export default connect(null, {
+  updatePaymentField,
+  deletePaymentField,
+  updatePaymentButtonData,
+  updateStepReviewProgress,
+})(EditableDisplayField);

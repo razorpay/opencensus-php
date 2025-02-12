@@ -1,28 +1,23 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import PropTypes from 'prop-types';
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
-import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
-
-import { buttonThemesList } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import {
   updatePaymentButtonData,
   updatePaymentField,
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
+import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
+import { buttonThemesList } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
+
 import track from '../../track';
 
 export const maxLengthForButtonLabel = 16;
 
-@connect(null, {
-  updatePaymentButtonData,
-  updatePaymentField,
-  updateStepReviewProgress,
-})
-export default class ButtonDetails extends React.Component {
+class ButtonDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -120,11 +115,11 @@ export default class ButtonDetails extends React.Component {
         setRef={this.setRefFormEl}
         style={{ display: this.props.isHidden ? 'none' : '' }}
       >
-        <div class="PaymentButtonForm-ButtonDetails Form-content">
+        <div className="PaymentButtonForm-ButtonDetails Form-content">
           <Input
             label="Title"
             name="title"
-            class="Input--vTop"
+            className="Input--vTop"
             defaultValue={subscriptionButtonEntity.title}
             description="For dashboard use, not visible to customers"
             validator={(val) => {
@@ -146,7 +141,7 @@ export default class ButtonDetails extends React.Component {
           <Input
             label="Button Label"
             name="button_text"
-            class="Input--vTop"
+            className="Input--vTop"
             placeholder="Subscribe"
             description="This label is shown to your customers"
             defaultValue={subscriptionButtonEntity.settings.payment_button_text}
@@ -168,7 +163,7 @@ export default class ButtonDetails extends React.Component {
           <InputDropdown
             label="Button Theme"
             name="button_theme"
-            class="Input--vTop"
+            className="Input--vTop"
             dropdownElementClass="Input-el-PaymentButtonForm"
             placeholder="Select Button Theme"
             options={buttonThemesList}
@@ -179,12 +174,18 @@ export default class ButtonDetails extends React.Component {
           />
         </div>
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Primary type="submit" disabled={this.state.disableSubmit}>
-            Next <i class="i i-chevron-right" />
+            Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>
       </Form>
     );
   }
 }
+
+export default connect(null, {
+  updatePaymentButtonData,
+  updatePaymentField,
+  updateStepReviewProgress,
+})(ButtonDetails);

@@ -1,2 +1,2 @@
 /* List of all reusable Card */
-export LinkCard from './Link';
+export { default as LinkCard } from './Link';

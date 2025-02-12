@@ -28,7 +28,7 @@ export default class Expression extends React.Component {
   };
 
   getAmountComp = (val, handleChange, VALUE_TYPE) => (
-    <div class="input-group">
+    <div className="input-group">
       <AmountTooltip
         currency="INR"
         parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
@@ -54,7 +54,7 @@ export default class Expression extends React.Component {
         type="number"
         placeholder="Enter Amount"
         name="amountInINR"
-        class="form-control"
+        className="form-control"
         min="0"
       />
     </div>
@@ -110,7 +110,7 @@ export default class Expression extends React.Component {
         {this.props.readonly ? (
           <div className="row">
             <div className="col-xs-12">
-              <div class="expression-readonly-high">
+              <div className="expression-readonly-high">
                 When <b>{PARAMETER.name}</b>{' '}
                 {getValue('operator', this.props.expression.value).name}{' '}
                 {PARAMETER.value === '$payment.navigator_amount' ? (
@@ -124,7 +124,7 @@ export default class Expression extends React.Component {
         ) : (
           <div style={{ display: 'flex' }}>
             <div style={{ width: '12%' }}>
-              <span class="mid-text">When</span>
+              <span className="mid-text">When</span>
             </div>
             <div style={{ width: '24%' }} className="p0 select-parameter">
               <Select
@@ -149,7 +149,7 @@ export default class Expression extends React.Component {
               />
             </div>
             <div style={{ width: '3%' }}>
-              <span class="mid-text">is</span>
+              <span className="mid-text">is</span>
             </div>
             <div style={{ width: '30%' }} className="col-xs-2 select-operator">
               <Select
@@ -234,7 +234,7 @@ export default class Expression extends React.Component {
                           type={`${RHS_TYPE?.number ? 'number' : 'text'}`}
                           placeholder="Enter Something"
                           name="enter_text"
-                          class="form-control"
+                          className="form-control"
                         />
                       </div>
                     </div>
@@ -279,7 +279,7 @@ export default class Expression extends React.Component {
                           type="text"
                           placeholder="Enter comma separated text"
                           name="enter_text"
-                          class="form-control"
+                          className="form-control"
                         />
                       </div>
                     </div>
@@ -346,7 +346,7 @@ export default class Expression extends React.Component {
                           type="text"
                           placeholder="Enter comma separated numbers"
                           name="enter_text"
-                          class={`form-control ${
+                          className={`form-control ${
                             this.state.showBinNumberErorr ? 'bin-input-error' : ''
                           }`}
                         />
@@ -381,7 +381,7 @@ export default class Expression extends React.Component {
                             className="between-inp-div"
                             style={{ width: '10%', margin: '5px 6px' }}
                           >
-                            <div class="text-center">to</div>
+                            <div className="text-center">to</div>
                           </div>
                           <div className="between-inp-div" style={{ width: '45%' }}>
                             {this.getAmountComp(

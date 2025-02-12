@@ -4,12 +4,9 @@ import LineItem from './Item';
 import Amount from 'common/ui/Amount';
 import AmountInWords from 'common/ui/AmountInWords';
 import { track } from 'merchant/views/Invoices/ga';
+import { compose } from 'redux';
 
-@reduxForm({
-  form: 'newInvoice',
-  destroyOnUnmount: false,
-})
-export default class InvoiceLineItemTable extends Component {
+class InvoiceLineItemTable extends Component {
   addInvoiceItem = () => {
     track({
       eventAction: 'Click - Add Line',
@@ -50,20 +47,20 @@ export default class InvoiceLineItemTable extends Component {
 
     return (
       <div>
-        <div class="items-header">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="invoice-lineitem table-responsive">
-                <table class="table inv__itemtable">
+        <div className="items-header">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="invoice-lineitem table-responsive">
+                <table className="table inv__itemtable">
                   <thead>
                     <tr>
-                      <th class="lineItem__item">DESCRIPTION</th>
-                      <th class="text-right lineItem__amount">RATE/ITEM</th>
-                      <th class="text-right lineItem__qty">QTY</th>
-                      <th class="text-right lineItem__total">TOTAL</th>
+                      <th className="lineItem__item">DESCRIPTION</th>
+                      <th className="text-right lineItem__amount">RATE/ITEM</th>
+                      <th className="text-right lineItem__qty">QTY</th>
+                      <th className="text-right lineItem__total">TOTAL</th>
                     </tr>
                   </thead>
-                  <tbody class="invoice-lineitem">
+                  <tbody className="invoice-lineitem">
                     {fields.map((fieldName, idx) => (
                       <LineItem
                         key={`line_item_${idx}`}
@@ -78,11 +75,11 @@ export default class InvoiceLineItemTable extends Component {
                         trackLineItem={trackLineItem}
                       />
                     ))}
-                    <tr class="addline">
-                      <td class="no-border">
+                    <tr className="addline">
+                      <td className="no-border">
                         {!disabled && (
                           <span
-                            class="text-primary cursor-pointer Btn--Link Button--transparent Button"
+                            className="text-primary cursor-pointer Btn--Link Button--transparent Button"
                             onClick={this.addInvoiceItem}
                           >
                             + Add Line Item
@@ -95,17 +92,17 @@ export default class InvoiceLineItemTable extends Component {
               </div>
             </div>
           </div>
-          <div class="row inv__padded">
-            <div class="col-md-12">
-              <div class="invoice-lineitem">
-                <table class="table inv__itemtable">
+          <div className="row inv__padded">
+            <div className="col-md-12">
+              <div className="invoice-lineitem">
+                <table className="table inv__itemtable">
                   <tbody>
                     {applyTaxes && (
                       <Fragment>
-                        <tr class="total sub-total">
+                        <tr className="total sub-total">
                           <td />
-                          <td class="text-right">Sub Total</td>
-                          <td class="text-right">
+                          <td className="text-right">Sub Total</td>
+                          <td className="text-right">
                             {' '}
                             <Amount
                               value={invoiceTotal.subtotal * 100}
@@ -114,10 +111,10 @@ export default class InvoiceLineItemTable extends Component {
                           </td>
                         </tr>
                         {invoiceCurrency === 'INR' && (
-                          <tr class="total sub-total">
+                          <tr className="total sub-total">
                             <td />
-                            <td class="text-right">Total Tax</td>
-                            <td class="text-right" width="30%">
+                            <td className="text-right">Total Tax</td>
+                            <td className="text-right" width="30%">
                               <Amount value={invoiceTotal.tax * 100} currency={invoice.currency} />
                             </td>
                           </tr>
@@ -126,12 +123,12 @@ export default class InvoiceLineItemTable extends Component {
                     )}
 
                     {invoice.offer_amount && (
-                      <tr class="total">
+                      <tr className="total">
                         <td />
-                        <td class="text-right">
+                        <td className="text-right">
                           <b>Offer Discount</b>
                         </td>
-                        <td class="text-right" width="30%">
+                        <td className="text-right" width="30%">
                           <b>
                             - <Amount value={invoice.offer_amount} currency={invoiceCurrency} />
                           </b>
@@ -139,20 +136,20 @@ export default class InvoiceLineItemTable extends Component {
                       </tr>
                     )}
 
-                    <tr class="total">
+                    <tr className="total">
                       <td />
-                      <td class="text-right">
+                      <td className="text-right">
                         <b>Total Amount</b>
                       </td>
-                      <td class="text-right" width="30%">
+                      <td className="text-right" width="30%">
                         <b>
                           <Amount value={invoiceTotal.total * 100} currency={invoiceCurrency} />
                         </b>
                       </td>
                     </tr>
                     {!invoice.subscription_id && invoiceCurrency === 'INR' && (
-                      <tr class="total amount-words">
-                        <td colSpan="3" class="text-right">
+                      <tr className="total amount-words">
+                        <td colSpan="3" className="text-right">
                           <AmountInWords
                             amount={invoiceTotal.total}
                             prefix="(In Words)"
@@ -163,12 +160,12 @@ export default class InvoiceLineItemTable extends Component {
                       </tr>
                     )}
                     {invoice.amount_paid ? (
-                      <tr class="text-success amount-paid">
+                      <tr className="text-success amount-paid">
                         <td />
-                        <td class="text-right">
+                        <td className="text-right">
                           <b>Amount Paid</b>
                         </td>
-                        <td class="text-right" width="30%">
+                        <td className="text-right" width="30%">
                           <b>
                             <Amount value={invoice.amount_paid} currency={invoice.currency} />
                           </b>
@@ -177,12 +174,12 @@ export default class InvoiceLineItemTable extends Component {
                     ) : null}
 
                     {invoice.amount_paid ? (
-                      <tr class="total">
+                      <tr className="total">
                         <td />
-                        <td class="text-right">
+                        <td className="text-right">
                           <b>Amount Due</b>
                         </td>
-                        <td class="text-right" width="30%">
+                        <td className="text-right" width="30%">
                           <b>
                             <Amount value={invoice.amount_due} currency={invoice.currency} />
                           </b>
@@ -199,3 +196,10 @@ export default class InvoiceLineItemTable extends Component {
     );
   }
 }
+
+export default compose(
+  reduxForm({
+    form: 'newInvoice',
+    destroyOnUnmount: false,
+  }),
+)(InvoiceLineItemTable);

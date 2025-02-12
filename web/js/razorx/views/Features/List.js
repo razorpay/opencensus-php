@@ -46,8 +46,8 @@ export default class extends React.Component {
     const { params = {} } = this.props;
 
     return (
-      <div class="list-container">
-        <Form onSubmit={this.applyFilters} class="filters">
+      <div className="list-container">
+        <Form onSubmit={this.applyFilters} className="filters">
           <Field label="Id" name="id" defaultValue={params.id || ''} />
           <Field label="Name" name="name" />
           <Field label="Created By" name="created_by" placeholder="Email" />
@@ -60,10 +60,10 @@ export default class extends React.Component {
             postSelectionValue={val => val.startOf('day')}
           />
 
-          <button class="btn btn--primary field">Search</button>
+          <button className="btn btn--primary field">Search</button>
           <button
             type="button"
-            class="btn btn--link field"
+            className="btn btn--link field"
             onClick={this.resetFilters}
           >
             Clear
@@ -89,7 +89,7 @@ const featuresFields = [
   [
     'Name',
     item => (
-      <span class={classList(item.active_experiments > 0 && 'is-active')}>
+      <span className={classList(item.active_experiments > 0 && 'is-active')}>
         {item.name}
       </span>
     ),

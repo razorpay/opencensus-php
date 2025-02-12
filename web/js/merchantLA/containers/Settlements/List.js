@@ -18,22 +18,9 @@ import { fetchSettlements as fetchAll } from 'merchantLA/reducers/collection';
 import { fetchBalanceAction } from 'merchantLA/reducers/credits';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import * as ModalActions from 'merchant_common/reducers/modals';
-
+import { compose } from 'redux';
 import SettlementBreakupModal from './BreakupModal';
 
-@connect(
-  (state) => ({
-    ...state.settlements,
-    balanceData: state.credits.balanceData,
-    user: state.session.user,
-    merchant: state.merchant,
-  }),
-  {
-    fetchAll,
-    fetchBalanceAction,
-    ...ModalActions,
-  },
-)
 class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     if (this.props.user.current && !this.props.balanceData.data.balance) {
@@ -102,18 +89,18 @@ class SettlementsListContainer extends ListContainer {
           <HeaderAction>
             <div>
               <a
-                class="btn btn-link"
+                className="btn btn-link"
                 href="http://razorpay.com/settlement"
                 target="_blank"
                 rel="noreferrer noopener"
               >
                 How settlements work?&nbsp;
-                <span class="icon i-external-link" />
+                <span className="icon i-external-link" />
               </a>
               {this.props.balanceData.loading ? (
                 <PlaceholderLoader style={{ width: 150 }} />
               ) : (
-                <span class="settlement-balance-amount">
+                <span className="settlement-balance-amount">
                   Current Balance:{' '}
                   <Amount value={balanceData.data.balance} currency={balanceData.data?.currency} />
                 </span>
@@ -125,7 +112,7 @@ class SettlementsListContainer extends ListContainer {
         <TestModeBanner />
 
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <SettlementsListFilter
               form="settlementsListFilter"
               count={this.state.count}
@@ -134,7 +121,7 @@ class SettlementsListContainer extends ListContainer {
               onClearAnalytics={this.onClearAnalytics}
             />
 
-            {error && <Alert type="error" message={error} />}
+            {Boolean(error) ? <Alert type="error" message={error} /> : null}
 
             <SettlementsList
               settlements={items}
@@ -157,4 +144,19 @@ class SettlementsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(SettlementsListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.settlements,
+      balanceData: state.credits.balanceData,
+      user: state.session.user,
+      merchant: state.merchant,
+    }),
+    {
+      fetchAll,
+      fetchBalanceAction,
+      ...ModalActions,
+    },
+  ),
+)(SettlementsListContainer);

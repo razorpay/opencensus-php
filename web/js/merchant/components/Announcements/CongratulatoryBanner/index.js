@@ -39,7 +39,7 @@ const CongratulatoryBanner = ({ user }) => {
       theme="primary"
       bannerKey={`congratulatory-banner-${user.current}`}
     >
-      <span class="display-inline">{bannerText}</span>
+      <span className="display-inline">{bannerText}</span>
     </AnnouncementBanner>
   );
 };

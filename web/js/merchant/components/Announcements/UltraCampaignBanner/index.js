@@ -58,10 +58,10 @@ export default React.memo(({ productName }) => {
       bannerKey={`ultra-campaign-banner-${user.current}`}
       card_id={cardId}
     >
-      <span class="display-inline">{bannerText}</span>{' '}
+      <span className="display-inline">{bannerText}</span>{' '}
       <Link
         to={cta1Link}
-        class="Button--secondary Button scheduled-btn-act btn-border"
+        className="Button--secondary Button scheduled-btn-act btn-border"
         onClick={track.onClickCTA1}
       >
         {cta1Text}

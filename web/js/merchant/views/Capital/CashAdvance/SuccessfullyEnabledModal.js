@@ -23,7 +23,7 @@ const SuccesfullyEnabledModal = ({ onClose }) => {
   return (
     <div className="successfully-enabled-modal">
       <div className="cross-btn" onClick={handleModalCloseClick}>
-        <i class="i i-close" />
+        <i className="i i-close" />
       </div>
       <div className="successfully-enabled-modal--heading">
         <img src={require("assets/capital/hurray_tick.svg")} />
@@ -37,7 +37,7 @@ const SuccesfullyEnabledModal = ({ onClose }) => {
           Your next withdrawal will be automatically credited to your account as soon as you repay
           your current outstanding due amount.
         </div>
-        <button class="btn btn-primary done-btn" onClick={handleDoneClick}>
+        <button className="btn btn-primary done-btn" onClick={handleDoneClick}>
           Done
         </button>
       </div>

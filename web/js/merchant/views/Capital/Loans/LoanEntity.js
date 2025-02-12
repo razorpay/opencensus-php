@@ -1,22 +1,16 @@
 import React, { Component } from 'react';
-import FormSectionRenderer from './FormSectionRenderer';
 import { connect } from 'react-redux';
-import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
-import ApplicationSummary from './ApplicationSummary';
-import HelpSection from '../components/HelpSection';
-import SideNavigation from './SideNavigation';
-import Button from 'common/new-ui/Button';
-import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import { isCashAdvanceProduct } from '../utils';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    fetchLoanApplicationMeta,
-  },
-)
+import Button from 'common/new-ui/Button';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
+
+import ApplicationSummary from './ApplicationSummary';
+import FormSectionRenderer from './FormSectionRenderer';
+import SideNavigation from './SideNavigation';
+import HelpSection from '../components/HelpSection';
+import { isCashAdvanceProduct } from '../utils';
+import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+
 class LoanEntity extends Component {
   _getParentStepLabel = (step) => {
     const { loanApplicationDetails } = this.props;
@@ -73,11 +67,11 @@ class LoanEntity extends Component {
     const { meta, context } = this.props.loanApplicationDetails;
 
     return (
-      <div class="loan-details-container">
+      <div className="loan-details-container">
         <div className="loan-application-modal-header">
           <div className="wrapper">
             <div className="logo">
-              <img src={require("assets/capital/capital_logo.svg")} alt="Loading icon" />
+              <img src={require('assets/capital/capital_logo.svg')} alt="Loading icon" />
             </div>
             <div className="title">
               {isCashAdvanceProduct(meta.product)
@@ -116,4 +110,11 @@ class LoanEntity extends Component {
   }
 }
 
-export default LoanEntity;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    fetchLoanApplicationMeta,
+  },
+)(LoanEntity);

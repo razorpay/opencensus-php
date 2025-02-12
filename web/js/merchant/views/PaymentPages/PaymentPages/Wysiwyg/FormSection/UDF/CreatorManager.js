@@ -111,7 +111,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
       }
 
       return (
-        <div class="CreatorManager">
+        <div className="CreatorManager">
           <WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.openBaseForm}
@@ -143,10 +143,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
   return HOC;
 }
 
-@connect((state) => ({ user: state.session.user }), {
-  setSettingsModal,
-})
-class BaseFormModal extends React.PureComponent {
+class BaseFormModalComponent extends React.PureComponent {
   onSaveForm = (formData) => {
     this.props.onSubmitUDFField(
       formData,
@@ -182,7 +179,7 @@ class BaseFormModal extends React.PureComponent {
     } = this.props;
 
     return (
-      <CreatorModal class="CreatorModal-BaseForm" overElement allowScroll>
+      <CreatorModal className="CreatorModal-BaseForm" overElement allowScroll>
         <BaseForm
           field={field}
           selfIndex={indexInRenderOrder}
@@ -203,7 +200,7 @@ class BaseFormModal extends React.PureComponent {
               <b>Mandatory</b> {field.title.toLowerCase()} field to be filled by customers and is
               required to create orders on Shiprocket. To delete this, disable Shiprocket order
               creation from{' '}
-              <Button.Transparent class="Button--Link" onClick={this.openPageSettings}>
+              <Button.Transparent className="Button--Link" onClick={this.openPageSettings}>
                 Page Settings
               </Button.Transparent>
             </Alert.Warning>
@@ -215,3 +212,6 @@ class BaseFormModal extends React.PureComponent {
     );
   }
 }
+const BaseFormModal = connect((state) => ({ user: state.session.user }), {
+  setSettingsModal,
+})(BaseFormModalComponent);

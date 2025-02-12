@@ -70,9 +70,9 @@ function AddOnEarningsBreakup(props) {
 
 function TotalValue({ data, currency }) {
   return (
-    <div class="pair-group-item vertical">
-      <div class="pair-label">Total Earnings</div>
-      <div class="pair-value font-lg">
+    <div className="pair-group-item vertical">
+      <div className="pair-label">Total Earnings</div>
+      <div className="pair-value font-lg">
         <strong>
           <Amount value={data.baseEarnings + data.addonEarnings} currency={currency} />
         </strong>

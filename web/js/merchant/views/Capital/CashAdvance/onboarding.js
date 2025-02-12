@@ -12,35 +12,35 @@ import Banner from 'merchant/views/Capital/components/Banner';
 import LeadDetails from './LeadDetails';
 
 const PROS = [
-  <div class="flex">
+  <div className="flex">
     <img src={require("assets/capital/internal_credit.svg")} alt="landing-image" />
-    <div class="p-l m-l m-t">
+    <div className="p-l m-l m-t">
       <strong>
         <p>Flexible Credit Limit</p>
       </strong>
-      <p class="privilege-description">
+      <p className="privilege-description">
         Razorpay's Credit Decisioning System sets a higher credit limit based on timely repayments.
       </p>
     </div>
   </div>,
-  <div class="flex m-t">
+  <div className="flex m-t">
     <img src={require("assets/capital/auto_repayment.svg")} alt="landing-image" />
     <div className="p-l m-l m-t">
       <strong>
         <p>Auto Repayment</p>
       </strong>
-      <p class="privilege-description">
+      <p className="privilege-description">
         Repay automatically through settlements just like it is an advance of your settlements.
       </p>
     </div>
   </div>,
-  <div class="flex m-t">
+  <div className="flex m-t">
     <img src={require("assets/capital/flexible_interest.svg")} alt="landing-image" />
     <div className="p-l m-l m-t">
       <strong>
         <p>Pay Interest only on your use </p>
       </strong>
-      <p class="privilege-description">
+      <p className="privilege-description">
         Pay interest only on the amount withdrawn for the duration of the withdrawal.
       </p>
     </div>
@@ -59,9 +59,9 @@ class Onboarding extends Component {
     } = this.props;
 
     return (
-      <OnBoardingWrapper class="Withdrawals">
+      <OnBoardingWrapper className="Withdrawals">
         <div className="Landing--Image">
-          <div class="image-wrapper">
+          <div className="image-wrapper">
             <img src={require("assets/capital/withdrawal_landing.svg")} alt="landing-image" />
           </div>
         </div>
@@ -103,14 +103,14 @@ class Onboarding extends Component {
             </div>
           )}
           {hasLOCStage2Feature && hasWithdrawalConfiguration && (
-            <div class="withdrawal-form-container p-all m-all">
-              <div class="withdrawal-config-details">
+            <div className="withdrawal-form-container p-all m-all">
+              <div className="withdrawal-config-details">
                 <EntityDetailRow
                   pairClass="highlight"
                   label={
                     <div>
                       <p>Maximum Withdrawable amount</p>
-                      <p class="text-small text-faded">in a single transaction</p>
+                      <p className="text-small text-faded">in a single transaction</p>
                     </div>
                   }
                 >
@@ -122,7 +122,7 @@ class Onboarding extends Component {
                   label={
                     <div>
                       <p>Total Withdrawable Balance</p>
-                      <p class="text-small text-faded">as a credit limit</p>
+                      <p className="text-small text-faded">as a credit limit</p>
                     </div>
                   }
                 >
@@ -137,7 +137,7 @@ class Onboarding extends Component {
                     </div>
                   }
                 >
-                  <div class="text-right">
+                  <div className="text-right">
                     <p>From your settlement Balance</p>
                     <p className="text-small text-faded">Repayment amount will be deducted</p>
                   </div>

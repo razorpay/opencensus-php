@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Button from 'common/new-ui/Button';
@@ -33,26 +33,8 @@ import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    org: state.session.org,
-    isMobileResolution: state.app.isMobileResolution,
-    isWebView: state.app.isWebView,
-    ...state.wysiwyg,
-  }),
-  {
-    showNotification,
-    openModal,
-    closeModal,
-    fetchPaymentPage,
-    updateReceiptDetails,
-    updateData,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 class Success extends React.Component {
   state = {
     isPaymentReceiptsModalOpen: false,
@@ -321,7 +303,7 @@ class Success extends React.Component {
                   : `/paymentpages/${pageId}/edit`
               }
             >
-              <i class="i i-chevron-left" />
+              <i className="i i-chevron-left" />
               <span>EDIT PAGE</span>
             </Link>
 
@@ -348,16 +330,16 @@ class Success extends React.Component {
                         readOnly={true}
                         className="short-url"
                       />
-                      <Button.Primary class="Button--small">Copy</Button.Primary>
+                      <Button.Primary className="Button--small">Copy</Button.Primary>
                     </CustomClipboard>
-                    <Button.Primary onClick={this.openShareView} class="Button--small">
+                    <Button.Primary onClick={this.openShareView} className="Button--small">
                       <i className="i i-share-outline mr-5" />
                       Share
                     </Button.Primary>
                     {this.props.mode === 'test' ? (
                       <span>
                         <Button
-                          class="Button--small Button--customise-url"
+                          className="Button--small Button--customise-url"
                           onClick={this.togglePageSettingsModal.bind(null, true)}
                           disabled={true}
                         >
@@ -369,7 +351,7 @@ class Success extends React.Component {
                       </span>
                     ) : (
                       <Button
-                        class="Button--small Button--customise-url"
+                        className="Button--small Button--customise-url"
                         onClick={this.togglePageSettingsModal.bind(null, true)}
                       >
                         Customise URL
@@ -377,9 +359,9 @@ class Success extends React.Component {
                     )}
                   </div>
                   {/* CTAs container for mobile view */}
-                  <div class="mobile-cta-container">
-                    <Button.Transparent class="button--highlight" onClick={this.handleViewPage}>
-                      Go To Page <i class="i i-external-link" />
+                  <div className="mobile-cta-container">
+                    <Button.Transparent className="button--highlight" onClick={this.handleViewPage}>
+                      Go To Page <i className="i i-external-link" />
                     </Button.Transparent>
                     <Button.Primary onClick={this.openShareView}>
                       <i className="i i-share-outline mr-5" />
@@ -514,7 +496,7 @@ class Success extends React.Component {
     }
 
     return (
-      <div class="pp-success-container">
+      <div className="pp-success-container">
         <Header isBatchPaymentPages={isBatchPaymentPages} />
         {content}
       </div>
@@ -522,4 +504,25 @@ class Success extends React.Component {
   }
 }
 
-export default withRouter(Success);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      org: state.session.org,
+      isMobileResolution: state.app.isMobileResolution,
+      isWebView: state.app.isWebView,
+      ...state.wysiwyg,
+    }),
+    {
+      showNotification,
+      openModal,
+      closeModal,
+      fetchPaymentPage,
+      updateReceiptDetails,
+      updateData,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentPagesContainer')),
+)(Success);

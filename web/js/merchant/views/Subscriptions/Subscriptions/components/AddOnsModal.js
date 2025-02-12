@@ -10,16 +10,9 @@ import { saveAddOn } from 'merchant/reducers/addons';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { AmountTooltip } from 'common/ui/Amount';
+import { compose } from 'redux';
 
-@connect(null, {
-  saveAddOn,
-  showNotification,
-  ...ModalActions,
-})
-@reduxForm({
-  form: 'newAddOn',
-})
-export default class CreateAddOnModal extends Component {
+class CreateAddOnModal extends Component {
   state = {};
 
   UNSAFE_componentWillMount() {
@@ -56,39 +49,39 @@ export default class CreateAddOnModal extends Component {
     const { handleSubmit, invalid, addon, currency } = this.props;
 
     return (
-      <div class="addon-create">
+      <div className="addon-create">
         <ModalHeader
           title={addon && addon.id ? 'Edit Add-on' : 'Include Add-on'}
           onCloseClick={this.props.closeModal}
         />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <Alert type="error" message={this.state.errors} />
 
           <form onSubmit={handleSubmit(this.handleSubmit)}>
-            <div class="form-group">
-              <label class="colcontrol-label label-required">Name</label>
+            <div className="form-group">
+              <label className="colcontrol-label label-required">Name</label>
               <Field
                 name="item[name]"
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 validate={required()}
               />
             </div>
 
-            <div class="form-group">
-              <label class="control-label">Description</label>
+            <div className="form-group">
+              <label className="control-label">Description</label>
               <Field
                 name="item[description]"
                 placeholder="Enter optional  description here"
                 component="textarea"
-                class="form-control"
+                className="form-control"
               />
             </div>
 
-            <div class="form-group">
+            <div className="form-group">
               <div style={{ display: 'inline-block', width: '62%' }}>
-                <label class="control-label label-required price-per-unit">
+                <label className="control-label label-required price-per-unit">
                   Price per unit (in{' '}
                   <AmountTooltip currency={currency} parentQuerySelector=".Modal">
                     {window.currencyList[currency].symbol}
@@ -99,7 +92,7 @@ export default class CreateAddOnModal extends Component {
                   name="item[amount]"
                   placeholder="0.00"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   validate={required()}
                 />
               </div>
@@ -110,20 +103,20 @@ export default class CreateAddOnModal extends Component {
                   float: 'right',
                 }}
               >
-                <label class="control-label label-required">Quantity</label>
+                <label className="control-label label-required">Quantity</label>
                 <Field
                   name="quantity"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   validate={required()}
                 />
               </div>
             </div>
 
-            <div class="Modal__actions clearfix" style={{ paddingTop: '16px' }}>
+            <div className="Modal__actions clearfix" style={{ paddingTop: '16px' }}>
               <AsyncButton
                 type="submit"
-                class="btn btn-primary col-lg-12"
+                className="btn btn-primary col-lg-12"
                 text="Include"
                 disabled={invalid}
                 pendingText="Creating..."
@@ -136,3 +129,14 @@ export default class CreateAddOnModal extends Component {
     );
   }
 }
+
+export default compose(
+  connect(null, {
+    saveAddOn,
+    showNotification,
+    ...ModalActions,
+  }),
+  reduxForm({
+    form: 'newAddOn',
+  }),
+)(CreateAddOnModal);

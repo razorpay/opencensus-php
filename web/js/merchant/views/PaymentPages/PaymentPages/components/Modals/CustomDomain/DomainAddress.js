@@ -99,8 +99,8 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification, planDetai
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Enter your domain address
         </div>
@@ -125,21 +125,21 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification, planDetai
             onChange={handleInputChange}
             onBlur={track.settings.enterDomainAddress}
           />
-          <div class="help-text spacing">
+          <div className="help-text spacing">
             <b>Need help?</b> Refer to{' '}
             <DocLink href="https://razorpay.com/docs/payments/payment-pages/domain-linking#connect-your-domain-link">
               <b>detailed steps </b>
-              <i class="i i-external-link" />
+              <i className="i i-external-link" />
             </DocLink>
           </div>
         </main>
         <footer>
-          <Button.Transparent class="Cancel-btn" type="button" onClick={handleClose}>
+          <Button.Transparent className="Cancel-btn" type="button" onClick={handleClose}>
             Cancel
           </Button.Transparent>
 
           <AsyncBtn.Primary
-            class="Save-btn"
+            className="Save-btn"
             type="submit"
             disabled={!value || !DOMAIN_SUBDOMAIN_REGEX.test(value)}
             onClick={handleSubmit}

@@ -150,7 +150,7 @@ class MainNavLink extends Component {
     let tag, loader, logo;
 
     if (isBeta) {
-      tag = <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>;
+      tag = <span className="badge bg-primary-fuse pull-right hidden-xs">beta</span>;
     } else if (isSettlementEnabled) {
       tag = (
         <span>
@@ -158,23 +158,23 @@ class MainNavLink extends Component {
         </span>
       );
     } else if (isNew) {
-      tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+      tag = <span className="badge bg-success pull-right hidden-xs">new</span>;
     } else if (!!customBadge) {
-      tag = <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>;
+      tag = <span className="badge bg-success pull-right hidden-xs">{customBadge}</span>;
     } else if (isComingSoon) {
-      tag = <span class="badge pull-right hidden-xs coming-soon-badge">Coming Soon!</span>;
+      tag = <span className="badge pull-right hidden-xs coming-soon-badge">Coming Soon!</span>;
     } else if (isLive) {
-      tag = <span class="badge bg-primary pull-right hidden-xs">live</span>;
+      tag = <span className="badge bg-primary pull-right hidden-xs">live</span>;
     }
     if (isPending) {
       //show infinite spin loader if there are some pending items in that section of the app
-      loader = <span class="spin-loader pull-right  hidden-xs" />;
+      loader = <span className="spin-loader pull-right  hidden-xs" />;
     }
 
     if (image) {
       logo = <img src={image} alt={`${label} icon`} />;
     } else if (icon) {
-      logo = <i class={icon} />;
+      logo = <i className={icon} />;
     }
 
     return (
@@ -189,7 +189,7 @@ class MainNavLink extends Component {
           {...linkProps}
           isActive={() => this.setActivePageName(location, label)}
           onClick={this.handleClick}
-          class="NavLink"
+          className="NavLink"
         >
           {logo}
           {label}

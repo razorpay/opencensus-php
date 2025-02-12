@@ -2,38 +2,36 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { withI18Service } from 'common/i18';
-import { RZPFeatures } from 'merchant/helpers/data';
-
-import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
-import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
+import { getItem } from 'common/utils/localStorage';
+import { getCommonAnalyticsProperties, getMobileOperatingSystem } from 'common/utils/rzp-utils';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
+import { DocLink } from 'merchant/components/DocsLink';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
-
+import { RZPFeatures } from 'merchant/helpers/data';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
+import lazy from 'merchant/routes/LazyLoader';
+import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
+import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
-import { isMobileDevice } from 'merchant/components/Home/data';
-import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
-import { getCommonAnalyticsProperties, getMobileOperatingSystem } from 'common/utils/rzp-utils';
-import { getItem } from 'common/utils/localStorage';
-import { DocLink } from 'merchant/components/DocsLink';
 import OnBoarding, {
   getIsPaymentLinksEnabled,
   getIsAllowedResetPaymentLinksOnBoarding,
 } from './OnBoarding';
-
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import lazy from 'merchant/routes/LazyLoader';
-import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 
 const MonetizationChargesBanner = lazy(() =>
   import(
@@ -46,17 +44,6 @@ if (getMobileOperatingSystem() == 'iOS') {
   url = 'https://apps.apple.com/in/app/razorpay-payments-dashboard/id1497250144';
 }
 
-// eslint-disable-next-line react/no-unsafe
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      paymentlinks: state.paymentlinks,
-      paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
-    };
-  },
-  { handleProductQuickGuide, openModal, closeModal },
-)
 class PaymentLinksContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -203,7 +190,7 @@ class PaymentLinksContainer extends React.Component {
             >
               Convert customers who drop-off because of a failed payment. Available from Feb 9,2022{' '}
               <DocLink
-                class="btn btn-link"
+                className="btn btn-link"
                 href="https://razorpay.com/docs/payments/payment-links/announcements/retry-link/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -270,4 +257,16 @@ class PaymentLinksContainer extends React.Component {
   }
 }
 
-export default withI18Service(PaymentLinksContainer);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        paymentlinks: state.paymentlinks,
+        paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
+      };
+    },
+    { handleProductQuickGuide, openModal, closeModal },
+  ),
+  withI18Service,
+)(PaymentLinksContainer);

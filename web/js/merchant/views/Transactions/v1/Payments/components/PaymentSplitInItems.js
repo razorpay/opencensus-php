@@ -72,7 +72,7 @@ class PaymentSplitInItems extends Component {
 
     return (
       <EntityDetailRow label="Payment Split">
-        <div class="full-width-item sub-entity-list" style={{ marginTop: 24 }}>
+        <div className="full-width-item sub-entity-list" style={{ marginTop: 24 }}>
           <DataTable
             title="Payments"
             loading={isLoading}

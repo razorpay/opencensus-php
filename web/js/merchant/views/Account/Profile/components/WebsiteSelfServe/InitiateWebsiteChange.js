@@ -121,12 +121,12 @@ function InitiateWebsiteChange(props) {
   // user should have key access, user should not fully activated and user has payment enabled
   if (props.user.has_key_access && !props.user.isAccepted && props.user.isActivated) {
     return (
-      <div class="website-self-serve-initiate-modal">
+      <div className="website-self-serve-initiate-modal">
         <ModalHeader
           title="You can add a new website/app URL later"
           onCloseClick={props.closeModal}
         />
-        <p class="amp-content">
+        <p className="amp-content">
           We're currently reviewing the website/app you've already shared. Once the review is
           complete, you'll be able to add a new website/app without any hassle.
         </p>
@@ -197,12 +197,12 @@ function InitiateWebsiteChange(props) {
   }
 
   return (
-    <div class="website-self-serve-initiate-modal">
+    <div className="website-self-serve-initiate-modal">
       <ModalHeader title={title} onCloseClick={props.closeModal} />
-      <div class="img-container">
+      <div className="img-container">
         <img src="https://cdn.razorpay.com/static/assets/website-self-serve/Website-change.svg" />
       </div>
-      <div class="content">
+      <div className="content">
         <strong>Keep in mind</strong>
         <span>
           <ol>
@@ -216,10 +216,10 @@ function InitiateWebsiteChange(props) {
           </ol>
         </span>
       </div>
-      <div class="action">
-        <button class="btn btn-primary" onClick={onProceedClick}>
+      <div className="action">
+        <button className="btn btn-primary" onClick={onProceedClick}>
           Proceed to update website/app
-          <i class="i i-chevron-right" />
+          <i className="i i-chevron-right" />
         </button>
       </div>
     </div>

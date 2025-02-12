@@ -3,10 +3,8 @@ import CreditPullModal from 'merchant/containers/CreditPullModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { compose } from 'redux';
 
-@connect(() => ({}), {
-  ...ModalActions,
-})
 class CreditPullAnnouncement extends Component {
   render() {
     return (
@@ -34,4 +32,8 @@ class CreditPullAnnouncement extends Component {
   }
 }
 
-export default CreditPullAnnouncement;
+export default compose(
+  connect(() => ({}), {
+    ...ModalActions,
+  }),
+)(CreditPullAnnouncement);

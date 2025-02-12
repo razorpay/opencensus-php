@@ -5,26 +5,26 @@ import track from './track';
 export default (props) => {
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Title</label>
         <Field
           name="title"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.searchTitle}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field name="status" component="select" className="form-control input-sm">
           <option value="">All</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </Field>
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -32,7 +32,7 @@ export default (props) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.searchCount}
         />
       </div>

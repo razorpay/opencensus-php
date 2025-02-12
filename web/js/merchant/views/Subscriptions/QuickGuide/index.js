@@ -52,7 +52,7 @@ export default class SubscriptionQuickGuide extends React.Component {
 
     return (
       <QuickStepGuide
-        class="Subscriptions"
+        className="Subscriptions"
         title={Title}
         closeBtn={CloseBtn}
         activeStep={activeStep}

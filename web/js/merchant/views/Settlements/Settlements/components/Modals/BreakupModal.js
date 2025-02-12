@@ -68,7 +68,7 @@ class BreakdownModal extends Component {
     // If items not yet ready, showing spinner
     if (loading) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -78,7 +78,7 @@ class BreakdownModal extends Component {
       <div>
         <ModalHeader title={`Breakup for #${settlementId}`} onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           {error && <Alert type="error" message={error} />}
 
           <SettlementBreakupTable
@@ -89,15 +89,15 @@ class BreakdownModal extends Component {
             currency={settlementCurrency}
           />
 
-          <div class="Modal__actions text-right settlement-amount-row">
-            <span class="settled-amount">
+          <div className="Modal__actions text-right settlement-amount-row">
+            <span className="settled-amount">
               Total Settled Amount:{' '}
               <Amount
                 value={calculateSettledAmount(items, isBreakupNew)}
                 currency={settlementCurrency}
               />
             </span>
-            <button class="btn btn-default" onClick={this.props.closeModal}>
+            <button className="btn btn-default" onClick={this.props.closeModal}>
               Close
             </button>
           </div>

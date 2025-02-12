@@ -11,7 +11,7 @@ export default class FixedAmount extends React.Component {
 
         {/* Dummy Checkbox for optional field */}
         {!isMandatory && (
-          <div class="Input--checkboxTooltip">
+          <div className="Input--checkboxTooltip">
             <Input.Check disabled />
 
             <Popover

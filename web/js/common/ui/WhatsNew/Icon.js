@@ -99,7 +99,7 @@ const WhatsNewIcon = ({
     if (!showMobileNav) {
       return (
         <>
-          <span onClick={handleSliderToggleClick} class={classList(hasUnread && 'highlight')}>
+          <span onClick={handleSliderToggleClick} className={classList(hasUnread && 'highlight')}>
             What's New
           </span>
           {hasUnread && <span className="bubble">{totalUnread}</span>}

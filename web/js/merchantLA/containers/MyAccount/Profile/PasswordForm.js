@@ -10,12 +10,9 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { compose } from 'redux';
 
-@connect(null, { closeModal, showNotification })
-@reduxForm({
-  form: 'updatePasswordChangeForm',
-})
-export default class PasswordForm extends PureComponent {
+class PasswordForm extends PureComponent {
   changePassword = (props) => {
     return updatePassword(props)
       .then(() => {
@@ -59,43 +56,43 @@ export default class PasswordForm extends PureComponent {
     return (
       <form onSubmit={handleSubmit(this.changePassword)}>
         <ModalHeader title="Change Password" onCloseClick={this.props.closeModal} />
-        <div class="modal-body">
-          <div class="form-group">
+        <div className="modal-body">
+          <div className="form-group">
             <Field
               component={InputField}
               type="password"
               placeholder="Current Password"
               name="old_password"
-              class="form-control"
+              className="form-control"
               validate={required()}
               autoFocus={true}
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <Field
               component={InputField}
               type="password"
               placeholder="New Password"
               name="password"
-              class="form-control"
+              className="form-control"
               validate={required()}
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <Field
               component={InputField}
               type="password"
               placeholder="Confirm New Password"
               name="password_confirmation"
-              class="form-control"
+              className="form-control"
               validate={required()}
             />
           </div>
 
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               text="Change Password"
               pendingText="Updating..."
               onClick={handleSubmit(this.changePassword)}
@@ -106,3 +103,10 @@ export default class PasswordForm extends PureComponent {
     );
   }
 }
+
+export default compose(
+  connect(null, { closeModal, showNotification }),
+  reduxForm({
+    form: 'updatePasswordChangeForm',
+  }),
+)(PasswordForm);

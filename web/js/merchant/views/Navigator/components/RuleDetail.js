@@ -1,13 +1,15 @@
-import Spinner from 'common/ui/Spinner';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import React, { Component, Fragment } from 'react';
+import moment from 'moment';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import moment from 'moment';
+import Spinner from 'common/ui/Spinner';
+import { deepClone } from 'common/utils/rzp-utils';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import {
   fetchRule,
   reorderRules,
@@ -15,12 +17,13 @@ import {
   fetchRules,
   deleteRule,
 } from 'merchant/reducers/navigator/details';
-import Precondition from './Precondition';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
+import DeactivateRule from './DeactivateRule';
+import Precondition from './Precondition';
 import ProviderRules from './ProviderRules';
 import { ReorderRules } from './ReorderRule';
-import PropTypes from 'prop-types';
-import { deepClone } from 'common/utils/rzp-utils';
 import {
   TOTAL_RULE_LIMIT,
   getRuleStatus,
@@ -30,32 +33,7 @@ import {
   parameters,
   createMappedProviders,
 } from './util';
-import DeactivateRule from './DeactivateRule';
 
-@connect(
-  (state) => {
-    return {
-      ...state.payment,
-      default_refund_speed: state.config.config.default_refund_speed,
-      config: state.config.config,
-      rules: state.navigator.rules,
-      rule_detail_loading: state.navigator.rule_detail_loading,
-      rules_loaded: state.navigator.rules_loaded,
-      default_rule: state.navigator.default_rule,
-      rule: state.navigator.rule,
-      terminalProviders: state.navigator.terminalProviders,
-    };
-  },
-  {
-    ...ModalActions,
-    ...NotificationsActions,
-    reorderRules,
-    fetchRule,
-    fetchRules,
-    deleteRule,
-    changeRuleMode,
-  },
-)
 class RuleDetail extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -126,14 +104,14 @@ class RuleDetail extends Component {
     });
     const status = getRuleStatus(this.props.rule);
     return (
-      <div class="content-wrapper content-sm txn-details navigator-rule-detail">
+      <div className="content-wrapper content-sm txn-details navigator-rule-detail">
         {this.props.rule_detail_loading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               <div className="row">
                 <div
                   className="col-xs-7"
@@ -175,10 +153,10 @@ class RuleDetail extends Component {
               </div>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 {!this.props.rule.is_default ? (
-                  <div class="list-group details-row-container">
+                  <div className="list-group details-row-container">
                     <EntityDetailRow
                       label="Rule Priority"
                       value={() => (
@@ -218,13 +196,13 @@ class RuleDetail extends Component {
                     />
                   </div>
                 ) : null}
-                <div class="list-group details-row-container">
+                <div className="list-group details-row-container">
                   <EntityDetailRow
                     label="Status"
                     value={() => (
                       <Fragment>
                         <span
-                          class={`rule-detail-mode status-label rule-status-label label label-${
+                          className={`rule-detail-mode status-label rule-status-label label label-${
                             status == 'live' ? 'success' : 'info'
                           }`}
                         >
@@ -353,7 +331,7 @@ class RuleDetail extends Component {
                   />
                 </div>
                 {/* {!this.props.rule.is_default ? (
-                  <div class="list-group details-row-container">
+                  <div className="list-group details-row-container">
                     <EntityDetailRow
                       label="Rule Name"
                       value={() => removeMid(this.props.rule.name)}
@@ -361,14 +339,14 @@ class RuleDetail extends Component {
                   </div>
                 ) : null} */}
                 {!this.props.rule.is_default ? (
-                  <div class="list-group details-row-container">
+                  <div className="list-group details-row-container">
                     <EntityDetailRow
                       label="Rule Description"
                       value={() => this.props.rule.description}
                     />
                   </div>
                 ) : null}
-                <div class="list-group details-row-container precondition-form-pair">
+                <div className="list-group details-row-container precondition-form-pair">
                   <EntityDetailRow
                     label="Rule Condition"
                     value={() =>
@@ -386,7 +364,7 @@ class RuleDetail extends Component {
                     }
                   />
                 </div>{' '}
-                <div class="list-group details-row-container precondition-form-pair provider-rules-form-pair">
+                <div className="list-group details-row-container precondition-form-pair provider-rules-form-pair">
                   <EntityDetailRow
                     label="Target Provider"
                     value={() => (
@@ -411,7 +389,7 @@ class RuleDetail extends Component {
                   />
                 </div>
                 {!this.props.rule.is_default ? (
-                  <div class="list-group details-row-container">
+                  <div className="list-group details-row-container">
                     <EntityDetailRow
                       label="Created By"
                       value={() => (
@@ -423,7 +401,7 @@ class RuleDetail extends Component {
                     />
                   </div>
                 ) : null}
-                <div class="list-group details-row-container">
+                <div className="list-group details-row-container">
                   <EntityDetailRow
                     label="Last Edited By"
                     value={() => (
@@ -451,4 +429,30 @@ class RuleDetail extends Component {
   };
 }
 
-export default withRouter(RuleDetail);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.payment,
+        default_refund_speed: state.config.config.default_refund_speed,
+        config: state.config.config,
+        rules: state.navigator.rules,
+        rule_detail_loading: state.navigator.rule_detail_loading,
+        rules_loaded: state.navigator.rules_loaded,
+        default_rule: state.navigator.default_rule,
+        rule: state.navigator.rule,
+        terminalProviders: state.navigator.terminalProviders,
+      };
+    },
+    {
+      ...ModalActions,
+      ...NotificationsActions,
+      reorderRules,
+      fetchRule,
+      fetchRules,
+      deleteRule,
+      changeRuleMode,
+    },
+  ),
+)(RuleDetail);

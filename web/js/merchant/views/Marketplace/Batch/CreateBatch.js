@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withSplitzService } from 'common/splitz';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
@@ -20,15 +21,6 @@ import { closeModal } from 'merchant_common/reducers/modals';
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
-@connect((state) => ({ user: state.session.user }), {
-  createTransferBatch,
-  validateTransferBatch,
-  createLinkedAccountBatch,
-  validateLinkedAccountBatch,
-  createReversalsBatch,
-  validateReversalsBatch,
-  closeModal,
-})
 class CreateHostedMandateBatch extends Component {
   renderTransfersModal = () => (
     <BatchUpload
@@ -155,4 +147,15 @@ class CreateHostedMandateBatch extends Component {
   }
 }
 
-export default withSplitzService(CreateHostedMandateBatch);
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    createTransferBatch,
+    validateTransferBatch,
+    createLinkedAccountBatch,
+    validateLinkedAccountBatch,
+    createReversalsBatch,
+    validateReversalsBatch,
+    closeModal,
+  }),
+  withSplitzService,
+)(CreateHostedMandateBatch);

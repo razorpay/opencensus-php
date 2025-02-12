@@ -1,16 +1,18 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
-import BaseForm from './BaseForm';
-import AdvancedForm from './AdvancedForm';
-import { ImageCropperModal } from './ImageCropper';
-import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+
+import { getCurrency } from 'common/ui/Amount';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import {
   isMandatoryToBool,
   mapFieldToAmountFieldType,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import { getCurrency } from 'common/ui/Amount';
-import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
+
+import AdvancedForm from './AdvancedForm';
+import BaseForm from './BaseForm';
+import { ImageCropperModal } from './ImageCropper';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -212,7 +214,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isImageCropperOpened,
       } = this.state;
       return (
-        <div class="CreatorManager">
+        <div className="CreatorManager">
           {/* eslint-disable-next-line react/jsx-pascal-case */}
           <_WrappedDisplayFieldComponent
             field={field}
@@ -268,8 +270,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   return HOC;
 }
 
-@connect((state) => ({ user: state.session.user }))
-class BaseFormModal extends React.PureComponent {
+class BaseFormModalComponent extends React.PureComponent {
   onSaveForm = (formData) => {
     this.props.onSaveForm(formData);
     this.props.closeFormModal();
@@ -299,7 +300,7 @@ class BaseFormModal extends React.PureComponent {
     } = this.props;
 
     return (
-      <CreatorModal class="CreatorModal-BaseForm" overElement allowScroll>
+      <CreatorModal className="CreatorModal-BaseForm" overElement allowScroll>
         <BaseForm
           field={field}
           fieldType={fieldType}
@@ -322,6 +323,7 @@ class BaseFormModal extends React.PureComponent {
     );
   }
 }
+const BaseFormModal = connect((state) => ({ user: state.session.user }))(BaseFormModalComponent);
 
 class AdvancedFormModal extends React.PureComponent {
   onSaveForm = (formData, fieldType) => {
@@ -334,7 +336,7 @@ class AdvancedFormModal extends React.PureComponent {
 
     // TODO: Handle currency
     return (
-      <CreatorModal class="CreatorModal-AdvancedForm" onClose={closeFormModal}>
+      <CreatorModal className="CreatorModal-AdvancedForm" onClose={closeFormModal}>
         <AdvancedForm
           field={field}
           fieldType={fieldType}

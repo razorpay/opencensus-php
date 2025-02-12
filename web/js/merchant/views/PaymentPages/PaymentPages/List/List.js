@@ -129,7 +129,7 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                             return (
                               <tr key={ix}>
                                 <td>
-                                  <span class="item-ellipsis">{itemName}</span>
+                                  <span className="item-ellipsis">{itemName}</span>
                                 </td>
                               </tr>
                             );
@@ -137,8 +137,8 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                           {item?.payment_page_items?.length > 2 && (
                             <tr>
                               <td>
-                                <span class="help-content">
-                                  <span class="more-btn">
+                                <span className="help-content">
+                                  <span className="more-btn">
                                     <b>+ {item.payment_page_items.length - 2} more</b>
                                   </span>
                                 </span>
@@ -154,7 +154,7 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                           {item?.payment_page_items?.slice(0, 2).map((pi, ix) => (
                             <tr key={ix}>
                               <td>
-                                <span class="item-ellipsis">
+                                <span className="item-ellipsis">
                                   {!isStorefrontPage ? (
                                     <>
                                       {Number(pi.quantity_sold)}
@@ -179,10 +179,10 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                   </HideItem>
                   <TableCell>
                     {item.short_url && (
-                      <span class="CopyLink">
+                      <span className="CopyLink">
                         <span>{item.short_url}</span>
                         <CustomClipboard value={item.short_url} onCopy={() => trackCopyClick(item)}>
-                          <button class="btn btn-default btn-xs">copy</button>
+                          <button className="btn btn-default btn-xs">copy</button>
                         </CustomClipboard>
                       </span>
                     )}

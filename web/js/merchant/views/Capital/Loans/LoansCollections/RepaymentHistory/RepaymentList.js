@@ -29,7 +29,7 @@ const ListItem = ({ repayment }) => {
         <Amount value={Number(amount)} />
       </td>
       <td className="text-xs text-center flex justify-center">
-        <span class={`status-pill status-pill-${StatusPillClasses[status]}`}>
+        <span className={`status-pill status-pill-${StatusPillClasses[status]}`}>
           {STATUS_LABELS[status]}
         </span>
       </td>

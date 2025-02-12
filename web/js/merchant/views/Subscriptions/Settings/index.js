@@ -1,8 +1,13 @@
 import React from 'react';
+import { Alert as BladeAlert, Link } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
 // eslint-disable-next-line no-restricted-imports
+import { compose } from 'redux';
+
 import { withI18Service } from 'common/i18';
+import { useSplitzService, withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
 import Alert from 'common/ui/Forms/Alert';
@@ -17,6 +22,7 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { fetchSettings, saveSettings } from 'merchant/reducers/subscriptions';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import {
   CARD_AFA_MAX_LIMIT,
@@ -27,10 +33,6 @@ import {
   DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { Alert as BladeAlert, Link } from '@razorpay/blade/components';
-import { useSplitzService, withSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -131,21 +133,6 @@ const cardNote = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: <div />,
 };
 
-@connect(
-  (state, ownProps) => ({
-    // if experiment is not enabled, then show the default settings
-    settings: isSubsciptionsToggleAllowed(ownProps.splitz)
-      ? state.subscriptions.settings
-      : {
-          loading: false,
-          items: [],
-          error: null,
-        },
-    user: state.session.user,
-    org: state.session.org,
-  }),
-  { fetchSettings, saveSettings, showNotification },
-)
 class SubscriptionsSettings extends React.Component {
   state = {};
 
@@ -216,16 +203,16 @@ class SubscriptionsSettings extends React.Component {
     const merchantCurrency = user?.merchant?.currency;
     if (settings.loading) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
     }
 
     return (
-      <div class="Subscriptions--Settings content-wrapper">
+      <div className="Subscriptions--Settings content-wrapper">
         <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <TakeATourButton
               feature={RZPFeatures.SUBSCRIPTIONS}
               onClick={() => analytics.track('setting.search.help')}
@@ -239,7 +226,7 @@ class SubscriptionsSettings extends React.Component {
         </HeaderAction>
 
         <div
-          class="panel panel-default panel-theme"
+          className="panel panel-default panel-theme"
           style={
             user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled ? {} : { maxWidth: '854px' }
           }
@@ -248,17 +235,17 @@ class SubscriptionsSettings extends React.Component {
             <Alert type="error" message={settings.errors} showDismiss={false} />
           ) : (
             <>
-              <div class="panel-heading">
-                <span class="title">Payment Methods</span>{' '}
+              <div className="panel-heading">
+                <span className="title">Payment Methods</span>{' '}
                 <DocsLink
                   title="Know More"
                   url="https://razorpay.com/docs/subscriptions/dashboard/settings/#steps"
                 />
               </div>
-              <div class="panel-body">
-                <div class="row">
+              <div className="panel-body">
+                <div className="row">
                   <div
-                    class={classList(
+                    className={classList(
                       user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
                         ? 'col-md-4'
                         : 'col-md-6',
@@ -268,7 +255,7 @@ class SubscriptionsSettings extends React.Component {
                     <ToggleCard
                       title={
                         <>
-                          <i class="i i-card m-r" /> Card
+                          <i className="i i-card m-r" /> Card
                         </>
                       }
                       methodName={PAYMENT_METHODS.CARD}
@@ -308,7 +295,7 @@ class SubscriptionsSettings extends React.Component {
 
                   {!user.isOrgCurlec && (
                     <div
-                      class={classList(
+                      className={classList(
                         user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
                           ? 'col-md-4'
                           : 'col-md-6',
@@ -318,7 +305,7 @@ class SubscriptionsSettings extends React.Component {
                       <ToggleCard
                         title={
                           <>
-                            <i class="i i-upi m-r" /> UPI
+                            <i className="i i-upi m-r" /> UPI
                           </>
                         }
                         methodName={PAYMENT_METHODS.UPI}
@@ -366,7 +353,7 @@ class SubscriptionsSettings extends React.Component {
 
                   {user.isOrgCurlec && (
                     <div
-                      class={classList(
+                      className={classList(
                         user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
                           ? 'col-md-4'
                           : 'col-md-6',
@@ -376,7 +363,7 @@ class SubscriptionsSettings extends React.Component {
                       <ToggleCard
                         title={
                           <>
-                            <i class="i i-upi m-r" /> Touch 'n Go Wallet
+                            <i className="i i-upi m-r" /> Touch 'n Go Wallet
                           </>
                         }
                         methodName={PAYMENT_METHODS.TOUCH_N_GO_WALLET}
@@ -412,11 +399,11 @@ class SubscriptionsSettings extends React.Component {
                   )}
 
                   {user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled && (
-                    <div class="col-md-4 column">
+                    <div className="col-md-4 column">
                       <ToggleCard
                         title={
                           <>
-                            <i class="i i-bank m-r" /> eMandate
+                            <i className="i i-bank m-r" /> eMandate
                           </>
                         }
                         methodName={PAYMENT_METHODS.EMANDATE}
@@ -468,26 +455,26 @@ const ToggleCard = ({
   const showRedirectionAlert = canToggleSubscriptions && !methodEnabled;
 
   return (
-    <div class="panel panel-default ToggleCard">
-      <div class="panel-heading">
-        <span class="title">{title}</span>
+    <div className="panel panel-default ToggleCard">
+      <div className="panel-heading">
+        <span className="title">{title}</span>
         {showToggle && (
-          <span class="pull-right toggler-btn">
+          <span className="pull-right toggler-btn">
             <SwitchField checked={checked} onChange={onToggleChange} type="prime" />
-            <strong class={classList('m-l', checked ? 'text-primary' : 'text-faded')}>
+            <strong className={classList('m-l', checked ? 'text-primary' : 'text-faded')}>
               {checked ? 'Enabled' : 'Disabled'}
             </strong>
           </span>
         )}
       </div>
-      <div class="panel-body">
-        <div class="description">
+      <div className="panel-body">
+        <div className="description">
           {typeof description === 'function' ? description() : description}
         </div>
         {info !== null && (
-          <div class="m-t">
+          <div className="m-t">
             <Banner className="settings-banner">
-              <i class="i-info-outline m-r" />
+              <i className="i-info-outline m-r" />
               <div>{typeof info === 'function' ? info() : info}</div>
             </Banner>
           </div>
@@ -534,4 +521,22 @@ const ToggleCard = ({
   );
 };
 
-export default withSplitzService(withI18Service(SubscriptionsSettings));
+export default compose(
+  connect(
+    (state, ownProps) => ({
+      // if experiment is not enabled, then show the default settings
+      settings: isSubsciptionsToggleAllowed(ownProps.splitz)
+        ? state.subscriptions.settings
+        : {
+            loading: false,
+            items: [],
+            error: null,
+          },
+      user: state.session.user,
+      org: state.session.org,
+    }),
+    { fetchSettings, saveSettings, showNotification },
+  ),
+  withSplitzService,
+  withI18Service,
+)(SubscriptionsSettings);

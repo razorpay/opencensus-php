@@ -9,6 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import { getCookie } from 'common/utils/cookies';
+import { compose } from 'redux';
 
 const EMAIL = 'email';
 const NAME = 'full_name';
@@ -42,30 +43,6 @@ const SubmissionSuccessfull = () => (
   </div>
 );
 
-@connect(
-  (state) => {
-    return {
-      ...fields.reduce(
-        (acc, element) => ({
-          ...acc,
-          [element]: selector(state, element),
-        }),
-        {},
-      ),
-      initialValues: {
-        [NAME]: (state.session.user.user || {}).name,
-        [EMAIL]: (state.session.user.user || {}).email,
-        [PHONE]: (state.session.user.user || {}).contact_mobile,
-      },
-    };
-  },
-  {
-    showNotification,
-  },
-)
-@reduxForm({
-  form: 'customerDetails',
-})
 class OpfinAnnouncementForm extends React.Component {
   state = {
     activeView: 'form-view',
@@ -140,37 +117,37 @@ class OpfinAnnouncementForm extends React.Component {
           auto-apply once you get started with Opfin.
         </p>
         <form autoComplete="off">
-          <div class="form-group">
+          <div className="form-group">
             <label className="control-label label-required">Email</label>
             <Field
               name={EMAIL}
               component={InputField}
-              class="form-control"
+              className="form-control"
               validate={validateEmail('Please provide a valid email')}
               onBlur={this.props.onBlur}
               required
               autoFocus
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <label className="control-label label-required">Full name</label>
             <div>
               <Field
                 name={NAME}
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 onBlur={this.props.onBlur}
                 required
               />
             </div>
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <label className="control-label label-required">Phone number</label>
             <div>
               <Field
                 name={PHONE}
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 onBlur={this.props.onBlur}
                 validate={validatePhone('Please provide a valid phone')}
                 required
@@ -190,33 +167,33 @@ class OpfinAnnouncementForm extends React.Component {
             ]}
           />
           {this.props[INCHARGE] === 'No' ? (
-            <div class="form-group">
+            <div className="form-group">
               <label className="control-label">Email of the person in charge of payroll</label>
               <Field
                 name={OTHER_EMAIL}
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 validate={validateEmail('Please provide a valid email')}
                 onBlur={this.props.onBlur}
               />
             </div>
           ) : null}
-          <div class="form-group">
+          <div className="form-group">
             <label className="control-label label-required">Company name</label>
             <Field
               name={COMPANY}
               component={InputField}
-              class="form-control"
+              className="form-control"
               onBlur={this.props.onBlur}
               required
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <label className="control-label label-required">
               How many employees does your company have?
             </label>
             <Field
-              class="form-control"
+              className="form-control"
               name={EMPLOYEES}
               component="select"
               defaultValue="Please Select"
@@ -242,10 +219,10 @@ class OpfinAnnouncementForm extends React.Component {
               ))}
             </Field>
           </div>
-          <div class="footer">
+          <div className="footer">
             <AsyncBtn.Primary
               type="submit"
-              class="btn btn-primary"
+              className="btn btn-primary"
               disabled={shouldSubmitBeDisabled}
               onClick={handleSubmit(this.save)}
             >
@@ -258,4 +235,29 @@ class OpfinAnnouncementForm extends React.Component {
   }
 }
 
-export default OpfinAnnouncementForm;
+export default compose(
+  reduxForm({
+    form: 'customerDetails',
+  }),
+  connect(
+    (state) => {
+      return {
+        ...fields.reduce(
+          (acc, element) => ({
+            ...acc,
+            [element]: selector(state, element),
+          }),
+          {},
+        ),
+        initialValues: {
+          [NAME]: (state.session.user.user || {}).name,
+          [EMAIL]: (state.session.user.user || {}).email,
+          [PHONE]: (state.session.user.user || {}).contact_mobile,
+        },
+      };
+    },
+    {
+      showNotification,
+    },
+  ),
+)(OpfinAnnouncementForm);

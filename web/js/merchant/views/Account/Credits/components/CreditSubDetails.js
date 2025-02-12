@@ -1,23 +1,15 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
 import moment from 'moment';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-
 import { fetchCreditById } from 'merchant/reducers/credits';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-@connect(
-  (state) => {
-    return {
-      credits: state.credits.creditsData.items,
-    };
-  },
-  { ...NotificationsActions },
-)
 class CreditSubDetails extends Component {
   state = {
     credit: null,
@@ -46,20 +38,20 @@ class CreditSubDetails extends Component {
       !isLoading && credit.expired_at && moment().isAfter(moment(credit.expired_at, 'X'));
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              <i class="i i-link text-primary" />
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
+              <i className="i i-link text-primary" />
               <strong>Coupon Details: {credit.campaign}</strong>
             </div>
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <div class="list-group details-row-container">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
+                <div className="list-group details-row-container">
                   <EntityDetailRow label="Amount Credits">
                     <strong>
                       <Amount value={credit.value} currency="INR" />
@@ -95,4 +87,14 @@ class CreditSubDetails extends Component {
   }
 }
 
-export default withRouter(CreditSubDetails);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        credits: state.credits.creditsData.items,
+      };
+    },
+    { ...NotificationsActions },
+  ),
+  withRouter,
+)(CreditSubDetails);

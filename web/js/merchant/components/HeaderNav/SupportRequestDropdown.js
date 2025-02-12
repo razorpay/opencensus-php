@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import { logout, updateSession } from 'merchant/reducers/session';
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import { getFormattedDate, STATUSES } from 'merchant/views/TicketSupport/utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { compose } from 'redux';
 
-@RTracking(() => window.rzpQ.component('SupportRequestDropdown'))
 class SupportTicketDropdown extends Component {
   handleHide = () => {
     // hide profile drop down when in hash mode
@@ -49,20 +49,20 @@ class SupportTicketDropdown extends Component {
                 isRTBEnabled ? ' rtb-user-dropdown' : ''
               }`}
             >
-              <span class="support-request-dropdown-trigger">
+              <span className="support-request-dropdown-trigger">
                 {' '}
                 <img
                   src="https://cdn.razorpay.com/static/assets/ticket-system/circle-alert.svg"
                   alt=""
                 />{' '}
-                <span class="support-request-header-dropdown-title">Support Requests</span>
+                <span className="support-request-header-dropdown-title">Support Requests</span>
                 {TicketsByaAgent.length ? <span>({TicketsByaAgent.length})</span> : null}{' '}
                 <span className="caret" />
               </span>{' '}
             </DropdownTrigger>
             <DropdownContent>
-              <div class="dropdown-menu support-dropdown">
-                <div class="support-dropdwon-title">
+              <div className="dropdown-menu support-dropdown">
+                <div className="support-dropdwon-title">
                   Support {`${TicketsByaAgent.length > 1 ? 'Requests' : 'Request'}`}(
                   {TicketsByaAgent.length})
                 </div>
@@ -103,16 +103,20 @@ class SupportTicketDropdown extends Component {
     );
   }
 }
-export default connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-      user: state.session.user,
-      isMobileResolution: state.app.isMobileResolution,
-      trustedBadge: state.trustedBadge.status,
-      ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
-    };
-  },
-  { logout, closeModal, openModal, updateSession },
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        ...state.config.config,
+        user: state.session.user,
+        isMobileResolution: state.app.isMobileResolution,
+        trustedBadge: state.trustedBadge.status,
+        ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
+      };
+    },
+    { logout, closeModal, openModal, updateSession },
+  ),
+  rTracking(() => window.rzpQ.component('SupportRequestDropdown')),
 )(SupportTicketDropdown);

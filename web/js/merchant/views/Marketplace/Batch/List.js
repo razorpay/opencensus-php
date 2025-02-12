@@ -29,9 +29,9 @@ const emptyResultsDescription =
   'Create multiple Transfers, Reversals or linked Accounts, in one go using a batch file. Simply upload a file containing all the information.';
 
 const BatchTypeFilterField = () => (
-  <div class="form-group list-filter-item">
+  <div className="form-group list-filter-item">
     <label>Batch Type</label>
-    <Field name="type" component="select" class="form-control input-sm">
+    <Field name="type" component="select" className="form-control input-sm">
       <option value="">All</option>
       <option value="payment_transfer">Transfers</option>
       <option value="transfer_reversal">Reversals</option>
@@ -40,10 +40,7 @@ const BatchTypeFilterField = () => (
   </div>
 );
 
-@connect((state) => ({ user: state.session.user }), {
-  fetchAll,
-})
-export default class BatchListContainer extends Component {
+class BatchListContainer extends Component {
   render() {
     const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
     return (
@@ -62,3 +59,7 @@ export default class BatchListContainer extends Component {
     );
   }
 }
+
+export default connect((state) => ({ user: state.session.user }), {
+  fetchAll,
+})(BatchListContainer);

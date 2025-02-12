@@ -16,7 +16,7 @@ interface FieldProps {
 const BaseField = ({ name, label }: BaseFieldProps) => (
   <div className="form-group list-filter-item">
     {label || <label>{toTitleCase(name, '_')}</label>}
-    <Field name={name} component="input" class="form-control input-sm" data-testid={name} />
+    <Field name={name} component="input" className="form-control input-sm" data-testid={name} />
   </div>
 );
 

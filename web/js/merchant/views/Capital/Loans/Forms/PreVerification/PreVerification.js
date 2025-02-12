@@ -408,7 +408,7 @@ const PreVerification = (props) => {
           </>
         }
       />
-      <div class="preverification-content">
+      <div className="preverification-content">
         <div className="preverification-content__options">
           <div className="flex">
             <div className="left">
@@ -421,7 +421,7 @@ const PreVerification = (props) => {
                   isNetbankingUpload={documentConfig.isNetbankingUpload}
                 />
               ) : (
-                <div class="preverification-content__option">
+                <div className="preverification-content__option">
                   <NetBanking
                     selected={isNetbankingOptionActive}
                     disabled={state.netbankingDisabled}
@@ -458,7 +458,7 @@ const PreVerification = (props) => {
             <i className="i i-chevron-left" />
             Back
           </Button.Transparent>
-          <AsyncBtn.Primary class="m-l" onClick={handleSubmission} disabled={isSubmitDisabled}>
+          <AsyncBtn.Primary className="m-l" onClick={handleSubmission} disabled={isSubmitDisabled}>
             {ctaText}
             <i className="i i-chevron-right" />
           </AsyncBtn.Primary>

@@ -1,13 +1,13 @@
 const EmptyList = ({ description }) => (
-  <div class="EmptyList">
-    <div class="dummy-circle" />
-    <div class="description">{description}</div>
+  <div className="EmptyList">
+    <div className="dummy-circle" />
+    <div className="description">{description}</div>
   </div>
 );
 
 export const EmptyListWithTableRow = (props) => (
   <tr>
-    <td class="text-center empty-table" colSpan={props.colSpan}>
+    <td className="text-center empty-table" colSpan={props.colSpan}>
       <EmptyList {...props} />
     </td>
   </tr>

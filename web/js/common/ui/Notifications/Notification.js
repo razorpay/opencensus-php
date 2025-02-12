@@ -10,7 +10,7 @@ export const NOTIFICATION_TYPES = {
 class Notification extends Component {
   constructor(...args) {
     super(...args);
-    this.close = ::this.close;
+    this.close = this.close.bind(this);
   }
 
   componentDidMount() {
@@ -73,13 +73,13 @@ class Notification extends Component {
         ref={(notificationEle) => {
           this.notificationEle = notificationEle;
         }}
-        class={`Notification ${NOTIFICATION_TYPES[type]}`}
+        className={`Notification ${NOTIFICATION_TYPES[type]}`}
         data-testid={NOTIFICATION_TYPES[type]}
       >
         {typeof message === 'function' ? (
           message()
         ) : Array.isArray(message) ? (
-          <ul class="list-unstyled">
+          <ul className="list-unstyled">
             {message.map((msg, idx) => (
               <li key={idx}>{msg}</li>
             ))}
@@ -89,7 +89,7 @@ class Notification extends Component {
         ) : (
           'Something Went Wrong'
         )}
-        {showClose && <i class="i i-close" onClick={this.onCloseClick} />}
+        {showClose && <i className="i i-close" onClick={this.onCloseClick} />}
       </div>
     );
   }

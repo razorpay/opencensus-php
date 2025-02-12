@@ -55,13 +55,13 @@ export default class CheckableItem extends Component {
 
     return (
       <div
-        class={`CheckableItem__Container
+        className={`CheckableItem__Container
                 ${checked ? 'CheckableItem__Checked' : ''}`}
         onClick={this.onClick}
       >
-        <div class="CheckableItem__Text">{text}</div>
-        <div class="CheckableItem__Tick">
-          <i class="i-check" />
+        <div className="CheckableItem__Text">{text}</div>
+        <div className="CheckableItem__Tick">
+          <i className="i-check" />
         </div>
       </div>
     );

@@ -1,11 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { classList } from 'common/utils/rzp-utils';
-@connect((state) => ({
-  org: state.session.org,
-  isMobileResolution: state.app.isMobileResolution,
-}))
-export default class StepGuide extends React.Component {
+import { compose } from 'redux';
+
+class StepGuide extends React.Component {
   constructor(props) {
     super(props);
 
@@ -44,11 +42,11 @@ export default class StepGuide extends React.Component {
     const { className, title, children, closeBtn, isMobileResolution, org } = this.props;
     const { activeStep, showLeftIndicator, showRightIndicator } = this.state;
 
-    const CloseBtn = closeBtn && (closeBtn || <i class="i i-close" />);
+    const CloseBtn = closeBtn && (closeBtn || <i className="i i-close" />);
 
     return (
       <div
-        class={classList(
+        className={classList(
           'StepGuide',
           className && `StepGuide--${className}`,
           isMobileResolution && 'StepGuide-mobile',
@@ -57,24 +55,26 @@ export default class StepGuide extends React.Component {
       >
         {showLeftIndicator && (
           <i
-            class="StepGuide-indicator i i-chevron-left"
+            className="StepGuide-indicator i i-chevron-left"
             onClick={() => this.handleSlideIndicator(true)}
           />
         )}
         {showRightIndicator && (
           <i
-            class="StepGuide-indicator i i-chevron-right"
+            className="StepGuide-indicator i i-chevron-right"
             onClick={() => this.handleSlideIndicator(false)}
           />
         )}
-        {title && <div class="StepGuide--Title">{title}</div>}
+        {title && <div className="StepGuide--Title">{title}</div>}
 
-        <div class="StepGuide--Steps">{isMobileResolution ? children[activeStep] : children}</div>
+        <div className="StepGuide--Steps">
+          {isMobileResolution ? children[activeStep] : children}
+        </div>
 
-        {CloseBtn && <span class="StepGuide--Close">{CloseBtn}</span>}
+        {CloseBtn && <span className="StepGuide--Close">{CloseBtn}</span>}
 
         {isMobileResolution && (
-          <div class="StepGuide--Switcher">
+          <div className="StepGuide--Switcher">
             {children.map((ele, stepNum) => (
               <div
                 key={stepNum}
@@ -88,3 +88,10 @@ export default class StepGuide extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({
+    org: state.session.org,
+    isMobileResolution: state.app.isMobileResolution,
+  })),
+)(StepGuide);

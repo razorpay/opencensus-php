@@ -42,18 +42,6 @@ const getVolmeListItem = (currency) => {
   };
 };
 
-@connect(
-  (state) => ({
-    ...state.commissionsAggregate,
-    user: state?.session?.user,
-    org: state?.session?.org,
-  }),
-  {
-    fetchAggregate,
-    openModal,
-    closeModal,
-  },
-)
 class CommissionsDailyList extends ListContainer {
   state = {
     isInviteMerchantModalOpen: false,
@@ -149,10 +137,16 @@ class CommissionsDailyList extends ListContainer {
     const volume = getVolmeListItem(currency);
 
     return (
-      <div class="content-wrapper CommissionList--Daily">
+      <div className="content-wrapper CommissionList--Daily">
         <ListFilter onDatesChange={this.onDatesChange} />
         <DataTable
-          columns={[this.dateColumn, this.props.amountColumn, volume, activeMerchants, transactions]}
+          columns={[
+            this.dateColumn,
+            this.props.amountColumn,
+            volume,
+            activeMerchants,
+            transactions,
+          ]}
           title="Data"
           EmptyComponent={this.renderLessThanRequiredMerchants}
           {...this.props}
@@ -173,4 +167,16 @@ export default compose(
   withPartnerDashboardExperiments,
   withRouter,
   withI18Service,
+  connect(
+    (state) => ({
+      ...state.commissionsAggregate,
+      user: state?.session?.user,
+      org: state?.session?.org,
+    }),
+    {
+      fetchAggregate,
+      openModal,
+      closeModal,
+    },
+  ),
 )(CommissionsDailyList);

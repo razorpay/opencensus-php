@@ -29,13 +29,13 @@ class AnnouncementBar extends Component {
 
   render() {
     return (
-      <div class="announcement-sidebar">
-        <div class="wrapper">
+      <div className="announcement-sidebar">
+        <div className="wrapper">
           <h2>Reduce Platform Fee to 1.65% </h2>
           <p>Get a current Account with RazorpayX</p>
         </div>
         <a
-          class="Button--secondary Button scheduled-btn-act"
+          className="Button--secondary Button scheduled-btn-act"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {

@@ -7,7 +7,7 @@ function ApplicationOverviewLoadingSkeleton() {
   return (
     <div className="status-overview">
       <div className="loan-application-overview-header flex">
-        <div class="section">
+        <div className="section">
           <h4 className="title no-margin PlaceholderLoader" />
           <p className="description text--secondary PlaceholderLoader" />
         </div>

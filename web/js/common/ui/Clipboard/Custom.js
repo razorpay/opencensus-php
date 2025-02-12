@@ -1,21 +1,15 @@
 // Todo: delete this file, it's available in @dashboard/shared-ui
 import { Component } from 'react';
 import { connect } from 'react-redux';
-
+import { compose } from 'redux';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 
-@connect(
-  (state) => ({
-    isWebView: state.app.isWebView,
-  }),
-  null,
-)
-export default class Clipboard extends Component {
+class Clipboard extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-    this.copyToClipboard = ::this.copyToClipboard;
-    this.selectValue = ::this.selectValue;
+    this.copyToClipboard = this.copyToClipboard.bind(this);
+    this.selectValue = this.selectValue.bind(this);
   }
 
   UNSAFE_componentWillMount() {
@@ -59,10 +53,10 @@ export default class Clipboard extends Component {
     }
 
     return (
-      <div class="ClipboardCustom">
+      <div className="ClipboardCustom">
         <textarea
           value={this.props.value}
-          class="ClipboardCustom__Input"
+          className="ClipboardCustom__Input"
           readOnly={true}
           ref={(textarea) => (this.textarea = textarea)}
           onFocus={this.selectValue}
@@ -74,3 +68,12 @@ export default class Clipboard extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      isWebView: state.app?.isWebView,
+    }),
+    null,
+  ),
+)(Clipboard);

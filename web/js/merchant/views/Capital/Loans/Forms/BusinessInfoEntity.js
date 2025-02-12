@@ -14,6 +14,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { isPreceedingState } from '../../utils';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
+import { compose } from 'redux';
 
 //TODO:Refactor this when removed redux form dependency.
 const TextInputWrapper = ({ input, ...rest }) => <Input {...input} {...rest} />;
@@ -23,100 +24,8 @@ const SelectInputWrapper = ({ input, ...rest }) => {
 const TextAreaWrapper = ({ input, ...rest }) => {
   return <Input.Textarea {...input} {...rest} />;
 };
-const OutlineLockIcon = <i class="i i-outline-lock" />;
+const OutlineLockIcon = <i className="i i-outline-lock" />;
 
-@connect(
-  (state) => {
-    if (state.loanApplicationDetails.meta.data.application.id === 'new') {
-      const {
-        session: { user },
-      } = state;
-      const { loan_attributes: loanAttributes, business_details } = state.loanApplicationDetails;
-      return {
-        session: state.session,
-        loanApplicationDetails: state.loanApplicationDetails,
-        hasLoanAttributesChanged: isDirty('loanee-business-details')(state, [
-          'amount',
-          'expected_tenure',
-          'monthly_volume',
-          'credit_request_purpose',
-        ]),
-        initialValues: {
-          ...(business_details.data.business
-            ? {
-                legal_name: business_details.data.business.legal_name,
-                business_email: business_details.data.business.emails[0].email_id,
-                business_pan: business_details.data.business.business_pan,
-                business_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
-              }
-            : {
-                business_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
-                legal_name: user.business_name,
-                business_email: user.email,
-                business_pan: user.company_pan,
-              }),
-          ...(loanAttributes
-            ? {
-                amount: loanAttributes.amount,
-                expected_tenure: loanAttributes.expected_tenure,
-                credit_request_purpose: loanAttributes.credit_request_purpose,
-                monthly_volume: loanAttributes.monthly_volume,
-              }
-            : {
-                amount: 'R50K_TO_100K',
-                expected_tenure: 'LESS_THAN_A_MONTH',
-                monthly_volume: 'R1LAKH_TO_5LAKHS',
-                credit_request_purpose: '',
-              }),
-        },
-      };
-    }
-    const {
-      business_details,
-      meta: {
-        data: { application },
-      },
-    } = state.loanApplicationDetails;
-    if (business_details.data.business) {
-      return {
-        session: state.session,
-        loanApplicationDetails: state.loanApplicationDetails,
-        initialValues: {
-          business_type: business_details.data.business.deed_type,
-          legal_name: business_details.data.business.legal_name,
-          business_email: business_details.data.business.emails[0].email_id,
-          business_pan: business_details.data.business.business_pan,
-          monthly_volume: application.requested_product_attributes.monthly_volume,
-          amount: application.requested_product_attributes.amount,
-          credit_request_purpose: application.requested_product_attributes.credit_request_purpose,
-          expected_tenure: application.requested_product_attributes.tenure,
-        },
-        hasLoanAttributesChanged: isDirty('loanee-business-details')(state, [
-          'amount',
-          'expected_tenure',
-          'monthly_volume',
-          'credit_request_purpose',
-        ]),
-      };
-    } else {
-      return {
-        session: state.session,
-        loanApplicationDetails: state.loanApplicationDetails,
-      };
-    }
-  },
-  {
-    saveBusinessDetails,
-    saveRequestedLoanAttributes,
-    registerBusiness,
-    saveApplicationDetails,
-    ...NotificationsActions,
-  },
-)
-@reduxForm({
-  form: 'loanee-business-details',
-  enableReinitialize: true,
-})
 class BusinessInfoEntity extends Component {
   constructor() {
     super();
@@ -296,7 +205,7 @@ class BusinessInfoEntity extends Component {
     return (
       <Form
         layout="tabular"
-        class="Form Form--tabular loan-application-form"
+        className="Form Form--tabular loan-application-form"
         onSubmit={this.props.handleSubmit(this.handleSubmit)}
       >
         <Field
@@ -386,10 +295,10 @@ class BusinessInfoEntity extends Component {
           placeholder="Use this space to describe the purpose of your loan to the best of your ability"
         />
 
-        <div class="loan-application-form-footer">
+        <div className="loan-application-form-footer">
           <AsyncBtn.Primary
             type="submit"
-            class="btn btn-primary pull-right no-margin"
+            className="btn btn-primary pull-right no-margin"
             onClick={this.props.handleSubmit(this.handleSubmit)}
           >
             {canModify ? 'Save & Next' : 'Next'}
@@ -401,4 +310,97 @@ class BusinessInfoEntity extends Component {
   }
 }
 
-export default BusinessInfoEntity;
+export default compose(
+  connect(
+    (state) => {
+      if (state.loanApplicationDetails.meta.data.application.id === 'new') {
+        const {
+          session: { user },
+        } = state;
+        const { loan_attributes: loanAttributes, business_details } = state.loanApplicationDetails;
+        return {
+          session: state.session,
+          loanApplicationDetails: state.loanApplicationDetails,
+          hasLoanAttributesChanged: isDirty('loanee-business-details')(state, [
+            'amount',
+            'expected_tenure',
+            'monthly_volume',
+            'credit_request_purpose',
+          ]),
+          initialValues: {
+            ...(business_details.data.business
+              ? {
+                  legal_name: business_details.data.business.legal_name,
+                  business_email: business_details.data.business.emails[0].email_id,
+                  business_pan: business_details.data.business.business_pan,
+                  business_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
+                }
+              : {
+                  business_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
+                  legal_name: user.business_name,
+                  business_email: user.email,
+                  business_pan: user.company_pan,
+                }),
+            ...(loanAttributes
+              ? {
+                  amount: loanAttributes.amount,
+                  expected_tenure: loanAttributes.expected_tenure,
+                  credit_request_purpose: loanAttributes.credit_request_purpose,
+                  monthly_volume: loanAttributes.monthly_volume,
+                }
+              : {
+                  amount: 'R50K_TO_100K',
+                  expected_tenure: 'LESS_THAN_A_MONTH',
+                  monthly_volume: 'R1LAKH_TO_5LAKHS',
+                  credit_request_purpose: '',
+                }),
+          },
+        };
+      }
+      const {
+        business_details,
+        meta: {
+          data: { application },
+        },
+      } = state.loanApplicationDetails;
+      if (business_details.data.business) {
+        return {
+          session: state.session,
+          loanApplicationDetails: state.loanApplicationDetails,
+          initialValues: {
+            business_type: business_details.data.business.deed_type,
+            legal_name: business_details.data.business.legal_name,
+            business_email: business_details.data.business.emails[0].email_id,
+            business_pan: business_details.data.business.business_pan,
+            monthly_volume: application.requested_product_attributes.monthly_volume,
+            amount: application.requested_product_attributes.amount,
+            credit_request_purpose: application.requested_product_attributes.credit_request_purpose,
+            expected_tenure: application.requested_product_attributes.tenure,
+          },
+          hasLoanAttributesChanged: isDirty('loanee-business-details')(state, [
+            'amount',
+            'expected_tenure',
+            'monthly_volume',
+            'credit_request_purpose',
+          ]),
+        };
+      } else {
+        return {
+          session: state.session,
+          loanApplicationDetails: state.loanApplicationDetails,
+        };
+      }
+    },
+    {
+      saveBusinessDetails,
+      saveRequestedLoanAttributes,
+      registerBusiness,
+      saveApplicationDetails,
+      ...NotificationsActions,
+    },
+  ),
+  reduxForm({
+    form: 'loanee-business-details',
+    enableReinitialize: true,
+  }),
+)(BusinessInfoEntity);

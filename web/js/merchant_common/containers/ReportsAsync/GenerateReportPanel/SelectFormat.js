@@ -52,7 +52,7 @@ export default class SelectFormat extends React.Component {
     return (
       <Input.Select
         label="Select Format"
-        class="Input--vTop"
+        className="Input--vTop"
         name="selectedFormat"
         value={this.state.value}
         options={reportFormatOptions}

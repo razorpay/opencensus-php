@@ -1,22 +1,10 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { removeUser, fetchTeamDetails } from 'merchantLA/reducers/team';
-
-@connect(
-  state => {
-    return {
-      merchantId: state.session.user.current,
-    };
-  },
-  {
-    fetchTeamDetails,
-    removeUser,
-    ...NotificationsActions,
-  }
-)
-export default class EditUser extends Component {
+import { compose } from 'redux';
+class EditUser extends Component {
   removeUser = () => {
     return this.props
       .removeUser(this.props.user.id)
@@ -29,7 +17,7 @@ export default class EditUser extends Component {
           message: 'Team member has been removed successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -43,9 +31,9 @@ export default class EditUser extends Component {
         <td>{this.props.user.email}</td>
         <td>{this.props.user.name}</td>
         <td>
-          <div class="btn-toolbar">
+          <div className="btn-toolbar">
             <AsyncButton
-              class="btn btn-sm btn-danger"
+              className="btn btn-sm btn-danger"
               text="Remove"
               data-tip="Removes user from your team"
               onClick={this.removeUser}
@@ -56,3 +44,18 @@ export default class EditUser extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        merchantId: state.session.user.current,
+      };
+    },
+    {
+      fetchTeamDetails,
+      removeUser,
+      ...NotificationsActions,
+    },
+  ),
+)(EditUser);

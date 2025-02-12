@@ -158,7 +158,7 @@ class Tour extends Component {
 
     return (
       <div {...activeChildProps}>
-        <div class="Tour__TargetLens" style={targetLensPos}>
+        <div className="Tour__TargetLens" style={targetLensPos}>
           {/* redering different instance each time */}
           {children.map((child, index) => {
             return (

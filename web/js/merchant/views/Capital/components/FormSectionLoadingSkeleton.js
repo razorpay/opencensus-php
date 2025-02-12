@@ -4,7 +4,7 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 const FormLoader = () => {
   return (
-    <form class="Form Form--tabular loan-application-form">
+    <form className="Form Form--tabular loan-application-form">
       <div className="Input Input--medium loading">
         <div className="Input-label">
           <PlaceholderLoader />

@@ -8,9 +8,9 @@ import { isValidWebsite } from 'common/utils/validators';
 const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
   ({ onSubmit, onCancel, handleSubmit }) => {
     return (
-      <form class={`edit-website-details-form${onCancel ? ' has-cancel-button' : ''}`}>
-        <div class="form-group">
-          <span class="text-muted">
+      <form className={`edit-website-details-form${onCancel ? ' has-cancel-button' : ''}`}>
+        <div className="form-group">
+          <span className="text-muted">
             Your website/app should contain these pages:{' '}
             <ShowWhen
               additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
@@ -18,7 +18,7 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
               <strong>
                 About Us, Contact Us,{' '}
                 <a
-                  class="btn-link"
+                  className="btn-link"
                   href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
                   target="_blank"
                   rel="noreferrer noopener"
@@ -27,7 +27,7 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
                 </a>
                 ,{' '}
                 <a
-                  class="btn-link"
+                  className="btn-link"
                   href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
                   target="_blank"
                   rel="noreferrer noopener"
@@ -36,7 +36,7 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
                 </a>
                 ,{' '}
                 <a
-                  class="btn-link"
+                  className="btn-link"
                   href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
                   target="_blank"
                   rel="noreferrer noopener"
@@ -53,21 +53,21 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
             </ShowWhen>
           </span>
         </div>
-        <div class="form-group">
+        <div className="form-group">
           <label>Website/App Link</label>
           <Field
             name="business_website"
             component={InputField}
-            class="form-control"
+            className="form-control"
             validate={(value) => isValidWebsite({url: value}) ? undefined : 'Please enter a valid URL'}
           />
         </div>
-        <div class="form-group">
-          <button type="button" class="btn btn-default" onClick={onCancel}>
+        <div className="form-group">
+          <button type="button" className="btn btn-default" onClick={onCancel}>
             Cancel
           </button>
           <AsyncButton
-            class="btn btn-primary"
+            className="btn btn-primary"
             text="Add Details"
             onClick={handleSubmit(onSubmit)}
             pendingText="Please Wait..."

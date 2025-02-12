@@ -1,20 +1,15 @@
-import AsyncButton from 'react-async-button';
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import moment from 'moment';
+import { connect } from 'react-redux';
 
 import Amount from 'common/ui/Amount';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
-import { SingleDatePicker } from 'react-dates';
-import { nextWorkingDay, isHoliday } from 'common/utils/bankHolidays';
+import { nextWorkingDay } from 'common/utils/bankHolidays';
 import { titleCase } from 'common/utils/rzp-utils';
-import TransferReversal from 'merchantLA/components/Marketplace/Transfers/TransferReversal';
-
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import TransferReversal from 'merchantLA/components/Marketplace/Transfers/TransferReversal';
 
 let initialState = {
   onHold: 'false',
@@ -48,18 +43,14 @@ const SettlementText = ({ data, transfer }) => {
       </div>
       {data.onHold === 'false' && (
         <div className="text-fade">
-          Transfers scheduled to settle on bank holidays will get settled on the
-          next working day.
+          Transfers scheduled to settle on bank holidays will get settled on the next working day.
         </div>
       )}
     </div>
   );
 };
 
-@connect(state => ({
-  isShowParentPaymentIdEnabled: state.session.user.isShowParentPaymentIdEnabled,
-}))
-export default class TransferDetails extends Component {
+class TransferDetails extends Component {
   state = { ...initialState };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -68,13 +59,13 @@ export default class TransferDetails extends Component {
     initialState = {
       ...initialState,
       onHold: (transfer.on_hold
-        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        ? transfer.on_hold_until
+          ? 'on_hold_until'
+          : 'on_hold'
         : false
       ).toString(),
       holdUntil: transfer.on_hold_until,
-      date: transfer.on_hold_until
-        ? moment((transfer.on_hold_until + 600) * 1000)
-        : null,
+      date: transfer.on_hold_until ? moment((transfer.on_hold_until + 600) * 1000) : null,
     };
 
     this.setState(initialState);
@@ -92,37 +83,28 @@ export default class TransferDetails extends Component {
       isShowParentPaymentIdEnabled,
     } = this.props;
 
-    const nextWorkingDate = nextWorkingDay(
-      moment()
-        .startOf('day')
-        .toDate(),
-      3
-    );
+    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               {onClose && (
-                <button
-                  type="button"
-                  class="close close-secondary"
-                  onClick={onClose}
-                >
-                  <i class="i i-arrow-back" />
-                  <i class="i i-close" />
+                <button type="button" className="close close-secondary" onClick={onClose}>
+                  <i className="i i-arrow-back" />
+                  <i className="i i-close" />
                 </button>
               )}
               Transfer ID: <strong>{transfer.id}</strong>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 <EntityDetailRow label="Parent Account">
                   <Definition>
                     <b>{parentAccountName}</b>
@@ -136,10 +118,7 @@ export default class TransferDetails extends Component {
                 )}
 
                 <EntityDetailRow label="Amount">
-                  <Amount
-                    value={transfer.amount}
-                    currency={transfer.currency}
-                  />
+                  <Amount value={transfer.amount} currency={transfer.currency} />
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Reversal">
@@ -152,11 +131,8 @@ export default class TransferDetails extends Component {
 
                 <EntityDetailRow
                   label="Amount"
-                  value={_ => (
-                    <Time
-                      value={transfer.created_at}
-                      format="Do MMM YYYY, hh:mm:ss a"
-                    />
+                  value={(_) => (
+                    <Time value={transfer.created_at} format="Do MMM YYYY, hh:mm:ss a" />
                   )}
                 />
 
@@ -186,3 +162,7 @@ export default class TransferDetails extends Component {
     );
   }
 }
+
+export default connect((state) => ({
+  isShowParentPaymentIdEnabled: state.session.user.isShowParentPaymentIdEnabled,
+}))(TransferDetails);

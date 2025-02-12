@@ -31,7 +31,7 @@ const OngoingDowntime = (props) => {
   });
 
   return (
-    <div class="downtime-container">
+    <div className="downtime-container">
       {severity === 'low' ? (
         <>
           <img
@@ -40,7 +40,7 @@ const OngoingDowntime = (props) => {
             width="14px"
             alt="Low Severity"
           />
-          <span class="heading">Low severity downtime</span>
+          <span className="heading">Low severity downtime</span>
         </>
       ) : severity === 'medium' ? (
         <>
@@ -50,7 +50,7 @@ const OngoingDowntime = (props) => {
             width="14px"
             alt="Medium Severity"
           />
-          <span class="heading">Medium severity downtime</span>
+          <span className="heading">Medium severity downtime</span>
         </>
       ) : (
         <>
@@ -60,11 +60,11 @@ const OngoingDowntime = (props) => {
             width="14px"
             alt="High Severity"
           />
-          <span class="heading">High severity downtime</span>
+          <span className="heading">High severity downtime</span>
         </>
       )}
 
-      <div class="details">
+      <div className="details">
         {downtimes.map((downtime) => {
           const { id, mapToName, providerName, instrument, started_at, started_date } = downtime;
           return (

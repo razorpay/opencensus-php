@@ -48,38 +48,38 @@ export default class Comments extends Component {
     const { comments } = this.props;
 
     return (
-      <div class="box comments-container">
-        <div class="heading">
+      <div className="box comments-container">
+        <div className="heading">
           <b>Comments:</b>
-          <span class="pull-right">{`${comments.length} comment${
+          <span className="pull-right">{`${comments.length} comment${
             comments.length > 1 ? 's' : ''
           }`}</span>
         </div>
-        <div class="comment-list">
+        <div className="comment-list">
           {cards.length
             ? cards.map((card, idx) => {
                 return card.type === 'comment' ? (
-                  <div key={idx} class="comment">
-                    <label class="box-label">
+                  <div key={idx} className="comment">
+                    <label className="box-label">
                       <strong>{`${card.admin.name}`}</strong>
-                      <span class="secondary-label">{` commented at ${formatDate(
+                      <span className="secondary-label">{` commented at ${formatDate(
                         card.created_at
                       )}`}</span>
                     </label>
-                    <div class="comment-body m-t">{card.comment}</div>
+                    <div className="comment-body m-t">{card.comment}</div>
                   </div>
                 ) : (
-                  <div key={idx} class="comment">
-                    <label class="box-label">
+                  <div key={idx} className="comment">
+                    <label className="box-label">
                       <i
-                        class={
+                        className={
                           card.approved
                             ? 'i i-yes text-success'
                             : 'i i-no text-danger'
                         }
                       />
                       <strong>&nbsp;{`${card.admin.name}`}</strong>
-                      <span class="secondary-label">
+                      <span className="secondary-label">
                         {` ${
                           card.approved ? 'approved' : 'rejected'
                         } at ${formatDate(card.created_at)}`}
@@ -90,7 +90,7 @@ export default class Comments extends Component {
               })
             : null}
         </div>
-        <Form class="full-span" onSubmit={this.addComment}>
+        <Form className="full-span" onSubmit={this.addComment}>
           <TextAreaField
             name="comment"
             label="Add comment:"
@@ -99,7 +99,7 @@ export default class Comments extends Component {
           />
           <AsyncButton
             text="Comment"
-            class="btn pull-right"
+            className="btn pull-right"
             pendingClass="small spinner pull-right"
             onSubmit={this.addComment}
             disabled={!this.state.comment.length}

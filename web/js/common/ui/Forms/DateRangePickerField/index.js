@@ -80,8 +80,8 @@ export default class DateRangePickerField extends Component {
     const from = this.state.from;
 
     return (
-      <div class={`daterangepicker-container ${this.state.focused ? 'datepicker--focused' : ''}`}>
-        <i class="i i-date-range" />
+      <div className={`daterangepicker-container ${this.state.focused ? 'datepicker--focused' : ''}`}>
+        <i className="i i-date-range" />
         <DateRangePicker
           startDateId={`${this.id}-startdate`}
           endDateId={`${this.id}-enddate`}
@@ -96,7 +96,7 @@ export default class DateRangePickerField extends Component {
           readOnly={true}
           {...otherProps}
         />
-        <span class="caret" />
+        <span className="caret" />
       </div>
     );
   }

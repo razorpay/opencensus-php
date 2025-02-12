@@ -99,7 +99,7 @@ class PaymentLinksSettings extends React.Component {
 
   render() {
     return (
-      <div class="RemindersSettings--PaymentLinks" key="RemindersSettings--PaymentLinks">
+      <div className="RemindersSettings--PaymentLinks" key="RemindersSettings--PaymentLinks">
         <ReminderSettings
           type="Payment Links"
           isEnabled={this.props.paymentLinkReminder.active}

@@ -47,7 +47,7 @@ const WidgetSetup = (props) => {
         <div className="Details-title">{title}</div>
         <div className="callout">{props.children}</div>
       </div>
-      <div class="Button-Container">
+      <div className="Button-Container">
         <Button.Transparent
           className="Back-Button"
           iconBefore="arrow-back"

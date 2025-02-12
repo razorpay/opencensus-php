@@ -88,15 +88,15 @@ class BaseForm extends React.Component {
 
   planOptionComponent = ({ option }) => (
     <div>
-      <div class="option-title">{option.item.name}</div>
-      <div class="option-description">
+      <div className="option-title">{option.item.name}</div>
+      <div className="option-description">
         <span>
           <Amount value={option.item.amount} currency={option.item.currency} />
         </span>
-        <span class="big-dot-separator" />
+        <span className="big-dot-separator" />
         <span>Charged {getPeriodLabel(option.period, option.interval)}</span>
       </div>
-      <i class="i i-check" />
+      <i className="i i-check" />
     </div>
   );
 
@@ -112,13 +112,13 @@ class BaseForm extends React.Component {
         <FieldOptionsDropdownWrapper
           trigger={
             <Button.Transparent>
-              <i class="i i-ellipsis-v" />
+              <i className="i i-ellipsis-v" />
             </Button.Transparent>
           }
         >
           <OptionsItem>
-            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
-              <i class="i i-delete" />
+            <div className="OptionsDropdown-item--delete" onClick={handleDeleteField}>
+              <i className="i i-delete" />
               <div>Delete Field</div>
             </div>
           </OptionsItem>
@@ -131,10 +131,10 @@ class BaseForm extends React.Component {
     const { disableSubmit } = this.state;
 
     return (
-      <div class="CreatorModal-BaseForm-footer">
+      <div className="CreatorModal-BaseForm-footer">
         <button
           type="button"
-          class="cancel-btn Button--transparent Button"
+          className="cancel-btn Button--transparent Button"
           onClick={() => {
             this.props.handleClose();
 
@@ -145,8 +145,8 @@ class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
-          <span class="icon i-check" />
+        <button type="submit" className="save-btn Button--transparent Button" disabled={disableSubmit}>
+          <span className="icon i-check" />
           Save
         </button>
       </div>
@@ -185,11 +185,11 @@ class BaseForm extends React.Component {
     }
 
     return (
-      <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
+      <EditorModal className="CreatorModal-BaseForm" overElement allowScroll>
         <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           <InputDropdown
             label="Plan"
-            class="Input--vTop"
+            className="Input--vTop"
             dropdownElementClass="ps-in-modal Input-el-PlansDropdown Input-el-PaymentButtonForm"
             placeholder="Select Plan"
             description={descriptionOfSelectedPlanFrequency}
@@ -206,7 +206,7 @@ class BaseForm extends React.Component {
             afterOptionsComponent={({ select }) => {
               return (
                 <div
-                  class="create-plan-btn Button Button--transparent"
+                  className="create-plan-btn Button Button--transparent"
                   onClick={() => {
                     this.handleAddNewPlan(select.actions.close);
                     track.lj.trackAddNewPlanField();
@@ -221,7 +221,7 @@ class BaseForm extends React.Component {
           <Input
             name="billing_cycles_total_count"
             label="No. of Billing Cycles"
-            class="Input--vTop"
+            className="Input--vTop"
             placeholder="Enter count"
             defaultValue={field ? field.product_config.subscription_details.total_count : ''}
             description="No. of times customers will be charged."

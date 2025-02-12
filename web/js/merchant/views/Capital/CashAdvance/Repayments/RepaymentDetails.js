@@ -1,16 +1,17 @@
 import React, { Component, Fragment } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import moment from 'moment';
 
-import Spinner from 'common/ui/Spinner';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Amount from 'common/ui/Amount';
-import DataTable from 'common/ui/Table/DataTable';
 import Button from 'common/new-ui/Button';
-import Withdrawals from 'merchant/models/Capital/Withdrawals';
+import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
+import DataTable from 'common/ui/Table/DataTable';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Repayments from 'merchant/models/Capital/Repayments';
+import Withdrawals from 'merchant/models/Capital/Withdrawals';
 import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
+
 import {
   STATUS_LABELS,
   StatusPillClasses,
@@ -20,24 +21,6 @@ import {
 } from '../constants';
 import { computePrincipalAndInterest } from '../utils';
 
-@connect(
-  (state) => {
-    const {
-      withdrawals: {
-        withdrawalConfiguration: { loading, data = {}, errors = null },
-      },
-    } = state;
-    return {
-      user: state.session.user,
-      loading,
-      withdrawalConfigurationDetails: data,
-      withdrawalConfigurationFetchError: errors,
-    };
-  },
-  {
-    fetchFunctionalWithdrawalConfigByMerchantID,
-  },
-)
 class RepaymentDetails extends Component {
   state = {
     repayment: {},
@@ -131,9 +114,8 @@ class RepaymentDetails extends Component {
     const {
       repayment: { amount, breakups = [] },
     } = this.state;
-    const { BALANCE_TYPE_PRINCIPAL = 0, BALANCE_TYPE_INTEREST = 0 } = computePrincipalAndInterest(
-      breakups,
-    );
+    const { BALANCE_TYPE_PRINCIPAL = 0, BALANCE_TYPE_INTEREST = 0 } =
+      computePrincipalAndInterest(breakups);
     const {
       withdrawalConfigurationDetails: { configuration: { interest = 0 } = {} },
     } = this.props;
@@ -150,10 +132,10 @@ class RepaymentDetails extends Component {
       {
         label: 'Interest Repaid',
         value: (
-          <div class="flex">
+          <div className="flex">
             <Amount value={BALANCE_TYPE_INTEREST} />
             {interest ? (
-              <small class="text-faded">
+              <small className="text-faded">
                 &nbsp;|&nbsp;{`Interest Rate ${Number(interest) / 100}%`}
               </small>
             ) : null}
@@ -236,7 +218,7 @@ class RepaymentDetails extends Component {
       {
         label: 'Repayment Status',
         value: (
-          <span class={`status-label label ${StatusPillClasses[status]}`}>
+          <span className={`status-label label ${StatusPillClasses[status]}`}>
             {STATUS_LABELS[status]}
           </span>
         ),
@@ -301,7 +283,7 @@ class RepaymentDetails extends Component {
     const currentStatus = {
       title: 'Current Status',
       value: ({ status }) => (
-        <span class={`status-label label ${StatusPillClasses[status]}`}>
+        <span className={`status-label label ${StatusPillClasses[status]}`}>
           {STATUS_LABELS[status]}
         </span>
       ),
@@ -329,10 +311,10 @@ class RepaymentDetails extends Component {
     return (
       <div>
         <strong>Next Automatic Repayment</strong>
-        <div class="flex">
-          <div class="left-section">
+        <div className="flex">
+          <div className="left-section">
             <Amount value={1292000} />
-            <div class="block-note purple">
+            <div className="block-note purple">
               Scheduled for {moment().format('MMMM Do YYYY, h:mm a')}
             </div>
           </div>
@@ -417,4 +399,21 @@ class RepaymentDetails extends Component {
   }
 }
 
-export default RepaymentDetails;
+export default connect(
+  (state) => {
+    const {
+      withdrawals: {
+        withdrawalConfiguration: { loading, data = {}, errors = null },
+      },
+    } = state;
+    return {
+      user: state.session.user,
+      loading,
+      withdrawalConfigurationDetails: data,
+      withdrawalConfigurationFetchError: errors,
+    };
+  },
+  {
+    fetchFunctionalWithdrawalConfigByMerchantID,
+  },
+)(RepaymentDetails);

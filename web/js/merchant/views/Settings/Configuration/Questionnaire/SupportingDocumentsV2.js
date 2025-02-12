@@ -211,7 +211,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
         defaultValue={formikProps.values.accepts_intl_txns || 'false'}
         propagatedError={getError('accepts_intl_txns')}
       />
-      <div class="spacer" />
+      <div className="spacer" />
       <Input
         required={isIecCodeRequired(formikProps.values.purpose_code)}
         name="import_export_code"
@@ -344,13 +344,13 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
         <AdditionalDocuments disabled={disabled} saveFormData={saveFormData} />
       ) : null}
 
-      <div class="Input Input--required Input--checkbox">
-        <div class="Input-content">
-          <div class="Input-elWrapper">
+      <div className="Input Input--required Input--checkbox">
+        <div className="Input-content">
+          <div className="Input-elWrapper">
             <label>
-              <input required name="submit" class="Input-el" type="checkbox" />
-              <div class="Input-checkbox" />
-              <div class="Input-inlineLabel">
+              <input required name="submit" className="Input-el" type="checkbox" />
+              <div className="Input-checkbox" />
+              <div className="Input-inlineLabel">
                 I have read and understood the{' '}
                 <a href="https://razorpay.com/terms" target="_blank" rel="noopener noreferrer">
                   Terms &amp; Conditions

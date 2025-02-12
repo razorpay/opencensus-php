@@ -2,7 +2,7 @@ import { Component, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { AnnouncementIcon, Tooltip, Button } from '@razorpay/blade/components';
 
 import ExclusiveOffer from 'common/ui/ExclusiveOffer';
@@ -46,30 +46,12 @@ import './Old.styl';
 
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
 import { ANALYTICS_ONENAV } from 'merchant/components/NavigationLayout/constants';
+import { compose } from 'redux';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
 }
 
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-      ...state.growthService.announcements,
-    };
-  },
-  {
-    openModal: openModalx,
-    closeModal: closeModalx,
-    showAcceptPaymentsModal,
-    openSlider,
-    fetchAnnouncements,
-    setActivePageName: fnSetActivePageName,
-    setBaseLocation: fnSetBaseLocation,
-  },
-)
-@RTracking(() => window.rzpQ.component('WhatsNew'))
 class WhatsNewOld extends Component {
   state = {
     isOpenSlider1: false,
@@ -939,4 +921,25 @@ const NotificationCard = ({
   );
 };
 
-export default withRouter(WhatsNewOld);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        ...state.config.config,
+        ...state.growthService.announcements,
+      };
+    },
+    {
+      openModal: openModalx,
+      closeModal: closeModalx,
+      showAcceptPaymentsModal,
+      openSlider,
+      fetchAnnouncements,
+      setActivePageName: fnSetActivePageName,
+      setBaseLocation: fnSetBaseLocation,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('WhatsNew')),
+)(WhatsNewOld);

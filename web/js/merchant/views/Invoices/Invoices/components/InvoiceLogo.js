@@ -17,27 +17,27 @@ export const LANDING_PAGE_DESC = {
 export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetails, org }) {
   const orgOptions = LANDING_PAGE_DESC[org.custom_code];
   return (
-    <div class="row inv__branding">
-      <div class="col-md-8 inv__branding--merchant">
-        <div class="media">
+    <div className="row inv__branding">
+      <div className="col-md-8 inv__branding--merchant">
+        <div className="media">
           {logo && (
-            <div class="media-left">
-              <span class="inv__merchant-logo">
-                <img class="media-object" src={logo} alt={name} />
+            <div className="media-left">
+              <span className="inv__merchant-logo">
+                <img className="media-object" src={logo} alt={name} />
               </span>
             </div>
           )}
-          <div class={`media-body ${gstin || cin ? 'valign-top' : ''}`}>
-            <h3 class="inv__company-name">{name}</h3>
+          <div className={`media-body ${gstin || cin ? 'valign-top' : ''}`}>
+            <h3 className="inv__company-name">{name}</h3>
             {gstin && (
-              <div class="inv__company-tax-details">
-                <span class="tax-heading">GSTIN - </span>
+              <div className="inv__company-tax-details">
+                <span className="tax-heading">GSTIN - </span>
                 {gstin}
               </div>
             )}
             {cin && (
-              <div class="inv__company-tax-details">
-                <span class="tax-heading">CIN - </span>
+              <div className="inv__company-tax-details">
+                <span className="tax-heading">CIN - </span>
                 {cin}
               </div>
             )}
@@ -45,10 +45,10 @@ export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetail
         </div>
       </div>
       {!hideRazorpayDetails && (
-        <div class="col-md-4 inv__branding--rzp">
-          <div class="text-right pull-right">
+        <div className="col-md-4 inv__branding--rzp">
+          <div className="text-right pull-right">
             <a
-              class="rzp-logo"
+              className="rzp-logo"
               href={orgOptions.link}
               target="_blank"
               rel="noreferrer noopener"
@@ -56,7 +56,7 @@ export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetail
             >
               <img src={orgOptions.logo} alt="logo" />
             </a>
-            <div class="rzp-header-branding-label">
+            <div className="rzp-header-branding-label">
               <div>Invoicing and payments</div>
               <div>
                 powered by{' '}

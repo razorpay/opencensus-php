@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { connect } from 'react-redux';
 
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import FileUpload from 'merchant/components/File/Upload';
 import {
   createNach,
   fetchLoanApplicationMeta,
@@ -9,16 +11,15 @@ import {
   uploadNach,
 } from 'merchant/reducers/capital';
 import { merchantFetch } from 'merchant/utils/ajax';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
-import FileUpload from 'merchant/components/File/Upload';
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { isPreceedingState } from '../../utils';
+import { APPLICATION_STATES, HOTJAR_TRIGGERS } from '../constants';
 
 const createFormData = (form = {}) => {
-  let formData = new FormData();
+  const formData = new FormData();
 
   Object.keys(form).map((key) => {
     formData.append(key, form[key]);
@@ -26,17 +27,6 @@ const createFormData = (form = {}) => {
   return formData;
 };
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-    user: state.session.user,
-  }),
-  {
-    fetchLoanApplicationMeta,
-    getNach,
-    ...NotificationActions,
-  },
-)
 class NachEntity extends Component {
   constructor() {
     super();
@@ -210,9 +200,9 @@ class NachEntity extends Component {
             accept={['pdf', 'png', 'jpg', 'jpeg']}
             uploadedFileName="Upload File here"
             onFileChange={this.handleFileChange}
-            description={'Nach Description'}
-            dropZoneCavityClassName={'nach'}
-            id={'nach'}
+            description="Nach Description"
+            dropZoneCavityClassName="nach"
+            id="nach"
           />
         ),
         icon: 'nach_upload',
@@ -272,7 +262,7 @@ class NachEntity extends Component {
 
     if (entity && entity.file_store_id) {
       return (
-        <div class="m-all">
+        <div className="m-all">
           <div className="panel panel-default m-all">
             <div className="panel-body">
               <strong>Signed Nach Form</strong>
@@ -303,7 +293,7 @@ class NachEntity extends Component {
               Back
             </Button.Transparent>
             <Button.Primary
-              class="m-l"
+              className="m-l"
               onClick={() => {
                 // this.props._trackNavigationActions(
                 //   'NEXT',
@@ -341,7 +331,7 @@ class NachEntity extends Component {
         {!isPreceedingState(meta.data.application.status, this.props.nextState) && (
           <AsyncBtn.Primary
             type="submit"
-            class="btn btn-primary pull-right"
+            className="btn btn-primary pull-right"
             onClick={this.handleNext}
           >
             Next
@@ -357,4 +347,14 @@ class NachEntity extends Component {
   }
 }
 
-export default NachEntity;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+    user: state.session.user,
+  }),
+  {
+    fetchLoanApplicationMeta,
+    getNach,
+    ...NotificationActions,
+  },
+)(NachEntity);

@@ -60,7 +60,7 @@ export default function EditPanModal({
                   <div className="flex full-width no-margin p-l">
                     <span>{pan}</span>
                     {pgLinkedPan === pan && (
-                      <div class="full-width no-margin text-right">
+                      <div className="full-width no-margin text-right">
                         <strong className="text-small text-faded">Linked to our PG</strong>
                         <small className="help-content">
                           &nbsp;
@@ -92,13 +92,13 @@ export default function EditPanModal({
                 title="Custom"
                 description={
                   isCustomPan && (
-                    <div class="m-t">
+                    <div className="m-t">
                       <Input
                         key="pan"
                         label=""
                         onChange={onChange}
                         name="pan"
-                        class={isInputInvalid ? 'no-margin is-invalid' : 'no-margin'}
+                        className={isInputInvalid ? 'no-margin is-invalid' : 'no-margin'}
                         value={value}
                         autoFocus={true}
                         propagatedError={error}
@@ -112,12 +112,12 @@ export default function EditPanModal({
             </div>
           </div>
           <div className="Modal__actions flex">
-            <Button type="button" class="btn btn-default btn-block" onClick={closeModal}>
+            <Button type="button" className="btn btn-default btn-block" onClick={closeModal}>
               Cancel
             </Button>
             <Button.Primary
               type="submit"
-              class="no-margin btn-block"
+              className="no-margin btn-block"
               onClick={registerCoApplicantPan}
               disabled={isInputInvalid}
             >

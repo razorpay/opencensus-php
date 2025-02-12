@@ -10,15 +10,15 @@ const PlanDetailsModal = ({ planDetails, closeModal }) => {
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Custom domain - plan details
         </div>
         <i className="i i-close" onClick={handleClose} />
       </div>
       <main>
-        <div class="plan-card plan-card--selected">
+        <div className="plan-card plan-card--selected">
           <div>
             <span>{planDetails.name}</span>
             {planDetails.metadata.per_month_amount !== planDetails.metadata.plan_amount && (
@@ -45,7 +45,7 @@ const PlanDetailsModal = ({ planDetails, closeModal }) => {
         <br />
       </main>
       <footer>
-        <Button.Primary class="Save-btn" type="submit" onClick={handleClose}>
+        <Button.Primary className="Save-btn" type="submit" onClick={handleClose}>
           Okay, got it
         </Button.Primary>
       </footer>

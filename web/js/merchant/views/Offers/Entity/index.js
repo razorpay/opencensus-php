@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { Modules } from 'common/constant/enums';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -29,13 +29,8 @@ import { withI18Service } from 'common/i18';
 
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 import { UPI_APPS_SELECT_OPTIONS } from 'merchant/views/Offers/New/components/UPISelector';
+import { compose } from 'redux';
 
-@connect((state) => ({ ...state.offer, user: state.session.user }), {
-  ...OffersActions,
-  ...ModalActions,
-  ...NotificationsActions,
-})
-@RTracking(() => window.rzpQ.component('OffersDetails'))
 export class OffersDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -285,7 +280,7 @@ export class OffersDetails extends React.Component {
 
             {this.isSubscriptionOffer && (
               <>
-                <Banner class="download-report">
+                <Banner className="download-report">
                   Download the report containing usage details for this offer across subscriptions.
                   <AsyncBtn.Primary>Download Report</AsyncBtn.Primary>
                 </Banner>
@@ -304,7 +299,7 @@ export class OffersDetails extends React.Component {
                   <EntityDetailRow label="Status">
                     <OfferStatusLabel status={active ? 'enabled' : 'disabled'} />
                     <Button.Transparent
-                      class={`Button--Link ${disabledButtonClass}`}
+                      className={`Button--Link ${disabledButtonClass}`}
                       style={{ marginLeft: 12 }}
                       onClick={this.toggleActivation}
                     >
@@ -437,4 +432,13 @@ export class OffersDetails extends React.Component {
   }
 }
 
-export default withI18Service(withSplitzService(OffersDetails));
+export default compose(
+  connect((state) => ({ ...state.offer, user: state.session.user }), {
+    ...OffersActions,
+    ...ModalActions,
+    ...NotificationsActions,
+  }),
+  rTracking(() => window.rzpQ.component('OffersDetails')),
+  withI18Service,
+  withSplitzService,
+)(OffersDetails);

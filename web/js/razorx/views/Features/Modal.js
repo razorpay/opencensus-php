@@ -120,8 +120,8 @@ class FeatureModal extends React.Component {
     }
 
     return (
-      <ModalContent class="modal-features modal-json-edit" header={header}>
-        <Form onSubmit={this.onSubmit} class="full-span full-elements">
+      <ModalContent className="modal-features modal-json-edit" header={header}>
+        <Form onSubmit={this.onSubmit} className="full-span full-elements">
           {JSONView ? (
             <JSONEdit initialJSON={initJSONObj} validatorJSON={validatorJSON} />
           ) : (
@@ -148,24 +148,24 @@ class FeatureModal extends React.Component {
                 type="text"
                 name="notify"
               />
-              <div class="sub-heading">Variants</div>
+              <div className="sub-heading">Variants</div>
               <EnumList
-                class="variants-list"
+                className="variants-list"
                 onChange={this.onChangeEnumList}
                 defaultValue={this.state.variants}
                 addNewBtn={() => (
-                  <button type="button" class="btn btn--pill">
-                    <i class="i i-return-key" /> Add Variant
+                  <button type="button" className="btn btn--pill">
+                    <i className="i i-return-key" /> Add Variant
                   </button>
                 )}
               />
               <div style={{ marginTop: 24 }} />
             </React.Fragment>
           )}
-          <div class="footer">
-            <button class="btn btn--primary">
+          <div className="footer">
+            <button className="btn btn--primary">
               {isEdit ? 'Update' : 'Create'}
-              <span class="spin-btn" />
+              <span className="spin-btn" />
             </button>
           </div>
         </Form>

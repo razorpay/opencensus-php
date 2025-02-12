@@ -25,6 +25,7 @@ import CreditPullSuccess from './components/CreditPullSuccess';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
+import { compose } from 'redux';
 
 const validate = (values) => {
   const errors = {};
@@ -37,26 +38,7 @@ const validate = (values) => {
   return errors;
 };
 
-@connect(
-  (state) => {
-    return {
-      initialValues: state.bMerchant.merchantData,
-      user: state.session.user,
-    };
-  },
-  {
-    showNotification,
-    ...MerchantActions,
-    ...ModalActions,
-    bMerchantReducer,
-    updateSession,
-  },
-)
-@reduxForm({
-  form: 'b-merchant',
-  validate,
-})
-export default class CreditPullModal extends Component {
+class CreditPullModal extends Component {
   constructor(props) {
     super(props);
     this.SMALL_MODAL = 'small';
@@ -304,7 +286,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="first_name"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="First Name"
                   validate={[required('Please enter a name'), name('Please enter a valid name')]}
                 />
@@ -314,7 +296,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="last_name"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Last Name"
                   validate={[required('Please enter a name'), name('Please enter a valid name')]}
                 />
@@ -327,7 +309,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="contact_mobile"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Mobile Number"
                   onChange={() => {
                     this.mobileChanged = true;
@@ -343,7 +325,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="email"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Email"
                   disabled={true}
                 />
@@ -364,7 +346,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="pan"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="PAN Number"
                   disabled={true}
                 />
@@ -412,7 +394,7 @@ export default class CreditPullModal extends Component {
                   component={InputField}
                   tagName="textarea"
                   type="textarea"
-                  class="form-control"
+                  className="form-control"
                   onChange={() => {
                     this.addressChanged = true;
                   }}
@@ -427,7 +409,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="city"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="City"
                   validate={required('Please enter a city')}
                 />
@@ -438,7 +420,7 @@ export default class CreditPullModal extends Component {
                   name="state"
                   component={InputField}
                   tagName="select"
-                  class="form-control"
+                  className="form-control"
                   placeholder="State"
                 >
                   {Object.keys(states).map((stateCode) => (
@@ -456,7 +438,7 @@ export default class CreditPullModal extends Component {
                 <Field
                   name="pincode"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Pin Code"
                   validate={[
                     required('Please enter a pin code'),
@@ -519,7 +501,7 @@ export default class CreditPullModal extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary"
+              className="btn btn-primary"
               text={'Verify & Submit'}
               disabled={!this.state.hasAcceptedTerms}
               onClick={handleSubmit(this.save)}
@@ -559,3 +541,25 @@ export default class CreditPullModal extends Component {
     return <div className="container-cred-pull-modal">{this.renderPreEnablement()}</div>;
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        initialValues: state.bMerchant.merchantData,
+        user: state.session.user,
+      };
+    },
+    {
+      showNotification,
+      ...MerchantActions,
+      ...ModalActions,
+      bMerchantReducer,
+      updateSession,
+    },
+  ),
+  reduxForm({
+    form: 'b-merchant',
+    validate,
+  }),
+)(CreditPullModal);

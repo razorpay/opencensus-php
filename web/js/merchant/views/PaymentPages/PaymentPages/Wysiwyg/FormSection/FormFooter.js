@@ -86,13 +86,13 @@ export default class FormFooter extends React.PureComponent {
     const { isEditModalOpened, paymentButtonLabel, disableSubmit } = this.state;
 
     const content = (
-      <div class="form-footer-payment">
+      <div className="form-footer-payment">
         <img id="fin-logo" alt="pay-methods" src={securityBrandingLogo} />
 
-        <button class="btn btn-gradient">
+        <button className="btn btn-gradient">
           {isEditModalOpened ? paymentButtonLabel : this.props.paymentButtonLabel}{' '}
           <span style={{ marginLeft: 4 }}>
-            <b class="currency-symbol">{getCurrency(currency).symbol}</b> {this.payButtonText()}
+            <b className="currency-symbol">{getCurrency(currency).symbol}</b> {this.payButtonText()}
           </span>
         </button>
       </div>
@@ -101,7 +101,7 @@ export default class FormFooter extends React.PureComponent {
     return (
       <div id="form-footer" ref={this.setRef}>
         {isEditModalOpened && (
-          <CreatorModal class="CreatorModal-BaseForm" overElement allowScroll>
+          <CreatorModal className="CreatorModal-BaseForm" overElement allowScroll>
             <div>
               <Input
                 name="payment_button_label"
@@ -117,7 +117,7 @@ export default class FormFooter extends React.PureComponent {
             </div>
 
             <Button.Transparent
-              class="base-form-side-btn base-form-cancel"
+              className="base-form-side-btn base-form-cancel"
               type="button"
               onClick={(_) => this.toggleModal(false)}
             >
@@ -126,23 +126,23 @@ export default class FormFooter extends React.PureComponent {
             </Button.Transparent>
 
             <Button.Transparent
-              class="base-form-side-btn base-form-save"
+              className="base-form-side-btn base-form-save"
               type="button"
               disabled={disableSubmit}
               onClick={this.savePaymentButtonLabel}
             >
-              <span class="icon i-check" />
+              <span className="icon i-check" />
               Save
             </Button.Transparent>
           </CreatorModal>
         )}
 
         <EditLayer
-          class={classList('edit-layer--formFooter', isListSorting && 'disable-hover')}
+          className={classList('edit-layer--formFooter', isListSorting && 'disable-hover')}
           onClick={(_) => this.toggleModal(true)}
         >
           {content}
-          <i class="i i-edit" />
+          <i className="i i-edit" />
         </EditLayer>
       </div>
     );

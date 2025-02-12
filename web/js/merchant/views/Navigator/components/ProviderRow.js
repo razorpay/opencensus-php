@@ -43,7 +43,7 @@ export default class ProviderRow extends React.Component {
         {this.props.readonly ? (
           <div className="row">
             <div className="col-xs-12">
-              <div class="expression-readonly-high">
+              <div className="expression-readonly-high">
                 Route <b>{additional_attribute[1] && additional_attribute[1].value}%</b> Payments
                 via{' '}
                 <b>
@@ -62,23 +62,23 @@ export default class ProviderRow extends React.Component {
         ) : (
           <div style={{ display: 'flex' }}>
             <div style={{ width: '10%' }}>
-              <span class="mid-text">Route</span>
+              <span className="mid-text">Route</span>
             </div>
             <div style={{ width: '20%' }}>
-              <div class="input-group">
+              <div className="input-group">
                 <input
                   type="text"
                   value={additional_attribute[1] && additional_attribute[1].value}
-                  class="form-control"
+                  className="form-control"
                   onChange={this.handleLoadChange}
                 />
-                <span class="input-group-addon">%</span>
+                <span className="input-group-addon">%</span>
               </div>
             </div>
             <div style={{ width: '15%' }}>
-              <span class="mid-text">payment via</span>
+              <span className="mid-text">payment via</span>
             </div>
-            <div style={{ width: '20%' }} class="select-provider">
+            <div style={{ width: '20%' }} className="select-provider">
               <Select
                 placeholder="Select Provider"
                 options={this.props.providers}

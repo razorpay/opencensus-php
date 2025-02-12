@@ -34,17 +34,17 @@ export default class FormWizard extends React.Component {
     const disableSubmit = props.isLoading || state.disableSubmit;
     const title = !props.isLoading && props.title;
     return (
-      <div class="PaymentLinks--CreateV2-wizard">
-        <div class={props.isModalView ? 'title' : 'Paymentlink-layout-title'}>
+      <div className="PaymentLinks--CreateV2-wizard">
+        <div className={props.isModalView ? 'title' : 'Paymentlink-layout-title'}>
           {title}{' '}
           {isMobileDevice() && (
             <span onClick={this.redirectToListView}>
-              <i class="i i-close" />
+              <i className="i i-close" />
             </span>
           )}
         </div>
-        <div class="form-container">
-          <Form class={FORM_CLASS_NAME} onChange={props.onChange}>
+        <div className="form-container">
+          <Form className={FORM_CLASS_NAME} onChange={props.onChange}>
             <main>
               {props.isLoading ? (
                 <div className="page-center">
@@ -57,7 +57,7 @@ export default class FormWizard extends React.Component {
 
             <footer>
               {props.isModalView && (
-                <Button class="btn-outline" type="button" onClick={props.onClose}>
+                <Button className="btn-outline" type="button" onClick={props.onClose}>
                   Cancel
                 </Button>
               )}

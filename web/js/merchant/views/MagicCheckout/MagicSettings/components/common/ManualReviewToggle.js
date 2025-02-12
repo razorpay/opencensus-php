@@ -3,7 +3,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 
 const ManualReviewToggle = ({ checked, switchMode }) => (
   <div className="filter-item link-account-instruction display-flex c-fee-configuration toggle-container">
-    <div className="intelligence-label font-normal" for="manual-review">
+    <div className="intelligence-label font-normal" htmlFor="manual-review">
       <label>
         Manually review COD orders
         <i className="i i-info-outline intelligence-tooltip font-normal">

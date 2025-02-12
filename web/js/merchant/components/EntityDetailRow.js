@@ -6,16 +6,16 @@ export default ({ label, value, children, pairClass = '', ...otherProps }) => {
   }
 
   return (
-    <div class={`pair-group-item ${pairClass}`} {...otherProps}>
-      {typeof label === 'function' ? label() : <div class="pair-label">{label}</div>}
-      {/*<span class="pair-separator">:</span>*/}
-      <div class="pair-value">
+    <div className={`pair-group-item ${pairClass}`} {...otherProps}>
+      {typeof label === 'function' ? label() : <div className="pair-label">{label}</div>}
+      {/*<span className="pair-separator">:</span>*/}
+      <div className="pair-value">
         {children ? (
           children
         ) : typeof value === 'function' ? (
           value()
         ) : (
-          <span class="label--primary">{`${value}`}</span>
+          <span className="label--primary">{`${value}`}</span>
         )}
       </div>
     </div>

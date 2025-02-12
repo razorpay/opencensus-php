@@ -19,6 +19,7 @@ import { isTaxOfTypeCess } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 import CheckableItem from './components/CheckableItem';
 import { TAX_DIVISOR, TAX_PERCENTAGE_DIVISOR } from '../Invoices/helpers';
+import { compose } from 'redux';
 
 const selector = formValueSelector('newItem');
 
@@ -54,32 +55,8 @@ const sacLengthValidator = (sac, all) => {
 };
 
 // eslint-disable-next-line react/no-unsafe
-@connect(
-  (state) => ({
-    taxRate: selector(state, 'tax_rate'),
-    taxInclusive: selector(state, 'tax_inclusive'),
-    cess: selector(state, 'cess'),
-    selected_currency: selector(state, 'currency'),
-    user: state.session.user,
-  }),
-  {
-    fetchTaxes,
-    saveTax,
-    fetchGSTTaxes,
-    saveSubscriptionItem,
-    ...ItemActions,
-    ...ModalActions,
-    ...NotificationsActions,
-  },
-)
-@reduxForm({
-  form: 'newItem',
-  initialValues: {
-    hsn_sac_code_type: 'hsn',
-    tax_inclusive: '1',
-  },
-})
-export default class AddItem extends Component {
+
+class AddItem extends Component {
   constructor() {
     // eslint-disable-next-line prefer-rest-params
     super(...arguments);
@@ -424,11 +401,11 @@ export default class AddItem extends Component {
     }
 
     const cessForm = (
-      <div class="row ItemCreationModal__cess-form">
-        <div class="col-md-12">
+      <div className="row ItemCreationModal__cess-form">
+        <div className="col-md-12">
           <label>Add Cess</label>
           <span
-            class="text-primary ItemCreationModal__cess-form-cancel"
+            className="text-primary ItemCreationModal__cess-form-cancel"
             onClick={() => {
               this.props.change('cess', null);
               this.setState({ showCessForm: false });
@@ -437,15 +414,15 @@ export default class AddItem extends Component {
             {cess ? 'Remove' : 'Cancel'}
           </span>
         </div>
-        <div class="col-md-12">
-          <div class="input-group">
-            <span class="input-group-addon">%</span>
+        <div className="col-md-12">
+          <div className="input-group">
+            <span className="input-group-addon">%</span>
             <Field
               name="cess"
               component={InputField}
               type="number"
               placeholder="Cess"
-              class="form-control input-number-no-arrows"
+              className="form-control input-number-no-arrows"
               min="0.00"
               onChange={this.makeCessPositive}
               autoFocus={true}
@@ -462,29 +439,29 @@ export default class AddItem extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <div class="modal-body ItemCreationModal">
+        <div className="modal-body ItemCreationModal">
           <Alert type="error" message={this.state.errors} />
 
           <form onSubmit={handleSubmit(this.save)}>
-            <div class="row">
-              <div class={aligenedStyleClass}>
-                <div class="form-group">
-                  <label class="label-required">Name</label>
+            <div className="row">
+              <div className={aligenedStyleClass}>
+                <div className="form-group">
+                  <label className="label-required">Name</label>
                   <div>
                     <Field
                       name="name"
                       placeholder="Item Name"
                       component={InputField}
-                      class="form-control"
+                      className="form-control"
                       autoFocus={true}
                       validate={required()}
                     />
                   </div>
                 </div>
-                <div class="form-group">
-                  <label class="label-required">Rate</label>
+                <div className="form-group">
+                  <label className="label-required">Rate</label>
                   <div>
-                    <div class="input-group input-group--amount">
+                    <div className="input-group input-group--amount">
                       <Input.CurrencySelect
                         name="currency"
                         onChange={this.onCurrencyChange}
@@ -496,11 +473,11 @@ export default class AddItem extends Component {
                         placeholder="Amount"
                         name="amountInINR"
                         component={InputField}
-                        class="form-control input-number-no-arrows"
+                        className="form-control input-number-no-arrows"
                         validate={required()}
                         type="number"
                       />
-                      <span class="input-group-addon">per unit</span>
+                      <span className="input-group-addon">per unit</span>
                     </div>
                   </div>
                 </div>
@@ -510,14 +487,14 @@ export default class AddItem extends Component {
                   showDismiss={false}
                 />
               </div>
-              <div class={aligenedStyleClass}>
-                <div class="form-group">
+              <div className={aligenedStyleClass}>
+                <div className="form-group">
                   <label>Description</label>
                   <div>
                     <Field
                       name="description"
                       component="textarea"
-                      class="form-control description"
+                      className="form-control description"
                     />
                   </div>
                 </div>
@@ -525,10 +502,10 @@ export default class AddItem extends Component {
                   <p>Note: The updated item details will be reflected everywhere in the future.</p>
                 )}
                 {(!showTaxes || isNonINR) && (
-                  <div class="Modal__actions">
+                  <div className="Modal__actions">
                     <AsyncButton
                       type="submit"
-                      class="btn btn-primary btn-block"
+                      className="btn btn-primary btn-block"
                       text={this.props.saveLabel}
                       pendingText="Saving..."
                       disabled={invalid}
@@ -539,12 +516,12 @@ export default class AddItem extends Component {
               </div>
             </div>
             {showTaxes && !isNonINR && (
-              <div class="row ItemCreationModal__TaxContainer">
-                <div class="col-md-6">
-                  <div class="form-group">
+              <div className="row ItemCreationModal__TaxContainer">
+                <div className="col-md-6">
+                  <div className="form-group">
                     <label>Tax Rate</label>
                     <PowerSelect
-                      class="CheckableItem__PowerSelect ps-in-modal"
+                      className="CheckableItem__PowerSelect ps-in-modal"
                       placeholder="Select Tax Rate"
                       options={gstRates}
                       selected={taxRate}
@@ -554,8 +531,8 @@ export default class AddItem extends Component {
                       }}
                       searchEnabled={false}
                     />
-                    <div class="row">
-                      <div class="col-md-12" style={{ fontSize: '0.85em', marginTop: '4px' }}>
+                    <div className="row">
+                      <div className="col-md-12" style={{ fontSize: '0.85em', marginTop: '4px' }}>
                         Tax breakup will be calculated automatically.
                       </div>
                     </div>
@@ -564,10 +541,10 @@ export default class AddItem extends Component {
                   {showCessForm ? (
                     cessForm
                   ) : (
-                    <div class="row CreateItemModal__cess-form">
-                      <div class="col-md-12">
+                    <div className="row CreateItemModal__cess-form">
+                      <div className="col-md-12">
                         <span
-                          class="text-primary cursor-pointer"
+                          className="text-primary cursor-pointer"
                           onClick={(_) => this.setState({ showCessForm: true })}
                         >
                           + Add Cess
@@ -577,8 +554,8 @@ export default class AddItem extends Component {
                   )}
 
                   {showTaxRadios ? (
-                    <div class="row">
-                      <div class="col-md-6">
+                    <div className="row">
+                      <div className="col-md-6">
                         <Field
                           name="tax_inclusive"
                           component={RadioButton}
@@ -586,7 +563,7 @@ export default class AddItem extends Component {
                           label="Tax Inclusive"
                         />
                       </div>
-                      <div class="col-md-6">
+                      <div className="col-md-6">
                         <Field
                           name="tax_inclusive"
                           component={RadioButton}
@@ -597,13 +574,13 @@ export default class AddItem extends Component {
                     </div>
                   ) : null}
                 </div>
-                <div class="col-md-6">
-                  <div class="row ItemCreationModal__hsn-radios">
-                    <div class="form-group">
-                      <div class="col-md-12">
+                <div className="col-md-6">
+                  <div className="row ItemCreationModal__hsn-radios">
+                    <div className="form-group">
+                      <div className="col-md-12">
                         <label style={{ marginBottom: '8px' }}>HSN/SAC Code</label>
                       </div>
-                      <div class="col-md-6">
+                      <div className="col-md-6">
                         <Field
                           name="hsn_sac_code_type"
                           component={RadioButton}
@@ -611,7 +588,7 @@ export default class AddItem extends Component {
                           label="HSN Code"
                         />
                       </div>
-                      <div class="col-md-6">
+                      <div className="col-md-6">
                         <Field
                           name="hsn_sac_code_type"
                           component={RadioButton}
@@ -620,12 +597,12 @@ export default class AddItem extends Component {
                         />
                       </div>
                     </div>
-                    <div class="col-md-12">
+                    <div className="col-md-12">
                       <Field
                         placeholder="HSN/SAC Code"
                         name="hsn_sac_code"
                         component={InputField}
-                        class="form-control"
+                        className="form-control"
                         validate={[sacLengthValidator]}
                       />
                     </div>
@@ -636,10 +613,10 @@ export default class AddItem extends Component {
                     </p>
                   )}
 
-                  <div class="Modal__actions">
+                  <div className="Modal__actions">
                     <AsyncButton
                       type="submit"
-                      class="btn btn-primary btn-block"
+                      className="btn btn-primary btn-block"
                       text={this.props.saveLabel}
                       pendingText="Saving..."
                       disabled={invalid}
@@ -660,3 +637,31 @@ AddItem.defaultProps = {
   onSave: () => {},
   saveLabel: 'Save',
 };
+
+export default compose(
+  connect(
+    (state) => ({
+      taxRate: selector(state, 'tax_rate'),
+      taxInclusive: selector(state, 'tax_inclusive'),
+      cess: selector(state, 'cess'),
+      selected_currency: selector(state, 'currency'),
+      user: state.session.user,
+    }),
+    {
+      fetchTaxes,
+      saveTax,
+      fetchGSTTaxes,
+      saveSubscriptionItem,
+      ...ItemActions,
+      ...ModalActions,
+      ...NotificationsActions,
+    },
+  ),
+  reduxForm({
+    form: 'newItem',
+    initialValues: {
+      hsn_sac_code_type: 'hsn',
+      tax_inclusive: '1',
+    },
+  }),
+)(AddItem);

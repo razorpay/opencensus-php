@@ -28,32 +28,13 @@ import QuickGuide, {
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { PaperNachBanner, UpdatePaymentMethodBanner } from './components/banners/';
 import { PAPER_NACH_CARD_BANNER_URL, UPDATE_PAYMENT_METHOD_URL } from './constants';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import analytics from './analytics';
 import './index.styl';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { withI18Service } from 'common/i18';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    mode: state.session.mode,
-    user: state.session.user,
-    plans: state.plans,
-    subscriptions: state.subscriptions,
-    subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.SUBSCRIPTIONS,
-    ),
-    payments: state.payments,
-  }),
-  {
-    fetchPlans,
-    getCheckoutInfo,
-    fetchSubscriptions,
-    handleProductQuickGuide,
-  },
-)
-@RTracking(() => window.rzpQ.component('Subscriptions'))
 class SubscriptionsController extends React.Component {
   componentDidMount() {
     this.initSubscriptions();
@@ -150,7 +131,7 @@ class SubscriptionsController extends React.Component {
     }
 
     return (
-      <div class={classList('Subscriptions-Container')}>
+      <div className={classList('Subscriptions-Container')}>
         <div className="banner-container">
           <DashboardBanner />
           {!userInfo.isChargeAtWillEnabled && (
@@ -209,7 +190,7 @@ class SubscriptionsController extends React.Component {
               >
                 Registration Links{' '}
                 <span>
-                  <i class="i i-info-circle" />
+                  <i className="i i-info-circle" />
                   <Popover theme="dark">
                     <PopoverBody>Authorization links are now called Registration links</PopoverBody>
                   </Popover>
@@ -240,4 +221,26 @@ class SubscriptionsController extends React.Component {
   }
 }
 
-export default withI18Service(SubscriptionsController);
+export default compose(
+  withI18Service,
+  connect(
+    (state) => ({
+      mode: state.session.mode,
+      user: state.session.user,
+      plans: state.plans,
+      subscriptions: state.subscriptions,
+      subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.SUBSCRIPTIONS,
+      ),
+      payments: state.payments,
+    }),
+    {
+      fetchPlans,
+      getCheckoutInfo,
+      fetchSubscriptions,
+      handleProductQuickGuide,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('Subscriptions')),
+)(SubscriptionsController);

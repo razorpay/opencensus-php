@@ -16,32 +16,32 @@ import analytics from 'merchant/views/Subscriptions/analytics';
 export default function PlanDetails({ plan, isLoading, statusMsg, subscriptions }) {
   const tableLimit = 5; // Set limit to total rows displayed in table
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div className="content-wrapper content-sm txn-details">
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-plan text-main icon--formal" /> <strong>{plan.id}</strong>
-            <div class="btn-toolbar pull-right">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <i className="i i-plan text-main icon--formal" /> <strong>{plan.id}</strong>
+            <div className="btn-toolbar pull-right">
               <NavLink
                 onClick={() => {
                   trackClickDuplicatePlan();
                   analytics.track('plan.clone.start');
                 }}
-                class="btn Button--primary--invert"
+                className="btn Button--primary--invert"
                 to={`/plans/new?duplicate_id=${plan.id}`}
               >
-                <i class="i i-copy" />
+                <i className="i i-copy" />
                 <Tooltip theme="dark">Duplicate Plan</Tooltip>
               </NavLink>
             </div>
           </div>
 
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <EntityDetailRow label="Plan Name" value={plan.item?.name} />
 

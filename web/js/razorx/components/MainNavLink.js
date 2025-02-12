@@ -16,8 +16,8 @@ export default class MainNavLink extends Component {
 
     return (
       <ShowWhen permission={permission}>
-        <NavLink class="main-nav" {...linkProps}>
-          <i class={icon} />
+        <NavLink className="main-nav" {...linkProps}>
+          <i className={icon} />
           {children}
           {tag}
         </NavLink>

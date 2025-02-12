@@ -12,22 +12,22 @@ const TotalOwedAmountBreakdown = ({
     return <PlaceholderLoader />;
   }
   return (
-    <div class="total-owed-amount-breakup">
-      <div class="breakup-wrapper">
-        <div class="flex m-b">
-          <div class="full-width no-margin">Total Principal Due</div>
+    <div className="total-owed-amount-breakup">
+      <div className="breakup-wrapper">
+        <div className="flex m-b">
+          <div className="full-width no-margin">Total Principal Due</div>
           <Amount value={totalPrincipalAmount} />
         </div>
 
-        <div class="m-b">
+        <div className="m-b">
           <div className="flex">
             <div className="full-width no-margin">Total Interest Due</div>
             <Amount value={totalInterestAmount} />
           </div>
-          <span class="text-faded">Inclusive all fees</span>
+          <span className="text-faded">Inclusive all fees</span>
         </div>
       </div>
-      <div class="bordered-top">
+      <div className="bordered-top">
         <div className="flex">
           <div className="full-width no-margin">
             <strong>Total Owed Amount</strong>

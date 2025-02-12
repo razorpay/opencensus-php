@@ -1,11 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { getValue, logical_operators } from './util';
-import React from 'react';
-@connect((state) => {
-  return state;
-})
-export default class PreconditionPopover extends React.Component {
+
+class PreconditionPopover extends React.Component {
   render() {
     const OP =
       this.props.rule.precondition.type == 'logical'
@@ -13,10 +11,10 @@ export default class PreconditionPopover extends React.Component {
         : [this.props.rule.precondition];
 
     return (
-      <div class="rule-body-popover">
+      <div className="rule-body-popover">
         {OP.map((o, i) => (
           <React.Fragment key={i}>
-            <div class="rule-body-popover-content">
+            <div className="rule-body-popover-content">
               <div>
                 {getValue('parameter', o.operands[0].value).name} is{' '}
                 {getValue('operator', o.value).name} {o.operands[1].value}
@@ -39,3 +37,7 @@ export default class PreconditionPopover extends React.Component {
     );
   }
 }
+
+export default connect((state) => {
+  return state;
+})(PreconditionPopover);

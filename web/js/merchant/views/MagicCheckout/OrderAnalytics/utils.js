@@ -273,8 +273,8 @@ export const customTooltip = (tooltipModel, ctx, chartName) => {
   const getLabel = (index) => body[index]?.lines[0].split(':')[0];
   const getValue = (label, value) => TOOLTIP_HANDLERS[label].value(value);
   let innerHTML = `
-      <div class="magic-tooltip-wrapper">
-      <div class="tooltip-date">${moment(+title[0]).format('MMM D YYYY hh:mm A')}</div>
+      <div className="magic-tooltip-wrapper">
+      <div className="tooltip-date">${moment(+title[0]).format('MMM D YYYY hh:mm A')}</div>
       `;
   dataPoints.forEach((item, index) => {
     const label = dataPoints.length > 1 ? getLabel(index) : TOOLTIP_HANDLERS[chartName].label;
@@ -288,13 +288,13 @@ export const customTooltip = (tooltipModel, ctx, chartName) => {
         : labelColors[index].borderColor;
     const hasNoData = value === NO_DATA_TEXT;
     innerHTML += `
-        <div class="magic-tooltip-info">
-          <div class="magic-tooltip-visual">
-            <span class="tooltip-graph-color" style="background-color: ${color}"></span>
-             <p class="tooltip-graph-label"> ${label}
+        <div className="magic-tooltip-info">
+          <div className="magic-tooltip-visual">
+            <span className="tooltip-graph-color" style="background-color: ${color}"></span>
+             <p className="tooltip-graph-label"> ${label}
            </p>
           </div>
-          <div class="tooltip-graph-value ${hasNoData ? 'no-data' : ''}"> ${value}</div>
+          <div className="tooltip-graph-value ${hasNoData ? 'no-data' : ''}"> ${value}</div>
         </div>
         `;
   });

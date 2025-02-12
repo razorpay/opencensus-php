@@ -1,8 +1,10 @@
 /* eslint-disable react/no-unsafe */
 /* eslint-disable no-bitwise */
 import React, { Component } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
@@ -17,7 +19,6 @@ import RazorpayXNitroAnnouncement from './RazorpayXNitroAnnouncement';
 import OpfinAnnouncement10L from './components/OpfinAnnouncement10L';
 import OpfinAnnouncementV2 from './components/OpfinAnnouncementV2';
 import { trackLoad, trackExpand, trackAnnouncement } from './ga';
-import moment from 'moment';
 
 const BUTTON_CLASSES = {
   button: 'btn-primary',
@@ -63,20 +64,6 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
 }
 
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-    };
-  },
-  {
-    openModal,
-    closeModal,
-    showAcceptPaymentsModal,
-  },
-)
-@RTracking(() => window.rzpQ.component('NotificationsDropdown'))
 class NotificationsDropdown extends Component {
   state = {};
   id = this.props.user.current;
@@ -269,7 +256,7 @@ class NotificationsDropdown extends Component {
     });
   };
 
-  handleContentScroll = debounce(::this.onScrollContent, 20);
+  handleContentScroll = debounce(this.onScrollContent.bind(this), 20);
 
   showOpfinAnnouncementV2 = (id) => {
     const { closeModal, openModal } = this.props;
@@ -368,7 +355,7 @@ class NotificationsDropdown extends Component {
     return (
       <Dropdown closeOnClick={false} onShow={this.onShow} onHide={this.onHide}>
         <DropdownTrigger
-          class={`dropdown-toggle Dropdown--Notifications-toggle${
+          className={`dropdown-toggle Dropdown--Notifications-toggle${
             user.isAnnouncementIconEnabled ? ' dropdown-toggle--large-icon' : ''
           }`}
         >
@@ -387,14 +374,14 @@ class NotificationsDropdown extends Component {
                   },
                 });
               }}
-              class="i i-bell"
+              className="i i-bell"
             >
-              {hasUnread && <span class="red-bubble" />}
+              {hasUnread && <span className="red-bubble" />}
             </i>
           ) : user.isAnnouncementIconEnabled ? (
             <React.Fragment>
-              <i class="i i-horn" />
-              {hasUnread && <span class="new-bubble">{this.state.totalUnread}</span>}
+              <i className="i i-horn" />
+              {hasUnread && <span className="new-bubble">{this.state.totalUnread}</span>}
             </React.Fragment>
           ) : (
             <React.Fragment>
@@ -411,31 +398,31 @@ class NotificationsDropdown extends Component {
                     },
                   });
                 }}
-                class={classList(hasUnread && 'highlight')}
+                className={classList(hasUnread && 'highlight')}
               >
                 Announcements
               </span>
-              {hasUnread && <span class="bubble">{this.state.totalUnread}</span>}
+              {hasUnread && <span className="bubble">{this.state.totalUnread}</span>}
             </React.Fragment>
           )}
         </DropdownTrigger>
         <DropdownContent>
           <div
-            class={classList(
+            className={classList(
               'dropdown-menu Dropdown--Notifications-menu js-overflow',
               this.state.canScrollDown && 'can-scroll',
             )}
           >
             {user.current && (
-              <div class="media">
-                <div class="media-body">
+              <div className="media">
+                <div className="media-body">
                   <b>ANNOUNCEMENTS</b>
                 </div>
               </div>
             )}
 
             <div
-              class="Dropdown--Notifications-content"
+              className="Dropdown--Notifications-content"
               onScroll={({ target }) => {
                 this.handleContentScroll(target);
               }}
@@ -443,9 +430,9 @@ class NotificationsDropdown extends Component {
               {cardsList.length ? (
                 cardsList
               ) : (
-                <div class="Notifications-content-empty">
+                <div className="Notifications-content-empty">
                   <img src="/img/notifications/no-notification.png" width="72px" />
-                  <div class="title">No announcements right now</div>
+                  <div className="title">No announcements right now</div>
                 </div>
               )}
             </div>
@@ -497,30 +484,30 @@ const NotificationCard = ({
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   return (
     <div
-      class={classList(
+      className={classList(
         'NotificationCard',
         isUnread ? 'active' : 'inactive', // Notification is not read and also not expiry
       )}
     >
-      <span class="NotificationCard-icon">
+      <span className="NotificationCard-icon">
         {iconMap[icon] ? (
-          <i class={`ico i ${iconMap[icon]}`}>{isUnread && <span class="red-bubble" />}</i>
+          <i className={`ico i ${iconMap[icon]}`}>{isUnread && <span className="red-bubble" />}</i>
         ) : (
-          <span class="ico">
+          <span className="ico">
             <img src={icon} width="32px" />
-            {isUnread && <span class="red-bubble" />}
+            {isUnread && <span className="red-bubble" />}
           </span>
         )}
       </span>
-      <div class="NotificationCard-body">
-        <div class="heading">
-          <div class="title">
+      <div className="NotificationCard-body">
+        <div className="heading">
+          <div className="title">
             <b>{title}</b>
           </div>
-          <div class="timestamp">{getAgoLabel(start_ts)}</div>
+          <div className="timestamp">{getAgoLabel(start_ts)}</div>
         </div>
-        <div class="description">{description}</div>
-        <div class="action-buttons">
+        <div className="description">{description}</div>
+        <div className="action-buttons">
           {buttons.map((btn, idx) => {
             const isExternal = /^http(s)?:\/\//.test(btn.url);
             const isHash = !isExternal && btn.url.indexOf('#') === 0;
@@ -549,7 +536,7 @@ const NotificationCard = ({
             return (
               <a
                 key={idx}
-                class={classList('btn', getButtonClass(btn.type))}
+                className={classList('btn', getButtonClass(btn.type))}
                 onClick={(e) => {
                   analyticsTrack({
                     objectName: 'announcements',
@@ -581,7 +568,7 @@ const NotificationCard = ({
                 rel="noreferrer"
               >
                 <b>
-                  {btn.label} {isExternal && <i class="i i-external-link" />}
+                  {btn.label} {isExternal && <i className="i i-external-link" />}
                 </b>
               </a>
             );
@@ -592,4 +579,22 @@ const NotificationCard = ({
   );
 };
 
-export default withRouter(NotificationsDropdown);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        ...state.config.config,
+      };
+    },
+    {
+      openModal,
+      closeModal,
+      showAcceptPaymentsModal,
+    },
+  ),
+  rTracking({
+    page: 'NotificationsDropdown',
+  }),
+  withRouter,
+)(NotificationsDropdown);

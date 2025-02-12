@@ -122,12 +122,12 @@ const ApplyCouponCodeModal = ({
   }, []);
 
   return (
-    <div class="coupon-code-modal">
+    <div className="coupon-code-modal">
       <ModalHeader title="Apply Coupon Code" onCloseClick={_onClose} />
       {!token ? (
-        <div class="modal-body">
+        <div className="modal-body">
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div class="form-group">
+            <div className="form-group">
               <label className="control-label" htmlFor="coupon">
                 Coupon Code
               </label>
@@ -135,15 +135,15 @@ const ApplyCouponCodeModal = ({
                 component={InputField}
                 type="text"
                 name="coupon"
-                class="form-control"
+                className="form-control"
                 onChange={(_, value) => onCouponChange(value)}
                 validate={required()}
                 autoFocus={true}
               />
-              <small class="text-danger">{error ? error : '\u00A0'}</small>
+              <small className="text-danger">{error ? error : '\u00A0'}</small>
             </div>
             <AsyncButton
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               text="Apply"
               type="submit"
               pendingText="Applying..."
@@ -164,7 +164,7 @@ const ApplyCouponCodeModal = ({
               Cancel
             </button>
             <AsyncButton
-              class="btn btn-primary"
+              className="btn btn-primary"
               text="Apply Coupon Code"
               pendingText="Applying..."
               disabled={error}

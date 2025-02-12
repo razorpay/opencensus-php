@@ -4,37 +4,21 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'common/ui/ModalHeader';
 import InputField from 'common/ui/Forms/InputField';
-import { amount } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { createTestPayment } from './model';
 import { validateAmount } from 'common/utils/validators';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      mode: state.session.mode,
-    };
-  },
-  {
-    closeModal,
-    showNotification,
-  },
-)
-@reduxForm({
-  form: 'createQRTestPayment',
-})
-export default class CreateTestPayment extends Component {
+class CreateTestPayment extends Component {
   state = {};
 
   componentDidMount() {
-    this.props.onMount &&
-      this.props.onMount(this.props.qrCode && this.props.qrCode.id);
+    this.props.onMount && this.props.onMount(this.props.qrCode && this.props.qrCode.id);
   }
 
   componentWillUnmount() {
-    this.props.onUnmount &&
-      this.props.onUnmount(this.props.qrCode && this.props.qrCode.id);
+    this.props.onUnmount && this.props.onUnmount(this.props.qrCode && this.props.qrCode.id);
   }
 
   createTestPayment = (props) => {
@@ -71,7 +55,7 @@ export default class CreateTestPayment extends Component {
         this.props.fetchQRPayments();
       })
       .catch(({ errors }) => {
-        const error = (errors || [])[0]
+        const error = (errors || [])[0];
 
         this.props.showNotification({
           type: 'error',
@@ -87,13 +71,13 @@ export default class CreateTestPayment extends Component {
       <div>
         <ModalHeader title="Create a Test Payment" onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <form onSubmit={handleSubmit(this.createTestPayment)}>
-            <div class="form-group">
+            <div className="form-group">
               <label>Amount (INR)</label>
               <Field
                 name="amount"
-                class="form-control"
+                className="form-control"
                 component={InputField}
                 placeholder="Amount in INR"
                 autoFocus={true}
@@ -101,9 +85,9 @@ export default class CreateTestPayment extends Component {
               />
             </div>
 
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
-                class="btn btn-primary btn-block"
+                className="btn btn-primary btn-block"
                 text="Create"
                 pendingText="Creating..."
                 onClick={handleSubmit(this.createTestPayment)}
@@ -119,3 +103,20 @@ export default class CreateTestPayment extends Component {
 function amountValidator(value) {
   return validateAmount(value);
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        mode: state.session.mode,
+      };
+    },
+    {
+      closeModal,
+      showNotification,
+    },
+  ),
+  reduxForm({
+    form: 'createQRTestPayment',
+  }),
+)(CreateTestPayment);

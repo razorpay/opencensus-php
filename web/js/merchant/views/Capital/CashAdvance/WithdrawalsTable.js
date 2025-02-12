@@ -20,7 +20,7 @@ const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
         <Amount value={withdrawal.amount} />
       </td>
       <td>
-        <span class={`status-label label ${StatusPillClasses[withdrawal.status]}`}>
+        <span className={`status-label label ${StatusPillClasses[withdrawal.status]}`}>
           {STATUS_LABELS[withdrawal.status]}
         </span>
       </td>
@@ -31,7 +31,7 @@ const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
           : '--'}
       </td>
       <td>{withdrawal.due_date ? moment(withdrawal.due_date).format('LL') : '--'}</td>
-      <td class="row-action">
+      <td className="row-action">
         <div className="btn-group">
           <button
             className="btn btn-xs btn-default"
@@ -71,15 +71,15 @@ export default ({ withdrawals, loading, trackGA }) => {
           colSpan={5}
           rows={withdrawals}
           emptyTableMsg={
-            <div class="no-results-container flex">
-              <div class="m-r">
+            <div className="no-results-container flex">
+              <div className="m-r">
                 <img src={require("assets/capital/no_results.svg")} height={240} width={240} />
               </div>
-              <div class="content">
-                <p class="m-b">
+              <div className="content">
+                <p className="m-b">
                   <strong>Unlock your Withdrawals View</strong>
                 </p>
-                <small class="text-faded">
+                <small className="text-faded">
                   Make your first withdrawal to unlock the List and details view of Withdrawals.
                 </small>
               </div>

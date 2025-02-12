@@ -1,28 +1,28 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import { getItem } from 'common/utils/localStorage';
+import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import { RZPFeatures } from 'merchant/helpers/data';
+import { fetchItems } from 'merchant/reducers/items';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import { fetchItems } from 'merchant/reducers/items';
+import lazy from 'merchant/routes/LazyLoader';
 
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
-import { getItem } from 'common/utils/localStorage';
-import DashboardBanner from 'common/ui/DashboardBanner';
 import OnBoarding, {
   getIsInvoicesEnabled,
   getIsAllowedResetInvoicesOnBoarding,
 } from './OnBoarding';
-
 import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import lazy from 'merchant/routes/LazyLoader';
 
 const MonetizationChargesBanner = lazy(() =>
   import(
@@ -32,19 +32,6 @@ const MonetizationChargesBanner = lazy(() =>
 
 // eslint-disable-next-line react/no-unsafe
 
-@connect(
-  (state) => ({
-    ...state.session,
-    user: state.session.user,
-    invoices: state.invoices,
-    items: state.items,
-    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
-  }),
-  {
-    handleProductQuickGuide,
-    fetchItems,
-  },
-)
 class InvoicesContainer extends Component {
   componentDidMount() {
     if (this.props.invoices.invoices.length) return;
@@ -140,4 +127,19 @@ class InvoicesContainer extends Component {
   }
 }
 
-export default withRouter(InvoicesContainer);
+export default compose(
+  connect(
+    (state) => ({
+      ...state.session,
+      user: state.session.user,
+      invoices: state.invoices,
+      items: state.items,
+      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
+    }),
+    {
+      handleProductQuickGuide,
+      fetchItems,
+    },
+  ),
+  withRouter,
+)(InvoicesContainer);

@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import AsyncButton from 'react-async-button';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import moment from 'moment';
 import { withI18Service } from 'common/i18';
 import Amount from 'common/ui/Amount';
@@ -74,6 +74,7 @@ import { removeTaxForNonINRItems, TAX_DIVISOR } from './helpers';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { withSplitzService } from 'common/splitz';
+import { compose } from 'redux';
 
 function validate(values) {
   const errors = {
@@ -114,54 +115,7 @@ function validate(values) {
 const selector = formValueSelector('newInvoice');
 
 // eslint-disable-next-line react/no-unsafe
-@withI18Service
-@connect(
-  (state) => {
-    const customers = state.customers;
-    return {
-      session: state.session,
-      customers: state.customers,
-      items: state.items.items,
-      customer: findBy(customers.items, 'id', selector(state, 'customer.id')),
-      invoice: state.invoice.invoice,
-      invoice_line_items: selector(state, 'line_items'),
-      state_of_supply: selector(state, 'state_of_supply'),
-      config: state.config.config,
-      supply_state_code: selector(state, 'supply_state_code'),
-    };
-  },
-  {
-    luminateRow,
-    fetchCustomersForAutocomplete,
-    fetchItemsForAutocomplete,
-    fetchCustomerAddresses,
-    appendCustomerInList,
-    saveInvoice,
-    deleteInvoice,
-    fetchStates,
-    fetchGSTTaxes,
-    ...InvoiceActions,
-    ...ModalActions,
-    ...NotificationsActions,
-  },
-)
-@reduxForm({
-  form: 'newInvoice',
-  enableReInitialize: true,
-  validate,
-  initialValues: {
-    date: Math.ceil(new Date().getTime() / 1000),
-    draft: '0',
-    type: 'invoice',
-    line_items: [
-      {
-        quantity: 1,
-        amountInINR: '0.00',
-      },
-    ],
-  },
-})
-@RTracking(() => window.rzpQ.component('InvoicesNewContainer'))
+
 class InvoicesNewContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -1198,7 +1152,7 @@ class InvoicesNewContainer extends Component {
     this.context.confirm({
       header: 'Delete Invoice?',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>The Invoice will be deleted. There is no coming back!. Are you sure?</p>
           <div>
             If you have added any item or customer, you can still use them in other invoices.
@@ -1241,7 +1195,7 @@ class InvoicesNewContainer extends Component {
     this.context.confirm({
       header: 'Cancel Invoice?',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>The Invoice will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
@@ -1703,7 +1657,7 @@ class InvoicesNewContainer extends Component {
 
     const duplicateInvoiceButton = this.props.invoice.id && !this.props.invoice.subscription_id && (
       <NavLink
-        class="btn btn-default btn-block btn-lg"
+        className="btn btn-default btn-block btn-lg"
         to={`/invoices/new?duplicate_id=${invoice.id}`}
         onClick={() => {
           this.trackUpdateInvoice('invoice.update.clone');
@@ -1711,11 +1665,11 @@ class InvoicesNewContainer extends Component {
           trackClickDuplicateInvoice();
         }}
       >
-        <div class="row inv__optiongroupbutton">
-          <div class="col-xs-4">
-            <i class="i i-copy" />
+        <div className="row inv__optiongroupbutton">
+          <div className="col-xs-4">
+            <i className="i i-copy" />
           </div>
-          <div class="col-xs-8">Duplicate Invoice</div>
+          <div className="col-xs-8">Duplicate Invoice</div>
         </div>
       </NavLink>
     );
@@ -1733,17 +1687,17 @@ class InvoicesNewContainer extends Component {
     const showCreateGSTEnabledInvoicesOption =
       !merchantGSTIN && (isNew || isDraft) && !isConfigTagEnabled('account.gst');
     return (
-      <div class="react-root">
+      <div className="react-root">
         {this.state.isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="content-wrapper invoice-creation-container">
+          <div className="content-wrapper invoice-creation-container">
             <form onSubmit={handleSubmit(this.save)}>
-              <div class="row">
-                <div class="col-md-8 col-sm-8">
-                  <div class="invoice-container">
+              <div className="row">
+                <div className="col-md-8 col-sm-8">
+                  <div className="invoice-container">
                     <InvoiceBreadcrumbNav
                       invoice={invoice}
                       onBackNavClick={this.handleBackNavClick}
@@ -1751,9 +1705,9 @@ class InvoicesNewContainer extends Component {
 
                     <Alert type={this.state.status.type} message={this.state.status.message} />
 
-                    <div class="invoice">
+                    <div className="invoice">
                       {isTestMode && (
-                        <div class="alert-sm alert-warning testmode-warning">
+                        <div className="alert-sm alert-warning testmode-warning">
                           Invoice is created in <b>Test Mode</b>. Only test payments can be made for
                           this invoice
                         </div>
@@ -1767,16 +1721,16 @@ class InvoicesNewContainer extends Component {
                         org={org}
                       />
 
-                      <div class="row">
-                        <div class="col-md-12">
-                          <div class="inv__titlesection">
+                      <div className="row">
+                        <div className="col-md-12">
+                          <div className="inv__titlesection">
                             <h3>Invoice #</h3>
                             {locked && !invoice.receipt ? (
                               <InlineField
                                 formName="newInvoice"
                                 name="id"
                                 component="input"
-                                class="material-input input-xs"
+                                className="material-input input-xs"
                                 disabled={true}
                                 size={30}
                               />
@@ -1785,7 +1739,7 @@ class InvoicesNewContainer extends Component {
                                 formName="newInvoice"
                                 name="receipt"
                                 component="input"
-                                class="material-input"
+                                className="material-input"
                                 placeholder={`${!locked ? 'Enter ' : ''}Invoice Number`}
                                 disabled={locked}
                                 keepValueInBG={false}
@@ -1794,13 +1748,13 @@ class InvoicesNewContainer extends Component {
                             )}
                           </div>
                         </div>
-                        <div class="col-md-12">
-                          <div class="inv__description">
+                        <div className="col-md-12">
+                          <div className="inv__description">
                             <InlineField
                               formName="newInvoice"
                               name="description"
                               component={AutoResizeTextarea}
-                              class="material-input"
+                              className="material-input"
                               placeholder={`${
                                 !isDisabled ? 'Enter a ' : ''
                               }Brief Description or Summary`}
@@ -1814,11 +1768,11 @@ class InvoicesNewContainer extends Component {
                       </div>
                       {(invoice.amount_due && invoice.amount_due > 0.0) ||
                       (invoiceTotal && invoiceTotal.total && invoiceTotal.total > 0.0) ? (
-                        <div class="row">
-                          <div class="col-md-12">
+                        <div className="row">
+                          <div className="col-md-12">
                             <div>
-                              <label class="inv__amountduetitle">AMOUNT DUE</label>
-                              <h3 class="inv__amountdue">
+                              <label className="inv__amountduetitle">AMOUNT DUE</label>
+                              <h3 className="inv__amountdue">
                                 {invoice.amount_due ? (
                                   <Amount
                                     value={invoice.amount_due}
@@ -1835,16 +1789,16 @@ class InvoicesNewContainer extends Component {
                           </div>
                         </div>
                       ) : null}
-                      <div class="row inv__customersection">
-                        <div class="col-md-6 inv__customerselectionsection">
+                      <div className="row inv__customersection">
+                        <div className="col-md-6 inv__customerselectionsection">
                           <div>
                             <label>BILLING TO</label>
                             <div>
-                              <div class="custom-select auto-complete-search">
+                              <div className="custom-select auto-complete-search">
                                 <TypeAhead
                                   options={customersList}
                                   disabled={!customersList}
-                                  class="ps-in-modal"
+                                  className="ps-in-modal"
                                   searchIndices={['id', 'name', 'email']}
                                   placeholder={`${
                                     !customersList ? 'Loading...' : 'Select a customer'
@@ -1854,7 +1808,7 @@ class InvoicesNewContainer extends Component {
                                   selectedOptionLabelPath="id"
                                   optionComponent={({ option }) => {
                                     return (
-                                      <div class="custom-powerselect-options">
+                                      <div className="custom-powerselect-options">
                                         <div>
                                           <b>{titleCase(option.name)}</b> (
                                           {option.code || option.id})
@@ -1863,11 +1817,13 @@ class InvoicesNewContainer extends Component {
                                       </div>
                                     );
                                   }}
-                                  beforeOptionsComponent={() => <div class="heading">Recent</div>}
+                                  beforeOptionsComponent={() => (
+                                    <div className="heading">Recent</div>
+                                  )}
                                   afterOptionsComponent={({ select }) => {
                                     return (
                                       <div
-                                        class="quick-create"
+                                        className="quick-create"
                                         onClick={() =>
                                           this.quickCreateCustomer({
                                             searchTerm: select.searchTerm,
@@ -1875,7 +1831,7 @@ class InvoicesNewContainer extends Component {
                                           })
                                         }
                                       >
-                                        <i class="i i-plus" />
+                                        <i className="i i-plus" />
                                         <b>Create New Customer</b>
                                       </div>
                                     );
@@ -1883,7 +1839,10 @@ class InvoicesNewContainer extends Component {
                                   onChange={this.handleSelectCustomer}
                                   onKeyDown={this.handleKeyDown}
                                 />
-                                <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
+                                <div
+                                  className="typeAheadSkin"
+                                  ref={(c) => (this.typeAheadSkin = c)}
+                                >
                                   {selectedCustomerDisplay ? (
                                     <div>
                                       {selectedCustomerDisplay.name
@@ -1895,12 +1854,12 @@ class InvoicesNewContainer extends Component {
                               </div>
                             </div>
                             {hasCustomerSelected && (
-                              <div class="inv__customerdetails">
+                              <div className="inv__customerdetails">
                                 {customerContact && <div>{customerContact}</div>}
                                 {customerEmail ? <div>{customerEmail}</div> : ''}
                                 {customerGstin && showGstn && (
                                   <div>
-                                    <span class="tax-heading">GSTIN - </span>
+                                    <span className="tax-heading">GSTIN - </span>
                                     {customerGstin}
                                   </div>
                                 )}
@@ -1909,7 +1868,7 @@ class InvoicesNewContainer extends Component {
                             <div>
                               {hasCustomerSelected && !isDisabled && (
                                 <button
-                                  class="btn btn-link no-padding"
+                                  className="btn btn-link no-padding"
                                   onClick={this.quickEditCustomer}
                                   type="button"
                                 >
@@ -1919,21 +1878,21 @@ class InvoicesNewContainer extends Component {
                             </div>
                           </div>
 
-                          <div class="inv__dates-container hidden-sm">
-                            <div class="row">
-                              <div class="col-md-4">
-                                <label class="text-uppercase">Issue Date</label>
+                          <div className="inv__dates-container hidden-sm">
+                            <div className="row">
+                              <div className="col-md-4">
+                                <label className="text-uppercase">Issue Date</label>
                               </div>
-                              <div class="col-md-8">
+                              <div className="col-md-8">
                                 <div
-                                  class={`material-input__datepicker ${
+                                  className={`material-input__datepicker ${
                                     this.state.issue_date_focused
                                       ? 'material-input__datepicker-focused'
                                       : ''
                                   }`}
                                 >
                                   <SingleDatePicker
-                                    customInputIcon={<i class="i i-date-range" />}
+                                    customInputIcon={<i className="i i-date-range" />}
                                     noBorder={true}
                                     disabled={isDisabled}
                                     placeholder="Issue Date"
@@ -1954,21 +1913,21 @@ class InvoicesNewContainer extends Component {
                                 </div>
                               </div>
                             </div>
-                            <div class="row">
+                            <div className="row">
                               <div>
-                                <div class="col-md-4">
-                                  <label class="text-uppercase">Expiry Date</label>
+                                <div className="col-md-4">
+                                  <label className="text-uppercase">Expiry Date</label>
                                 </div>
-                                <div class="col-md-8">
+                                <div className="col-md-8">
                                   <div
-                                    class={`material-input__datepicker ${
+                                    className={`material-input__datepicker ${
                                       this.state.expiry_date_focused
                                         ? 'material-input__datepicker-focused'
                                         : ''
                                     }`}
                                   >
                                     <SingleDatePicker
-                                      customInputIcon={<i class="i i-date-range" />}
+                                      customInputIcon={<i className="i i-date-range" />}
                                       noBorder={true}
                                       disabled={locked}
                                       placeholder="Expiry Date"
@@ -1987,7 +1946,7 @@ class InvoicesNewContainer extends Component {
                                       isOutsideRange={this.expiryDateRange}
                                     />
                                     <div
-                                      class={`Input-info ${
+                                      className={`Input-info ${
                                         this.state.expiry_date_focused ? 'show-info' : ''
                                       }`}
                                     >
@@ -2000,9 +1959,9 @@ class InvoicesNewContainer extends Component {
                             </div>
                           </div>
                         </div>
-                        <div class="col-md-6">
-                          <div class="row">
-                            <div class="col-md-12">
+                        <div className="col-md-6">
+                          <div className="row">
+                            <div className="col-md-12">
                               <BillingAddress
                                 isFetchingAddresses={isFetchingAddresses}
                                 isDisabled={isDisabled}
@@ -2024,13 +1983,13 @@ class InvoicesNewContainer extends Component {
                                 track={track}
                               />
                               {merchantGSTIN && showGstn && (
-                                <div class="inv__place-of-supply-container">
-                                  <label class="text-uppercase">Place of Supply</label>
+                                <div className="inv__place-of-supply-container">
+                                  <label className="text-uppercase">Place of Supply</label>
                                   {!isDisabled ? (
                                     <Fragment>
                                       <div>
                                         <PowerSelect
-                                          class="inv__state-of-delivery-list material-input"
+                                          className="inv__state-of-delivery-list material-input"
                                           placeholder="Select from Dropdown"
                                           options={this.state.states || []}
                                           selected={this.props.state_of_supply}
@@ -2040,8 +1999,8 @@ class InvoicesNewContainer extends Component {
                                         />
                                       </div>
                                       {!this.props.state_of_supply && (
-                                        <div class="alert-sm alert-warning">
-                                          <i class="i i-info-circle" />
+                                        <div className="alert-sm alert-warning">
+                                          <i className="i i-info-circle" />
                                           Add a Place of Supply to apply taxes
                                         </div>
                                       )}
@@ -2049,29 +2008,29 @@ class InvoicesNewContainer extends Component {
                                   ) : this.props.state_of_supply ? (
                                     <div>{this.props.state_of_supply.name}</div>
                                   ) : (
-                                    <div class="light-placeholder">
+                                    <div className="light-placeholder">
                                       Place of Supply not applicable.
                                     </div>
                                   )}
                                 </div>
                               )}
                             </div>
-                            <div class="col-md-12 hidden-md visible-sm-block">
-                              <div class="inv__dates-container">
-                                <div class="row">
-                                  <div class="col-md-4">
-                                    <label class="text-uppercase">Issue Date</label>
+                            <div className="col-md-12 hidden-md visible-sm-block">
+                              <div className="inv__dates-container">
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <label className="text-uppercase">Issue Date</label>
                                   </div>
-                                  <div class="col-md-8">
+                                  <div className="col-md-8">
                                     <div
-                                      class={`material-input__datepicker ${
+                                      className={`material-input__datepicker ${
                                         this.state.issue_date_mobile_focused
                                           ? 'material-input__datepicker-focused'
                                           : ''
                                       }`}
                                     >
                                       <SingleDatePicker
-                                        customInputIcon={<i class="i i-date-range" />}
+                                        customInputIcon={<i className="i i-date-range" />}
                                         noBorder={true}
                                         disabled={isDisabled}
                                         placeholder="Issue Date"
@@ -2092,21 +2051,21 @@ class InvoicesNewContainer extends Component {
                                     </div>
                                   </div>
                                 </div>
-                                <div class="row">
+                                <div className="row">
                                   <div>
-                                    <div class="col-md-4">
-                                      <label class="text-uppercase">Expiry Date</label>
+                                    <div className="col-md-4">
+                                      <label className="text-uppercase">Expiry Date</label>
                                     </div>
-                                    <div class="col-md-8">
+                                    <div className="col-md-8">
                                       <div
-                                        class={`material-input__datepicker ${
+                                        className={`material-input__datepicker ${
                                           this.state.expiry_date_mobile_focused
                                             ? 'material-input__datepicker-focused'
                                             : ''
                                         }`}
                                       >
                                         <SingleDatePicker
-                                          customInputIcon={<i class="i i-date-range" />}
+                                          customInputIcon={<i className="i i-date-range" />}
                                           noBorder={true}
                                           placeholder="Expiry Date"
                                           disabled={locked}
@@ -2150,14 +2109,14 @@ class InvoicesNewContainer extends Component {
                         trackLineItem={this.trackCreateInvoice}
                       />
 
-                      <div class="row" style={{ marginTop: '40px' }}>
-                        <div class="col-md-12">
-                          <label class="text-uppercase">Customer Notes</label>
+                      <div className="row" style={{ marginTop: '40px' }}>
+                        <div className="col-md-12">
+                          <label className="text-uppercase">Customer Notes</label>
                           <InlineField
                             formName="newInvoice"
                             name="comment"
                             component={AutoResizeTextarea}
-                            class="material-input"
+                            className="material-input"
                             placeholder={`${!locked ? 'Add ' : ''}Customer Notes`}
                             rows="1"
                             keepValueInBG={false}
@@ -2166,14 +2125,14 @@ class InvoicesNewContainer extends Component {
                         </div>
                       </div>
 
-                      <div class="row">
-                        <div class="col-md-12">
-                          <label class="text-uppercase">Terms and Conditions</label>
+                      <div className="row">
+                        <div className="col-md-12">
+                          <label className="text-uppercase">Terms and Conditions</label>
                           <InlineField
                             formName="newInvoice"
                             name="terms"
                             component={AutoResizeTextarea}
-                            class="material-input"
+                            className="material-input"
                             placeholder={`${!locked ? 'Add ' : ''}Terms and Conditions`}
                             rows="1"
                             keepValueInBG={false}
@@ -2182,8 +2141,8 @@ class InvoicesNewContainer extends Component {
                         </div>
                       </div>
 
-                      <div class="inv__Footer">
-                        <div class="inv__Footer__merchantName">
+                      <div className="inv__Footer">
+                        <div className="inv__Footer__merchantName">
                           {this.state.merchantAltBillingLabel}
                         </div>
                         <ShowWhen
@@ -2192,7 +2151,7 @@ class InvoicesNewContainer extends Component {
                             isAddressValid(merchantAddress)
                           }
                         >
-                          <div class="inv__Footer__merchantAddress">
+                          <div className="inv__Footer__merchantAddress">
                             <AddressDisplay address={merchantAddress} />
                           </div>
                         </ShowWhen>
@@ -2202,14 +2161,14 @@ class InvoicesNewContainer extends Component {
                 </div>
 
                 <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('invoices')}>
-                  <div class="col-md-4 col-sm-4 invoices--side">
+                  <div className="col-md-4 col-sm-4 invoices--side">
                     {!locked && (
-                      <div class="inv__cta">
-                        <div class="btn-group-vertical">
+                      <div className="inv__cta">
+                        <div className="btn-group-vertical">
                           {(isNew || isDraft) && (
                             <AsyncButton
                               type="button"
-                              class="btn btn-primary btn-block btn-lg"
+                              className="btn btn-primary btn-block btn-lg"
                               disabled={
                                 this.state.isSaving || this.props.invalid || !hasCustomerSelected
                               }
@@ -2220,11 +2179,11 @@ class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <div class="row inv__optiongroupbutton">
-                                <div class="col-xs-4">
-                                  <i class="i i-check" />
+                              <div className="row inv__optiongroupbutton">
+                                <div className="col-xs-4">
+                                  <i className="i i-check" />
                                 </div>
-                                <div class="col-xs-8">Finalize and Issue</div>
+                                <div className="col-xs-8">Finalize and Issue</div>
                               </div>
                             </AsyncButton>
                           )}
@@ -2232,24 +2191,24 @@ class InvoicesNewContainer extends Component {
                           {isIssued && (
                             <AsyncButton
                               type="button"
-                              class="btn btn-primary btn-block btn-lg"
+                              className="btn btn-primary btn-block btn-lg"
                               disabled={this.state.isSaving}
                               onClick={handleSubmit(this.resendInvoice)}
                             >
-                              <div class="row inv__optiongroupbutton">
-                                <div class="col-xs-4">
-                                  <i class="i i-send" />
+                              <div className="row inv__optiongroupbutton">
+                                <div className="col-xs-4">
+                                  <i className="i i-send" />
                                 </div>
-                                <div class="col-xs-8">Resend Invoice</div>
+                                <div className="col-xs-8">Resend Invoice</div>
                               </div>
                             </AsyncButton>
                           )}
                         </div>
-                        <div class="btn-group-vertical">
+                        <div className="btn-group-vertical">
                           {!locked && (
                             <AsyncButton
                               type="button"
-                              class="btn btn-default btn-block btn-lg"
+                              className="btn btn-default btn-block btn-lg"
                               text="Save Invoice"
                               pendingText="Saving..."
                               disabled={this.state.isSaving || this.props.invalid}
@@ -2260,11 +2219,11 @@ class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <div class="row inv__optiongroupbutton">
-                                <div class="col-xs-4">
-                                  <i class="i i-save" />
+                              <div className="row inv__optiongroupbutton">
+                                <div className="col-xs-4">
+                                  <i className="i i-save" />
                                 </div>
-                                <div class="col-xs-8">Save Invoice</div>
+                                <div className="col-xs-8">Save Invoice</div>
                               </div>
                             </AsyncButton>
                           )}
@@ -2272,102 +2231,108 @@ class InvoicesNewContainer extends Component {
                           {(isNew || isDraft) && (
                             <button
                               type="button"
-                              class="btn btn-default btn-block btn-lg"
+                              className="btn btn-default btn-block btn-lg"
                               onClick={this.deleteInvoice}
                               disabled={this.state.isSaving}
                             >
-                              <div class="row inv__optiongroupbutton">
-                                <div class="col-xs-4">
-                                  <i class="i i-close" />
+                              <div className="row inv__optiongroupbutton">
+                                <div className="col-xs-4">
+                                  <i className="i i-close" />
                                 </div>
-                                <div class="col-xs-8">Delete Invoice</div>
+                                <div className="col-xs-8">Delete Invoice</div>
                               </div>
                             </button>
                           )}
                           {isIssued && (
                             <button
                               type="button"
-                              class="btn btn-default btn-block btn-lg"
+                              className="btn btn-default btn-block btn-lg"
                               onClick={this.cancelInvoice}
                               disabled={this.state.isSaving}
                             >
-                              <div class="row inv__optiongroupbutton">
-                                <div class="col-xs-4">
-                                  <i class="i i-close" />
+                              <div className="row inv__optiongroupbutton">
+                                <div className="col-xs-4">
+                                  <i className="i i-close" />
                                 </div>
-                                <div class="col-xs-8">Cancel Invoice</div>
+                                <div className="col-xs-8">Cancel Invoice</div>
                               </div>
                             </button>
                           )}
                         </div>
-                        <div class="btn-group-vertical inv__actionbutton">
+                        <div className="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
                           {showCreateGSTEnabledInvoicesOption && (
-                            <label class="btn btn-default btn-block btn-lg" for="gst_enabled">
-                              <div class="row">
-                                <div class="col-xs-10">
+                            <label
+                              className="btn btn-default btn-block btn-lg"
+                              htmlFor="gst_enabled"
+                            >
+                              <div className="row">
+                                <div className="col-xs-10">
                                   <h3>Create GST Enabled Invoices</h3>
                                   <p>Add your GST number</p>
                                 </div>
-                                <div class="col-xs-2">
-                                  <div class="custom-checkbox">
+                                <div className="col-xs-2">
+                                  <div className="custom-checkbox">
                                     <Field
                                       name="gst_enabled"
                                       id="gst_enabled"
                                       component="input"
                                       type="checkbox"
                                       disabled={locked}
-                                      class="Input-el"
+                                      className="Input-el"
                                       checked={!!merchantGSTIN}
                                       onChange={this.showGSTModal}
                                     />
-                                    <div class="Input-checkbox" />
+                                    <div className="Input-checkbox" />
                                   </div>
                                 </div>
                               </div>
                             </label>
                           )}
-                          <label class="btn btn-default btn-block btn-lg" for="partial_payment">
-                            <div class="row">
-                              <div class="col-xs-10">
+                          <label
+                            className="btn btn-default btn-block btn-lg"
+                            htmlFor="partial_payment"
+                          >
+                            <div className="row">
+                              <div className="col-xs-10">
                                 <h3>Enable Partial Payments</h3>
                                 <p>Allow accepting multiple payments</p>
                               </div>
                               <div
-                                class="col-xs-2"
+                                className="col-xs-2"
                                 onClick={() =>
                                   track({
                                     eventAction: 'Enable - Partial Payment',
                                   })
                                 }
                               >
-                                <div class="custom-checkbox">
+                                <div className="custom-checkbox">
                                   <Field
                                     name="partial_payment"
                                     id="partial_payment"
                                     component="input"
                                     type="checkbox"
                                     disabled={locked}
-                                    class="Input-el"
+                                    className="Input-el"
                                   />
-                                  <div class="Input-checkbox" />
+                                  <div className="Input-checkbox" />
                                 </div>
                               </div>
                             </div>
                           </label>
                           {showEditInvoiceLabelOption && (
                             <button
-                              class="btn btn-default btn-block btn-lg"
+                              className="btn btn-default btn-block btn-lg"
                               onClick={this.showEditInvoiceLabelModal}
                               type="button"
                             >
-                              <div class="row">
-                                <div class="col-xs-10">
+                              <div className="row">
+                                <div className="col-xs-10">
                                   <h3>Change Invoice Label</h3>
                                   <p>Invoices will be issued under this label</p>
                                 </div>
                                 <i
-                                  class="col-xs-2 i i-arrow-forward"
+                                  className="col-xs-2 i i-arrow-forward"
                                   style={{ marginTop: '0.5em' }}
                                 />
                               </div>
@@ -2376,23 +2341,23 @@ class InvoicesNewContainer extends Component {
                           {!invoice.id && this.props.session.user.isInttCurrenciesEnabled && (
                             <div
                               id="change-currency-cta"
-                              class={classList(
+                              className={classList(
                                 'change-currency-cta',
                                 this.state.highlightCurrencyChangeCTA && 'highlight',
                               )}
                             >
                               <button
-                                class="btn btn-default btn-block btn-lg"
+                                className="btn btn-default btn-block btn-lg"
                                 onClick={this.openInvoiceCurrencyChangeModal}
                                 type="button"
                               >
-                                <div class="row">
-                                  <div class="col-xs-10">
+                                <div className="row">
+                                  <div className="col-xs-10">
                                     <h3>Change Currency</h3>
                                     <p>Select different currency</p>
                                   </div>
                                   <i
-                                    class="col-xs-2 i i-arrow-forward"
+                                    className="col-xs-2 i i-arrow-forward"
                                     style={{ marginTop: '0.5em' }}
                                   />
                                 </div>
@@ -2411,8 +2376,8 @@ class InvoicesNewContainer extends Component {
                     <ShowWhen
                       additionalCondition={(_user) => locked && _user.isAllowedEdit('invoices')}
                     >
-                      <div class="inv__cta">
-                        <div class="btn-group-vertical">{duplicateInvoiceButton}</div>
+                      <div className="inv__cta">
+                        <div className="btn-group-vertical">{duplicateInvoiceButton}</div>
                       </div>
                     </ShowWhen>
 
@@ -2434,4 +2399,57 @@ class InvoicesNewContainer extends Component {
   }
 }
 
-export default withSplitzService(withRouter(InvoicesNewContainer));
+export default compose(
+  withI18Service,
+  withSplitzService,
+  withRouter,
+  connect(
+    (state) => {
+      const customers = state.customers;
+      return {
+        session: state.session,
+        customers: state.customers,
+        items: state.items.items,
+        customer: findBy(customers.items, 'id', selector(state, 'customer.id')),
+        invoice: state.invoice.invoice,
+        invoice_line_items: selector(state, 'line_items'),
+        state_of_supply: selector(state, 'state_of_supply'),
+        config: state.config.config,
+        supply_state_code: selector(state, 'supply_state_code'),
+      };
+    },
+    {
+      luminateRow,
+      fetchCustomersForAutocomplete,
+      fetchItemsForAutocomplete,
+      fetchCustomerAddresses,
+      appendCustomerInList,
+      saveInvoice,
+      deleteInvoice,
+      fetchStates,
+      fetchGSTTaxes,
+      ...InvoiceActions,
+      ...ModalActions,
+      ...NotificationsActions,
+    },
+  ),
+  reduxForm({
+    form: 'newInvoice',
+    enableReInitialize: true,
+    validate,
+    initialValues: {
+      date: Math.ceil(new Date().getTime() / 1000),
+      draft: '0',
+      type: 'invoice',
+      line_items: [
+        {
+          quantity: 1,
+          amountInINR: '0.00',
+        },
+      ],
+    },
+  }),
+  rTracking({
+    page: 'InvoicesNewContainer',
+  }),
+)(InvoicesNewContainer);

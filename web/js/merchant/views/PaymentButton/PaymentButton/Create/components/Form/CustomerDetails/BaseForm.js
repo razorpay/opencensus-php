@@ -19,9 +19,9 @@ import track from '../../../track';
 
 const udfFieldTypeOptionComponent = ({ option }) => (
   <div>
-    <i class={classList('i', option.icon && `i-${option.icon}`)} />
+    <i className={classList('i', option.icon && `i-${option.icon}`)} />
     <span>{option.label}</span>
-    <i class="i i-check" />
+    <i className="i i-check" />
   </div>
 );
 
@@ -139,14 +139,14 @@ export default class BaseForm extends React.Component {
       <FieldOptionsDropdown
         trigger={
           <Button.Transparent onClick={track.customerScreenInputFieldMoreOptions}>
-            <i class="i i-ellipsis-v" />
+            <i className="i i-ellipsis-v" />
           </Button.Transparent>
         }
       >
         {!isFieldForcedRequired && (
           <OptionsItem isSelected={!isRequired}>
             <div onClick={this.handleToggleMakeOptional}>
-              <i class="i i-optional_mark" />
+              <i className="i i-optional_mark" />
               Optional Field
             </div>
           </OptionsItem>
@@ -154,15 +154,15 @@ export default class BaseForm extends React.Component {
 
         <OptionsItem isSelected={!!hasDescription}>
           <div onClick={this.handleToggleAddDescription}>
-            <i class="i i-sort i-fix-sort" />
+            <i className="i i-sort i-fix-sort" />
             {hasDescription ? 'Remove Description' : 'Add Description'}
           </div>
         </OptionsItem>
 
         {typeof indexInOrder !== 'undefined' && handleDeleteField && (
           <OptionsItem>
-            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
-              <i class="i i-delete" />
+            <div className="OptionsDropdown-item--delete" onClick={handleDeleteField}>
+              <i className="i i-delete" />
               <div>Delete Field</div>
             </div>
           </OptionsItem>
@@ -175,10 +175,10 @@ export default class BaseForm extends React.Component {
     const { disableSubmit } = this.state;
 
     return (
-      <div class="CreatorModal-BaseForm-footer">
+      <div className="CreatorModal-BaseForm-footer">
         <button
           type="button"
-          class="cancel-btn Button--transparent Button"
+          className="cancel-btn Button--transparent Button"
           onClick={() => {
             this.props.handleClose();
 
@@ -189,8 +189,8 @@ export default class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
-          <span class="icon i-check" />
+        <button type="submit" className="save-btn Button--transparent Button" disabled={disableSubmit}>
+          <span className="icon i-check" />
           Save
         </button>
       </div>
@@ -206,11 +206,11 @@ export default class BaseForm extends React.Component {
     const { isRequired, hasDescription, enumOptions } = this.state;
 
     return (
-      <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
+      <EditorModal className="CreatorModal-BaseForm" overElement allowScroll>
         <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           <InputDropdown
             label="Field Type"
-            class="Input--vTop"
+            className="Input--vTop"
             description={!isRequired ? 'Optional Field' : ''}
             disabled={isFieldForcedRequired}
             dropdownElementClass="ps-in-modal Input-el-PaymentButtonForm"
@@ -227,10 +227,10 @@ export default class BaseForm extends React.Component {
           <input name="field_type" value={this.indexInUDFDropdown} hidden readOnly />
           <input name="required" value={Number(isRequired)} hidden readOnly />
 
-          <Input.Group label="Field Label" class="Input--vTop" required>
+          <Input.Group label="Field Label" className="Input--vTop" required>
             <Input
               name="title"
-              class="Input--vTop"
+              className="Input--vTop"
               placeholder="Enter field label"
               defaultValue={field.title}
               autoFocus
@@ -258,7 +258,7 @@ export default class BaseForm extends React.Component {
 
             {hasDescription && (
               <Input.TextareaAutoResize
-                class="Input--description"
+                className="Input--description"
                 name="description"
                 placeholder="Enter field description"
                 defaultValue={field.description}
@@ -276,7 +276,7 @@ export default class BaseForm extends React.Component {
                 <br />
                 <Input.Group label="Dropdown Values">
                   <Input.EnumList
-                    class="dropdown-options"
+                    className="dropdown-options"
                     onChange={this.onChangeEnumList}
                     defaultValue={enumOptions.length ? enumOptions : ['']}
                   />

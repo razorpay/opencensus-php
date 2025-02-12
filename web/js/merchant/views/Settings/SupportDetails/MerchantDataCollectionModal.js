@@ -25,19 +25,19 @@ const PhoneField = () => (
       component={InputField}
       type="tel"
       name="phone"
-      class="form-control"
+      className="form-control"
       pattern="[789][0-9]{9}"
     />
   </>
 );
 const EmailField = () => (
   <>
-    <label class="label-required">Support Email id</label>
+    <label className="label-required">Support Email id</label>
     <Field
       component={InputField}
       type="email"
       name="email"
-      class="form-control"
+      className="form-control"
       validate={required()}
     />
   </>
@@ -45,7 +45,7 @@ const EmailField = () => (
 const SupportUrlField = () => (
   <>
     <label>Support URL</label>
-    <Field component={InputField} type="text" name="url" class="form-control" />
+    <Field component={InputField} type="text" name="url" className="form-control" />
   </>
 );
 
@@ -262,7 +262,7 @@ class MerchantDataCollectionModal extends Component {
               return null;
             }
             return (
-              <div class="form-group" key={each}>
+              <div className="form-group" key={each}>
                 <Component />
               </div>
             );

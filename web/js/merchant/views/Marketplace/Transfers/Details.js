@@ -1,22 +1,23 @@
 /* eslint-disable react/no-find-dom-node */
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
-import { withRouter } from 'common/deprecated/withRouter';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import ReversalDetails from 'merchant/views/Marketplace/Reversals/Details';
-import ReversalModal from './ReversalModal';
+import { withRouter } from 'common/deprecated/withRouter';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import {
   fetchTransfer,
   fetchReversals,
   updateTransfer,
 } from 'merchant/reducers/marketplace/transfers/details';
+import lazy from 'merchant/routes/LazyLoader';
+import ReversalDetails from 'merchant/views/Marketplace/Reversals/Details';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 
-import { showNotification } from 'merchant_common/reducers/notifications';
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ReversalModal from './ReversalModal';
 
 const TransferDetails = lazy(() =>
   import(
@@ -24,15 +25,6 @@ const TransferDetails = lazy(() =>
   ),
 );
 
-@connect((state) => state.transfer, {
-  fetchTransfer,
-  fetchReversals,
-  showNotification,
-  expandSlider,
-  compactSlider,
-  updateTransfer,
-  ...ModalActions,
-})
 class TransferDetailsContainer extends Component {
   state = {};
 
@@ -135,7 +127,7 @@ class TransferDetailsContainer extends Component {
     }
 
     return (
-      <div class={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
+      <div className={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
         <SuspenseWithLoader>
           <TransferDetails
             transfer={entity}
@@ -163,4 +155,15 @@ class TransferDetailsContainer extends Component {
   }
 }
 
-export default withRouter(TransferDetailsContainer);
+export default compose(
+  connect((state) => state.transfer, {
+    fetchTransfer,
+    fetchReversals,
+    showNotification,
+    expandSlider,
+    compactSlider,
+    updateTransfer,
+    ...ModalActions,
+  }),
+  withRouter,
+)(TransferDetailsContainer);

@@ -141,7 +141,7 @@ function TopSection({
   return (
     <Container>
       <CloseButton data-testid="close-button" type="button" onClick={onCloseClick || closeModal}>
-        <i class="i i-close" />
+        <i className="i i-close" />
       </CloseButton>
 
       {emoji && <Emoji>{emoji}</Emoji>}

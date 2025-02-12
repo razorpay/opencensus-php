@@ -9,7 +9,7 @@ class Alert extends Component {
     this.state = {
       close: false,
     };
-    this.close = ::this.close;
+    this.close = this.close.bind(this);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -40,7 +40,7 @@ class Alert extends Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'alert',
           'alert-dismissable',
           `alert-${props.type === 'error' ? 'danger' : props.type}`,
@@ -49,13 +49,13 @@ class Alert extends Component {
         style={{ borderRadius: 0 }}
       >
         {props.showDismiss && (
-          <button type="button" class="close" onClick={this.close}>
+          <button type="button" className="close" onClick={this.close}>
             <span>×</span>
           </button>
         )}
 
         <ul
-          class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
+          className={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
           style={{ paddingLeft: msgs.length === 1 ? 5 : 15 }}
         >
           {msgs.map((msg, index) => {

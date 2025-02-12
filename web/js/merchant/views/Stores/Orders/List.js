@@ -1,13 +1,15 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
-import ListContainer from 'merchant/containers/ListContainer';
-import PaymentsListFilter from './Filter';
-import { amount, customer, createdAtShort, status } from 'common/ui/item/pair';
-import EntityTable from 'merchant/components/EntityTable';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+
 import { SelfServeActionPages } from 'common/constant/enums';
+import { withRouter } from 'common/deprecated/withRouter';
+import { amount, customer, createdAtShort, status } from 'common/ui/item/pair';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import EntityTable from 'merchant/components/EntityTable';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+
+import PaymentsListFilter from './Filter';
 
 const _paymentId = () => {
   return {
@@ -40,13 +42,6 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect(
-  (state) => ({
-    ...state.payments,
-    id: state.storefront.entity.data.id,
-  }),
-  { fetchAll },
-)
 class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
@@ -63,7 +58,7 @@ class PaymentsList extends ListContainer {
     const { children, ...restProps } = this.props;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         {children}
 
         <PaymentsListFilter
@@ -84,4 +79,10 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withRouter(PaymentsList);
+export default connect(
+  (state) => ({
+    ...state.payments,
+    id: state.storefront.entity.data.id,
+  }),
+  { fetchAll },
+)(withRouter(PaymentsList));

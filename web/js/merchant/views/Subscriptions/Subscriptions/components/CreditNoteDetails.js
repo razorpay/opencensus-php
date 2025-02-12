@@ -17,25 +17,25 @@ export default class CreditNoteDetails extends React.Component {
     });
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               {onClose && (
-                <button type="button" class="close close-secondary" onClick={onClose}>
-                  <i class="i i-arrow-back" />
-                  <i class="i i-close" />
+                <button type="button" className="close close-secondary" onClick={onClose}>
+                  <i className="i i-arrow-back" />
+                  <i className="i i-close" />
                 </button>
               )}
               Credit Note ID: <strong>{creditNote.id}</strong>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
 
                 <EntityDetailRow label="Name">{creditNote.name}</EntityDetailRow>
@@ -65,7 +65,7 @@ const RefundsList = ({ refunds }) => {
   };
 
   return (
-    <div class="full-width-item sub-entity-list">
+    <div className="full-width-item sub-entity-list">
       <DataTable
         title="Refunds"
         customClass="refunds-table"

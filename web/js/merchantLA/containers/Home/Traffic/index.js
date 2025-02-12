@@ -59,9 +59,9 @@ class Traffic extends Component {
 
     this.requestId = 0;
 
-    this.onGroupChange = ::this.onGroupChange;
-    this.handleImageExportClick = ::this.handleImageExportClick;
-    this.handleResize = debounce(::this.handleResize, 250);
+    this.onGroupChange = this.onGroupChange.bind(this);
+    this.handleImageExportClick = this.handleImageExportClick.bind(this);
+    this.handleResize = debounce(this.handleResize.bind(this), 250);
 
     this.data = null;
   }

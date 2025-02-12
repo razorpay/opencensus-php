@@ -5,8 +5,8 @@ export default props => {
   const hasError = meta.touched && meta.error;
 
   return (
-    <div class={`custom-date ${hasError ? 'custom-date-error' : ''}`}>
-      <i class="i i-date-range custom-icon" />
+    <div className={`custom-date ${hasError ? 'custom-date-error' : ''}`}>
+      <i className="i i-date-range custom-icon" />
       <Datetime
         defaultValue={input.value}
         value={input.value}

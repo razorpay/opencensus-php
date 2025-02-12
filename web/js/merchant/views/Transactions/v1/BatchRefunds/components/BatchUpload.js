@@ -1,13 +1,15 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import FileUploadInputButton from 'common/ui/FileUpload/InputButton';
 import { titleCase } from 'common/utils/rzp-utils';
-import ProceedModal from './ProceedModal';
-import * as ModalActions from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { bindActionCreators } from 'redux';
+import * as ModalActions from 'merchant_common/reducers/modals';
+
+import ProceedModal from './ProceedModal';
 
 class BatchUpload extends Component {
   static contextTypes = {
@@ -61,30 +63,30 @@ class BatchUpload extends Component {
   render() {
     return (
       <div
-        class="content-wrapper content-sm upload-container"
+        className="content-wrapper content-sm upload-container"
         data-testid="batchrefunds-batchupload"
       >
-        <div class="panel panel-default">
-          <div class="panel-heading">
+        <div className="panel panel-default">
+          <div className="panel-heading">
             {titleCase(this.props.title)} File Upload - {this.props.modeFormatted} Mode
-            <small class="pull-right">
+            <small className="pull-right">
               <ShowWhen
                 additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <a href={this.props.docUrl} target="_blank" rel="noopener noreferrer" role="link">
                   DOCUMENTATION &nbsp;
-                  <i class="i i-external-link" />
+                  <i className="i i-external-link" />
                 </a>
               </ShowWhen>
             </small>
           </div>
 
-          <div class="panel-body">
-            <div class="help-block">
+          <div className="panel-body">
+            <div className="help-block">
               This is a simple way to process <b>{this.props.title}</b> in batches. For a quick
               reference,{' '}
               <a
-                class="highlight"
+                className="highlight"
                 href={this.props.sampleUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -95,22 +97,26 @@ class BatchUpload extends Component {
               to download a sample file.
             </div>
 
-            <div class="form-group">
-              <div class="row">
-                <div class="col-md-12">
+            <div className="form-group">
+              <div className="row">
+                <div className="col-md-12">
                   <FileUploadInputButton onChange={this.handleChange} />
                 </div>
               </div>
             </div>
 
-            <div class="text-center">
+            <div className="text-center">
               {this.props.isProceedDialogType ? (
-                <button class="btn btn-primary" onClick={this.proceed} disabled={!this.state.file}>
+                <button
+                  className="btn btn-primary"
+                  onClick={this.proceed}
+                  disabled={!this.state.file}
+                >
                   Proceed
                 </button>
               ) : (
                 <AsyncButton
-                  class="btn btn-primary"
+                  className="btn btn-primary"
                   type="button"
                   text="Submit"
                   pendingText="Submitting..."

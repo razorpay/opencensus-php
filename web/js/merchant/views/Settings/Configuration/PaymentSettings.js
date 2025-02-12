@@ -1,28 +1,30 @@
 import React, { Component } from 'react';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import CaptureSettingsModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/CaptureSettingsModal';
-import PaymentsCaptureConfigurationModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/PaymentsCaptureConfigurationModal';
-import Timeouts from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/Timeouts';
 import moment from 'moment';
 import { connect } from 'react-redux';
+
+import { Modules } from 'common/constant/enums';
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { analyticsTrack } from 'common/utils/analytics';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { DocLink, getCustomURL } from 'merchant/components/DocsLink';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   updateFeatures,
   fetchLateAuthConfig,
   createLateAuthConfig,
 } from 'merchant/reducers/config';
-import { DocLink, getCustomURL } from 'merchant/components/DocsLink';
+import CaptureSettingsModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/CaptureSettingsModal';
+import PaymentsCaptureConfigurationModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/PaymentsCaptureConfigurationModal';
+import Timeouts from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/Timeouts';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 import CaptureMode from './CaptureSettingsComponents/CaptureMode';
-import rolesList from 'merchant/helpers/permissions/roles-list';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { parseTimeoutValues, defaultTimeoutValue } from './CaptureSettingsComponents/data';
 import { renderTimeoutAsString } from './PaymentCaptureComponents/util';
 import { CAPTURE_SETTINGS } from './deeplink-constants';
-import TextHighlighter from 'common/ui/TextHighlighter';
-import { Modules } from 'common/constant/enums';
 
 const CAPTURE_ASSETS_CDN_URL = 'https://cdn.razorpay.com/static/assets/capture-settings';
 
@@ -480,13 +482,13 @@ class PaymentSettings extends Component {
     }
 
     return (
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <span class="title">
+      <div className="panel panel-default">
+        <div className="panel-heading">
+          <span className="title">
             <TextHighlighter hashedWith={CAPTURE_SETTINGS}>Payment Capture</TextHighlighter>
           </span>
 
-          <span class="toggler-btn">
+          <span className="toggler-btn">
             <DocLink
               href={
                 custom_code === 'axis'
@@ -497,20 +499,20 @@ class PaymentSettings extends Component {
               rel="noopener noreferrer"
               onClick={this.onKnowMoreClick}
             >
-              Know more <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+              Know more <i className="i i-external-link" style={{ marginLeft: '5px' }} />
             </DocLink>
           </span>
         </div>
-        <div class="panel-body payment-capture-panel">
-          <div class="panel-content capture-panel-content" style={{ flexDirection: 'column' }}>
+        <div className="panel-body payment-capture-panel">
+          <div className="panel-content capture-panel-content" style={{ flexDirection: 'column' }}>
             <div
-              class="left-panel is-active"
+              className="left-panel is-active"
               style={{
                 marginRight: '5px',
                 height: this.computeHeight(items[0].config.capture, 'automatic'),
               }}
             >
-              <div class="panel-header">
+              <div className="panel-header">
                 <h4>
                   <b>
                     {items[0].config.capture === 'automatic'
@@ -520,7 +522,7 @@ class PaymentSettings extends Component {
                   <i className="i i-done" />
                 </h4>
               </div>
-              <div class="panel-description">
+              <div className="panel-description">
                 <p>
                   {items[0].config.capture === 'automatic' ? (
                     <>
@@ -545,7 +547,7 @@ class PaymentSettings extends Component {
                   )}
                 </p>
                 <button
-                  class="btn btn-primary capture-change-btn"
+                  className="btn btn-primary capture-change-btn"
                   onClick={this.changeSettings}
                   disabled={
                     [rolesList.OWNER, rolesList.ADMIN, rolesList.MANAGER].indexOf(role) === -1
@@ -555,7 +557,10 @@ class PaymentSettings extends Component {
                 </button>
               </div>
               <div style={{ paddingLeft: '15px' }}>
-                <div class="text-primary timeoutview-toggler" onClick={this.handleContentToggle}>
+                <div
+                  className="text-primary timeoutview-toggler"
+                  onClick={this.handleContentToggle}
+                >
                   Authorisation post{' '}
                   {items[0].config.capture === 'automatic'
                     ? renderTimeoutAsString(
@@ -610,7 +615,7 @@ class PaymentSettings extends Component {
               </div>
             )}
           </div>
-          <div class="note__orders-api">
+          <div className="note__orders-api">
             <p>
               <strong>Note:</strong> Capture settings are applicable only if{' '}
               <a

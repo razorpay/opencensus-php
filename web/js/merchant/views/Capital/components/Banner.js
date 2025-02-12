@@ -24,16 +24,17 @@ const Banner = React.forwardRef(
     >
       <div className={`banner-message-wrapper ${type && `${type} border-left`}`}>
         <div className="banner-status-title-wrapper">
-          {type && (type === 'success' || type === 'conditional_success' || type === 'approval') && (
-            <div class="status-icon">
-              <SuccessTickIcon
-                fill={['success', 'approval'].includes(type) ? '#24A832' : '#E79315'}
-              />
-            </div>
-          )}
+          {type &&
+            (type === 'success' || type === 'conditional_success' || type === 'approval') && (
+              <div className="status-icon">
+                <SuccessTickIcon
+                  fill={['success', 'approval'].includes(type) ? '#24A832' : '#E79315'}
+                />
+              </div>
+            )}
           {type && type === 'pending' && (
-            <div class="status-icon icon-pending">
-              <img src={require("assets/capital/pending.svg")} />
+            <div className="status-icon icon-pending">
+              <img src={require('assets/capital/pending.svg')} />
             </div>
           )}
           {type && type === 'error' && <i className={`i i-info-circle ${type} status-icon`} />}
@@ -47,7 +48,7 @@ const Banner = React.forwardRef(
           </p>
         )}
         {type === 'approval' && (
-          <img src={require("assets/capital/green_patch.svg")} className="green_patch" />
+          <img src={require('assets/capital/green_patch.svg')} className="green_patch" />
         )}
       </div>
       {cta}

@@ -60,7 +60,7 @@ const Onboarding = ({ x_banking_widget }) => {
   const variant = widgetData?.variant || BankingWidgetVariants.V2;
 
   return variant === BankingWidgetVariants.V1 ? (
-    <OnBoardingWrapper class="RazorpayX">
+    <OnBoardingWrapper className="RazorpayX">
       <div
         className="OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing Slider"
         key="LandingSlide"
@@ -98,7 +98,7 @@ const Onboarding = ({ x_banking_widget }) => {
     </OnBoardingWrapper>
   ) : (
     variant === BankingWidgetVariants.V2 && (
-      <OnBoardingWrapper class="RazorpayX">
+      <OnBoardingWrapper className="RazorpayX">
         <Box
           backgroundImage={`url(${widgetData?.background_illustration?.url})`}
           backgroundColor="surface.background.gray.subtle"

@@ -3,35 +3,36 @@ import { Link as BladeLink } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import { SelfServeActionPages } from 'common/constant/enums';
+import Alert from 'common/new-ui/Alert';
+import Button from 'common/new-ui/Button';
 import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
-import Button from 'common/new-ui/Button';
-import Time from 'common/ui/Time';
-import Spinner from 'common/ui/Spinner';
-import Alert from 'common/new-ui/Alert';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Definition from 'common/ui/Definition';
+import Spinner from 'common/ui/Spinner';
+import Table from 'common/ui/Table/Index';
+import Time from 'common/ui/Time';
+import { paymentId, amount } from 'common/ui/item/pair';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import { AXIS_BANK_MIGRATION_FAQ } from 'merchant/constants/urls';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
+import { EditExpiry } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
 import { isAxisBank, isRBLBank } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
+import { showNotification } from 'merchant_common/reducers/notifications';
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
 } from './AccountDetails';
-import CustomClipboard from 'common/ui/Clipboard/Custom';
-import Table from 'common/ui/Table/Index';
+
 import AccountDetailsSummary from './Modals/AccountDetailsSummary';
 import EnableTransferMode from './Modals/EnableTransferMode';
-import { paymentId, amount } from 'common/ui/item/pair';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
-import { EditExpiry } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
-import { SelfServeActionPages } from 'common/constant/enums';
 
 const _paymentId = () => {
   return {
@@ -47,19 +48,6 @@ const _paymentId = () => {
   };
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    isTestMode: state.session.mode === 'test',
-  }),
-  {
-    openModal,
-    closeModal,
-    showNotification,
-    updateVirtualAccountDetails,
-    fetchFeatureStatus,
-  },
-)
 class VirtualAccountDetails extends React.Component {
   state = {
     isEditSingleVaMid: false,
@@ -206,19 +194,19 @@ class VirtualAccountDetails extends React.Component {
     }
 
     return (
-      <div class="content-wrapper content-sm txn-details VirtualAccount--Details">
+      <div className="content-wrapper content-sm txn-details VirtualAccount--Details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              <i class="i i-account-balance text-success icon--formal" />{' '}
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
+              <i className="i i-account-balance text-success icon--formal" />{' '}
               <strong>{virtualaccount.id}</strong>
             </div>
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 {isRblAccountMigrated && (
                   <Alert.Warning iconBefore="i-warning">
                     Share new customer identifier details with your customers to accept payments.
@@ -233,7 +221,7 @@ class VirtualAccountDetails extends React.Component {
                     </BladeLink>
                   </Alert.Warning>
                 )}
-                <div class="VirtualAccountDetails">
+                <div className="VirtualAccountDetails">
                   <EntityDetailRow
                     label={
                       <b>
@@ -261,19 +249,19 @@ class VirtualAccountDetails extends React.Component {
                           onCopy(virtualaccount);
                         }}
                       >
-                        <div class="copy btn btn-link no-padding">Copy Details</div>
+                        <div className="copy btn btn-link no-padding">Copy Details</div>
                       </CustomClipboard>
                     )}
                   </EntityDetailRow>
 
-                  <div class="divider" />
+                  <div className="divider" />
                   <AccountDetails
                     bankAccount1={bankAccount2 || bankAccount1}
                     upiAddress={!bankAccount2 && upiAddress}
                   />
                   {bankAccount2 && (
                     <div>
-                      <div class="divider" />
+                      <div className="divider" />
                       <EntityDetailRow
                         label={
                           <b style={{ color: '#58666e', fontSize: '14px' }}>
@@ -287,7 +275,7 @@ class VirtualAccountDetails extends React.Component {
                             onCopy(virtualaccount);
                           }}
                         >
-                          <div class="copy btn btn-link no-padding">Copy Details</div>
+                          <div className="copy btn btn-link no-padding">Copy Details</div>
                         </CustomClipboard>
                       </EntityDetailRow>
                       <AccountDetails bankAccount1={bankAccount1} upiAddress={upiAddress} />
@@ -299,7 +287,7 @@ class VirtualAccountDetails extends React.Component {
                   <>
                     <br />
 
-                    <button class="btn btn-default" onClick={this.openEnableTransferModeModal}>
+                    <button className="btn btn-default" onClick={this.openEnableTransferModeModal}>
                       Enable Customer Identifier Transfer
                     </button>
                   </>
@@ -309,7 +297,7 @@ class VirtualAccountDetails extends React.Component {
                   <>
                     <br />
 
-                    <button class="btn btn-default" onClick={this.openEnableTransferModeModal}>
+                    <button className="btn btn-default" onClick={this.openEnableTransferModeModal}>
                       Enable UPI Transfer
                     </button>
                   </>
@@ -352,7 +340,7 @@ class VirtualAccountDetails extends React.Component {
                       ? '--'
                       : virtualaccount?.notes &&
                         Object.keys(virtualaccount?.notes).map((key, index) => (
-                          <div class="m-b" key={index}>
+                          <div className="m-b" key={index}>
                             <Definition>
                               {key}
                               {String(virtualaccount?.notes[key])}
@@ -364,13 +352,13 @@ class VirtualAccountDetails extends React.Component {
                 </div>
 
                 {virtualaccount.status !== 'closed' ? (
-                  <button class="btn btn-default" onClick={() => onClose(virtualaccount)}>
+                  <button className="btn btn-default" onClick={() => onClose(virtualaccount)}>
                     Close Customer Identifier
                   </button>
                 ) : null}
 
                 {showTestPaymentBtn && (
-                  <Banner class="VA-test-payment">
+                  <Banner className="VA-test-payment">
                     <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                     <div>
@@ -382,10 +370,10 @@ class VirtualAccountDetails extends React.Component {
                 <hr />
 
                 <div>
-                  <p class="text-muted" style={{ lineHeight: '35px' }}>
+                  <p className="text-muted" style={{ lineHeight: '35px' }}>
                     Payments to this customer identifier - {va_payments.length} payments
                     <Link
-                      class="pull-right"
+                      className="pull-right"
                       to={`/smartcollect/payments/?virtual_account_id=${virtualaccount.id}`}
                       onClick={() => this.props.track('view_payments')}
                     >
@@ -404,10 +392,22 @@ class VirtualAccountDetails extends React.Component {
   }
 }
 
-export default withSplitzService(VirtualAccountDetails);
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    isTestMode: state.session.mode === 'test',
+  }),
+  {
+    openModal,
+    closeModal,
+    showNotification,
+    updateVirtualAccountDetails,
+    fetchFeatureStatus,
+  },
+)(withSplitzService(VirtualAccountDetails));
 
 const AllowedPayersList = ({ allowedPayers }) => (
-  <table class="allowed-payers-list">
+  <table className="allowed-payers-list">
     <thead>
       <tr>
         <th>IFSC Code</th>

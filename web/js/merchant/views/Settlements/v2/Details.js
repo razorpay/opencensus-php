@@ -85,16 +85,16 @@ const SettlementDetails = (props) => {
   return (
     <React.Fragment>
       <div
-        class={classList(
+        className={classList(
           'content-sm txn-details settlements-v2',
           detailsCollapse && !shouldShowMore() && 'settlements-v2-collapse',
         )}
       >
-        <div class="content-header">
-          <Link to="/settlements" class="link-all">
-            <i class="i i-arrow-back" /> All Settlements
+        <div className="content-header">
+          <Link to="/settlements" className="link-all">
+            <i className="i i-arrow-back" /> All Settlements
           </Link>
-          <i class="i i-chevron-right" /> Settlement Id: {settlementId}
+          <i className="i i-chevron-right" /> Settlement Id: {settlementId}
         </div>
         {user?.isSingleReconEnabled &&
           user?.isOptimizerEnabled &&
@@ -107,12 +107,12 @@ const SettlementDetails = (props) => {
               gatewayName={settlement?.settled_by || ''}
             />
           )}
-        <div class="panel panel-default">
+        <div className="panel panel-default">
           {props.mode === 'test' && <TestModeBanner />}
-          <div class="panel-heading">
-            <div class="text">{settlementId}</div>
+          <div className="panel-heading">
+            <div className="text">{settlementId}</div>
             {/* added a new class as we need to add media query for the same for m-web support */}
-            <div class="settlement-total-amount">
+            <div className="settlement-total-amount">
               {!loading ? (
                 <TotalAmount
                   infoComp={
@@ -133,11 +133,11 @@ const SettlementDetails = (props) => {
               )}
             </div>
           </div>
-          <div class="panel-body">
-            <div class="entity-details">
+          <div className="panel-body">
+            <div className="entity-details">
               <SettlementInfo settlementId={settlementId} currency={currency} />
             </div>
-            <div class="item-details">
+            <div className="item-details">
               <SettlementBreakup settlementId={settlementId} currency={currency} />
             </div>
           </div>
@@ -145,16 +145,16 @@ const SettlementDetails = (props) => {
         {!loading && !shouldShowMore() && (
           <button
             type="button"
-            class="btn btn-primary btn-sm panel-collapser"
+            className="btn btn-primary btn-sm panel-collapser"
             onClick={toggleShowMore}
           >
             {detailsCollapse ? (
               <span>
-                Show More <i class="i i-chevron-down" />
+                Show More <i className="i i-chevron-down" />
               </span>
             ) : (
               <span>
-                Show Less <i class="i i-chevron-up" />
+                Show Less <i className="i i-chevron-up" />
               </span>
             )}
           </button>
@@ -162,7 +162,7 @@ const SettlementDetails = (props) => {
       </div>
       <div />
 
-      <div class="content-sm txn-details settlements-v2 entity-list-table">
+      <div className="content-sm txn-details settlements-v2 entity-list-table">
         <SettlementEntities settlementId={settlementId} currency={currency} />
       </div>
     </React.Fragment>
@@ -171,28 +171,28 @@ const SettlementDetails = (props) => {
 
 const InfoComponent = ({ creditAmount, debitAmount, totalAmount, isNew, currency }) => {
   return (
-    <div class="settlement-info-popup">
-      <div class="amount-row">
+    <div className="settlement-info-popup">
+      <div className="amount-row">
         Total credit amount:{' '}
-        <span class="amount-value">
+        <span className="amount-value">
           + <Amount value={creditAmount} currency={currency} />
         </span>
       </div>
-      <div class="amount-row">
+      <div className="amount-row">
         Total debit amount:
         {isNew ? (
-          <span class="amount-value">
+          <span className="amount-value">
             - <Amount value={debitAmount * -1} currency={currency} />
           </span>
         ) : (
-          <span class="amount-value">
+          <span className="amount-value">
             - <Amount value={debitAmount} currency={currency} />
           </span>
         )}
       </div>
-      <div class="settled-amount-row">
+      <div className="settled-amount-row">
         Total settled amount:{' '}
-        <span class="amount-value">
+        <span className="amount-value">
           <Amount value={totalAmount} currency={currency} />
         </span>
       </div>

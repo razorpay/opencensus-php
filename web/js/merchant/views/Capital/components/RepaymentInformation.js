@@ -31,7 +31,7 @@ function RepaymentInformation({ creditOffer, trackGAEvents = true, _fromWhere, p
               <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div class="text-left">{TOOLTIP_DESCRIPTIONS.daily_repayable_amount}</div>
+                  <div className="text-left">{TOOLTIP_DESCRIPTIONS.daily_repayable_amount}</div>
                 </PopoverBody>
               </Popover>
             </small>

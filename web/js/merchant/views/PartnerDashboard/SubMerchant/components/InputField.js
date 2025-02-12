@@ -11,10 +11,10 @@ export default (props) => {
   const InputComponent = tagName;
 
   return (
-    <div class={`InputField ${touched && error ? 'InputField--error' : ''}`}>
+    <div className={`InputField ${touched && error ? 'InputField--error' : ''}`}>
       <InputComponent {...input} {...otherProps} />
       {showInlineErrorText && touched && error && (
-        <div class="InputField__ErrorText text-danger">{error}</div>
+        <div className="InputField__ErrorText text-danger">{error}</div>
       )}
     </div>
   );

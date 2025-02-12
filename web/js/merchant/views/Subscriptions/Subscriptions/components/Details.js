@@ -90,19 +90,19 @@ export default function SubscriptionDetails(props) {
     ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
 
   return (
-    <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
+    <div className="content-wrapper content-sm txn-details SubscriptionLinks--Details">
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-refresh text-main icon--formal" /> <strong>{subscription.id}</strong>
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <i className="i i-refresh text-main icon--formal" /> <strong>{subscription.id}</strong>
             {allowUpdateSubscription && (
-              <div class="pull-right" style={style}>
+              <div className="pull-right" style={style}>
                 <NavLink
-                  class="btn btn-primary"
+                  className="btn btn-primary"
                   to={`/subscriptions/${subscription.id}/edit`}
                   onClick={() => {
                     analytics.track('subscription.update.initiate');
@@ -112,23 +112,23 @@ export default function SubscriptionDetails(props) {
                 </NavLink>
               </div>
             )}
-            <div class="btn-toolbar pull-right">
+            <div className="btn-toolbar pull-right">
               <NavLink
                 onClick={() => {
                   trackClickDuplicateSubscription();
                   analytics.track('subscription.clone.start');
                 }}
-                class="btn Button--primary--invert"
+                className="btn Button--primary--invert"
                 to={`/subscriptions/new?duplicate_id=${subscription.id}`}
               >
-                <i class="i i-copy" />
+                <i className="i i-copy" />
                 <Tooltip theme="dark">Duplicate Subscription</Tooltip>
               </NavLink>
             </div>
           </div>
 
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
 
               <EntityDetailRow label="Customer">{getCustomerDetail(customer)}</EntityDetailRow>
@@ -137,9 +137,9 @@ export default function SubscriptionDetails(props) {
                 <div>
                   <Link to={`/plans/${subscription.plan_id}`}>{subscription.plan_id}</Link>
                   <div style={{ marginTop: '4px' }}>
-                    <div class="label--primary">{plan.item.name}</div>
-                    <div class="label--secondary">{plan.item.description}</div>
-                    <div class="label--secondary">{getDescription(plan.interval, plan.period)}</div>
+                    <div className="label--primary">{plan.item.name}</div>
+                    <div className="label--secondary">{plan.item.description}</div>
+                    <div className="label--secondary">{getDescription(plan.interval, plan.period)}</div>
                   </div>
                 </div>
               </EntityDetailRow>
@@ -150,13 +150,13 @@ export default function SubscriptionDetails(props) {
 
               <EntityDetailRow label="Recurring Billing">
                 <div>
-                  <div class="label--primary">
+                  <div className="label--primary">
                     <Amount
                       currency={plan.item.currency}
                       value={subscription.quantity * plan.item.unit_amount}
                     />
                   </div>
-                  <small class="label--secondary">
+                  <small className="label--secondary">
                     {subscription.quantity} x{' '}
                     <Amount currency={plan.item.currency} value={plan.item.unit_amount} /> per unit
                   </small>
@@ -169,14 +169,14 @@ export default function SubscriptionDetails(props) {
 
                   <span>
                     {showPauseAndResumeBtn && (
-                      <button class="btn btn-default btn-xs m-l" onClick={onClickPauseAndResume}>
+                      <button className="btn btn-default btn-xs m-l" onClick={onClickPauseAndResume}>
                         {subscription.status === 'paused' ? 'Resume' : 'Pause'}
                       </button>
                     )}
 
                     {showCancelBtn && (
                       <button
-                        class={showPauseAndResumeBtn ? 'm-l btn btn-default btn-xs' : 'btn-link'}
+                        className={showPauseAndResumeBtn ? 'm-l btn btn-default btn-xs' : 'btn-link'}
                         onClick={onCancelClick}
                       >
                         Cancel
@@ -187,7 +187,7 @@ export default function SubscriptionDetails(props) {
               </EntityDetailRow>
 
               <EntityDetailRow label="Payment Method">
-                <div class="payment_method">{titleCase(subscription.payment_method) || '--'}</div>
+                <div className="payment_method">{titleCase(subscription.payment_method) || '--'}</div>
                 {(subscription.payment_details || []).map((ele, i) => (
                   <div key={i}>{ele}</div>
                 ))}
@@ -203,14 +203,14 @@ export default function SubscriptionDetails(props) {
                           <Link to={`/offers/${subscription.offer_id}`}>
                             {subscription.offer_id}
                           </Link>{' '}
-                          <button class="m-l btn btn-default btn-xs" onClick={removeOffer}>
+                          <button className="m-l btn btn-default btn-xs" onClick={removeOffer}>
                             Remove
                           </button>
                         </div>
                       )}
-                      <div class="label--primary">{selectedOffer ? selectedOffer.name : ''}</div>
+                      <div className="label--primary">{selectedOffer ? selectedOffer.name : ''}</div>
                       {subscription.offer && (
-                        <div class="label--secondary">
+                        <div className="label--secondary">
                           Redeemed on {subscription.offer.applied_count}/
                           {subscription.offer.cycle_count} cycles(s)
                         </div>
@@ -232,17 +232,17 @@ export default function SubscriptionDetails(props) {
 
               {showTestChargeBtn && (
                 <div
-                  class={`alert alert-warning custom-banner ${
+                  className={`alert alert-warning custom-banner ${
                     subscription.status !== 'halted' ? 'arrow-up' : ''
                   }`}
                 >
                   <button
-                    class="btn btn-default"
+                    className="btn btn-default"
                     onClick={() => onTestChargeAttempt(subscription.id)}
                   >
                     {testModeMsg.btnLabel}
                   </button>
-                  <div class="info">
+                  <div className="info">
                     <b>Test Mode:</b>
                     {testModeMsg.infoMsg}
                     <ShowWhen
@@ -262,7 +262,7 @@ export default function SubscriptionDetails(props) {
 
               {!scheduledChanges.isLoading && scheduledChanges.data && (
                 <div
-                  class="update-subscription-preview alert alert-warning custom-banner"
+                  className="update-subscription-preview alert alert-warning custom-banner"
                   style={{ width: '100%' }}
                 >
                   <div>
@@ -271,7 +271,7 @@ export default function SubscriptionDetails(props) {
                     {!hideCancelUpdate && (
                       <Button.Transparent
                         onClick={cancelUpdateSubscription(subscription.id)}
-                        class="pull-right"
+                        className="pull-right"
                       >
                         Cancel Update
                       </Button.Transparent>
@@ -279,7 +279,7 @@ export default function SubscriptionDetails(props) {
                   </div>
                   <ContentToggler>
                     <span>View Details</span>
-                    <div class="full-width-item">
+                    <div className="full-width-item">
                       <strong>Update Summary</strong>
                       <UpdatedSubscriptionPreview data={subscriptionChanges} />
                     </div>
@@ -364,14 +364,14 @@ function getTestModeMessage(subscription) {
 
 function UpdatedSubscriptionPreview({ data }) {
   return data.map(({ heading, changes }, index) => (
-    <div class="changed-values" key={index}>
+    <div className="changed-values" key={index}>
       <div>
         {changes.map((e) => (
-          <div class="current-change" key={e.current}>
+          <div className="current-change" key={e.current}>
             <b>{heading} :</b>
             <span>
               {e.current}
-              <i class="i i-arrow-forward" />
+              <i className="i i-arrow-forward" />
               {e.change}
             </span>
           </div>

@@ -23,18 +23,9 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import track from '../track';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    qrCodeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.QR_CODES),
-  }),
-  { handleProductQuickGuide },
-)
-@OnBoarding({
-  feature: RZPFeatures.QR_CODES,
-})
-export default class QRCodesOnBoarding extends React.Component {
+class QRCodesOnBoarding extends React.Component {
   getNextButton = (sliderProps) => () => {
     const props = {
       feature: RZPFeatures.QR_CODES,
@@ -89,14 +80,14 @@ export default class QRCodesOnBoarding extends React.Component {
     const { active, qrCodeProductOnBoarding } = this.props;
 
     return (
-      <OnBoardingWrapper class="QRCodes">
+      <OnBoardingWrapper className="QRCodes">
         <Slider active={active} afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}>
           {(sliderProps) => (
             <Landing
               {...sliderProps}
               feature={RZPFeatures.QR_CODES}
               title="QR Codes"
-              imageUrl={require("assets/qr_code/onboarding.svg")}
+              imageUrl={require('assets/qr_code/onboarding.svg')}
               desc="Create UPI QR codes in 3 simple steps with no integration efforts. Adopt contactless payments through customized QR codes and track payments easily."
               readMoreClicked={this.readMoreClicked}
             />
@@ -117,6 +108,19 @@ export default class QRCodesOnBoarding extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      qrCodeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.QR_CODES),
+    }),
+    { handleProductQuickGuide },
+  ),
+  OnBoarding({
+    feature: RZPFeatures.QR_CODES,
+  }),
+)(QRCodesOnBoarding);
 
 function getOnBoardingSliderDots(renderSkipButton) {
   return (sliderProps) => <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>;

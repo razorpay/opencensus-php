@@ -7,9 +7,9 @@ import Accordion, {
 
 const ProcessOverview = () => {
   return (
-    <div class="process-overview">
-      <div class="main-title">Process Overview</div>
-      <div class="">
+    <div className="process-overview">
+      <div className="main-title">Process Overview</div>
+      <div className="">
         Please fill out with the following questionnaire to provide details and supporting documents
         for <strong>enabling international payment acceptance</strong> for your account.
       </div>

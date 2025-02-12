@@ -191,7 +191,7 @@ class DateRangePicker extends Component {
     const { presets, selectedPreset, startDate, endDate } = this.state;
     return (
       <div className="rzp-daterange-picker clearfix">
-        <div className="icon-container pull-left">{icon ? icon : <i class="i i-date-range" />}</div>
+        <div className="icon-container pull-left">{icon ? icon : <i className="i i-date-range" />}</div>
         <div className="presets-container pull-left">
           {presets.length > 0 && (
             <ErrorBoundary resetOnProps rank={Ranks.P2}>

@@ -12,7 +12,7 @@ export class FieldOptionsDropdown extends React.PureComponent {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'OptionsDropdown FieldOptionsDropdown',
           type && `FieldOptionsDropdown--${type}`,
         )}
@@ -21,8 +21,8 @@ export class FieldOptionsDropdown extends React.PureComponent {
           <DropdownTrigger>{trigger}</DropdownTrigger>
 
           <DropdownContent>
-            <ul class="dropdown-menu nav nav-stacked OptionsDropdown-list">
-              <div class="OptionsDropdown-title">Additional Options</div>
+            <ul className="dropdown-menu nav nav-stacked OptionsDropdown-list">
+              <div className="OptionsDropdown-title">Additional Options</div>
               {children}
             </ul>
           </DropdownContent>
@@ -48,9 +48,9 @@ export class FieldOptionsDropdownMobile extends React.PureComponent {
 
     // wrapping with these classes to resuse CSS
     const _trigger = (
-      <div class="OptionsDropdown FieldsDropdown">
-        <div class="dropdown">
-          <a class="dropdown__trigger">{trigger}</a>
+      <div className="OptionsDropdown FieldsDropdown">
+        <div className="dropdown">
+          <a className="dropdown__trigger">{trigger}</a>
         </div>
       </div>
     );
@@ -62,14 +62,14 @@ export class FieldOptionsDropdownMobile extends React.PureComponent {
         trigger={_trigger}
         onDismiss={this.handleDismiss}
         onTriggerClick={() => this.setState({ isOpen: true })}
-        class="payment-pages-v3"
+        className="payment-pages-v3"
       >
         {/* 
           Wrapped with onclick so that on select of option, the event bubbles and is caught by onclick
           and then the bottom sheet is also closed behaving like a dropdown
         */}
-        <div class="Bottom-sheet__options" onClick={this.handleDismiss}>
-          <div class="OptionsDropdown-title">Additional Options</div>
+        <div className="Bottom-sheet__options" onClick={this.handleDismiss}>
+          <div className="OptionsDropdown-title">Additional Options</div>
           {children}
         </div>
       </BottomSheet>
@@ -79,7 +79,7 @@ export class FieldOptionsDropdownMobile extends React.PureComponent {
 
 export const OptionsItem = ({ children, isSelected }) => (
   <li
-    class={classList('OptionsDropdown-item', isSelected && 'OptionsDropdown-item--selected')}
+    className={classList('OptionsDropdown-item', isSelected && 'OptionsDropdown-item--selected')}
     data-testid={`list-option${isSelected ? '-selected' : ''}`}
   >
     {children}

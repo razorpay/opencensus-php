@@ -66,7 +66,7 @@ const S0 = (props) => {
   return (
     <>
       <div className="partner-onbr-info">
-        <div class="title">Welcome to your Partner Dashboard</div>
+        <div className="title">Welcome to your Partner Dashboard</div>
         {orgCode === ORG_CUSTOM_CODE_MAP.CURLEC ? (
           <>
             <div className="" style={{ marginTop: '20px' }}>

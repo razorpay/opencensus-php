@@ -1,37 +1,21 @@
 import { Component } from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
-import { fetchSubmerchantWithProduct, resendInvite } from 'merchant/reducers/submerchant';
+import { withRouter } from 'common/deprecated/withRouter';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { fetchProducts } from 'merchant/reducers/capital';
 import { switchMerchant } from 'merchant/reducers/session';
+import { fetchSubmerchantWithProduct, resendInvite } from 'merchant/reducers/submerchant';
+import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Details';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { trackListEvents } from 'merchant/views/PartnerDashboard/ga';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Details';
-
 import InviteMerchant from './Invite';
-import { trackListEvents } from 'merchant/views/PartnerDashboard/ga';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import { fetchProducts } from 'merchant/reducers/capital';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    capitalProducts: state.loanApplicationDetails.products,
-    ...state.submerchant,
-  }),
-  {
-    fetchSubmerchantWithProduct,
-    resendInvite,
-    switchMerchant,
-    openModal,
-    showNotification,
-    fetchProducts,
-  },
-)
-@RTracking(() => window.rzpQ.component('SubmerchantDetailsContainer '))
 class SubmerchantDetailsContainer extends Component {
   state = {};
 
@@ -183,4 +167,22 @@ class SubmerchantDetailsContainer extends Component {
   }
 }
 
-export default withRouter(SubmerchantDetailsContainer);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      capitalProducts: state.loanApplicationDetails.products,
+      ...state.submerchant,
+    }),
+    {
+      fetchSubmerchantWithProduct,
+      resendInvite,
+      switchMerchant,
+      openModal,
+      showNotification,
+      fetchProducts,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('SubmerchantDetailsContainer ')),
+  withRouter,
+)(SubmerchantDetailsContainer);

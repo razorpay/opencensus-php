@@ -1,25 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
+
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import FileUpload from 'merchant/components/File/Upload';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import FileUpload from 'merchant/components/File/Upload';
+
 import { MAX_SIZE_LIMIT, statuses } from './data';
 
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-      user: state.session.user,
-    };
-  },
-  {
-    showNotification,
-  },
-)
-export default class Reply extends React.Component {
+class Reply extends React.Component {
   constructor(props) {
     super(props);
     this.replyRef = React.createRef();
@@ -321,3 +311,16 @@ export default class Reply extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      ...state.session,
+      ...state.config.config,
+      user: state.session.user,
+    };
+  },
+  {
+    showNotification,
+  },
+)(Reply);

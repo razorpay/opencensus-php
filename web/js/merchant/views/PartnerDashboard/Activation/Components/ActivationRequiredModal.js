@@ -14,7 +14,7 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
     <div>
       You can only use Razorpay in test mode until your account is activated. <br />
       Please fill and submit the {activationName} Form to access live mode.
-      <div class="Modal__actions text-right">
+      <div className="Modal__actions text-right">
         <NavLink to={partnerKycURL} onClick={onCloseClick}>
           <Button variant="primary"> Fill {activationName} Form</Button>
         </NavLink>
@@ -28,7 +28,7 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
     )
   ) {
     const modalAction = (
-      <div class="Modal__actions text-right">
+      <div className="Modal__actions text-right">
         <Button variant="primary" onClick={onCloseClick}>
           Okay!
         </Button>
@@ -46,7 +46,7 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
       );
     } else if (partnerActivationStatus === 'needs_clarification') {
       modalBody = (
-        <div class="Modal__actions">
+        <div className="Modal__actions">
           Your KYC details require further clarifications. Update required details within 1 day,
           otherwise your settlements might get paused.
           <NavLink to={partnerKycURL} onClick={onCloseClick}>

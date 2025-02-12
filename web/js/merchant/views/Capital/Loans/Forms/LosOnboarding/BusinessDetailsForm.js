@@ -209,7 +209,7 @@ const BusinessDetailsForm = ({
                 allowToday
                 placeholder="DD-MM-YYYY"
                 onChange={handleDateChange}
-                addonAfter={<i class="i i-date-range" />}
+                addonAfter={<i className="i i-date-range" />}
                 placement="bottomLeft"
                 value={formData.date_of_incorporation}
                 disabledDate={disableFutureMonths}
@@ -273,7 +273,7 @@ const BusinessDetailsForm = ({
         </div>
       </div>
       {pincodeError && (
-        <div class="flex los-row">
+        <div className="flex los-row">
           <Input
             value={formData.city}
             onChange={handleChange}
@@ -281,7 +281,7 @@ const BusinessDetailsForm = ({
             name="city"
             label="City"
             required
-            class="InputGroup--vTop"
+            className="InputGroup--vTop"
             size="small"
           />
           <Input.Select
@@ -293,7 +293,7 @@ const BusinessDetailsForm = ({
             options={statesOptions}
             required
             label="State"
-            class="InputGroup--vTop"
+            className="InputGroup--vTop"
           />
         </div>
       )}

@@ -1,15 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import Time from 'common/ui/Time';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import BatchStats from 'common/ui/StatsTable';
-
-import setGaTrack from 'merchant/containers/BatchNew/ga';
-import BatchDetails from 'merchant/containers/BatchNew/Details';
-import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/reducers/batches';
-import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+import Time from 'common/ui/Time';
 import { titleCase } from 'common/utils/rzp-utils';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+import BatchDetails from 'merchant/containers/BatchNew/Details';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { fetchHostedMandateBatchDetails as fetchBatchDetails } from 'merchant/reducers/batches';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
@@ -22,11 +21,11 @@ function renderBatchDetails({ batch }) {
 
   return (
     <>
-      <div class="equal-margin">
+      <div className="equal-margin">
         <BatchStats stats={stats} />
       </div>
 
-      <div class="equal-margin">
+      <div className="equal-margin">
         <EntityDetailRow label="Batch Type" value={getBatchType(batch)} />
         <EntityDetailRow label="Batch Name" value={batch.name} />
         <EntityDetailRow label="Status">
@@ -47,8 +46,7 @@ function renderBatchDetails({ batch }) {
   );
 }
 
-@connect(null, { fetchBatchDetails })
-export default class RegistrationLinksBatchDetailsContainer extends React.Component {
+class RegistrationLinksBatchDetailsContainer extends React.Component {
   render() {
     return (
       <BatchDetails
@@ -93,3 +91,5 @@ function getBatchType(batch) {
 
   return titleCase(linkType);
 }
+
+export default connect(null, { fetchBatchDetails })(RegistrationLinksBatchDetailsContainer);

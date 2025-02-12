@@ -26,6 +26,7 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import PaymentLinkIcon from 'assets/product_onboarding/payment_link.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { NOT_SKIP } from 'merchant/constants/payments';
+import { compose } from 'redux';
 
 // i18
 export const LANDING_PAGE_DESC = {
@@ -41,18 +42,7 @@ const FEATURE_LINKS_MAPS = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: [],
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    org: state.session.org,
-    paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
-  }),
-  { handleProductQuickGuide },
-)
-@OnBoarding({
-  feature: RZPFeatures.PL,
-})
-export default class PaymentPagesOnBoarding extends React.Component {
+class PaymentPagesOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
@@ -94,7 +84,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
     const description = LANDING_PAGE_DESC[orgCode];
 
     return (
-      <OnBoardingWrapper class="PaymentLinks">
+      <OnBoardingWrapper className="PaymentLinks">
         <Slider
           active={active}
           afterSlide={getOnBoardingSliderDots({
@@ -171,3 +161,17 @@ export function getIsPaymentLinksEnabled({ user, paymentlinks }) {
 
   return false;
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      org: state.session.org,
+      paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
+    }),
+    { handleProductQuickGuide },
+  ),
+  OnBoarding({
+    feature: RZPFeatures.PL,
+  }),
+)(PaymentPagesOnBoarding);

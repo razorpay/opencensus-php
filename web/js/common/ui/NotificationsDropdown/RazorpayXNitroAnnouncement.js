@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { compose } from 'redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 
@@ -20,9 +20,9 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateUser } from 'merchant_common/reducers/user';
 
-import RazorpayXLogoWhite from "assets/razorpay-x-logo-white.svg"
-import RXCABullet from "assets/rxca-bullet.svg"
-import RXCADashboardBG from "assets/rxca-dashboard-bg.svg";
+import RazorpayXLogoWhite from 'assets/razorpay-x-logo-white.svg';
+import RXCABullet from 'assets/rxca-bullet.svg';
+import RXCADashboardBG from 'assets/rxca-dashboard-bg.svg';
 
 const BENEFITS = {
   other: [
@@ -80,31 +80,6 @@ export const getProductName = () => {
 
 const selector = formValueSelector('customerDetails');
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    ...fields.reduce(
-      (acc, element) => ({
-        ...acc,
-        [element]: selector(state, element),
-      }),
-      {},
-    ),
-    initialValues: {
-      [VENDORS]: '',
-      [NAME]: (state.session.user.user || {}).name,
-      [EMAIL]: (state.session.user.user || {}).email,
-      [PHONE]: (state.session.user.user || {}).contact_mobile,
-      country_code: '+91 - ',
-    },
-  }),
-  {
-    showNotification,
-  },
-)
-@reduxForm({
-  form: 'customerDetails',
-})
 class InfoForm extends React.Component {
   render() {
     const { handleSubmit, change } = this.props;
@@ -115,14 +90,14 @@ class InfoForm extends React.Component {
         <div className="left-section">
           <img className="rx-logo" src={RazorpayXLogoWhite} alt="rx-logo" />
           <div className="row">
-            <div class="form-group">
+            <div className="form-group">
               <label className="control-label label-required">Name</label>
               <div>
                 <Field
                   name={NAME}
                   placeholder="Full Name"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   autoFocus
                   required
                 />
@@ -130,14 +105,14 @@ class InfoForm extends React.Component {
             </div>
           </div>
           <div className="row">
-            <div class="form-group">
+            <div className="form-group">
               <label className="control-label label-required">Email ID</label>
               <div>
                 <Field
                   name={EMAIL}
                   placeholder="Work email"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   validate={validateEmail('Please provide a valid email')}
                   onBlur={this.props.onBlur}
                   required
@@ -146,15 +121,20 @@ class InfoForm extends React.Component {
             </div>
           </div>
           <div className="row">
-            <div class="form-group">
+            <div className="form-group">
               <label className="control-label label-required">Phone number</label>
               <div className="phone-field">
-                <Field name="country_code" component={InputField} class="form-control" readOnly />
+                <Field
+                  name="country_code"
+                  component={InputField}
+                  className="form-control"
+                  readOnly
+                />
                 <Field
                   name={PHONE}
                   placeholder="Phone number"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   onBlur={this.props.onBlur}
                   validate={validatePhone('Please provide a valid phone')}
                   required
@@ -163,7 +143,7 @@ class InfoForm extends React.Component {
             </div>
           </div>
           <div className="row">
-            <div class="form-group">
+            <div className="form-group">
               <label className="control-label label-required">
                 What are the biggest challenges with your Current Account today?
               </label>
@@ -172,7 +152,7 @@ class InfoForm extends React.Component {
                   name={CHALLENGES}
                   placeholder="Tell us about your challenges here"
                   component={Textarea}
-                  class="form-control"
+                  className="form-control"
                   onBlur={this.props.onBlur}
                   required
                 />
@@ -274,7 +254,7 @@ class InfoForm extends React.Component {
           </div>
           <AsyncBtn.Primary
             type="submit"
-            class="btn btn-primary submit-btn"
+            className="btn btn-primary submit-btn"
             disabled={shouldSubmitBeDisabled}
             onClick={handleSubmit(this.props.save)}
           >
@@ -286,6 +266,34 @@ class InfoForm extends React.Component {
   }
 }
 
+const InfoFormComponent = compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      ...fields.reduce(
+        (acc, element) => ({
+          ...acc,
+          [element]: selector(state, element),
+        }),
+        {},
+      ),
+      initialValues: {
+        [VENDORS]: '',
+        [NAME]: (state.session.user.user || {}).name,
+        [EMAIL]: (state.session.user.user || {}).email,
+        [PHONE]: (state.session.user.user || {}).contact_mobile,
+        country_code: '+91 - ',
+      },
+    }),
+    {
+      showNotification,
+    },
+  ),
+  reduxForm({
+    form: 'customerDetails',
+  }),
+)(InfoForm);
+
 export const SubmissionSuccessfull = ({ handleClose }) => {
   return (
     <div className="rxca-submit-finish-modal">
@@ -293,8 +301,8 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
         <div className="title">
           Congratulations! We’re processing your request for a RazorpayX powered Current Account.
         </div>
-        <button type="button" class="close" onClick={handleClose}>
-          <i class="i i-close" />
+        <button type="button" className="close" onClick={handleClose}>
+          <i className="i i-close" />
         </button>
       </div>
       <div className="description">
@@ -307,7 +315,7 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
           target="_blank"
           rel="noreferrer noopener"
         >
-          <Button.Primary class="btn btn-primary" type="button">
+          <Button.Primary className="btn btn-primary" type="button">
             View Documents Required
           </Button.Primary>
         </a>
@@ -317,14 +325,6 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
   );
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    showNotification,
-  },
-)
 class DetailView extends React.Component {
   state = {
     showNitroFormFields: false,
@@ -465,7 +465,8 @@ class DetailView extends React.Component {
     const { isCSSEducationEnabled, isCSSOtherBusinessesEnabled } = this.props.user;
     const content = BENEFITS.other;
 
-    if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
+    if (showNitroFormFields)
+      return <InfoFormComponent save={this.save} tracking={this.props.tracking} />;
     if (isCSSEducationEnabled || isCSSOtherBusinessesEnabled)
       return <CrossSellSubscriptionsModal user={this?.props?.user} />;
 
@@ -473,11 +474,7 @@ class DetailView extends React.Component {
       <div className="razorpayx-announcement-details">
         <div className="section">
           <div className="left-section">
-            <img
-              className="rx-logo"
-              src={RazorpayXLogoWhite}
-              alt="rx-logo"
-            />
+            <img className="rx-logo" src={RazorpayXLogoWhite} alt="rx-logo" />
             <h3 className="heading">
               Get <span>1.65%* pricing</span> when you switch to a RazorpayX Current Account
             </h3>
@@ -490,7 +487,7 @@ class DetailView extends React.Component {
               ))}
             </ul>
             <div className="btn-wrapper">
-              <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={this.save}>
+              <AsyncBtn.Primary type="submit" className="btn btn-primary" onClick={this.save}>
                 Apply For Current Account
               </AsyncBtn.Primary>
             </div>
@@ -503,6 +500,15 @@ class DetailView extends React.Component {
     );
   }
 }
+
+const DetailViewComponent = connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    showNotification,
+  },
+)(DetailView);
 
 const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
   const [activeView, setActiveView] = useState('detail-view');
@@ -525,11 +531,11 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
     return (
       // eslint-disable-next-line react/no-unknown-property
       <div ariaHideApp={false} id="hubspot-ca-form-modal">
-        <button type="button" class="close btn-close-modal" onClick={handleClose}>
-          <i class="i i-close" />
+        <button type="button" className="close btn-close-modal" onClick={handleClose}>
+          <i className="i i-close" />
         </button>
         <div className="razorpayx-announcement">
-          <DetailView
+          <DetailViewComponent
             onOfferAccept={onOfferAccept}
             onSubmissionSuccess={() => setActiveView('submission-success-view')}
             tracking={tracking}
@@ -543,8 +549,7 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
 };
 
 export default compose(
-  // eslint-disable-next-line babel/new-cap
-  RTracking({
+  rTracking({
     page: 'ScheduledNitroBanner',
   }),
   connect(

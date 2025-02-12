@@ -1,14 +1,11 @@
-import { merchantFetch } from 'merchant/utils/ajax';
+import React from 'react';
 import { connect } from 'react-redux';
 
+import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import React from 'react';
 
 const ERROR_MESSAGE = 'Something went wrong, try again later!';
-@connect(null, {
-  showNotification,
-})
-export default class BBPS extends React.PureComponent {
+class BBPS extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -44,9 +41,11 @@ export default class BBPS extends React.PureComponent {
 
   render() {
     return (
-      <div class="Bbps-container">
-        {this.state.iframeUrl ? <iframe src={this.state.iframeUrl} /> : <div class="spinner" />}
+      <div className="Bbps-container">
+        {this.state.iframeUrl ? <iframe src={this.state.iframeUrl} /> : <div className="spinner" />}
       </div>
     );
   }
 }
+
+export default connect(null, { showNotification })(BBPS);

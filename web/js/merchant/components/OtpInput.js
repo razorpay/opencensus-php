@@ -8,7 +8,7 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {
       name=""
       type="number"
       pattern="[0-9]*"
-      class="form-control input-sm"
+      className="form-control input-sm"
       value={digit[pos]}
       key={pos}
       onChange={() => {}}
@@ -98,21 +98,21 @@ export class OtpInput extends Component {
 
     return (
       <div>
-        <strong class="">Enter the code</strong>
-        {wrong && <span class="pull-right wrong-msg">{wrongOtpText}</span>}
-        <div class="otp-input">
+        <strong className="">Enter the code</strong>
+        {wrong && <span className="pull-right wrong-msg">{wrongOtpText}</span>}
+        <div className="otp-input">
           {opt.map((i) => {
             if (i === '-') {
               return (
-                <div class="seprator" key="seprator">
-                  <div class="_dash" />
+                <div className="seprator" key="seprator">
+                  <div className="_dash" />
                 </div>
               );
             } else {
               return (
                 <div
                   key={i.key}
-                  class={classList(
+                  className={classList(
                     ...i.cList,
                     currentIndex == i.key ? 'active' : '',
                     wrong ? 'wrong' : '',

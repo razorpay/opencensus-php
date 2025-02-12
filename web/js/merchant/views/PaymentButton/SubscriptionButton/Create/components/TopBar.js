@@ -1,18 +1,18 @@
 const TopBar = ({ title, actionButtons, handleClose, isActionsActive }) => {
   return (
-    <div class="PaymentButton-Create-TopBar">
+    <div className="PaymentButton-Create-TopBar">
       <div
-        class="TopBar-container
+        className="TopBar-container
       "
       >
-        <div class="TopBar-title">{title}</div>
+        <div className="TopBar-title">{title}</div>
 
         {isActionsActive && !!actionButtons && (
-          <div class="TopBar-actions">{actionButtons}</div>
+          <div className="TopBar-actions">{actionButtons}</div>
         )}
 
         {isActionsActive && !!handleClose && (
-          <span class="close-btn" onClick={handleClose}>
+          <span className="close-btn" onClick={handleClose}>
             ×
           </span>
         )}

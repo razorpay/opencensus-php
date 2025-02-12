@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -7,17 +8,9 @@ import InputField from 'common/ui/Forms/InputField';
 import { required } from 'common/utils/validators';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
 
-@connect(
-  state => ({
-    email: state.session.user.user.email,
-  }),
-  { showNotification }
-)
-@reduxForm({
-  form: 'confirmPassword',
-})
-export default class PasswordVerification extends React.Component {
+class PasswordVerification extends React.Component {
   onSubmit = ({ password }) => {
     return this.props.onSubmit({
       ...this.props.dataSentWithPassword,
@@ -28,30 +21,30 @@ export default class PasswordVerification extends React.Component {
   render() {
     const { email, enable, handleSubmit, closeModal } = this.props;
     return (
-      <div class="2fa-modal">
+      <div className="2fa-modal">
         <ModalHeader
           title={(enable ? 'Enable' : 'Disable') + ' 2-step verification'}
           onCloseClick={closeModal}
         />
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
             To confirm please enter the password for <strong>{email}</strong>
           </p>
           <form style={{ marginBottom: '35px' }}>
-            <div class="form-group">
+            <div className="form-group">
               <Field
                 type="password"
                 name="password"
                 component={InputField}
-                class="form-control m-t"
+                className="form-control m-t"
                 placeholder="Password"
                 validate={[required()]}
                 autoFocus
               />
             </div>
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
-                class="btn btn-primary btn-block"
+                className="btn btn-primary btn-block"
                 text="Confirm"
                 pendingText="Please Wait..."
                 onClick={handleSubmit(this.onSubmit)}
@@ -63,3 +56,15 @@ export default class PasswordVerification extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      email: state.session.user.user.email,
+    }),
+    { showNotification },
+  ),
+  reduxForm({
+    form: 'confirmPassword',
+  }),
+)(PasswordVerification);

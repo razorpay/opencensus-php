@@ -1,3 +1,6 @@
+import { Component } from 'react';
+import { connect } from 'react-redux';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import {
@@ -6,25 +9,13 @@ import {
   fetchLoanApplicationMeta,
   getAcceptedOffer,
 } from 'merchant/reducers/capital';
-import { Component } from 'react';
-import { connect } from 'react-redux';
+
 import CreditOffer from '../../components/CreditOffer';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
 import RepaymentInformation from '../../components/RepaymentInformation';
 import { isCashAdvanceProduct } from '../../utils';
 import { HOTJAR_TRIGGERS } from '../constants';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    acceptCreditOffer,
-    fetchCreditOffers,
-    getAcceptedOffer,
-    fetchLoanApplicationMeta,
-  },
-)
 class CreditOfferEntity extends Component {
   componentDidMount() {
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_LOAN_OFFER);
@@ -65,11 +56,8 @@ class CreditOfferEntity extends Component {
   };
 
   render() {
-    const {
-      credit_offer_details,
-      accepted_offer_details,
-      meta,
-    } = this.props.loanApplicationDetails;
+    const { credit_offer_details, accepted_offer_details, meta } =
+      this.props.loanApplicationDetails;
 
     if (credit_offer_details.loading || !credit_offer_details.data) return <FormLoader />;
 
@@ -105,7 +93,7 @@ class CreditOfferEntity extends Component {
               </Button.Transparent>
               <AsyncBtn.Primary
                 type="submit"
-                class="btn btn-primary pull-right"
+                className="btn btn-primary pull-right"
                 onClick={() => this.handleAcceptance(creditOffer.id)}
               >
                 Accept Offer
@@ -114,7 +102,7 @@ class CreditOfferEntity extends Component {
             </div>
           ) : (
             <div className="loan-offer-action">
-              <Button.Transparent onClick={this.handleBack} class="back-btn">
+              <Button.Transparent onClick={this.handleBack} className="back-btn">
                 <i className="i i-chevron-left" />
                 Back
               </Button.Transparent>
@@ -142,4 +130,14 @@ class CreditOfferEntity extends Component {
   }
 }
 
-export default CreditOfferEntity;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    acceptCreditOffer,
+    fetchCreditOffers,
+    getAcceptedOffer,
+    fetchLoanApplicationMeta,
+  },
+)(CreditOfferEntity);

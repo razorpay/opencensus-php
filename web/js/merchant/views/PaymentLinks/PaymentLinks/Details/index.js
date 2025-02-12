@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import {
   fetchPLRemindersList,
   fetchPaymentLinkDetails,
@@ -22,26 +22,10 @@ import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers
 import track from 'merchant/views/PaymentLinks/PaymentLinks/Details/track';
 import { MIN_AMOUNT_TEXT } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditMinimumAmount';
 import { showNoExpiryPL } from 'merchant/views/PaymentLinks/utils';
+import { compose } from 'redux';
 const showNoExpiry = showNoExpiryPL();
-@connect(
-  (state) => ({
-    ...state.paymentlink,
-    ...state.session,
-    reminders: state.reminders,
-  }),
-  {
-    ...ModalActions,
-    ...NotificationsActions,
-    fetchPaymentLinkDetails,
-    notifyCustomer,
-    updatePLInReduxList,
-    cancelPaymentLink,
-    fetchReminders,
-    fetchRemindersMerchantConfigs,
-  },
-)
-@RTracking(() => window.rzpQ.component('InvoiceDetailContainer'))
-export default class PaymentLinkDetails extends Component {
+
+class PaymentLinkDetails extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -448,3 +432,24 @@ export default class PaymentLinkDetails extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      ...state.paymentlink,
+      ...state.session,
+      reminders: state.reminders,
+    }),
+    {
+      ...ModalActions,
+      ...NotificationsActions,
+      fetchPaymentLinkDetails,
+      notifyCustomer,
+      updatePLInReduxList,
+      cancelPaymentLink,
+      fetchReminders,
+      fetchRemindersMerchantConfigs,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('InvoiceDetailContainer')),
+)(PaymentLinkDetails);

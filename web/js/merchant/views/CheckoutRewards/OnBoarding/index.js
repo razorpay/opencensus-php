@@ -1,16 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import { RZPFeatures } from 'merchant/helpers/data';
-
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
-
-import Landing from 'merchant/components/OnBoarding/Slides/Landing';
-import Features from 'merchant/components/OnBoarding/Slides/Features';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getItem, setItem } from 'common/utils/localStorage';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
@@ -18,25 +14,18 @@ import OnBoarding, {
   getIsAllowedResetBoarding,
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import { RZPFeatures } from 'merchant/helpers/data';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
 import ComingSoonCallout from 'merchant/views/CheckoutRewards/components/ComingSoonCallout';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { getItem, setItem } from 'common/utils/localStorage';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    rewardsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.REWARDS),
-  }),
-  { handleProductQuickGuide },
-)
-@OnBoarding({
-  feature: RZPFeatures.REWARDS,
-})
-export default class RewardsOnBoarding extends React.Component {
+class RewardsOnBoarding extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -116,7 +105,7 @@ export default class RewardsOnBoarding extends React.Component {
             </Button>
           ) : (
             <AsyncBtn.Primary
-              class="Forward-Button"
+              className="Forward-Button"
               onClick={this.handleJoinWaitlistClick}
               showLoader={true}
             >
@@ -156,7 +145,9 @@ export default class RewardsOnBoarding extends React.Component {
     ) : null;
 
     return (
-      <OnBoardingWrapper class={`Rewards ${!isFeatureEnabled ? 'Checkout-Rewards-Callout' : ''}`}>
+      <OnBoardingWrapper
+        className={`Rewards ${!isFeatureEnabled ? 'Checkout-Rewards-Callout' : ''}`}
+      >
         <Slider
           active={active}
           afterSlide={getOnBoardingSliderDots({
@@ -237,3 +228,17 @@ export function getIsRewardsEnabled({ user, rewards }) {
 
   return user.isRewardsEnabled;
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      rewardsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.REWARDS),
+    }),
+    { handleProductQuickGuide },
+  ),
+  // eslint-disable-next-line
+  OnBoarding({
+    feature: RZPFeatures.REWARDS,
+  }),
+)(RewardsOnBoarding);

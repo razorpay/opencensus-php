@@ -16,7 +16,7 @@ const PartialPayments = (props) => (
       name="accept_partial"
       fieldLabel="Enable Partial Payment"
       label="Partial Payment"
-      class="Input--vTop"
+      className="Input--vTop"
       disabled={props.disabled}
       defaultValue={props.defaultValue}
       labelClass="Input-label pb-8"
@@ -27,14 +27,14 @@ const PartialPayments = (props) => (
     />
 
     {props.showFirstPaymentMinAmount && props.defaultValue === '1' && (
-      <div class="Input--custom">
+      <div className="Input--custom">
         <Input.Group
-          class="InputGroup--inline"
+          className="InputGroup--inline"
           label={
             <>
               {MIN_AMOUNT_TEXT} (Optional)
               <small className="help-content">
-                <i class="i i-info-outline m-l" />
+                <i className="i i-info-outline m-l" />
                 <Popover align="top" parentQuerySelector=".Modal-body">
                   {PopoverBodyText}
                 </Popover>
@@ -42,7 +42,7 @@ const PartialPayments = (props) => (
             </>
           }
         >
-          <div class="Input-content">
+          <div className="Input-content">
             <Input.CurrencySelect
               disabled
               currency={props.currency}

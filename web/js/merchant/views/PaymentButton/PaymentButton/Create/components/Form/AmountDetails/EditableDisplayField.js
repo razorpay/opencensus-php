@@ -2,34 +2,22 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
-import BaseForm from './BaseForm';
-import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldTypesRepresentations';
-
-import { classList } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
-import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import { classList } from 'common/utils/rzp-utils';
 import {
   updateAmountField,
   deleteAmountField,
   updatePaymentButtonData,
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
-
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
+import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    updateAmountField,
-    deleteAmountField,
-    updatePaymentButtonData,
-    updateStepReviewProgress,
-  },
-)
-export default class EditableDisplayField extends React.Component {
+import BaseForm from './BaseForm';
+import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldTypesRepresentations';
+
+class EditableDisplayField extends React.Component {
   state = {
     isEditModeOpened: this.props.isEditModeOpened || false,
   };
@@ -58,7 +46,7 @@ export default class EditableDisplayField extends React.Component {
     return (
       <Input
         label="Value"
-        class="Input--vTop Input--dummy Input--withCurrency"
+        className="Input--vTop Input--dummy Input--withCurrency"
         addonBefore={currencySymbol}
         value={field.item.amount || ''}
         placeholder={isDynamicAmountField ? 'To be filled by cutomer' : ''}
@@ -141,7 +129,7 @@ export default class EditableDisplayField extends React.Component {
     return (
       <div
         onClick={!children && !isEditModeOpened ? this.handleToggleEditMode : () => {}}
-        class={classList(
+        className={classList(
           'EditableAmount EditableDisplayField',
           children && 'EditableDisplayField--disabled',
           isEditModeOpened && 'EditableDisplayField--editMode',
@@ -149,20 +137,20 @@ export default class EditableDisplayField extends React.Component {
       >
         {children || (
           <React.Fragment>
-            <span class="btn btn-link edit-btn">
+            <span className="btn btn-link edit-btn">
               Click to Edit This Item
-              <i class="i i-edit" />
+              <i className="i i-edit" />
             </span>
 
             <Input
               label="Field Label"
-              class="Input--vTop Input--dummy"
+              className="Input--vTop Input--dummy"
               value={field.item.name}
               description={!field.mandatory ? 'Optional' : ''}
               readOnly
             />
 
-            <Input.Group class="">{this.amountFieldForFieldType}</Input.Group>
+            <Input.Group className="">{this.amountFieldForFieldType}</Input.Group>
           </React.Fragment>
         )}
 
@@ -183,3 +171,15 @@ export default class EditableDisplayField extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    updateAmountField,
+    deleteAmountField,
+    updatePaymentButtonData,
+    updateStepReviewProgress,
+  },
+)(EditableDisplayField);

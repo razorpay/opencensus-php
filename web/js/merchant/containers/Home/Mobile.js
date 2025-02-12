@@ -62,6 +62,7 @@ import SettleNow from 'merchant/views/Settlements/components/SettleNow';
 import { Box } from '@razorpay/blade/components';
 import { isEligibleForReKyc } from 'merchant/components/ReKycStatusAlerts/utils';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
+import { compose } from 'redux';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -79,27 +80,6 @@ const ReKycStatusBanner = lazy(() =>
   ),
 );
 
-@withI18Service
-@connect(
-  (state) => ({
-    windowWidth: state.app.windowWidth,
-    activationData: state.websiteCompliance.activationData,
-    websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
-    websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
-    user: state.session.user,
-    config: state.config,
-    can_refer: state.merchantReferral.data.can_refer,
-    referee: state.merchantReferral.data.referee,
-    transactionAmount: state.transactionAmount.amount,
-    ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
-    bannerCarouselData: state?.growthService?.banner_carousel_items,
-    org: state.session.org,
-  }),
-  {
-    openModal,
-    fetchCarouselBanner: fetchCarouselBannerProp,
-  },
-)
 class AnalyticsMobile extends Component {
   state = {
     settlementExists: true,
@@ -537,4 +517,27 @@ class AnalyticsMobile extends Component {
   }
 }
 
-export default withSplitzService(AnalyticsMobile);
+export default compose(
+  withSplitzService,
+  withI18Service,
+  connect(
+    (state) => ({
+      windowWidth: state.app.windowWidth,
+      activationData: state.websiteCompliance.activationData,
+      websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+      websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
+      user: state.session.user,
+      config: state.config,
+      can_refer: state.merchantReferral.data.can_refer,
+      referee: state.merchantReferral.data.referee,
+      transactionAmount: state.transactionAmount.amount,
+      ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
+      bannerCarouselData: state?.growthService?.banner_carousel_items,
+      org: state.session.org,
+    }),
+    {
+      openModal,
+      fetchCarouselBanner: fetchCarouselBannerProp,
+    },
+  ),
+)(AnalyticsMobile);

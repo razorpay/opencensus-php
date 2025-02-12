@@ -7,9 +7,9 @@ export default function Details({
   joinTheWaitlist = (f) => f,
 }) {
   return (
-    <div class={`ComingSoonCallout ${isJoinedWaitlist ? 'joined-waitlist' : ''}`}>
-      <div class="title">Coming Soon</div>
-      <div class="content-container">
+    <div className={`ComingSoonCallout ${isJoinedWaitlist ? 'joined-waitlist' : ''}`}>
+      <div className="title">Coming Soon</div>
+      <div className="content-container">
         {isJoinedWaitlist ? (
           <>
             <div className="description">

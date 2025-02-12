@@ -47,52 +47,52 @@ export default class RequestActions extends Component {
     const checkers = this.props.checkers.peek();
 
     return (
-      <aside class="requests-actions">
+      <aside className="requests-actions">
         {requestState === 'open' || requestState === 'approved' ? (
-          <div class="container">
-            <div class="header">
+          <div className="container">
+            <div className="header">
               <b>ACTIONS</b>
             </div>
             {requestState !== 'approved' ? (
               <AsyncButton
-                class="btn btn-default"
+                className="btn btn-default"
                 pendingClass="btn btn-default btn-pending"
                 confirm="Are you sure you want to approve this request?"
                 onClick={_ => this.handleSubmit('approve')}
               >
-                <i class="i i-yes label-success" /> Approve
-                <span class="spin-btn" />
+                <i className="i i-yes label-success" /> Approve
+                <span className="spin-btn" />
               </AsyncButton>
             ) : null}
             {requestState !== 'approved' ? (
               <AsyncButton
-                class="btn btn-default"
+                className="btn btn-default"
                 pendingClass="btn btn-default btn-pending"
                 confirm="Are you sure you want to reject this request?"
                 onClick={_ => this.handleSubmit('reject')}
               >
-                <i class="i i-no label-danger" /> Reject
-                <span class="spin-btn" />
+                <i className="i i-no label-danger" /> Reject
+                <span className="spin-btn" />
               </AsyncButton>
             ) : null}
             <AsyncButton
-              class="btn btn-default"
+              className="btn btn-default"
               pendingClass="btn btn-default btn-pending"
               confirm="Are you sure you want to close this request?"
               onClick={_ => this.handleSubmit('close')}
             >
-              <i class="i i-no label-pending" /> Close
-              <span class="spin-btn" />
+              <i className="i i-no label-pending" /> Close
+              <span className="spin-btn" />
             </AsyncButton>
             {requestState === 'approved' ? (
               <AsyncButton
-                class="btn btn-default"
+                className="btn btn-default"
                 pendingClass="btn btn-default btn-pending"
                 confirm="Are you sure you want to execute this request?"
                 onClick={_ => this.handleSubmit('execute')}
               >
-                <i class="i i-upload label-success" /> Execute
-                <span class="spin-btn" />
+                <i className="i i-upload label-success" /> Execute
+                <span className="spin-btn" />
               </AsyncButton>
             ) : null}
           </div>
@@ -116,26 +116,26 @@ const RequestActionCheckers = ({ checkers }) => {
   });
 
   return (
-    <div class="request-checkers-list">
+    <div className="request-checkers-list">
       {approvalMap['approved'].length ? (
-        <div class="m-b">
-          <div class="header">
+        <div className="m-b">
+          <div className="header">
             <b>Approved By:</b>
           </div>
           {approvalMap['approved'].map((name, idx) => (
-            <span class="pill" key={idx}>
+            <span className="pill" key={idx}>
               {name}
             </span>
           ))}
         </div>
       ) : null}
       {approvalMap['rejected'].length ? (
-        <div class="separate m-t">
-          <div class="header">
+        <div className="separate m-t">
+          <div className="header">
             <b>Rejected By:</b>
           </div>
           {approvalMap['rejected'].map((name, idx) => (
-            <span class="pill" key={idx}>
+            <span className="pill" key={idx}>
               {name}
             </span>
           ))}

@@ -86,12 +86,12 @@ export default class Form extends React.Component {
     const activeTabContent = this.tabContents[activeTabIndex];
 
     return (
-      <div class="PaymentButton-Create-Form">
+      <div className="PaymentButton-Create-Form">
         {subscriptionButtonEntity && (
-          <div class="Form-container">
-            <div class="Form-title">
+          <div className="Form-container">
+            <div className="Form-title">
               {activeTabContent.title}
-              <div class="Form-description">{activeTabContent.description}</div>
+              <div className="Form-description">{activeTabContent.description}</div>
             </div>
 
             {this.tabContents.map((tab, index) => {

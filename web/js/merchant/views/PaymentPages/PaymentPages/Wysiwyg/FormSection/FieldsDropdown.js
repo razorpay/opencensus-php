@@ -30,7 +30,7 @@ export class FieldsDropdown extends React.PureComponent {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'OptionsDropdown FieldsDropdown',
           type && `FieldsDropdown--${type}`,
           showInfo && 'FieldsDropdown--withInfo',
@@ -40,13 +40,13 @@ export class FieldsDropdown extends React.PureComponent {
           <DropdownTrigger>{trigger}</DropdownTrigger>
 
           <DropdownContent>
-            <ul class="dropdown-menu nav nav-stacked OptionsDropdown-list">
-              {!!beforeOptionsTxt && <div class="OptionsDropdown-title">{beforeOptionsTxt}</div>}
+            <ul className="dropdown-menu nav nav-stacked OptionsDropdown-list">
+              {!!beforeOptionsTxt && <div className="OptionsDropdown-title">{beforeOptionsTxt}</div>}
               {options.map((option, ix) => {
                 return (
                   <li
                     key={ix}
-                    class={classList(
+                    className={classList(
                       'OptionsDropdown-item',
                       selectedLabel === option.label && 'OptionsDropdown-item--selected',
                     )}
@@ -54,7 +54,7 @@ export class FieldsDropdown extends React.PureComponent {
                     onMouseOver={showInfo ? () => this.setOnHoverOption(option) : undefined}
                     onMouseLeave={showInfo ? () => this.setOnHoverOption(null) : undefined}
                   >
-                    <i class={classList('i', option.icon && `i-${option.icon}`)} />
+                    <i className={classList('i', option.icon && `i-${option.icon}`)} />
                     <span>{option.label}</span>
                     {option.short_description && (
                       <>
@@ -64,16 +64,16 @@ export class FieldsDropdown extends React.PureComponent {
                         </span>
                       </>
                     )}
-                    <i class="i i-check" />
+                    <i className="i i-check" />
                   </li>
                 );
               })}
             </ul>
             {showInfo && hoverOption && (
-              <div class="info">
+              <div className="info">
                 <img src={hoverOption.info.img} width="176" />
-                <div class="title">{hoverOption.info.title}</div>
-                <div class="description">{hoverOption.info.description}</div>
+                <div className="title">{hoverOption.info.title}</div>
+                <div className="description">{hoverOption.info.description}</div>
               </div>
             )}
           </DropdownContent>
@@ -130,16 +130,16 @@ export class FieldsDropdownMobile extends React.PureComponent {
           return [maxHeight / 2, minHeight];
         }}
       >
-        <div class={classList('Bottom-sheet__options', type && `FieldsDropdown--${type}`)}>
-          <div class="OptionsDropdown-title">{beforeOptionsTxt}</div>
+        <div className={classList('Bottom-sheet__options', type && `FieldsDropdown--${type}`)}>
+          <div className="OptionsDropdown-title">{beforeOptionsTxt}</div>
           {options.map((option, ix) => {
             return (
               <div
                 key={ix}
-                class={classList('OptionsDropdown-item')}
+                className={classList('OptionsDropdown-item')}
                 onClick={() => this.onSelect(option)}
               >
-                <i class={classList('i', option.icon && `i-${option.icon}`)} />
+                <i className={classList('i', option.icon && `i-${option.icon}`)} />
                 <span>{option.label}</span>
                 {option.short_description && (
                   <>
@@ -149,7 +149,7 @@ export class FieldsDropdownMobile extends React.PureComponent {
                     </span>
                   </>
                 )}
-                <i class="i i-check" />
+                <i className="i i-check" />
               </div>
             );
           })}

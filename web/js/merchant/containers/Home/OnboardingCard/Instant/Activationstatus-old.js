@@ -5,13 +5,14 @@ import { Link } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import { Step, StepTitle, StepContent, possibleStatuses } from './Step';
 import { trackGoToActivationFromError } from 'merchant/containers/Home/ga';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import SupportButton from 'merchant/components/Home/SupportButton';
 import {
   checkEligibilityForFeeBasedGating,
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
+import { compose } from 'redux';
 
 const initialState = {
   status: null,
@@ -19,10 +20,7 @@ const initialState = {
   title: 'Account Activation',
 };
 
-@RTracking(() => {
-  return window.rzpQ.component('ActivationCard');
-})
-export default class ActivationCard extends Component {
+class ActivationCard extends Component {
   constructor(props) {
     super(props);
     this.state = initialState;
@@ -522,3 +520,9 @@ export default class ActivationCard extends Component {
     );
   }
 }
+
+export default compose(
+  rTracking(() => {
+    return window.rzpQ.component('ActivationCard');
+  }),
+)(ActivationCard);

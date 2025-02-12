@@ -2,16 +2,15 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { fetchTransfers, fetchReversals, fetchSettlements } from 'merchantLA/reducers/collection';
 import { titleCase } from 'common/utils/rzp-utils';
-
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
   PanelFooter,
 } from 'merchantLA/components/Home/GenericPanel';
-import { tabs, tabsMeta } from './data';
+import { fetchTransfers, fetchReversals, fetchSettlements } from 'merchantLA/reducers/collection';
 
+import { tabs, tabsMeta } from './data';
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
 const shouldDisplayCompact = (windowWidth) => {
@@ -49,22 +48,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   );
 };
 
-@connect(
-  (state) => {
-    return {
-      transfers: state.transfers,
-      reversals: state.reversals,
-      settlements: state.settlements,
-      windowWidth: state.app.windowWidth,
-    };
-  },
-  {
-    fetchTransfers,
-    fetchReversals,
-    fetchSettlements,
-  },
-)
-export default class RecentActivity extends Component {
+class RecentActivity extends Component {
   constructor(props) {
     super(props);
 
@@ -73,7 +57,7 @@ export default class RecentActivity extends Component {
       displayCompact: shouldDisplayCompact(props.windowWidth),
     };
 
-    this.handleTabClick = ::this.handleTabClick;
+    this.handleTabClick = this.handleTabClick.bind(this);
   }
 
   handleTabClick(e) {
@@ -183,3 +167,19 @@ export default class RecentActivity extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      transfers: state.transfers,
+      reversals: state.reversals,
+      settlements: state.settlements,
+      windowWidth: state.app.windowWidth,
+    };
+  },
+  {
+    fetchTransfers,
+    fetchReversals,
+    fetchSettlements,
+  },
+)(RecentActivity);

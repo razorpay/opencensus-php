@@ -20,6 +20,7 @@ import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
+import { compose } from 'redux';
 
 const selector = formValueSelector('newCustomer');
 
@@ -29,34 +30,8 @@ const DEFAULT_COUNTY_MAP = {
 };
 
 // eslint-disable-next-line react/no-unsafe
-@withI18Service
-@connect(
-  (state) => {
-    return {
-      // Screen 1
-      name: selector(state, 'name'),
-      email: selector(state, 'email'),
-      contact: selector(state, 'contact'),
 
-      shipping_same_as_billing: selector(state, 'shipping_same_as_billing'),
-      add_customer_address: selector(state, 'add_customer_address'),
-      add_shipping_address: selector(state, 'add_shipping_address'),
-      user: state.session.user,
-      org: state.session.org,
-    };
-  },
-  {
-    fetchStates,
-    ...CustomerActions,
-    ...ModalActions,
-    ...NotificationsActions,
-  },
-)
-@reduxForm({
-  form: 'newCustomer',
-  validate,
-})
-export default class AddCustomer extends Component {
+class AddCustomer extends Component {
   constructor(props) {
     // eslint-disable-next-line prefer-rest-params
     super(...arguments);
@@ -432,25 +407,25 @@ export default class AddCustomer extends Component {
 
     // Add Screen 1
     const screen1 = (
-      <div class="modal-body CustomerCreationModal">
+      <div className="modal-body CustomerCreationModal">
         <Alert type="error" message={this.state.errors} />
         <form autoComplete="off">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
                 <label>Company/Individual Name</label>
                 <div>
                   <Field
                     name="name"
                     placeholder="Customer Name"
                     component={InputField}
-                    class="form-control"
+                    className="form-control"
                     autoFocus={true}
                     onBlur={this.props.onBlur}
                   />
                 </div>
               </div>
-              <div class="form-group">
+              <div className="form-group">
                 <label>Email</label>
                 <div>
                   <Field
@@ -458,20 +433,20 @@ export default class AddCustomer extends Component {
                     placeholder="Email Address"
                     component={InputField}
                     type="email"
-                    class="form-control"
+                    className="form-control"
                     validate={email('Please provide a valid email')}
                     onBlur={this.props.onBlur}
                   />
                 </div>
               </div>
-              <div class="form-group">
+              <div className="form-group">
                 <label>Contact No.</label>
                 <div>
                   <Field
                     name="contact"
                     placeholder="Contact Number"
                     component={InputField}
-                    class="form-control"
+                    className="form-control"
                     type="tel"
                     validate={[phone('Invalid Contact')]}
                     onBlur={this.props.onBlur}
@@ -479,14 +454,14 @@ export default class AddCustomer extends Component {
                 </div>
               </div>
               {showGSTNInput && (
-                <div class="form-group">
+                <div className="form-group">
                   <label>GSTIN</label>
                   <div>
                     <Field
                       name="gstin"
                       placeholder="e.g 22AAAAA0000A1Z5"
                       component={InputField}
-                      class="form-control"
+                      className="form-control"
                       validate={[validateGSTIN]}
                       onBlur={this.props.onBlur}
                     />
@@ -494,8 +469,8 @@ export default class AddCustomer extends Component {
                 </div>
               )}
               {askAddress && (
-                <div class="form-group">
-                  <div class="rzpCheckbox" style={{ marginTop: '4px' }}>
+                <div className="form-group">
+                  <div className="rzpCheckbox" style={{ marginTop: '4px' }}>
                     <Field
                       name="add_customer_address"
                       id="add_customer_address"
@@ -503,9 +478,9 @@ export default class AddCustomer extends Component {
                       type="checkbox"
                     />
                     <label
-                      for="add_customer_address"
+                      htmlFor="add_customer_address"
                       style={{ fontWeight: 'normal' }}
-                      class="icon i-check"
+                      className="icon i-check"
                     >
                       Add Billing Address
                     </label>
@@ -515,19 +490,19 @@ export default class AddCustomer extends Component {
             </div>
           </div>
           {customer && customer.id && (
-            <div class="row">
-              <div class="col-md-12">
+            <div className="row">
+              <div className="col-md-12">
                 <p>
                   Note: The updated customer details will be reflected everywhere in the future.
                 </p>
               </div>
             </div>
           )}
-          <div class="row">
-            <div class="col-md-12">
-              <div class="Modal__actions">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="Modal__actions">
                 <button
-                  class="btn btn-primary btn-block"
+                  className="btn btn-primary btn-block"
                   type="button"
                   disabled={disabled[screenIndex]}
                   onClick={address ? this.getChangeScreenHandler(1) : handleSubmit(this.save)}
@@ -545,18 +520,21 @@ export default class AddCustomer extends Component {
 
     // Add Screen 2
     screens.push(
-      <div class="modal-body CustomerCreationModal">
+      <div className="modal-body CustomerCreationModal">
         <Alert type="error" message={this.state.errors} />
         <form autoComplete="off">
-          <div class="row CustomerCreationModal__header-action">
-            <div class="col-md-12">
-              <span onClick={this.getChangeScreenHandler(0)} class="text-primary cursor-pointer">
-                <i class="i i-arrow-back" />
+          <div className="row CustomerCreationModal__header-action">
+            <div className="col-md-12">
+              <span
+                onClick={this.getChangeScreenHandler(0)}
+                className="text-primary cursor-pointer"
+              >
+                <i className="i i-arrow-back" />
                 Back to Customer Details
               </span>
             </div>
           </div>
-          <div class="CustomerCreationModal__headers">
+          <div className="CustomerCreationModal__headers">
             <label>Billing Address</label>
           </div>
           <AddressEntry
@@ -567,10 +545,10 @@ export default class AddCustomer extends Component {
             hideCountry={!isInttCurrenciesEnabled}
             {...extraProps}
           />
-          <div class="row CustomerCreationModal__bottom">
-            <div class="col-md-12">
+          <div className="row CustomerCreationModal__bottom">
+            <div className="col-md-12">
               <div>
-                <div class="rzpCheckbox">
+                <div className="rzpCheckbox">
                   <Field
                     name="add_shipping_address"
                     id="add_shipping_address"
@@ -578,9 +556,9 @@ export default class AddCustomer extends Component {
                     type="checkbox"
                   />
                   <label
-                    for="add_shipping_address"
+                    htmlFor="add_shipping_address"
                     style={{ fontWeight: 'normal' }}
-                    class="icon i-check"
+                    className="icon i-check"
                   >
                     Add Shipping Address
                   </label>
@@ -588,12 +566,12 @@ export default class AddCustomer extends Component {
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-12">
-              <div class="Modal__actions">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="Modal__actions">
                 {add_shipping_address ? (
                   <button
-                    class="btn btn-primary btn-block"
+                    className="btn btn-primary btn-block"
                     disabled={disabled[screenIndex]}
                     type="button"
                     onClick={this.getChangeScreenHandler(2)}
@@ -603,7 +581,7 @@ export default class AddCustomer extends Component {
                 ) : (
                   <AsyncButton
                     type="submit"
-                    class="btn btn-primary btn-block"
+                    className="btn btn-primary btn-block"
                     text={this.props.saveLabel}
                     pendingText="Saving..."
                     disabled={disabled[screenIndex]}
@@ -619,20 +597,23 @@ export default class AddCustomer extends Component {
 
     // Add Screen 3
     screens.push(
-      <div class="modal-body CustomerCreationModal">
+      <div className="modal-body CustomerCreationModal">
         <Alert type="error" message={this.state.errors} />
         <form autoComplete="off">
-          <div class="row CustomerCreationModal__header-action">
-            <div class="col-md-12">
-              <span onClick={this.getChangeScreenHandler(1)} class="text-primary cursor-pointer">
-                <i class="i i-arrow-back" />
+          <div className="row CustomerCreationModal__header-action">
+            <div className="col-md-12">
+              <span
+                onClick={this.getChangeScreenHandler(1)}
+                className="text-primary cursor-pointer"
+              >
+                <i className="i i-arrow-back" />
                 Back to Billing Address
               </span>
             </div>
           </div>
-          <div class="CustomerCreationModal__headers">
+          <div className="CustomerCreationModal__headers">
             <label>Shipping Address</label>
-            <div class="rzpCheckbox">
+            <div className="rzpCheckbox">
               <Field
                 name="shipping_same_as_billing"
                 id="shipping_same_as_billing"
@@ -641,9 +622,9 @@ export default class AddCustomer extends Component {
                 onChange={this.onSameShippingAsBilling}
               />
               <label
-                for="shipping_same_as_billing"
+                htmlFor="shipping_same_as_billing"
                 style={{ fontWeight: 'normal' }}
-                class="icon i-check"
+                className="icon i-check"
               >
                 Same as Billing Address
               </label>
@@ -657,12 +638,12 @@ export default class AddCustomer extends Component {
             hideCountry={!isInttCurrenciesEnabled}
             {...extraProps}
           />
-          <div class="row">
-            <div class="col-md-12">
-              <div class="Modal__actions">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="Modal__actions">
                 <AsyncButton
                   type="submit"
-                  class="btn btn-primary btn-block"
+                  className="btn btn-primary btn-block"
                   text={this.props.saveLabel}
                   pendingText="Saving..."
                   disabled={disabled[screenIndex]}
@@ -705,3 +686,33 @@ function validate(values) {
 
   return errors;
 }
+
+export default compose(
+  withI18Service,
+  connect(
+    (state) => {
+      return {
+        // Screen 1
+        name: selector(state, 'name'),
+        email: selector(state, 'email'),
+        contact: selector(state, 'contact'),
+
+        shipping_same_as_billing: selector(state, 'shipping_same_as_billing'),
+        add_customer_address: selector(state, 'add_customer_address'),
+        add_shipping_address: selector(state, 'add_shipping_address'),
+        user: state.session.user,
+        org: state.session.org,
+      };
+    },
+    {
+      fetchStates,
+      ...CustomerActions,
+      ...ModalActions,
+      ...NotificationsActions,
+    },
+  ),
+  reduxForm({
+    form: 'newCustomer',
+    validate,
+  }),
+)(AddCustomer);

@@ -68,9 +68,9 @@ const BusinessDetails = ({
   }, [isRevampFlow, triggerSource, websiteInfo.isWebsiteDetails]);
 
   return (
-    <div class="business-details">
-      <div class="main-title">BUSINESS DETAILS</div>
-      <div class="sub-title">
+    <div className="business-details">
+      <div className="main-title">BUSINESS DETAILS</div>
+      <div className="sub-title">
         International payments are associated with a higher risk of frauds and chargeback, hence it
         is governed by strict risk evaluations policies laid down by our banking partners
       </div>
@@ -83,7 +83,7 @@ const BusinessDetails = ({
           label="Choose product(s) to collect international payments on"
           className="product-options"
         >
-          <div class="Input-content">
+          <div className="Input-content">
             {productOptions.map((each, index) => (
               <StyledProductOption key={`check-${index}`}>
                 <Input.Check
@@ -146,7 +146,7 @@ const BusinessDetails = ({
           autoRender
         />
       )}
-      <div class="spacer" />
+      <div className="spacer" />
       <Input.Select
         required
         name="goods_type"

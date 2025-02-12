@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -19,24 +19,13 @@ import {
   patchProduct,
 } from 'merchant/views/Stores/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
+import { compose } from 'redux';
 import track from './track';
 
 const FILE_SIZE_LIMIT = 2; // 2 MB
 const FORM_NAME = 'ProductCreate-Form';
 const WRAPPER_CLASS = 'Stores--ProductCreate';
 
-@connect(
-  (state) => ({
-    store: state.storefront,
-  }),
-  {
-    showNotification,
-    addToProductsList,
-    updateProductsList,
-  },
-)
-@RTracking(() => window.rzpQ.component('StoresProductCreate'))
 class ProductCreate extends React.Component {
   state = {
     isLoading: false,
@@ -302,13 +291,13 @@ class ProductCreate extends React.Component {
 
     const content = (
       <div>
-        <div class="title">
-          {isEdit ? 'Edit Product' : 'Adding a new Product '} <div class="title-underline" />
+        <div className="title">
+          {isEdit ? 'Edit Product' : 'Adding a new Product '} <div className="title-underline" />
         </div>
-        <Form name={FORM_NAME} class={FORM_NAME} onChange={this.handleFieldChange}>
+        <Form name={FORM_NAME} className={FORM_NAME} onChange={this.handleFieldChange}>
           {isLoading ? (
-            <div class="loader-container">
-              <div class="spinner" />
+            <div className="loader-container">
+              <div className="spinner" />
             </div>
           ) : (
             <main>
@@ -316,7 +305,7 @@ class ProductCreate extends React.Component {
                 autoRender
                 name="name"
                 label="Product Name"
-                class="Input--vTop"
+                className="Input--vTop"
                 placeholder="eg. Polo Tshirt XL"
                 required
                 maxLength="100"
@@ -324,13 +313,13 @@ class ProductCreate extends React.Component {
                 onBlur={this.handleProductName}
               />
               {isEdit ? (
-                <div class="status-field">
+                <div className="status-field">
                   <StoreProductsStatusLabel status={status} />
                   {status === 'active' ? (
                     <>
-                      <span class="m-r" />
+                      <span className="m-r" />
                       <button
-                        class="Button--Link Button--transparent Button"
+                        className="Button--Link Button--transparent Button"
                         onClick={this.handleDeactivate}
                       >
                         Deactivate
@@ -343,36 +332,39 @@ class ProductCreate extends React.Component {
               ) : (
                 ''
               )}
-              <div class="Input product-images">
-                <div class="Input-label">
+              <div className="Input product-images">
+                <div className="Input-label">
                   Product Images<small> (optional)</small>
                 </div>
-                <div class="info">Max size per image 2MB</div>
-                <div class="Input-content">
+                <div className="info">Max size per image 2MB</div>
+                <div className="Input-content">
                   {images.map((imageUrl, index) => (
-                    <div key={imageUrl} class="image-container">
+                    <div key={imageUrl} className="image-container">
                       <img
                         src={imageUrl}
                         width="56px"
                         height="56px"
                         alt={`product image ${index}`}
                       />
-                      <div class="remove-button" onClick={() => this.handleImageRemove(index)}>
-                        <i class="i i-close" />
+                      <div className="remove-button" onClick={() => this.handleImageRemove(index)}>
+                        <i className="i i-close" />
                       </div>
                     </div>
                   ))}
                   {images.length < 5 && (
-                    <div class="add" onClick={this.handleImageInsert}>
-                      <i class="i i-plus" />
+                    <div className="add" onClick={this.handleImageInsert}>
+                      <i className="i i-plus" />
                     </div>
                   )}
                 </div>
               </div>
-              <Input.Group class="InputGroup--inline InputGroup--vTop price" label="Selling Price">
-                <div class="Input-content">
-                  <div class="Input Input--Currency Input--noMargin">
-                    <div class="value">₹</div>
+              <Input.Group
+                className="InputGroup--inline InputGroup--vTop price"
+                label="Selling Price"
+              >
+                <div className="Input-content">
+                  <div className="Input Input--Currency Input--noMargin">
+                    <div className="value">₹</div>
                   </div>
                   <Input
                     autoRender
@@ -387,16 +379,16 @@ class ProductCreate extends React.Component {
               </Input.Group>
               <span style={{ width: '2%', display: 'inline-block' }} />
               <Input.Group
-                class="InputGroup--inline InputGroup--vTop price"
+                className="InputGroup--inline InputGroup--vTop price"
                 label={
                   <div>
                     Discounted Price <small>(opt.)</small>
                   </div>
                 }
               >
-                <div class="Input-content">
-                  <div class="Input Input--Currency Input--noMargin">
-                    <div class="value">₹</div>
+                <div className="Input-content">
+                  <div className="Input Input--Currency Input--noMargin">
+                    <div className="value">₹</div>
                   </div>
                   <Input
                     autoRender
@@ -411,7 +403,7 @@ class ProductCreate extends React.Component {
               <Input
                 name="stock"
                 label="Quantity Available"
-                class="Input--vTop"
+                className="Input--vTop"
                 placeholder="No. of units in Stock"
                 defaultValue={formData.stock}
                 type="number"
@@ -435,12 +427,12 @@ class ProductCreate extends React.Component {
                     Product Description <small>(optional)</small>
                   </div>
                 }
-                class="Input--vTop"
+                className="Input--vTop"
                 maxLength="240"
                 placeholder="1 to 2 line description of the product"
                 defaultValue={formData.description}
                 description={
-                  <div class="text-right">{(formData.description || '').length} / 240</div>
+                  <div className="text-right">{(formData.description || '').length} / 240</div>
                 }
                 onBlur={this.handleProductDescription}
               />
@@ -466,9 +458,9 @@ class ProductCreate extends React.Component {
 
     if (isModalView) {
       return (
-        <div class={WRAPPER_CLASS}>
+        <div className={WRAPPER_CLASS}>
           <ModalMask maskClosable={false}>
-            <Modal class={content && 'animate-down'} showCloseBtn={false}>
+            <Modal className={content && 'animate-down'} showCloseBtn={false}>
               <ModalContent>{content}</ModalContent>
             </Modal>
           </ModalMask>
@@ -477,11 +469,24 @@ class ProductCreate extends React.Component {
     }
 
     return (
-      <div class={WRAPPER_CLASS}>
-        <div class="StandaloneContainer">{content}</div>;
+      <div className={WRAPPER_CLASS}>
+        <div className="StandaloneContainer">{content}</div>;
       </div>
     );
   }
 }
 
-export default withRouter(ProductCreate);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      store: state.storefront,
+    }),
+    {
+      showNotification,
+      addToProductsList,
+      updateProductsList,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('StoresProductCreate')),
+)(ProductCreate);

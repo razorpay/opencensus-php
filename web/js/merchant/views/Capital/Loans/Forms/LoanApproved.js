@@ -1,35 +1,25 @@
 import React, { Component } from 'react';
-import CreditOffer from '../../components/CreditOffer';
-import RepaymentInformation from '../../components/RepaymentInformation';
-import Button from 'common/new-ui/Button';
 import { connect } from 'react-redux';
-import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
-import SettlementAccountDetails from '../../components/SettlementAccountDetails';
-import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES, HOTJAR_TRIGGERS } from '../constants';
-import { isPreceedingState } from '../../utils';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-    user: state.session.user,
-  }),
-  {
-    fetchLoanApplicationMeta,
-  },
-)
+import Button from 'common/new-ui/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
+
+import CreditOffer from '../../components/CreditOffer';
+import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
+import RepaymentInformation from '../../components/RepaymentInformation';
+import SettlementAccountDetails from '../../components/SettlementAccountDetails';
+import { isPreceedingState } from '../../utils';
+import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES, HOTJAR_TRIGGERS } from '../constants';
+
 class LoanApproved extends Component {
   componentDidMount() {
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_FINAL_APPROVAL);
   }
 
   render() {
-    const {
-      credit_offer_details,
-      accepted_offer_details,
-      meta,
-    } = this.props.loanApplicationDetails;
+    const { credit_offer_details, accepted_offer_details, meta } =
+      this.props.loanApplicationDetails;
 
     if (credit_offer_details.loading || accepted_offer_details.loading) return <FormLoader />;
 
@@ -39,7 +29,7 @@ class LoanApproved extends Component {
     );
 
     return (
-      <div class={'credit-offer-container'}>
+      <div className="credit-offer-container">
         <div className="loan-offer-wrapper">
           <CreditOffer
             offerDetails={creditOffer}
@@ -48,7 +38,7 @@ class LoanApproved extends Component {
             product={meta.product}
             highlightCreditAmount={false}
           />
-          <div class="m-b">
+          <div className="m-b">
             <SettlementAccountDetails
               user={this.props.user}
               showFinancerDetails={false}
@@ -61,7 +51,7 @@ class LoanApproved extends Component {
             product={CAPITAL_PRODUCT_CODES.LOAN}
           />
         </div>
-        <div class="loan-offer-wrapper">
+        <div className="loan-offer-wrapper">
           <div className="loan-offer-action pull-right">
             <Button.Transparent
               onClick={() => {
@@ -93,4 +83,12 @@ class LoanApproved extends Component {
   }
 }
 
-export default LoanApproved;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+    user: state.session.user,
+  }),
+  {
+    fetchLoanApplicationMeta,
+  },
+)(LoanApproved);

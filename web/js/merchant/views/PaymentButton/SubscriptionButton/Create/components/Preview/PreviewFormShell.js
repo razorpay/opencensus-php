@@ -6,11 +6,7 @@ import { getCurrency } from 'common/ui/Amount';
 const blackColor = '#263a4a';
 const whiteColor = '#fff';
 
-@connect((state) => ({
-  config: state.config,
-  user: state.session.user,
-}))
-export default class PreviewFormShell extends React.Component {
+class PreviewFormShell extends React.Component {
   state = {
     textColor: whiteColor,
   };
@@ -52,15 +48,15 @@ export default class PreviewFormShell extends React.Component {
     const brandLogoUrl = config.config.logo_url;
 
     return (
-      <div class="PaymentButton-PreviewFormShell">
-        <div class="PreviewFormShell-header">
-          <div class="Preview-topbar">
-            <div class="Preview-topbar-title">
+      <div className="PaymentButton-PreviewFormShell">
+        <div className="PreviewFormShell-header">
+          <div className="Preview-topbar">
+            <div className="Preview-topbar-title">
               <span>{shellTitle}</span>
             </div>
 
-            <div class="Preview-controls">
-              <div class="Preview-progressDots">
+            <div className="Preview-controls">
+              <div className="Preview-progressDots">
                 {Array.from({ length: totalDots }).map((_, index) => (
                   <span
                     key={index}
@@ -72,31 +68,31 @@ export default class PreviewFormShell extends React.Component {
                 ))}
               </div>
 
-              <span class="Preview-cross">
+              <span className="Preview-cross">
                 <span>×</span>
               </span>
             </div>
           </div>
 
           <div>
-            <div class="PreviewFormShell-header-details">
+            <div className="PreviewFormShell-header-details">
               {brandLogoUrl && <img src={brandLogoUrl} width="30px" height="30px" />}
               <div>
-                <div class="header-details-merchant">{merchantBillingLabel}</div>
+                <div className="header-details-merchant">{merchantBillingLabel}</div>
               </div>
             </div>
           </div>
         </div>
-        <div class="PreviewFormShell-checkout-form">
-          <div class="Body">{children}</div>
+        <div className="PreviewFormShell-checkout-form">
+          <div className="Body">{children}</div>
 
           {buttonTitle && (
-            <div class="Footer">
-              <div class="Footer--Amount">
+            <div className="Footer">
+              <div className="Footer--Amount">
                 {this.currencySymbol} {this.displayAmountToPayByCustomer}
               </div>
               <div
-                class="Field-dummy-btn"
+                className="Field-dummy-btn"
                 style={{
                   color: this.state.textColor,
                   backgroundColor: brandColor,
@@ -111,3 +107,8 @@ export default class PreviewFormShell extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({
+  config: state.config,
+  user: state.session.user,
+}))(PreviewFormShell);

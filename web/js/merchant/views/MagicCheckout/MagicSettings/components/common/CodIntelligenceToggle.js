@@ -69,7 +69,7 @@ const CodIntelligenceToggle = ({ checked, switchMode, sopcMetafields, rcodEnable
     </Box>
   ) : (
     <div className="filter-item link-account-instruction display-flex c-fee-configuration toggle-container">
-      <div className="intelligence-label font-normal" for="cod-intelligence">
+      <div className="intelligence-label font-normal" htmlFor="cod-intelligence">
         <label>
           COD Intelligence
           <i className="i i-info-outline intelligence-tooltip font-normal">

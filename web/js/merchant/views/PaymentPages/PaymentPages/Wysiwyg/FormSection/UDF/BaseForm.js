@@ -1,23 +1,24 @@
 import React from 'react';
 import { connect } from 'react-redux';
+
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
+import { classList } from 'common/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
 import FieldOptionsDropdownWrapper, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
-import { classList } from 'common/utils/rzp-utils';
 import { mapFieldToIndex } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
-import ShowWhen from 'merchant/components/ShowWhen';
 import {
   BATCH_UPLOAD_MSG,
   FILLED_BY_CUSTOMER,
   SEC_REF_ID,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+
 import { FIXED_FIELDS } from './helpers/preAddedFields';
 
-@connect((state) => ({ countryCode: state.session.user.merchant.country_code }))
-export default class BaseForm extends React.PureComponent {
+class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -126,14 +127,16 @@ export default class BaseForm extends React.PureComponent {
     const { isRequired, hasDescription, disableSubmit, mirrorDisplayTitle, isSecondaryRefId } =
       this.state;
     const placeHolder = isBatchPaymentPages ? BATCH_UPLOAD_MSG : FILLED_BY_CUSTOMER;
-    let _RepresentationEl = <input class="Field-el" placeholder={placeHolder} disabled />;
+    let _RepresentationEl = <input className="Field-el" placeholder={placeHolder} disabled />;
     let _RepresentationClass = '';
     if (field.options && field.options.cmp === 'textarea') {
-      _RepresentationEl = <textarea class="Field-el" placeholder={FILLED_BY_CUSTOMER} disabled />;
+      _RepresentationEl = (
+        <textarea className="Field-el" placeholder={FILLED_BY_CUSTOMER} disabled />
+      );
       _RepresentationClass = 'Field--textarea';
     } else if (field.enum) {
       _RepresentationEl = (
-        <select class="Field-el" disabled>
+        <select className="Field-el" disabled>
           <option>To be selected by customer</option>
         </select>
       );
@@ -179,9 +182,9 @@ export default class BaseForm extends React.PureComponent {
           }}
           autoFocus
         >
-          <div class={classList('Field Field--mirrorDisplay', isRequired && 'Field--required')}>
-            <span class="mirror-title">{mirrorDisplayTitle}</span>
-            {mirrorDisplayTitle && !isRequired && <div class="text-optional">(Optional)</div>}
+          <div className={classList('Field Field--mirrorDisplay', isRequired && 'Field--required')}>
+            <span className="mirror-title">{mirrorDisplayTitle}</span>
+            {mirrorDisplayTitle && !isRequired && <div className="text-optional">(Optional)</div>}
           </div>
         </Input.TextareaAutoResize>
 
@@ -191,12 +194,12 @@ export default class BaseForm extends React.PureComponent {
           <input name="sec__ref__id" value={Number(isSecondaryRefId)} hidden readOnly />
         </ShowWhen>
 
-        <div class={classList('Field--representation', _RepresentationClass)}>
-          <div class="Field-wrapper placeholder-field">{_RepresentationEl}</div>
+        <div className={classList('Field--representation', _RepresentationClass)}>
+          <div className="Field-wrapper placeholder-field">{_RepresentationEl}</div>
 
           {this.state.isFieldEnum && (
             <Input.EnumList
-              class="dropdown-options"
+              className="dropdown-options"
               onChange={this.onChangeEnumList}
               defaultValue={field.enum.length ? field.enum : ['']}
             />
@@ -204,7 +207,7 @@ export default class BaseForm extends React.PureComponent {
 
           {hasDescription && (
             <Input.TextareaAutoResize
-              class="Input--description"
+              className="Input--description"
               name="description"
               placeholder="Enter description"
               defaultValue={field.description}
@@ -222,7 +225,7 @@ export default class BaseForm extends React.PureComponent {
         <FieldOptionsDropdownWrapper
           trigger={
             <Button.Transparent data-testid="dropdown-trigger">
-              <i class="i i-ellipsis-v" />
+              <i className="i i-ellipsis-v" />
             </Button.Transparent>
           }
         >
@@ -238,7 +241,7 @@ export default class BaseForm extends React.PureComponent {
           {!isFieldForcedRequired && (
             <OptionsItem isSelected={!isRequired}>
               <div onClick={this.toggleOptional}>
-                <i class="i i-optional_mark" />
+                <i className="i i-optional_mark" />
                 Optional Field
               </div>
             </OptionsItem>
@@ -246,15 +249,15 @@ export default class BaseForm extends React.PureComponent {
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
-              <i class="i i-sort i-fix-sort" />
+              <i className="i i-sort i-fix-sort" />
               {this.state.hasDescription ? 'Remove Description' : 'Add Description'}
             </div>
           </OptionsItem>
 
           {typeof selfIndex !== 'undefined' && onDeleteField && (
             <OptionsItem>
-              <div class="OptionsDropdown-item--delete" onClick={onDeleteField}>
-                <i class="i i-delete" />
+              <div className="OptionsDropdown-item--delete" onClick={onDeleteField}>
+                <i className="i i-delete" />
                 <div>Delete Field</div>
               </div>
             </OptionsItem>
@@ -262,7 +265,7 @@ export default class BaseForm extends React.PureComponent {
         </FieldOptionsDropdownWrapper>
 
         <Button.Transparent
-          class="base-form-side-btn base-form-cancel"
+          className="base-form-side-btn base-form-cancel"
           type="button"
           onClick={onCloseForm}
         >
@@ -271,14 +274,18 @@ export default class BaseForm extends React.PureComponent {
         </Button.Transparent>
 
         <Button.Transparent
-          class="base-form-side-btn base-form-save"
+          className="base-form-side-btn base-form-save"
           type="submit"
           disabled={disableSubmit}
         >
-          <span class="icon i-check" />
+          <span className="icon i-check" />
           Save
         </Button.Transparent>
       </Form>
     );
   }
 }
+
+export default connect((state) => ({ countryCode: state.session.user.merchant.country_code }))(
+  BaseForm,
+);

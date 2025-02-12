@@ -4,7 +4,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 export default ({ closeModal, addToQueue }) => (
   <div className="reward-queue-confirm-modal">
     <ModalHeader title="Add to Queue" onCloseClick={closeModal} />
-    <div class="modal-body">
+    <div className="modal-body">
       <p>
         Offer starting at a later date will be added to the queue and will be picked up on the
         go-live date

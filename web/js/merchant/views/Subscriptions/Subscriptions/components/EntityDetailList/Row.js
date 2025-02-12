@@ -104,20 +104,20 @@ export default function EntityDetailRow(props) {
 
   return (
     <div
-      class={classNames.join(' ')}
+      className={classNames.join(' ')}
       onClick={() => {
         if (isRowClickable) {
           goToLink(item.id, index);
         }
       }}
     >
-      <div class="row-item content">
-        <div class="detail-row">
-          <div class="row-element left">
+      <div className="row-item content">
+        <div className="detail-row">
+          <div className="row-element left">
             {loading ? (
               <PlaceholderLoader style={{ width: '70%' }} />
             ) : item.billing_start ? (
-              <span class="label--primary">
+              <span className="label--primary">
                 <Time value={item.billing_start} format="MMM DD, YYYY" />
                 {timeDiff > 0 && <span> (due in {Math.ceil(timeDiff / (3600 * 24))} days)</span>}
               </span>
@@ -127,7 +127,7 @@ export default function EntityDetailRow(props) {
               'Upcoming Invoice'
             )}
           </div>
-          <div class="row-element right">
+          <div className="row-element right">
             {loading ? (
               <PlaceholderLoader style={{ width: '45%' }} />
             ) : (
@@ -136,12 +136,12 @@ export default function EntityDetailRow(props) {
           </div>
         </div>
 
-        <div class="detail-row">
-          <div class="row-element left">
+        <div className="detail-row">
+          <div className="row-element left">
             {loading ? (
               <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
             ) : (
-              <span class="label--secondary">
+              <span className="label--secondary">
                 {index
                   ? isChargedInvoice
                     ? 'Charged due to subscription update'
@@ -152,28 +152,28 @@ export default function EntityDetailRow(props) {
               </span>
             )}
           </div>
-          <div class="row-element right">
+          <div className="row-element right">
             {loading ? (
               <PlaceholderLoader style={{ width: '30%' }} />
             ) : (
-              <span class="tag">
+              <span className="tag">
                 <InvoiceStatusLabel status={item.status} />
               </span>
             )}
           </div>
         </div>
 
-        <div class="detail-row">
+        <div className="detail-row">
           {item.id &&
             (chargeAttemptsFailedText || retryingInfo) && [
-              <span key="retrying-attempts" class="text-danger">
-                <i class="i i-info-circle" /> {chargeAttemptsFailedText}
+              <span key="retrying-attempts" className="text-danger">
+                <i className="i i-info-circle" /> {chargeAttemptsFailedText}
               </span>,
               <span key="retrying-info"> {retryingInfo}</span>,
             ]}
           {showAttemptChargeCTA && !shouldShowAttemptCharge && (
             <AsyncButton
-              class="btn-link no-padding"
+              className="btn-link no-padding"
               text=" Attempt Charge"
               pendingText="Attempting..."
               onClick={() => onManualAttempt(item.id, subscriptionId)}
@@ -182,8 +182,8 @@ export default function EntityDetailRow(props) {
         </div>
 
         {isEmandatePayment && isIssued && (
-          <div class="details-row eMandate-status">
-            <i class="i i-info-outline m-r" /> eMandate payment status can take 24 - 48 hours to
+          <div className="details-row eMandate-status">
+            <i className="i i-info-outline m-r" /> eMandate payment status can take 24 - 48 hours to
             confirm.
             <DocsLink
               title="Learn more"
@@ -194,7 +194,7 @@ export default function EntityDetailRow(props) {
       </div>
 
       {isRowClickable && (
-        <span class="row-item i i-chevron-right" onClick={() => goToLink(item.id, index)} />
+        <span className="row-item i i-chevron-right" onClick={() => goToLink(item.id, index)} />
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import trackPB from 'merchant/views/PaymentButton/PaymentButton/Details/track';
 
@@ -18,10 +18,9 @@ import { get80gMerchantDetails, set80gMerchantDetails } from 'merchant/reducers/
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import { compose } from 'redux';
 
-@connect((state) => ({ org: state.session.org }), { openModal, showNotification })
-@RTracking(() => window.rzpQ.component('PaymentReceipt'))
-export default class PaymentReceipt extends React.Component {
+class PaymentReceipt extends React.Component {
   constructor(props) {
     super(props);
 
@@ -256,22 +255,22 @@ export default class PaymentReceipt extends React.Component {
     const { org } = props;
     const { text_80g_12a, image_url_80g } = this.state['80_details'];
     return (
-      <ModalMask maskClosable={false} class="PaymentpagesReceipt">
-        <Modal class="PaymentpagesReceipt" onClose={props.handleClose} showCloseBtn={false}>
+      <ModalMask maskClosable={false} className="PaymentpagesReceipt">
+        <Modal className="PaymentpagesReceipt" onClose={props.handleClose} showCloseBtn={false}>
           <ModalContent>
-            <div class="main-title">
+            <div className="main-title">
               <i className="i i-receipt mr-8" />
               Payment Receipts Settings
             </div>
 
             {this.state.isLoading ? (
-              <div class="page-spinner-container">
+              <div className="page-spinner-container">
                 <Spinner />
               </div>
             ) : (
-              <Form class="Receipts-form" onSubmit={this.onSubmit}>
+              <Form className="Receipts-form" onSubmit={this.onSubmit}>
                 <main>
-                  <div class="settings-section">
+                  <div className="settings-section">
                     <Input.Radio
                       name="enable_custom_serial_number"
                       defaultValue={
@@ -298,30 +297,30 @@ export default class PaymentReceipt extends React.Component {
                           ),
                         },
                       ]}
-                      class="Input--vTop Input--theme"
+                      className="Input--vTop Input--theme"
                     />
 
-                    <div class="doc-links">
+                    <div className="doc-links">
                       <DocLink
                         href="https://razorpay.com/docs/payment-pages/receipt/#pdf-receipt-to-customers"
                         target="_blank"
                       >
-                        Sample Receipt <i class="i i-external-link" />
+                        Sample Receipt <i className="i i-external-link" />
                       </DocLink>
                       <DocLink
                         href="https://razorpay.com/docs/payment-pages/receipt/"
                         target="_blank"
                       >
-                        Learn More <i class="i i-external-link" />
+                        Learn More <i className="i i-external-link" />
                       </DocLink>
                     </div>
                   </div>
 
-                  <div class="settings-section">
+                  <div className="settings-section">
                     <Input.Check
                       fieldLabel={() => (
                         <div>
-                          <b class="m-r">Show Customer’s Information on Receipt</b>
+                          <b className="m-r">Show Customer’s Information on Receipt</b>
                         </div>
                       )}
                       onChange={this.handleInputFieldChecked}
@@ -331,7 +330,7 @@ export default class PaymentReceipt extends React.Component {
 
                     {this.state.isInputFieldChecked && (
                       <PowerSelect
-                        class="PowerSelect-PickField ps-in-modal"
+                        className="PowerSelect-PickField ps-in-modal"
                         placeholder="Choose type of information"
                         options={this.options}
                         selected={
@@ -354,13 +353,13 @@ export default class PaymentReceipt extends React.Component {
                     )}
                   </div>
 
-                  <div class="settings-section">
+                  <div className="settings-section">
                     <div className="checkbox-container-80g">
                       <Input.Check
                         name="enable_80g_details"
                         fieldLabel={() => (
                           <div>
-                            <b class="m-r">
+                            <b className="m-r">
                               Show {getI18nTaxExemptionName(org.custom_code)} Details on Receipt
                             </b>
                           </div>
@@ -386,7 +385,7 @@ export default class PaymentReceipt extends React.Component {
                       {!text_80g_12a ? (
                         <Button
                           type="button"
-                          class="Button--transparent Button--add-80g"
+                          className="Button--transparent Button--add-80g"
                           onClick={this.open80gDetailsModal}
                         >
                           + Add your {getI18nTaxExemptionName(org.custom_code)} details
@@ -399,7 +398,7 @@ export default class PaymentReceipt extends React.Component {
                             <div className="preview_80g--container-right">
                               <Button
                                 type="button"
-                                class="Button--transparent"
+                                className="Button--transparent"
                                 onClick={this.open80gDetailsModal}
                               >
                                 <i className="i i-edit-outline" />
@@ -408,7 +407,7 @@ export default class PaymentReceipt extends React.Component {
                               <div className="vertical-divider" />
                               <Button
                                 type="button"
-                                class="Button--transparent"
+                                className="Button--transparent"
                                 onClick={this.remove80gDetails}
                               >
                                 <i className="i i-delete-outline" />
@@ -435,3 +434,8 @@ export default class PaymentReceipt extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ org: state.session.org }), { openModal, showNotification }),
+  rTracking(() => window.rzpQ.component('PaymentReceipt')),
+)(PaymentReceipt);

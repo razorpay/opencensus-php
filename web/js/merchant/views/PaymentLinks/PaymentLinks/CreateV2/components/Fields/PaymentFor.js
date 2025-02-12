@@ -5,7 +5,7 @@ const PaymentFor = (props) => (
   <Input
     name="description"
     label="Payment For"
-    class="Input--vTop"
+    className="Input--vTop"
     placeholder="Payment description"
     labelClass="Input-label pb-8"
     onBlur={() => {

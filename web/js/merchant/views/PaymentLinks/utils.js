@@ -37,11 +37,11 @@ export const getStatsTableForBatchPLV2 = ({ stats, processedCount }) => {
     [
       {
         title: 'Paid',
-        value: <span class="text-success">{stats.paid || 0}</span>,
+        value: <span className="text-success">{stats.paid || 0}</span>,
       },
       {
         title: 'Unpaid',
-        value: <span class="text-danger">{stats.expired || 0}</span>,
+        value: <span className="text-danger">{stats.expired || 0}</span>,
       },
     ],
   ];

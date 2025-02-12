@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 import Overlay from 'common/ui/Overlay';
 import Spinner from 'common/ui/Spinner';
+import { compose } from 'redux';
 
 export function WarningSvg() {
   return (
@@ -59,10 +60,7 @@ class PanelTopbar extends Component {
  * The body of the panel, where actual content
  * goes
  */
-@connect((state) => ({
-  windowWidth: state.app.windowWidth,
-}))
-class PanelBody extends Component {
+class PanelBodyComponent extends Component {
   render() {
     const {
       children,
@@ -107,6 +105,12 @@ class PanelBody extends Component {
     );
   }
 }
+
+const PanelBody = compose(
+  connect((state) => ({
+    windowWidth: state.app.windowWidth,
+  })),
+)(PanelBodyComponent);
 
 /*
  * Footer of the Panel, useful to show stats and

@@ -14,27 +14,27 @@ import ajax from 'merchant/utils/ajax';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 const SuccessScreen = ({ closeScreen = () => {} }) => (
-  <div class="modal-body rzp-early-stl-modal success-modal">
-    <div class="success-banner-cnt">
-      <img class="banner-header" src="/img/early_settlements/es-banner-1-header.png" />
-      <button class="close" onClick={() => closeScreen('Close Buuton')}>
-        <i class="i i-close" />
+  <div className="modal-body rzp-early-stl-modal success-modal">
+    <div className="success-banner-cnt">
+      <img className="banner-header" src="/img/early_settlements/es-banner-1-header.png" />
+      <button className="close" onClick={() => closeScreen('Close Buuton')}>
+        <i className="i i-close" />
       </button>
 
-      <img class="banner" src="/img/early_settlements/es-banner-2.png" />
-      <h3 class="modal-title">Instant Settlements Requested</h3>
-      <div class="help-block">
+      <img className="banner" src="/img/early_settlements/es-banner-2.png" />
+      <h3 className="modal-title">Instant Settlements Requested</h3>
+      <div className="help-block">
         You shall be activated soon for Instant Settlements. A confirmation email will be sent to
         your registered Email ID.
       </div>
 
       <div>
-        <Button.Primary class="close-btn m-t" onClick={() => closeScreen('Got it')}>
+        <Button.Primary className="close-btn m-t" onClick={() => closeScreen('Got it')}>
           Got it
         </Button.Primary>
       </div>
 
-      <img class="banner-footer" src="/img/early_settlements/es-banner-1-footer.png" />
+      <img className="banner-footer" src="/img/early_settlements/es-banner-1-footer.png" />
     </div>
   </div>
 );
@@ -282,26 +282,26 @@ class RequestEarlyAccessForm extends Component {
 
     screens.push(
       <>
-        <button class="close" onClick={this.closeForm}>
-          <i class="i i-close" />
+        <button className="close" onClick={this.closeForm}>
+          <i className="i i-close" />
         </button>
-        <div class="modal-header">
-          <h3 class="modal-title">Get Started!</h3>
+        <div className="modal-header">
+          <h3 className="modal-title">Get Started!</h3>
         </div>
-        <div class="help-block">
+        <div className="help-block">
           You can choose to get Instant settlements in either of the following ways:
         </div>
         <form onSubmit={handleSubmit(this.onSubmit)}>
-          <div class="form-group">
+          <div className="form-group">
             <Field
               name="interested_in"
               component={RadioButton}
               htmlValue="automatic"
               onChange={this.handleChange}
               label={() => (
-                <span class="radio-label">
-                  <label class="title">Automatic Instant Settlements</label>
-                  <div class="description">
+                <span className="radio-label">
+                  <label className="title">Automatic Instant Settlements</label>
+                  <div className="description">
                     Razorpay will automatically settle all your payments at specific hours during
                     the day, ensuring a consistent working capital.
                   </div>
@@ -314,9 +314,9 @@ class RequestEarlyAccessForm extends Component {
               htmlValue="on-demand"
               onChange={this.handleChange}
               label={() => (
-                <span class="radio-label">
-                  <label class="title">On-demand Instant Settlements</label>
-                  <div class="description">
+                <span className="radio-label">
+                  <label className="title">On-demand Instant Settlements</label>
+                  <div className="description">
                     Choose when you want your settlements early. All your other settlements follow
                     your existing settlement schedule.
                   </div>
@@ -324,12 +324,12 @@ class RequestEarlyAccessForm extends Component {
               )}
             />
           </div>
-          <div class="form-action">
-            <Button class="options-back-btn" onClick={this.handleOptionsBack}>
+          <div className="form-action">
+            <Button className="options-back-btn" onClick={this.handleOptionsBack}>
               Back
             </Button>
             <Button.Primary
-              class="submit-btn"
+              className="submit-btn"
               disabled={this.state.fetching || !this.state.formData}
             >
               {this.state.fetching ? 'Fetching details ' : 'Request'}
@@ -341,24 +341,24 @@ class RequestEarlyAccessForm extends Component {
 
     screens.push(
       <>
-        <button class="close" onClick={this.closePricing}>
-          <i class="i i-close" />
+        <button className="close" onClick={this.closePricing}>
+          <i className="i i-close" />
         </button>
-        <div class="modal-header">
-          <h3 class="modal-title">{this.state.modalTitle}</h3>
+        <div className="modal-header">
+          <h3 className="modal-title">{this.state.modalTitle}</h3>
         </div>
-        <div class="help-block">
+        <div className="help-block">
           {this.state.formData && this.state.formData.interested_in == 'on-demand'
             ? 'Choose when you want your settlements early. All your other settlements follow your existing settlement schedule.'
             : 'Razorpay will automatically settle all your payments at specific hours during the day, ensuring a consistent working capital.'}
         </div>
-        <span class="modal-subtitle">Your pricing is {this.state.pricing}%</span>
+        <span className="modal-subtitle">Your pricing is {this.state.pricing}%</span>
         <p>
           Based on your risk profile which includes refunds, chargebacks, vintage with Razorpay,
           etc. you will be charged <strong>{this.state.pricing}%</strong> more for domestic payments
           settling early. For international payments, it will be <strong>1%</strong> more.
         </p>
-        <div class="form-action">
+        <div className="form-action">
           <Button onClick={this.handleBack} disabled={this.state.saving}>
             Back
           </Button>
@@ -370,74 +370,74 @@ class RequestEarlyAccessForm extends Component {
     );
 
     mainScreen = (
-      <div id="es-modal-cnt" class="modal-body rzp-early-stl-modal">
-        <div class={`content-left ${!this.state.showFeatures && 'hide'}`}>
-          <button class="close" onClick={this.props.closeModal}>
-            <i class="i i-close" />
+      <div id="es-modal-cnt" className="modal-body rzp-early-stl-modal">
+        <div className={`content-left ${!this.state.showFeatures && 'hide'}`}>
+          <button className="close" onClick={this.props.closeModal}>
+            <i className="i i-close" />
           </button>
-          <div class="modal-header">
-            <h3 class="modal-title">Instant Settlements</h3>
+          <div className="modal-header">
+            <h3 className="modal-title">Instant Settlements</h3>
           </div>
-          <div class="help-block">
+          <div className="help-block">
             Razorpay is working with <strong>top financing institutions</strong> to help you realise
             your settlements within a few working hours. No more shortfalls in working capital.
             <ShowWhen
               additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
-              <p class="m-t">
+              <p className="m-t">
                 <a
                   target="_blank"
                   rel="noopener noreferrer"
                   href="https://razorpay.com/knowledgebase/"
                 >
-                  Know more about Instant Settlements <i class="i i-external-link" />
+                  Know more about Instant Settlements <i className="i i-external-link" />
                 </a>
               </p>
             </ShowWhen>
           </div>
-          <div class="features-list">
-            <div class="feature-item">
-              <div class="feature-icon">
+          <div className="features-list">
+            <div className="feature-item">
+              <div className="feature-icon">
                 <img src="/img/early_settlements/es-icon-1.png" />
               </div>
-              <div class="feature-content">
-                <span class="feature-title">Better Budgeting</span>
-                <div class="feature-text">Predict monthly budget, expenses and investment</div>
+              <div className="feature-content">
+                <span className="feature-title">Better Budgeting</span>
+                <div className="feature-text">Predict monthly budget, expenses and investment</div>
               </div>
             </div>
-            <div class="feature-item">
-              <div class="feature-icon">
+            <div className="feature-item">
+              <div className="feature-icon">
                 <img src="/img/early_settlements/es-icon-2.png" />
               </div>
-              <div class="feature-content">
-                <span class="feature-title">Zero Backlogs</span>
-                <div class="feature-text">Avoid backlog in your payment reconciliation</div>
+              <div className="feature-content">
+                <span className="feature-title">Zero Backlogs</span>
+                <div className="feature-text">Avoid backlog in your payment reconciliation</div>
               </div>
             </div>
-            <div class="feature-item">
-              <div class="feature-icon">
+            <div className="feature-item">
+              <div className="feature-icon">
                 <img src="/img/early_settlements/es-icon-3.png" />
               </div>
-              <div class="feature-content">
-                <span class="feature-title">Easy Financing</span>
-                <div class="feature-text">Avoid costly short-term financing</div>
+              <div className="feature-content">
+                <span className="feature-title">Easy Financing</span>
+                <div className="feature-text">Avoid costly short-term financing</div>
               </div>
             </div>
-            <div class="feature-item">
-              <div class="feature-icon">
+            <div className="feature-item">
+              <div className="feature-icon">
                 <img src="/img/early_settlements/es-icon-4.png" />
               </div>
-              <div class="feature-content">
-                <span class="feature-title">Manage Settlements</span>
-                <div class="feature-text">Efficiently manage your vendor settlements</div>
+              <div className="feature-content">
+                <span className="feature-title">Manage Settlements</span>
+                <div className="feature-text">Efficiently manage your vendor settlements</div>
               </div>
             </div>
           </div>
-          <div class="form-action">
+          <div className="form-action">
             <Button.Primary onClick={this.handleNext}>Next</Button.Primary>
           </div>
         </div>
-        <div class={`content-right ${!this.state.showOptions && 'hide'}`}>
+        <div className={`content-right ${!this.state.showOptions && 'hide'}`}>
           {screens[this.state.activeScreenIndex]}
         </div>
       </div>

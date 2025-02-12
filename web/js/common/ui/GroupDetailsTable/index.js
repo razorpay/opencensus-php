@@ -28,12 +28,12 @@ export default function GroupDetailsTable({
   }
 
   return (
-    <div class={classList('entity-detail-list', className)}>
-      <div class="list-heading">
-        <span class="label--primary">
+    <div className={classList('entity-detail-list', className)}>
+      <div className="list-heading">
+        <span className="label--primary">
           <b>{title}</b>
         </span>
-        <span class="label--secondary">{subTitle}</span>
+        <span className="label--secondary">{subTitle}</span>
       </div>
       {items.map((rowData, idx) => (
         <GroupDetailRow
@@ -46,10 +46,10 @@ export default function GroupDetailsTable({
       ))}
       {!loading &&
         !items.length && (
-          <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
+          <h4 className="empty-table-message">{`No ${title} Found!`}</h4>
         )}
 
-      {!loading && footer && <div class="entity-detail-footer">{footer}</div>}
+      {!loading && footer && <div className="entity-detail-footer">{footer}</div>}
     </div>
   );
 }
@@ -64,11 +64,11 @@ export default function GroupDetailsTable({
 * */
 function GroupDetailRow({ loading, rowData, rowConfig, loaderConfig }) {
   return (
-    <div class="entity-detail-row">
-      <div class="row-item content">
+    <div className="entity-detail-row">
+      <div className="row-item content">
         {rowConfig.map((subrow, idx) => (
-          <div class="detail-row" key={idx}>
-            <div class="row-element left">
+          <div className="detail-row" key={idx}>
+            <div className="row-element left">
               {rowConfig[idx][0] &&
                 (loading ? (
                   <PlaceholderLoader
@@ -78,7 +78,7 @@ function GroupDetailRow({ loading, rowData, rowConfig, loaderConfig }) {
                   rowConfig[idx][0](rowData)
                 ))}
             </div>
-            <div class="row-element right">
+            <div className="row-element right">
               {rowConfig[idx][1] &&
                 (loading ? (
                   <PlaceholderLoader

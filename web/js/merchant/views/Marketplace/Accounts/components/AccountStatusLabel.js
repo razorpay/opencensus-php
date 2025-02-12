@@ -86,9 +86,9 @@ const AccountStatusDetailsView = React.memo(
 
     return (
       <>
-        <span class={`${labelClass} status-label label m-r`}>{titleCase(status)}</span>{' '}
+        <span className={`${labelClass} status-label label m-r`}>{titleCase(status)}</span>{' '}
         {(description || errorDetails) && (
-          <div class="help-text" style={{ marginTop: '5px' }}>
+          <div className="help-text" style={{ marginTop: '5px' }}>
             {description || errorDetails}
           </div>
         )}
@@ -102,7 +102,7 @@ const AccountStatusDetailsView = React.memo(
                 </Popover>
               )}
               <button
-                class="m-t btn btn-primary btn-sm"
+                className="m-t btn btn-primary btn-sm"
                 onClick={showActivationForm}
                 disabled={isCtaDisabled}
               >

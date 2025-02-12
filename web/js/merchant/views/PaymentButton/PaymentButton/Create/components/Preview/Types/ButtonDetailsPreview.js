@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+
 import { classList } from 'common/utils/rzp-utils';
 import { maxLengthForButtonLabel } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/ButtonDetails';
 import {
@@ -19,12 +20,7 @@ const rzpLogoWhite = (
 
 let isFontLoadedForButton = false;
 
-@connect((state) => ({
-  user: state.session.user,
-  org: state.session.org,
-  config: state.config,
-}))
-export default class ButtonDetailsPreview extends React.Component {
+class ButtonDetailsPreview extends React.Component {
   constructor() {
     super();
 
@@ -117,7 +113,7 @@ export default class ButtonDetailsPreview extends React.Component {
     const customBrand = (
       <>
         Secured by{' '}
-        <img class="secured-by-logo" src={org.payment_btn_logo_url} alt="brand" height="10px" />
+        <img className="secured-by-logo" src={org.payment_btn_logo_url} alt="brand" height="10px" />
       </>
     );
     return customBrand;
@@ -137,9 +133,9 @@ export default class ButtonDetailsPreview extends React.Component {
     }
 
     return (
-      <div class="ButtonDetailsPreview">
+      <div className="ButtonDetailsPreview">
         <div
-          class={classList(
+          className={classList(
             'PaymentButton-Button',
             this.isRazorpayTheme && 'PaymentButton-Button--rzpTheme',
             `PaymentButton-Button--${isLightTheme ? 'light' : 'dark'}`,
@@ -152,14 +148,20 @@ export default class ButtonDetailsPreview extends React.Component {
         >
           {(user.isOrgRZP || user.isOrgCurlec) && rzpLogoWhite}
 
-          <div class="PaymentButton-Button-contents">
-            <span class="PaymentButton-Button-text">
+          <div className="PaymentButton-Button-contents">
+            <span className="PaymentButton-Button-text">
               {buttonText ? buttonText.substring(0, maxLengthForButtonLabel) : ''}
             </span>
-            <div class="PaymentButton-Button-rzpBranding">{this.brandingText}</div>
+            <div className="PaymentButton-Button-rzpBranding">{this.brandingText}</div>
           </div>
         </div>
       </div>
     );
   }
 }
+
+export default connect((state) => ({
+  user: state.session.user,
+  org: state.session.org,
+  config: state.config,
+}))(ButtonDetailsPreview);

@@ -2,16 +2,17 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 /* eslint-disable import/no-cycle */
-import {
-  getQuickGuideLocalStorageKey,
-  getQuickGuideIsClosedFromLocalStorage,
-  setQuickGuideIsClosedInLocalStorage,
-} from './utils';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
+
+import {
+  getQuickGuideLocalStorageKey,
+  getQuickGuideIsClosedFromLocalStorage,
+  setQuickGuideIsClosedInLocalStorage,
+} from './utils';
 
 /*
   DATA_POINTS: contains keys to get data from redux store
@@ -24,24 +25,6 @@ export default (params) => {
   const { feature: FEATURE, data_points: DATA_POINTS, dataTransformer = _dataTransformer } = params;
 
   let WrappedComponent;
-  @connect(
-    (state) => {
-      const newState = {};
-
-      DATA_POINTS.forEach((key) => {
-        newState[key] = dataTransformer(key, state);
-      });
-
-      return {
-        ...newState,
-        user: state.session.user,
-        mode: state.session.mode,
-        org: state.session.org,
-        currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
-      };
-    },
-    { handleProductQuickGuide },
-  )
   class QuickGuideHOC extends React.PureComponent {
     constructor(props) {
       super(props);
@@ -163,9 +146,28 @@ export default (params) => {
     }
   }
 
+  const ConnectedQuickGuideHOC = connect(
+    (state) => {
+      const newState = {};
+
+      DATA_POINTS.forEach((key) => {
+        newState[key] = dataTransformer(key, state);
+      });
+
+      return {
+        ...newState,
+        user: state.session.user,
+        mode: state.session.mode,
+        org: state.session.org,
+        currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
+      };
+    },
+    { handleProductQuickGuide },
+  )(QuickGuideHOC);
+
   return (_WrappedComponent) => {
     WrappedComponent = _WrappedComponent;
-    return QuickGuideHOC;
+    return ConnectedQuickGuideHOC;
   };
 };
 

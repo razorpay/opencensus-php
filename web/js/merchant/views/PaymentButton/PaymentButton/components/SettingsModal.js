@@ -3,18 +3,12 @@ import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
-
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import { lenientUrl } from 'common/utils/validators';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { lenientUrl } from 'common/utils/validators';
-import { autoPrefixUrls } from 'common/utils/rzp-utils';
 
-@connect(null, {
-  openModal,
-  closeModal,
-  showNotification,
-})
-export default class SettingsModal extends React.Component {
+class SettingsModal extends React.Component {
   constructor(props) {
     super(props);
 
@@ -133,10 +127,10 @@ export default class SettingsModal extends React.Component {
     } = this.state;
 
     return (
-      <div class="ButtonSettingsModal">
+      <div className="ButtonSettingsModal">
         <ModalHeader title="Button Settings" />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <Input.Check
             fieldLabel="Show a custom message"
             onChange={this.handleShowCustomMessage}
@@ -144,7 +138,7 @@ export default class SettingsModal extends React.Component {
           />
 
           <Input.Textarea
-            class="custom-message-input"
+            className="custom-message-input"
             disabled={!showCustomMessage}
             onChange={this.handleCustomMessage}
             placeholder="Add your message here."
@@ -158,7 +152,7 @@ export default class SettingsModal extends React.Component {
             }}
             description={
               <div>
-                <span class="chars-pressed">
+                <span className="chars-pressed">
                   {`${paymentSuccessMessage ? paymentSuccessMessage.length : '0'} / 80`}
                 </span>
                 This message is shown after Successful payment and on Payment receipt
@@ -168,7 +162,7 @@ export default class SettingsModal extends React.Component {
           />
 
           <br />
-          <div class="divider" />
+          <div className="divider" />
           <br />
 
           <Input.Check
@@ -177,7 +171,7 @@ export default class SettingsModal extends React.Component {
             defaultValue={showRedirectUrl}
           />
           <Input
-            class="custom-message-input"
+            className="custom-message-input"
             disabled={!showRedirectUrl}
             onChange={this.handleRedirectUrl}
             defaultValue={paymentSuccessRedirectUrl}
@@ -188,11 +182,11 @@ export default class SettingsModal extends React.Component {
           />
         </div>
 
-        <div class="Modal__actions">
-          <button class="btn btn-link m-r" onClick={this.closeModal}>
+        <div className="Modal__actions">
+          <button className="btn btn-link m-r" onClick={this.closeModal}>
             Cancel
           </button>
-          <button class="btn btn-primary" disabled={isUpdating} onClick={this.onClickSave}>
+          <button className="btn btn-primary" disabled={isUpdating} onClick={this.onClickSave}>
             Save
           </button>
         </div>
@@ -200,3 +194,9 @@ export default class SettingsModal extends React.Component {
     );
   }
 }
+
+export default connect(null, {
+  openModal,
+  closeModal,
+  showNotification,
+})(SettingsModal);

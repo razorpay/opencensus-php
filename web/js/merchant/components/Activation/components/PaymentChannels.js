@@ -23,7 +23,7 @@ const CustomPaymentsCahnnel = ({
     <>
       {!isOnKYCTab && (
         <>
-          <div class="Input-label">Payment Channels</div>
+          <div className="Input-label">Payment Channels</div>
           <div className="Input-content channel_checkbox">
             <div className="info-text">
               This allows us to recommend a suitable product for your business
@@ -223,9 +223,9 @@ const CustomPaymentsCahnnel = ({
               The website should have the following pages/sections:
               <div className="bullet-list-container">
                 <ul className="bullet-list bullet-list--left">
-                  <li class="shallow"> About Us</li>
-                  <li class="shallow"> Contact Us</li>
-                  <li class="shallow"> Pricing</li>
+                  <li className="shallow"> About Us</li>
+                  <li className="shallow"> Contact Us</li>
+                  <li className="shallow"> Pricing</li>
                 </ul>
                 <ul className="bullet-list bullet-list--right">
                   <li>

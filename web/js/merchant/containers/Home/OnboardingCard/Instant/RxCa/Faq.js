@@ -30,7 +30,7 @@ const Faq = (props) => {
         {!showNitroRXCAFlow ? (
           <div className="t-n-c">
             <a onClick={handleClick}>
-              Terms and conditions <i class="i i-external-link" />
+              Terms and conditions <i className="i i-external-link" />
             </a>
           </div>
         ) : null}

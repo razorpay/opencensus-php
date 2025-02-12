@@ -23,20 +23,6 @@ import RepaymentModal from 'merchant/views/Capital/components/RepaymentModal';
 import SettlementAccountDetails from 'merchant/views/Capital/components/SettlementAccountDetails';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-    user: state.session.user,
-  }),
-  {
-    acceptCreditOffer,
-    fetchCreditOffers,
-    getAcceptedOffer,
-    fetchLoanApplicationMeta,
-    openModal,
-    closeModal,
-  },
-)
 class DisbursalEntity extends Component {
   state = {
     isModalOpen: false,
@@ -70,10 +56,10 @@ class DisbursalEntity extends Component {
     );
 
     return (
-      <div class="credit-offer-container">
+      <div className="credit-offer-container">
         <Modal
           isOpen={this.state.isModalOpen}
-          class="Modal Modal--small Modal--confirm"
+          className="Modal Modal--small Modal--confirm"
           contentLabel="ConfirmModal"
           ariaHideApp={false}
         >
@@ -90,7 +76,7 @@ class DisbursalEntity extends Component {
             showInstallmentDetails={false}
             _fromWhere="Disbursal Details"
           />
-          <div class="m-b">
+          <div className="m-b">
             <SettlementAccountDetails
               user={this.props.user}
               showFinancerDetails={true}
@@ -124,4 +110,17 @@ class DisbursalEntity extends Component {
   }
 }
 
-export default DisbursalEntity;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+    user: state.session.user,
+  }),
+  {
+    acceptCreditOffer,
+    fetchCreditOffers,
+    getAcceptedOffer,
+    fetchLoanApplicationMeta,
+    openModal,
+    closeModal,
+  },
+)(DisbursalEntity);

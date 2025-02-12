@@ -29,9 +29,9 @@ class Experiments extends React.Component {
     const queryParams = getURLQueryParams(this.props.location.search);
 
     return (
-      <div class="parent-container experiments-container">
-        <div class="header">
-          <span class="title">Experiments</span>
+      <div className="parent-container experiments-container">
+        <div className="header">
+          <span className="title">Experiments</span>
           <SwitchField
             name="mode"
             defaultValue={AppStore.mode}
@@ -41,16 +41,16 @@ class Experiments extends React.Component {
             disabledValue="test"
             onChange={AppStore.updateMode}
           />
-          <div class="btn-group">
-            <button class="btn btn--primary" onClick={this.showExperimentModal}>
+          <div className="btn-group">
+            <button className="btn btn--primary" onClick={this.showExperimentModal}>
               + Add New
             </button>
-            <button class="btn btn--transparent raw-btn" onClick={this.showJSONModal}>
+            <button className="btn btn--transparent raw-btn" onClick={this.showJSONModal}>
               RAW
             </button>
           </div>
         </div>
-        <div class="container-group">
+        <div className="container-group">
           <List
             mode={AppStore.mode}
             queryParams={{

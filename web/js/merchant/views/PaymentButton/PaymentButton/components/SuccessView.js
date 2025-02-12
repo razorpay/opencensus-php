@@ -23,6 +23,7 @@ import WixImage from 'assets/payment_button/success-screen/integrations/wix.svg'
 import GoogleSitesImage from 'assets/payment_button/success-screen/integrations/googleSites.svg';
 import BloggerImage from 'assets/payment_button/success-screen/integrations/blogger.svg';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { compose } from 'redux';
 
 const pluginsList = [
   {
@@ -97,11 +98,7 @@ const integrationsList = [
     icon: BloggerImage,
   },
 ];
-@withI18Service
-@connect((state) => ({
-  user: state.session.user,
-  mode: state.session.mode,
-}))
+
 class SuccessModal extends React.Component {
   onClickCopy = () => {
     setIsPaymentButtonCodeUsed({
@@ -152,43 +149,42 @@ class SuccessModal extends React.Component {
     const { isConfigTagEnabled } = this.props.i18;
 
     return (
-      <div class="PaymentButton-Create-Form PaymentButton-Create-SuccessView-V2">
-        <div class="Form-container">
-          <div class="Form-title">
+      <div className="PaymentButton-Create-Form PaymentButton-Create-SuccessView-V2">
+        <div className="Form-container">
+          <div className="Form-title">
             Button Created Successfully
-            <div class="Form-description">Your payment button is ready for integration</div>
+            <div className="Form-description">Your payment button is ready for integration</div>
           </div>
 
-          <div class="Form">
-            <div class="Form-buttonIntegration">
-              <div class="Form-buttonIntegration-title">
+          <div className="Form">
+            <div className="Form-buttonIntegration">
+              <div className="Form-buttonIntegration-title">
                 <b>Integrate on your Website</b>
               </div>
 
-              <div class="Form-buttonIntegration-body">
+              <div className="Form-buttonIntegration-body">
                 {/* Integrate via copy-code */}
                 <div
-                  class="code-section"
+                  className="code-section"
                   style={{
-                    backgroundImage:
-                      `url(${require("assets/payment_button/success-screen/code-background.svg")}`,
+                    backgroundImage: `url(${require('assets/payment_button/success-screen/code-background.svg')}`,
                   }}
                 >
-                  <div class="section-title">
-                    <i class="i i-code-white m-r" /> HTML Code
+                  <div className="section-title">
+                    <i className="i i-code-white m-r" /> HTML Code
                   </div>
-                  <div class="test-code-section">
-                    <span class="help-text">Copy & paste this HTML in your code</span>
+                  <div className="test-code-section">
+                    <span className="help-text">Copy & paste this HTML in your code</span>
 
                     <CustomClipboard value={this.codeToCopy}>
                       <Button.Primary onClick={this.onClickCopy}>
-                        <i class="i i-copy m-r" />
+                        <i className="i i-copy m-r" />
                         <b>COPY CODE</b>
                       </Button.Primary>
                     </CustomClipboard>
 
                     <Input.Textarea
-                      class="Input--vTop Input--codeCopy"
+                      className="Input--vTop Input--codeCopy"
                       value={this.codeToCopy.trim()}
                       readOnly
                       setRef={this.setRef}
@@ -196,16 +192,16 @@ class SuccessModal extends React.Component {
                     />
                   </div>
 
-                  <div class="test-code-text">
+                  <div className="test-code-text">
                     Test this button before integration{' '}
                     <a
                       href="https://cdn.razorpay.com/static/widget/test-payment-button.html"
                       target="_blank"
-                      class="Button Button--primary--invert try-now-btn"
+                      className="Button Button--primary--invert try-now-btn"
                       onClick={track.testButton}
                       rel="noreferrer noopener"
                     >
-                      <i class="i i-play-arrow m-r" /> TEST
+                      <i className="i i-play-arrow m-r" /> TEST
                     </a>
                   </div>
                 </div>
@@ -216,9 +212,9 @@ class SuccessModal extends React.Component {
                     !isConfigTagEnabled('payment_buttons.other_integration_methods')
                   }
                 >
-                  <div class="integration-section">
+                  <div className="integration-section">
                     <b>No-Code Plugins to add this button on your website directly:</b>
-                    <div class="plugins">
+                    <div className="plugins">
                       {pluginsList.map((plugin, i) => (
                         <div key={`plugin-${i}`}>
                           <img
@@ -239,7 +235,7 @@ class SuccessModal extends React.Component {
                       ))}
                     </div>
                     <b>Integration guide for this code on other platforms:</b>
-                    <div class="integrations">
+                    <div className="integrations">
                       {integrationsList.map((integration, i) => (
                         <div key={`integration-${i}`}>
                           <img
@@ -264,18 +260,18 @@ class SuccessModal extends React.Component {
               </div>
             </div>
 
-            <div class="Form-buttonActions">
-              <div class="Form-buttonActions-title">
+            <div className="Form-buttonActions">
+              <div className="Form-buttonActions-title">
                 <b>What should your customer see after a successful payment?</b>
               </div>
 
-              <div class="Form-buttonActions-body">
+              <div className="Form-buttonActions-body">
                 {/* Payment Receipt Action Modal */}
-                <div class="receipt-settings">
+                <div className="receipt-settings">
                   <div>
-                    <i class="i i-document m-r" /> <span>Automated Payment Receipt</span>
+                    <i className="i i-document m-r" /> <span>Automated Payment Receipt</span>
                     <Button
-                      class="Button--primary--invert"
+                      className="Button--primary--invert"
                       onClick={this.props.openPageReceiptModal}
                     >
                       <b>CONFIGURE</b>
@@ -284,25 +280,28 @@ class SuccessModal extends React.Component {
                 </div>
 
                 {/* Redirect Url Action Modal */}
-                <div class="postPayment-settings">
+                <div className="postPayment-settings">
                   <div>
-                    <i class="i i-checked-document m-r" />{' '}
+                    <i className="i i-checked-document m-r" />{' '}
                     <span>Custom Message and Redirect to a URL</span>
-                    <Button class="Button--primary--invert" onClick={this.props.openSettingsModal}>
+                    <Button
+                      className="Button--primary--invert"
+                      onClick={this.props.openSettingsModal}
+                    >
                       <b>CONFIGURE</b>
                     </Button>
                   </div>
                 </div>
               </div>
 
-              <div class="help-text help-text-settings">
-                <i class="i i-info-outline m-r" /> These settings may be configured later from
+              <div className="help-text help-text-settings">
+                <i className="i i-info-outline m-r" /> These settings may be configured later from
                 dashboard
               </div>
             </div>
 
-            <div class="Form-controls">
-              <Link to="/paymentbuttons" class="Button Button--primary">
+            <div className="Form-controls">
+              <Link to="/paymentbuttons" className="Button Button--primary">
                 Back To Dashboard
               </Link>
             </div>
@@ -313,4 +312,11 @@ class SuccessModal extends React.Component {
   }
 }
 
-export default withRouter(SuccessModal);
+export default compose(
+  withRouter,
+  withI18Service,
+  connect((state) => ({
+    user: state.session.user,
+    mode: state.session.mode,
+  })),
+)(SuccessModal);

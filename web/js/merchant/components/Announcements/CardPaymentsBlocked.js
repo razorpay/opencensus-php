@@ -1,3 +1,4 @@
+import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { DocLink } from 'merchant/components/DocsLink';
 
@@ -8,9 +9,9 @@ export default React.memo(({ children, docURL }) => {
       theme="warning"
       card_id="card-payments-blocked-banner"
     >
-      <span class="display-inline">
+      <span className="display-inline">
         {children}{' '}
-        <DocLink class="btn-link" href={docURL} target="_blank">
+        <DocLink className="btn-link" href={docURL} target="_blank">
           documentation here.
         </DocLink>
       </span>

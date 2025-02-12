@@ -15,24 +15,10 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import User from 'merchant/models/User';
 
-import SuccessTickBlue from "assets/success-tick-blue.svg"
+import SuccessTickBlue from 'assets/success-tick-blue.svg';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return { user: state.session.user };
-  },
-  {
-    updateBillingLabel,
-    updateSession,
-    closeModal,
-    showNotification,
-    fetchBillingLabelSuggestions,
-  },
-)
-@reduxForm({
-  form: 'updateMerchantConfigForm',
-})
-export default class UpdateBillingLabel extends PureComponent {
+class UpdateBillingLabel extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -90,7 +76,7 @@ export default class UpdateBillingLabel extends PureComponent {
       <div>
         <span>Brand Name</span>
         <small>
-          <i class="i i-info-circle billing-label-info" />
+          <i className="i i-info-circle billing-label-info" />
           <Popover
             align="bottom"
             followPointer={true}
@@ -251,13 +237,13 @@ export default class UpdateBillingLabel extends PureComponent {
     return (
       <form onSubmit={this.props.handleSubmit(this.onSaveClicked)}>
         <ModalHeader title={this.titleGenerator()} onCloseClick={this.props.closeModal} />
-        <div class="modal-body">
-          <div class="form-group">
+        <div className="modal-body">
+          <div className="form-group">
             <small>
               Brand Name should be similar to your <b>Business name</b> or the <b>Domain name</b> of
               your website/app. Based on that we have generated the following suggestions.
             </small>
-            <div class="help-curr-billing-div">Current Brand Name</div>
+            <div className="help-curr-billing-div">Current Brand Name</div>
             <InputGroupField
               value={user.billing_label}
               readOnly={true}
@@ -271,9 +257,9 @@ export default class UpdateBillingLabel extends PureComponent {
                 />
               }
             />
-            <div class="help-curr-billing-div">Other Alternatives</div>
+            <div className="help-curr-billing-div">Other Alternatives</div>
             {loading ? (
-              <div class="page-spinner-container">
+              <div className="page-spinner-container">
                 <Spinner />
               </div>
             ) : (
@@ -307,7 +293,7 @@ export default class UpdateBillingLabel extends PureComponent {
             )}
             {openCustomLabel && (
               <div>
-                <div class="help-curr-billing-div">Custom Brand Name</div>
+                <div className="help-curr-billing-div">Custom Brand Name</div>
                 <input
                   name="billingLabel"
                   value={billingLabel}
@@ -318,10 +304,10 @@ export default class UpdateBillingLabel extends PureComponent {
             )}
           </div>
 
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               text="Save Changes"
               pendingText="Saving..."
               disabled={!isValid}
@@ -333,3 +319,21 @@ export default class UpdateBillingLabel extends PureComponent {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return { user: state.session.user };
+    },
+    {
+      updateBillingLabel,
+      updateSession,
+      closeModal,
+      showNotification,
+      fetchBillingLabelSuggestions,
+    },
+  ),
+  reduxForm({
+    form: 'updateMerchantConfigForm',
+  }),
+)(UpdateBillingLabel);

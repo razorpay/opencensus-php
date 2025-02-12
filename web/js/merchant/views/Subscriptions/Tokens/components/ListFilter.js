@@ -7,24 +7,24 @@ import { titleCase } from 'common/utils/rzp-utils';
 export default function TokensListFilter(props) {
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Token Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="payment_id" component="input" class="form-control input-sm" />
+        <Field name="payment_id" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Customer Contact</label>
-        <Field name="customer_contact" component="input" class="form-control input-sm" />
+        <Field name="customer_contact" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Status</label>
-        <Field name="recurring_status" component="select" class="form-control input-sm">
+        <Field name="recurring_status" component="select" className="form-control input-sm">
           <option value="">All</option>
           {tokenStatuses.map((status) => (
             <option key={status} value={status}>
@@ -34,7 +34,7 @@ export default function TokensListFilter(props) {
         </Field>
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -42,7 +42,7 @@ export default function TokensListFilter(props) {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
     </ListFilter>

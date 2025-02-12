@@ -24,6 +24,21 @@ module.exports = {
     'max-statements': 'off',
     'no-console': 'off',
     'no-negated-condition': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'BindExpression',
+        message: 'The `::` operator is not allowed. Use bind if really needed',
+      },
+      {
+        selector: 'DoExpression',
+        message: 'The `do` expression is not allowed in JSX.',
+      },
+      {
+        selector: 'ExportDefaultSpecifier',
+        message: "Use 'export { default } from' instead of 'export default from'.",
+      },
+    ],
     'json/*': [
       'error',
       {
@@ -36,7 +51,7 @@ module.exports = {
     'no-unused-expressions': 'off',
     'babel/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
     'react/prop-types': 'off',
-    'react/no-unknown-property': [2, { ignore: ['class', 'for'] }],
+    'react/no-unknown-property': 'error',
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.tsx'] }],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     'react/react-in-jsx-scope': 'off',

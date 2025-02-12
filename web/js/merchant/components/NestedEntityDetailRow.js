@@ -7,11 +7,11 @@ export default ({ label, value = {} }) => {
   if (value && Object.keys(value).length) {
     return (
       <NestedEntityDetailToggler label={label} show={false}>
-        <div class="table-responsive">
+        <div className="table-responsive">
           {Object.keys(value).map((key) => (
-            <div key={key} class="pair-list-item">
-              <div class="item-label">{key}</div>
-              <div class="items-value">{value[key] || placeholder}</div>
+            <div key={key} className="pair-list-item">
+              <div className="item-label">{key}</div>
+              <div className="items-value">{value[key] || placeholder}</div>
             </div>
           ))}
         </div>

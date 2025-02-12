@@ -5,7 +5,7 @@ import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
@@ -116,7 +116,7 @@ const activationStatus = {
     <Fragment>
       Activation Status&nbsp;
       <span>
-        <i class="i i-info-circle" />
+        <i className="i i-info-circle" />
         &nbsp;
         <PopoverComponent align="top" theme="dark">
           <PopoverBody>Current status of merchant's activation request</PopoverBody>
@@ -131,7 +131,7 @@ const activationStatus = {
         {submerchant.details.activation_status === 'instantly_activated' && (
           <>
             &nbsp;
-            <i class="i i-info-circle" />
+            <i className="i i-info-circle" />
             <PopoverComponent align="right" theme="dark">
               <PopoverBody>
                 The merchant can accept live payments but settlements will be on hold until KYC
@@ -142,7 +142,7 @@ const activationStatus = {
         )}
       </>
     ) : (
-      <span class="status-label label label-warning">Not Submitted</span>
+      <span className="status-label label label-warning">Not Submitted</span>
     ),
 };
 
@@ -151,7 +151,7 @@ const settlementStatus = {
     <Fragment>
       Settlement Status&nbsp;
       <span>
-        <i class="i i-info-circle" />
+        <i className="i i-info-circle" />
         &nbsp;
         <PopoverComponent align="top" theme="dark">
           <PopoverBody>
@@ -179,7 +179,7 @@ const xCurrentAccountStatus = {
     <Fragment>
       Current Account Status&nbsp;
       <span>
-        <i class="i i-info-circle" />
+        <i className="i i-info-circle" />
         &nbsp;
         <PopoverComponent align="top" theme="dark">
           <PopoverBody>Current status of merchant's current account</PopoverBody>
@@ -239,7 +239,6 @@ const appId = {
   ),
 };
 
-@RTracking(() => window.rzpQ.component('ProductSubMerchantsList'))
 class ProductSubMerchantsList extends ListContainer {
   state = {
     capitalLoading: false,
@@ -450,7 +449,7 @@ class ProductSubMerchantsList extends ListContainer {
         <Fragment>
           Activation Status&nbsp;
           <span>
-            <i class="i i-info-circle" />
+            <i className="i i-info-circle" />
             &nbsp;
             <PopoverComponent align="top" theme="dark">
               <PopoverBody>Current status of merchant's activation request</PopoverBody>
@@ -677,7 +676,7 @@ class ProductSubMerchantsList extends ListContainer {
       if (this.switchAccountLabel(item)) {
         return (
           <button
-            class="btn btn-default btn-xs"
+            className="btn btn-default btn-xs"
             onClick={handleSwitchMerchant(item.id.replace('acc_', ''))}
           >
             Switch
@@ -786,7 +785,7 @@ class ProductSubMerchantsList extends ListContainer {
     ) {
       return (
         <tabbed-container>
-          <div class="sub-merchants-list">
+          <div className="sub-merchants-list">
             <Loader />
           </div>
         </tabbed-container>
@@ -870,7 +869,7 @@ class ProductSubMerchantsList extends ListContainer {
       capitalColumns.push(this.createBureauLinkBtn(this.handleCreateBureauLinkClick));
     }
     return (
-      <tabbed-container class="sub-merchants-tab">
+      <tabbed-container className="sub-merchants-tab">
         <div className={`sub-merchants-list ${currentProduct}`}>
           {!shouldShowWelcomeScreen && isPGProductWithInviteFlow ? (
             <InviteNavLinks
@@ -902,7 +901,7 @@ class ProductSubMerchantsList extends ListContainer {
                   }
                 />
                 <button
-                  class="btn btn-default export-all-btn"
+                  className="btn btn-default export-all-btn"
                   onClick={this.confirmAndDownload}
                   disabled={this.state.affiliatesDownloading}
                 >
@@ -925,11 +924,11 @@ class ProductSubMerchantsList extends ListContainer {
                 paginate={this.paginate}
                 empty_placeholder={
                   isFilterSearchUsed ? (
-                    <div class="empty-table-message">
+                    <div className="empty-table-message">
                       <h4>No Search results found</h4>
                     </div>
                   ) : (
-                    <div class="empty-table-message">
+                    <div className="empty-table-message">
                       <h4>All Accepted Invites</h4>
                       <p className="m-t">
                         All accepted invites will be visible here once the client has accepted the
@@ -949,7 +948,7 @@ class ProductSubMerchantsList extends ListContainer {
                   (!isNonEmptyList || (this.isCapitalProduct && !isNonEmptyCapitalList)) && (
                     <div style={{ flex: 2, textAlign: 'center' }}>
                       <div>
-                        <h3 class="sub-title">No Search results found</h3>
+                        <h3 className="sub-title">No Search results found</h3>
                       </div>
                     </div>
                   )}
@@ -996,13 +995,13 @@ class ProductSubMerchantsList extends ListContainer {
               <>
                 <div style={{ flex: 2, textAlign: 'center' }}>
                   <div>
-                    <h1 class="main-title"> Welcome to Partner Dashboard</h1>
-                    <h3 class="sub-title">
+                    <h1 className="main-title"> Welcome to Partner Dashboard</h1>
+                    <h3 className="sub-title">
                       Get started by adding merchants to {this.state.orgName}
                     </h3>
                   </div>
                 </div>
-                <div style={{ flex: 3 }} class="action-area">
+                <div style={{ flex: 3 }} className="action-area">
                   <div>
                     <ShowWhen
                       myRole={ADD_NEW_MERCHANT_ELIGIBLE_ROLES}
@@ -1021,10 +1020,10 @@ class ProductSubMerchantsList extends ListContainer {
                         </p>
                         <div style={{ paddingTop: '20px' }}>
                           <button
-                            class="btn btn-primary pull-right m-l"
+                            className="btn btn-primary pull-right m-l"
                             onClick={this.handleAddMerchant}
                           >
-                            <i class="i i-plus line-height-9" /> Add New Merchant
+                            <i className="i i-plus line-height-9" /> Add New Merchant
                           </button>
                         </div>
                       </div>
@@ -1044,13 +1043,13 @@ class ProductSubMerchantsList extends ListContainer {
                           Share the <strong>invite link</strong> on social media
                         </p>
 
-                        <div class="social-share-btn-grp">
+                        <div className="social-share-btn-grp">
                           <CustomClipboard value={referralUrl}>
                             <button
-                              class="btn btn-primary pull-right m-l"
+                              className="btn btn-primary pull-right m-l"
                               onClick={this.handleCopyReferralLink}
                             >
-                              <i class="i i-link line-height-9" /> Copy Link
+                              <i className="i i-link line-height-9" /> Copy Link
                             </button>
                           </CustomClipboard>
                           <img
@@ -1121,6 +1120,7 @@ export const PrimarySubMerchantList = compose(
   ),
   withRouter,
   withI18Service,
+  rTracking(() => window.rzpQ.component('ProductSubMerchantsList')),
 )(ProductSubMerchantsList);
 
 export const XSubMerchantList = compose(
@@ -1135,6 +1135,7 @@ export const XSubMerchantList = compose(
   ),
   withRouter,
   withI18Service,
+  rTracking(() => window.rzpQ.component('ProductSubMerchantsList')),
 )(ProductSubMerchantsList);
 
 export const CapitalSubMerchantList = compose(
@@ -1150,4 +1151,5 @@ export const CapitalSubMerchantList = compose(
   ),
   withRouter,
   withI18Service,
+  rTracking(() => window.rzpQ.component('ProductSubMerchantsList')),
 )(ProductSubMerchantsList);

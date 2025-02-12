@@ -145,23 +145,23 @@ export default class EntityDetailList extends React.Component {
 
       return (
         <div
-          class="entity-detail-row clickable credit-note-row"
+          className="entity-detail-row clickable credit-note-row"
           onClick={() => goToLink(creditNote.id, index)}
           key={index}
         >
-          <div class="row-item content">
-            <i class="i i-replay item-left" />
+          <div className="row-item content">
+            <i className="i i-replay item-left" />
             <div className="item-right">
-              <div class="detail-row">
-                <div class="row-element left">
+              <div className="detail-row">
+                <div className="row-element left">
                   <Time value={creditNote.created_at} format="MMM DD, YYYY" />
                 </div>
-                <span class="row-element right">
+                <span className="row-element right">
                   <Amount currency={creditNote.currency} value={creditNote.amount} />
                 </span>
               </div>
-              <div class="detail-row">
-                <span class="label--secondary">Refund due to subscription update.</span>
+              <div className="detail-row">
+                <span className="label--secondary">Refund due to subscription update.</span>
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default class EntityDetailList extends React.Component {
     ) {
       showBtn = (
         <button
-          class="show-btn primary-link"
+          className="show-btn primary-link"
           style={{ display: 'block', margin: '0 auto' }}
           onClick={() =>
             this.setState({
@@ -234,7 +234,7 @@ export default class EntityDetailList extends React.Component {
             })
           }
         >
-          Show All <i class="i i-chevron-down" />
+          Show All <i className="i i-chevron-down" />
         </button>
       );
     }
@@ -242,16 +242,16 @@ export default class EntityDetailList extends React.Component {
     let rowList = this.mergeCreditNotesRows();
 
     if (!loading && !items.length) {
-      rowList = <h4 class="empty-table-message">{`No '${title}' Found!`}</h4>;
+      rowList = <h4 className="empty-table-message">{`No '${title}' Found!`}</h4>;
     }
 
     return (
-      <div class="entity-detail-list">
-        <div class="list-heading">
-          <span class="label--primary">{title}</span>
-          <span class="label--secondary">{subTitle}</span>
+      <div className="entity-detail-list">
+        <div className="list-heading">
+          <span className="label--primary">{title}</span>
+          <span className="label--secondary">{subTitle}</span>
         </div>
-        <div class="list-content">
+        <div className="list-content">
           {error && <Alert type="error" message={error} />}
           {rowList}
         </div>

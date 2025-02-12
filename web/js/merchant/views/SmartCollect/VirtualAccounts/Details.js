@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import VirtualAccountDetails from './components/Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
@@ -12,21 +12,8 @@ import { openModal } from 'merchant_common/reducers/modals';
 import CreateTestPayment from './components/Modals/CreateTestPayment';
 import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import moment from 'moment';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      ...state.virtualaccount,
-      mode: state.session.mode,
-    };
-  },
-  {
-    openModal,
-    showNotification,
-    ...VirtualAccountActions,
-  },
-)
-@RTracking(() => window.rzpQ.component('VirtualAccountDetailsContainer'))
 class VirtualAccountDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -244,4 +231,20 @@ class VirtualAccountDetailsContainer extends Component {
   }
 }
 
-export default withRouter(VirtualAccountDetailsContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.virtualaccount,
+        mode: state.session.mode,
+      };
+    },
+    {
+      openModal,
+      showNotification,
+      ...VirtualAccountActions,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('VirtualAccountDetailsContainer')),
+)(VirtualAccountDetailsContainer);

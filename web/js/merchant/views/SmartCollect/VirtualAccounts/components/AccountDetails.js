@@ -21,7 +21,7 @@ export default function VirtualAccountDetails({ bankAccount1, bankAccount2, upiA
         </>
       )}
 
-      {bankAccount1 && bankAccount2 && <div class="divider--dotted" />}
+      {bankAccount1 && bankAccount2 && <div className="divider--dotted" />}
 
       {bankAccount2 && (
         <>
@@ -39,7 +39,7 @@ export default function VirtualAccountDetails({ bankAccount1, bankAccount2, upiA
         </>
       )}
 
-      {(bankAccount1 || bankAccount2) && upiAddress && <div class="divider--dotted" />}
+      {(bankAccount1 || bankAccount2) && upiAddress && <div className="divider--dotted" />}
 
       {upiAddress && (
         <EntityDetailRow label="UPI Address">

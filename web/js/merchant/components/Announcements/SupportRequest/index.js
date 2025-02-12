@@ -10,7 +10,7 @@ export default function SupportRequest({ tickets }) {
         <div className="banner-meesage">
           <div className="banner-icon">
             <img
-              class="circle-support-alert"
+              className="circle-support-alert"
               src="https://cdn.razorpay.com/static/assets/ticket-system/circle-alert.svg"
               alt="banner-icon"
             />

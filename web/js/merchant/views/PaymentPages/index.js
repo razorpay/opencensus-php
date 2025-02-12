@@ -2,26 +2,22 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding';
+import lazy from 'merchant/routes/LazyLoader';
+import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import ProductsCatalogList from 'merchant/views/PaymentPages/Products';
 
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
-
-import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
-import ProductsCatalogList from 'merchant/views/PaymentPages/Products';
-
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import DashboardBanner from 'common/ui/DashboardBanner';
-
-import { RouteGuard } from 'merchant/components/ShowWhen';
-import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import lazy from 'merchant/routes/LazyLoader';
-import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const MonetizationChargesBanner = lazy(() =>
   import(
@@ -29,13 +25,7 @@ const MonetizationChargesBanner = lazy(() =>
   ),
 );
 
-@connect((state) => {
-  return {
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
-    user: state.session.user,
-  };
-})
-export default class PaymentPagesContainer extends Component {
+class PaymentPagesContainer extends Component {
   componentDidMount() {
     analyticsTrack({
       objectName: 'NC App Page Dashboard',
@@ -117,3 +107,10 @@ export default class PaymentPagesContainer extends Component {
     );
   }
 }
+
+export default connect((state) => {
+  return {
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
+    user: state.session.user,
+  };
+})(PaymentPagesContainer);

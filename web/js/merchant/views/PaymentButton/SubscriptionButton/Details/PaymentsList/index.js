@@ -1,20 +1,23 @@
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+
+import { SelfServeActionPages } from 'common/constant/enums';
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
-import ListContainer from 'merchant/containers/ListContainer';
-import PaymentsListFilter from './PaymentsListFilter';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
-import { _paymentId } from 'merchant/views/Transactions/v1/Payments/Utils';
-import { SelfServeActionPages } from 'common/constant/enums';
-import { withSplitzService } from 'common/splitz';
+import ListContainer from 'merchant/containers/ListContainer';
 import {
   fetchPaymentPagePayments,
   isFetchViaNCA,
 } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { _paymentId } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { onPaginate } from 'merchant/views/Transactions/v2/common/utils';
+import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
+
+import PaymentsListFilter from './PaymentsListFilter';
 
 const PaymentsTable = (props) => {
   const paymentColumns = [
@@ -31,13 +34,6 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect(
-  (state) => ({
-    payments: state.payments,
-    ncaPayments: state.invoices.storefrontPayments,
-  }),
-  { fetchPaymentPagePayments },
-)
 class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
@@ -77,23 +73,23 @@ class PaymentsList extends ListContainer {
     const entityData = isFetchViaNCA(splitz) ? ncaPayments : payments;
     return (
       <div>
-        <div class="stats">
-          <div class="info">
-            <b class="bold">Transactions</b>
+        <div className="stats">
+          <div className="info">
+            <b className="bold">Transactions</b>
             {this.getStatsTable(entity).map((st, ix) => (
               <div key={ix}>
                 {st.title}
-                <b class="bold">{st.value}</b>
+                <b className="bold">{st.value}</b>
               </div>
             ))}
           </div>
 
-          <div class="report-download btn-toolbar pull-right">
+          <div className="report-download btn-toolbar pull-right">
             <div
-              class="btn btn-default Button--invert report-download-trigger"
+              className="btn btn-default Button--invert report-download-trigger"
               disabled={isExportInProgress}
             >
-              <i class="i i-download m-r" />
+              <i className="i i-download m-r" />
               {isExportInProgress ? 'Downloading...' : 'Download Report'}
             </div>
             <Popover align="bottom">
@@ -102,7 +98,7 @@ class PaymentsList extends ListContainer {
                   <li
                     key={index}
                     type="button"
-                    class="btn"
+                    className="btn"
                     onClick={() => this.props.downloadReport(o.name)}
                     disabled={isExportInProgress}
                   >
@@ -114,7 +110,7 @@ class PaymentsList extends ListContainer {
           </div>
         </div>
 
-        <div class="content-wrapper">
+        <div className="content-wrapper">
           {children}
 
           <PaymentsListFilter
@@ -138,4 +134,14 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withSplitzService(withRouter(PaymentsList));
+export default compose(
+  connect(
+    (state) => ({
+      payments: state.payments,
+      ncaPayments: state.invoices.storefrontPayments,
+    }),
+    { fetchPaymentPagePayments },
+  ),
+  withRouter,
+  withSplitzService,
+)(PaymentsList);

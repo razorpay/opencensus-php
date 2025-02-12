@@ -22,7 +22,7 @@ const SuccessTnCGeneratedModal = ({ onCloseModal, data }) => {
             </p>
             <div className="tnc-success__link">
               <a href={data.link} target="_blank" rel="noreferrer noopener">
-                <span>{data.link}</span> <i class="i i-external-link" />
+                <span>{data.link}</span> <i className="i i-external-link" />
               </a>
             </div>
             <p style={{ color: '#162f5661' }}>

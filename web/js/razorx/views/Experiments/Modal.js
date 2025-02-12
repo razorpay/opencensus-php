@@ -240,8 +240,8 @@ class ExModal extends React.Component {
     const { featuresList, selectedFeature } = this.state;
 
     return (
-      <ModalContent class="modal-experiments modal-json-edit" header={header}>
-        <Form onSubmit={this.onSubmit} class="full-span full-elements">
+      <ModalContent className="modal-experiments modal-json-edit" header={header}>
+        <Form onSubmit={this.onSubmit} className="full-span full-elements">
           {JSONView ? (
             <JSONEdit
               initialJSON={this.JSONObj}
@@ -292,13 +292,13 @@ class ExModal extends React.Component {
                   selected={selectedFeature}
                   onInput={this.onInput}
                   onChange={this.handleSelectFeature}
-                  beforeOptionsComponent={() => <div class="heading">Recent</div>}
+                  beforeOptionsComponent={() => <div className="heading">Recent</div>}
                 />
               )}
 
               {selectedFeature && (
                 <div key={selectedFeature.id}>
-                  <div class="sub-heading">Segments</div>
+                  <div className="sub-heading">Segments</div>
                   <SegmentsList
                     variantsList={selectedFeature.variants}
                     onChange={this.onChangeSegmentsList}
@@ -310,11 +310,11 @@ class ExModal extends React.Component {
               <div style={{ marginTop: 24 }} />
             </React.Fragment>
           )}
-          <div class="footer">
+          <div className="footer">
             {!isReadOnly && (
-              <button class="btn btn--primary" disabled={!this.isValid()}>
+              <button className="btn btn--primary" disabled={!this.isValid()}>
                 {isEdit ? 'Update' : 'Create'}
-                <span class="spin-btn" />
+                <span className="spin-btn" />
               </button>
             )}
           </div>

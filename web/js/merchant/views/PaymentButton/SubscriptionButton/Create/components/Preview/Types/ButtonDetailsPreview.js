@@ -1,7 +1,10 @@
+import React from 'react';
 import { connect } from 'react-redux';
+
 import { classList } from 'common/utils/rzp-utils';
-import { maxLengthForButtonLabel } from '../../Form/ButtonDetails';
+
 import { buttonThemes } from '../../../constants/buttonThemes';
+import { maxLengthForButtonLabel } from '../../Form/ButtonDetails';
 
 const rzpLogoWhite = (
   <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -15,10 +18,7 @@ const rzpLogoWhite = (
 
 let isFontLoadedForButton = false;
 
-@connect((state) => ({
-  config: state.config,
-}))
-export default class ButtonDetailsPreview extends React.Component {
+class ButtonDetailsPreview extends React.Component {
   constructor() {
     super();
 
@@ -33,10 +33,10 @@ export default class ButtonDetailsPreview extends React.Component {
 
     isFontLoadedForButton = true;
 
-    const head = document.head || document.getElementsByTagName('head')[0],
-      style = document.createElement('style');
+    const head = document.head || document.getElementsByTagName('head')[0];
+    const style = document.createElement('style');
 
-    var css = `@import url('https://fonts.googleapis.com/css2?family=Muli:wght@400;600;700;800&display=swap');`;
+    const css = `@import url('https://fonts.googleapis.com/css2?family=Muli:wght@400;600;700;800&display=swap');`;
 
     head.appendChild(style);
 
@@ -54,8 +54,8 @@ export default class ButtonDetailsPreview extends React.Component {
 
   render() {
     const { subscriptionButtonEntity, showOneTimePayments } = this.props;
-    const buttonText = subscriptionButtonEntity.settings.payment_button_text,
-      buttonTheme = subscriptionButtonEntity.settings.payment_button_theme;
+    const buttonText = subscriptionButtonEntity.settings.payment_button_text;
+    const buttonTheme = subscriptionButtonEntity.settings.payment_button_theme;
 
     const isRazorpayTheme = buttonThemes.BRAND_COLOR.value !== buttonTheme;
     let isLightTheme = true; // Default false bcoz meanwhile the colorJS script is loading, light theme enables dark color text which works well with all contrasts.
@@ -81,9 +81,9 @@ export default class ButtonDetailsPreview extends React.Component {
     }
 
     return (
-      <div class="ButtonDetailsPreview ButtonDetailsPreview--subscriptionButton">
+      <div className="ButtonDetailsPreview ButtonDetailsPreview--subscriptionButton">
         <div
-          class={classList(
+          className={classList(
             'PaymentButton-Button',
             isRazorpayTheme && 'PaymentButton-Button--rzpTheme',
             `PaymentButton-Button--${isLightTheme ? 'light' : 'dark'}`,
@@ -95,12 +95,12 @@ export default class ButtonDetailsPreview extends React.Component {
         >
           {rzpLogoWhite}
 
-          <div class="PaymentButton-Button-contents">
-            <span class="PaymentButton-Button-text">{displayButtonText}</span>
+          <div className="PaymentButton-Button-contents">
+            <span className="PaymentButton-Button-text">{displayButtonText}</span>
           </div>
         </div>
-        <div class="PaymentButton-Button-rzpBranding">
-          <span class="powered-by-razorpay">
+        <div className="PaymentButton-Button-rzpBranding">
+          <span className="powered-by-razorpay">
             <span>Powered by</span> <img src="/img/logo_black.png" />
           </span>
         </div>
@@ -108,3 +108,7 @@ export default class ButtonDetailsPreview extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({
+  config: state.config,
+}))(ButtonDetailsPreview);

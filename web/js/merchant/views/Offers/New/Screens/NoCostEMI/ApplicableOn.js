@@ -144,16 +144,16 @@ class ApplicableOn extends React.Component {
               />
             ) : (
               <Input.Group label="EMI Tenure" required>
-                <div class="emi-options">
-                  <div class="emi-option heading">
-                    <div class="emi-check-field">
+                <div className="emi-options">
+                  <div className="emi-option heading">
+                    <div className="emi-check-field">
                       <Text>EMI tenure</Text>
                     </div>
                     <Text>Discount borne by merchant</Text>
                   </div>
                   {SelectedEMIOptions.map((plan) => (
-                    <div class="emi-option" key={plan.duration}>
-                      <div class="emi-check-field">
+                    <div className="emi-option" key={plan.duration}>
+                      <div className="emi-check-field">
                         <Input.Check
                           fieldLabel={`${plan.duration} Months`}
                           onChange={(value) =>

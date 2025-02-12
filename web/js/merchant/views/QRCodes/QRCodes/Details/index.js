@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import QRCodeDetails from './Details';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -14,29 +14,13 @@ import { closeQR } from 'merchant/reducers/qrCodes/list';
 import CreateTestPayment from './CreateTestPayment';
 import QRCodePreviewModal from 'merchant/views/QRCodes/QRCodes/components/QRPreviewModal';
 import track from './track';
+import { compose } from 'redux';
 
 const QR_CODE_DETAILS_HOTJAR = {
   trigger: 'QR_Details',
   tags: ['QR_Details'],
 };
 
-@connect(
-  (state) => {
-    return {
-      isTestMode: state.session.mode === 'test',
-      customers: state.customers,
-      user: state.session.user,
-    };
-  },
-  {
-    openModal,
-    closeModal,
-    showNotification,
-    fetchCustomersForAutocomplete,
-    closeQR,
-  },
-)
-@RTracking(() => window.rzpQ.component('QRCodeDetailsContainer'))
 class QRCodeDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -217,4 +201,23 @@ class QRCodeDetailsContainer extends React.Component {
   }
 }
 
-export default withRouter(QRCodeDetailsContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        isTestMode: state.session.mode === 'test',
+        customers: state.customers,
+        user: state.session.user,
+      };
+    },
+    {
+      openModal,
+      closeModal,
+      showNotification,
+      fetchCustomersForAutocomplete,
+      closeQR,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('QRCodeDetailsContainer')),
+)(QRCodeDetailsContainer);

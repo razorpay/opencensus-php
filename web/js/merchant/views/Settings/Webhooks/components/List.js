@@ -47,7 +47,7 @@ class WebhooksList extends React.Component {
     return (
       <div className="empty-table-message font-size-16">
         You have not setup any webhook
-        <div class="add-new-webhook" onClick={this.props.onNewWebhookClick}>
+        <div className="add-new-webhook" onClick={this.props.onNewWebhookClick}>
           Add new Webhook
         </div>
       </div>

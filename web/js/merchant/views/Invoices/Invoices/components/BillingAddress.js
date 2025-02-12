@@ -12,18 +12,18 @@ const BillingAddress = (props) => {
     track,
   } = props;
   return (
-    <div class="inv__address-container">
-      <label class="text-uppercase">Billing Address</label>
-      <span class={`two-btn-group ${areBillingAddressActionsVisible ? '' : 'invisible'}`}>
+    <div className="inv__address-container">
+      <label className="text-uppercase">Billing Address</label>
+      <span className={`two-btn-group ${areBillingAddressActionsVisible ? '' : 'invisible'}`}>
         <button
-          class="btn btn-sm btn-link"
+          className="btn btn-sm btn-link"
           onClick={showSelectAddressModal('billing')}
           type="button"
         >
           Change
         </button>
         <button
-          class="btn btn-sm btn-link"
+          className="btn btn-sm btn-link"
           onClick={() => {
             selectBillingAddress(null);
             track({
@@ -36,17 +36,17 @@ const BillingAddress = (props) => {
           Remove
         </button>
       </span>
-      <div class="inv__address-container">
+      <div className="inv__address-container">
         {selectedBillingAddress ? (
           stringifyAddress(selectedBillingAddress)
         ) : (
-          <div class="light-placeholder">
+          <div className="light-placeholder">
             {isFetchingAddresses ? (
               <>Loading...</>
             ) : !isDisabled ? (
               customer && customer.id ? (
                 <button
-                  class="btn btn-link"
+                  className="btn btn-link"
                   onClick={showSelectAddressModal('billing')}
                   type="button"
                 >

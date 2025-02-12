@@ -4,7 +4,8 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -17,27 +18,15 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
 import { isHoliday, nextWorkingDay } from 'common/utils/bankHolidays';
 import { classList } from 'common/utils/rzp-utils';
-import { i18nifyConvertToMinorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import { isAmount } from 'common/utils/validators';
 import AccountSelector from 'merchant/components/AccountSelector';
 import { luminateRow } from 'merchant/reducers/app';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import { createDirectTransfer } from 'merchant/reducers/payments/details';
+import { i18nifyConvertToMinorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(
-  (state) => ({
-    accounts: state.accounts,
-    current_balance: state.home.current_balance,
-  }),
-  {
-    luminateRow,
-    showNotification,
-    fetchCurrentBalance,
-  },
-)
-@RTracking(() => window.rzpQ.component('DirectTransfers'))
 class DirectTransfers extends React.Component {
   state = {
     disableSubmit: false,
@@ -185,8 +174,12 @@ class DirectTransfers extends React.Component {
           selectedAccount={state.selectedAccount}
         />
 
-        <Input.Group required class="InputGroup--inline InputGroup--vTop" label="Billing Amount">
-          <div class="Input-content">
+        <Input.Group
+          required
+          className="InputGroup--inline InputGroup--vTop"
+          label="Billing Amount"
+        >
+          <div className="Input-content">
             <Input.CurrencySelect
               name="currency"
               defaultValue={props.user?.merchant?.currency || 'INR'}
@@ -196,7 +189,7 @@ class DirectTransfers extends React.Component {
 
             <Input
               required
-              class="Input--vTop"
+              className="Input--vTop"
               name="amount"
               placeholder="0.00"
               onChange={this.handleAmount}
@@ -210,7 +203,7 @@ class DirectTransfers extends React.Component {
 
         <Input.Radio
           label="Settlement Schedule"
-          class="Input--vTop settlement-schedule"
+          className="Input--vTop settlement-schedule"
           onChange={this.handleSettlementSchedule}
           disabled={state.isFormLocked}
           options={[
@@ -218,7 +211,7 @@ class DirectTransfers extends React.Component {
               label: (
                 <>
                   Settle Now
-                  <div class="text-fade">
+                  <div className="text-fade">
                     Transfer will be settled in the next available settlement slot
                   </div>
                 </>
@@ -235,7 +228,7 @@ class DirectTransfers extends React.Component {
                     disablePastDates
                     placeholder="DD-MM-YYYY"
                     onChange={this.onDateChange}
-                    addonAfter={<i class="i i-date-range" />}
+                    addonAfter={<i className="i i-date-range" />}
                     placement="topLeft"
                     disabled={state.disableOnHoldUntilDatePicker || state.isFormLocked}
                     isDayBlocked={getIsDayBlocked}
@@ -249,7 +242,7 @@ class DirectTransfers extends React.Component {
               label: (
                 <>
                   Put on hold
-                  <div class="text-fade">
+                  <div className="text-fade">
                     The settlement will be on hold till specified otherwise.
                   </div>
                 </>
@@ -260,7 +253,7 @@ class DirectTransfers extends React.Component {
         />
 
         <Input.PairList
-          class="Input--vTop"
+          className="Input--vTop"
           name="notes"
           label="Notes"
           onChange={this.onChangeNotes}
@@ -275,9 +268,9 @@ class DirectTransfers extends React.Component {
     const disableSubmit = props.isLoading || state.disableSubmit || state.isFormLocked;
 
     const content = (
-      <div class="Transfers--DirectTransfer">
-        <div class="title">Create Direct Transfer</div>
-        <div class="form-container">
+      <div className="Transfers--DirectTransfer">
+        <div className="title">Create Direct Transfer</div>
+        <div className="form-container">
           <Form>
             <main ref={(ele) => (this.formEle = ele)}>
               {props.isLoading ? (
@@ -312,13 +305,13 @@ class DirectTransfers extends React.Component {
 
     if (this.isModalView) {
       return (
-        <Modal class={classList('PaymentLink--CreateV2', 'animate-down')} showCloseBtn={false}>
+        <Modal className={classList('PaymentLink--CreateV2', 'animate-down')} showCloseBtn={false}>
           <ModalContent>{content}</ModalContent>
         </Modal>
       );
     }
 
-    return <div class="StandAloneContainer">{content}</div>;
+    return <div className="StandAloneContainer">{content}</div>;
   }
 }
 
@@ -346,7 +339,7 @@ function CurrentBalance({ currentBalance }) {
       <Amount
         value={balance}
         currency={currentBalance.data.currency || 'INR'}
-        class={currentBalanceClassName}
+        className={currentBalanceClassName}
         parentQuerySelector=".Modal-body"
       />{' '}
     </>
@@ -372,10 +365,19 @@ function getIsDayBlocked(date) {
   return date < nextWorkingDate || isHoliday(date);
 }
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.session.user,
-  };
-};
-
-export default connect(mapStateToProps)(withRouter(DirectTransfers));
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      accounts: state.accounts,
+      current_balance: state.home.current_balance,
+    }),
+    {
+      luminateRow,
+      showNotification,
+      fetchCurrentBalance,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('DirectTransfers')),
+  withRouter,
+)(DirectTransfers);

@@ -28,15 +28,15 @@ function ShowStatusMsg({ closeModal }) {
   return (
     <div>
       <ModalHeader title="Verify GST details" />
-      <div class="Modal__actions">
-        <div class="modal-body rzp-gst-content">
-          <div class="gst-help-block">
+      <div className="Modal__actions">
+        <div className="modal-body rzp-gst-content">
+          <div className="gst-help-block">
             <span>
               We are verifying your GST details with GST portal database. We will reach out to you
               if we need any more clarification
             </span>
           </div>
-          <button class="btn btn-primary btn-block" onClick={closeModal}>
+          <button className="btn btn-primary btn-block" onClick={closeModal}>
             Okay, got it
           </button>
         </div>
@@ -260,7 +260,7 @@ class AddGST extends Component {
                   </Popover>
                 </span>
               </div>
-              <div class="Modal__actions">
+              <div className="Modal__actions">
                 <button
                   type="submit"
                   className="btn btn-primary btn-block"

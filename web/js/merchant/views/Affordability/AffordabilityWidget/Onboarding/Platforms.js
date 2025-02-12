@@ -49,7 +49,7 @@ const OnboardingPlatforms = (props) => {
           <PlatformCard {...data} key={idx} handlePlatformSelection={handlePlatformSelection} />
         ))}
       </div>
-      <div class="Button-Container">
+      <div className="Button-Container">
         <Button.Transparent
           className="Back-Button"
           iconBefore="arrow-back"

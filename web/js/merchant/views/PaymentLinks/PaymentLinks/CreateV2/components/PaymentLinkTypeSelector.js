@@ -53,11 +53,11 @@ export default class PaymentLinkSelector extends React.PureComponent {
     const { props } = this;
 
     const content = (
-      <div class="PaymentLinks--CreateV2--LinkTypeSelection">
-        <div class="slide-in">
-          <div class="heading">Pick a Payment Link Type</div>
+      <div className="PaymentLinks--CreateV2--LinkTypeSelection">
+        <div className="slide-in">
+          <div className="heading">Pick a Payment Link Type</div>
         </div>
-        <div class="TemplateCard-list">
+        <div className="TemplateCard-list">
           {PAYMENT_LINK_TYPES.map((templateData) => {
             const actionsDisabled = props.isTestMode && TEST_MODE_TYPES[templateData.key];
             const extraProps = !actionsDisabled && {
@@ -80,19 +80,19 @@ export default class PaymentLinkSelector extends React.PureComponent {
     if (props.isModalView) {
       const { redirect } = getURLQueryParams(props?.history?.location?.search);
       return (
-        <ModalMask class="PaymentLinks--CreateV2--LinkTypeSelection" maskClosable={false}>
-          <Link class="back-btn" to={redirect ?? '/paymentlinks'}>
-            <i class="i i-chevron-left" />
+        <ModalMask className="PaymentLinks--CreateV2--LinkTypeSelection" maskClosable={false}>
+          <Link className="back-btn" to={redirect ?? '/paymentlinks'}>
+            <i className="i i-chevron-left" />
             Back to Dashboard
           </Link>
-          <Modal class={content && 'animate-down'} showCloseBtn={false}>
+          <Modal className={content && 'animate-down'} showCloseBtn={false}>
             <ModalContent>{content}</ModalContent>
           </Modal>
         </ModalMask>
       );
     }
 
-    return <div class="StandAloneContainer">{content}</div>;
+    return <div className="StandAloneContainer">{content}</div>;
   }
 }
 
@@ -101,19 +101,19 @@ class TemplateCard extends React.PureComponent {
     const { title, description, img, onClick, hoverText, className } = this.props;
 
     return (
-      <div class={classList('TemplateCard', !onClick && 'disabled', className)} onClick={onClick}>
+      <div className={classList('TemplateCard', !onClick && 'disabled', className)} onClick={onClick}>
         <img src={img} />
-        <div class="TemplateCard-details">
+        <div className="TemplateCard-details">
           {title}
-          <div class="TemplateCard-desc">
+          <div className="TemplateCard-desc">
             {description}
-            {hoverText && <div class="hover-text">{hoverText}</div>}
+            {hoverText && <div className="hover-text">{hoverText}</div>}
           </div>
 
           {onClick && (
-            <div class="link">
+            <div className="link">
               <span>Create Now</span>
-              <i class="i i-arrow-forward" />
+              <i className="i i-arrow-forward" />
             </div>
           )}
         </div>

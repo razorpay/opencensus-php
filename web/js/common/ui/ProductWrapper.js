@@ -11,7 +11,7 @@ const ProductWrapper = ({ children, extra, isMobile, tabsData, customHeaderRight
   );
   const location = useLocation();
   return (
-    <tabbed-container class="updated">
+    <tabbed-container className="updated">
       <header id="link-header">
         <div className="header-left">
           {tabsData.map(

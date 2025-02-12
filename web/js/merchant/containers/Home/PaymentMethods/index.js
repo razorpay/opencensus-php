@@ -1,33 +1,33 @@
-import moment from 'moment';
 import React, { Component } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
 
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import Breadcrumb, { BreadcrumbItem } from 'common/ui/Breadcrumb';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { fetch } from 'merchant/reducers/pokedex';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
   PanelFallback,
 } from 'merchant/components/Home/GenericPanel';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackGoToLinks, trackNoData, trackError } from 'merchant/containers/Home/ga';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+import LastUpdated from 'merchant/components/Home/LastUpdated';
+import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
+import { trackGoToLinks, trackNoData, trackError } from 'merchant/containers/Home/ga';
+import D3ScriptLoaderHoc from 'merchant/hoc/D3ScriptLoaderHoc';
+import { fetch } from 'merchant/reducers/pokedex';
 import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Mobile from './Mobile';
-import { trackBreadcrumbClick } from './ga';
 import { getQuery, aggTypes } from './data';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import D3ScriptLoaderHoc from 'merchant/hoc/D3ScriptLoaderHoc';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { trackBreadcrumbClick } from './ga';
 const Treemap = lazy(() =>
   import(/* webpackChunkName: 'Treemap' */ 'merchant/containers/Home/PaymentMethods/Treemap'),
 );
@@ -48,11 +48,6 @@ function getLevels(hierarchy, levels = []) {
 const csvDateFormat = 'DD-MM-YYYY';
 const mobileAggKey = 'method';
 
-// eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ user: state.session.user, org: state.session.org }), {
-  ...ModalActions,
-  showNotification,
-})
 class PaymentMethods extends Component {
   constructor(props) {
     super(props);
@@ -70,10 +65,10 @@ class PaymentMethods extends Component {
 
     this.requestId = 0;
 
-    this.onLevelChange = ::this.onLevelChange;
-    this.onCSVData = ::this.onCSVData;
-    this.openReportModal = ::this.openReportModal;
-    this.onAggChange = ::this.onAggChange;
+    this.onLevelChange = this.onLevelChange.bind(this);
+    this.onCSVData = this.onCSVData.bind(this);
+    this.openReportModal = this.openReportModal.bind(this);
+    this.onAggChange = this.onAggChange.bind(this);
   }
 
   fetchData(startDate, endDate, aggType) {
@@ -349,4 +344,9 @@ class PaymentMethods extends Component {
   }
 }
 
-export default PaymentMethods;
+export default compose(
+  connect((state) => ({ user: state.session.user, org: state.session.org }), {
+    ...ModalActions,
+    showNotification,
+  }),
+)(PaymentMethods);

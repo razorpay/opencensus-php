@@ -48,8 +48,8 @@ const RemoveDomainModal = ({
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <i className="i i-warning-o" />
           Remove domain
         </div>
@@ -69,11 +69,11 @@ const RemoveDomainModal = ({
           <br />
         </main>
         <footer>
-          <Button.Transparent class="Cancel-btn" type="button" onClick={handleClose}>
+          <Button.Transparent className="Cancel-btn" type="button" onClick={handleClose}>
             No, don't remove
           </Button.Transparent>
           <AsyncBtn.Primary
-            class="Save-btn"
+            className="Save-btn"
             type="submit"
             onClick={handleSubmit}
             pendingState="Removing..."

@@ -23,7 +23,7 @@ export default function UpdateSubscriptionLinkReview(props) {
   }
 
   return (
-    <div class="SubscriptionLinks--Update-review">
+    <div className="SubscriptionLinks--Update-review">
       {changes.map((e) => (
         <ChangeValue key={e.heading} {...e} />
       ))}
@@ -134,15 +134,15 @@ export function changeData({
 }
 
 const ChangeValue = ({ heading, changes }) => (
-  <div class="changed-values">
-    <span class="big-dot-separator" />
+  <div className="changed-values">
+    <span className="big-dot-separator" />
     <div>
       <strong>{heading}</strong>
       {changes.map((change) => (
-        <div class="current-change" key={change.current}>
+        <div className="current-change" key={change.current}>
           {change.current}
           <b>
-            <i class="i i-arrow-forward" />
+            <i className="i i-arrow-forward" />
             {change.change}
           </b>
         </div>

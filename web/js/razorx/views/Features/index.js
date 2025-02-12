@@ -23,11 +23,11 @@ class Features extends React.Component {
 
   render() {
     return (
-      <div class="parent-container features-container">
-        <div class="header">
-          <span class="title">Features</span>
+      <div className="parent-container features-container">
+        <div className="header">
+          <span className="title">Features</span>
         </div>
-        <div class="container-group">
+        <div className="container-group">
           <List />
           <Entity id={this.props.match.params.id} />
         </div>

@@ -1,11 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
-import BaseForm from './BaseForm';
-
 import { getCurrency } from 'common/ui/Amount';
 import { classList } from 'common/utils/rzp-utils';
-
 import {
   updatePaymentField,
   deletePaymentField,
@@ -13,15 +11,10 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
 
+import BaseForm from './BaseForm';
 import track from '../../../track';
 
-@connect(null, {
-  updatePaymentField,
-  deletePaymentField,
-  updatePaymentButtonData,
-  updateStepReviewProgress,
-})
-export default class EditableDisplayField extends React.Component {
+class EditableDisplayField extends React.Component {
   state = {
     isEditModeOpened: false,
   };
@@ -74,7 +67,7 @@ export default class EditableDisplayField extends React.Component {
     return (
       <div
         onClick={!isEditModeOpened ? this.handleToggleEditMode : () => {}}
-        class={classList(
+        className={classList(
           'EditableUDF EditableDisplayField',
           children && 'EditableDisplayField--disabled',
           isEditModeOpened && 'EditableDisplayField--editMode',
@@ -82,21 +75,21 @@ export default class EditableDisplayField extends React.Component {
       >
         {children || (
           <React.Fragment>
-            <span class="btn btn-link edit-btn">
+            <span className="btn btn-link edit-btn">
               Click to Edit This Field
-              <i class="i i-edit" />
+              <i className="i i-edit" />
             </span>
 
             <Input
               label="Label"
-              class="Input--vTop Input--dummy"
+              className="Input--vTop Input--dummy"
               value={field.item.name}
               readOnly
             />
 
             <Input
               label="Value"
-              class="Input--vTop Input--dummy"
+              className="Input--vTop Input--dummy"
               value={field.item.amount}
               description={field.item.description}
               readOnly
@@ -119,3 +112,10 @@ export default class EditableDisplayField extends React.Component {
     );
   }
 }
+
+export default connect(null, {
+  updatePaymentField,
+  deletePaymentField,
+  updatePaymentButtonData,
+  updateStepReviewProgress,
+})(EditableDisplayField);

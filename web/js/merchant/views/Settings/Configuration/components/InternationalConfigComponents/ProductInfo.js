@@ -13,8 +13,8 @@ const ProductAction = ({
 }) => {
   if (status === 'request_rejected') {
     return (
-      <small class="help-content">
-        <i class="i i-info-outline" />
+      <small className="help-content">
+        <i className="i i-info-outline" />
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
@@ -29,8 +29,8 @@ const ProductAction = ({
 
   if (product === 'otherProducts' && !isKycComplete) {
     return (
-      <small class="help-content">
-        <i class="i i-info-outline" />
+      <small className="help-content">
+        <i className="i i-info-outline" />
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>You need to complete your KYC to request access.</div>
@@ -42,8 +42,8 @@ const ProductAction = ({
 
   if (product === 'otherProducts' && !isWebsiteAdded) {
     return (
-      <small class="help-content">
-        <i class="i i-info-outline" />
+      <small className="help-content">
+        <i className="i i-info-outline" />
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
@@ -58,7 +58,7 @@ const ProductAction = ({
 
   if (showRequestAccessBtn) {
     return (
-      <button onClick={onRequestAccessClick} class="btn-link">
+      <button onClick={onRequestAccessClick} className="btn-link">
         {questionnaireStatus?.new_flow && questionnaireStatus.enablement_progress === 'in_progress'
           ? `Edit draft (${questionnaireStatus.percentage_completion}%)`
           : 'Request Access'}
@@ -82,14 +82,14 @@ const ProductInfo = ({
   questionnaireStatus,
 }) => {
   return (
-    <div class="international__Product">
-      <div class="international__ProductInfo">
+    <div className="international__Product">
+      <div className="international__ProductInfo">
         <li>
           <strong>{title}</strong>
         </li>
-        <div class="international__ProductDescription">{description}</div>
+        <div className="international__ProductDescription">{description}</div>
       </div>
-      <div class="international__ProductActionAndStatus">
+      <div className="international__ProductActionAndStatus">
         <ProductAction
           isKycComplete={isKycComplete}
           isWebsiteAdded={isWebsiteAdded}

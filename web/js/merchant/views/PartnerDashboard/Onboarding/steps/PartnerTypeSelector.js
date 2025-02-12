@@ -50,7 +50,7 @@ export default class PartnerTypeSelector extends React.Component {
     return (
       <>
       <div
-        class={classList(
+        className={classList(
           'SelectBox',
           'PartnerTypeSelectBox',
           props.className,
@@ -61,7 +61,7 @@ export default class PartnerTypeSelector extends React.Component {
       >
         {
           !props.isMobile ? (
-            <Popover align="right" theme="dark" class="SelectBox--popover">
+            <Popover align="right" theme="dark" className="SelectBox--popover">
               <PopoverTitle>
                 <h4>
                   <strong>Select if you are a</strong>
@@ -74,11 +74,11 @@ export default class PartnerTypeSelector extends React.Component {
         <div className="select-box-image-container">
           <img src={props.icon} alt="" />
         </div>
-        <div class="SelectBox-heading">
+        <div className="SelectBox-heading">
           <Label text={props.label} />
           <Description text={props.description} />
         </div>
-        <div class="SelectBox-action">{props.children}</div>
+        <div className="SelectBox-action">{props.children}</div>
         <div className="select-button-container">
           <div className={checked ? 'checked radio-btn' : 'radio-btn'}>
             {checked && <i className="fa fa-check"></i>}

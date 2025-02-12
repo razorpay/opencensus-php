@@ -1,13 +1,15 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import BankAccountUpdateAsyncFlow from '../BankAccountUpdateAsyncFlow';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fireEvent, render, screen, waitFor } from 'test-utils';
+
+import BankAccountUpdateAsyncFlow from '../BankAccountUpdateAsyncFlow';
 import {
   BANK_ACCOUNT_UPDATE_UNDER_REVIEW,
   BANK_VERIFICATION_LETTER_UPLOAD,
   CANCELLED_CHEQUE_VIDEO_UPLOAD,
 } from '../constants';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as bankAccountUpdateUtils from '../utils';
 
 jest.mock('merchant/components/File/Upload', () => ({
@@ -33,7 +35,7 @@ jest.mock('merchant/components/File/Upload', () => ({
 
     return (
       <div>
-        <label for="uploadFile">Upload file</label>
+        <label htmlFor="uploadFile">Upload file</label>
         <input
           type="file"
           data-testid="uploadFile"

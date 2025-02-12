@@ -55,7 +55,7 @@ function WithdrawalStatus({ status, withdrawalDetails }) {
               label: status === STATUSES.FAILED ? 'Failed' : 'Rejected',
               active: true,
               date: updated_at,
-              icon: <i class="i i-close text-danger" />,
+              icon: <i className="i i-close text-danger" />,
             },
           ]
         : []),
@@ -99,7 +99,7 @@ function WithdrawalStatus({ status, withdrawalDetails }) {
         label: 'Repaid',
         active: status === STATUSES.REPAID,
         date: getLastRepaidDate(),
-        icon: <i class="i i-check" />,
+        icon: <i className="i i-check" />,
       },
     ];
 

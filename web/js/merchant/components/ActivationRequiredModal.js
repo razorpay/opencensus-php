@@ -62,14 +62,14 @@ export default ({ onCloseClick, user }) => {
           ? 'Sales will reach out to you for more details'
           : `Please fill and submit the ${activationName} Form to access live mode.`}
         {!user.isOrgAxis && !isSGMerchant ? (
-          <div class="Modal__actions text-right">
+          <div className="Modal__actions text-right">
             {!shouldRedirectToEasyFlow ? (
-              <button class="btn btn-primary btn-block" onClick={redirectToEasyAfter1sec}>
+              <button className="btn btn-primary btn-block" onClick={redirectToEasyAfter1sec}>
                 Fill {activationName} Form
               </button>
             ) : (
               <NavLink to={activationUrl} onClick={onCloseClick}>
-                <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
+                <button className="btn btn-primary btn-block">Fill {activationName} Form</button>
               </NavLink>
             )}
           </div>
@@ -88,8 +88,8 @@ export default ({ onCloseClick, user }) => {
 
   if (user.isSubmitted || user.isRejected || user.needsClarification) {
     const modalAction = (
-      <div class="Modal__actions text-right">
-        <button class="btn btn-primary btn-block" onClick={onCloseClick}>
+      <div className="Modal__actions text-right">
+        <button className="btn btn-primary btn-block" onClick={onCloseClick}>
           Okay!
         </button>
       </div>

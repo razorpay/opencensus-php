@@ -101,12 +101,12 @@ export default class EditMinimumAmount extends React.Component {
           />{' '}
           {titleCase(MIN_AMOUNT_TEXT)}
           <small className="help-content">
-            <i class="i i-info-outline" style={{ verticalAlign: 'middle', marginLeft: 4 }} />
+            <i className="i i-info-outline" style={{ verticalAlign: 'middle', marginLeft: 4 }} />
             <Popover align="top">{PopoverBodyText}</Popover>
           </small>
         </span>
         {isRoleAllowedEdit && isIssued && (
-          <Button.Transparent onClick={this.makeEditable} class="Button--Link">
+          <Button.Transparent onClick={this.makeEditable} className="Button--Link">
             Change
           </Button.Transparent>
         )}
@@ -117,14 +117,14 @@ export default class EditMinimumAmount extends React.Component {
       content = (
         <div style={{ marginTop: 4 }}>
           {MIN_AMOUNT_TEXT}
-          <Input.Group class="InputGroup--inline">
-            <div class="Input-content">
+          <Input.Group className="InputGroup--inline">
+            <div className="Input-content">
               <Input.CurrencySelect name="currency" defaultValue="INR" disabled />
 
               <Input
                 name="first_payment_min_amount"
                 placeholder={titleCase(MIN_AMOUNT_TEXT)}
-                class="Input--small"
+                className="Input--small"
                 value={this.state.first_payment_min_amount}
                 validator={(val) =>
                   validateMinAmount(
@@ -144,7 +144,7 @@ export default class EditMinimumAmount extends React.Component {
 
           <div style={{ textAlign: 'right', margin: '8px 0 12px 0', width: 260 }}>
             <Button.Transparent
-              class="Button--Link"
+              className="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
                 this.props.trackerFn(this.props.entityId, 'Cancel Minimum Payable Amount');
@@ -154,7 +154,7 @@ export default class EditMinimumAmount extends React.Component {
             </Button.Transparent>
 
             <AsyncBtn.Primary
-              class="Button--small"
+              className="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={
                 !!validateMinAmount(

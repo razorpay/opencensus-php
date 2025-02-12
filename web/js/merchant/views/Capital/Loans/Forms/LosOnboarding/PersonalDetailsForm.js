@@ -269,7 +269,7 @@ const PersonalDetailsForm = ({
                       isInline
                     />
                     {formData.date_of_birth && !isValidDate(formData.date_of_birth) && (
-                      <div class="Input-error d-block">
+                      <div className="Input-error d-block">
                         To apply, you must be between 18 to 65 years
                       </div>
                     )}
@@ -360,7 +360,7 @@ const PersonalDetailsForm = ({
               </div>
             </div>
             {pincodeError && (
-              <div class="flex">
+              <div className="flex">
                 <Input
                   value={formData.city}
                   onChange={handleChange}
@@ -368,7 +368,7 @@ const PersonalDetailsForm = ({
                   name="city"
                   label="City"
                   required
-                  class="InputGroup--vTop"
+                  className="InputGroup--vTop"
                   size="small"
                 />
                 <Input.Select
@@ -380,7 +380,7 @@ const PersonalDetailsForm = ({
                   options={statesOptions}
                   required
                   label="State"
-                  class="InputGroup--vTop"
+                  className="InputGroup--vTop"
                 />
               </div>
             )}

@@ -24,7 +24,7 @@ const RepaymentDetails = ({ id }) => {
       {
         label: 'Repayment Status',
         value: (
-          <span class={`status-pill status-pill-${StatusPillClasses[status]}`}>
+          <span className={`status-pill status-pill-${StatusPillClasses[status]}`}>
             {STATUS_LABELS[status]}
           </span>
         ),

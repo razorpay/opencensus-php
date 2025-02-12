@@ -36,9 +36,9 @@ export default ({
 
   return (
     <ListFilter {...otherProps} onSubmit={_onSubmit}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>{label} Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field name="status" component="select" className="form-control input-sm">
           <option value="">All</option>
           {!isTypeLink && <option value="draft">Draft</option>}
           {isPaymentlinksV2Enabled ? (
@@ -53,38 +53,38 @@ export default ({
         </Field>
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>{label} Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
       {label === 'Payment Link' && (
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Batch Id</label>
-          <Field name="batch_id" component="input" class="form-control input-sm" />
+          <Field name="batch_id" component="input" className="form-control input-sm" />
         </div>
       )}
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</label>
-        <Field name="receipt" component="input" class="form-control input-sm" />
+        <Field name="receipt" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Customer Contact</label>
-        <Field name="customer_contact" component="input" class="form-control input-sm" />
+        <Field name="customer_contact" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Customer Email</label>
-        <Field name="customer_email" component="input" class="form-control input-sm" />
+        <Field name="customer_email" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field name="notes" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -92,14 +92,14 @@ export default ({
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
 
       {isInttCurrenciesEnabled && user.isCountryIndia && (
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Currency Type</label>
-          <Field name="international" component="select" class="form-control input-sm">
+          <Field name="international" component="select" className="form-control input-sm">
             <option value="">All Currencies</option>
             <option value="0">Indian</option>
             <option value="1">International</option>

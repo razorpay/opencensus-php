@@ -69,7 +69,7 @@ function ShopifyCommingSoonCTA({ user, platform }) {
           <JoinWaitlistButton platform={platformName} />
         ) : (
           <AsyncBtn.Primary
-            class="Button--primary btn-lg btn-primary"
+            className="Button--primary btn-lg btn-primary"
             onClick={handleJoinWaitlistClick}
             showLoader={true}
           >

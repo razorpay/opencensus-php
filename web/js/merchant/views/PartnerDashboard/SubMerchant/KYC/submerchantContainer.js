@@ -278,7 +278,7 @@ const SubmerchantActivationContainer = ({
     return (
       <div>
         <Modal
-          class={classList(...modalClasses)}
+          className={classList(...modalClasses)}
           onClose={onClose}
           onCloseCB={handleCloseActivationForm}
           canDisableCloseBtn={isActivationFormLoading}

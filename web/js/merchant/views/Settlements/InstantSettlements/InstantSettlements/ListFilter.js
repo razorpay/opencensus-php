@@ -8,7 +8,7 @@ const InstantSettlementListFilter = (props) => {
     <ListFilter {...props}>
       <div className="form-group list-filter-item">
         <label>Settlement Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
       <div className="form-group list-filter-item">
@@ -16,7 +16,7 @@ const InstantSettlementListFilter = (props) => {
         <Field
           name="status"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onClick={() => trackIS.filterISStatus()}
         >
           <option value="">All</option>
@@ -36,7 +36,7 @@ const InstantSettlementListFilter = (props) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onClick={() => trackIS.filterISCount()}
         />
       </div>

@@ -4,7 +4,7 @@ import sanitizer from 'common/utils/xss-sanitizer';
 
 const Details = (props) => {
   return (
-    <div class={`row detail-section${props.className ? ` ${props.className}` : ''}`}>
+    <div className={`row detail-section${props.className ? ` ${props.className}` : ''}`}>
       <div className="col-lg-6">
         <div className={`section-head ${props.headClass ? ` ${props.headClass}` : ''}`}>
           <div className="title">{props.title}</div>

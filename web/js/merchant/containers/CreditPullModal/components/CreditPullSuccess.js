@@ -1,21 +1,19 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import ModalHeader from 'common/ui/ModalHeader';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { Bar } from 'react-chartjs-2';
 import AsyncButton from 'react-async-button';
-import CreditPullAdditionalReport from './CreditPullAdditionalReport';
+import { Bar } from 'react-chartjs-2';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
+import ModalHeader from 'common/ui/ModalHeader';
+import ajax from 'merchant/utils/ajax';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
 import CloseReasons from './CloseReasons';
 import { CLOSE_OPTIONS } from './CreditNotInterestedReasons';
-import ajax from 'merchant/utils/ajax';
+import CreditPullAdditionalReport from './CreditPullAdditionalReport';
 
-@connect((state) => ({ user: state.session.user }), {
-  closeModal,
-  openModal,
-  showNotification,
-})
-export default class CreditPullSuccess extends Component {
+class CreditPullSuccess extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -178,13 +176,13 @@ export default class CreditPullSuccess extends Component {
               )}
               <div className="report-actions">
                 <AsyncButton
-                  class="btn btn-primary"
+                  className="btn btn-primary"
                   text="Yes I'm interested"
                   onClick={() => this.handleInterest(1)}
                 />
                 <span> </span>
                 <AsyncButton
-                  class="btn btn-secondary"
+                  className="btn btn-secondary"
                   text="No, I'm not"
                   onClick={() => this.handleInterest(0)}
                 />
@@ -226,3 +224,11 @@ export default class CreditPullSuccess extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    closeModal,
+    openModal,
+    showNotification,
+  }),
+)(CreditPullSuccess);

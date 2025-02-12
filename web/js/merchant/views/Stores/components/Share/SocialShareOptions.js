@@ -50,7 +50,7 @@ const SocialShareOptions = ({ msgInPost, linkInPost }) => {
   }
 
   return (
-    <div class="social-media" style={{ display: 'inline-block' }}>
+    <div className="social-media" style={{ display: 'inline-block' }}>
       <a onClick={mediaWindowUrl} data-type="fb">
         <img src="/img/social-media/fb.png" alt="Facebook share" />
       </a>

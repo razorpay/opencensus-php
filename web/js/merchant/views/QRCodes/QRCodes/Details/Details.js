@@ -59,40 +59,40 @@ export default function Details(props) {
   const customerDetails = findBy(customers.items, 'id', qrCode.customer_id) || {};
 
   return (
-    <div class="content-wrapper content-sm txn-details QRCode--Details">
+    <div className="content-wrapper content-sm txn-details QRCode--Details">
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-qr-code text-warm" /> <strong>{qrCode.id}</strong>
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <i className="i i-qr-code text-warm" /> <strong>{qrCode.id}</strong>
           </div>
 
-          <div class="SliderPanel__Body">
+          <div className="SliderPanel__Body">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
-            <div class="panel-body">
-              <div class="info">
+            <div className="panel-body">
+              <div className="info">
                 <div>
-                  <div class="heading">Amount Received</div>
-                  <div class="value">
+                  <div className="heading">Amount Received</div>
+                  <div className="value">
                     <Amount value={qrCode.payments_amount_received || '000'} />
                   </div>
                 </div>
                 <div>
-                  <div class="heading">Number of Payments</div>
-                  <div class="value">{qrCode.payments_count_received || 0}</div>
+                  <div className="heading">Number of Payments</div>
+                  <div className="value">{qrCode.payments_count_received || 0}</div>
                 </div>
               </div>
 
-              <div class="actions">
-                <Button.Transparent class="Button--Link" onClick={showPreview}>
-                  <i class="i i-eye m-r" /> Preview QR
+              <div className="actions">
+                <Button.Transparent className="Button--Link" onClick={showPreview}>
+                  <i className="i i-eye m-r" /> Preview QR
                 </Button.Transparent>
-                <Button.Transparent class="Button--Link" onClick={downloadQRCode}>
-                  <i class="i i-download m-r" /> Download QR
+                <Button.Transparent className="Button--Link" onClick={downloadQRCode}>
+                  <i className="i i-download m-r" /> Download QR
                 </Button.Transparent>
               </div>
               <div>
@@ -101,10 +101,10 @@ export default function Details(props) {
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Status">
-                  <div class="status">
+                  <div className="status">
                     <QRCodeStatusLabel status={qrCode.status} />
                     {!isQRClosed && !hideQRCloseButton && (
-                      <button class="btn btn-link" onClick={onClose}>
+                      <button className="btn btn-link" onClick={onClose}>
                         Close
                       </button>
                     )}
@@ -150,7 +150,7 @@ export default function Details(props) {
               </div>
 
               {/* showTestPaymentBtn &&
-                <Banner class="QRCode-test-payment">
+                <Banner className="QRCode-test-payment">
                   <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                   <div>
@@ -162,10 +162,10 @@ export default function Details(props) {
               <hr />
 
               <div>
-                <p class="text-muted" style={{ lineHeight: '35px' }}>
+                <p className="text-muted" style={{ lineHeight: '35px' }}>
                   Recent Payments
                   <Link
-                    class="pull-right"
+                    className="pull-right"
                     to={`/qr_codes/payments/?qr_code_id=${qrCode.id}`}
                     onClick={viewAllPayments}
                   >

@@ -31,14 +31,14 @@ class SuccessModal extends React.Component {
     );
 
     const docLink = (
-      <div class="docs-link m-t">
+      <div className="docs-link m-t">
         How to use this code?{' '}
         <DocLink
           target="_blank"
           href="https://razorpay.com/docs/payment-button/subscription-buttons/"
           onClick={this.props.onClickSeeDocumentation}
         >
-          See our documentation <i class="i i-external-link" />
+          See our documentation <i className="i i-external-link" />
         </DocLink>
       </div>
     );
@@ -48,19 +48,19 @@ class SuccessModal extends React.Component {
         paymentButton={paymentButton}
         title={modalTitle}
         description={description}
-        class="success-screen"
+        className="success-screen"
         afterEmbedButton={docLink}
         {...extraProps}
       >
-        <div class="receipt-description">
-          <div class="description-title">Actions After a Successful Payment</div>
-          <div class="description-list">
+        <div className="receipt-description">
+          <div className="description-title">Actions After a Successful Payment</div>
+          <div className="description-list">
             <li> Show a custom message.</li>
             {/*<li> Send automated payment receipts.</li>*/}
             <div>
               Configure these options in
-              <button class="btn-link" onClick={this.onClickButtonSettings}>
-                Button Settings <i class="i i-arrow-forward" />
+              <button className="btn-link" onClick={this.onClickButtonSettings}>
+                Button Settings <i className="i i-arrow-forward" />
               </button>
             </div>
           </div>

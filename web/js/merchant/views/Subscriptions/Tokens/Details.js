@@ -1,59 +1,106 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import Spinner from 'common/ui/Spinner';
-import Alert from 'common/ui/Forms/Alert';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import Time from 'common/ui/Time';
-import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
+import Definition from 'common/ui/Definition';
+import Alert from 'common/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { rupeesToPaise, getFormattedAmountNew, currencySymbols } from 'common/utils/rzp-utils';
-
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
-import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
-import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
-import MandateBankAccountDetails from 'merchant/views/Subscriptions/components/MandateBankAccountDetails';
-import analytics from 'merchant/views/Subscriptions/analytics';
-
-import { fetchToken, deleteToken, resubmitNACHFile, cancelToken } from 'merchant/reducers/token';
 import { downloadSignedNACHFile } from 'merchant/reducers/registration_link';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { fetchToken, deleteToken, resubmitNACHFile, cancelToken } from 'merchant/reducers/token';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import MandateBankAccountDetails from 'merchant/views/Subscriptions/components/MandateBankAccountDetails';
+import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
+import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
+import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
 import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { getTokenStatus } from './List';
 import ChargeToken from './components/ChargeToken';
-
 import {
   trackClickDownloadNACHForm,
   trackClickResubmitNachForm,
   trackClickViewNACHForm,
 } from './ga';
 
-@connect(
-  (state) => ({
-    ...state.token,
-    user: state.session.user,
-  }),
-  {
-    fetchToken,
-    openModal,
-    closeModal,
-    cancelToken,
-    deleteToken,
+class ErrorMessageComponent extends React.PureComponent {
+  static defaultProps = {
+    recurringDetails: {
+      failure_reason: '',
+    },
+  };
+
+  resubmitNACHFile = () => {
+    this.props.trackTokenDetailsView('nach.download_signed_nach.initiate');
+
+    return resubmitNACHFile(this.props.id)
+      .then(() => {
+        trackClickResubmitNachForm();
+
+        this.props.showNotification({
+          type: 'success',
+          message: 'NACH file re-submitted successfully',
+        });
+
+        this.props.trackTokenDetailsView('nach.download_signed_nach.success');
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+
+        this.props.trackTokenDetailsView('nach.download_signed_nach.fail', {
+          response: errors,
+        });
+      });
+  };
+
+  render() {
+    const {
+      recurringDetails: { failure_reason },
+      isNACHMethod,
+    } = this.props;
+
+    if (isNACHMethod && failure_reason) {
+      return (
+        <EntityDetailRow label="Failure Reason">
+          <Alert type="error" message={failure_reason} showDismiss={false} />
+
+          <AsyncBtn.Primary
+            onClick={this.resubmitNACHFile}
+            pendingState="Resubmitting..."
+            className="btn"
+          >
+            Resubmit
+          </AsyncBtn.Primary>
+        </EntityDetailRow>
+      );
+    }
+    return null;
+  }
+}
+
+const ErrorMessage = compose(
+  connect(null, {
     showNotification,
-  },
-)
-@RTracking(() => window.rzpQ.component('TokenDetailsContainer'))
+  }),
+)(ErrorMessageComponent);
+
 class TokenDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -235,20 +282,20 @@ class TokenDetailsContainer extends Component {
     }
 
     return (
-      <div class="content-wrapper content-sm txn-details Token--Details">
+      <div className="content-wrapper content-sm txn-details Token--Details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">{entity.id}</div>
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">{entity.id}</div>
             <Alert type="error" message={error} />
             {!error && (
-              <div class="SliderPanel__Body">
-                <div class="panel-body">
-                  <div class="list-group details-row-container">
-                    <div class="charge-now">
+              <div className="SliderPanel__Body">
+                <div className="panel-body">
+                  <div className="list-group details-row-container">
+                    <div className="charge-now">
                       <MandateCustomerDetails customer={entity.customer} />
 
                       {showChangeBtn && (
@@ -260,7 +307,7 @@ class TokenDetailsContainer extends Component {
 
                     {/* status of token */}
                     <EntityDetailRow label="Status">
-                      <TokenStatusLabel class="m-r" status={getTokenStatus(entity)} />
+                      <TokenStatusLabel className="m-r" status={getTokenStatus(entity)} />
                     </EntityDetailRow>
                     <ErrorMessage
                       id={entity.id}
@@ -304,7 +351,7 @@ class TokenDetailsContainer extends Component {
                       <EntityDetailRow label="Max Auto-debit Amount">
                         <Amount value={maxAmount} currency={merchantCurrency} />{' '}
                         <span>
-                          <i class="i i-info-circle" />
+                          <i className="i i-info-circle" />
                           <Popover theme="dark">
                             <PopoverBody>
                               {`You can automatically charge the customer upto
@@ -325,24 +372,24 @@ class TokenDetailsContainer extends Component {
                     )}
                     <NestedEntityDetailRow label="Notes" value={entity.notes} />
 
-                    <EntityDetailRow label="Actions" class="pair-group-item actions">
+                    <EntityDetailRow label="Actions" className="pair-group-item actions">
                       {this.isUPIMethod && !isCancelled && (
                         <button
-                          class="btn btn-default"
+                          className="btn btn-default"
                           onClick={this.handleCancelToken}
                           style={{
                             marginRight: 8,
                           }}
                         >
-                          <i class="i i-close" /> Cancel Token
+                          <i className="i i-close" /> Cancel Token
                         </button>
                       )}
 
                       <button
-                        class="btn Button--invert Button--danger"
+                        className="btn Button--invert Button--danger"
                         onClick={this.handleDeleteToken}
                       >
-                        <i class="i i-delete" /> Delete Token
+                        <i className="i i-delete" /> Delete Token
                       </button>
                     </EntityDetailRow>
                   </div>
@@ -360,7 +407,7 @@ function TimeStamps({ token }) {
   const timeFormat = 'LL, hh:mm A';
   return (
     <ContentToggler>
-      <span class="text-primary">
+      <span className="text-primary">
         <Time value={token.created_at} format={timeFormat} />
       </span>
       <Definition>
@@ -372,65 +419,21 @@ function TimeStamps({ token }) {
   );
 }
 
-@connect(null, {
-  showNotification,
-})
-class ErrorMessage extends React.PureComponent {
-  static defaultProps = {
-    recurringDetails: {
-      failure_reason: '',
+export default compose(
+  connect(
+    (state) => ({
+      ...state.token,
+      user: state.session.user,
+    }),
+    {
+      fetchToken,
+      openModal,
+      closeModal,
+      cancelToken,
+      deleteToken,
+      showNotification,
     },
-  };
-
-  resubmitNACHFile = () => {
-    this.props.trackTokenDetailsView('nach.download_signed_nach.initiate');
-
-    return resubmitNACHFile(this.props.id)
-      .then(() => {
-        trackClickResubmitNachForm();
-
-        this.props.showNotification({
-          type: 'success',
-          message: 'NACH file re-submitted successfully',
-        });
-
-        this.props.trackTokenDetailsView('nach.download_signed_nach.success');
-      })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors[0],
-        });
-
-        this.props.trackTokenDetailsView('nach.download_signed_nach.fail', {
-          response: errors,
-        });
-      });
-  };
-
-  render() {
-    const {
-      recurringDetails: { failure_reason },
-      isNACHMethod,
-    } = this.props;
-
-    if (isNACHMethod && failure_reason) {
-      return (
-        <EntityDetailRow label="Failure Reason">
-          <Alert type="error" message={failure_reason} showDismiss={false} />
-
-          <AsyncBtn.Primary
-            onClick={this.resubmitNACHFile}
-            pendingState="Resubmitting..."
-            class="btn"
-          >
-            Resubmit
-          </AsyncBtn.Primary>
-        </EntityDetailRow>
-      );
-    }
-    return null;
-  }
-}
-
-export default withRouter(TokenDetailsContainer);
+  ),
+  rTracking(() => window.rzpQ.component('TokenDetailsContainer')),
+  withRouter,
+)(TokenDetailsContainer);

@@ -1,20 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as EventActions from 'merchant/reducers/trackEvents';
+
 import ActivationForm from './index';
 
-@connect(
-  (state) => ({
-    session: state.session,
-    user: state.session.user,
-  }),
-  {
-    ...EventActions,
-  },
-)
-export default class ActivationNativeView extends React.Component {
+class ActivationNativeView extends React.Component {
   componentDidMount() {
     if (this.props.user?.isActivationFormFullView) {
       this.props.trackEvents({
@@ -34,3 +27,15 @@ export default class ActivationNativeView extends React.Component {
     return <ActivationForm />;
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      session: state.session,
+      user: state.session.user,
+    }),
+    {
+      ...EventActions,
+    },
+  ),
+)(ActivationNativeView);

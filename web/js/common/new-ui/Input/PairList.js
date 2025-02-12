@@ -79,9 +79,9 @@ export default class PairList extends React.PureComponent {
 
   render() {
     return (
-      <div class={classList(inputClass(this), !!this.state.pairs.length && 'isExpanded')}>
+      <div className={classList(inputClass(this), !!this.state.pairs.length && 'isExpanded')}>
         <Label text={this.props.label} className={this.props.labelClass} />
-        <div class="Input-content">
+        <div className="Input-content">
           {!!this.state.pairs.length &&
             this.state.pairs.map((pair, idx) => (
               <Pair
@@ -98,7 +98,7 @@ export default class PairList extends React.PureComponent {
             ))}
 
           {this.state.pairs.length < this.state.maxAllowedPairs ? (
-            <Button.Transparent type="button" class="Btn--Link" onClick={this.onAddNew}>
+            <Button.Transparent type="button" className="Btn--Link" onClick={this.onAddNew}>
               + Add New
             </Button.Transparent>
           ) : null}
@@ -152,14 +152,14 @@ class Pair extends React.Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'Input-pair',
           (this.state.focusDesc || this.state.focusTitle) && 'is-focused',
         )}
       >
-        <div class="Input-elWrapper">
+        <div className="Input-elWrapper">
           <input
-            class="Input-el Input-el--after"
+            className="Input-el Input-el--after"
             name={`${name}[${idx}][key]`}
             placeholder="Title (key)"
             data-id={idx}
@@ -169,18 +169,18 @@ class Pair extends React.Component {
             onFocus={this.onFocusTitle}
           />
           <span
-            class="Input-addons Input-addons--after Input-addons--clickable"
+            className="Input-addons Input-addons--after Input-addons--clickable"
             data-id={idx}
             onClick={this.props.removePair}
           >
-            <i class="i i-close" />
+            <i className="i i-close" />
           </span>
         </div>
 
-        <div class="Input-pair-separator" />
-        <div class="Input-elWrapper">
+        <div className="Input-pair-separator" />
+        <div className="Input-elWrapper">
           <textarea
-            class="Input-el"
+            className="Input-el"
             name={`${name}[${idx}][value]`}
             placeholder="Description (value)"
             data-id={idx}

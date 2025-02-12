@@ -19,7 +19,7 @@ import * as HomeActions from 'merchantLA/reducers/home';
 import { fetch } from 'merchantLA/reducers/pokedex';
 import { fetchTransfers } from 'merchantLA/reducers/collection';
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchantLA/components/Home/data';
-
+import { compose } from 'redux';
 import { trackError, trackDatesChange, trackPlatformAnalyticsHidden } from './ga';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
@@ -48,21 +48,7 @@ const keymetricsSectionTitle = 'Transactions Overview';
 const trafficSectionTitle = 'Traffic split on platforms';
 const recentActivityTitle = 'Recent Activity';
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      mode: state.session.mode,
-      current_balance: state.home.current_balance,
-    };
-  },
-  {
-    ...HomeActions,
-    showNotification,
-    fetchTransfers,
-  },
-)
-export default class HomeContainer extends Component {
+class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
@@ -552,9 +538,26 @@ export default class HomeContainer extends Component {
     };
 
     return (
-      <div class="react-root dashboard-home">
+      <div className="react-root dashboard-home">
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        mode: state.session.mode,
+        current_balance: state.home.current_balance,
+      };
+    },
+    {
+      ...HomeActions,
+      showNotification,
+      fetchTransfers,
+    },
+  ),
+)(HomeContainer);

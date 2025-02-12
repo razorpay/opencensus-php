@@ -191,7 +191,7 @@ const MissedOrderPaymentLink = ({
             </span>
             {activeSubscription && (
               <div className="manage-btn" onClick={manageSettings}>
-                <i class="i i-settings icon-wrapper" />
+                <i className="i i-settings icon-wrapper" />
                 Manage
               </div>
             )}

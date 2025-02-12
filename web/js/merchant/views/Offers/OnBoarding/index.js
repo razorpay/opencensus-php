@@ -1,43 +1,27 @@
+import React from 'react';
 import { connect } from 'react-redux';
-
-import { RZPFeatures } from 'merchant/helpers/data';
+import { compose } from 'redux';
 
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
-
-import Landing from 'merchant/components/OnBoarding/Slides/Landing';
-import Features from 'merchant/components/OnBoarding/Slides/Features';
-import OnBoarding, {
+import onBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
   SkipAndGetStartedButton,
   getIsAllowedResetBoarding,
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
-
-import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import { RZPFeatures } from 'merchant/helpers/data';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(
-  state => ({
-    user: state.session.user,
-    offersProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.offers
-    ),
-  }),
-  { handleProductQuickGuide }
-)
-@OnBoarding({
-  feature: RZPFeatures.OFFERS,
-})
-export default class OffersOnBoarding extends React.Component {
-  getNextBtnProp = sliderProps => () => {
+class OffersOnBoarding extends React.Component {
+  getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
         isLocalEnabler
@@ -56,7 +40,7 @@ export default class OffersOnBoarding extends React.Component {
     const { active, offersProductOnBoarding } = this.props;
 
     return (
-      <OnBoardingWrapper class="Offers">
+      <OnBoardingWrapper className="Offers">
         <Slider
           active={active}
           afterSlide={getOnBoardingSliderDots({
@@ -64,7 +48,7 @@ export default class OffersOnBoarding extends React.Component {
             closeOnboarding: this.closeOnboarding,
           })}
         >
-          {sliderProps => (
+          {(sliderProps) => (
             <Landing
               {...sliderProps}
               feature={RZPFeatures.OFFERS}
@@ -74,7 +58,7 @@ export default class OffersOnBoarding extends React.Component {
             />
           )}
 
-          {sliderProps => (
+          {(sliderProps) => (
             <Features
               {...sliderProps}
               title="What makes Offers great?"
@@ -91,7 +75,7 @@ export default class OffersOnBoarding extends React.Component {
 }
 
 function getOnBoardingSliderDots({ closeOnboarding, offersProductOnBoarding }) {
-  return sliderProps => (
+  return (sliderProps) => (
     <SliderDots {...sliderProps}>
       <SkipAndGetStartedButton
         isLocalEnabler
@@ -132,3 +116,16 @@ export function getIsOffersEnabled({ user, offers }) {
 
   return user.isOffersEnabled;
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      offersProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.offers),
+    }),
+    { handleProductQuickGuide },
+  ),
+  onBoarding({
+    feature: RZPFeatures.OFFERS,
+  }),
+)(OffersOnBoarding);

@@ -1,19 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import PlanDetails from 'merchant/views/Subscriptions/Plans/components/Details';
+
+import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import {
   fetchPlan as fetchItem,
   fetchSubscriptionsByPlanId as fetchSubscriptions,
 } from 'merchant/reducers/plans';
-import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import PlanDetails from 'merchant/views/Subscriptions/Plans/components/Details';
 
-@connect(
-  (state) => ({
-    ...state.plan,
-  }),
-  { fetchItem, fetchSubscriptions },
-)
-export default class PlanDetailsContainer extends Component {
+class PlanDetailsContainer extends Component {
   UNSAFE_componentWillMount() {
     this.props.fetchItem(this.props.id).then(() => {
       this.props.fetchSubscriptions(this.props.entity);
@@ -73,3 +68,10 @@ export default class PlanDetailsContainer extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    ...state.plan,
+  }),
+  { fetchItem, fetchSubscriptions },
+)(PlanDetailsContainer);

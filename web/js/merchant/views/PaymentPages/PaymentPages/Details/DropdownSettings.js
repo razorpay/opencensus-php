@@ -32,7 +32,7 @@ const DropdownSettings = ({
     <span className="d-inline-block">
       <Dropdown closeOnClick={false} onShow={onShow}>
         <DropdownTrigger className="dropdown-toggle Dropdown--Notifications-toggle}">
-          <Button class="Button--primary--invert">
+          <Button className="Button--primary--invert">
             <i className="i i-settings-outline" />
             <i className="i i-chevron-down" />
             <i className="i i-chevron-up" />
@@ -42,11 +42,11 @@ const DropdownSettings = ({
           </Button>
         </DropdownTrigger>
         <DropdownContent>
-          <ul class="dropdown-menu">
+          <ul className="dropdown-menu">
             {!isStorefrontPage ? (
               <li
                 type="button"
-                class="btn"
+                className="btn"
                 onClick={() => {
                   track.receiptSettings();
 
@@ -61,7 +61,7 @@ const DropdownSettings = ({
             ) : null}
             <li
               type="button"
-              class="btn"
+              className="btn"
               onClick={() => {
                 track.pageSettings();
 

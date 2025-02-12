@@ -38,7 +38,7 @@ export function customTooltip(tooltipModel, btnAction) {
     tooltipEl = document.createElement('div');
     tooltipEl.id = 'chartjs-tooltip';
     tooltipEl.innerHTML = sanitizer(
-      '<div class="tooltip-wrapper"></div><div class="tooltip-caret"></div>',
+      '<div className="tooltip-wrapper"></div><div className="tooltip-caret"></div>',
     );
     document.body.appendChild(tooltipEl);
   }
@@ -69,23 +69,23 @@ export function customTooltip(tooltipModel, btnAction) {
   if (body) {
     const titleLines = title || [];
 
-    let innerHtml = '<div class="title-wrap">';
+    let innerHtml = '<div className="title-wrap">';
 
     titleLines.forEach((title) => {
-      innerHtml += `<div class="title">${title}</div>`;
+      innerHtml += `<div className="title">${title}</div>`;
     });
 
-    innerHtml += '</div><div class="tooltip-body-wrap">';
+    innerHtml += '</div><div className="tooltip-body-wrap">';
 
     body.forEach(({ lines }, i) => {
       const { backgroundColor, borderColor } = labelColors[i];
 
       const style = `background: ${backgroundColor}; border-color: ${borderColor};`;
 
-      const colorBox = `<span class="label-box" style="${style}"></span>`;
+      const colorBox = `<span className="label-box" style="${style}"></span>`;
 
-      innerHtml += `<div class="tooltip-body-list">
-      <div class="tooltip-body">${colorBox}${lines[0]}</div>
+      innerHtml += `<div className="tooltip-body-list">
+      <div className="tooltip-body">${colorBox}${lines[0]}</div>
       </div>`;
     });
 
@@ -94,7 +94,7 @@ export function customTooltip(tooltipModel, btnAction) {
     const tooltipWrapper = tooltipEl.querySelector('.tooltip-wrapper');
     tooltipWrapper.innerHTML = sanitizer(innerHtml, { span: ['style'] }); // Allow span tag with style attr
     if (showButton) {
-      tooltipWrapper.innerHTML += `<div class="btn-wrapper"><button class="tooltip-btn">Know more?</button></div>`;
+      tooltipWrapper.innerHTML += `<div className="btn-wrapper"><button className="tooltip-btn">Know more?</button></div>`;
       const tooltipBtn = tooltipEl.querySelector('.tooltip-btn');
       tooltipBtn?.addEventListener('click', () => {
         tooltipEl.style.opacity = 0;

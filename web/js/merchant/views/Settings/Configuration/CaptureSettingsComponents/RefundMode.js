@@ -113,11 +113,11 @@ function RefundMode(props) {
 
   return (
     <>
-      <div class="capture-mode-container">
+      <div className="capture-mode-container">
         <ModalHeader title="Capture Settings" onCloseClick={props.closeModal} />
-        <div class="content">
-          <div class="info">
-            <p class="automatic-info">
+        <div className="content">
+          <div className="info">
+            <p className="automatic-info">
               [Automatic Capture Duration :{' '}
               {renderTimeoutAsString(parseTimeoutValues(props.captureModeTimeout))}]
             </p>
@@ -127,16 +127,16 @@ function RefundMode(props) {
             </p>
           </div>
           <div
-            class={`upper-panel ${isSelected === 'manually' ? 'flex-7' : ''}`}
+            className={`upper-panel ${isSelected === 'manually' ? 'flex-7' : ''}`}
             style={{ marginTop: '-6px' }}
           >
             <div
-              class={`panel-rows highlight-box ${
+              className={`panel-rows highlight-box ${
                 isSelected === 'manually' ? `m-t-negative` : null
               }`}
             >
-              <div class={`${isSelected ? handleLayout().upper : ``}`}>
-                <div class="left-col">
+              <div className={`${isSelected ? handleLayout().upper : ``}`}>
+                <div className="left-col">
                   <input
                     type="radio"
                     onClick={(_) => {
@@ -145,7 +145,7 @@ function RefundMode(props) {
                     checked={isSelected === 'automatically'}
                   />
                 </div>
-                <div class="right-col">
+                <div className="right-col">
                   <strong
                     onClick={(_) => {
                       setisSelected(`automatically`);
@@ -153,13 +153,13 @@ function RefundMode(props) {
                   >
                     Refund Automatically
                   </strong>
-                  <p class="highlight__subtext" style={{ paddingBottom: '12px' }}>
+                  <p className="highlight__subtext" style={{ paddingBottom: '12px' }}>
                     I do not want to accept those payments. Please refund them automatically.
                   </p>
                 </div>
               </div>
-              <div class={`highlight-border-top ${isSelected ? handleLayout().lower : ``}`}>
-                <div class="left-col">
+              <div className={`highlight-border-top ${isSelected ? handleLayout().lower : ``}`}>
+                <div className="left-col">
                   <input
                     type="radio"
                     onClick={(_) => {
@@ -168,7 +168,7 @@ function RefundMode(props) {
                     checked={isSelected === 'manually'}
                   />
                 </div>
-                <div class="right-col">
+                <div className="right-col">
                   <strong
                     onClick={(_) => {
                       setisSelected(`manually`);
@@ -176,7 +176,7 @@ function RefundMode(props) {
                   >
                     Capture manually via dashboard or API
                   </strong>
-                  <p class="highlight__subtext">
+                  <p className="highlight__subtext">
                     Payments have to be captured manually by you via the API or the dashboard.
                   </p>
 
@@ -198,17 +198,17 @@ function RefundMode(props) {
             </div>
           </div>
         </div>
-        <div class="lower-panel" />
-        <div class="actions">
-          <div class="stepper">
+        <div className="lower-panel" />
+        <div className="actions">
+          <div className="stepper">
             <span />
-            <span class="active" />
+            <span className="active" />
           </div>
           <div>
-            <p class="prev-btn" onClick={onPreviousClick}>
+            <p className="prev-btn" onClick={onPreviousClick}>
               Previous
             </p>
-            <button class="btn btn-primary" onClick={onNextClick} disabled={!isSelected}>
+            <button className="btn btn-primary" onClick={onNextClick} disabled={!isSelected}>
               Next
             </button>
           </div>

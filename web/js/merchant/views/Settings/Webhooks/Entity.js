@@ -82,7 +82,7 @@ class WebhookEntity extends Component {
       .confirm({
         header: 'Are you sure?',
         message: () => (
-          <div class="text-semi-muted">
+          <div className="text-semi-muted">
             You are about to permanently delete the webhook URL.
             <br />
             <br />
@@ -152,7 +152,7 @@ class WebhookEntity extends Component {
         <div className="panel panel-default SliderPanel">
           <div className="panel-heading">
             <strong>Webhook Details</strong>
-            <div class="webhook-actions">
+            <div className="webhook-actions">
               <button
                 type="button"
                 className="btn Button--primary--invert btn-lg delete-webhook"
@@ -203,7 +203,7 @@ class WebhookEntity extends Component {
                   <DocsLink
                     title="Learn more about Webhook secrets"
                     url="https://razorpay.com/docs/webhooks/"
-                    class="webhook-doclinks"
+                    className="webhook-doclinks"
                   />
                 </EntityDetailRow>
                 <EntityDetailRow label="Active Events">
@@ -221,7 +221,7 @@ class WebhookEntity extends Component {
                             </span>
                           )}
                           childrenPosition="top"
-                          class="CollapsibleFields"
+                          className="CollapsibleFields"
                         >
                           {activeEvents.slice(7).map((event, idx) => (
                             <p key={idx}>{event}</p>

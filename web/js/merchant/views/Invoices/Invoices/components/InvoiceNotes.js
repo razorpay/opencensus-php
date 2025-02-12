@@ -8,7 +8,7 @@ export default ({ invoice, isSaving, onAddClick }) => {
 
   if (Object.keys(invoice.notes || {}).length) {
     return (
-      <div class="inv__info inv__addnote">
+      <div className="inv__info inv__addnote">
         <h4>Internal Notes</h4>
         <dl>
           {Object.keys(invoice.notes).map(key => (
@@ -21,11 +21,11 @@ export default ({ invoice, isSaving, onAddClick }) => {
         {!(isNew || locked) && (
           <button
             type="button"
-            class="btn btn-default btn-block btn-lg"
+            className="btn btn-default btn-block btn-lg"
             onClick={onAddClick}
             disabled={isSaving}
           >
-            <i class="i i-comment" />
+            <i className="i i-comment" />
             <span>Add Internal Note</span>
           </button>
         )}
@@ -33,14 +33,14 @@ export default ({ invoice, isSaving, onAddClick }) => {
     );
   } else if (!(isNew || locked)) {
     return (
-      <div class="inv__cta">
+      <div className="inv__cta">
         <button
           type="button"
-          class="btn btn-default btn-block btn-lg"
+          className="btn btn-default btn-block btn-lg"
           onClick={onAddClick}
           disabled={isSaving}
         >
-          <i class="i i-comment" />
+          <i className="i i-comment" />
           <span>Add Internal Note</span>
         </button>
       </div>

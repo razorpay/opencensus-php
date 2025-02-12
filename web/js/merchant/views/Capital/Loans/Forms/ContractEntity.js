@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
 import Note from '../../components/Note';
 import {
   fetchLoanApplicationMeta,
@@ -8,21 +9,12 @@ import {
 } from 'merchant/reducers/capital';
 
 import '../Leegaliity';
-import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
+
 import { APPLICATION_STATES, CAPITAL_PRODUCT_CODES } from '../constants';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    getAgreementStatus,
-    fetchLoanApplicationMeta,
-    ...NotificationActions,
-  },
-)
 class ContractEntity extends Component {
   constructor(props) {
     super(props);
@@ -138,14 +130,16 @@ class ContractEntity extends Component {
 
     return (
       //Add this in CSS
-      <div class="m-l m-r">
+      <div className="m-l m-r">
         {agreement_details.data ? (
           this.hasSigned() ? (
-            <div class="panel panel-default m-all">
-              <div class="panel-body">
+            <div className="panel panel-default m-all">
+              <div className="panel-body">
                 <strong>Signed Loan Agreement</strong>
-                <p class="text--secondary">Check the signed agreement with loan offer details.</p>
-                <a class="link no-margin no-padding" onClick={this.handleDownloadAgreement}>
+                <p className="text--secondary">
+                  Check the signed agreement with loan offer details.
+                </p>
+                <a className="link no-margin no-padding" onClick={this.handleDownloadAgreement}>
                   {this.state.downloading ? (
                     'Downloading...'
                   ) : (
@@ -156,7 +150,7 @@ class ContractEntity extends Component {
                   )}
                 </a>
               </div>
-              <div class="actions pull-right m-t">
+              <div className="actions pull-right m-t">
                 <button
                   className="btn btn-link"
                   onClick={() => {
@@ -171,7 +165,7 @@ class ContractEntity extends Component {
                   Back
                 </button>
                 <Button.Primary
-                  class="no-margin"
+                  className="no-margin"
                   onClick={() => {
                     this.props._trackNavigationActions(
                       'NEXT',
@@ -198,7 +192,7 @@ class ContractEntity extends Component {
                   </span>
                 }
               />
-              <div class="actions pull-right m-r">
+              <div className="actions pull-right m-r">
                 <Button.Transparent
                   onClick={() => {
                     this.props._trackNavigationActions(
@@ -212,7 +206,7 @@ class ContractEntity extends Component {
                   Back
                 </Button.Transparent>
                 <AsyncBtn.Primary
-                  class="m-r m-l"
+                  className="m-r m-l"
                   onClick={this.sign}
                   showLoader={false}
                   pendingState="Signing..."
@@ -239,4 +233,13 @@ class ContractEntity extends Component {
   }
 }
 
-export default ContractEntity;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    getAgreementStatus,
+    fetchLoanApplicationMeta,
+    ...NotificationActions,
+  },
+)(ContractEntity);

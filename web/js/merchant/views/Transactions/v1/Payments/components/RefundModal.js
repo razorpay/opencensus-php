@@ -409,10 +409,10 @@ class RefundModal extends Component {
             .confirm({
               header: 'Do you want to refund this payment?',
               message: () => (
-                <div class="confirm-note">
+                <div className="confirm-note">
                   The payment will be instantly refunded &nbsp;
                   <span>
-                    <i class="i i-help" />
+                    <i className="i i-help" />
                     <PopoverComponent
                       theme="dark"
                       align="bottom"
@@ -460,7 +460,7 @@ class RefundModal extends Component {
           message: props.reverse_all ? (
             'Reversals will be automatically created for all transfers on this payment, before the refund'
           ) : (
-            <span class="confirm-note d-block">The payment will be refunded in 5-7 days.</span>
+            <span className="confirm-note d-block">The payment will be refunded in 5-7 days.</span>
           ),
           affirmativeLabel: 'Yes, Refund',
           affirmativePendingLabel: 'Refunding...',
@@ -553,16 +553,16 @@ class RefundModal extends Component {
         <div>
           <div
             style={{ marginTop: '20px' }}
-            class={`${this.getInstantRefundClassNames(
+            className={`${this.getInstantRefundClassNames(
               refund_check_disabled,
             )} instant-refund-check ${
               this.state.instantChecked && !refund_check_disabled ? 'focussed' : ''
             }`}
           >
-            <div class="row">
-              <div class="col-xs-8">
+            <div className="row">
+              <div className="col-xs-8">
                 <div
-                  class="instant-refund-check-container"
+                  className="instant-refund-check-container"
                   onMouseEnter={this.handleHoverIn}
                   onMouseLeave={this.handleHoverOut}
                 >
@@ -577,13 +577,13 @@ class RefundModal extends Component {
                   <strong>Refund Instantly</strong>
                 </div>
               </div>
-              <div class="col-xs-4 text-right">
+              <div className="col-xs-4 text-right">
                 {!this.state.instantChecked ? (
                   <span>
                     {!refund_check_disabled ? (
                       <Fragment>
                         <i
-                          class="i i-help"
+                          className="i i-help"
                           onMouseEnter={
                             /* istanbul ignore next */ () => {
                               this.analytics.hovered = true;
@@ -615,7 +615,7 @@ class RefundModal extends Component {
                         value={this.state.instant_fee.fee}
                         currency={payment.currency}
                       />{' '}
-                      <span style={{ marginLeft: '3px' }} class="grey">
+                      <span style={{ marginLeft: '3px' }} className="grey">
                         Fee
                       </span>
                     </Fragment>
@@ -665,8 +665,8 @@ class RefundModal extends Component {
           {this.state.instantChecked &&
           !refund_check_disabled &&
           !this.props.current_balance.loading ? (
-            <div class="low-funds" style={{ marginBottom: 0 }}>
-              <div class="instant-refund-breakup-para">
+            <div className="low-funds" style={{ marginBottom: 0 }}>
+              <div className="instant-refund-breakup-para">
                 <div>
                   A total amount of &nbsp;
                   <Amount
@@ -695,7 +695,7 @@ class RefundModal extends Component {
                           this.analytics.hover_breakup = true;
                         }
                       }
-                      class="i i-info-circle"
+                      className="i i-info-circle"
                     />
                     <PopoverComponent
                       theme="dark"
@@ -703,10 +703,10 @@ class RefundModal extends Component {
                       parentQuerySelector=".Modal--small"
                     >
                       <PopoverBody>
-                        <div class="instant-breakup">
-                          <div class="flex">
-                            <div class="w50 text-left">Refund Amount</div>
-                            <div class="w50 text-right">
+                        <div className="instant-breakup">
+                          <div className="flex">
+                            <div className="w50 text-left">Refund Amount</div>
+                            <div className="w50 text-right">
                               <Amount
                                 value={rupeesToPaise(
                                   this.props.payable_amount,
@@ -716,9 +716,9 @@ class RefundModal extends Component {
                               />
                             </div>
                           </div>
-                          <div class="flex">
-                            <div class="w50 text-left">Instant Refund Fees</div>
-                            <div class="w50 text-right">
+                          <div className="flex">
+                            <div className="w50 text-left">Instant Refund Fees</div>
+                            <div className="w50 text-right">
                               +{' '}
                               <Amount
                                 value={this.state.instant_fee.fee - this.state.instant_fee.tax}
@@ -726,9 +726,9 @@ class RefundModal extends Component {
                               />
                             </div>
                           </div>
-                          <div class="flex">
-                            <div class="w50 text-left">Taxes</div>
-                            <div class="w50 text-right">
+                          <div className="flex">
+                            <div className="w50 text-left">Taxes</div>
+                            <div className="w50 text-right">
                               +
                               <Amount
                                 value={this.state.instant_fee.tax}
@@ -742,11 +742,11 @@ class RefundModal extends Component {
                               opacity: 0.6,
                             }}
                           />
-                          <div class="flex">
-                            <div style={{ flex: '1 1 auto' }} class="text-left">
+                          <div className="flex">
+                            <div style={{ flex: '1 1 auto' }} className="text-left">
                               <b>Amount to be deducted</b>
                             </div>
-                            <div style={{ flex: '1 1 auto' }} class="text-right">
+                            <div style={{ flex: '1 1 auto' }} className="text-right">
                               <b>
                                 {' '}
                                 <Amount
@@ -861,9 +861,9 @@ class RefundModal extends Component {
         {({ data: ezetapData }) => (
           <div>
             <ModalHeader title="Refund Payment" onCloseClick={this.props.closeModal} />
-            <div class="modal-body">
+            <div className="modal-body">
               {nonFraudDisputeCount ? (
-                <div class="text-danger m-b">
+                <div className="text-danger m-b">
                   There {nonFraudDisputeCount > 1 ? 'are' : 'is'} dispute
                   {nonFraudDisputeCount > 1 && 's'} raised against this payment. Kindly check the
                   dispute details before initiating a refund.
@@ -874,14 +874,14 @@ class RefundModal extends Component {
                   this.save(props, ezetapData);
                 })}
               >
-                <div class="refunds-overflow-box">
+                <div className="refunds-overflow-box">
                   {gateway_refund_support === false && (
                     <div
                       className={`block-refunds-note ${
                         highlightNote ? `highlight-block-refund-note` : ''
                       }`}
                     >
-                      <i class="i i-triangle-alert" />{' '}
+                      <i className="i i-triangle-alert" />{' '}
                       {instant_refund_support ? (
                         <p>
                           This payment was made more than{' '}
@@ -911,9 +911,9 @@ class RefundModal extends Component {
                       )}
                     </div>
                   )}
-                  <div class={`form-group ${this.shouldFormBeOpaque() ? `make-opaque` : null}`}>
-                    <label class="label-required">Refund Amount</label>
-                    <div class="input-group">
+                  <div className={`form-group ${this.shouldFormBeOpaque() ? `make-opaque` : null}`}>
+                    <label className="label-required">Refund Amount</label>
+                    <div className="input-group">
                       <AmountTooltip
                         currency={payment.currency}
                         parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
@@ -933,7 +933,7 @@ class RefundModal extends Component {
                           const focussed = this.state.focussed;
                           this.setState({ focussed: !focussed });
                         }}
-                        class="form-control refund-amt-input"
+                        className="form-control refund-amt-input"
                         type="number"
                         step="0.01"
                         placeholder="Enter the refund amount"
@@ -941,9 +941,9 @@ class RefundModal extends Component {
                       />
                     </div>
                     {!!amountError ? (
-                      <div class="InputField__ErrorText text-danger">{amountError}</div>
+                      <div className="InputField__ErrorText text-danger">{amountError}</div>
                     ) : (
-                      <small class="help-block">
+                      <small className="help-block">
                         This will be a{' '}
                         <b>
                           <RefundType partial={partial} /> refund
@@ -953,25 +953,27 @@ class RefundModal extends Component {
                     )}
                   </div>
                   {transfers.items.length > 0 && (
-                    <div class="row">
-                      <div class="col-xs-12">
+                    <div className="row">
+                      <div className="col-xs-12">
                         <div
-                          class={`instant-refund-check ${this.state.reversal ? 'focussed' : ''}`}
+                          className={`instant-refund-check ${
+                            this.state.reversal ? 'focussed' : ''
+                          }`}
                           style={{ marginBottom: '0', marginTop: '0' }}
                         >
                           <div
                             style={{ paddingLeft: '5px' }}
-                            class="instant-refund-check-container route-transfer-check-container"
+                            className="instant-refund-check-container route-transfer-check-container"
                           >
                             <Field
                               name="reverse_all"
                               id="reverse_all"
                               component="input"
-                              class="pointer route-transfer-check"
+                              className="pointer route-transfer-check"
                               type="checkbox"
                               onChange={(e) => this.setState({ reversal: e.target.checked })}
                             />
-                            <strong class="icon i-check" for="reverse_all">
+                            <strong className="icon i-check" htmlFor="reverse_all">
                               Reverse all{' '}
                               <a
                                 href="https://razorpay.com/docs/route/operations/#reversals"
@@ -991,17 +993,17 @@ class RefundModal extends Component {
                 </div>
 
                 <div
-                  class={`form-group add-comment-div ${
+                  className={`form-group add-comment-div ${
                     this.shouldFormBeOpaque() ? `make-opaque` : null
                   }`}
                 >
                   {this.state.showComments ? (
-                    <div class="form-group mt20">
+                    <div className="form-group mt20">
                       <Field
                         name="comment"
                         placeholder="Comment Description"
                         component={AutoResizeTextarea}
-                        class="form-control"
+                        className="form-control"
                       />
                     </div>
                   ) : (
@@ -1010,19 +1012,19 @@ class RefundModal extends Component {
                         this.analytics.comment = true;
                         this.setState({ showComments: true });
                       }}
-                      class="comment-link-optional"
+                      className="comment-link-optional"
                     >
                       + Add Comments(Optional)
                     </a>
                   )}
                 </div>
                 <div
-                  class="Modal__actions"
+                  className="Modal__actions"
                   onMouseEnter={this.handleHoverIn}
                   onMouseLeave={this.handleHoverOut}
                 >
                   <button
-                    class="btn btn-primary btn-block"
+                    className="btn btn-primary btn-block"
                     disabled={
                       this.isRefundButtonDisabled() ||
                       this.shouldDisableRefundIfUnchecked() ||

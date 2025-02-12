@@ -1,11 +1,13 @@
 import { Component } from 'react';
-import ModalHeader from 'common/ui/ModalHeader';
+
 import Input from 'common/new-ui/Input';
-import TimeInput from './TimeInput';
-import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { parseTimeoutValues, renderTimeoutAsString, capitalize } from './util';
+import ModalHeader from 'common/ui/ModalHeader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+import TimeInput from './TimeInput';
+import { parseTimeoutValues, renderTimeoutAsString, capitalize } from './util';
 
 const refund_options = [
   { label: 'Select Option', name: '' },
@@ -177,7 +179,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'payment-capture-configuration-container',
           this.state.activeStep === 3
             ? captureType === 'automatic'
@@ -202,9 +204,9 @@ export default class PaymentsCaptureConfigurationModal extends Component {
             this.props.closeModal();
           }}
         />
-        <div class="configuration-content">
+        <div className="configuration-content">
           {captureType === 'automatic' && (
-            <div class="custom-timeout-subtitle">
+            <div className="custom-timeout-subtitle">
               Setup Custom Timeout{' '}
               <strong
                 style={{ color: '#2B83EA' }}
@@ -217,7 +219,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
             </div>
           )}
           <div
-            class={classList(
+            className={classList(
               'configuration-row__automatic',
               this.state.activeStep === 1 ? 'highlight' : '',
             )}
@@ -225,19 +227,19 @@ export default class PaymentsCaptureConfigurationModal extends Component {
           >
             {this.state.activeStep === 1 && captureType === 'automatic' ? (
               <>
-                <div class="content-header">Set Automatic Capture Timeout</div>
-                <div class="vertical-connector" style={{ top: '121px', height: '170px' }} />
-                <div class="content-subtitle">Capture all payments authorised within</div>
-                <div class="content-container">
+                <div className="content-header">Set Automatic Capture Timeout</div>
+                <div className="vertical-connector" style={{ top: '121px', height: '170px' }} />
+                <div className="content-subtitle">Capture all payments authorised within</div>
+                <div className="content-container">
                   <TimeInput
                     handleValueChange={this.handleAutomaticTimeoutValues}
                     values={this.state.automatic}
                   />
                   <p>Enter value between 12 mins and 5 days</p>
                 </div>
-                <div class="content-action">
+                <div className="content-action">
                   <button
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                     onClick={() => {
                       analyticsTrack({
                         objectName: 'set automatic capture timeout',
@@ -262,31 +264,31 @@ export default class PaymentsCaptureConfigurationModal extends Component {
               captureType === 'automatic' && (
                 <>
                   <div
-                    class={classList(
+                    className={classList(
                       'content-header',
                       this.state.completedSteps.includes(1) ? 'content-filled' : '',
                     )}
                   >
                     Set Automatic Capture Timeout
                   </div>
-                  <div class="vertical-connector" style={{ top: '122px' }} />
+                  <div className="vertical-connector" style={{ top: '122px' }} />
                 </>
               )
             )}
           </div>
           <div
-            class={classList(
+            className={classList(
               'configuration-row__manual',
               this.state.activeStep === 2 ? 'highlight' : '',
             )}
           >
             {this.state.activeStep === 2 ? (
               <>
-                <div class="content-header">
+                <div className="content-header">
                   Add Manual Capture Timeout
                   {captureType === 'automatic' && (
                     <button
-                      class="btn btn-xs btn-default"
+                      className="btn btn-xs btn-default"
                       onClick={() => {
                         analyticsTrack({
                           objectName: 'add manual capture timeout',
@@ -306,13 +308,15 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     </button>
                   )}
                 </div>
-                <div class="vertical-connector" style={this.renderStylesWhenActive()} />
-                <p class="help-text">
+                <div className="vertical-connector" style={this.renderStylesWhenActive()} />
+                <p className="help-text">
                   Payments authorised after 60 minutes can be captured manually. Till what time do
                   you want to capture payments manually?
                 </p>
-                <div class="content-subtitle">Manually capture all payments authorised within</div>
-                <div class="content-container">
+                <div className="content-subtitle">
+                  Manually capture all payments authorised within
+                </div>
+                <div className="content-container">
                   <TimeInput
                     handleValueChange={this.handleManualTimeoutValues}
                     values={this.state.manual}
@@ -320,7 +324,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   <p>Enter value between 12 mins and 5 days</p>
                 </div>
                 {Object.keys(this.state.manual).length > 0 && (
-                  <div class="info-text">
+                  <div className="info-text">
                     <div />
                     <p>
                       Payments authorised after{' '}
@@ -328,10 +332,10 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     </p>
                   </div>
                 )}
-                <div class="content-action">
+                <div className="content-action">
                   {captureType === 'automatic' && (
                     <button
-                      class="btn btn-default"
+                      className="btn btn-default"
                       onClick={() => {
                         analyticsTrack({
                           objectName: 'add manual capture timeout',
@@ -351,7 +355,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     </button>
                   )}
                   <button
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                     onClick={() => {
                       analyticsTrack({
                         objectName: 'add manual capture timeout',
@@ -376,7 +380,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
             ) : (
               <>
                 <div
-                  class={classList(
+                  className={classList(
                     'content-header',
                     this.state.completedSteps.includes(2) ? 'content-filled' : '',
                   )}
@@ -384,7 +388,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   Add Manual Capture Timeout
                 </div>
                 <div
-                  class="vertical-connector"
+                  className="vertical-connector"
                   style={{
                     top:
                       this.state.activeStep === 3
@@ -398,20 +402,20 @@ export default class PaymentsCaptureConfigurationModal extends Component {
             )}
           </div>
           <div
-            class={classList(
+            className={classList(
               'configuration-row__refund',
               this.state.activeStep === 3 ? 'highlight' : '',
             )}
           >
             {this.state.activeStep === 3 ? (
               <>
-                <div class="content-header">Set Refund Speed</div>
-                <p class="help-text">
+                <div className="content-header">Set Refund Speed</div>
+                <p className="help-text">
                   All payments that are not captured within manual timeout period will be refunded
                   to you customers. Select a refund speed.
                 </p>
-                <div class="content-subtitle">Refund Speed</div>
-                <div class="content-container">
+                <div className="content-subtitle">Refund Speed</div>
+                <div className="content-container">
                   <Input.Select
                     options={refund_options}
                     onChange={this.handleDropdownSelection}
@@ -421,7 +425,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     <p>
                       Late authorised payments would be refunded instantly
                       <i
-                        class="i i-info-circle"
+                        className="i i-info-circle"
                         style={{ paddingLeft: '5px' }}
                         onMouseEnter={this.onTooltipHover}
                       >
@@ -438,9 +442,9 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     </p>
                   )}
                 </div>
-                <div class="content-action">
+                <div className="content-action">
                   <button
-                    class="btn btn-default"
+                    className="btn btn-default"
                     onClick={() => {
                       analyticsTrack({
                         objectName: 'set refund speed',
@@ -459,7 +463,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     Back
                   </button>
                   <button
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                     disabled={!this.state.refundValue}
                     onClick={this.handleSave}
                   >
@@ -469,7 +473,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
               </>
             ) : (
               <div
-                class="content-header"
+                className="content-header"
                 style={{
                   paddingBottom: this.state.activeStep !== 3 ? '20px' : '',
                 }}

@@ -1,11 +1,20 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import { RZPFeatures } from 'merchant/helpers/data';
-
-import Slider, { SliderDots } from 'common/new-ui/Slider';
 import Button from 'common/new-ui/Button';
-
+import Slider, { SliderDots } from 'common/new-ui/Slider';
+import { setItem } from 'common/utils/localStorage';
+import OnBoarding, {
+  OnBoardingWrapper,
+  FeatureEnableSliderButton,
+  SkipAndGetStartedButton,
+  getIsAllowedResetBoarding,
+} from 'merchant/components/OnBoarding';
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
+import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+import { RZPFeatures } from 'merchant/helpers/data';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -13,37 +22,10 @@ import {
 import { fetchUser } from 'merchant/reducers/session';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import Landing from 'merchant/components/OnBoarding/Slides/Landing';
-import Features from 'merchant/components/OnBoarding/Slides/Features';
-import OnBoarding, {
-  OnBoardingWrapper,
-  FeatureEnableSliderButton,
-  SkipAndGetStartedButton,
-  getIsAllowedResetBoarding,
-} from 'merchant/components/OnBoarding';
-import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
-
-import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import KYCAlertModal from './KYCAlertModal';
-import { setItem } from 'common/utils/localStorage';
+import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    isTestMode: state.session.mode === 'test',
-    routeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.ROUTE),
-  }),
-  {
-    fetchUser,
-    openModal,
-    closeModal,
-    handleProductQuickGuide,
-  },
-)
-@OnBoarding({
-  feature: RZPFeatures.ROUTE,
-})
-export default class MarketPlaceOnBoarding extends React.Component {
+class MarketPlaceOnBoarding extends React.Component {
   get showKYCModal() {
     return !this.props.isTestMode && !this.props.user.isAccepted;
   }
@@ -79,7 +61,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     if (this.showKYCModal) {
       return (
-        <Button.Primary class="Forward-Button" onClick={this.showKYCAlertModal}>
+        <Button.Primary className="Forward-Button" onClick={this.showKYCAlertModal}>
           Get Started
         </Button.Primary>
       );
@@ -125,7 +107,7 @@ export default class MarketPlaceOnBoarding extends React.Component {
 
   render() {
     return (
-      <OnBoardingWrapper class="Route">
+      <OnBoardingWrapper className="Route">
         <Slider
           active={this.props.active}
           afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
@@ -155,6 +137,26 @@ export default class MarketPlaceOnBoarding extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      isTestMode: state.session.mode === 'test',
+      routeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.ROUTE),
+    }),
+    {
+      fetchUser,
+      openModal,
+      closeModal,
+      handleProductQuickGuide,
+    },
+  ),
+  // eslint-disable-next-line
+  OnBoarding({
+    feature: RZPFeatures.ROUTE,
+  }),
+)(MarketPlaceOnBoarding);
 
 function getOnBoardingSliderDots(renderSkipButton) {
   return (sliderProps) => <SliderDots {...sliderProps}>{renderSkipButton(sliderProps)}</SliderDots>;

@@ -171,7 +171,7 @@ class NavFragment extends Component {
           )}
         </li>
         {!isRTUXHomepage && Object.keys(user.merchants).length > 1 ? (
-          <li class="SwitchMerchantDropdown">
+          <li className="SwitchMerchantDropdown">
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
         ) : null}

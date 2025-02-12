@@ -8,7 +8,7 @@ export default class DatePickerField extends Component {
     this.state = {
       focused: false,
     };
-    this.handleFocusChange = ::this.handleFocusChange;
+    this.handleFocusChange = this.handleFocusChange.bind(this);
   }
 
   handleFocusChange({ focused }) {
@@ -35,7 +35,7 @@ export default class DatePickerField extends Component {
     let date = (input.value && dateFormatFn(input.value)) || null;
 
     return (
-      <div class={`datepicker-container ${focused ? 'datepicker--focused' : ''}`}>
+      <div className={`datepicker-container ${focused ? 'datepicker--focused' : ''}`}>
         <SingleDatePicker
           id={input.name}
           date={date}

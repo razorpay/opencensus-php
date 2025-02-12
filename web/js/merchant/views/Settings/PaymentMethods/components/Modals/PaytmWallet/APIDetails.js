@@ -54,8 +54,8 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
       <Form>
         <main>
           <div className="form-container">
-            <div class="form-title">Enter Production API Details</div>
-            <p class="form-subtitle">
+            <div className="form-title">Enter Production API Details</div>
+            <p className="form-subtitle">
               Please make sure you{' '}
               <b>
                 <i>enter the production API details</i>

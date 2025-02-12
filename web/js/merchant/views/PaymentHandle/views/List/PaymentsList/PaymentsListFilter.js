@@ -5,22 +5,22 @@ import ListFilter from 'merchant/components/ListFilter';
 export default ({ ...props }) => {
   return (
     <ListFilter {...props} hideClear onSubmit={track.search}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Id</label>
         <Field
           name="id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.searchPaymentId}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Status</label>
         <Field
           name="status"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={track.searchStatus}
         >
           <option value="">All</option>
@@ -31,18 +31,18 @@ export default ({ ...props }) => {
         </Field>
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Email</label>
         <Field
           name="email"
           component="input"
           type="email"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.searchEmail}
         />
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -50,7 +50,7 @@ export default ({ ...props }) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.searchCount}
         />
       </div>

@@ -1,40 +1,29 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
-import InputCurrencyAmount from './components/InputCurrencyAmount';
-import InputDropdown from './components/InputDropdown';
-
-import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
-import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import META, {
-  templateTypes,
-} from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import {
   updatePaymentButtonData,
   updateAmountField,
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
+import META, {
+  templateTypes,
+} from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
+import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+
+import InputCurrencyAmount from './components/InputCurrencyAmount';
+import InputDropdown from './components/InputDropdown';
 
 export const maxLengthForButtonLabel = 16;
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    org: state.session.org,
-  }),
-  {
-    updatePaymentButtonData,
-    updateAmountField,
-    updateStepReviewProgress,
-  },
-)
-export default class ButtonDetails extends React.Component {
+class ButtonDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -135,7 +124,7 @@ export default class ButtonDetails extends React.Component {
     this.context.confirm({
       header: 'Change Button Type?',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>All changes would be lost. Do you want to continue?</p>
         </div>
       ),
@@ -229,11 +218,11 @@ export default class ButtonDetails extends React.Component {
         setRef={this.setRefFormEl}
         style={{ display: this.props.isHidden ? 'none' : '' }}
       >
-        <div class="PaymentButtonForm-ButtonDetails Form-content">
+        <div className="PaymentButtonForm-ButtonDetails Form-content">
           <Input
             label="Title"
             name="title"
-            class="Input--vTop"
+            className="Input--vTop"
             defaultValue={paymentButtonEntity.title}
             description="For dashboard use, not visible to customers"
             validator={(val) => {
@@ -256,7 +245,7 @@ export default class ButtonDetails extends React.Component {
           <InputDropdown
             label="Button Type"
             description="Change button type"
-            class="Input--vTop"
+            className="Input--vTop"
             dropdownElementClass="Input-el-PaymentButtonForm"
             placeholder="Select Button Type"
             options={this.buttonTypesList}
@@ -272,7 +261,7 @@ export default class ButtonDetails extends React.Component {
               label="Amount"
               description="Your customers will pay this amount"
               name="amount"
-              class="Input--vTop Input--CurrencyAmount"
+              className="Input--vTop Input--CurrencyAmount"
               placeholder="Add your amount"
               defaultValueCurrency={currency}
               defaultValueAmount={this.amountFieldForQuickPayTemplate.item.amount || ''}
@@ -285,7 +274,7 @@ export default class ButtonDetails extends React.Component {
           <Input
             label="Button Label"
             name="button_text"
-            class="Input--vTop"
+            className="Input--vTop"
             description="This label is shown to your customers"
             defaultValue={paymentButtonEntity.settings.payment_button_text}
             required
@@ -307,7 +296,7 @@ export default class ButtonDetails extends React.Component {
             <InputDropdown
               label="Button Theme"
               name="button_theme"
-              class="Input--vTop"
+              className="Input--vTop"
               dropdownElementClass="Input-el-PaymentButtonForm"
               placeholder="Select Button Theme"
               options={buttonThemesList}
@@ -319,12 +308,24 @@ export default class ButtonDetails extends React.Component {
           )}
         </div>
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Primary type="submit" disabled={this.state.disableSubmit}>
-            Next <i class="i i-chevron-right" />
+            Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>
       </Form>
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    org: state.session.org,
+  }),
+  {
+    updatePaymentButtonData,
+    updateAmountField,
+    updateStepReviewProgress,
+  },
+)(ButtonDetails);

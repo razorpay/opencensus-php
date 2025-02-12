@@ -26,7 +26,7 @@ const DisableWidgetConfirmModal = ({ closeModal, onConfirm }) => {
           <AsyncButton
             onClick={onConfirm}
             type="submit"
-            class="btn btn-border"
+            className="btn btn-border"
             text="Yes, disable"
           />
           <button onClick={closeModal} className="btn btn-primary">

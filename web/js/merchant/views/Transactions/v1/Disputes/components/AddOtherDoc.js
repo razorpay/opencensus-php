@@ -5,7 +5,7 @@ const AddOtherDoc = (props) => {
   const [takeInput, setTakeInput] = useState(false);
   const [input, setInput] = useState('');
   return (
-    <div class="others">
+    <div className="others">
       {takeInput ? (
         <>
           <input
@@ -15,12 +15,12 @@ const AddOtherDoc = (props) => {
             onChange={(e) => setInput(e.target.value)}
             autoFocus
           />
-          <button class="btn btn-link add" onClick={() => onActionClick(input)}>
+          <button className="btn btn-link add" onClick={() => onActionClick(input)}>
             +Add
           </button>
         </>
       ) : (
-        <button class="btn btn-link" onClick={() => setTakeInput(true)}>
+        <button className="btn btn-link" onClick={() => setTakeInput(true)}>
           {label}
         </button>
       )}

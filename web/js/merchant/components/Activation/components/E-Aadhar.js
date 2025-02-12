@@ -47,7 +47,7 @@ const EAadhar = ({
       <>
         <Input
           type="text"
-          class="Input--small"
+          className="Input--small"
           label="Aadhaar Verification"
           defaultValue="XXXXXXXXXXXX"
           style={{ border: '1px solid rgba(31, 137, 14, 0.54)' }}

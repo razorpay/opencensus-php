@@ -67,8 +67,8 @@ const PLFeaturesModal = ({ closeModalBanner, type }) => {
   return (
     <div className="pl-catalyst-modal">
       <div className="white-circle" />
-      <button type="button" class="close" onClick={closeModalBanner}>
-        <i class="i i-close" />
+      <button type="button" className="close" onClick={closeModalBanner}>
+        <i className="i i-close" />
       </button>
       <div className="modal-body">
         <h3 className="heading nomob">
@@ -107,18 +107,18 @@ const PLFeaturesModal = ({ closeModalBanner, type }) => {
         <div className="section">
           <div className="left-section">
             <ul>{bulletPoint}</ul>
-            <Link to="/paymentlinks/new" class="modal-cta" onClick={closeModalBanner}>
-              <Button.Primary class="btn btn-primary" type="button">
+            <Link to="/paymentlinks/new" className="modal-cta" onClick={closeModalBanner}>
+              <Button.Primary className="btn btn-primary" type="button">
                 Create a Payment Link
               </Button.Primary>
             </Link>
           </div>
           <div className="right-section nomob">
             <div className="x-dashboard-view">
-              <div class="tab-section">
-                <span class="dot" id="red" />
-                <span class="dot" id="orange" />
-                <span class="dot" id="green" />
+              <div className="tab-section">
+                <span className="dot" id="red" />
+                <span className="dot" id="orange" />
+                <span className="dot" id="green" />
               </div>
               <img
                 src="https://cdn.razorpay.com/static/assets/payment-links/pl-creation-steps.gif"

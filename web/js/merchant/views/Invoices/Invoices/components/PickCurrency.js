@@ -1,8 +1,7 @@
+import React from 'react';
 import ModalHeader from 'common/ui/ModalHeader';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 
@@ -11,12 +10,12 @@ export default class extends React.PureComponent {
     currencySelected: this.props.currency,
   };
 
-  onSave = data => {
+  onSave = (data) => {
     this.props.onSave(data.currency);
     this.props.closeModal();
   };
 
-  onChange = option => {
+  onChange = (option) => {
     this.setState({ currencySelected: option.name });
 
     this.props.onChange && this.props.onChange(option);
@@ -32,20 +31,16 @@ export default class extends React.PureComponent {
     ];
 
     if (this.state.currencySelected !== 'INR') {
-      alerts.push(
-        'The rate of all the items in the current invoice will reset to 0.'
-      );
+      alerts.push('The rate of all the items in the current invoice will reset to 0.');
     }
 
     return (
-      <div class="PickCurrency-Modal">
+      <div className="PickCurrency-Modal">
         <ModalHeader
           title="Choose the Invoice Currency"
-          onCloseClick={
-            this.props.showCross ? this.props.closeModal : undefined
-          }
+          onCloseClick={this.props.showCross ? this.props.closeModal : undefined}
         />
-        <div class="modal-body">
+        <div className="modal-body">
           <Form onSubmit={this.onSave}>
             <Input.CurrencySelect
               name="currency"
@@ -70,9 +65,7 @@ export default class extends React.PureComponent {
               <br />
             </Alert.Warning>
             <br />
-            <Button.Primary class="btn-block">
-              Continue to Invoice
-            </Button.Primary>
+            <Button.Primary className="btn-block">Continue to Invoice</Button.Primary>
           </Form>
         </div>
       </div>

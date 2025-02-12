@@ -1,12 +1,11 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-
 import { PowerSelect } from 'react-power-select';
-import QuickAdd from 'common/ui/Select/QuickAdd';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { connect } from 'react-redux';
 
+import QuickAdd from 'common/ui/Select/QuickAdd';
 import State from 'merchant/models/State';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 const ZIP_CODE_PLACEHOLDER_MAP = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'PIN Code',
@@ -22,8 +21,7 @@ const ZIP_CODE_PLACEHOLDER_MAP = {
 const findStateByName = (states, name) => states.find((s) => s.name === name);
 
 // eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ org: state.session.org }))
-export default class AddressEntry extends React.Component {
+class AddressEntry extends React.Component {
   static defaultProps = {
     address: {
       line1: '',
@@ -210,23 +208,23 @@ export default class AddressEntry extends React.Component {
     const zipCodePlaceholder = ZIP_CODE_PLACEHOLDER_MAP[org.custom_code] || 'Pin Code';
 
     return (
-      <div class="row address-entry">
-        <div class="col col-md-12">
+      <div className="row address-entry">
+        <div className="col col-md-12">
           <textarea
             value={line1}
             placeholder="Address line 1 (minimum 10 characters)"
-            class="form-control"
+            className="form-control"
             onChange={this.onFieldChangeClosure('line1')}
             autoComplete="address-line1"
             onBlur={onBlur}
           />
         </div>
         {!hideLine2 && (
-          <div class="col col-md-12">
+          <div className="col col-md-12">
             <input
               value={line2}
               placeholder="Address line 2 (Optional, minimum 5 characters)"
-              class="form-control"
+              className="form-control"
               type="text"
               onChange={this.onFieldChangeClosure('line2')}
               autoComplete="address-line2"
@@ -234,22 +232,22 @@ export default class AddressEntry extends React.Component {
             />
           </div>
         )}
-        <div class="double-field">
-          <div class="col col-md-6">
+        <div className="double-field">
+          <div className="col col-md-6">
             <input
               value={zipcode}
               placeholder={zipCodePlaceholder}
-              class="form-control input-number-no-arrows"
+              className="form-control input-number-no-arrows"
               onChange={this.onFieldChangeClosure('zipcode')}
               autoComplete="postal-code"
               onBlur={onBlur}
             />
           </div>
-          <div class="col col-md-6">
+          <div className="col col-md-6">
             <input
               value={city}
               placeholder="City"
-              class="form-control"
+              className="form-control"
               type="text"
               onChange={this.onFieldChangeClosure('city')}
               autoComplete="address-level2"
@@ -257,24 +255,24 @@ export default class AddressEntry extends React.Component {
             />
           </div>
         </div>
-        <div class={`${!hideCountry || showDisabledCountry ? 'double-field' : ''}`}>
-          <div class={`col col-md-${!hideCountry || showDisabledCountry ? '6' : '12'}`}>
+        <div className={`${!hideCountry || showDisabledCountry ? 'double-field' : ''}`}>
+          <div className={`col col-md-${!hideCountry || showDisabledCountry ? '6' : '12'}`}>
             {showStateInput ? (
-              <div class="state-input">
+              <div className="state-input">
                 <input
                   placeholder="State"
                   name="state"
                   defaultValue={selectedState && selectedState.name}
-                  class="form-control"
+                  className="form-control"
                   ref={this.stateInputRef}
                   onChange={(event) => this.updateState({ option: { name: event.target.value } })}
                 />
-                <i class="i i-close" onClick={this.quickCreateState} />
+                <i className="i i-close" onClick={this.quickCreateState} />
               </div>
             ) : (
               <PowerSelect
                 placeholder="State"
-                class="address-entry-PS ps-in-modal"
+                className="address-entry-PS ps-in-modal"
                 selected={selectedState}
                 optionLabelPath="name"
                 options={states}
@@ -288,10 +286,10 @@ export default class AddressEntry extends React.Component {
             )}
           </div>
           {!hideCountry && (
-            <div class="col col-md-6">
+            <div className="col col-md-6">
               <PowerSelect
                 placeholder="Country"
-                class="address-entry-PS ps-in-modal"
+                className="address-entry-PS ps-in-modal"
                 selected={country}
                 options={countries}
                 onChange={this.updateCountry}
@@ -300,11 +298,11 @@ export default class AddressEntry extends React.Component {
             </div>
           )}
           {hideCountry && showDisabledCountry && (
-            <div class="col col-md-6">
+            <div className="col col-md-6">
               <input
                 value={country}
                 placeholder="Country"
-                class="form-control"
+                className="form-control"
                 type="text"
                 disabled
               />
@@ -315,3 +313,5 @@ export default class AddressEntry extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({ org: state.session.org }))(AddressEntry);

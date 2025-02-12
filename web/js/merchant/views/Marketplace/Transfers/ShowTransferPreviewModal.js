@@ -1,16 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-
 import Button from 'common/new-ui/Button';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 import TransfersPreviewModal from './TransfersPreviewModal';
 
-@connect(null, {
-  openModal,
-  closeModal,
-})
-export default class ShowTransferPreviewModal extends React.PureComponent {
+class ShowTransferPreviewModal extends React.PureComponent {
   openTransfersPreviewModal = () => {
     this.props.openModal({
       size: 'large',
@@ -26,3 +22,8 @@ export default class ShowTransferPreviewModal extends React.PureComponent {
     );
   }
 }
+
+export default connect(null, {
+  openModal,
+  closeModal,
+})(ShowTransferPreviewModal);

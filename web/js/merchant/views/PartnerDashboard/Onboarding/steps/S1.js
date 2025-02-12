@@ -18,7 +18,7 @@ const S1 = ({
   return (
     <>
       <div className="partner-onbr-info">
-        <div class="title">Welcome to your Partner Dashboard</div>
+        <div className="title">Welcome to your Partner Dashboard</div>
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('partnership.partner_commission')}>
           <div className="line-box brd-primary">
             <p className="info info-green">Get 0.1% commission on all your referrals.</p>

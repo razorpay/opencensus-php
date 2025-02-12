@@ -32,7 +32,7 @@ export default class CancelWithdrawalReasons extends Component {
   render() {
     return (
       <div className="reasons-close-modal">
-        <ModalHeader class="header" title="Reason" onCloseClick={() => {}} />
+        <ModalHeader className="header" title="Reason" onCloseClick={() => {}} />
         <div className="modal-body">
           {this.props.closeReasons.map((choice) => {
             return (
@@ -50,7 +50,7 @@ export default class CancelWithdrawalReasons extends Component {
               </div>
             );
           })}
-          <div class="m-t">
+          <div className="m-t">
             <strong>Description</strong>
             <textarea
               value={this.state.reasonDescription}

@@ -189,7 +189,7 @@ export default class PaymentPageSettings extends React.Component {
     const EmbedBtn = (
       <Button.Transparent
         type="button"
-        class="Button--Link"
+        className="Button--Link"
         disabled={!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined')}
         onClick={this.openEmbedButtonView}
       >
@@ -205,7 +205,7 @@ export default class PaymentPageSettings extends React.Component {
     const PluginsBtn = (
       <Button.Transparent
         type="button"
-        class="Button--Link"
+        className="Button--Link"
         onClick={this.openConfigurePluginsView}
       >
         <b>{isPluginConfigured ? 'Update' : 'Configure'}</b>
@@ -213,15 +213,15 @@ export default class PaymentPageSettings extends React.Component {
     );
 
     return (
-      <ModalMask maskClosable={false} class="paymentpages-settings">
+      <ModalMask maskClosable={false} className="paymentpages-settings">
         <Modal showCloseBtn={false}>
           <ModalContent>
-            <div class="main-title">
+            <div className="main-title">
               <i className="i i-settings-outline mr-8" />
               Page Settings
             </div>
-            <Form class="Settings-form" onSubmit={this.onSubmit} onChange={this.onChange}>
-              <div class="Settings-form--body">
+            <Form className="Settings-form" onSubmit={this.onSubmit} onChange={this.onChange}>
+              <div className="Settings-form--body">
                 <CustomURL
                   paymentPageId={this.props.paymentPageEntity.id}
                   isTestMode={isTestMode}
@@ -230,21 +230,21 @@ export default class PaymentPageSettings extends React.Component {
                   closeModal={this.props.closeModal}
                   paymentPageCustomUrl={paymentPageEntity.settings?.custom_domain}
                 />
-                <div class="settings-section">
+                <div className="settings-section">
                   <Input.Radio
                     name="theme"
                     label="Theme"
                     options={['Dark', 'Light']}
-                    class="Input--vTop Input--theme"
+                    className="Input--vTop Input--theme"
                     defaultValue={theme}
                   />
                 </div>
-                <div class="settings-section">
+                <div className="settings-section">
                   <input name="expire_by" value={expire_by || ''} readOnly hidden />
                   <Input.DateTime
                     label="Page Expiry Date"
                     checkboxFieldLabel="No Expiry"
-                    class="Input--vTop Input--expiryby"
+                    className="Input--vTop Input--expiryby"
                     value={expire_by}
                     defaultValue={expire_by}
                     onChange={this.updateDate}
@@ -253,10 +253,10 @@ export default class PaymentPageSettings extends React.Component {
                   />
                 </div>
 
-                <div class="settings-section">
-                  <div class="InputGroup InputGroup--vTop InputGroup--near Input">
-                    <div class="Input-label">Action after successful payment?</div>
-                    <div class="Input-content">
+                <div className="settings-section">
+                  <div className="InputGroup InputGroup--vTop InputGroup--near Input">
+                    <div className="Input-label">Action after successful payment?</div>
+                    <div className="Input-content">
                       <Input.Check
                         fieldLabel="Show custom message"
                         defaultValue={_hasSuccessMsg ? '1' : '0'}
@@ -274,14 +274,14 @@ export default class PaymentPageSettings extends React.Component {
                       />
 
                       {_hasSuccessMsg && (
-                        <div class="custom-success-msg">
+                        <div className="custom-success-msg">
                           <Input.Textarea
                             name="payment_success_message"
                             maxLength="80"
                             value={payment_success_message}
                             onChange={this.onSuccessMsgChange}
                           />
-                          <span class="chars-pressed">
+                          <span className="chars-pressed">
                             {`${
                               payment_success_message ? payment_success_message.length : '0'
                             } / 80`}
@@ -316,13 +316,13 @@ export default class PaymentPageSettings extends React.Component {
                   </div>
                 </div>
 
-                <div class="settings-section">
+                <div className="settings-section">
                   <b>Get Hyperlink Button</b>
-                  <div class="cta-section">
-                    <div class="body">
+                  <div className="cta-section">
+                    <div className="body">
                       Put a hyperlink button on your website
-                      <span class="help-content">
-                        <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                      <span className="help-content">
+                        <i className="i i-info-outline" style={{ marginLeft: 4 }} />
                         <Popover
                           align="top"
                           theme="dark"
@@ -336,7 +336,7 @@ export default class PaymentPageSettings extends React.Component {
                       </span>
                     </div>
                     {!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined') ? (
-                      <span class="help-content action">
+                      <span className="help-content action">
                         <span>{EmbedBtn}</span>
                         <Popover
                           align="top"
@@ -349,14 +349,14 @@ export default class PaymentPageSettings extends React.Component {
                         </Popover>
                       </span>
                     ) : (
-                      <span class="action">{EmbedBtn}</span>
+                      <span className="action">{EmbedBtn}</span>
                     )}
                   </div>
                 </div>
-                <div class="settings-section">
-                  <div class="Input-label">Plugins and Add ons</div>
-                  <div class="cta-section">
-                    <div class="body">
+                <div className="settings-section">
+                  <div className="Input-label">Plugins and Add ons</div>
+                  <div className="cta-section">
+                    <div className="body">
                       {isPluginConfigured ? (
                         <div>
                           Facebook ID: {paymentPageEntity.settings.pp_fb_pixel_tracking_id || '-'}
@@ -367,22 +367,22 @@ export default class PaymentPageSettings extends React.Component {
                         'Add your Facebook Pixel or Google tracking ID to track your page metrics'
                       )}
                     </div>
-                    <span class="action">{PluginsBtn}</span>
+                    <span className="action">{PluginsBtn}</span>
                   </div>
                 </div>
                 <ShowWhen additionalCondition={(user) => user.isShipRocketEnabled}>
-                  <div class="settings-section shiprocket-section">
-                    <div class="Input-label">
+                  <div className="settings-section shiprocket-section">
+                    <div className="Input-label">
                       <img src={ShiprocketImage} alt="shiprocket-logo" />
                       Create orders on Shiprocket{' '}
-                      <span class="badge bg-success hidden-xs m-r">New</span>
+                      <span className="badge bg-success hidden-xs m-r">New</span>
                     </div>
-                    <div class="cta-section">
-                      <div class="body">
+                    <div className="cta-section">
+                      <div className="body">
                         After your customers pay on this page, automatically create orders on
                         Shiprocket{' '}
                         <span>
-                          <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                          <i className="i i-info-outline" style={{ marginLeft: 4 }} />
                           <Popover
                             align="top"
                             theme="dark"
@@ -395,10 +395,10 @@ export default class PaymentPageSettings extends React.Component {
                           </Popover>
                         </span>
                       </div>
-                      <span class="action">
+                      <span className="action">
                         <Button.Transparent
                           type="button"
-                          class="Button--Link"
+                          className="Button--Link"
                           onClick={this.props.handleShiprocket}
                         >
                           <b>{!isShiprocket ? 'Enable' : 'Disable'}</b>
@@ -424,7 +424,7 @@ export default class PaymentPageSettings extends React.Component {
                         onClick={track.wysiwyg.clickShiprocketDocsLink.bind(null, 'settings')}
                         rel="noreferrer noopener"
                       >
-                        Shiprocket integration docs <i class="i i-external-link" />
+                        Shiprocket integration docs <i className="i i-external-link" />
                       </DocLink>
                     </div>
                   </div>

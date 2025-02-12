@@ -1,30 +1,21 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-
-import { removeItem } from 'common/utils/localStorage';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
-import CustomClipboard from 'common/ui/Clipboard/Custom';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import Image from 'common/ui/Image';
-import ModalHeader from 'common/ui/ModalHeader';
-import Group, { GroupItem } from 'common/ui/Group';
-
-import { logout, showOrHideTour } from 'merchantLA/reducers/session';
-import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
-import logoutGoogleAccount from 'common/utils/logoutGoogle';
 import BusinessImage from 'assets/business.svg';
 import BusinessImageThumb from 'assets/business_thumbnail.svg';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      isMobileResolution: state.app.isMobileResolution,
-    };
-  },
-  { logout, closeModal, openModal, showOrHideTour },
-)
+import { withRouter } from 'common/deprecated/withRouter';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import Group, { GroupItem } from 'common/ui/Group';
+import Image from 'common/ui/Image';
+import ModalHeader from 'common/ui/ModalHeader';
+import { removeItem } from 'common/utils/localStorage';
+import logoutGoogleAccount from 'common/utils/logoutGoogle';
+import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
+import { logout, showOrHideTour } from 'merchantLA/reducers/session';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+
 class ProfileDropdown extends Component {
   logout = () => {
     logoutGoogleAccount();
@@ -187,4 +178,15 @@ class ProfileDropdown extends Component {
   }
 }
 
-export default withRouter(ProfileDropdown);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        isMobileResolution: state.app.isMobileResolution,
+      };
+    },
+    { logout, closeModal, openModal, showOrHideTour },
+  ),
+)(ProfileDropdown);

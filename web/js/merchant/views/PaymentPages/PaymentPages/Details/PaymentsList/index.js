@@ -1,20 +1,22 @@
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import { fetchStorefrontPayments } from 'merchant/reducers/invoices/list';
+import { compose } from 'redux';
 
-import ListContainer from 'merchant/containers/ListContainer';
-import PaymentsListFilter from './PaymentsListFilter';
+import { SelfServeActionPages } from 'common/constant/enums';
+import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchStorefrontPayments } from 'merchant/reducers/invoices/list';
 import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
-import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
-import { SelfServeActionPages } from 'common/constant/enums';
-import { withSplitzService } from 'common/splitz';
 import {
   fetchPaymentPagePayments,
   isFetchViaNCA,
 } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { onPaginate } from 'merchant/views/Transactions/v2/common/utils';
+
+import PaymentsListFilter from './PaymentsListFilter';
 
 // wrapper to trigger analytics event on click
 const _paymentId = () => {
@@ -37,10 +39,6 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect(
-  (state) => ({ payments: state.payments, storefrontPayments: state.invoices.storefrontPayments }),
-  { fetchPaymentPagePayments, fetchStorefrontPayments },
-)
 class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
@@ -65,7 +63,7 @@ class PaymentsList extends ListContainer {
     const tableData = isStorefrontPage || isFetchViaNCA(splitz) ? storefrontPayments : payments;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         {children}
 
         {/* hiding filters for storefront until backend dev is completed */}
@@ -89,4 +87,14 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withSplitzService(withRouter(PaymentsList));
+export default compose(
+  connect(
+    (state) => ({
+      payments: state.payments,
+      storefrontPayments: state.invoices.storefrontPayments,
+    }),
+    { fetchPaymentPagePayments, fetchStorefrontPayments },
+  ),
+  withSplitzService,
+  withRouter,
+)(PaymentsList);

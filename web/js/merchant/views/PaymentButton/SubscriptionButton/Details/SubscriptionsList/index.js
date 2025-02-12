@@ -1,13 +1,11 @@
 import { connect } from 'react-redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
-
-import ListContainer from 'merchant/containers/ListContainer';
-import SubscriptionsListFilter from 'merchant/views/Subscriptions/Subscriptions/components/ListFilter';
-
 import { subscriptionId, planId, nextDueOn, createdAtShort, status } from 'common/ui/item/pair';
-
 import EntityTable from 'merchant/components/EntityTable';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchSubscriptions as fetchAll } from 'merchant/reducers/subscriptions';
+import SubscriptionsListFilter from 'merchant/views/Subscriptions/Subscriptions/components/ListFilter';
 
 const SubscriptionsTable = (props) => {
   const paymentColumns = [subscriptionId, planId, nextDueOn, createdAtShort, status];
@@ -15,7 +13,6 @@ const SubscriptionsTable = (props) => {
   return <EntityTable title="Subscriptions" columns={paymentColumns} {...props} />;
 };
 
-@connect((state) => state.subscriptions, { fetchAll })
 class SubscriptionsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
@@ -51,19 +48,19 @@ class SubscriptionsList extends ListContainer {
 
     return (
       <div>
-        <div class="stats">
-          <div class="info">
-            <b class="bold">Subscriptions</b>
+        <div className="stats">
+          <div className="info">
+            <b className="bold">Subscriptions</b>
             {this.statsTable.map((st, ix) => (
               <div key={ix}>
                 {st.title}
-                <b class="bold">{st.value}</b>
+                <b className="bold">{st.value}</b>
               </div>
             ))}
           </div>
         </div>
 
-        <div class="content-wrapper">
+        <div className="content-wrapper">
           {children}
 
           <SubscriptionsListFilter
@@ -85,4 +82,4 @@ class SubscriptionsList extends ListContainer {
   }
 }
 
-export default withRouter(SubscriptionsList);
+export default connect((state) => state.subscriptions, { fetchAll })(withRouter(SubscriptionsList));

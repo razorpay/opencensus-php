@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
@@ -30,13 +30,9 @@ import {
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import AdditionalOptions from './AdditionalOptions';
+import { compose } from 'redux';
 
-@connect((state) => ({ countryCode: state.session.user.merchant.country_code }), {
-  openModal,
-  closeModal,
-})
-@RTracking(() => window.rzpQ.component('BaseForm'))
-export default class BaseForm extends React.PureComponent {
+class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
     const field = props.field;
@@ -145,7 +141,7 @@ export default class BaseForm extends React.PureComponent {
           <div>
             <ModalHeader title="Currency change?" />
 
-            <div class="modal-body">
+            <div className="modal-body">
               <div>
                 You&apos;re changing currency from <b>{this.props.currency}</b> to{' '}
                 <b>{selectedCurrency.name}</b>.
@@ -153,7 +149,7 @@ export default class BaseForm extends React.PureComponent {
               <div>On saving this item, this currency will apply to all items on this page.</div>
               <br />
               <footer>
-                <Button.Primary class="Button--full-width" onClick={this.props.closeModal}>
+                <Button.Primary className="Button--full-width" onClick={this.props.closeModal}>
                   Ok
                 </Button.Primary>
               </footer>
@@ -181,7 +177,7 @@ export default class BaseForm extends React.PureComponent {
     let inputField = (
       <Input
         name={isDisabled ? undefined : 'amount'}
-        class="placeholder-field"
+        className="placeholder-field"
         placeholder={placeholder}
         defaultValue={amount}
         validator={(val) => validateAmount(val, minAmountAllowed, currency)}
@@ -200,7 +196,7 @@ export default class BaseForm extends React.PureComponent {
         : 'No Limit';
 
       inputField = (
-        <div class="Input">
+        <div className="Input">
           {inputField}
           <Popover
             align="top"
@@ -221,10 +217,10 @@ export default class BaseForm extends React.PureComponent {
     const isEditDisabledForCurrency = isPaymentPageEditMode;
 
     return (
-      <Input.Group class="InputGroup--inline InputGroup--full">
-        <div class="Input-content">
+      <Input.Group className="InputGroup--inline InputGroup--full">
+        <div className="Input-content">
           {field.image_url && (
-            <div class="Input Input--img">
+            <div className="Input Input--img">
               <img src={field.image_url} />
             </div>
           )}
@@ -257,7 +253,7 @@ export default class BaseForm extends React.PureComponent {
 
             {/* Dummy Checkbox for optional field */}
             {!this.state.isMandatory && (
-              <div class="Input-checkboxTooltip">
+              <div className="Input-checkboxTooltip">
                 <Input.Check disabled />
 
                 <Popover
@@ -283,10 +279,10 @@ export default class BaseForm extends React.PureComponent {
             {this.getREP_Amount()}
 
             {/* Add dummy Counter */}
-            <div class="Input-counterTooltip">
-              <div class="Field--counter Field--small Input--disabled">
+            <div className="Input-counterTooltip">
+              <div className="Field--counter Field--small Input--disabled">
                 <div
-                  class="Field-wrapper Field-wrapper--counter"
+                  className="Field-wrapper Field-wrapper--counter"
                   style={{
                     display: 'inline-block',
                     pointerEvents: 'none',
@@ -295,7 +291,7 @@ export default class BaseForm extends React.PureComponent {
                   <button type="button" disabled>
                     -
                   </button>
-                  <input class="Field-el counter-value" value={field.min_purchase} disabled />
+                  <input className="Field-el counter-value" value={field.min_purchase} disabled />
                   <button type="button" disabled>
                     +
                   </button>
@@ -349,7 +345,7 @@ export default class BaseForm extends React.PureComponent {
         )}
 
         <Input.TextareaAutoResize
-          class="Input--title"
+          className="Input--title"
           name="name"
           defaultValue={field.item.name || ''}
           maxLength="60"
@@ -377,8 +373,10 @@ export default class BaseForm extends React.PureComponent {
             }
           }}
         >
-          <div class={classList('Field Field--mirrorDisplay', isMandatory && 'Field--required')}>
-            <span class="mirror-title">{mirrorDisplayName}</span>
+          <div
+            className={classList('Field Field--mirrorDisplay', isMandatory && 'Field--required')}
+          >
+            <span className="mirror-title">{mirrorDisplayName}</span>
 
             <div className="text-optional-wrap">
               {mirrorDisplayName && !isMandatory && <div className="text-optional">(Optional)</div>}
@@ -390,12 +388,12 @@ export default class BaseForm extends React.PureComponent {
           </div>
         </Input.TextareaAutoResize>
 
-        <div class="Field--representation">
+        <div className="Field--representation">
           {this.amountRepresentationForFieldType}
 
           {hasDescription && (
             <Input.TextareaAutoResize
-              class="Input--description"
+              className="Input--description"
               name="description"
               placeholder="Enter description"
               defaultValue={field.item.description || ''}
@@ -431,3 +429,11 @@ export default class BaseForm extends React.PureComponent {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ countryCode: state.session.user.merchant.country_code }), {
+    openModal,
+    closeModal,
+  }),
+  rTracking(() => window.rzpQ.component('BaseForm')),
+)(BaseForm);

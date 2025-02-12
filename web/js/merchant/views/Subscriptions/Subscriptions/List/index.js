@@ -32,18 +32,6 @@ const link = {
   value: (item) => <CopyLink url={item.short_url} />,
 };
 
-@connect(
-  (state) => ({
-    ...state.subscriptions,
-    user: state.session.user,
-  }),
-  {
-    fetchAll,
-    changeListFilterField: (field, value) => (dispatch) => {
-      dispatch(change('subscriptionsListFilter', field, value));
-    },
-  },
-)
 class SubscriptionsListContainer extends ListContainer {
   filterEle = React.createRef();
 
@@ -90,9 +78,9 @@ class SubscriptionsListContainer extends ListContainer {
   render() {
     const { user } = this.props;
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <TakeATourButton
               feature={RZPFeatures.SUBSCRIPTIONS}
               onClick={() => analytics.track('subscription.search.help')}
@@ -106,7 +94,7 @@ class SubscriptionsListContainer extends ListContainer {
             />
             <span className="cta-container">
               <NavLink
-                class="btn btn-primary"
+                className="btn btn-primary"
                 to="/subscriptions/new"
                 onClick={() => {
                   selfServeTrackInitiate({
@@ -117,7 +105,7 @@ class SubscriptionsListContainer extends ListContainer {
                   analytics.track('subscription.create.initiate');
                 }}
               >
-                <i class="i i-plus" />
+                <i className="i i-plus" />
                 <span>Create New Subscription</span>
               </NavLink>
             </span>
@@ -171,4 +159,15 @@ function EmptyComponent() {
   );
 }
 
-export default withRouter(SubscriptionsListContainer);
+export default connect(
+  (state) => ({
+    ...state.subscriptions,
+    user: state.session.user,
+  }),
+  {
+    fetchAll,
+    changeListFilterField: (field, value) => (dispatch) => {
+      dispatch(change('subscriptionsListFilter', field, value));
+    },
+  },
+)(withRouter(SubscriptionsListContainer));

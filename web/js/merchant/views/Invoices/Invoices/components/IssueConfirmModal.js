@@ -8,21 +8,12 @@ import Clipboard from 'common/ui/Clipboard';
 import { titleCase } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import DocsLink from 'merchant/components/DocsLink';
+import { compose } from 'redux';
 
 const selector = formValueSelector('issueInvoice');
 // eslint-disable-next-line react/no-unsafe
-@withI18Service
-@connect((state) => {
-  return {
-    session: state.session,
-    sms_notify: selector(state, 'sms_notify'),
-    email_notify: selector(state, 'email_notify'),
-  };
-}, ModalActions)
-@reduxForm({
-  form: 'issueInvoice',
-})
-export default class IssueInvoiceConfirmModal extends Component {
+
+class IssueInvoiceConfirmModal extends Component {
   static defaultProps = {
     onFieldChange: () => {},
   };
@@ -103,25 +94,25 @@ export default class IssueInvoiceConfirmModal extends Component {
       (customer.contact || customer.email) && !isConfigTagEnabled('app_store.app_store');
 
     return (
-      <div class="issue-invoice-modal">
+      <div className="issue-invoice-modal">
         <ModalHeader
           title={isPaymentLink ? 'Send Link' : paymentLink ? 'Issued' : 'Issue Invoice'}
           onCloseClick={this.closeModal}
         />
 
-        <form class="form-horizontal">
-          <div class="modal-body">
+        <form className="form-horizontal">
+          <div className="modal-body">
             {paymentLink ? (
               <div>
-                <p class="help-block">
+                <p className="help-block">
                   Share the following link with the customer manually to receive the payment
                 </p>
                 <Clipboard value={paymentLink} />
 
-                <div class="Modal__actions">
+                <div className="Modal__actions">
                   <AsyncButton
                     type="submit"
-                    class="btn btn-primary btn-block btn-lg"
+                    className="btn btn-primary btn-block btn-lg"
                     text="Done"
                     onClick={this.props.closeModal}
                   />
@@ -131,7 +122,7 @@ export default class IssueInvoiceConfirmModal extends Component {
               <div>
                 <p>Send {titleCase(entityName)} and payment instructions to...</p>
                 {customer.contact && (
-                  <div class="rzpCheckbox">
+                  <div className="rzpCheckbox">
                     <Field
                       name="sms_notify"
                       id="sms_notify"
@@ -139,14 +130,14 @@ export default class IssueInvoiceConfirmModal extends Component {
                       type="checkbox"
                       onChange={onFieldChange}
                     />
-                    <label for="sms_notify" class="icon i-check">
+                    <label htmlFor="sms_notify" className="icon i-check">
                       {customer.contact}
                     </label>
                   </div>
                 )}
 
                 {customer.email && (
-                  <div class="rzpCheckbox">
+                  <div className="rzpCheckbox">
                     <Field
                       name="email_notify"
                       id="email_notify"
@@ -154,7 +145,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                       type="checkbox"
                       onChange={onFieldChange}
                     />
-                    <label for="email_notify" class="icon i-check">
+                    <label htmlFor="email_notify" className="icon i-check">
                       {customer.email}
                     </label>
                   </div>
@@ -179,16 +170,16 @@ export default class IssueInvoiceConfirmModal extends Component {
                 </div>
 
                 {isTestMode && (
-                  <div class="alert alert-sm alert-warning">
+                  <div className="alert alert-sm alert-warning">
                     The {entityName} is created in <b>Test Mode</b>. So, only test payments can be
                     made for this {entityName}.{/* Also, SMS will not be sent in test mode.*/}
                   </div>
                 )}
 
-                <div class="Modal__actions">
+                <div className="Modal__actions">
                   <AsyncButton
                     type="submit"
-                    class="btn btn-primary btn-block btn-lg"
+                    className="btn btn-primary btn-block btn-lg"
                     text={isPaymentLink ? 'Send Link' : 'Issue Invoice'}
                     pendingText={isPaymentLink ? 'Sending...' : 'Issuing...'}
                     disabled={disabled}
@@ -203,3 +194,17 @@ export default class IssueInvoiceConfirmModal extends Component {
     );
   }
 }
+
+export default compose(
+  withI18Service,
+  connect((state) => {
+    return {
+      session: state.session,
+      sms_notify: selector(state, 'sms_notify'),
+      email_notify: selector(state, 'email_notify'),
+    };
+  }, ModalActions),
+  reduxForm({
+    form: 'issueInvoice',
+  }),
+)(IssueInvoiceConfirmModal);

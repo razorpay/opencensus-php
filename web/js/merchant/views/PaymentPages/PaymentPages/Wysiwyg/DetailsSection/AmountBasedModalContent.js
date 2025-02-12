@@ -30,14 +30,14 @@ const AmountBasedModalContent = ({
 
   return (
     <>
-      <div class="main-title">Configure Your Goal Tracker</div>
-      <Form class="goal-tracker-form--amount" onChange={handleFormChange}>
+      <div className="main-title">Configure Your Goal Tracker</div>
+      <Form className="goal-tracker-form--amount" onChange={handleFormChange}>
         <div className="modal-section">
           <Input.Group
-            class="InputGroup--inline InputGroup--vTop amount"
+            className="InputGroup--inline InputGroup--vTop amount"
             label="Enter your goal amount"
           >
-            <div class="Input-content">
+            <div className="Input-content">
               <Input.CurrencySelect autoRender name="currency" defaultValue={currency} disabled />
               <Input
                 autoRender

@@ -10,11 +10,11 @@ export default function NewSubscriptionLinkDetails(props) {
   return (
     <>
       <Input.Group
-        class="InputGroup--inline"
+        className="InputGroup--inline"
         label="Customer Contact"
         required={fields.customer_notify}
       >
-        <div class="Input-content">
+        <div className="Input-content">
           <Input
             placeholder="Email"
             name="notify_info.notify_email"
@@ -41,7 +41,7 @@ export default function NewSubscriptionLinkDetails(props) {
         </div>
       </Input.Group>
 
-      <Input.Group class="InputGroup--near">
+      <Input.Group className="InputGroup--near">
         <Input.Check
           fieldLabel="Notify Customer"
           name="customer_notify"
@@ -62,14 +62,14 @@ export default function NewSubscriptionLinkDetails(props) {
           analytics.track('subscription.create.authlink_expiry_no', cloneOptions);
         }}
       />
-      <Input.Group class="InputGroup--inline InputGroup--near">
-        <div class="Input-content">
+      <Input.Group className="InputGroup--inline InputGroup--near">
+        <div className="Input-content">
           <Input.ToCalendar
             placeholder="DD-MM-YYYY"
             allowToday
             disablePastDates
             size="half"
-            addonAfter={<i class="i i-date-range" />}
+            addonAfter={<i className="i i-date-range" />}
             placement="topLeft"
             name="expire_by"
             onChange={onDateChange('expire_by')}
@@ -84,7 +84,7 @@ export default function NewSubscriptionLinkDetails(props) {
           {!!fields.expire_by && (
             <Input.TimePicker
               placeholder="HH:MM A"
-              addonAfter={<i class="i i-time" />}
+              addonAfter={<i className="i i-time" />}
               name="expire_by_time"
               onChange={onTimeChange('expire_by_time')}
               disabled={internals._isNonExpiringLink}
@@ -101,7 +101,7 @@ export default function NewSubscriptionLinkDetails(props) {
       <Input.PairList
         name="notes"
         label="Internal Notes"
-        class="Input--vTop"
+        className="Input--vTop"
         labelClass="Input-label"
         defaultValue={fields.notes}
         onChange={(_, field) => {

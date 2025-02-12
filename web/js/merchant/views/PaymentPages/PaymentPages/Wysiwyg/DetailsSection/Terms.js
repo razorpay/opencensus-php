@@ -38,7 +38,7 @@ export default class extends React.PureComponent {
       <div id="terms-details">
         {isEditable ? (
           <React.Fragment>
-            <textarea class="fake-textarea" readOnly />
+            <textarea className="fake-textarea" readOnly />
             <label>Terms & Conditions:</label>
             <Input.Textarea
               name="terms"
@@ -64,7 +64,7 @@ export default class extends React.PureComponent {
         ) : (
           <>
             <Button.Transparent
-              class="btn-link"
+              className="btn-link"
               onClick={() => {
                 analyticsTrack({
                   objectName: 'terms',

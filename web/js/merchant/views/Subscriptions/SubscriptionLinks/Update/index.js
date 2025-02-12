@@ -1,19 +1,21 @@
 import React from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-
-import Form from 'common/new-ui/Form';
-import Spinner from 'common/ui/Spinner';
-import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { withI18Service } from 'common/i18';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import Spinner from 'common/ui/Spinner';
 import { findBy, stringToObj, classList } from 'common/utils/rzp-utils';
 import DocsLink from 'merchant/components/DocsLink';
-
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import Plan from 'merchant/models/Plan';
-import { fetchPlan, fetchPlans, updatePlans } from 'merchant/reducers/plans';
 import { fetchItems } from 'merchant/reducers/items';
+import { fetchPlan, fetchPlans, updatePlans } from 'merchant/reducers/plans';
 import {
   fetchSettings,
   fetchSubscription,
@@ -21,18 +23,13 @@ import {
   fetchScheduledChanges,
   fetchSubscriptionOfferAPI,
 } from 'merchant/reducers/subscriptions';
-
-import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { withI18Service } from 'common/i18';
-
-import Review from './Review';
-import PlanDetails from './PlanDetails';
-import moment from 'moment';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { isDomesticCardOrIsUPI } from 'merchant/views/Subscriptions/utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import PlanDetails from './PlanDetails';
+import Review from './Review';
 
 const tabsMeta = {
   'Subscription Details': {
@@ -48,24 +45,6 @@ const tabs = Object.keys(tabsMeta);
 
 // eslint-disable-next-line react/no-unsafe
 
-@connect(
-  (state) => ({
-    plans: state.plans,
-    items: state.items,
-    subscription: state.subscription,
-    user: state.session.user,
-  }),
-  {
-    fetchPlan,
-    updatePlans,
-    fetchPlans,
-    fetchItems,
-    updateSubscription,
-    showNotification,
-    fetchSubscription,
-    fetchSettings,
-  },
-)
 class UpdateSubscriptionLink extends React.Component {
   constructor(props) {
     super(props);
@@ -421,7 +400,7 @@ class UpdateSubscriptionLink extends React.Component {
     );
     if (isLoading) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -483,7 +462,7 @@ class UpdateSubscriptionLink extends React.Component {
       }
       default: {
         return (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         );
@@ -504,7 +483,7 @@ class UpdateSubscriptionLink extends React.Component {
     return (
       // need to improve this css styling
       <div
-        class={classList(
+        className={classList(
           'Links--Create SubscriptionLinks--update Wizard',
           showUPIUnAvlBanner && 'upi-banner-visible',
         )}
@@ -518,11 +497,11 @@ class UpdateSubscriptionLink extends React.Component {
           tabsValidity={this.state.validTabs}
           tabClickHandler={this.handleTabChange}
         />
-        <main class="form-container">
-          <div class="title">
+        <main className="form-container">
+          <div className="title">
             <strong>{currentTabMeta.title}</strong>
           </div>
-          <div class="description large">{currentTabMeta.desc}</div>
+          <div className="description large">{currentTabMeta.desc}</div>
           <Form layout="tabular" onChange={this.handleChangeIn}>
             {this.renderForm()}
           </Form>
@@ -530,10 +509,13 @@ class UpdateSubscriptionLink extends React.Component {
         <footer>
           {this.props.user.isCardRecurringPaymentsBlocked && (
             <div
-              class={classList('card-blocked-banner', showUPIUnAvlBanner && 'upi-banner-visible')}
+              className={classList(
+                'card-blocked-banner',
+                showUPIUnAvlBanner && 'upi-banner-visible',
+              )}
             >
-              <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily disabled
-              for new subscriptions.{' '}
+              <i className="i i-info-circle" /> Cards issued by Indian banks are temporarily
+              disabled for new subscriptions.{' '}
               <DocsLink
                 url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
                 title="Learn more"
@@ -578,14 +560,35 @@ class UpdateSubscriptionLink extends React.Component {
 
     if (isModalView) {
       return (
-        <Modal class="UpdateSubscriptionLink animate-down" onClose={this.props.onClose}>
+        <Modal className="UpdateSubscriptionLink animate-down" onClose={this.props.onClose}>
           <ModalContent>{this.renderWizard({ isModalView })}</ModalContent>
         </Modal>
       );
     }
 
-    return <div class="StandAloneContainer">{this.renderWizard({ isModalView })}</div>;
+    return <div className="StandAloneContainer">{this.renderWizard({ isModalView })}</div>;
   }
 }
 
-export default withRouter(withI18Service(UpdateSubscriptionLink));
+export default compose(
+  connect(
+    (state) => ({
+      plans: state.plans,
+      items: state.items,
+      subscription: state.subscription,
+      user: state.session.user,
+    }),
+    {
+      fetchPlan,
+      updatePlans,
+      fetchPlans,
+      fetchItems,
+      updateSubscription,
+      showNotification,
+      fetchSubscription,
+      fetchSettings,
+    },
+    withRouter,
+    withI18Service,
+  ),
+)(UpdateSubscriptionLink);

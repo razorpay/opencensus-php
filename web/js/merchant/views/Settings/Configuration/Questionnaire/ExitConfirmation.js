@@ -59,11 +59,11 @@ const ExitConfirmation = ({
                 });
               }
             }}
-            class="btn btn-link"
+            className="btn btn-link"
           >
             Cancel
           </button>
-          <button onClick={saveDraft} class="btn btn-primary">
+          <button onClick={saveDraft} className="btn btn-primary">
             Save and Exit
           </button>
         </footer>

@@ -152,7 +152,7 @@ export default class ExpirySubscriptions extends React.Component {
     if (state.error) return <Alert type="error" message={state.error} />;
 
     return (
-      <div class="Subscription--Expiry">
+      <div className="Subscription--Expiry">
         {CARDS.map((card) => {
           const style = {
             borderLeftColor: card.color,
@@ -163,15 +163,15 @@ export default class ExpirySubscriptions extends React.Component {
           return (
             <div
               key={card.key}
-              class={classList('card', isActive && 'active')}
+              className={classList('card', isActive && 'active')}
               style={style}
               onClick={this.onClickQuickFilter(card)}
             >
-              <div class="count">
+              <div className="count">
                 {state.isLoading ? <PlaceholderLoader /> : state.data[card.key]}
               </div>
-              <div class="details">
-                {isActive && <i class="i i-close" />}
+              <div className="details">
+                {isActive && <i className="i i-close" />}
                 {card.getTitle()}
               </div>
             </div>

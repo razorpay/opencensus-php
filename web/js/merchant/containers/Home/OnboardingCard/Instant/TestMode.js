@@ -6,7 +6,8 @@ import SwitchToMode from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 // eslint-disable-next-line import/no-named-as-default
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { showProductsModal } from 'merchant/reducers/home';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 const TestProducts = ({ onClick }) => (
   <span className="btn-link cursor-pointer" onClick={onClick}>
@@ -20,11 +21,7 @@ const initialState = {
   content: null,
 };
 
-@connect(null, { showProductsModal })
-@RTracking(() => {
-  return window.rzpQ.component('TestMode');
-})
-export default class TestMode extends Component {
+class TestMode extends Component {
   constructor(props) {
     super(props);
     this.state = initialState;
@@ -128,3 +125,10 @@ export default class TestMode extends Component {
     );
   }
 }
+
+export default compose(
+  connect(null, { showProductsModal }),
+  rTracking(() => {
+    return window.rzpQ.component('TestMode');
+  }),
+)(TestMode);

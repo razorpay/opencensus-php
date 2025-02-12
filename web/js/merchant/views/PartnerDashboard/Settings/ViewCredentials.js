@@ -1,14 +1,14 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
+
 import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
-import ajax from 'merchant/utils/ajax';
 import fileDownload from 'common/utils/file-download';
+import ajax from 'merchant/utils/ajax';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(null, { closeModal, showNotification })
-export default class ViewCredentials extends Component {
+class ViewCredentials extends Component {
   state = {
     showClientSecret: false,
   };
@@ -46,32 +46,32 @@ export default class ViewCredentials extends Component {
     const { mode, credentials } = this.props;
 
     return (
-      <div class="Partner-Dashboard__View-Credentials">
+      <div className="Partner-Dashboard__View-Credentials">
         <ModalHeader title={`Download ${mode} token`} onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           {/* client ID */}
-          <div class="form-group">
+          <div className="form-group">
             <label>Client ID</label>
-            <InputField value={credentials.id} disabled class="form-control" />
+            <InputField value={credentials.id} disabled className="form-control" />
           </div>
 
           {/* client Secret */}
-          <div class="form-group toggle-password">
+          <div className="form-group toggle-password">
             <label>Client Secret</label>
             <InputField
               value={credentials.secret}
               type={this.state.showClientSecret ? 'text' : 'password'}
               disabled
-              class="form-control"
+              className="form-control"
             />
-            <button class="btn-link btn-show-secret" onClick={this.toggleSecretView}>
+            <button className="btn-link btn-show-secret" onClick={this.toggleSecretView}>
               {this.state.showClientSecret ? 'Hide' : 'Show'}
             </button>
           </div>
 
-          <div class="Modal__Actions clearfix">
-            <button class="btn btn-primary btn-block" onClick={this.handleDownloadToken}>
+          <div className="Modal__Actions clearfix">
+            <button className="btn btn-primary btn-block" onClick={this.handleDownloadToken}>
               Download Token
             </button>
           </div>
@@ -80,3 +80,5 @@ export default class ViewCredentials extends Component {
     );
   }
 }
+
+export default connect(null, { closeModal, showNotification })(ViewCredentials);

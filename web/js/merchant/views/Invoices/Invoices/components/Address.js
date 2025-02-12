@@ -17,14 +17,14 @@ export default class Address extends Component {
     const { address } = this.props;
 
     return (
-      <div class="row AddressSelectionModal__address">
-        <div class="col-md-12">
+      <div className="row AddressSelectionModal__address">
+        <div className="col-md-12">
           <Field
             name="address_id"
             component={RadioButton}
             htmlValue={address.id}
             label={() => (
-              <p class="AddressSelectionModal__address-text">
+              <p className="AddressSelectionModal__address-text">
                 {stringifyAddress(address)}
               </p>
             )}

@@ -71,8 +71,8 @@ const NitroCCCampaign = React.memo(({ productName, openModal, closeModal }) => {
       bannerKey={`nitro-CC-Campaign-${user.current}`}
       card_id={cardId}
     >
-      <span class="display-inline">{bannerText}</span>
-      <a class="Button--secondary Button scheduled-btn-act btn-border" onClick={handleCTA1Click}>
+      <span className="display-inline">{bannerText}</span>
+      <a className="Button--secondary Button scheduled-btn-act btn-border" onClick={handleCTA1Click}>
         {cta1Text}
       </a>
     </AnnouncementBanner>

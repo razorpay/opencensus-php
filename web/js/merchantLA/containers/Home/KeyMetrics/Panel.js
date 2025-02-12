@@ -98,12 +98,12 @@ class Panel extends Component {
       hideGraph: false,
     };
 
-    this.handleGroupingChange = ::this.handleGroupingChange;
-    this.handleBreakdownChange = ::this.handleBreakdownChange;
-    this.handleBreakdownSelectChange = ::this.handleBreakdownSelectChange;
-    this.handleImageExportClick = ::this.handleImageExportClick;
-    this.handleFilterChange = ::this.handleFilterChange;
-    this.handleResize = debounce(::this.handleResize, 250);
+    this.handleGroupingChange = this.handleGroupingChange.bind(this);
+    this.handleBreakdownChange = this.handleBreakdownChange.bind(this);
+    this.handleBreakdownSelectChange = this.handleBreakdownSelectChange.bind(this);
+    this.handleImageExportClick = this.handleImageExportClick.bind(this);
+    this.handleFilterChange = this.handleFilterChange.bind(this);
+    this.handleResize = debounce(this.handleResize.bind(this), 250);
   }
 
   getVisibleGroups(showGroupingByPtfm) {

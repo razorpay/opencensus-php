@@ -52,7 +52,7 @@ const SettlementEntities = (props) => {
           currency={props.currency}
         />
       ) : (
-        <div class="div--loading">
+        <div className="div--loading">
           <Spinner />
         </div>
       )}

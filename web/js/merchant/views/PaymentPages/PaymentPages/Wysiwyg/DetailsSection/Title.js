@@ -61,8 +61,8 @@ export default class extends React.Component {
     const hasVal = ele ? ele.value : this.props.title;
 
     return (
-      <div id="title" class={classList('title title--big', !hasVal && 'Input-highlight')}>
-        <textarea class="fake-textarea" readOnly />
+      <div id="title" className={classList('title title--big', !hasVal && 'Input-highlight')}>
+        <textarea className="fake-textarea" readOnly />
         <Input.Textarea
           name="title"
           placeholder="Enter page title here"

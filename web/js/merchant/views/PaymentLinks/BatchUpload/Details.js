@@ -17,9 +17,9 @@ import {
   fetchPaymentLinkBatchesDetails as fetchBatchDetails,
   cancelPaymentLinkBatch,
 } from 'merchant/reducers/batches';
+import { getStatsTableForBatchPLV2 } from 'merchant/views/PaymentLinks/utils';
 import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { getStatsTableForBatchPLV2 } from 'merchant/views/PaymentLinks/utils';
 
 import track from './track';
 
@@ -51,15 +51,18 @@ const renderBatchDetails = (props) => {
 
   return (
     <Fragment>
-      <div class="equal-margin">
+      <div className="equal-margin">
         <BatchStats stats={statsTable} />
       </div>
-      <div class="equal-margin">
+      <div className="equal-margin">
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
 
           {showCancelBtn && props.isBatchCancelEnabled && (
-            <Button.Transparent class="Button--Link cancel-batch" onClick={props.onClickCancelBtn}>
+            <Button.Transparent
+              className="Button--Link cancel-batch"
+              onClick={props.onClickCancelBtn}
+            >
               Cancel
             </Button.Transparent>
           )}
@@ -88,17 +91,7 @@ const renderBatchDetails = (props) => {
   );
 };
 
-@connect(
-  (state) => ({
-    isBatchCancelEnabled: state.session.user.isBatchCancelEnabled,
-  }),
-  {
-    cancelPaymentLinkBatch,
-    showNotification,
-    fetchBatchDetails,
-  },
-)
-export default class PaymentLinksBatchDetailsContainer extends Component {
+class PaymentLinksBatchDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -182,10 +175,10 @@ function PaymentLinksTable({ isPaymentlinksV2Enabled, paymentlinks, batchId, tot
 
 function LinksErrMessage({ issuedCount, onDownload, batchId }) {
   return (
-    <small class="help-block m-l">
-      <i class="i i-info-circle" /> {issuedCount === 0 ? 'The payment' : 'Some'} links related to
-      this batch were not created due to errors. Please
-      <span class="btn-link" onClick={onDownload.bind(this, batchId)}>
+    <small className="help-block m-l">
+      <i className="i i-info-circle" /> {issuedCount === 0 ? 'The payment' : 'Some'} links related
+      to this batch were not created due to errors. Please
+      <span className="btn-link" onClick={onDownload.bind(this, batchId)}>
         {' '}
         download{' '}
       </span>
@@ -203,11 +196,11 @@ function getStatsTable(stats) {
     [
       {
         title: 'Paid',
-        value: <span class="text-success">{stats.paid_count}</span>,
+        value: <span className="text-success">{stats.paid_count}</span>,
       },
       {
         title: 'Expired',
-        value: <span class="text-danger">{stats.expired_count}</span>,
+        value: <span className="text-danger">{stats.expired_count}</span>,
       },
     ],
   ];
@@ -222,12 +215,23 @@ function getStatsTableForPLV2(stats, processedCount) {
     [
       {
         title: 'Paid',
-        value: <span class="text-success">{stats.paid || 0}</span>,
+        value: <span className="text-success">{stats.paid || 0}</span>,
       },
       {
         title: 'Expired',
-        value: <span class="text-danger">{stats.expired || 0}</span>,
+        value: <span className="text-danger">{stats.expired || 0}</span>,
       },
     ],
   ];
 }
+
+export default connect(
+  (state) => ({
+    isBatchCancelEnabled: state.session.user.isBatchCancelEnabled,
+  }),
+  {
+    cancelPaymentLinkBatch,
+    showNotification,
+    fetchBatchDetails,
+  },
+)(PaymentLinksBatchDetailsContainer);

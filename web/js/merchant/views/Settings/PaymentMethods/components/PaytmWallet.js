@@ -14,7 +14,7 @@ const ProductionAccount = () => {
         }}
       >
         <p>Live Mode</p>
-        <div class="activated status">
+        <div className="activated status">
           <Popover align="bottom" theme="dark">
             <PopoverBody>
               <div style={{ textAlign: 'left', textTransform: 'none' }}>Activated</div>
@@ -35,7 +35,7 @@ export const PaytmWallet = ({ paytm_production_status, loading, handlePaytmWalle
     <div className="flex-end">
       {[ACCOUNT_LINKABLE].includes(paytm_production_status) && (
         <button
-          class="btn btn-primary mr-25 ml-5"
+          className="btn btn-primary mr-25 ml-5"
           disabled={loading}
           onClick={handlePaytmWalletIntegration}
         >

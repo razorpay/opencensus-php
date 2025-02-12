@@ -145,7 +145,7 @@ const SubMerchantKycStatusLabel = ({
       {activation_status === 'instantly_activated' && (
         <>
           &nbsp;
-          <i class="i i-info-circle" />
+          <i className="i i-info-circle" />
           <PopoverComponent align="right" theme="dark">
             <PopoverBody>
               The merchant can accept live payments but settlements will be on hold until KYC

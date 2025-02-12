@@ -7,7 +7,7 @@ export function WalletAutoDebit({ label, provider, changeEnableAutoDebitSwitch }
     <div className="col-xs-12" key={label}>
       <div className="row">
         <div className="col-xs-3">
-          <label for="name" className="gateway-detail-title">
+          <label htmlFor="name" className="gateway-detail-title">
             <span>Wallet auto-debit</span>
             <small className="help-content ml-4">
               <i className="i i-help-outline" />

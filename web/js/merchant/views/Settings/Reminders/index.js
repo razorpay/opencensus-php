@@ -49,14 +49,14 @@ class Reminders extends React.Component {
 
     if (loading) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
     }
 
     return (
-      <div class="content-wrapper content-sm" id="settings-content">
+      <div className="content-wrapper content-sm" id="settings-content">
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}>
           <div className="documentation-section-link">
             <DocsLink url="https://razorpay.com/docs/payment-links/reminders-payment-links/" />
@@ -66,7 +66,7 @@ class Reminders extends React.Component {
         {this.state.errors ? (
           <Alert type="error" message={this.state.errors} showDismiss={false} />
         ) : (
-          <div class="ReminderSettings">
+          <div className="ReminderSettings">
             <PaymentLinksSettings />
           </div>
         )}

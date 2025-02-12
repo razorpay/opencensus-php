@@ -88,7 +88,7 @@ const Reward = (props) => {
   const CTAButton = () =>
     CTA[status] == 'Remove' ? (
       <AsyncBtn.Transparent
-        class={`Reward--remove-button ${isEditing ? 'Reward--remove-button--disabled' : ''}`}
+        className={`Reward--remove-button ${isEditing ? 'Reward--remove-button--disabled' : ''}`}
         onClick={clickRemove}
         disabled={false}
         showLoader={false}
@@ -99,7 +99,7 @@ const Reward = (props) => {
     ) : (
       <>
         <AsyncBtn.Primary
-          class={`Button--small Reward--activate-button ${
+          className={`Button--small Reward--activate-button ${
             isEditing ? 'Reward--activate-button--disabled' : ''
           }`}
           disabled={props.isEmailAndContactOptional}

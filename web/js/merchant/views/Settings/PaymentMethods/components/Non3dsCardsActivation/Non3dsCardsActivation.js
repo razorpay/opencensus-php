@@ -142,7 +142,7 @@ const Non3dsCardsActivation = ({
 
   return (
     <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.CROSS_BORDER}>
-      <div class="non-3ds-card-activation">
+      <div className="non-3ds-card-activation">
         <div className="product-info">
           <div className="product-title header-title">
             <strong>Support for Non 3D Secure transactions</strong>

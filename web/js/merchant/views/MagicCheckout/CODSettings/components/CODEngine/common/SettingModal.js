@@ -51,7 +51,7 @@ function SettingModal({
       <ModalHeader title={header} extraClass="no-padding" onCloseClick={closeModal} />
       <div className="name-container">
         <Text weight="semibold">{variant} name</Text>
-        <div class="name-input">
+        <div className="name-input">
           <input
             data-testid="name-input"
             onChange={handleNameChange}

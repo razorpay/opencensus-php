@@ -6,7 +6,7 @@ import { Box } from '@razorpay/blade/components';
 const SubText = (props) => {
   let text = props.text;
   if (props.optOut) {
-    text += ` <span class="opt-out" id="rtbOptOut">Opt-out</span>`;
+    text += ` <span className="opt-out" id="rtbOptOut">Opt-out</span>`;
   }
 
   React.useEffect(() => {

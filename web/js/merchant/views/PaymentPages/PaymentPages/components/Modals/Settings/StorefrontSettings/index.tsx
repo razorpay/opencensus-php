@@ -131,7 +131,7 @@ const StorefrontSettings = ({
   };
 
   const PluginsBtn = (
-    <Button.Transparent type="button" class="Button--Link" onClick={handleConfigurePlugins}>
+    <Button.Transparent type="button" className="Button--Link" onClick={handleConfigurePlugins}>
       <b>{isPluginConfigured ? 'Update' : 'Configure'}</b>
     </Button.Transparent>
   );
@@ -150,7 +150,7 @@ const StorefrontSettings = ({
             <CustomSlugSection>
               <Input
                 name={CUSTOM_URL_INPUT_NAME}
-                class={CUSTOM_URL_INPUT_CLASS}
+                className={CUSTOM_URL_INPUT_CLASS}
                 label={CUSTOM_URL_LABEL}
                 defaultValue={storefrontEntity.slug}
                 addonValueBefore={CUSTOM_URL_RZP_PAGES_URL}
@@ -172,7 +172,7 @@ const StorefrontSettings = ({
                 <Input.DateTime
                   label="Page Expiry Date"
                   checkboxFieldLabel="No Expiry"
-                  class="Input--vTop Input--expiryby"
+                  className="Input--vTop Input--expiryby"
                   value={expireBy}
                   defaultValue={expireBy}
                   onChange={handleExpiryDateChange}

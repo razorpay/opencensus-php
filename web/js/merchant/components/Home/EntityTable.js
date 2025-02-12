@@ -30,26 +30,26 @@ const StatusLabel = ({ status, entity, children, ...otherProps }) => {
 export default ({ entity, data, loading, onSeeAll = () => {}, onOpenDetails = () => {} }) => {
   let items = data.items;
   return (
-    <div class="col-md-4 col-sm-6 col-xs-12">
-      <div class="WidgetContainer">
-        <div class="panel">
-          <div class="panel-body">
+    <div className="col-md-4 col-sm-6 col-xs-12">
+      <div className="WidgetContainer">
+        <div className="panel">
+          <div className="panel-body">
             <Link
               data-tip={`See All ${titleCase(entity)}s`}
-              class="pull-right"
+              className="pull-right"
               to={`/${entity}s`}
               onClick={onSeeAll}
             >
-              <i class="i i-arrow-forward" />
+              <i className="i i-arrow-forward" />
             </Link>
 
             <h4>Recent {titleCase(entity)}s</h4>
             {loading ? (
-              <div class="centered">
+              <div className="centered">
                 <LoaderDots />
               </div>
             ) : items.length ? (
-              <div class="table-responsive EntityTable">
+              <div className="table-responsive EntityTable">
                 <Table data={{ nodes: items.slice(0, 5) }}>
                   {(tableData) => (
                     <>
@@ -59,7 +59,7 @@ export default ({ entity, data, loading, onSeeAll = () => {}, onOpenDetails = ()
                             <TableCell>
                               <Link to={`/${entity}s/${item.id}`} onClick={onOpenDetails}>
                                 <code>{item.id}</code>
-                                <div class="text-muted font-xs">
+                                <div className="text-muted font-xs">
                                   {formatFromNow(item.created_at)}
                                 </div>
                               </Link>

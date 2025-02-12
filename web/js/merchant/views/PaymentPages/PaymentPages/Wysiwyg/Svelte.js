@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-@connect((state) => ({ user: state.session.user, org: state.session.org }))
-export default class Svelte extends React.Component {
+class Svelte extends React.Component {
   shouldComponentUpdate() {
     return false; // No need to re-render again, all 3 React apps are working independently bridged via store
   }
@@ -56,3 +55,5 @@ export default class Svelte extends React.Component {
     });
   }
 }
+
+export default connect((state) => ({ user: state.session.user, org: state.session.org }))(Svelte);

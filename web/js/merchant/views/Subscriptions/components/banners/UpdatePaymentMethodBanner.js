@@ -5,11 +5,11 @@ import { DocLink } from 'merchant/components/DocsLink';
 function UpdatePaymentMethodBanner({ url }) {
   return (
     <AnnouncementBanner title="IMPORTANT UPDATE" canBeClosed={true} theme="warning">
-      <span class="display-inline">
+      <span className="display-inline">
         Activate your &#39;pending&#39; and &#39;halted&#39; subscriptions by updating payment
         methods!
       </span>
-      <DocLink class="btn btn-link" href={url} target="_blank">
+      <DocLink className="btn btn-link" href={url} target="_blank">
         Click here to know more
       </DocLink>
     </AnnouncementBanner>

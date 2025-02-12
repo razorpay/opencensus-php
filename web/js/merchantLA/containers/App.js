@@ -1,19 +1,17 @@
-import { withRouter } from 'common/deprecated/withRouter';
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
+import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import debounce from 'common/utils/debounce';
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import { initSentry } from 'common/utils/observability';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import Footer from 'merchant/components/Footer';
-import { applyTheme } from 'merchant_common/helpers/themes';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Content from 'merchantLA/components/Content';
 import HeaderNav from 'merchantLA/components/HeaderNav';
 import MerchantTour from 'merchantLA/containers/MerchantTour';
@@ -23,44 +21,33 @@ import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
 import * as SessionActions from 'merchantLA/reducers/session';
 import { fetchFeaturesAjax } from 'merchantLA/reducers/session';
-import LogoutDialog from '../../merchant/components/LogoutDialog';
-import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
-import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
+import { applyTheme } from 'merchant_common/helpers/themes';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+
+import LogoutDialog from '../../merchant/components/LogoutDialog';
 
 initSentry('MerchantLA');
-@connect(
-  (state) => ({
-    ...state.session,
-    windowWidth: state.app.windowWidth,
-  }),
-  {
-    ...ModalActions,
-    ...SessionActions,
-    ...NotificationActions,
-    updateTwoFactorVerified,
-    resizeWindow,
-    openModal,
-    closeModal,
-  },
-)
+
 class App extends Component {
   pendingRequests = [];
 
   constructor(props) {
     super(props);
 
-    const oldModeToken = 'rzp_mode',
-      oldModeValue = LocalStorageService.getItem(oldModeToken);
+    const oldModeToken = 'rzp_mode';
+    const oldModeValue = getItem(oldModeToken);
 
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
     if (oldModeValue) {
       Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
-        LocalStorageService.setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
+        setItem(`${oldModeToken}--${merchantId}`, oldModeValue);
       });
 
-      LocalStorageService.removeItem(oldModeToken);
+      removeItem(oldModeToken);
     }
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
@@ -101,12 +88,12 @@ class App extends Component {
         );
     });
 
-    let currentMode = LocalStorageService.getItem(this.modeToken);
+    let currentMode = getItem(this.modeToken);
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        let user = data;
-        let role = user.userRole;
+        const user = data;
+        const role = user.userRole;
 
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
@@ -143,7 +130,7 @@ class App extends Component {
           user.features = setFeatures(data.success ? data.data.features : []);
           this.props.updateSession({ user, mode: currentMode });
 
-          let $splash = document.getElementById('splash');
+          const $splash = document.getElementById('splash');
 
           if ($splash) {
             $splash.parentElement.removeChild($splash);
@@ -167,9 +154,9 @@ class App extends Component {
     initLumberjack();
   }
 
-  UNSAFE_componentWillReceiveProps({ user, history }) {
+  UNSAFE_componentWillReceiveProps({ user }) {
     if (user.isAuthenticated) {
-      let role = user.userRole;
+      const role = user.userRole;
       this.redirectToRoute(role);
     }
   }
@@ -179,14 +166,14 @@ class App extends Component {
   }
 
   fetchUser() {
-    let user = new User(window.rzp_user);
+    const user = new User(window.rzp_user);
 
     if (user) {
       this.props.updateSession({ user });
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
-      let currentMode = LocalStorageService.getItem(this.modeToken);
+      let currentMode = getItem(this.modeToken);
 
       if (!currentMode) {
         currentMode = user.isActivated ? 'live' : 'test';
@@ -197,7 +184,7 @@ class App extends Component {
       // making sure his current mode is remembered so that when he gets
       // activated, he wont be switched to live mode automatically
       // which may lead to mass confusion for merchants
-      LocalStorageService.setItem(this.modeToken, currentMode);
+      setItem(this.modeToken, currentMode);
 
       if (user && user.user) {
         window.rzpAnalytics({
@@ -225,7 +212,7 @@ class App extends Component {
   }
 
   fetchOrg() {
-    let org = window.rzp_org;
+    const org = window.rzp_org;
     if (org) {
       delete window.rzp_org;
       this.props.updateSession({ org });
@@ -236,12 +223,12 @@ class App extends Component {
   }
 
   redirectToRoute(role) {
-    let pathname = this.props.history.location.pathname;
+    const pathname = this.props.history.location.pathname;
 
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
         case [rolesList.SELLERAPP]:
-          let url = '/paymentlinks';
+          const url = '/paymentlinks';
           return this.props.history.replace(url);
         case [rolesList.SUPPORT]:
           return this.props.history.replace('/payments');
@@ -258,7 +245,7 @@ class App extends Component {
       eventAction: 'Switch - Mode',
       eventLabel: mode,
     });
-    let user = this.props.user;
+    const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.showNotification({
         type: 'error',
@@ -267,7 +254,7 @@ class App extends Component {
       });
     } else {
       callback();
-      LocalStorageService.setItem(this.modeToken, mode);
+      setItem(this.modeToken, mode);
       location.reload();
     }
   };
@@ -291,14 +278,14 @@ class App extends Component {
   };
 
   render() {
-    let { user, org, mode, modeFormatted } = this.props;
+    const { user, org, mode, modeFormatted } = this.props;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
 
     return (
-      <div class={`layout ${this.orgCode}`}>
+      <div className={`layout ${this.orgCode}`}>
         <HeaderNav
           user={user}
           mode={mode}
@@ -324,4 +311,20 @@ class App extends Component {
   }
 }
 
-export default withRouter(App);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.session,
+      windowWidth: state.app.windowWidth,
+    }),
+    {
+      ...ModalActions,
+      ...SessionActions,
+      ...NotificationActions,
+      resizeWindow,
+      openModal,
+      closeModal,
+    },
+  ),
+)(App);

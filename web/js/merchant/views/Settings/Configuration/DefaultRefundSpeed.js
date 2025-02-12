@@ -1,6 +1,16 @@
 import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import { compose } from 'redux';
+
+import { withI18Service } from 'common/i18';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCustomURL } from 'merchant/components/DocsLink';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import {
   updateFeatures,
   updateConfig,
@@ -8,24 +18,14 @@ import {
   createLateAuthConfig,
   fetchFeatureStatus,
 } from 'merchant/reducers/config';
-import PropTypes from 'prop-types';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-
-import { showWhenUtil } from 'merchant/components/ShowWhen';
-import EnableInstantRefundsModal from 'merchant/views/Transactions/v1/Payments/components/EnableInstantRefundsModal';
-import { openModal } from 'merchant_common/reducers/modals';
-import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
-import RTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { getCustomURL } from 'merchant/components/DocsLink';
-import { REFUND_SETTINGS } from './deeplink-constants';
-import TextHighlighter from 'common/ui/TextHighlighter';
 import { updateMerchant as updateMerchantReducer } from 'merchant/reducers/session';
-import { withI18Service } from 'common/i18';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import EnableInstantRefundsModal from 'merchant/views/Transactions/v1/Payments/components/EnableInstantRefundsModal';
+import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { REFUND_SETTINGS } from './deeplink-constants';
 
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
@@ -50,8 +50,6 @@ const raiseTicket = () => {
     }, 1000);
   }
 };
-// eslint-disable-next-line react/no-unsafe
-@withI18Service
 class DefaultRefundSpeed extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -426,4 +424,5 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('DefaultRefundSpeed')),
+  withI18Service,
 )(DefaultRefundSpeed);

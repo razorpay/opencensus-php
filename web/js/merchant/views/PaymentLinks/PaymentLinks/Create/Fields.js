@@ -20,19 +20,19 @@ import { getAmountFieldPlaceholder } from 'common/utils/rzp-utils';
 
 const CustomInput = (props) => {
   return (
-    <div class="Input--custom">
-      <div class="Input-label">
+    <div className="Input--custom">
+      <div className="Input-label">
         {MIN_AMOUNT_TEXT} (Optional)
         <small className="help-content">
-          <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+          <i className="i i-info-outline" style={{ marginLeft: 4 }} />
           <Popover align="top" parentQuerySelector=".Modal-body .PaymentLinks--Create">
             {PopoverBodyText}
           </Popover>
         </small>
       </div>
 
-      <Input.Group class="InputGroup--inline">
-        <div class="Input-content">
+      <Input.Group className="InputGroup--inline">
+        <div className="Input-content">
           <Input.CurrencySelect
             name="currency"
             defaultValue="INR"
@@ -298,7 +298,7 @@ export default [
         placeholder: 'DD-MM-YYYY',
         size: 'half_big',
         _disabledWhen: (form) => form.state._name.hasNoExpiry === '1',
-        addonAfter: <i class="i i-date-range" />,
+        addonAfter: <i className="i i-date-range" />,
 
         _cmp: Input.ToCalendar,
         allowToday: true,
@@ -315,7 +315,7 @@ export default [
         size: 'half_big',
         _when: (form) => !!form.state._name.expire_by_date,
         _disabledWhen: (form) => form.state._name.hasNoExpiry === '1',
-        addonAfter: <i class="i i-time" />,
+        addonAfter: <i className="i i-time" />,
 
         // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).
         _cmp: Input.TimePicker,
@@ -390,9 +390,9 @@ export default [
 ];
 
 const ReminderNotEnabled = ({ type = '' }) => (
-  <div class="Input">
-    <div class="Input-label">Reminders</div>
-    <div class="Input-content">
+  <div className="Input">
+    <div className="Input-label">Reminders</div>
+    <div className="Input-content">
       Reminders is not set to payment links with {type} expiry date.
       <br />
       Set it up{' '}

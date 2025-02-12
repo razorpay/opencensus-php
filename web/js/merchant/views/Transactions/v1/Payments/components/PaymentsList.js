@@ -78,11 +78,6 @@ const _paymentId = (initiatePage = 'Transactions.Payments') => {
   };
 };
 
-@connect((state) => ({
-  org: state.session.org,
-  isMobile: state.app.isMobileResolution,
-  config: state.config,
-}))
 class PaymentsListContainer extends ListContainer {
   state = {
     columnsList: [],
@@ -448,4 +443,8 @@ class PaymentsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(PaymentsListContainer);
+export default connect((state) => ({
+  org: state.session.org,
+  isMobile: state.app.isMobileResolution,
+  config: state.config,
+}))(withRouter(PaymentsListContainer));

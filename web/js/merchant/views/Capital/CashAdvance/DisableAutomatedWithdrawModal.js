@@ -42,12 +42,12 @@ const DisableAutomatedWithdrawModal = ({
       <div>All future automated withdrawals will be disabled.</div>
       <div className="flex disable-automated-withdraw-modal--action">
         <button
-          class="btn btn-outline dont-disable-btn"
+          className="btn btn-outline dont-disable-btn"
           onClick={onDontDisableAutomatedWithdrawClick}
         >
           No, don’t
         </button>
-        <button class="btn btn-primary yes-disable-btn" onClick={onDisableAutomatedWithdrawClick}>
+        <button className="btn btn-primary yes-disable-btn" onClick={onDisableAutomatedWithdrawClick}>
           Yes, Disable
         </button>
       </div>

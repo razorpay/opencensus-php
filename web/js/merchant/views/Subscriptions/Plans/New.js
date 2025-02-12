@@ -25,6 +25,7 @@ import analytics from 'merchant/views/Subscriptions/analytics';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { trackSaveDuplicatePlan, trackSelectCurrency } from './ga';
+import { compose } from 'redux';
 
 const selector = formValueSelector('newPlan');
 
@@ -32,42 +33,14 @@ const Label = ({ text, htmlFor, required: isRequired }) => {
   const classes = typeof isRequired !== 'undefined' ? 'label-required' : '';
 
   return (
-    <div class="pair-label">
-      <label for={htmlFor} class={classes}>
+    <div className="pair-label">
+      <label htmlFor={htmlFor} className={classes}>
         {text}
       </label>
     </div>
   );
 };
 
-@connect(
-  (state) => {
-    const { currency } = selector(state, 'item') || {
-      currency: state.session.user.merchant.currency,
-    };
-    return {
-      currency,
-      baseLocation: state.app.baseLocation,
-      user: state.session.user,
-    };
-  },
-  {
-    fetchPlan,
-    savePlan,
-    showNotification,
-  },
-)
-@reduxForm({
-  form: 'newPlan',
-  initialValues: {
-    period: 'monthly',
-    interval: 1,
-    item: {
-      currency: 'INR',
-    },
-    notes: [],
-  },
-})
 class NewPlan extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -206,21 +179,21 @@ class NewPlan extends Component {
       };
     }
     return (
-      <div class="content-wrapper content-sm txn-details plan-fields-wrapper">
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-plan text-main icon--formal" />{' '}
+      <div className="content-wrapper content-sm txn-details plan-fields-wrapper">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <i className="i i-plan text-main icon--formal" />{' '}
             <strong>{plan && plan.id ? 'Edit Plan' : 'New Plan'}</strong>
           </div>
-          <div class="SliderPanel__Body">
-            <form class="panel-body" onSubmit={handleSubmit(this.save)}>
+          <div className="SliderPanel__Body">
+            <form className="panel-body" onSubmit={handleSubmit(this.save)}>
               <FormItem
                 label={(_) => <Label text="Plan Name" required />}
                 field={(_) => (
                   <Field
                     name="item[name]"
                     component={InputField}
-                    class="form-control"
+                    className="form-control"
                     validate={required('Plan name is required')}
                     placeholder="The name known to your customers"
                     onBlur={() => analytics.track('plan.create.name', this.cloneOptions)}
@@ -234,12 +207,12 @@ class NewPlan extends Component {
                     <Field
                       name="item[description]"
                       component="textarea"
-                      class="form-control"
+                      className="form-control"
                       placeholder="Optional"
                       onBlur={() => analytics.track('plan.create.description', this.cloneOptions)}
                     />
-                    <span class="help-block label--secondary">
-                      <i class="i i-info-outline" /> The <b>Plan Name</b> and{' '}
+                    <span className="help-block label--secondary">
+                      <i className="i i-info-outline" /> The <b>Plan Name</b> and{' '}
                       <b>Plan Description</b> will appear on the invoice as entered above
                     </span>
                   </div>
@@ -248,12 +221,12 @@ class NewPlan extends Component {
               <FormItem
                 label={(_) => <Label text="Billing Frequency" required />}
                 field={(_) => (
-                  <div class="billing-frequency">
+                  <div className="billing-frequency">
                     <span>Every</span>
                     <Field
                       name="interval"
                       component="input"
-                      class="form-control"
+                      className="form-control"
                       style={{
                         width: '38px',
                         padding: '6px 8px',
@@ -266,7 +239,7 @@ class NewPlan extends Component {
                     <Field
                       name="period"
                       component="select"
-                      class="form-control"
+                      className="form-control"
                       style={{
                         width: '98px',
                         padding: '6px 8px',
@@ -281,9 +254,10 @@ class NewPlan extends Component {
                       <option value="yearly">Year(s)</option>
                     </Field>
 
-                    <span class="help-block label--secondary">
-                      <i class="i i-info-outline" /> You can set <b>billing cycle</b> (start date
-                      and end date) and <b>trial period</b> later while, creating a subscription.
+                    <span className="help-block label--secondary">
+                      <i className="i i-info-outline" /> You can set <b>billing cycle</b> (start
+                      date and end date) and <b>trial period</b> later while, creating a
+                      subscription.
                     </span>
                   </div>
                 )}
@@ -292,7 +266,7 @@ class NewPlan extends Component {
               <FormItem
                 label={(_) => <Label text="Billing Amount" required />}
                 field={(_) => (
-                  <div class="Field-amount-wrapper">
+                  <div className="Field-amount-wrapper">
                     <Input.CurrencySelect
                       name="currency"
                       onChange={this.onCurrencyChange}
@@ -302,7 +276,7 @@ class NewPlan extends Component {
                       name="item[amount]"
                       component={InputGroupField}
                       suffix="per unit"
-                      class="form-control"
+                      className="form-control"
                       validate={[
                         required('Billing amount is required'),
                         (value) => validateAmount(value, null, currency),
@@ -310,8 +284,8 @@ class NewPlan extends Component {
                       placeholder={getAmountFieldPlaceholder(currency)}
                       onBlur={() => analytics.track('plan.create.amount', this.cloneOptions)}
                     />
-                    <span class="help-block label--secondary">
-                      <i class="i i-info-outline" />
+                    <span className="help-block label--secondary">
+                      <i className="i i-info-outline" />
                       <b>Billing amount</b> and <b>billing frequency</b> can not be changed later.
                     </span>
                   </div>
@@ -336,10 +310,10 @@ class NewPlan extends Component {
                 <Alert type="error" message={this.state.errors} />
               </div>
 
-              <div class="btn-toolbar text-center">
+              <div className="btn-toolbar text-center">
                 <AsyncButton
                   type="submit"
-                  class="btn btn-primary btn-half"
+                  className="btn btn-primary btn-half"
                   text="Create Plan"
                   pendingText="Creating..."
                   onClick={() => {
@@ -349,7 +323,7 @@ class NewPlan extends Component {
                 />
                 <button
                   type="button"
-                  class="btn btn-half btn-outline"
+                  className="btn btn-half btn-outline"
                   onClick={() => {
                     analytics.track(actionLabel.cancelInitiate, this.cloneOptions);
                     this.context
@@ -384,8 +358,34 @@ class NewPlan extends Component {
   }
 }
 
-NewPlan.defaultProps = {
-  onSave: () => {},
-};
-
-export default withRouter(NewPlan);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      const { currency } = selector(state, 'item') || {
+        currency: state.session.user.merchant.currency,
+      };
+      return {
+        currency,
+        baseLocation: state.app.baseLocation,
+        user: state.session.user,
+      };
+    },
+    {
+      fetchPlan,
+      savePlan,
+      showNotification,
+    },
+  ),
+  reduxForm({
+    form: 'newPlan',
+    initialValues: {
+      period: 'monthly',
+      interval: 1,
+      item: {
+        currency: 'INR',
+      },
+      notes: [],
+    },
+  }),
+)(NewPlan);

@@ -1,5 +1,6 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
+import { compose } from 'redux';
 
 import QuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
@@ -10,85 +11,18 @@ import QuickStepGuide, {
   QuickGuideTitle,
   QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
+import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
 import { getQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
-@connect(state => ({
-  user: state.session.user,
-  mode: state.session.mode,
-}))
-@QuickGuide({
-  feature: RZPFeatures.ROUTE,
-  data_points: ['transfers', 'accounts'],
-  dataTransformer: (key, state) => {
-    if (key === 'accounts') {
-      return {
-        ...state.accounts,
-        items: state.accounts.accounts,
-      };
-    }
-
-    return state[key];
-  },
-})
-export default class MarketPlaceQuickGuide extends React.Component {
-  getCloseBtn = isCompleted => {
-    return (
-      <QuickGuideCloseBtn
-        isCompleted={isCompleted}
-        onClick={this.props.onClickClose}
-      />
-    );
-  };
-
-  render() {
-    const { accountsStatus, transfersStatus } = getStatus(this.props);
-
-    const closeBtn = this.getCloseBtn(transfersStatus === done);
-
-    let activeStep = 0;
-
-    if (transfersStatus === done) {
-      activeStep = 1;
-    }
-
-    return (
-      <QuickStepGuide
-        activeStep={activeStep}
-        class="Route"
-        title={Title}
-        closeBtn={closeBtn}
-      >
-        <QuickGuideStep
-          status={accountsStatus}
-          step="Account"
-          feature={RZPFeatures.ROUTE}
-          {...getQuickGuideData.LinkedAccount(accountsStatus)}
-        />
-
-        <QuickGuideStep
-          status={transfersStatus}
-          step="Transfers"
-          feature={RZPFeatures.ROUTE}
-          {...getQuickGuideData.Transfers(transfersStatus)}
-        />
-      </QuickStepGuide>
-    );
-  }
-}
-
 const Title = <QuickGuideTitle />;
 
-export const getRouteQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.ROUTE);
+export const getRouteQuickGuideIsClosed = (props) => {
+  const isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.ROUTE);
 
-  if (
-    isClosed ||
-    props.transfers.items.length <= 2 ||
-    props.accounts.length <= 2
-  ) {
+  if (isClosed || props.transfers.items.length <= 2 || props.accounts.length <= 2) {
     return isClosed;
   }
 
@@ -117,7 +51,7 @@ const getStatus = ({ accounts, transfers }) => {
 
   if (transfers.loading) {
     return {
-      accountsStatus: accountsStatus,
+      accountsStatus,
       transfersStatus: loading,
     };
   }
@@ -137,3 +71,61 @@ const getStatus = ({ accounts, transfers }) => {
     transfersStatus,
   };
 };
+
+class MarketPlaceQuickGuide extends React.Component {
+  getCloseBtn = (isCompleted) => {
+    return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
+  };
+
+  render() {
+    const { accountsStatus, transfersStatus } = getStatus(this.props);
+
+    const closeBtn = this.getCloseBtn(transfersStatus === done);
+
+    let activeStep = 0;
+
+    if (transfersStatus === done) {
+      activeStep = 1;
+    }
+
+    return (
+      <QuickStepGuide activeStep={activeStep} className="Route" title={Title} closeBtn={closeBtn}>
+        <QuickGuideStep
+          status={accountsStatus}
+          step="Account"
+          feature={RZPFeatures.ROUTE}
+          {...getQuickGuideData.LinkedAccount(accountsStatus)}
+        />
+
+        <QuickGuideStep
+          status={transfersStatus}
+          step="Transfers"
+          feature={RZPFeatures.ROUTE}
+          {...getQuickGuideData.Transfers(transfersStatus)}
+        />
+      </QuickStepGuide>
+    );
+  }
+}
+
+export default compose(
+  connect((state) => ({
+    user: state.session.user,
+    mode: state.session.mode,
+  })),
+  /* eslint-disable */
+  QuickGuide({
+    feature: RZPFeatures.ROUTE,
+    data_points: ['transfers', 'accounts'],
+    dataTransformer: (key, state) => {
+      if (key === 'accounts') {
+        return {
+          ...state.accounts,
+          items: state.accounts.accounts,
+        };
+      }
+
+      return state[key];
+    },
+  }),
+)(MarketPlaceQuickGuide);

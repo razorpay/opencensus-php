@@ -1,18 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import { getCurrency } from 'common/ui/Amount';
 import { getCurrencyConfig } from 'common/utils/rzp-utils';
+import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 
 const blackColor = '#263a4a';
 const whiteColor = '#fff';
 
-@connect((state) => ({
-  config: state.config,
-  user: state.session.user,
-}))
-export default class PreviewFormShell extends React.Component {
+class PreviewFormShell extends React.Component {
   totalDots = this.isQuickPayTemplate ? 2 : 3;
 
   state = {
@@ -114,21 +110,21 @@ export default class PreviewFormShell extends React.Component {
     const brandLogoUrl = config.config.logo_url;
 
     return (
-      <div class="PaymentButton-PreviewFormShell">
-        <div class="PreviewFormShell-header">
+      <div className="PaymentButton-PreviewFormShell">
+        <div className="PreviewFormShell-header">
           <div
-            class="Preview-topbar"
+            className="Preview-topbar"
             style={{
               color: this.state.textColor,
               backgroundColor: brandColor,
             }}
           >
-            <div class="Preview-topbar-title">
+            <div className="Preview-topbar-title">
               <span>{this.title}</span>
             </div>
 
-            <div class="Preview-controls">
-              <div class="Preview-progressDots">
+            <div className="Preview-controls">
+              <div className="Preview-progressDots">
                 {Array.from({ length: this.totalDots }).map((_, index) => (
                   <span
                     key={index}
@@ -136,7 +132,7 @@ export default class PreviewFormShell extends React.Component {
                       borderColor: brandColor,
                       background: brandColor,
                     }}
-                    class={`${index === this.activeDotIndex ? 'active' : ''} ${
+                    className={`${index === this.activeDotIndex ? 'active' : ''} ${
                       index <= this.activeDotIndex ? 'marked' : ''
                     }`}
                   />
@@ -145,15 +141,15 @@ export default class PreviewFormShell extends React.Component {
             </div>
           </div>
           <div
-            class="Preview-topbar-border"
+            className="Preview-topbar-border"
             style={{
               backgroundColor: brandColor,
             }}
           >
-            <div></div>
+            <div />
           </div>
           <div
-            class="PreviewFormShell-header-details"
+            className="PreviewFormShell-header-details"
             style={{
               color: this.state.textColor,
               backgroundColor: brandColor,
@@ -165,19 +161,19 @@ export default class PreviewFormShell extends React.Component {
             />
             {brandLogoUrl && <img src={brandLogoUrl} width="35px" height="35px" />}
             <div>
-              <div class="header-details-merchant">{merchantBillingLabel}</div>
+              <div className="header-details-merchant">{merchantBillingLabel}</div>
             </div>
           </div>
         </div>
-        <div class="PreviewFormShell-checkout-form">
-          <div class="Body">{children}</div>
+        <div className="PreviewFormShell-checkout-form">
+          <div className="Body">{children}</div>
 
           {buttonTitle && (
-            <div class="Footer">
-              <div class="Footer--Amount">
+            <div className="Footer">
+              <div className="Footer--Amount">
                 {this.currencySymbol} {this.displayAmountToPayByCustomer}
               </div>
-              <div class="Field-dummy-btn">{buttonTitle}</div>
+              <div className="Field-dummy-btn">{buttonTitle}</div>
             </div>
           )}
         </div>
@@ -185,3 +181,8 @@ export default class PreviewFormShell extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({
+  config: state.config,
+  user: state.session.user,
+}))(PreviewFormShell);

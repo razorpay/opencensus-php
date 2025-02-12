@@ -36,21 +36,21 @@ class ModalStore {
       let modals = this.modals;
 
       let Confirm = (
-        <div class="confirm-modal">
+        <div className="confirm-modal">
           <header>Confirm</header>
-          <div class="confirm-body">
-            <div class="message">{message}</div>
-            <div class="action-buttons">
+          <div className="confirm-body">
+            <div className="message">{message}</div>
+            <div className="action-buttons">
               <button
                 onClick={(_) => {
                   isResolved = 1;
                   this.closeModal();
                 }}
-                class="btn-confirm"
+                className="btn-confirm"
               >
                 {confirmLabel}
               </button>
-              <button onClick={(_) => this.closeModal()} class="btn-reject">
+              <button onClick={(_) => this.closeModal()} className="btn-reject">
                 {rejectLabel}
               </button>
             </div>
@@ -122,9 +122,9 @@ export default class ModalContainer extends Component {
             <CSSTransition classNames="slider" timeout={animObj}>
               <div id="slider-container">
                 {store.sliders.map((slider, index) => (
-                  <div class="slider" key={index}>
+                  <div className="slider" key={index}>
                     <div
-                      class="slider-close"
+                      className="slider-close"
                       onClick={(_) => {
                         store.sliders.remove(slider);
                       }}
@@ -146,7 +146,7 @@ export default class ModalContainer extends Component {
                 {store.modals.map((modal, index) => (
                   <Modal
                     key={index}
-                    class={'admin'}
+                    className={'admin'}
                     onClose={(_) => {
                       store.modals.remove(modal);
                     }}
@@ -163,7 +163,7 @@ export default class ModalContainer extends Component {
           {store.toasts.map(({ className, message }, index) => (
             <CSSTransition
               key={index}
-              class={'toast ' + className}
+              className={'toast ' + className}
               classNames="toast"
               timeout={animObj}
               style={{ maxWidth: 'inherit' }}

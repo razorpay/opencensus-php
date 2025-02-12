@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import ModalHeader from 'common/ui/ModalHeader';
-import { bindActionCreators } from 'redux';
-import * as ModalActions from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import RefundMode from './RefundMode';
-import CaptureMode from './CaptureMode';
-import { fetchLateAuthConfig, createLateAuthConfig } from 'merchant/reducers/config';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { parseTimeoutValues, maxTimeoutValue } from './data';
-import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
-import { GraphicalExplanation } from './GraphicalExplanation';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { bindActionCreators } from 'redux';
+
 import { Modules } from 'common/constant/enums';
+import ModalHeader from 'common/ui/ModalHeader';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { fetchLateAuthConfig, createLateAuthConfig } from 'merchant/reducers/config';
+import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import CaptureMode from './CaptureMode';
+import { GraphicalExplanation } from './GraphicalExplanation';
+import RefundMode from './RefundMode';
+import { parseTimeoutValues, maxTimeoutValue } from './data';
 
 function RefundSpeed(props) {
   const [refundSpeed, setrefundSpeed] = useState(() => {
@@ -165,24 +167,24 @@ function RefundSpeed(props) {
 
   return (
     <>
-      <div class="capture-mode-container">
+      <div className="capture-mode-container">
         <ModalHeader title="Capture Settings" onCloseClick={props.closeModal} />
-        <div class="content">
-          <div class="info">
+        <div className="content">
+          <div className="info">
             {props.captureMode === 'automatic' && (
-              <p class="automatic-info">
+              <p className="automatic-info">
                 [Automatic Capture Duration :{' '}
                 {renderTimeoutAsString(parseTimeoutValues(props.captureModeTimeout))}]
               </p>
             )}
             {props.captureMode === 'manual' && (
-              <p class="manual-info">
+              <p className="manual-info">
                 [Manual Capture Duration :{' '}
                 {renderTimeoutAsString(parseTimeoutValues(props.captureModeTimeout))}]
               </p>
             )}
             {props.timeoutValue && (
-              <p class="manual-info">
+              <p className="manual-info">
                 [Manual Capture Duration :{' '}
                 {renderTimeoutAsString(parseTimeoutValues(props.timeoutValue))}]
               </p>
@@ -208,13 +210,15 @@ function RefundSpeed(props) {
               </p>
             )}
           </div>
-          <div class="upper-panel flex-3" style={{ marginTop: '-18px' }}>
+          <div className="upper-panel flex-3" style={{ marginTop: '-18px' }}>
             <div
-              class={`panel-rows highlight-box ${refundSpeed === 'optimum' ? `m-t-negative` : ''}`}
+              className={`panel-rows highlight-box ${
+                refundSpeed === 'optimum' ? `m-t-negative` : ''
+              }`}
               style={{ height: '70%' }}
             >
-              <div class={`${refundSpeed ? handleLayout().upper : ``}`}>
-                <div class="left-col">
+              <div className={`${refundSpeed ? handleLayout().upper : ``}`}>
+                <div className="left-col">
                   <input
                     type="radio"
                     onClick={(_) => {
@@ -223,15 +227,15 @@ function RefundSpeed(props) {
                     checked={refundSpeed === `normal`}
                   />
                 </div>
-                <div class="right-col">
+                <div className="right-col">
                   <strong>Normal Speed</strong>
-                  <p class="highlight__subtext">Refund will be made in 5-7 days.</p>
+                  <p className="highlight__subtext">Refund will be made in 5-7 days.</p>
                 </div>
               </div>
             </div>
           </div>
-          <div class="lower-panel flex-7">
-            <div class="note">
+          <div className="lower-panel flex-7">
+            <div className="note">
               <p>
                 <strong>Note</strong> : Instant refunds are available only on captured payments and
                 not on authorised payments for now
@@ -239,16 +243,16 @@ function RefundSpeed(props) {
             </div>
           </div>
         </div>
-        <div class="actions">
-          <div class="stepper">
+        <div className="actions">
+          <div className="stepper">
             <span />
-            <span class="active" />
+            <span className="active" />
           </div>
           <div>
-            <p class="prev-btn" onClick={onPreviousClick}>
+            <p className="prev-btn" onClick={onPreviousClick}>
               Previous
             </p>
-            <button class="btn btn-primary" onClick={onSaveClick} disabled={!refundSpeed}>
+            <button className="btn btn-primary" onClick={onSaveClick} disabled={!refundSpeed}>
               Save
             </button>
           </div>

@@ -32,7 +32,7 @@ const EnableNon3dsStatusModal = ({ open, isLoading, onClose, onEnable }) => {
           <div className="non-3ds-modal-header">
             <h3>Enable non 3D Secure Cards</h3>
           </div>
-          <div class="non-3ds-modal-content">
+          <div className="non-3ds-modal-content">
             <div>
               You are requesting to enable Non 3D Secure card support. Enabling non 3D Secure card
               support might have fraud risks.

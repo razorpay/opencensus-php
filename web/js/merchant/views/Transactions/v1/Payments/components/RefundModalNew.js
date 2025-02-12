@@ -891,7 +891,7 @@ class RefundModal extends Component {
                           type="checkbox"
                           onChange={(e) => this.setState({ reversal: e.target.checked })}
                         />
-                        <strong className="icon i-check" for="reverse_all">
+                        <strong className="icon i-check" htmlFor="reverse_all">
                           Reverse all{' '}
                           <a
                             href="https://razorpay.com/docs/route/operations/#reversals"

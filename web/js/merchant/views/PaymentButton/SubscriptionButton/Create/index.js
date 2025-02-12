@@ -37,6 +37,7 @@ import {
 } from 'common/utils/rzp-utils';
 
 import track from './track';
+import { compose } from 'redux';
 
 const docTitles = {
   DEFAULT: 'Razorpay Dashboard',
@@ -44,23 +45,6 @@ const docTitles = {
   EDIT: 'Edit Subscription Button',
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    subscription_button: state.subscription_button_create,
-  }),
-  {
-    resetPageData,
-    fetchSubscriptionButtonDetails,
-    updateReceiptDetails,
-    closeModal,
-    openModal,
-    showNotification,
-    updateHighlightButtonSettings,
-  },
-)
-@RTracking(() => window.rzpQ.component('SubscriptionButtonCreate'))
 class SubscriptionButtonCreate extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -221,7 +205,7 @@ class SubscriptionButtonCreate extends React.Component {
     this.context.confirm({
       header: 'Go back to Dashboard',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>Unsaved changes will be lost. Do you want to continue?</p>
         </div>
       ),
@@ -531,11 +515,11 @@ class SubscriptionButtonCreate extends React.Component {
           <Button.Transparent
             type="button"
             style={{ color: '#fff' }}
-            class="payment-receipt-btn"
+            className="payment-receipt-btn"
             onClick={this.handleTogglePageReceiptModal}
           >
             <span>
-              <i class="i i-document" /> Payment Receipts
+              <i className="i i-document" /> Payment Receipts
             </span>
           </Button.Transparent>
         )}
@@ -566,7 +550,7 @@ class SubscriptionButtonCreate extends React.Component {
 
   get ErrorView() {
     return (
-      <div class="page-center">
+      <div className="page-center">
         Subscription Button with id <b>{this.subscriptionButtonId}</b> doesn't exist.
         <br />
         Go to <Link to="/subscription_buttons/">Subscription Buttons list</Link>{' '}
@@ -582,10 +566,10 @@ class SubscriptionButtonCreate extends React.Component {
       this.subscriptionButtonId && !subscription_button.subscriptionButtonEntity.title;
 
     return (
-      <div class="PaymentButton-Create-Content">
-        <div class="PaymentButton-Create-Content-container SubscriptionButton-Create-Content-container">
+      <div className="PaymentButton-Create-Content">
+        <div className="PaymentButton-Create-Content-container SubscriptionButton-Create-Content-container">
           {isPageLoading ? (
-            <div class="page-center">
+            <div className="page-center">
               <Spinner />
             </div>
           ) : (
@@ -624,7 +608,7 @@ class SubscriptionButtonCreate extends React.Component {
 
   render() {
     return (
-      <div id="payment-buttons-create-container" class="desktop-view">
+      <div id="payment-buttons-create-container" className="desktop-view">
         {this.state.isPageReceiptModalOpened && this.ReceiptModal}
 
         {this.TopBar}
@@ -643,4 +627,23 @@ function setWindowTitle(title) {
   document.title = 'Razorpay Dashboard';
 }
 
-export default withRouter(SubscriptionButtonCreate);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      subscription_button: state.subscription_button_create,
+    }),
+    {
+      resetPageData,
+      fetchSubscriptionButtonDetails,
+      updateReceiptDetails,
+      closeModal,
+      openModal,
+      showNotification,
+      updateHighlightButtonSettings,
+    },
+  ),
+  RTracking(() => window.rzpQ.component('SubscriptionButtonCreate')),
+)(SubscriptionButtonCreate);

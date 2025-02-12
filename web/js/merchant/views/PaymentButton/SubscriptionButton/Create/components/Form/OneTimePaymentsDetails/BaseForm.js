@@ -77,13 +77,13 @@ export default class BaseForm extends React.Component {
         <FieldOptionsDropdown
           trigger={
             <Button.Transparent>
-              <i class="i i-ellipsis-v" />
+              <i className="i i-ellipsis-v" />
             </Button.Transparent>
           }
         >
           <OptionsItem>
-            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
-              <i class="i i-delete" />
+            <div className="OptionsDropdown-item--delete" onClick={handleDeleteField}>
+              <i className="i i-delete" />
               <div>Delete Field</div>
             </div>
           </OptionsItem>
@@ -96,10 +96,10 @@ export default class BaseForm extends React.Component {
     const { disableSubmit } = this.state;
 
     return (
-      <div class="CreatorModal-BaseForm-footer">
+      <div className="CreatorModal-BaseForm-footer">
         <button
           type="button"
-          class="cancel-btn Button--transparent Button"
+          className="cancel-btn Button--transparent Button"
           onClick={() => {
             this.props.handleClose();
 
@@ -110,8 +110,8 @@ export default class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
-          <span class="icon i-check" />
+        <button type="submit" className="save-btn Button--transparent Button" disabled={disableSubmit}>
+          <span className="icon i-check" />
           Save
         </button>
       </div>
@@ -129,13 +129,13 @@ export default class BaseForm extends React.Component {
     );
 
     return (
-      <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
+      <EditorModal className="CreatorModal-BaseForm" overElement allowScroll>
         <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           <Input
             name="name"
             label="Label"
             required
-            class="Input--vTop"
+            className="Input--vTop"
             placeholder="Enter field label"
             defaultValue={field ? field.item.name : ''}
             autoFocus
@@ -161,11 +161,11 @@ export default class BaseForm extends React.Component {
             }}
           />
 
-          <Input.Group class="Input--vTop">
+          <Input.Group className="Input--vTop">
             <Input
               name="amount"
               label="Value"
-              class="Input--vTop"
+              className="Input--vTop"
               placeholder="Enter Amount"
               defaultValue={field ? field.item.amount : ''}
               required
@@ -173,7 +173,7 @@ export default class BaseForm extends React.Component {
             />
 
             <Input.TextareaAutoResize
-              class="Input--description"
+              className="Input--description"
               name="description"
               placeholder="Enter field description"
               defaultValue={field ? field.item.description : ''}

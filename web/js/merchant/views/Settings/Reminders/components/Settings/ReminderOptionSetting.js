@@ -58,9 +58,9 @@ export default class ReminderOptionSetting extends React.Component {
       selectedReminders.length < maxReminderCount;
 
     return (
-      <div class="setting">
+      <div className="setting">
         <EntityDetailRow label={label}>
-          <div class="add-to-list">
+          <div className="add-to-list">
             {selectedReminders.map((selectedOption, idx) => {
               return (
                 selectedOption && (
@@ -80,7 +80,7 @@ export default class ReminderOptionSetting extends React.Component {
 
             {showAddBtn && (
               <Button.Transparent onClick={this.handleAddButton}>
-                <i class="i i-plus" /> Add Reminder
+                <i className="i i-plus" /> Add Reminder
               </Button.Transparent>
             )}
           </div>
@@ -91,18 +91,18 @@ export default class ReminderOptionSetting extends React.Component {
 }
 
 const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
-  <div class="removable-select">
+  <div className="removable-select">
     <PowerSelect
       {...otherProps}
       options={options}
       showClear={false}
       searchEnabled={false}
       optionLabelPath="label"
-      class="removable-power-select"
+      className="removable-power-select"
     />
 
-    <span class="cross-wrapper" onClick={onRemove}>
-      <i class="i-close" />
+    <span className="cross-wrapper" onClick={onRemove}>
+      <i className="i-close" />
     </span>
   </div>
 );

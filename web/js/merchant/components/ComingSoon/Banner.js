@@ -1,9 +1,6 @@
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useCallback } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import DocsLink from 'merchant/components/DocsLink';
 import Button from 'common/new-ui/Button';
 import useLocalStorageCheck from 'merchant/hooks/localStorageCheck';
 
@@ -28,8 +25,8 @@ const Banner = (props) => {
     });
 
     window.rzpQ.productOnboarding().interaction(`coming_soon`, {
-      product: key
-    })
+      product: key,
+    });
 
     props.interestClicked && props.interestClicked();
 
@@ -37,9 +34,9 @@ const Banner = (props) => {
   }, [toggleIsHidden]);
 
   return (
-    <div class="ComingSoon--Banner">
+    <div className="ComingSoon--Banner">
       {isHidden ? (
-        <div class="request-success">
+        <div className="request-success">
           <img src={ComingSoonSuccess} />
           <div>
             <strong>We're glad you're interested in Razorpay {props.product}!</strong>
@@ -47,12 +44,12 @@ const Banner = (props) => {
           </div>
         </div>
       ) : (
-        <div class="request">
+        <div className="request">
           <strong>Want early access to {props.product}?</strong>
           <Button.Primary onClick={interestClicked}>
             Yes, I am Interested
-            <span class="m-l">
-              <i class="i i-arrow-forward"></i>
+            <span className="m-l">
+              <i className="i i-arrow-forward"></i>
             </span>
           </Button.Primary>
         </div>

@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom';
 const SubmitForm = ({ isRevampFlow }) => {
   return (
     <div>
-      <div class="main-title">Submit Form</div>
-      <div class="Input Input--required Input--checkbox">
-        <div class="Input-content">
-          <div class="Input-elWrapper">
+      <div className="main-title">Submit Form</div>
+      <div className="Input Input--required Input--checkbox">
+        <div className="Input-content">
+          <div className="Input-elWrapper">
             <label>
-              <input required name="submit" class="Input-el" type="checkbox" />
-              <div class="Input-checkbox" />
-              <div class="Input-inlineLabel">
+              <input required name="submit" className="Input-el" type="checkbox" />
+              <div className="Input-checkbox" />
+              <div className="Input-inlineLabel">
                 I have read and understood the{' '}
                 <a href="https://razorpay.com/terms" target="_blank" rel="noopener noreferrer">
                   Terms &amp; Conditions
@@ -32,7 +32,7 @@ const SubmitForm = ({ isRevampFlow }) => {
         </div>
       </div>
       {!isRevampFlow && (
-        <div class="greyed-out m-t p-t">
+        <div className="greyed-out m-t p-t">
           Please review the form before submitting. For any changes after submission, you can{' '}
           <Link to="#ticket">write to support</Link>
         </div>

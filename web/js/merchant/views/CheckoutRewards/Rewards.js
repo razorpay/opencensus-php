@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
-import Spinner from 'common/ui/Spinner';
-import { connect } from 'react-redux';
 import moment from 'moment';
-import RewardItem, { STATUSES, SECTIONS, SUB_SECTIONS } from './Reward';
+import { connect } from 'react-redux';
+
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { merchantFetch } from 'merchant/utils/ajax';
-import * as RewardsListActions from 'merchant/reducers/checkoutRewards';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import * as RewardsListActions from 'merchant/reducers/checkoutRewards';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import QueueConfirm from './QueueConfirm';
+import RewardItem, { STATUSES, SECTIONS, SUB_SECTIONS } from './Reward';
 
 const REWARD_CDN_URL = 'https://cdn.razorpay.com/static/assets/rewards';
 
@@ -57,14 +58,14 @@ const RewardsList = ({
 }) => {
   if (isLoading) {
     return (
-      <div class="page-spinner-container">
+      <div className="page-spinner-container">
         <Spinner />
       </div>
     );
   }
 
   if (rewards.length === 0) {
-    return <div class="Rewards--empty">{getEmptyMessage(section)}</div>;
+    return <div className="Rewards--empty">{getEmptyMessage(section)}</div>;
   }
 
   return (
@@ -88,17 +89,19 @@ const RewardsList = ({
 
 const RewardsListContainer = (props) => {
   return (
-    <div class="col-sm-6 RewardsContainer">
+    <div className="col-sm-6 RewardsContainer">
       <div
-        class={`Rewards--header ${
+        className={`Rewards--header ${
           props.content === 'activated' ? 'Rewards--activated-header' : ''
         }`}
       >
-        <h3 class="Rewards--header--title">{props.title}</h3>
-        <div class="Rewards--header--desc">{props.subtitle}</div>
+        <h3 className="Rewards--header--title">{props.title}</h3>
+        <div className="Rewards--header--desc">{props.subtitle}</div>
       </div>
       <div
-        class={`Rewards--list ${props.content === 'activated' ? 'Rewards--activated-list' : ''}`}
+        className={`Rewards--list ${
+          props.content === 'activated' ? 'Rewards--activated-list' : ''
+        }`}
       >
         {props.children}
       </div>
@@ -106,13 +109,7 @@ const RewardsListContainer = (props) => {
   );
 };
 
-@connect((state) => ({ ...state.rewards, ...state.session }), {
-  ...RewardsListActions,
-  ...NotificationsActions,
-  openModal,
-  closeModal,
-})
-export default class Rewards extends Component {
+class Rewards extends Component {
   constructor() {
     super();
     this.state = {
@@ -242,7 +239,7 @@ export default class Rewards extends Component {
 
             this.props.showNotification({
               type: 'success',
-              message: message,
+              message,
             });
 
             const data =
@@ -279,12 +276,8 @@ export default class Rewards extends Component {
    * @param {string} subsection - this value is for which section we are collapsing
    */
   collapse = (subsection) => {
-    let {
-      isAvailableNowCollapsed,
-      isAvailableLaterCollapsed,
-      isLiveCollapsed,
-      isQueueCollapsed,
-    } = this.state;
+    let { isAvailableNowCollapsed, isAvailableLaterCollapsed, isLiveCollapsed, isQueueCollapsed } =
+      this.state;
     let isSlideUp = true;
     if (subsection === 'available-now') {
       if (isAvailableNowCollapsed) {
@@ -363,13 +356,13 @@ export default class Rewards extends Component {
       }
     });
 
-    const isOneRewardLive = liveRewards.length > 0 ? true : false;
+    const isOneRewardLive = liveRewards.length > 0;
 
     const isEmailAndContactOptional =
       user.isPaymentPageEmailOptional && user.isPaymentPageContactOptional;
 
     return (
-      <div class="row">
+      <div className="row">
         <RewardsListContainer
           title="All Rewards from Leading Brands"
           subtitle={
@@ -384,7 +377,7 @@ export default class Rewards extends Component {
             <>
               {availableNowRewards.length > 0 && (
                 <>
-                  <h4 class="h4 Rewards--list-header Rewards--list-sticky-header Rewards--available-now-list-header">
+                  <h4 className="h4 Rewards--list-header Rewards--list-sticky-header Rewards--available-now-list-header">
                     Available Now{` (${availableNowRewards.length})`}
                     {this.collapsibleTitle(SUB_SECTIONS.AVAILABLE_NOW, isAvailableNowCollapsed)}
                   </h4>
@@ -404,7 +397,7 @@ export default class Rewards extends Component {
               )}
               {availableLaterRewards.length > 0 && (
                 <>
-                  <h4 class="h4 Rewards--list-header">
+                  <h4 className="h4 Rewards--list-header">
                     Starting Later{` (${availableLaterRewards.length})`}
                     {this.collapsibleTitle(SUB_SECTIONS.AVAILABLE_LATER, isAvailableLaterCollapsed)}
                   </h4>
@@ -464,14 +457,12 @@ export default class Rewards extends Component {
                     return this.props.openModal({
                       size: 'xlarge',
                       component: (
-                        <>
-                          <div className="preview-img-div">
-                            <button type="button" className="close" onClick={this.props.closeModal}>
-                              <i class="i i-close" />
-                            </button>
-                            <img src={`${REWARD_CDN_URL}/rewards_preview_checkout.jpg`} />
-                          </div>
-                        </>
+                        <div className="preview-img-div">
+                          <button type="button" className="close" onClick={this.props.closeModal}>
+                            <i className="i i-close" />
+                          </button>
+                          <img src={`${REWARD_CDN_URL}/rewards_preview_checkout.jpg`} />
+                        </div>
                       ),
                       className: 'Rewards--preview-checkout-modal',
                     });
@@ -489,7 +480,7 @@ export default class Rewards extends Component {
             }
             content="activated"
           >
-            <h4 class="h4 Rewards--list-header Rewards--list-sticky-header Rewards--live-list-header">
+            <h4 className="h4 Rewards--list-header Rewards--list-sticky-header Rewards--live-list-header">
               Live Now{` (${liveRewards.length})`}
               {isOneRewardLive && this.collapsibleTitle(SUB_SECTIONS.LIVE, isLiveCollapsed)}
             </h4>
@@ -509,10 +500,10 @@ export default class Rewards extends Component {
 
             {queuedRewards.length > 0 && (
               <>
-                <h4 class="h4 Rewards--list-header Rewards--queue-list-header">
+                <h4 className="h4 Rewards--list-header Rewards--queue-list-header">
                   Goes live later{` (${queuedRewards.length}) `}
-                  <small class="help-content">
-                    <i class="i i-info-outline" />
+                  <small className="help-content">
+                    <i className="i i-info-outline" />
                     <Popover
                       align="bottom"
                       followPointer={true}
@@ -549,3 +540,10 @@ export default class Rewards extends Component {
     );
   }
 }
+
+export default connect((state) => ({ ...state.rewards, ...state.session }), {
+  ...RewardsListActions,
+  ...NotificationsActions,
+  openModal,
+  closeModal,
+})(Rewards);

@@ -38,8 +38,8 @@ export default function CustomerDetailsForm(props) {
         onBlur={onBlurElement}
       />
 
-      <Input.Group class="InputGroup--inline" label="Customer Contact" required>
-        <div class="Input-content">
+      <Input.Group className="InputGroup--inline" label="Customer Contact" required>
+        <div className="Input-content">
           <Input
             required
             name="customerContact"
@@ -66,8 +66,8 @@ export default function CustomerDetailsForm(props) {
         </div>
       </Input.Group>
 
-      <Input.Group class="InputGroup--inline InputGroup--vTop" label="Notify">
-        <div class="Input-content">
+      <Input.Group className="InputGroup--inline InputGroup--vTop" label="Notify">
+        <div className="Input-content">
           <Input.Check
             name="configSmsNotify"
             checked={configSmsNotify}
@@ -95,7 +95,7 @@ export default function CustomerDetailsForm(props) {
         onBlur={onBlurElement}
       />
 
-      <Input.Group label="Registration Link Expiry" class="InputGroup--vTop">
+      <Input.Group label="Registration Link Expiry" className="InputGroup--vTop">
         <Input.Check
           fieldLabel="No Expiry"
           name="hasNoExpiry"
@@ -110,7 +110,7 @@ export default function CustomerDetailsForm(props) {
           name="expireAt"
           placeholder="Expiry (DD-MM-YYYY)"
           placement="topLeft"
-          addonAfter={<i class="i i-date-range" />}
+          addonAfter={<i className="i i-date-range" />}
           disabled={hasNoExpiry}
           defaultValue={!hasNoExpiry && expireAt ? moment(expireAt, 'X') : null}
           onChange={handleDateChange('expireAt')}

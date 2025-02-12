@@ -9,23 +9,11 @@ import RadioButton from 'common/ui/Forms/RadioButton';
 import PropTypes from 'prop-types';
 import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
 
 const selector = formValueSelector('editInvoiceLabel');
 
-@connect(
-  state => {
-    return { invoicesIssuedUnder: selector(state, 'invoice_label_field') };
-  },
-  {
-    ...NotificationsActions,
-    ...ConfigActions,
-    ...ModalActions,
-  }
-)
-@reduxForm({
-  form: 'editInvoiceLabel',
-})
-export default class EditInvoiceLabelModal extends Component {
+class EditInvoiceLabelModal extends Component {
   static propTypes = {
     /**
      * Merchant.
@@ -62,10 +50,10 @@ export default class EditInvoiceLabelModal extends Component {
    * Saves the label.
    * @param {Object} props
    */
-  save = props => {
+  save = (props) => {
     return this.props
       .updateConfig(props)
-      .then(res => {
+      .then((res) => {
         this.props.showNotification({
           type: 'success',
           message: 'Invoice Label updated',
@@ -73,7 +61,7 @@ export default class EditInvoiceLabelModal extends Component {
         });
         this.props.onSave(props);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           errors: err.errors,
         });
@@ -92,7 +80,7 @@ export default class EditInvoiceLabelModal extends Component {
    * Change handler.
    * @param {Event} e
    */
-  billingLabelChange = e => {
+  billingLabelChange = (e) => {
     this.props.change('invoice_label_field', e.target.value);
   };
 
@@ -102,24 +90,21 @@ export default class EditInvoiceLabelModal extends Component {
     return (
       <div>
         <ModalHeader title={header} onCloseClick={this.props.closeModal} />
-        <div class="modal-body EditInvoiceLabelModal">
+        <div className="modal-body EditInvoiceLabelModal">
           <Alert type="error" message={this.state.errors} />
           <form autoComplete="off">
-            <div class="row">
-              <div class="col-md-12">
-                <p>
-                  The Invoices created from this date onwards will be issued
-                  under this name.
-                </p>
+            <div className="row">
+              <div className="col-md-12">
+                <p>The Invoices created from this date onwards will be issued under this name.</p>
               </div>
             </div>
-            <div class="row">
-              <div class="col-md-12">
+            <div className="row">
+              <div className="col-md-12">
                 <Field
                   label={() => (
                     <span>
-                      <div class="title">{merchant.business_name}</div>
-                      <div class="description">Registered Name</div>
+                      <div className="title">{merchant.business_name}</div>
+                      <div className="description">Registered Name</div>
                     </span>
                   )}
                   name="invoice_label_field"
@@ -130,8 +115,8 @@ export default class EditInvoiceLabelModal extends Component {
                 <Field
                   label={() => (
                     <span>
-                      <div class="title">{merchant.business_dba}</div>
-                      <div class="description">Billing Label</div>
+                      <div className="title">{merchant.business_dba}</div>
+                      <div className="description">Billing Label</div>
                     </span>
                   )}
                   component={RadioButton}
@@ -141,12 +126,12 @@ export default class EditInvoiceLabelModal extends Component {
                 />
               </div>
             </div>
-            <div class="row">
-              <div class="col-md-12">
-                <div class="Modal__actions">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="Modal__actions">
                   <AsyncButton
                     type="submit"
-                    class="btn btn-primary btn-block"
+                    className="btn btn-primary btn-block"
                     text="Save"
                     pendingText="Saving..."
                     onClick={handleSubmit(this.save)}
@@ -160,3 +145,19 @@ export default class EditInvoiceLabelModal extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return { invoicesIssuedUnder: selector(state, 'invoice_label_field') };
+    },
+    {
+      ...NotificationsActions,
+      ...ConfigActions,
+      ...ModalActions,
+    },
+  ),
+  reduxForm({
+    form: 'editInvoiceLabel',
+  }),
+)(EditInvoiceLabelModal);

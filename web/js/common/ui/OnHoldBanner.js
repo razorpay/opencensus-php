@@ -27,11 +27,11 @@ const onHoldBanner = ({ ctaOnClick, user }) => {
   }
 
   return (
-    <div class="TestModeBanner">
+    <div className="TestModeBanner">
       <Banner>
         {content}
         &nbsp;
-        <span onClick={ctaOnClick} class="btn-link">
+        <span onClick={ctaOnClick} className="btn-link">
           View Details
         </span>
       </Banner>

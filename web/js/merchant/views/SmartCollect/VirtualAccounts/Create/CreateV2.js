@@ -1,40 +1,36 @@
 import React from 'react';
+import BankImage from 'assets/bank.svg';
+import UpiImage from 'assets/upi.svg';
 import PropTypes from 'prop-types';
-import { withRouter } from 'common/deprecated/withRouter';
-import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
-
-import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { TypeAhead } from 'react-power-select';
-import SelectBox from 'common/new-ui/SelectBox';
+import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
-import QuickAdd from 'common/ui/Select/QuickAdd';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Spinner from 'common/ui/Spinner';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import SelectBox from 'common/new-ui/SelectBox';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-
+import QuickAdd from 'common/ui/Select/QuickAdd';
+import Spinner from 'common/ui/Spinner';
 import { classList } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { validateAlphanumeric } from 'common/utils/validators';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { luminateRow } from 'merchant/reducers/app';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import {
   saveVirtualAccount,
   fetchConfigForVirtualAccount,
 } from 'merchant/reducers/virtualaccounts';
-
 import CustomerCreation from 'merchant/views/Customers/New';
-
 import AccountDetailsSummary from 'merchant/views/SmartCollect/VirtualAccounts/components/Modals/AccountDetailsSummary';
-import VPAPrefixModal from './VPAPrefixModal';
 import ConfigureBankAccountsModal from 'merchant/views/SmartCollect/VirtualAccounts/components/Modals/ConfigureBankAccounts';
-
-import BankImage from 'assets/bank.svg';
-import UpiImage from 'assets/upi.svg';
-
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
   DESCRIPTOR_LENGTH_VPA,
@@ -44,45 +40,20 @@ import {
   getStyle_AddOnBefore_VPA,
   getStyle_AddOnAfter_VPA,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { isExperimentEnabled } from 'common/splitz/utils';
-import { withSplitzService } from 'common/splitz';
+import VPAPrefixModal from './VPAPrefixModal';
 
 const CustomCustomerOption = ({ option }) => {
   return (
-    <div class="custom-powerselect-options">
+    <div className="custom-powerselect-options">
       {option.name && <b>{option.name} : </b>}
       {option.email || option.contact}
     </div>
   );
 };
 
-@connect(
-  (state) => {
-    const customers = state.customers.items;
-
-    return {
-      customers,
-      ...state.config.config,
-      user: state.session.user,
-      isTestMode: state.session.mode === 'test',
-      va_config: state.virtualaccounts.va_config || {},
-      org: state.session.org,
-    };
-  },
-  {
-    luminateRow,
-    showNotification,
-    saveVirtualAccount,
-    ...ModalActions,
-    fetchConfigForVirtualAccount,
-    fetchCustomersForAutocomplete,
-    fetchFeatureStatus,
-  },
-)
-@RTracking(() => window.rzpQ.component('CreateVirtualAccount'))
 class CreateVirtualAccount extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -545,25 +516,25 @@ class CreateVirtualAccount extends React.Component {
     // have added this to diable the VPA option from smart collect create customer identifier
 
     const content = (
-      <div class="VirtualAccount--CreateV2 Wizard">
+      <div className="VirtualAccount--CreateV2 Wizard">
         <Form onChange={this.props.onChange} onSubmit={this.handleSubmit} ref={this.setRefForm}>
           <main>
-            <div class="form-container">
-              <div class="form-title">Create Customer Identifier</div>
+            <div className="form-container">
+              <div className="form-title">Create Customer Identifier</div>
 
               {isLoading ? (
-                <div class="page-spinner-container">
+                <div className="page-spinner-container">
                   <Spinner />
                 </div>
               ) : (
                 <>
-                  <label class="payment-method-label">
+                  <label className="payment-method-label">
                     Methods to accept payments in this customer identifier
                   </label>
 
                   <SelectBox
                     name="hasBankAccount"
-                    class="SelectBox--Outline"
+                    className="SelectBox--Outline"
                     onClick={this.handlePaymentMethod('hasBankAccount')}
                     defaultChecked={_internals.hasBankAccount}
                     label={
@@ -583,7 +554,7 @@ class CreateVirtualAccount extends React.Component {
                         size="vpa_custom"
                         description={
                           <>
-                            <div class="remaining-count">
+                            <div className="remaining-count">
                               {descriptors.bank_account.length} / {bankAccountLengthCheck}
                             </div>
                             <br />
@@ -618,7 +589,7 @@ class CreateVirtualAccount extends React.Component {
                   {!isTestMode && showVpaSC && (
                     <SelectBox
                       name="hasVPA"
-                      class="SelectBox--Outline"
+                      className="SelectBox--Outline"
                       onClick={this.handlePaymentMethod('hasVPA')}
                       defaultChecked={_internals.hasVPA}
                       label={
@@ -651,7 +622,7 @@ class CreateVirtualAccount extends React.Component {
                           validator={validateCustomVPA(descriptorLimit_VPA)}
                           description={
                             <>
-                              <div class="remaining-count">
+                              <div className="remaining-count">
                                 {descriptors.vpa.length} / {descriptorLimit_VPA}
                               </div>
                               <br />
@@ -687,15 +658,15 @@ class CreateVirtualAccount extends React.Component {
                     </SelectBox>
                   )}
 
-                  <div class="Input Input--vTop Input--SelectCustomer">
-                    <div class="Input-label">
+                  <div className="Input Input--vTop Input--SelectCustomer">
+                    <div className="Input-label">
                       Customer <span>(Optional)</span>
                     </div>
 
-                    <div class="Input-content">
+                    <div className="Input-content">
                       <TypeAhead
                         options={customers}
-                        class="ps-in-modal"
+                        className="ps-in-modal"
                         searchIndices={['id', 'name', 'email', 'contact']}
                         placeholder="Select or Add a New Customer"
                         showClear={true}
@@ -714,22 +685,25 @@ class CreateVirtualAccount extends React.Component {
                   </div>
 
                   <div
-                    class={classList('additional-options-btn', showAdditionalOptions && 'btn-hide')}
+                    className={classList(
+                      'additional-options-btn',
+                      showAdditionalOptions && 'btn-hide',
+                    )}
                     onClick={this.handleAdditionalOptions}
                   >
                     {showAdditionalOptions ? (
-                      <div class="heading">Hide Advance Options</div>
+                      <div className="heading">Hide Advance Options</div>
                     ) : (
                       <div>
-                        <div class="heading">View Advance Options</div>
-                        <div class="description">
+                        <div className="heading">View Advance Options</div>
+                        <div className="description">
                           {' '}
                           Third Party Validation, Auto Close, Description, etc.{' '}
                         </div>
                       </div>
                     )}
                     <i
-                      class={classList(
+                      className={classList(
                         'i',
                         showAdditionalOptions ? 'i-chevron-up' : 'i-chevron-down',
                       )}
@@ -737,15 +711,15 @@ class CreateVirtualAccount extends React.Component {
                   </div>
 
                   {showAdditionalOptions && (
-                    <div class="AdditionalOptions">
+                    <div className="AdditionalOptions">
                       {!this.state.isTPVOrg || (this.state.isTPVOrg && this.state.isTPVMid) ? (
-                        <div class="third-party-validation">
+                        <div className="third-party-validation">
                           <div>
                             <strong>Third Party Validation</strong>
 
-                            <span class="m-l">
+                            <span className="m-l">
                               <i
-                                class="i i-info-outline"
+                                className="i i-info-outline"
                                 onClick={() => {
                                   this.track('advance.tpv_info');
                                 }}
@@ -763,17 +737,17 @@ class CreateVirtualAccount extends React.Component {
                             </span>
                           </div>
 
-                          <div class="description">
+                          <div className="description">
                             {!!allowedPayers.length
                               ? `Configured with ${allowedPayers.length} authorised accounts.`
                               : 'Not Configured'}
 
-                            <div class="actions">
+                            <div className="actions">
                               {!!allowedPayers.length ? (
                                 <>
                                   <button
                                     type="button"
-                                    class="btn-link"
+                                    className="btn-link"
                                     onClick={() => {
                                       this.openConfigureBankAccountsModal();
                                       this.track('advance.tpv.edit');
@@ -784,7 +758,7 @@ class CreateVirtualAccount extends React.Component {
                                   |
                                   <button
                                     type="button"
-                                    class="btn-link"
+                                    className="btn-link"
                                     onClick={this.handleRemoveAllowedPayers}
                                   >
                                     Remove
@@ -793,7 +767,7 @@ class CreateVirtualAccount extends React.Component {
                               ) : (
                                 <button
                                   type="button"
-                                  class="btn-link"
+                                  className="btn-link"
                                   onClick={() => {
                                     this.openConfigureBankAccountsModal();
                                     this.track('advance.tpv.configure');
@@ -809,7 +783,7 @@ class CreateVirtualAccount extends React.Component {
                       <hr />
 
                       <Input.TextareaAutoResize
-                        class="Input--vTop"
+                        className="Input--vTop"
                         name="description"
                         label="Customer Identifier Description"
                         description="Description is shown only on the dashboard and not to customers"
@@ -821,7 +795,7 @@ class CreateVirtualAccount extends React.Component {
                       <hr />
 
                       <Input.DateTime
-                        class="Input--vTop"
+                        className="Input--vTop"
                         label="Close By"
                         checkboxFieldLabel="Disable Auto Close"
                         onChange={this.updateDate}
@@ -838,7 +812,7 @@ class CreateVirtualAccount extends React.Component {
                       <hr />
 
                       <Input.PairList
-                        class="Input--vTop"
+                        className="Input--vTop"
                         name="notes"
                         label="Internal Notes"
                         onChange={this.handleNotesChange}
@@ -871,11 +845,11 @@ class CreateVirtualAccount extends React.Component {
     );
 
     return IS_MODAL_VIEW ? (
-      <Modal class={classList('VirtualAccountV2', content && 'animate-down')} onClose={onClose}>
+      <Modal className={classList('VirtualAccountV2', content && 'animate-down')} onClose={onClose}>
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">{content}</div>
+      <div className="StandAloneContainer">{content}</div>
     );
   }
 }
@@ -910,4 +884,31 @@ function validateCustomBankAccountNumber(descriptorLimit_BankAccount) {
   };
 }
 
-export default withSplitzService(withRouter(CreateVirtualAccount));
+export default compose(
+  connect(
+    (state) => {
+      const customers = state.customers.items;
+
+      return {
+        customers,
+        ...state.config.config,
+        user: state.session.user,
+        isTestMode: state.session.mode === 'test',
+        va_config: state.virtualaccounts.va_config || {},
+        org: state.session.org,
+      };
+    },
+    {
+      luminateRow,
+      showNotification,
+      saveVirtualAccount,
+      ...ModalActions,
+      fetchConfigForVirtualAccount,
+      fetchCustomersForAutocomplete,
+      fetchFeatureStatus,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('CreateVirtualAccount')),
+  withRouter,
+  withSplitzService,
+)(CreateVirtualAccount);

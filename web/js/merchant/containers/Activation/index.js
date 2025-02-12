@@ -1,8 +1,8 @@
 /* eslint-disable */
 
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import QueryString from 'query-string';
 import { withRouter } from 'common/deprecated/withRouter';
 
@@ -16,18 +16,10 @@ import KycForm from './new';
 import { setInstantActivationsTracking } from './ga_new';
 import KYCStatusModal from 'merchant/views/PartnerDashboard/Activation/Components/KYCStatus/KYCStatusModal';
 import { formatBusinessTypeOptions } from 'merchant/components/Activation/ActivationUtils';
+import { compose } from 'redux';
 
 const SOURCE_RAZORPAY_X = 'x';
 
-@RTracking(() => window.rzpQ.component('ActivationContainer'))
-@connect(
-  (state) => ({
-    user: state.session.user,
-    session: state.session,
-    current_tab_name: state.activationWizard.current_tab_name,
-  }),
-  { showNotification, ...EventsActions },
-)
 class ActivationContainer extends Component {
   constructor(props) {
     super(props);
@@ -425,4 +417,15 @@ class ActivationContainer extends Component {
   }
 }
 
-export default withRouter(ActivationContainer);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      session: state.session,
+      current_tab_name: state.activationWizard.current_tab_name,
+    }),
+    { showNotification, ...EventsActions },
+  ),
+  rTracking(() => window.rzpQ.component('ActivationContainer')),
+  withRouter,
+)(ActivationContainer);

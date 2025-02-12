@@ -55,7 +55,7 @@ export class RulesTable extends Component {
           <div className="table table-responsive">
             <table className="table table-striped">
               <thead>
-                <tr class="heading">
+                <tr className="heading">
                   {is_highlighted ? (
                     <th>
                       <div style={{ width: '20px' }} />
@@ -80,9 +80,9 @@ export class RulesTable extends Component {
                   return (
                     <Fragment key={i}>
                       <tr
-                        class="rule-row-table pointer"
+                        className="rule-row-table pointer"
                         style={{ cursor: 'pointer' }}
-                        class={r.current ? 'is_current' : ''}
+                        className={r.current ? 'is_current' : ''}
                         id={JSON.stringify(r)}
                       >
                         {is_highlighted ? (
@@ -108,11 +108,11 @@ export class RulesTable extends Component {
                         <td>{i + 1}</td>
                         {/* <td>{r.rules[0].score}</td> */}
                         <td>
-                          <div class="rule-table-overflow">{removeMid(r.name)}</div>
+                          <div className="rule-table-overflow">{removeMid(r.name)}</div>
                         </td>
                         <td>
                           <div>
-                            <div class="rule-table-overflow">
+                            <div className="rule-table-overflow">
                               {uniqueArray(
                                 OP.map((o) => getValue('parameter', o.operands[0].value).name),
                               ).join(', ')}
@@ -129,7 +129,7 @@ export class RulesTable extends Component {
                           </div>
                         </td>
                         <td style={{ borderRight: r.current ? '1px solid #2b83ea' : 'auto' }}>
-                          <div class="rule-table-overflow">
+                          <div className="rule-table-overflow">
                             {uniqueArray(
                               r.rules.map((i) => i.expression.operands[0].operands[1].value),
                             ).join(', ')}
@@ -139,16 +139,16 @@ export class RulesTable extends Component {
                               parentQuerySelector={`.Modal--large`}
                             >
                               <PopoverBody>
-                                <div class="rule-body-popover">
+                                <div className="rule-body-popover">
                                   <Fragment key={i}>
-                                    <div class="rule-body-popover-content">
+                                    <div className="rule-body-popover-content">
                                       {Object.keys(RULES).map((k, i) => (
                                         <div style={{ marginTop: '15px' }} key={i}>
-                                          <div class="rule-priority-heading">
+                                          <div className="rule-priority-heading">
                                             <b>Priority {k}</b>
                                           </div>
                                           {RULES[k].map((o) => (
-                                            <div class="rule-priority-body">
+                                            <div className="rule-priority-body">
                                               Route {o.additional_attribute[1].value}% Payment via{' '}
                                               {o.expression.operands[0].operands[1].value}
                                             </div>

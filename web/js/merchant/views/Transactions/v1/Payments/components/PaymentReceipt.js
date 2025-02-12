@@ -198,9 +198,9 @@ class PaymentReceipt extends Component {
         <Form onSubmit={(formData) => manualReceiptActionHandler(formData.receipt)}>
           <Input name="receipt" placeholder="Enter Reference ID" required />
 
-          <div class="pull-right">
+          <div className="pull-right">
             <button
-              class="btn btn-default m-r"
+              className="btn btn-default m-r"
               type="button"
               onClick={this.closeManualReceiptAction}
               disabled={this.state.isActionInProgress}
@@ -208,7 +208,7 @@ class PaymentReceipt extends Component {
               Cancel
             </button>
             <button
-              class="btn btn-primary"
+              className="btn btn-primary"
               disabled={this.state.isActionInProgress}
               onClick={() => {
                 this.props.tracking.trackEvent(
@@ -230,20 +230,20 @@ class PaymentReceipt extends Component {
     return (
       <EntityDetailRow label="Payment Receipt">
         <div>
-          {this.state.receipt && <div class="m-b">Reference ID: {this.state.receipt}</div>}
+          {this.state.receipt && <div className="m-b">Reference ID: {this.state.receipt}</div>}
 
           {this.state.showCustomReceiptInput ? (
             manualReceiptActions
           ) : (
             <div>
               <button
-                class="btn btn-default m-r"
+                className="btn btn-default m-r"
                 onClick={this.handleSend}
                 disabled={this.state.isActionInProgress}
               >
                 {this.state.isActionInProgress ? 'Sending..' : 'Send'}
               </button>
-              <button class="btn btn-default" onClick={this.handleDownload}>
+              <button className="btn btn-default" onClick={this.handleDownload}>
                 Download
               </button>
             </div>

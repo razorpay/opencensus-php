@@ -40,7 +40,7 @@ export default class TimeInput extends Component {
 
     return (
       <div>
-        <div class="input-mask" data-attr="day :">
+        <div className="input-mask" data-attr="day :">
           <input
             maxLength={1}
             placeholder="0"
@@ -50,7 +50,7 @@ export default class TimeInput extends Component {
             type="number"
           />
         </div>
-        <div class="input-mask" data-attr="hr :">
+        <div className="input-mask" data-attr="hr :">
           <input
             maxLength={2}
             placeholder="00"
@@ -60,7 +60,7 @@ export default class TimeInput extends Component {
             type="number"
           />
         </div>
-        <div class="input-mask" data-attr="minutes">
+        <div className="input-mask" data-attr="minutes">
           <input
             maxLength={2}
             placeholder="00"

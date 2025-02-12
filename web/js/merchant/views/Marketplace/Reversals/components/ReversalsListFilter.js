@@ -5,12 +5,12 @@ import { Field } from 'redux-form';
 const ReversalListFilter = props => {
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Reversal Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -18,13 +18,13 @@ const ReversalListFilter = props => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
 
-      {/* <div class="form-group list-filter-item">
+      {/* <div className="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field name="notes" component="input" className="form-control input-sm" />
       </div> */}
     </ListFilter>
   );

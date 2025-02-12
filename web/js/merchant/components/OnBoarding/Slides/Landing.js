@@ -1,12 +1,13 @@
 import React from 'react';
 import Button from 'common/new-ui/Button';
 import DataList from './DataList';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import track from 'merchant/components/OnBoarding/track';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
-@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_landing_page`))
-export default class OnBoardingLanding extends React.PureComponent {
+import { compose } from 'redux';
+
+class OnBoardingLanding extends React.PureComponent {
   componentDidMount() {
     const { includeKycProperties, feature } = this.props;
     track.onBoardingSuccess(feature, { includeKycProperties });
@@ -102,3 +103,7 @@ export default class OnBoardingLanding extends React.PureComponent {
     );
   }
 }
+
+export default compose(
+  rTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_landing_page`)),
+)(OnBoardingLanding);

@@ -68,10 +68,10 @@ function ManageBalanceAlert({
   };
 
   return (
-    <div class="manage-alert-modal-container">
+    <div className="manage-alert-modal-container">
       <ModalHeader title="Manage Balance Alerts" onCloseClick={closeModal} />
       <div>
-        <div class="description">
+        <div className="description">
           <p>
             You will receive an email when your balance goes below the amount set in the alerts.{' '}
             <a
@@ -87,7 +87,7 @@ function ManageBalanceAlert({
           </p>
           <strong>Note: Set amount to 0 if you do not want to receive alerts.</strong>
         </div>
-        <div class="alerts-table">
+        <div className="alerts-table">
           <CreditsAlertsTable
             ref={(instance) => (ref.current = instance)}
             items={getAlertTableItems()}

@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
@@ -43,6 +43,7 @@ import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/Gen
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getBatchStatsTable } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import { compose } from 'redux';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -59,24 +60,7 @@ const trackShare = (eventName, data) => {
   track.shareModalEvents(eventName, data);
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    reportConfigs: state.reports.reportConfigs,
-    isMobileResolution: state.app.isMobileResolution,
-    isWebView: state.app.isWebView,
-  }),
-  {
-    showNotification,
-    openModal,
-    closeModal,
-    saveReportConfigs,
-    addPollInstance,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
-export default class PaymentPagesV3Entity extends React.Component {
+class PaymentPagesV3Entity extends React.Component {
   state = { detailsCollapse: true, isExportInProgress: false };
   isStorefrontPage = location.hash === '#storefront';
   componentDidMount() {
@@ -654,5 +638,25 @@ export default class PaymentPagesV3Entity extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      reportConfigs: state.reports.reportConfigs,
+      isMobileResolution: state.app.isMobileResolution,
+      isWebView: state.app.isWebView,
+    }),
+    {
+      showNotification,
+      openModal,
+      closeModal,
+      saveReportConfigs,
+      addPollInstance,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentPagesContainer')),
+)(PaymentPagesV3Entity);
 
 function noop() {}

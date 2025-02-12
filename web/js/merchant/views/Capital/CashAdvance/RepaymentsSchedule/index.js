@@ -1,9 +1,12 @@
 import { Component } from 'react';
-import RepaymentCard from './RepaymentCard';
-import { Link } from 'react-router-dom';
+import moment from 'moment';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { compose } from 'redux';
 import { Field } from 'redux-form';
+
 import { getURLQueryParams } from 'common/utils/rzp-utils';
+import ListFilter from 'merchant/components/ListFilter';
 import {
   fetchFunctionalWithdrawalConfigByMerchantID,
   fetchInstallments,
@@ -12,24 +15,13 @@ import {
   CASH_ADVANCE_SECTIONS,
   SCHEDULED_REPAYMENT_LINKS,
 } from 'merchant/views/Capital/CashAdvance/constants';
-import ScheduledRepaymentsList from './ScheduledRepaymentList';
-import ListFilter from 'merchant/components/ListFilter';
-import moment from 'moment';
+
 import { getProductType } from 'merchant/views/Capital/utils';
+import RepaymentCard from './RepaymentCard';
+
+import ScheduledRepaymentsList from './ScheduledRepaymentList';
 import withEDIMigration from 'merchant/views/Capital/CashAdvance/withEDIMigration';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    installments: state.withdrawals.installments,
-    currentOutstanding: state.withdrawals.current_outstanding,
-    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
-  }),
-  {
-    fetchFunctionalWithdrawalConfigByMerchantID,
-    fetchInstallments,
-  },
-)
 class RepaymentsSchedule extends Component {
   componentDidMount() {
     this.fetch();
@@ -126,7 +118,7 @@ class RepaymentsSchedule extends Component {
     return (
       <div className="cash-advance-repayments-schedule">
         <div className="top-nav">
-          <div class="left-section">
+          <div className="left-section">
             <Link to={`/capital/cash-advance/${CASH_ADVANCE_SECTIONS.OVERVIEW}`}>
               <i className="i i-arrow-back" />
               &nbsp;
@@ -134,9 +126,9 @@ class RepaymentsSchedule extends Component {
             </Link>
             <i className="i i-chevron-right" /> Repayments Schedule
           </div>
-          <div class="right-section">
+          <div className="right-section">
             Go to
-            <div class="links-wrapper">
+            <div className="links-wrapper">
               {SCHEDULED_REPAYMENT_LINKS.map(({ text, to }) => (
                 <Link to={to} key={to}>
                   <strong>{text}</strong>
@@ -145,10 +137,10 @@ class RepaymentsSchedule extends Component {
             </div>
           </div>
         </div>
-        <div class="repayments-schedule-repay-card flex">
+        <div className="repayments-schedule-repay-card flex">
           <RepaymentCard installments={installments} currentOutstanding={currentOutstanding} />
         </div>
-        <tabbed-container class="no-padding">
+        <tabbed-container className="no-padding">
           <content>
             <div className="content-wrapper cash-advance-repayments">
               <div className="cash-advance-body">
@@ -156,7 +148,7 @@ class RepaymentsSchedule extends Component {
                   <ListFilter form="ScheduledRepaymentsList" onSubmit={this.fetchInstallments}>
                     <div className="form-group list-filter-item">
                       <label>Select Period</label>
-                      <Field name="period" component="select" class="form-control input-sm">
+                      <Field name="period" component="select" className="form-control input-sm">
                         {periods.map(({ value, label }, idx) => (
                           <option value={value} key={idx}>
                             {label}
@@ -165,7 +157,7 @@ class RepaymentsSchedule extends Component {
                       </Field>
                     </div>
                   </ListFilter>
-                  <div class="float-right-note">
+                  <div className="float-right-note">
                     <div className="block-note right-border text-right">
                       <i>
                         The upcoming repayments indicate the amounts that
@@ -185,4 +177,18 @@ class RepaymentsSchedule extends Component {
   }
 }
 
-export default withEDIMigration(RepaymentsSchedule);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      installments: state.withdrawals.installments,
+      currentOutstanding: state.withdrawals.current_outstanding,
+      withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
+    }),
+    {
+      fetchFunctionalWithdrawalConfigByMerchantID,
+      fetchInstallments,
+    },
+  ),
+  withEDIMigration,
+)(RepaymentsSchedule);

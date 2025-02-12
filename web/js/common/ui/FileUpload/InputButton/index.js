@@ -18,16 +18,16 @@ export default class FileUploadInputButton extends Component {
     text = uploadedFileName ? 'Change File' : text;
 
     return (
-      <div class="fileupload-input-group input-group">
+      <div className="fileupload-input-group input-group">
         <input
-          class={`form-control ${uploadedFileName ? 'file-uploaded' : ''}`}
+          className={`form-control ${uploadedFileName ? 'file-uploaded' : ''}`}
           ref={input => {
             this.textInput = input;
           }}
           disabled={true}
         />
 
-        <span class="input-group-addon">
+        <span className="input-group-addon">
           <FileUploadButton
             text={text}
             onChange={event => {

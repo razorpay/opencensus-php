@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withI18Service } from 'common/i18';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
@@ -105,7 +106,7 @@ const TabContent = ({
             {title}
             {helpText && (
               <small className="help-content">
-                <i class="i i-help" />
+                <i className="i i-help" />
                 <Popover align="top">
                   <PopoverBody>
                     <div>{helpText}</div>
@@ -148,17 +149,7 @@ const TabContent = ({
 };
 
 // eslint-disable-next-line react/no-unsafe
-@withI18Service
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-    };
-  },
-  {
-    showNotification,
-  },
-)
+
 class KeyMetricsContainer extends Component {
   constructor(props) {
     super(props);
@@ -1099,4 +1090,16 @@ class KeyMetricsContainer extends Component {
   }
 }
 
-export default KeyMetricsContainer;
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+      };
+    },
+    {
+      showNotification,
+    },
+  ),
+  withI18Service,
+)(KeyMetricsContainer);

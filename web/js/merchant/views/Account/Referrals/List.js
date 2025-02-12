@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Alert from 'common/ui/Forms/Alert';
@@ -15,15 +16,6 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import CreateLogin from './components/CreateLogin';
 import CreateMerchant from './components/CreateMerchant';
 
-@connect(
-  (state) => {
-    return {
-      referrals: state.referrals,
-      session: state.session,
-    };
-  },
-  { ...ReferralActions, ...ModalActions, ...NotificationsActions },
-)
 class ReferralsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchReferrals(params);
@@ -67,15 +59,15 @@ class ReferralsListContainer extends ListContainer {
     const isEditAllowed = user.isAllowedEdit('referrals');
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction>
           <ShowWhen additionalCondition={(user) => isEditAllowed && !user.isPartner()}>
-            <div class="btn-toolbar">
+            <div className="btn-toolbar">
               <button
-                class="pull-right btn btn-primary"
+                className="pull-right btn btn-primary"
                 onClick={() => this.showCreateMerchantModal()}
               >
-                <i class="i i-plus" />
+                <i className="i i-plus" />
                 <span>New Merchant</span>
               </button>
             </div>
@@ -97,4 +89,14 @@ class ReferralsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(ReferralsListContainer);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        referrals: state.referrals,
+        session: state.session,
+      };
+    },
+    { ...ReferralActions, ...ModalActions, ...NotificationsActions },
+  ),
+)(withRouter(ReferralsListContainer));

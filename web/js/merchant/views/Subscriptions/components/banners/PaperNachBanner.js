@@ -5,10 +5,10 @@ import { DocLink } from 'merchant/components/DocsLink';
 function PaperNachBanner({ url }) {
   return (
     <AnnouncementBanner title="IMPORTANT UPDATE" canBeClosed={true} theme="warning">
-      <span class="display-inline">
+      <span className="display-inline">
         On-board customers using Cash Credit, NRE and NRO accounts with Razorpay Paper NACH.
       </span>
-      <DocLink class="btn btn-link" href={url} target="_blank">
+      <DocLink className="btn btn-link" href={url} target="_blank">
         Know more
       </DocLink>
     </AnnouncementBanner>

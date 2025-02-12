@@ -1,17 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
-import { RZPFeatures } from 'merchant/helpers/data';
+import { compose } from 'redux';
 
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
-
-import Landing from 'merchant/components/OnBoarding/Slides/Landing';
-import Features from 'merchant/components/OnBoarding/Slides/Features';
 import OnBoarding, {
   FeatureEnableSliderButton,
   OnBoardingWrapper,
@@ -19,9 +10,15 @@ import OnBoarding, {
   getIsAllowedResetBoarding,
   setOnBoardingDataInLocalState,
 } from 'merchant/components/OnBoarding';
-
+import Features from 'merchant/components/OnBoarding/Slides/Features';
+import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+import { RZPFeatures } from 'merchant/helpers/data';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
 
 import { FEATURES_DATA, FEATURES_LINKS, CURLEC_FEATURES_DATA } from './data';
 
@@ -44,18 +41,7 @@ const FEATURE_DATA_MAPS = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: CURLEC_FEATURES_DATA,
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    org: state.session.org,
-    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
-  }),
-  { handleProductQuickGuide },
-)
-@OnBoarding({
-  feature: RZPFeatures.INVOICE,
-})
-export default class InvoicesOnBoarding extends React.Component {
+class InvoicesOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
@@ -84,7 +70,7 @@ export default class InvoicesOnBoarding extends React.Component {
     const featureData = FEATURE_DATA_MAPS[orgCode] || FEATURES_DATA;
 
     return (
-      <OnBoardingWrapper class="Invoices">
+      <OnBoardingWrapper className="Invoices">
         <Slider
           active={active}
           afterSlide={getOnBoardingSliderDots({
@@ -164,3 +150,18 @@ export function getIsInvoicesEnabled({ user, invoices, items }) {
 
   return user.isInvoicesEnabled;
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      org: state.session.org,
+      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
+    }),
+    { handleProductQuickGuide },
+  ),
+  // eslint-disable-next-line
+  OnBoarding({
+    feature: RZPFeatures.INVOICE,
+  }),
+)(InvoicesOnBoarding);

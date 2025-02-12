@@ -67,7 +67,7 @@ function ReserveBalance({
 
   if (ticketStatusLoading) {
     return (
-      <div class="page-spinner-container">
+      <div className="page-spinner-container">
         <SpinnerLegacy />
       </div>
     );

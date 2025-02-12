@@ -202,14 +202,14 @@ export default class SelectPeriod extends React.Component {
     } = this.props;
 
     return !isCustomConfig ? (
-      <Input.Group class="InputGroup--inline">
-        <div class="Input-content">
-          <div class="Input">
+      <Input.Group className="InputGroup--inline">
+        <div className="Input-content">
+          <div className="Input">
             <Input.Select
               label="Select Period"
               options={avlblPeriodOptions}
               size="half_big"
-              class="Input--vTop"
+              className="Input--vTop"
               name="selectedPeriod"
               onChange={this.onChange}
               disabled={isFormDisabled}
@@ -220,7 +220,7 @@ export default class SelectPeriod extends React.Component {
             {!isFormDisabled && <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />}
 
             {selectedPeriod === 'dateRange' && (
-              <div class="m-t">
+              <div className="m-t">
                 <Input.Check
                   name="withTime"
                   fieldLabel="Specify Time"
@@ -240,12 +240,12 @@ export default class SelectPeriod extends React.Component {
             />
           </div>
           {!!dateRangeError && selectedPeriod === 'dateRange' && (
-            <div class="m-t text-danger text-small" data-testid="date-range-error-message">
+            <div className="m-t text-danger text-small" data-testid="date-range-error-message">
               {dateRangeError}
             </div>
           )}
           {selectedConfig && selectedConfig.name === 'Monthly Invoice Report' && (
-            <div class="m-t text-small">
+            <div className="m-t text-small">
               To reconcile the monthly invoice of December 20 and January 21 with the monthly
               invoice report, please use the custom period option as per the billing period
               mentioned above.
@@ -303,10 +303,10 @@ function SelectMonth({ onDateChange, selectedMonth, name }) {
       type="month"
       name={name}
       placement="topLeft"
-      addonAfter={<i class="i i-date-range" />}
+      addonAfter={<i className="i i-date-range" />}
       defaultValue={selectedMonth}
       label="Select Month"
-      class="Input--vTop"
+      className="Input--vTop"
       onChange={onDateChange}
       disabledDate={disableFutureMonths}
     />
@@ -328,22 +328,22 @@ function SelectSingleDay({ selectedDate, ...props }) {
 
 function SelectDate({ withTime, onDateChange, ...props }) {
   return (
-    <div class="Input">
+    <div className="Input">
       <Input.ToCalendar
         name="selectedDate"
         placement="topLeft"
-        addonAfter={<i class="i i-date-range" />}
-        class="Input--vTop"
+        addonAfter={<i className="i i-date-range" />}
+        className="Input--vTop"
         onChange={onDateChange}
         {...props}
       />
       {withTime && (
-        <div class="m-t">
+        <div className="m-t">
           <Input.TimePicker
             name={`${props.name}Time`}
             data-testid={`${props.name}Time`}
             placeholder="HH:MM A"
-            addonAfter={<i class="i i-time" />}
+            addonAfter={<i className="i i-time" />}
             defaultValue={props.defaultValue}
             onChange={onDateChange}
           />
@@ -408,7 +408,7 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
 
   return (
     <div className="m-t" data-testid="selected-period-text">
-      <small class="text-warning">
+      <small className="text-warning">
         {fromDate} {toDate && ` to ${toDate}`}
       </small>
     </div>

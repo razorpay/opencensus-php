@@ -1,20 +1,18 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { fetchKeys } from 'merchant/reducers/keys';
 
-import { LIVE_MODE } from './data';
 import InstantActivationsCard from './Instant';
 import RegularActivationsCard from './Regular';
+import { LIVE_MODE } from './data';
 
-@connect(state => ({ user: state.session.user, mode: state.session.mode }), {
-  fetchKeys,
-})
-export default class OnboardingCard extends Component {
+class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
-    const { mode, payments, user } = props;
+    const { user } = props;
 
     this.state = {
       integration: {
@@ -25,7 +23,7 @@ export default class OnboardingCard extends Component {
       },
     };
 
-    this.paymentsRequest = new Promise((res, rej) => {
+    this.paymentsRequest = new Promise((res) => {
       this.onFetchPayments = res;
 
       if (!props.payments.loading) {
@@ -41,10 +39,10 @@ export default class OnboardingCard extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    let params = {};
+    const params = {};
 
-    const { user, mode } = this.props,
-      isKLA = !user.has_key_access;
+    const { user, mode } = this.props;
+    const isKLA = !user.has_key_access;
 
     params.mode = this.props.mode;
 
@@ -53,10 +51,10 @@ export default class OnboardingCard extends Component {
         this.props.fetchKeys(params, user.has_key_access).then(({ data }) => {
           return !!data.items.length;
         }),
-      this.paymentsRequest.then(payments => {
+      this.paymentsRequest.then((payments) => {
         return !!payments.length;
       }),
-    ]).then(resp => {
+    ]).then((resp) => {
       const { 0: keysGenerated, 1: paymentsMade } = resp;
 
       this.setState({
@@ -71,8 +69,8 @@ export default class OnboardingCard extends Component {
   }
 
   render() {
-    const { showInstantActivation, ...rest } = this.props,
-      props = { integration: this.state.integration, ...rest };
+    const { showInstantActivation, ...rest } = this.props;
+    const props = { integration: this.state.integration, ...rest };
 
     return showInstantActivation ? (
       <InstantActivationsCard {...props} />
@@ -81,3 +79,9 @@ export default class OnboardingCard extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ user: state.session.user, mode: state.session.mode }), {
+    fetchKeys,
+  }),
+)(OnboardingCard);

@@ -103,7 +103,7 @@ const BaseDashboardBanner = React.memo(
           bannerKey={`${bannerId}-${user.current}`}
           card_id={bannerId}
         >
-          <span class="display-inline">{bannerText}</span>
+          <span className="display-inline">{bannerText}</span>
           {renderATag}
           {cta2Link ? (
             <a

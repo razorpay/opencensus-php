@@ -18,15 +18,15 @@ const CardPaymentsBlockedModal = ({ user }) => {
   return (
     <ModalMask>
       <Modal
-        class={classList('CardPaymentsBlockedModal', 'animate-down')}
+        className={classList('CardPaymentsBlockedModal', 'animate-down')}
         showCloseBtn={false}
         onClose={toggleIsHidden}
       >
         <ModalContent>
-          <div class="header">
+          <div className="header">
             <img src={BackgroundImg} />
-            <div class="text-center">
-              <div class="heading">
+            <div className="text-center">
+              <div className="heading">
                 {user.isChargeAtWillEnabled ? (
                   <>Impact on Card Payments for Registration Links</>
                 ) : (
@@ -35,7 +35,7 @@ const CardPaymentsBlockedModal = ({ user }) => {
               </div>
             </div>
           </div>
-          <div class="content">
+          <div className="content">
             <div>
               {user.isChargeAtWillEnabled ? (
                 <>
@@ -64,12 +64,12 @@ const CardPaymentsBlockedModal = ({ user }) => {
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                class="doc-link"
+                className="doc-link"
               >
                 our documentation here.
               </DocLink>
             </div>
-            <div class="banner">
+            <div className="banner">
               {user.isChargeAtWillEnabled ? (
                 <>
                   Registration links and tokens which were created on or before 31 Mar, 2021 are not
@@ -86,10 +86,10 @@ const CardPaymentsBlockedModal = ({ user }) => {
                 </>
               )}
             </div>
-            <div class="italic">
+            <div className="italic">
               If you have any further queries or concerns, please reach out to support.
             </div>
-            <div class="footer">
+            <div className="footer">
               <Button.Primary onClick={toggleIsHidden}>Close</Button.Primary>
             </div>
           </div>

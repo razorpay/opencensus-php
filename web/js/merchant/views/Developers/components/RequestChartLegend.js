@@ -14,7 +14,7 @@ export default function RequestLegend(props) {
       <Legend alignment="horizontal">
         {legend.map(({ value, title, color }) => (
           <LegendItem key={value}>
-            <label for={`status-checkbox-${value}`}>
+            <label htmlFor={`status-checkbox-${value}`}>
               <input
                 name="status-checkbox"
                 value={value}

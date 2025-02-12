@@ -14,6 +14,7 @@ import { isAddressValid, capitalize } from 'common/utils/rzp-utils';
 import { track } from 'merchant/views/Invoices/ga';
 import Countries from 'merchant/helpers/countries.json';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { compose } from 'redux';
 
 const CountryNames = Object.keys(Countries);
 
@@ -21,17 +22,8 @@ const DEFAULT_COUNTY_MAP = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'India',
   [ORG_CUSTOM_CODE_MAP.CURLEC]: 'Malaysia',
 };
-// eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ org: state.session.org }), {
-  fetchStates,
-  ...CustomerActions,
-  ...ModalActions,
-  ...NotificationsActions,
-})
-@reduxForm({
-  form: 'newAddress',
-})
-export default class New extends Component {
+
+class New extends Component {
   static propTypes = {
     /**
      * Address Type (Shipping/Billing)
@@ -223,23 +215,23 @@ export default class New extends Component {
       <div id="add-address-modal">
         <ModalHeader title={header} onCloseClick={this.onClickClose} />
 
-        <div class="modal-body AddressSelectionModal">
+        <div className="modal-body AddressSelectionModal">
           {!hideBack && (
             <div
-              class="text-primary cursor-pointer AddressSelectionModal__header-action"
+              className="text-primary cursor-pointer AddressSelectionModal__header-action"
               onClick={onBackClick}
             >
-              <i class="i i-arrow-back" />
+              <i className="i i-arrow-back" />
               {backLabel}
             </div>
           )}
 
           <Alert type="error" message={this.state.errors} />
 
-          <div class="AddressSelectionModal__new-headers">
+          <div className="AddressSelectionModal__new-headers">
             <label>Enter a new Address</label>
             {!hideBack && (
-              <span class="text-primary cursor-pointer" onClick={onBackClick}>
+              <span className="text-primary cursor-pointer" onClick={onBackClick}>
                 Cancel
               </span>
             )}
@@ -257,12 +249,12 @@ export default class New extends Component {
               onBlur={onBlur}
             />
 
-            <div class="row">
-              <div class="col-md-12">
-                <div class="Modal__actions">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="Modal__actions">
                   <AsyncButton
                     type="submit"
-                    class="btn btn-primary btn-block"
+                    className="btn btn-primary btn-block"
                     text={saveLabel}
                     pendingText="Saving..."
                     disabled={invalid}
@@ -277,3 +269,15 @@ export default class New extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ org: state.session.org }), {
+    fetchStates,
+    ...CustomerActions,
+    ...ModalActions,
+    ...NotificationsActions,
+  }),
+  reduxForm({
+    form: 'newAddress',
+  }),
+)(New);

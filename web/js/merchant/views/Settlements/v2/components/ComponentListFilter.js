@@ -7,7 +7,7 @@ const ComponentListFilter = (props, ref) => {
   const activeTabLabel = `${titleCase(sanitizeTabName(props.activeTab))} Id`;
   return (
     <form ref={ref} onSubmit={props.submit}>
-      <div class="settlement-components-filter">
+      <div className="settlement-components-filter">
         <div>
           <Input label={activeTabLabel} name="id" type="text" aria-label={activeTabLabel} />
         </div>
@@ -21,7 +21,7 @@ const ComponentListFilter = (props, ref) => {
           />
         </div>
         <div>
-          <button class="btn btn-primary" type="submit">
+          <button className="btn btn-primary" type="submit">
             Search
           </button>
         </div>

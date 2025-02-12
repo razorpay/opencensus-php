@@ -42,7 +42,7 @@ const ListItem = ({ repayment }) => {
         <Amount value={Number(BALANCE_TYPE_PRINCIPAL)} />
       </td>
       <td>
-        <span class={`status-label label ${StatusPillClasses[status]}`}>
+        <span className={`status-label label ${StatusPillClasses[status]}`}>
           {STATUS_LABELS[status]}
         </span>
       </td>
@@ -74,15 +74,15 @@ const RepaymentsList = ({ repayments, loading, paginationConfig, onPaginate }) =
           colSpan={7}
           rows={repayments}
           emptyTableMsg={
-            <div class="no-results-container flex">
-              <div class="m-r">
+            <div className="no-results-container flex">
+              <div className="m-r">
                 <img src={require("assets/capital/no_results.svg")} height={240} width={240} />
               </div>
-              <div class="content">
-                <p class="m-b">
+              <div className="content">
+                <p className="m-b">
                   <strong>Unlock your Repayments View</strong>
                 </p>
-                <small class="text-faded">
+                <small className="text-faded">
                   Make your first repayment to unlock the List and details view of Repayments.
                 </small>
               </div>

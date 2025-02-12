@@ -24,19 +24,9 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 import { FEATURES_DATA, FEATURES_LINKS, PROS } from './data';
 
 import ImgSmartCollect from 'assets/product_onboarding/smart_collect.svg';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
-  }),
-  { handleProductQuickGuide },
-)
-@RTracking(() => window.rzpQ.component('InvoicesOnBoarding'))
-@OnBoarding({
-  feature: RZPFeatures.VA,
-})
-export default class InvoicesOnBoarding extends React.Component {
+class InvoicesOnBoarding extends React.Component {
   track = (event, options) => {
     this.props.tracking.trackEvent(
       window.rzpQ.smartCollect().interaction(`smartcollect.va.onboarding.${event}`, options),
@@ -90,7 +80,7 @@ export default class InvoicesOnBoarding extends React.Component {
     const { active } = this.props;
 
     return (
-      <OnBoardingWrapper class="SmartCollect">
+      <OnBoardingWrapper className="SmartCollect">
         <Slider active={active} afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}>
           {(sliderProps) => (
             <Landing
@@ -134,3 +124,17 @@ export function getIsAllowedResetVAOnBoarding({ items, loading }) {
 
   return getIsAllowedResetBoarding(RZPFeatures.VA);
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
+    }),
+    { handleProductQuickGuide },
+  ),
+  RTracking(() => window.rzpQ.component('InvoicesOnBoarding')),
+  OnBoarding({
+    feature: RZPFeatures.VA,
+  }),
+)(InvoicesOnBoarding);

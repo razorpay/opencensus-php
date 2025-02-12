@@ -1,14 +1,12 @@
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
-import { fetchSubventions as fetchAll } from 'merchant/reducers/collection';
-
-import DataTable from 'common/ui/Table/DataTable';
 import Amount from 'common/ui/Amount';
-
+import DataTable from 'common/ui/Table/DataTable';
 import { subventionId, createdAtShort } from 'common/ui/item/pair';
-
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchSubventions as fetchAll } from 'merchant/reducers/collection';
 import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Transactional/ListFilter';
 
 const merchantName = {
@@ -21,7 +19,6 @@ const subventionFee = {
   value: (item) => <Amount currency={item.currency} value={item.fee} />,
 };
 
-@connect((state) => ({ ...state.commisions }), { fetchAll })
 class SubventionList extends ListContainer {
   render() {
     return (
@@ -46,4 +43,7 @@ class SubventionList extends ListContainer {
   }
 }
 
-export default withRouter(SubventionList);
+export default compose(
+  withRouter,
+  connect((state) => ({ ...state.commisions }), { fetchAll }),
+)(SubventionList);

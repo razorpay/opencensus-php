@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
-
 import {
   createRecurringChargeBatch,
   validateRecurringChargeBatch,
@@ -12,23 +11,14 @@ import {
   createRegistrationLinkBatch,
   validateRegistrationLinkBatch,
 } from 'merchant/reducers/batches';
+import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 import RegistrationLinksBatchForm from './components/RegistrationLinkBatchCreationForm';
-import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-@connect((state) => ({ user: state.session.user }), {
-  createRecurringChargeBatch,
-  validateRecurringChargeBatch,
-  validateRecurringChargeAxisBatch,
-  createRecurringChargeAxisBatch,
-  createRegistrationLinkBatch,
-  validateRegistrationLinkBatch,
-  closeModal,
-})
-export default class CreateHostedMandateBatch extends React.Component {
+class CreateHostedMandateBatch extends React.Component {
   renderRecurringChargeModal = () => (
     <BatchUpload
       acceptFileInfo={['csv']}
@@ -78,41 +68,41 @@ export default class CreateHostedMandateBatch extends React.Component {
     const { openUploadModal, user } = this.props;
 
     return (
-      <div class="SubscriptionsBatch--upload-modal">
+      <div className="SubscriptionsBatch--upload-modal">
         <div
-          class="panel panel-default registration-link"
+          className="panel panel-default registration-link"
           onClick={openUploadModal(this.renderRegistrationLinksModal)}
         >
-          <div class="panel-body">
-            <div class="logo" />
-            <div class="description">
-              <div class="text-primary">
+          <div className="panel-body">
+            <div className="logo" />
+            <div className="description">
+              <div className="text-primary">
                 <strong>Batch Registration Links</strong>
               </div>
               <div>Create Bulk Registration Links</div>
             </div>
-            <i class="i-chevron-right pull-right text-primary" />
+            <i className="i-chevron-right pull-right text-primary" />
           </div>
         </div>
 
         {!user.isRegistrationLinkSupervisorRole && (
           <div
-            class="panel panel-default recurring-charge"
+            className="panel panel-default recurring-charge"
             onClick={openUploadModal(
               user.isCAWRecurringChargeAxisEnabled
                 ? this.renderRecurringChargeAxisModal
                 : this.renderRecurringChargeModal,
             )}
           >
-            <div class="panel-body">
-              <div class="logo" />
-              <div class="description">
-                <div class="text-primary">
+            <div className="panel-body">
+              <div className="logo" />
+              <div className="description">
+                <div className="text-primary">
                   <strong>Batch Recurring Payments</strong>
                 </div>
                 <div>Create bulk recurring Payments</div>
               </div>
-              <i class="i-chevron-right pull-right text-primary" />
+              <i className="i-chevron-right pull-right text-primary" />
             </div>
           </div>
         )}
@@ -120,3 +110,13 @@ export default class CreateHostedMandateBatch extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({ user: state.session.user }), {
+  createRecurringChargeBatch,
+  validateRecurringChargeBatch,
+  validateRecurringChargeAxisBatch,
+  createRecurringChargeAxisBatch,
+  createRegistrationLinkBatch,
+  validateRegistrationLinkBatch,
+  closeModal,
+})(CreateHostedMandateBatch);

@@ -82,13 +82,13 @@ const CatalystCampaignBannerPhase2 = React.memo(
         bannerKey={`catalyst-banner-${user.current}`}
         card_id={cardId}
       >
-        <span class="display-inline banner-text-width">{bannerText}</span>
-        <a class="Button--secondary Button scheduled-btn-act btn-border" onClick={handleCTA1Click}>
+        <span className="display-inline banner-text-width">{bannerText}</span>
+        <a className="Button--secondary Button scheduled-btn-act btn-border" onClick={handleCTA1Click}>
           {cta1Text}
         </a>
         <Link
           to={cta2Link}
-          class="Button--primary Button scheduled-btn-act btn-border"
+          className="Button--primary Button scheduled-btn-act btn-border"
           onClick={track.onClickCTA2}
         >
           {cta2Text}

@@ -44,17 +44,17 @@ export default function Table({
   }
 
   if (!items || !items.length) {
-    return <div class={`table-empty ${customClass}`} />;
+    return <div className={`table-empty ${customClass}`} />;
   }
 
   return (
-    <div class={`table-container ${customClass}`}>
-      <TransitionGroup class={tableClass} enter={animateRow} exit={animateRow}>
+    <div className={`table-container ${customClass}`}>
+      <TransitionGroup className={tableClass} enter={animateRow} exit={animateRow}>
         {header && (
           <CSSTransition timeout={0}>
-            <div class="tr thead">
+            <div className="tr thead">
               {fields.map((field, index) => (
-                <div class="th" key={index}>
+                <div className="th" key={index}>
                   {field[0]}
                 </div>
               ))}
@@ -64,7 +64,7 @@ export default function Table({
         {items.map((item, index) => {
           return (
             <CSSTransition key={indexFn(item, index, items)} classNames="row" timeout={animObj}>
-              <Row class={rowClass} onClick={onClick && item::onClick} to={href && href(item)}>
+              <Row className={rowClass} onClick={onClick && onClick.bind(item)} to={href && href(item)}>
                 {fields.map((field, index) => (
                   <Value key={index} index={index} item={item} valueFn={field[1]} />
                 ))}
@@ -80,7 +80,7 @@ export default function Table({
 @observer
 class Value extends Component {
   render() {
-    return <div class="td">{this.props.valueFn(this.props.item, this.props.index)}</div>;
+    return <div className="td">{this.props.valueFn(this.props.item, this.props.index)}</div>;
   }
 }
 
@@ -132,19 +132,19 @@ export class PageTable extends Component {
     // animateRow = false because animation is causing rendering issues when search filter is there
     if (!pending && items && items.length) {
       return (
-        <div class="box">
+        <div className="box">
           <Pagination model={model} />
           {title && <header>{title}</header>}
 
           {info && (
-            <div class="table-header">
-              <span class="table-info">
+            <div className="table-header">
+              <span className="table-info">
                 Results {filters.skip + 1} &ndash; {filters.skip + items.length}
               </span>
               {searchFilters && (
-                <div class="pull-right">
+                <div className="pull-right">
                   {props.searchLabel}:
-                  <input class="m-l" onChange={this.handleSearchQuery} />
+                  <input className="m-l" onChange={this.handleSearchQuery} />
                 </div>
               )}
             </div>
@@ -179,15 +179,15 @@ class Pagination extends Component {
   render() {
     let model = this.props.model;
     return (
-      <div class="pagination">
+      <div className="pagination">
         {(model.filters.skip && (
-          <div class="prev" onClick={model::this.prev}>
+          <div className="prev" onClick={this.prev.bind(model)}>
             ← Previous
           </div>
         )) ||
           null}
         {(model.filters.count == model.items.length && (
-          <div class="next" onClick={model::this.next}>
+          <div className="next" onClick={this.next.bind(model)}>
             Next →
           </div>
         )) ||

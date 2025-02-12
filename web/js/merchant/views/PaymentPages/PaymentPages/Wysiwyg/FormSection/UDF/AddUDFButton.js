@@ -1,5 +1,5 @@
 import React from 'react';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
 import FieldsDropdownWrapper from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldsDropdown';
@@ -11,8 +11,8 @@ import {
   checkIsMagicCheckoutField,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 import fieldUnits from './helpers/field-units';
+import { compose } from 'redux';
 
-@RTracking(() => window.rzpQ.component('AddUDFButton'))
 class AddUDFButton extends React.PureComponent {
   onSelectFieldType = (field) => {
     track.wysiwyg.chosenInputField();
@@ -50,8 +50,8 @@ class AddUDFButton extends React.PureComponent {
         beforeOptionsTxt="Select Input Type"
         options={this.getOptions()}
       >
-        <Button.Transparent class="btn-dotted" onClick={this.trackInputField}>
-          <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
+        <Button.Transparent className="btn-dotted" onClick={this.trackInputField}>
+          <span className="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
           <span>
             <b>Input field</b>
           </span>
@@ -61,8 +61,10 @@ class AddUDFButton extends React.PureComponent {
   }
 }
 
-// eslint-disable-next-line babel/new-cap
-export default CreatorManager(AddUDFButton);
+export default compose(
+  rTracking(() => window.rzpQ.component('AddUDFButton')),
+  CreatorManager,
+)(AddUDFButton);
 
 export const UDFDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt, options }) => (
   <FieldsDropdownWrapper

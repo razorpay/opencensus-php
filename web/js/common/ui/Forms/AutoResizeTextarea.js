@@ -9,7 +9,7 @@ export default class AutoResizeTextarea extends Component {
       height: 'auto',
     };
 
-    this.measureHeight = ::this.measureHeight;
+    this.measureHeight = this.measureHeight.bind(this);
   }
 
   componentDidMount() {

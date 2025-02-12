@@ -1,18 +1,13 @@
 import React, { Component } from 'react';
-import Note from '../../components/Note';
 import { connect } from 'react-redux';
-import Button from 'common/new-ui/Button';
-import { isPreceedingState } from '../../utils';
-import { GA_CATEGORY_BY_PRODUCT } from '../constants';
-import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalculator';
 
-@connect((state) => ({
-  currentState: state.loanApplicationDetails.meta.data.application.status,
-  configuration: state.loanApplicationDetails.meta.configuration,
-  activeState: state.loanApplicationDetails.context.activeState,
-  applicationId: state.loanApplicationDetails.meta.data.application.id,
-  product: state.loanApplicationDetails.meta.product,
-}))
+import Button from 'common/new-ui/Button';
+
+import Note from '../../components/Note';
+import { isPreceedingState } from '../../utils';
+import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalculator';
+import { GA_CATEGORY_BY_PRODUCT } from '../constants';
+
 class PendingState extends Component {
   gaEventDispatcher = (eventObject) => {
     eventObject.eventCategory = GA_CATEGORY_BY_PRODUCT[this.props.product];
@@ -34,16 +29,10 @@ class PendingState extends Component {
   };
 
   render() {
-    const {
-      message,
-      showNavigation,
-      currentState,
-      applicationId,
-      navigation,
-      configuration,
-    } = this.props;
+    const { message, showNavigation, currentState, applicationId, navigation, configuration } =
+      this.props;
     return (
-      <div class="pending-note-wrapper">
+      <div className="pending-note-wrapper">
         <Note
           message={message}
           applicationId={applicationId}
@@ -101,4 +90,10 @@ class PendingState extends Component {
   }
 }
 
-export default PendingState;
+export default connect((state) => ({
+  currentState: state.loanApplicationDetails.meta.data.application.status,
+  configuration: state.loanApplicationDetails.meta.configuration,
+  activeState: state.loanApplicationDetails.context.activeState,
+  applicationId: state.loanApplicationDetails.meta.data.application.id,
+  product: state.loanApplicationDetails.meta.product,
+}))(PendingState);

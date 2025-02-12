@@ -4,12 +4,12 @@ import { Field } from 'redux-form';
 export default (props) => {
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Batch Upload Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -17,7 +17,7 @@ export default (props) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
     </ListFilter>

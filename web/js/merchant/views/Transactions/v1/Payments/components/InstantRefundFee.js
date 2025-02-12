@@ -1,10 +1,11 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { formValueSelector } from 'redux-form';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import ModalHeader from 'common/ui/ModalHeader';
+
 import Amount from 'common/ui/Amount';
+import ModalHeader from 'common/ui/ModalHeader';
 import { updateConfig } from 'merchant/reducers/config';
 import {
   refundPayment,
@@ -12,9 +13,9 @@ import {
   fetchRefunds,
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
-import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { bindActionCreators } from 'redux';
+import { closeModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('refundModal');
 
@@ -54,39 +55,40 @@ class InstantRefundFee extends Component {
     const rules = this.props.pricing.rules;
 
     return (
-      <div class="instant-refund-fee-modal">
+      <div className="instant-refund-fee-modal">
         <ModalHeader
           onCloseClick={this.props.closeModal}
           title={
             <div style={{ color: '#515978' }}>
-              <i style={{ marginRight: '5px' }} class="i i-instant-refund" /> Fee for instant refund
+              <i style={{ marginRight: '5px' }} className="i i-instant-refund" /> Fee for instant
+              refund
             </div>
           }
         />
-        <div class="modal-body" style={{ paddingTop: '10px', paddingBottom: '5px' }}>
-          <div class="panel panel-default refund-fee-structure">
-            <div class="panel-heading grey" style={{ fontWeight: 600, color: '#515978' }}>
+        <div className="modal-body" style={{ paddingTop: '10px', paddingBottom: '5px' }}>
+          <div className="panel panel-default refund-fee-structure">
+            <div className="panel-heading grey" style={{ fontWeight: 600, color: '#515978' }}>
               We charge minimal fee on each refund
             </div>
-            <div class="panel-body" style={{ paddingBottom: '8px' }}>
+            <div className="panel-body" style={{ paddingBottom: '8px' }}>
               {!this.props.pricing.custom_pricing ? (
-                <div class="instant-breakup">
-                  <div class="flex">
-                    <div style={{ marginBottom: '5px' }} class="w50 text-left t-heading">
+                <div className="instant-breakup">
+                  <div className="flex">
+                    <div style={{ marginBottom: '5px' }} className="w50 text-left t-heading">
                       Refund Amount
                     </div>
-                    <div style={{ marginBottom: '5px' }} class="w50 text-right t-heading">
+                    <div style={{ marginBottom: '5px' }} className="w50 text-right t-heading">
                       Processing Fees
                     </div>
                   </div>
                   {rules.map((r, i) => (
-                    <div key={i} class="flex">
-                      <div class="text-left amt" style={{ flexGrow: 1 }}>
+                    <div key={i} className="flex">
+                      <div className="text-left amt" style={{ flexGrow: 1 }}>
                         ₹ {i > 0 ? r.amount_range_min / 100 + 1 : r.amount_range_min / 100}{' '}
                         {i == rules.length - 1 ? 'and' : '-'}{' '}
                         {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
                       </div>
-                      <div class="text-right" style={{ flexGrow: 1 }}>
+                      <div className="text-right" style={{ flexGrow: 1 }}>
                         <Amount
                           value={r.fixed_rate}
                           currency="INR"
@@ -97,12 +99,12 @@ class InstantRefundFee extends Component {
                   ))}{' '}
                 </div>
               ) : (
-                <div class="flex">
+                <div className="flex">
                   <div style={{ color: '#515978' }}>
                     To know your pricing, please{' '}
                     <a>
                       <strong
-                        class="pointer"
+                        className="pointer"
                         onClick={() => {
                           window.rzpAnalytics?.({
                             eventCategory: 'Dashboard - Instant Refund',

@@ -26,7 +26,7 @@ class Notifications extends Component {
     }
 
     return (
-      <div class={`Notifications${this.getExtraClass(notifications)}`}>
+      <div className={`Notifications${this.getExtraClass(notifications)}`}>
         {notifications.map((notification, idx) => (
           <Notification
             key={notification.id}

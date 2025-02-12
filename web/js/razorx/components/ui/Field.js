@@ -259,13 +259,11 @@ class SearchableSelect extends Component {
 export const SearchableSelectField = (props) => <Field {...props} tag={SearchableSelect} />;
 
 export function HelpMsg({ infoMsg, helpMsg }) {
+  const msg = infoMsg || helpMsg;
   return infoMsg || helpMsg ? (
     <div className="info-block">
       {helpMsg && <i className="i i-info-circle" />}
-      {do {
-        const msg = infoMsg || helpMsg;
-        typeof msg === 'function' ? msg() : msg;
-      }}
+      {typeof msg === 'function' ? msg() : msg}
     </div>
   ) : null;
 }

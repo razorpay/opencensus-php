@@ -57,7 +57,7 @@ const ScheduledRepaymentsList = ({ repayments, loading }) => {
             <th>Daily Installment</th>
             <th>Principal Component</th>
             <th>Interest Component</th>
-            <th class="highlight">Amount Collected</th>
+            <th className="highlight">Amount Collected</th>
           </tr>
         </thead>
         <TableBody
@@ -65,15 +65,15 @@ const ScheduledRepaymentsList = ({ repayments, loading }) => {
           colSpan={7}
           rows={repayments}
           emptyTableMsg={
-            <div class="no-results-container flex">
-              <div class="m-r">
+            <div className="no-results-container flex">
+              <div className="m-r">
                 <img src={require("assets/capital/no_results.svg")} height={240} width={240} />
               </div>
-              <div class="content">
-                <p class="m-b">
+              <div className="content">
+                <p className="m-b">
                   <strong>Unlock your Repayments View</strong>
                 </p>
-                <small class="text-faded">
+                <small className="text-faded">
                   Make your first repayment to unlock the List and details view of Repayments.
                 </small>
               </div>

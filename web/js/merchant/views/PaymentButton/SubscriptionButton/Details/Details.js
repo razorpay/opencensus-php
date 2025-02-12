@@ -29,6 +29,7 @@ import SettingsModal from '../components/SettingsModal';
 import ItemDetails from './components/ItemDetails';
 
 import track from './track';
+import { compose } from 'redux';
 
 /*
   Human readable reason to be displayed
@@ -40,27 +41,7 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      isTestMode: state.session.mode === 'test',
-      reportConfigs: state.reports.reportConfigs,
-      currentHighlightedButtonSettings:
-        state.subscription_button_create.current_highlighted_button_settings,
-    };
-  },
-  {
-    showNotification,
-    openModal,
-    closeModal,
-    saveReportConfigs,
-    addPollInstance,
-    updateHighlightButtonSettings,
-  },
-)
-@RTracking(() => window.rzpQ.component('SubscriptionButtonEntityComponent'))
-export default class SubscriptionButtonEntityComponent extends React.Component {
+class SubscriptionButtonEntityComponent extends React.Component {
   constructor(props) {
     super(props);
 
@@ -226,12 +207,8 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
   };
 
   render() {
-    const {
-      createdByUser,
-      subscriptionButtonEntity,
-      formItems,
-      currentHighlightedButtonSettings,
-    } = this.props;
+    const { createdByUser, subscriptionButtonEntity, formItems, currentHighlightedButtonSettings } =
+      this.props;
     const { isPageReceiptModalOpened } = this.state;
 
     const highlightButtonSettings =
@@ -242,46 +219,46 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
     return (
       <React.Fragment>
         <div
-          class={classList(
+          className={classList(
             'content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3',
             'Entity--paymentbutton',
             this.state.detailsCollapse && 'Entity--paymentpage-collapse',
           )}
         >
-          <div class="content-header">
+          <div className="content-header">
             <Link to="/subscription_buttons">
-              <i class="i i-arrow-back" /> Button List
+              <i className="i i-arrow-back" /> Button List
             </Link>
-            <i class="i i-chevron-right" /> {subscriptionButtonEntity.title}
+            <i className="i i-chevron-right" /> {subscriptionButtonEntity.title}
           </div>
 
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <div class="text">{subscriptionButtonEntity.title}</div>
-              <div class="page-options">
+          <div className="panel panel-default">
+            <div className="panel-heading">
+              <div className="text">{subscriptionButtonEntity.title}</div>
+              <div className="page-options">
                 <Link
-                  class="Button Button--primary--invert"
+                  className="Button Button--primary--invert"
                   to={`/subscription_buttons/${subscriptionButtonEntity.id}/edit`}
                   onClick={track.lj.trackOptionsOpenEdit}
                 >
-                  <i class="i i-edit-outline" />
+                  <i className="i i-edit-outline" />
                 </Link>
 
                 <Link
-                  class="Button Button--primary--invert"
+                  className="Button Button--primary--invert"
                   to={`/subscription_buttons/new?duplicate_id=${subscriptionButtonEntity.id}`}
                   onClick={track.lj.trackOptionsOpenDuplicate}
                 >
-                  <i class="i i-copy" />
+                  <i className="i i-copy" />
                 </Link>
 
                 <Dropdown>
                   <DropdownTrigger
-                    class="dropdown-toggle Button Button--primary--invert"
+                    className="dropdown-toggle Button Button--primary--invert"
                     onClick={this.onClickOptions}
                   >
-                    <i class="i i-settings-outline" />
-                    <i class="i i-chevron-down" />
+                    <i className="i i-settings-outline" />
+                    <i className="i i-chevron-down" />
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
                         <PopoverBody>Configure post paymentmessage from options here.</PopoverBody>
@@ -289,15 +266,15 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
                     )}
                   </DropdownTrigger>
                   <DropdownContent>
-                    <ul class="dropdown-menu nav nav-stacked">
+                    <ul className="dropdown-menu nav nav-stacked">
                       {/*
                       <li onClick={this.togglePageReceiptModal}>
-                        <i class="i i-document" /> Payment Receipts
+                        <i className="i i-document" /> Payment Receipts
                       </li>
                     */}
                       <li onClick={this.openSettingsModal}>
                         {/* TODO:  Compress the i-checked-document svg icon */}
-                        <i class="i i-checked-document" /> Post Payment Message
+                        <i className="i i-checked-document" /> Post Payment Message
                       </li>
                     </ul>
                   </DropdownContent>
@@ -307,8 +284,8 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
               </div>
             </div>
 
-            <div class="panel-body">
-              <div class="entity-details">
+            <div className="panel-body">
+              <div className="entity-details">
                 <EntityDetailRow label="Button ID" value={subscriptionButtonEntity.id} />
 
                 <EntityDetailRow
@@ -319,7 +296,7 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
 
                       {!isActive && (
                         <Button.Transparent
-                          class="Button--Link"
+                          className="Button--Link"
                           style={{ marginLeft: 12 }}
                           onClick={this.props.reActivateLink}
                         >
@@ -356,27 +333,27 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
           </div>
           <button
             type="button"
-            class="btn-primary btn-sm panel-collapser collapsable-btn"
+            className="btn-primary btn-sm panel-collapser collapsable-btn"
             onClick={(_) =>
               this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
             }
           >
             {this.state.detailsCollapse ? (
               <span>
-                Show More <i class="i i-chevron-down" />
+                Show More <i className="i i-chevron-down" />
               </span>
             ) : (
               <span>
-                Show Less <i class="i i-chevron-up" />
+                Show Less <i className="i i-chevron-up" />
               </span>
             )}
           </button>
         </div>
-        <div class="content-sm txn-details Entity--paymentpage-v3 Entity--paymentbutton">
+        <div className="content-sm txn-details Entity--paymentpage-v3 Entity--paymentbutton">
           {this.props.isTestMode && <TestModeBanner />}
 
           <TabsContainer
-            class="item-details"
+            className="item-details"
             tabNames={[
               <b key="subscription-payments">Subscription Payments</b>,
               <b key="one-time-Payments">One-Time Payments</b>,
@@ -408,3 +385,26 @@ export default class SubscriptionButtonEntityComponent extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        isTestMode: state.session.mode === 'test',
+        reportConfigs: state.reports.reportConfigs,
+        currentHighlightedButtonSettings:
+          state.subscription_button_create.current_highlighted_button_settings,
+      };
+    },
+    {
+      showNotification,
+      openModal,
+      closeModal,
+      saveReportConfigs,
+      addPollInstance,
+      updateHighlightButtonSettings,
+    },
+  ),
+  RTracking(() => window.rzpQ.component('SubscriptionButtonEntityComponent')),
+)(SubscriptionButtonEntityComponent);

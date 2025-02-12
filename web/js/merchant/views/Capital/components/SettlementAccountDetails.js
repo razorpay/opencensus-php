@@ -27,7 +27,7 @@ function SettlementAccountDetails({ user, showFinancerDetails, trackGAEvents = t
               <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div class="text-left">{TOOLTIP_DESCRIPTIONS.ifsc_code}</div>
+                  <div className="text-left">{TOOLTIP_DESCRIPTIONS.ifsc_code}</div>
                 </PopoverBody>
               </Popover>
             </small>
@@ -44,7 +44,7 @@ function SettlementAccountDetails({ user, showFinancerDetails, trackGAEvents = t
           <small>○ The bank account details where the money will be settled to</small>
         </div>
       ) : (
-        <div class="m-l m-b">
+        <div className="m-l m-b">
           <small>○ The bank account details where the money will be settled to</small>
         </div>
       )}

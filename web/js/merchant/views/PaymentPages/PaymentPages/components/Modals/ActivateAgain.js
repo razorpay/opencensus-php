@@ -103,7 +103,7 @@ export default class ActivateAgainModal extends React.Component {
       <div>
         <ModalHeader title={title} onCloseClick={this.props.handleClose} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
             {!!msg.length && `${msg}.`}
             <br />
@@ -111,10 +111,10 @@ export default class ActivateAgainModal extends React.Component {
             {description}
           </p>
 
-          <div class="ModalForm ModalForm--ActivationAgain">
+          <div className="ModalForm ModalForm--ActivationAgain">
             {this.props.expireBy && (
-              <div class="ModalForm-field">
-                <div class="Input-label">Expires On</div>
+              <div className="ModalForm-field">
+                <div className="Input-label">Expires On</div>
                 <Input.Check
                   fieldLabel="No Expiry"
                   defaultValue="0"
@@ -128,8 +128,8 @@ export default class ActivateAgainModal extends React.Component {
                     );
                   }}
                 />
-                <Input.Group class="InputGroup--near InputGroup--inline">
-                  <div class="Input-content">
+                <Input.Group className="InputGroup--near InputGroup--inline">
+                  <div className="Input-content">
                     <Input.ToCalendar
                       data-name="expire_by_date"
                       placeholder="15-04-2018"
@@ -139,7 +139,7 @@ export default class ActivateAgainModal extends React.Component {
                       readOnly={true}
                       onChange={this.onDateChange}
                       size="half_small"
-                      addonAfter={<i class="i i-date-range" />}
+                      addonAfter={<i className="i i-date-range" />}
                       placement="topLeft"
                       allowToday={true}
                       disablePastDates={true}
@@ -153,7 +153,7 @@ export default class ActivateAgainModal extends React.Component {
                         readOnly={true}
                         onChange={this.onTimeChange}
                         size="half_small"
-                        addonAfter={<i class="i i-time" />}
+                        addonAfter={<i className="i i-time" />}
                       />
                     )}
                   </div>

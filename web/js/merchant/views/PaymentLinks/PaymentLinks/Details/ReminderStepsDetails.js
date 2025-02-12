@@ -25,7 +25,7 @@ const ReminderStepsDetails = ({
 
       return {
         status: newReminder.status,
-        type: <i class={`i i-${newReminder.status === 'completed' ? 'check-circle' : 'bullet'}`} />,
+        type: <i className={`i i-${newReminder.status === 'completed' ? 'check-circle' : 'bullet'}`} />,
         label: isAutoRemindersUpdating ? (
           <PlaceholderLoader />
         ) : (

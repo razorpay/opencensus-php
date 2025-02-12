@@ -21,7 +21,7 @@ const businessTypeMap = {
 export default connect(null, { openModal, closeModal })(
   ({ user, openModal, closeModal, changeDisplayName }) => {
     return (
-      <div class="list-group details-row-container">
+      <div className="list-group details-row-container">
         <DetailRow label="Contact Name" value={titleCase(user.name)} />
 
         {changeDisplayName && (
@@ -29,8 +29,8 @@ export default connect(null, { openModal, closeModal })(
             label={() => (
               <div>
                 <span>Display Name</span>
-                <small class="help-content">
-                  <i class="i i-info-outline" />
+                <small className="help-content">
+                  <i className="i i-info-outline" />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
                       <div>
@@ -46,11 +46,11 @@ export default connect(null, { openModal, closeModal })(
               <span>
                 {user.display_name}
                 <a
-                  class="p-l"
+                  className="p-l"
                   title="Edit Display Name"
                   onClick={changeDisplayName}
                 >
-                  <i class="i i-edit" />
+                  <i className="i i-edit" />
                 </a>
               </span>
             )}

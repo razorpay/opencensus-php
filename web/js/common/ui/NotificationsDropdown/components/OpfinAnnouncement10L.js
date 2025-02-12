@@ -85,7 +85,7 @@ const FormModal = ({ id, onClose, tracking }) => {
   return (
     <div>
       <button type="button" className={classList('close', 'inverted-close')} onClick={onClose}>
-        <i class="i i-close" />
+        <i className="i i-close" />
       </button>
       <div className="hbspt-opfin-nitro-wrapper">
         <OpfinAnnouncementForm id={id} tracking={tracking} />

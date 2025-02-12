@@ -115,7 +115,7 @@ export default class extends React.PureComponent {
   render() {
     return (
       <div
-        class={classList(
+        className={classList(
           'JSONEdit-container',
           this.state.isInValid && 'is-invalid'
         )}
@@ -123,12 +123,12 @@ export default class extends React.PureComponent {
         <input
           name="json-value"
           value={this.flask ? this.state.jsonValue : ''}
-          class="hide"
+          className="hide"
           readOnly={this.props.isReadOnly}
         />
         <div id="json-edit-view" />
-        <div class={classList('error', !this.state.isInValid && 'hidden')}>
-          <i class="i-info-circle" />
+        <div className={classList('error', !this.state.isInValid && 'hidden')}>
+          <i className="i-info-circle" />
           {this.state.isInValid}
         </div>
       </div>

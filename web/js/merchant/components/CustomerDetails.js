@@ -24,7 +24,7 @@ const CustomerDetails = ({
         <span>
           {email}
           {emailStatus ? (
-            <span style={{ marginLeft: '10px' }} class={`${notificationClassMap[emailStatus]}`}>
+            <span style={{ marginLeft: '10px' }} className={`${notificationClassMap[emailStatus]}`}>
               ({emailStatus} mail)
             </span>
           ) : null}
@@ -35,7 +35,7 @@ const CustomerDetails = ({
         <span>
           {contact}
           {smsStatus ? (
-            <span style={{ marginLeft: '10px' }} class={notificationClassMap[smsStatus]}>
+            <span style={{ marginLeft: '10px' }} className={notificationClassMap[smsStatus]}>
               ({smsStatus} sms)
             </span>
           ) : null}

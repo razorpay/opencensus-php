@@ -31,7 +31,7 @@ export function custumTooltip(tooltipModel) {
     tooltipEl = document.createElement('div');
     tooltipEl.id = 'chartjs-tooltip';
     tooltipEl.innerHTML = sanitizer(
-      '<div class="tooltip-wrapper"></div><div class="tooltip-caret"></div>',
+      '<div className="tooltip-wrapper"></div><div className="tooltip-caret"></div>',
     );
     document.body.appendChild(tooltipEl);
   }
@@ -56,13 +56,13 @@ export function custumTooltip(tooltipModel) {
   if (body) {
     const titleLines = title || [];
 
-    let innerHtml = '<div class="title-wrap">';
+    let innerHtml = '<div className="title-wrap">';
 
     titleLines.forEach((title) => {
-      innerHtml += `<div class="title">${title}</div>`;
+      innerHtml += `<div className="title">${title}</div>`;
     });
 
-    innerHtml += '</div><div class="tooltip-body-wrap">';
+    innerHtml += '</div><div className="tooltip-body-wrap">';
 
     body.forEach(({ before, lines }, i) => {
       const { type } = this._chart.data.datasets[dataPoints[i].datasetIndex];
@@ -73,18 +73,18 @@ export function custumTooltip(tooltipModel) {
 
       const style = `background: ${backgroundColor}; border-color: ${borderColor};`;
 
-      const colorBox = `<span class="label-box" style="${style}"></span>`;
+      const colorBox = `<span className="label-box" style="${style}"></span>`;
 
-      innerHtml += `<div class="tooltip-body-list">${
+      innerHtml += `<div className="tooltip-body-list">${
         type === SCATTER
-          ? `<div class="tooltip-body-before">
-          <span class="time">${time}</span>
-          <span class="severity ${severity.toLowerCase()}">${severity.toUpperCase()} SEVERITY</span>
+          ? `<div className="tooltip-body-before">
+          <span className="time">${time}</span>
+          <span className="severity ${severity.toLowerCase()}">${severity.toUpperCase()} SEVERITY</span>
         </div>`
           : ''
       }
-      <div class="tooltip-body">${colorBox}${lines[0]}</div>
-      ${type === SCATTER && i !== body.length - 1 ? '<span class="line"></span>' : ''}</div>`;
+      <div className="tooltip-body">${colorBox}${lines[0]}</div>
+      ${type === SCATTER && i !== body.length - 1 ? '<span className="line"></span>' : ''}</div>`;
     });
 
     innerHtml += '</div>';

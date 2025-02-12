@@ -38,11 +38,11 @@ export default ({ totalFee = 0, rzpFee = 0, tax = 0, currency = 'INR' }) => {
   const user = useStore((state) => state.session.user);
 
   return (
-    <div class="rzp-fee">
-      <div class="m-b text-small">
+    <div className="rzp-fee">
+      <div className="m-b text-small">
         <FeeTable rows={[['Total Fee', <Amount value={totalFee} currency={currency} />]]} />
       </div>
-      <div class="text-fade">
+      <div className="text-fade">
         <Blockquote>
           <FeeTable
             rows={[

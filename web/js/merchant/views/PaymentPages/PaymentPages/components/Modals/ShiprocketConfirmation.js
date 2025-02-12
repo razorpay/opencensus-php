@@ -7,11 +7,11 @@ import { SHIPROCKET_FORM_ITEMS } from '../../Wysiwyg/FormSection/UDF/helpers';
 const ShiprocketConfirmation = ({ handleClose, handleConfirm }) => {
   return (
     <ModalMask maskClosable={false}>
-      <Modal class="Paymentpage-shiprocket-confirm" onClose={handleClose} showCloseBtn={false}>
-        <div class="modal-header">
-          <h3 class="modal-title">Address fields will be added to this page</h3>
+      <Modal className="Paymentpage-shiprocket-confirm" onClose={handleClose} showCloseBtn={false}>
+        <div className="modal-header">
+          <h3 className="modal-title">Address fields will be added to this page</h3>
         </div>
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
             <div>
               A few fields will be added to this page to collect customer’s shipping address. This
@@ -21,17 +21,17 @@ const ShiprocketConfirmation = ({ handleClose, handleConfirm }) => {
               Please remove any duplicate address fields that were previously added
             </Alert.Warning>
           </p>
-          <div class="Modal__actions">
-            <button type="button" class="btn btn-outline" onClick={handleClose}>
+          <div className="Modal__actions">
+            <button type="button" className="btn btn-outline" onClick={handleClose}>
               Cancel
             </button>
-            <button type="button" class="btn btn-primary" onClick={handleConfirm}>
+            <button type="button" className="btn btn-primary" onClick={handleConfirm}>
               Continue
             </button>
           </div>
         </div>
       </Modal>
-      <Modal class="Paymentpage-shiprocket-fields-preview" showCloseBtn={false}>
+      <Modal className="Paymentpage-shiprocket-fields-preview" showCloseBtn={false}>
         <div className="UI-form">
           {SHIPROCKET_FORM_ITEMS.map((fi, idx) => (
             <UDFDisplayField

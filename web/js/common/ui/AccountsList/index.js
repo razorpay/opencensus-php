@@ -17,8 +17,8 @@ const CustomTag = ({ tag, tagIcon }) => {
 
 const AccountItem = ({ account, hideTagInfo }) => (
   <div className="rzp-account-item">
-    <b class={`account-name ${account.tag ? '' : 'tag-invisible'}`}>{account.name}</b>
-    <span class="account-id"> - {account.id}</span>
+    <b className={`account-name ${account.tag ? '' : 'tag-invisible'}`}>{account.name}</b>
+    <span className="account-id"> - {account.id}</span>
     {!hideTagInfo && <CustomTag tag={account.tag} tagIcon={account.tagIcon} />}
   </div>
 );
@@ -27,13 +27,13 @@ const AccountItemDetailsPreview = ({ account, hideTagInfo }) => {
   return (
     <div className="rzp-account-item rzp-account-item-preview">
       <div>
-        <b class={`account-name ${account.tag ? '' : 'tag-invisible'}`}>{account.name}</b>
+        <b className={`account-name ${account.tag ? '' : 'tag-invisible'}`}>{account.name}</b>
         {account.code && `( ${account.code} )`}
         {!hideTagInfo && <CustomTag tag={account.tag} tagIcon={account.tagIcon} />}
       </div>
-      <div class="id-email">
-        <span class="account-id">{account.id}</span>
-        <span class="dot-separator"></span>
+      <div className="id-email">
+        <span className="account-id">{account.id}</span>
+        <span className="dot-separator"></span>
         <span>{account.email}</span>
       </div>
     </div>

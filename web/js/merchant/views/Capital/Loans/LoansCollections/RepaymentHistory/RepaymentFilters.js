@@ -7,13 +7,13 @@ import { REPAYMENT_FILTER_STATUS_OPTIONS } from '../../constants';
 export default function RepaymentFilters({ onSubmit, repayments, ...props }) {
   return (
     <ListFilter {...props} onSubmit={onSubmit}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Repayment ID</label>
-        <Field name="reference_id" component="input" class="form-control input-sm" />
+        <Field name="reference_id" component="input" className="form-control input-sm" />
       </div>
       <div className="form-group list-filter-item">
         <label>Status</label>
-        <Field name="statuses" component="select" class="form-control input-sm">
+        <Field name="statuses" component="select" className="form-control input-sm">
           <option value="">All</option>
           {Object.entries(REPAYMENT_FILTER_STATUS_OPTIONS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -31,7 +31,7 @@ export default function RepaymentFilters({ onSubmit, repayments, ...props }) {
           min={10}
           max={25}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
     </ListFilter>

@@ -216,10 +216,10 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
                     readOnly={true}
                     className="short-url"
                   />
-                  <Button.Primary class="Button--small">Copy</Button.Primary>
+                  <Button.Primary className="Button--small">Copy</Button.Primary>
                 </CustomClipboard>
                 {/* TODO: Add it back once backend API is done */}
-                {/* <Button.Primary class="Button--small" onClick={handleShare}>
+                {/* <Button.Primary className="Button--small" onClick={handleShare}>
                   <i className="i i-share-outline mr-5" />
                   Share
                 </Button.Primary> */}
@@ -227,7 +227,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
                 {/* {props.mode === 'test' ? (
             <span>
               <Button
-                class="Button--small Button--customise-url"
+                className="Button--small Button--customise-url"
                 // onClick={this.togglePageSettingsModal.bind(null, true)}
                 disabled={true}
               >
@@ -239,7 +239,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
             </span>
           ) : (
             <Button
-              class="Button--small Button--customise-url"
+              className="Button--small Button--customise-url"
               onClick={togglePageSettingsModal.bind(null, true)}
             >
               Customise URL
@@ -248,7 +248,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
               </div>
               {/* CTAs container for mobile view */}
               <div className="mobile-cta-container">
-                <Button.Transparent class="button--highlight" onClick={handleGoToPage}>
+                <Button.Transparent className="button--highlight" onClick={handleGoToPage}>
                   Go To Page <i className="i i-external-link" />
                 </Button.Transparent>
                 <Button.Primary onClick={handleShare}>

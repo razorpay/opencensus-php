@@ -9,19 +9,9 @@ import RadioButton from 'common/ui/Forms/RadioButton';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { cancelSubscription } from 'merchant/reducers/subscriptions';
 import analytics from '../../analytics';
+import { compose } from 'redux';
 
-@connect(null, {
-  closeModal,
-  cancelSubscription,
-  showNotification,
-})
-@reduxForm({
-  form: 'cancelSubscription',
-  initialValues: {
-    cancel_at_cycle_end: '1',
-  },
-})
-export default class CancellationModal extends Component {
+class CancellationModal extends Component {
   constructor() {
     // eslint-disable-next-line prefer-rest-params
     super(...arguments);
@@ -78,11 +68,11 @@ export default class CancellationModal extends Component {
       <div>
         <ModalHeader title="Cancel Subscription?" onCloseClick={this.props.closeModal} />
 
-        <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
-          <div class="modal-body">
+        <form className="form-horizontal" onSubmit={handleSubmit(this.save)}>
+          <div className="modal-body">
             <Alert type="error" message={this.state.errors} />
 
-            <div class="text-muted">
+            <div className="text-muted">
               <b>Important:</b> This action can not be undone. The subscription will move to
               cancelled state.
             </div>
@@ -96,7 +86,7 @@ export default class CancellationModal extends Component {
                   <div>
                     <div>
                       <b>Cancel at end of current billing cycle</b>
-                      <div class="text-muted">Next payment will not be charged</div>
+                      <div className="text-muted">Next payment will not be charged</div>
                     </div>
                     <div />
                   </div>
@@ -109,10 +99,10 @@ export default class CancellationModal extends Component {
                 label={() => <b>Cancel Immediately</b>}
               />
             </div>
-            <div class="btn-toolbar">
+            <div className="btn-toolbar">
               <button
                 type="button"
-                class="btn btn-default btn-half"
+                className="btn btn-default btn-half"
                 onClick={() => {
                   analytics.track('subscription.cancel.discard');
                   this.props.closeModal();
@@ -123,7 +113,7 @@ export default class CancellationModal extends Component {
 
               <AsyncButton
                 type="submit"
-                class="btn btn-primary btn-half"
+                className="btn btn-primary btn-half"
                 text="Yes, Cancel"
                 pendingText="Cancelling..."
                 onClick={handleSubmit(this.save)}
@@ -135,3 +125,17 @@ export default class CancellationModal extends Component {
     );
   }
 }
+
+export default compose(
+  connect(null, {
+    closeModal,
+    cancelSubscription,
+    showNotification,
+  }),
+  reduxForm({
+    form: 'cancelSubscription',
+    initialValues: {
+      cancel_at_cycle_end: '1',
+    },
+  }),
+)(CancellationModal);

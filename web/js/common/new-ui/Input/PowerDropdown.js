@@ -140,7 +140,7 @@ export default class PowerDropdown extends React.Component {
 
     return (
       <div
-        class={inputClass(this)}
+        className={inputClass(this)}
         ref={el => {
           this.powerDropdown = el;
         }}
@@ -153,8 +153,8 @@ export default class PowerDropdown extends React.Component {
           ref={this.setRef}
         />
         <Label text={label} />
-        <div class="Input-content">
-          <div class="Input-elWrapper Select-elWrapper">
+        <div className="Input-content">
+          <div className="Input-elWrapper Select-elWrapper">
             <div
               onClick={this.toggleExpansion}
               onKeyPress={e => {
@@ -167,13 +167,13 @@ export default class PowerDropdown extends React.Component {
               onBlur={this.blur}
             >
               <input
-                class="Input-el"
+                className="Input-el"
                 readOnly
                 value={selectedOptionLabel}
                 hidden={!!SelectedComponent}
               />
               {SelectedComponent && (
-                <div class="Input-el Input-el--customSelection">
+                <div className="Input-el Input-el--customSelection">
                   <SelectedComponent
                     option={getValueOfKeyAtLevel(
                       undefined,
@@ -234,8 +234,8 @@ class DropDownList extends React.PureComponent {
     this.props.toggleExpansion();
   };
 
-  handleEscapePress = ::this.handleEscapePress;
-  handleDocumentClick = ::this.handleDocumentClick;
+  handleEscapePress = this.handleEscapePress.bind(this);
+  handleDocumentClick = this.handleDocumentClick.bind(this);
 
   render() {
     const {
@@ -258,14 +258,14 @@ class DropDownList extends React.PureComponent {
         : options[0].value;
     }
     return (
-      <div class="Input-list">
+      <div className="Input-list">
         {options.map((o, i) => {
           const displayLabel = typeof o === 'object' ? o.label : o;
           const hasSubOptions = !!o.options;
 
           return (
             <div
-              class={classList(
+              className={classList(
                 'Input-list-item',
                 valueAtSelectedIndex === o.value && 'selected'
               )}
@@ -276,12 +276,12 @@ class DropDownList extends React.PureComponent {
               {OptionComponent ? (
                 <React.Fragment key={i}>
                   <OptionComponent option={o} />
-                  {!!o.options && <i class="i i-chevron-right" />}
+                  {!!o.options && <i className="i i-chevron-right" />}
                 </React.Fragment>
               ) : (
                 <React.Fragment key={i}>
-                  <span class="display-label">{displayLabel}</span>
-                  {hasSubOptions && <i class="i i-chevron-right" />}
+                  <span className="display-label">{displayLabel}</span>
+                  {hasSubOptions && <i className="i i-chevron-right" />}
                 </React.Fragment>
               )}
               {hasSubOptions && (

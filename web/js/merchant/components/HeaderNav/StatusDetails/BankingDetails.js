@@ -10,8 +10,8 @@ const BankingDetails = (props) => {
   ) : (
     <>
       <MethodNotOperational methodName={methodName} switchToInfoView={switchToInfoView} />
-      <div class="instrument-details">
-        <div class="instrument-title">Banks</div>
+      <div className="instrument-details">
+        <div className="instrument-title">Banks</div>
         {downtimes?.low && <OngoingDowntime downtimes={downtimes.low} severity="low" />}
         {downtimes?.medium && <OngoingDowntime downtimes={downtimes.medium} severity="medium" />}
         {downtimes?.high && <OngoingDowntime downtimes={downtimes.high} severity="high" />}

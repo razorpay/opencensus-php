@@ -1,18 +1,13 @@
 import { Component } from 'react';
+import Modal from 'react-modal';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import { getItem } from 'common/utils/localStorage';
-import Modal from 'react-modal';
-import * as SliderActions from 'merchant_common/reducers/slider';
 import { classList } from 'common/utils/rzp-utils';
+import * as SliderActions from 'merchant_common/reducers/slider';
 
-@connect(
-  (state) => ({
-    ...state.slider,
-    org: state.session.org,
-  }),
-  SliderActions,
-)
 class ModalSlider extends Component {
   // Closes the slider
   //  1. When slider `Close` button is clicked
@@ -50,7 +45,7 @@ class ModalSlider extends Component {
 
   componentWillUnmount() {
     document.removeEventListener('click', this.handleDocumentClick, true);
-    this.props.onClose();
+    this.props?.onClose?.();
   }
 
   close = () => {
@@ -85,7 +80,7 @@ class ModalSlider extends Component {
         isOpen={this.props.isOpen}
         closeTimeoutMS={300}
         overlayClassName={className}
-        class={classList('ModalSlider__Content', this.props.org.custom_code)}
+        className={classList('ModalSlider__Content', this.props.org.custom_code)}
         contentLabel="SliderModal"
         ariaHideApp={false}
       >
@@ -96,7 +91,7 @@ class ModalSlider extends Component {
           className={classList('close close-primary', this.props.closeButtonClass)}
           onClick={this.close}
         >
-          <i class="i i-close" />
+          <i className="i i-close" />
         </button>
 
         {this.props.children}
@@ -105,8 +100,13 @@ class ModalSlider extends Component {
   }
 }
 
-ModalSlider.defaultProps = {
-  onClose: () => {},
-};
-
-export default withRouter(ModalSlider);
+export default compose(
+  connect(
+    (state) => ({
+      ...state.slider,
+      org: state.session.org,
+    }),
+    SliderActions,
+  ),
+  withRouter,
+)(ModalSlider);

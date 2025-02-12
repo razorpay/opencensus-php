@@ -8,7 +8,7 @@ const ReferenceId = (props) => (
     name="reference_id"
     placeholder="123456"
     label="Reference Id"
-    class="Input--vTop"
+    className="Input--vTop"
     labelClass="Input-label pb-8"
     required={props.required}
     disabled={props.disabled}

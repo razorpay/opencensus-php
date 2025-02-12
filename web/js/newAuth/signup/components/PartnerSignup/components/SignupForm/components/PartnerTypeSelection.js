@@ -96,7 +96,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
                     <div className="pts-sub-heading">
                       Reseller Partners can refer their connections and get rewarded
                     </div>
-                    <div class="desktop-only">
+                    <div className="desktop-only">
                       <div className="row pts-sub-description">
                         <div className="column">
                           <ul>
@@ -129,7 +129,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
                     <div className="pts-sub-heading">
                       They Manage account and payment cycle for their merchants
                     </div>
-                    <div class="desktop-only">
+                    <div className="desktop-only">
                       <div className="row pts-sub-description">
                         <div className="column">
                           <ul>

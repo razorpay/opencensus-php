@@ -1,6 +1,3 @@
-/* eslint-disable */
-export roleEditPermissions from './role-edit';
-export roleViewPermissions from './role-view';
-/* eslint-enable */
-
+export { default as roleEditPermissions } from './role-edit';
+export { default as roleViewPermissions } from './role-view';
 export { antiOrgsModules, antiOrgsFeatures } from './org-view';

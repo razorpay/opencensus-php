@@ -32,7 +32,7 @@ function CatalystCampaign({
         />
       </div>
       <div className="button">
-        <Button.Primary class="btn btn-primary" type="button" onClick={handleCtaClick}>
+        <Button.Primary className="btn btn-primary" type="button" onClick={handleCtaClick}>
           Create a Payment Page
         </Button.Primary>
       </div>

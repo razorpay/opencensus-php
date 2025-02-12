@@ -39,7 +39,7 @@ const FeatureContent = ({ feature }) => {
   Object.keys(feature).forEach((key) => {
     featuresResult.push(
       <div className="features-content" key={key}>
-        <span class={feature[key] ? 'icon i-check success-tick' : 'icon i-close close-tick'} />{' '}
+        <span className={feature[key] ? 'icon i-check success-tick' : 'icon i-close close-tick'} />{' '}
         {humanize(key)}
       </div>,
     );

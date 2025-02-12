@@ -41,12 +41,12 @@ export default function DataTable(props) {
 
   const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
   return (
-    <div class={`data-table ${panelHeading ? 'has-panel' : ''}`}>
+    <div className={`data-table ${panelHeading ? 'has-panel' : ''}`}>
       {error && <Alert type="error" message={error} onCloseClick={onErrorCloseClick} />}
       {panelHeading && (
-        <div class="list-heading">
-          <span class="label--primary">{panelHeading.title}</span>
-          <span class="label--secondary" style={{ float: 'right' }}>
+        <div className="list-heading">
+          <span className="label--primary">{panelHeading.title}</span>
+          <span className="label--secondary" style={{ float: 'right' }}>
             {panelHeading.subTitle}
           </span>
         </div>
@@ -74,7 +74,7 @@ export default function DataTable(props) {
         ) : empty_placeholder ? (
           empty_placeholder
         ) : (
-          <h4 class="empty-table-message">{`No ${title} Found!`}</h4>
+          <h4 className="empty-table-message">{`No ${title} Found!`}</h4>
         ))}
 
       {paginate && (

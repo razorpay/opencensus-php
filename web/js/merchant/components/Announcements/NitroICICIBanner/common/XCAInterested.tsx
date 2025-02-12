@@ -15,7 +15,7 @@ const XCAInterested = ({
     <div className="xcaMainSection--strike" />
     <p dangerouslySetInnerHTML={{ __html: sanitizer(XCASubText) }} />
     <div className="btn-wrapper">
-      <AsyncBtn.Primary type="submit" class="btn btn-primary-icici" onClick={save}>
+      <AsyncBtn.Primary type="submit" className="btn btn-primary-icici" onClick={save}>
         I am Interested ✨
       </AsyncBtn.Primary>
     </div>

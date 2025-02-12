@@ -2,7 +2,7 @@ import React from 'react';
 import Spinner from 'common/ui/Spinner';
 
 const Loader = () => (
-  <div class="page-spinner-container">
+  <div className="page-spinner-container">
     <Spinner />
   </div>
 );

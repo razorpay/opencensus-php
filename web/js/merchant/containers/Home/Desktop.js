@@ -629,7 +629,7 @@ class AnalyticsDesktop extends Component {
                 Accept payments of minimum ₹2,000 to receive{' '}
                 {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
                 100% FREE*
-                <div class="big-circle-seprator" />
+                <div className="big-circle-seprator" />
                 <a className="btn-link" onClick={() => this.props.showProductsModal()}>
                   Accept payments.
                 </a>{' '}

@@ -14,7 +14,7 @@ import User from 'merchant/models/User';
 import { showKYCStatusModal, showTnC } from 'merchant/reducers/home';
 import { rxCaSelectedFlag, caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { withRouter } from 'common/deprecated/withRouter';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
@@ -22,6 +22,7 @@ import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFo
 import { isSourceRX, isDedupeOldFunc } from 'merchant/components/Activation/ActivationUtils';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventsActions from 'merchant/reducers/trackEvents';
+import { compose } from 'redux';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
@@ -35,22 +36,6 @@ const POLLING_COUNTER_LIMIT = 5;
  * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
  * @props {submerchantId} for Submerchant KYC from Partner dashboard - submerchantContainer.js
  * */
-@RTracking(() => window.rzpQ.component('ActivationContainer'))
-@connect(
-  (state) => ({
-    session: state.session,
-    user: state.session.user,
-  }),
-  {
-    showNotification,
-    updateSession,
-    showKYCStatusModal,
-    showTnC,
-    openModal,
-    closeModal,
-    ...EventsActions,
-  },
-)
 class ActivationContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -935,20 +920,20 @@ export const SuccessScreen = ({ formName = 'Activation Form' }) => {
   }
 
   return (
-    <div class="Activation--success">
-      <div class="Activation-title">
+    <div className="Activation--success">
+      <div className="Activation-title">
         <side-title>{formName} submitted Successfully!</side-title>
-        <img src={successImg} class="submit-illustration" />
+        <img src={successImg} className="submit-illustration" />
       </div>
-      <div class="Activation-info">
-        <i class="i i-check" /> {formName} Submitted
-        <p class="desc">
+      <div className="Activation-info">
+        <i className="i i-check" /> {formName} Submitted
+        <p className="desc">
           Our team will review the form and submitted documents. We will reach out on your contact
           email for all updates.
         </p>
       </div>
 
-      <div class="Activation-actions">
+      <div className="Activation-actions">
         <side-title>What's Next?</side-title>
         <LinkCard
           title={'Personalise Your Account'}
@@ -967,11 +952,11 @@ export const SuccessScreen = ({ formName = 'Activation Form' }) => {
  * */
 export const WelcomeScreen = ({ openWizard }) => {
   return (
-    <div class="Activation--welcome">
+    <div className="Activation--welcome">
       <h3> Get Started with Activation</h3>
-      <div class="underline" />
-      <img src={welcomeImg} class="welcome-illustration" />
-      <div class="short-content">
+      <div className="underline" />
+      <img src={welcomeImg} className="welcome-illustration" />
+      <div className="short-content">
         <p>
           Simply submit your business details and upload relevant proofs to start accepting
           payments.
@@ -1041,4 +1026,22 @@ const excludedFieldsInForm = [
   'allowed_next_activation_statuses',
 ];
 
-export default withRouter(ActivationContainer);
+export default compose(
+  rTracking(() => window.rzpQ.component('ActivationContainer')),
+  connect(
+    (state) => ({
+      session: state.session,
+      user: state.session.user,
+    }),
+    {
+      showNotification,
+      updateSession,
+      showKYCStatusModal,
+      showTnC,
+      openModal,
+      closeModal,
+      ...EventsActions,
+    },
+  ),
+  withRouter,
+)(ActivationContainer);

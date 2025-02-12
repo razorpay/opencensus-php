@@ -1,33 +1,28 @@
 import React, { Component } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import { matchDetail, matchModal } from 'merchantLA/routes';
-import Slider from 'common/ui/Slider';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { compose } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
-import ReversalsTable from 'merchantLA/containers/Marketplace/Reversals/ReversalsTable';
-import Credit from 'merchantLA/containers/Marketplace/Reversals/Credit';
+import Slider from 'common/ui/Slider';
 import BatchUploadList from 'merchantLA/containers/Marketplace/Reversals/BatchUpload/List';
-import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
+import Credit from 'merchantLA/containers/Marketplace/Reversals/Credit';
 import Reversals from 'merchantLA/containers/Marketplace/Reversals/List';
-import Settlements from 'merchantLA/containers/Settlements/List';
+import ReversalsTable from 'merchantLA/containers/Marketplace/Reversals/ReversalsTable';
+import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
 import MyAccount from 'merchantLA/containers/MyAccount';
 import Profile from 'merchantLA/containers/MyAccount/Profile';
 import TeamManagement from 'merchantLA/containers/MyAccount/Team';
-
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { RouteGuard } from './ShowWhen';
-
+import Settlements from 'merchantLA/containers/Settlements/List';
 import { setBaseLocation, setActiveEntity, setSecActiveEntity } from 'merchantLA/reducers/app';
+import { matchDetail, matchModal } from 'merchantLA/routes';
 import { openSlider } from 'merchant_common/reducers/slider';
 import LinkedAccountReports from 'merchant_common/views/Reports/views/LinkedAccountReports';
 
-@connect(null, {
-  setBaseLocation,
-  setActiveEntity,
-  setSecActiveEntity,
-  openSlider,
-})
+import { RouteGuard } from './ShowWhen';
+
 class Content extends Component {
   setBaseLocation = (location) => {
     const { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
@@ -223,7 +218,7 @@ class Content extends Component {
         <ModalMask
           maskClosable={false}
           onClose={this.closeModalView}
-          class={ModalFormView.MODAL_MASK_CLASS}
+          className={ModalFormView.MODAL_MASK_CLASS}
         >
           <ModalFormView
             {...this.detailProps}
@@ -239,7 +234,7 @@ class Content extends Component {
     }
 
     return (
-      <main class="main-content">
+      <main className="main-content">
         {BaseView}
         {DetailView}
         {ModalFormView}
@@ -248,4 +243,11 @@ class Content extends Component {
   }
 }
 
-export default withRouter(Content);
+export default compose(
+  connect(null, {
+    setBaseLocation,
+    setActiveEntity,
+    setSecActiveEntity,
+    openSlider,
+  }),
+)(withRouter(Content));

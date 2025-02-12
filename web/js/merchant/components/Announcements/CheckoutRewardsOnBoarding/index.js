@@ -43,12 +43,12 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
 
   return (
     <AnnouncementBanner
-      class="rewards-onboarding-anc"
+      className="rewards-onboarding-anc"
       theme="success"
       title="Coming Soon !"
       card_id="checkout-rewards-interest-banner"
     >
-      <span class="display-inline">
+      <span className="display-inline">
         {isInstrested
           ? 'Your interest has been recorded! We are currently testing out the feature. We will notify you once it’s available.'
           : 'Wouldn’t it be great if you could reward your customers for every purchase? Let us know if you are interested.'}
@@ -63,7 +63,7 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
           Know More
         </a>
         {!isInstrested && (
-          <button class="btn btn-outline interested-btn" onClick={interestClicked}>
+          <button className="btn btn-outline interested-btn" onClick={interestClicked}>
             INTERESTED
           </button>
         )}

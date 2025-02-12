@@ -142,7 +142,7 @@ const CaApplyForm = (props) => {
       <div className="top-action">
         <div className="title">Start your CA process</div>
         <div className="cross-btn" onClick={onClose}>
-          <i class="i i-close" />
+          <i className="i i-close" />
         </div>
       </div>
       <div className="info">

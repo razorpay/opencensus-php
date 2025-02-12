@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
 // eslint-disable-next-line no-restricted-imports
@@ -15,6 +15,7 @@ import analytics from 'merchant/views/Subscriptions/analytics';
 import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 
 import TokensListFilter from './components/ListFilter';
+import { compose } from 'redux';
 
 const method = {
   title: 'Method',
@@ -39,13 +40,6 @@ const status = {
   value: (item) => <TokenStatusLabel status={getTokenStatus(item)} />,
 };
 
-@connect(
-  (state) => ({
-    ...state.tokens,
-  }),
-  { fetchAll },
-)
-@RTracking(() => window.rzpQ.component('TokensList'))
 class TokensListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'token.search' });
@@ -67,9 +61,9 @@ class TokensListContainer extends ListContainer {
 
   render() {
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <DocsLink
               title="Documentation"
               url="https://razorpay.com/docs/recurring-payments/token/"
@@ -104,7 +98,16 @@ class TokensListContainer extends ListContainer {
   }
 }
 
-export default withRouter(TokensListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.tokens,
+    }),
+    { fetchAll },
+  ),
+  rTracking(() => window.rzpQ.component('TokensList')),
+)(TokensListContainer);
 
 export function getTokenStatus(token) {
   return token?.recurring_details?.status ?? '';

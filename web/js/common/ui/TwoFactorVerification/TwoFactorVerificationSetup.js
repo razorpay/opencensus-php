@@ -6,13 +6,10 @@ import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
 import DocsLink from 'merchant/components/DocsLink';
 
-import IMG2FALocked from "assets/2fa/2fa-locked.svg"
+import IMG2FALocked from 'assets/2fa/2fa-locked.svg';
+import { compose } from 'redux';
 
-@connect(null, {
-  closeModal,
-  openModal,
-})
-export default class TwoFactorVerificationSetup extends React.Component {
+class TwoFactorVerificationSetup extends React.Component {
   onCloseClick = () => {
     this.props.onClose();
     this.props.closeModal();
@@ -20,19 +17,19 @@ export default class TwoFactorVerificationSetup extends React.Component {
 
   render() {
     return (
-      <div class="2fa-modal">
+      <div className="2fa-modal">
         <ModalHeader title="Action Needs 2 Step Verification" onCloseClick={this.onCloseClick} />
-        <div class="modal-body">
-          <div class="illustration">
+        <div className="modal-body">
+          <div className="illustration">
             <img src={IMG2FALocked} />
           </div>
 
-          <p class="m-b">
+          <p className="m-b">
             {
               "You haven't set-up 2 step verification for your account. Please verify your mobile number to set it up."
             }
           </p>
-          <p class="m-b">
+          <p className="m-b">
             <DocsLink
               url="https://razorpay.com/docs/payment-gateway/dashboard-guide/profile/"
               title="What's 2-step verification?"
@@ -43,7 +40,7 @@ export default class TwoFactorVerificationSetup extends React.Component {
             <AsyncBtn.Primary
               pendingState="Processing..."
               type="submit"
-              class="Button--full-width"
+              className="Button--full-width"
               onClick={this.props.onClickSetup}
             >
               Setup 2-step Verification
@@ -54,3 +51,10 @@ export default class TwoFactorVerificationSetup extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(null, {
+    closeModal,
+    openModal,
+  }),
+)(TwoFactorVerificationSetup);

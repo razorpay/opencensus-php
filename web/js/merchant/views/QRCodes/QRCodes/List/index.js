@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { NavLink } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import ProductWrapper from 'common/ui/ProductWrapper';
@@ -29,6 +29,7 @@ import { Box, Button, PlusIcon } from '@razorpay/blade/components';
 import { NEW_QR_URL } from 'merchant/constants/urls';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
+import { compose } from 'redux';
 
 const tabsData = [
   { title: 'QR Codes', url: '/qr_codes' },
@@ -69,18 +70,6 @@ export const status = {
   value: (item) => <QRCodeStatusLabel status={item.status} />,
 };
 
-@connect(
-  (state) => ({
-    ...state.qr_codes,
-    ...state.session,
-    isMobileResolution: state.app.isMobileResolution,
-    isTestMode: state.session.mode === 'test',
-  }),
-  {
-    fetchAll,
-  },
-)
-@RTracking(() => window.rzpQ.component('QRCodesListContainer'))
 class QRCodesListContainer extends ListContainer {
   componentDidMount() {
     track.init({
@@ -157,7 +146,7 @@ class QRCodesListContainer extends ListContainer {
         }
       >
         <content>
-          <div class="QRCode--List content-wrapper">
+          <div className="QRCode--List content-wrapper">
             {isTestMode && <TestModeBanner />}
 
             <ListFilter
@@ -206,4 +195,18 @@ class QRCodesListContainer extends ListContainer {
   }
 }
 
-export default withRouter(QRCodesListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.qr_codes,
+      ...state.session,
+      isMobileResolution: state.app.isMobileResolution,
+      isTestMode: state.session.mode === 'test',
+    }),
+    {
+      fetchAll,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('QRCodesListContainer')),
+)(QRCodesListContainer);

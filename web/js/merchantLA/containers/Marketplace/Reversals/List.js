@@ -10,16 +10,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
-@connect(
-  (state) => {
-    return {
-      balanceData: state.credits.balanceData,
-      user: state.session.user,
-    };
-  },
-  { fetchBalanceAction },
-)
-export default class ReversalsListContainer extends Component {
+class ReversalsListContainer extends Component {
   componentDidMount() {
     if (this.props.user.current && !this.props.balanceData.data.balance) {
       this.props.fetchBalanceAction();
@@ -53,7 +44,7 @@ export default class ReversalsListContainer extends Component {
               <NavLink to="/credits">Credits</NavLink>
             </ShowWhen>
             <HeaderAction>
-              <span class="reversal-balance-amount">
+              <span className="reversal-balance-amount">
                 {loading ? (
                   <PlaceholderLoader />
                 ) : (
@@ -75,3 +66,13 @@ export default class ReversalsListContainer extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      balanceData: state.credits.balanceData,
+      user: state.session.user,
+    };
+  },
+  { fetchBalanceAction },
+)(ReversalsListContainer);

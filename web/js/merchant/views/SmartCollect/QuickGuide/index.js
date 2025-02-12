@@ -42,7 +42,7 @@ export default class InvoicesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class={`SmartCollect ${className}`}
+        className={`SmartCollect ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >

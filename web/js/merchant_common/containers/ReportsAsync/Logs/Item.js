@@ -39,7 +39,7 @@ export default class LogItem extends React.PureComponent {
     });
 
     return (
-      <div class={classList('LogItem', `LogItem--${actualStatus}`, props.isNew && 'LogItem--new')}>
+      <div className={classList('LogItem', `LogItem--${actualStatus}`, props.isNew && 'LogItem--new')}>
         <div className="LogItem__Body">
           <div>
             <strong>{config.name || '--'}</strong>
@@ -88,7 +88,7 @@ export default class LogItem extends React.PureComponent {
             )}
             data-testid="log-item-info-message"
           >
-            <i class="i i-info-outline" /> {logItemInfoMessages[actualStatus]}
+            <i className="i i-info-outline" /> {logItemInfoMessages[actualStatus]}
           </div>
         )}
       </div>
@@ -106,7 +106,7 @@ function ReportDuration({ startTime, endTime }) {
   const startDate = getFormattedDate(startTime);
   const endDate = getFormattedDate(endTime);
   return (
-    <p class="text-muted small" data-testid="report-duration">
+    <p className="text-muted small" data-testid="report-duration">
       ({startDate} {startDate !== endDate ? `- ${endDate}` : ''})
     </p>
   );
@@ -116,7 +116,7 @@ function FileFormat({ logTemplate, configTemplate }) {
   return (
     <>
       <strong>Format</strong>
-      <p class="text-muted text-small" data-testid="file-format">
+      <p className="text-muted text-small" data-testid="file-format">
         {(
           extractExtensionFromTemplate(logTemplate) ||
           extractExtensionFromTemplate(configTemplate) ||

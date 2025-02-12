@@ -1,18 +1,19 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
-import Time from 'common/ui/Time';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import BatchStats from 'common/ui/StatsTable';
-
-import setGaTrack from 'merchant/containers/BatchNew/ga';
-import BatchDetails from 'merchant/containers/BatchNew/Details';
-import { fetchRouteBatchDetails as fetchBatchDetails } from 'merchant/reducers/batches';
-import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+import Time from 'common/ui/Time';
 import { titleCase } from 'common/utils/rzp-utils';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+import BatchDetails from 'merchant/containers/BatchNew/Details';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { fetchRouteBatchDetails as fetchBatchDetails } from 'merchant/reducers/batches';
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
-const downloadReportText = 'Download the report containing Transfers, Reversals and Accounts data for this batch.'
+const downloadReportText =
+  'Download the report containing Transfers, Reversals and Accounts data for this batch.';
 
 function getStatsTable(stats) {
   return [
@@ -33,11 +34,11 @@ function renderBatchDetails({ batch }) {
 
   return (
     <React.Fragment>
-      <div class="equal-margin">
+      <div className="equal-margin">
         <BatchStats stats={stats} />
       </div>
 
-      <div class="equal-margin">
+      <div className="equal-margin">
         <EntityDetailRow label="Batch Type" value={titleCase(batch.type)} />
         <EntityDetailRow label="Batch Name" value={batch.name} />
         <EntityDetailRow label="Status">
@@ -45,11 +46,7 @@ function renderBatchDetails({ batch }) {
           {batch.status === 'scheduled' && (
             <p>
               <em>
-                Scheduled for{' '}
-                <Time
-                  value={parseInt(batch.schedule_time / 1000)}
-                  format="lll"
-                />
+                Scheduled for <Time value={parseInt(batch.schedule_time / 1000)} format="lll" />
               </em>
             </p>
           )}
@@ -62,8 +59,7 @@ function renderBatchDetails({ batch }) {
   );
 }
 
-@connect(null, { fetchBatchDetails })
-export default class RouteBatchDetailsContainer extends React.Component {
+class RouteBatchDetailsContainer extends React.Component {
   render() {
     return (
       <BatchDetails
@@ -76,3 +72,4 @@ export default class RouteBatchDetailsContainer extends React.Component {
     );
   }
 }
+export default connect(null, { fetchBatchDetails })(RouteBatchDetailsContainer);

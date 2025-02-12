@@ -116,48 +116,48 @@ const SetPasswordModal = ({
   }, []);
 
   return (
-    <div class="set-password-modal">
+    <div className="set-password-modal">
       <ModalHeader
         title={customTitle ? customTitle : `Setting up 2-step verification`}
         onCloseClick={_onClose}
       />
-      <div class="modal-body">
-        <p class="merchant-note">
+      <div className="modal-body">
+        <p className="merchant-note">
           {customMessage
             ? customMessage
             : `Set a strong password for your Razorpay account. Now your Razorpay account will be more secure.`}
         </p>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div class="form-group">
+          <div className="form-group">
             <label htmlFor="password">Create a new password </label>
             <Field
               component={InputField}
               type="password"
               placeholder="New Password"
               name="password"
-              class="form-control"
+              className="form-control"
               onChange={(event, value) => onChange(value)}
               validate={[required(), length(), passwordValidator()]}
               autoFocus={true}
             />
           </div>
-          <div class="form-group">
+          <div className="form-group">
             <label htmlFor="password_confirmation">Confirm new password </label>
             <Field
               component={InputField}
               type="password"
               placeholder="Confirm New Password"
               name="password_confirmation"
-              class="form-control"
+              className="form-control"
               onChange={(event, value) => onChange(value, true)}
               validate={[required()]}
             />
             {valid && inputPassword === inputConfirmPassword ? (
-              <small class="text-success">Both passwords match</small>
+              <small className="text-success">Both passwords match</small>
             ) : null}
           </div>
           <AsyncButton
-            class="btn btn-primary btn-block"
+            className="btn btn-primary btn-block"
             text={buttonText ? buttonText : 'Set Password'}
             pendingText={buttonPendingText ? buttonPendingText : 'Setting Password...'}
             disabled={!inputPassword}

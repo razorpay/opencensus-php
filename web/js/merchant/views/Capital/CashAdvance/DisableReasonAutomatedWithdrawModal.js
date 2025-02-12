@@ -35,7 +35,7 @@ const DisableReasonAutomatedWithdrawModal = ({ onClose, openModal }) => {
   return (
     <div className="disable-reason-automated-withdraw-modal">
       <div className="cross-btn" onClick={handleCloseModalClick}>
-        <i class="i i-close" />
+        <i className="i i-close" />
       </div>
       <div className="disable-reason-automated-withdraw-modal--heading">Reason</div>
       <div className="disable-reason-automated-withdraw-modal--description">
@@ -44,7 +44,7 @@ const DisableReasonAutomatedWithdrawModal = ({ onClose, openModal }) => {
       <div>
         {AUTOMATED_WITHDRAWAL_DISABLE_OPTIONS.map((choice, index) => {
           return (
-            <div key={'parent-choice-' + choice.value} class="close-choices">
+            <div key={'parent-choice-' + choice.value} className="close-choices">
               <label key={'lab-' + choice.value}>
                 <input
                   type="radio"
@@ -59,11 +59,11 @@ const DisableReasonAutomatedWithdrawModal = ({ onClose, openModal }) => {
           );
         })}
       </div>
-      <div class="flex Input-textarea-container">
+      <div className="flex Input-textarea-container">
         <Input.Textarea
           label="Write a brief"
           size="small"
-          class="Input-description Input--vTop m-b p-b"
+          className="Input-description Input--vTop m-b p-b"
           placeholder="Write a brief description (Optional)"
           value={brief}
           onChange={handleBriefChange}
@@ -73,7 +73,7 @@ const DisableReasonAutomatedWithdrawModal = ({ onClose, openModal }) => {
         <Button.Primary
           onClick={handleSubmitCloseReason}
           disabled={!closeReason}
-          class="confirm-close"
+          className="confirm-close"
         >
           Confirm & Close
         </Button.Primary>

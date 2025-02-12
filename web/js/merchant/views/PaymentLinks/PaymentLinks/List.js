@@ -33,6 +33,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { isReminderEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
+import { compose } from 'redux';
 const {
   accountsettings: { additionalCondition: isAccountsAndSettingsEnabled },
 } = PRODUCTS_DATA;
@@ -63,12 +64,12 @@ const getExtraFields = (user, tracking, onDatesChange) => {
 
   if (user.isPaymentLinkCreationV2Enabled && user.isCountryIndia) {
     fields.push(
-      <div key="upi_link" class="form-group list-filter-item">
+      <div key="upi_link" className="form-group list-filter-item">
         <label>Payment Link Type</label>
         <Field
           name="upi_link"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={(event) => {
             tracking.trackEvent(
               window.rzpQ.paymentLinks().interaction(`pl.browse.link_type`, {
@@ -90,7 +91,7 @@ const getExtraFields = (user, tracking, onDatesChange) => {
   }
 
   fields.push(
-    <div key="duration" class="form-group datepicker-group">
+    <div key="duration" className="form-group datepicker-group">
       <label>Duration</label>
       <DateRangePicker
         isOutsideRange={isOutsideRange}
@@ -111,11 +112,7 @@ const getExtraFields = (user, tracking, onDatesChange) => {
 
   return fields;
 };
-@connect((state) => ({ ...state.paymentlinks, ...state.session }), {
-  fetchPaymentLinks,
-  fetchReminders,
-})
-@RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
+
 class PaymentLinksContainer extends ListContainer {
   constructor(props) {
     super(props);
@@ -269,7 +266,7 @@ class PaymentLinksContainer extends ListContainer {
         : 'https://razorpay.com/docs/payments/payment-links/create/?utm_source=razorpay-dashboard&utm_medium=docs-link&utm_campaign=dash-exp';
       docsLinkProps.title = (
         <span>
-          Documentation <span class="badge bg-success m-r hidden-xs">new</span>
+          Documentation <span className="badge bg-success m-r hidden-xs">new</span>
           <Popover theme="dark" parentQuerySelector=".tether-element">
             <PopoverBody>
               New API Contract is applicable for your <br /> merchant profile
@@ -289,8 +286,8 @@ class PaymentLinksContainer extends ListContainer {
                 isReminderEnabled(extraConfig) && isAccountsAndSettingsEnabled(user)
               }
             >
-              <span class="btn btn-link">
-                <span class="badge bg-success m-r hidden-xs">new</span>
+              <span className="btn btn-link">
+                <span className="badge bg-success m-r hidden-xs">new</span>
 
                 <Link
                   to="/payments-and-refunds-settings/reminders"
@@ -326,7 +323,7 @@ class PaymentLinksContainer extends ListContainer {
               <span className="tabbed-header-actions">
                 <span className="cta-container">
                   <NavLink className="btn btn-primary btn-shine" to="/paymentlinks/new">
-                    <i class="i i-plus" />
+                    <i className="i i-plus" />
                     <span
                       onClick={() => {
                         tracking.trackEvent(
@@ -359,7 +356,7 @@ class PaymentLinksContainer extends ListContainer {
         }
       >
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <TestModeBanner />
             <ListFilter
               form="InvoiceListFilter"
@@ -411,4 +408,12 @@ class PaymentLinksContainer extends ListContainer {
   }
 }
 
-export default withRouter(withI18Service(PaymentLinksContainer));
+export default compose(
+  withRouter,
+  withI18Service,
+  connect((state) => ({ ...state.paymentlinks, ...state.session }), {
+    fetchPaymentLinks,
+    fetchReminders,
+  }),
+  RTracking(() => window.rzpQ.component('PaymentLinksContainer')),
+)(PaymentLinksContainer);

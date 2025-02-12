@@ -28,15 +28,15 @@ const OptOut = (props) => {
       isOpen={modalState.show}
       onRequestClose={props.onAbort}
       closeTimeoutMS={300}
-      class="Modal Modal-rtb--small Modal--confirm"
+      className="Modal Modal-rtb--small Modal--confirm"
       contentLabel="ConfirmModal"
       ariaHideApp={false}
     >
-      <div class="modal-header">
-        <h3 class="modal-title">{data.title}</h3>
+      <div className="modal-header">
+        <h3 className="modal-title">{data.title}</h3>
       </div>
 
-      <div class="modal-body">
+      <div className="modal-body">
         <p>{data.body}</p>
         {data.link && (
           <a

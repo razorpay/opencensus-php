@@ -17,24 +17,24 @@ export default class TemplateSelection extends React.PureComponent {
     return (
       <ModalMask
         maskClosable={false}
-        class={classList('payment-pages-v2-templates', 'view-1', 'PaymentButton--Templates')}
+        className={classList('payment-pages-v2-templates', 'view-1', 'PaymentButton--Templates')}
         isBlur={true}
       >
-        <Link class="back-btn" to={redirect ?? '/paymentbuttons'}>
-          <i class="i i-chevron-left" />
+        <Link className="back-btn" to={redirect ?? '/paymentbuttons'}>
+          <i className="i i-chevron-left" />
           Back to Dashboard
         </Link>
         <Modal showCloseBtn={false}>
           <ModalContent>
-            <div class="slide-in">
-              <div class="heading">Pick a Button Type</div>
+            <div className="slide-in">
+              <div className="heading">Pick a Button Type</div>
               <p>
                 Pick a button which meets your requirements and get a head start on collecting
                 payments or you could build your own
               </p>
             </div>
 
-            <div class="TemplateCard-list">
+            <div className="TemplateCard-list">
               {Object.keys(META).map((m, k) => {
                 if (META.hasOwnProperty(m)) {
                   return (
@@ -63,15 +63,15 @@ class TemplateCard extends React.PureComponent {
     const { title, description, img, selectTemplate, onMouseEnter } = this.props;
 
     return (
-      <div class="TemplateCard" onClick={selectTemplate} onMouseEnter={onMouseEnter}>
+      <div className="TemplateCard" onClick={selectTemplate} onMouseEnter={onMouseEnter}>
         <img src={img} />
-        <div class="TemplateCard-details">
-          <div class="TemplateCard-title">{title}</div>
-          <div class="TemplateCard-desc">{description}</div>
+        <div className="TemplateCard-details">
+          <div className="TemplateCard-title">{title}</div>
+          <div className="TemplateCard-desc">{description}</div>
 
-          <div class="link">
+          <div className="link">
             <span>Use this template</span>
-            <i class="i i-arrow-forward" />
+            <i className="i i-arrow-forward" />
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ export default class EnumList extends React.PureComponent {
     });
   };
 
-  updateEnumList = this.props.onChange && debounce(::this.props.onChange, 60);
+  updateEnumList = this.props.onChange && debounce(this.props.onChange.bind(this), 60);
 
   updateOption = (i, val) => {
     const newOptions = this.state.options.concat();
@@ -50,8 +50,8 @@ export default class EnumList extends React.PureComponent {
     const { options } = this.state;
 
     return (
-      <div class={classList('Input Input--enum-list', this.props.className)}>
-        <div class="Input-content">
+      <div className={classList('Input Input--enum-list', this.props.className)}>
+        <div className="Input-content">
           {options.map((o, i) => {
             return (
               <EnumOption
@@ -77,7 +77,7 @@ export default class EnumList extends React.PureComponent {
           </span>
         ) : (
           <Button.Transparent
-            class="btn-link"
+            className="btn-link"
             onClick={this.addNewOption}
             type="button"
           >
@@ -117,7 +117,8 @@ class EnumOption extends React.PureComponent {
     }
   }
 
-  updateOption = debounce(::this.props.updateOption, 50);
+  // updateOption = debounce(::this.props.updateOption, 50);
+  updateOption = debounce(this.props.updateOption.bind(this), 50);
 
   handleChange = e => {
     e.stopPropagation();
@@ -141,14 +142,14 @@ class EnumOption extends React.PureComponent {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'Input-elWrapper Input-enum-option',
           this.state.focus && 'is-focused'
         )}
       >
         <input
           ref={el => (this.el = el)}
-          class={classList('Input-el', inputClass)}
+          className={classList('Input-el', inputClass)}
           value={this.state.value}
           onChange={this.handleChange}
           onKeyPress={e => {
@@ -168,7 +169,7 @@ class EnumOption extends React.PureComponent {
           autoFocus={newOptionIndex === index}
         />
 
-        <span class="Input-el-btn" onClick={() => removeOption(index)}>
+        <span className="Input-el-btn" onClick={() => removeOption(index)}>
           &times;
         </span>
       </div>

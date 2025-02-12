@@ -15,12 +15,12 @@ const isReminderChannelDisabled = ({ user, channel }) => {
 };
 
 export default ({ channels, onChannelChange, user }) => (
-  <div class="setting">
+  <div className="setting">
     <ContentToggler show>
       Advanced settings
       <div>
         <EntityDetailRow label="Channels">
-          <Input.Group required class="InputGroup--inline InputGroup--near">
+          <Input.Group required className="InputGroup--inline InputGroup--near">
             <div className="Input-content">
               {Object.keys(channels).map((channelName) => (
                 <Input.Check

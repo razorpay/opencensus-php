@@ -71,19 +71,19 @@ export default class Staged extends React.Component {
     const loader = this.getProgress();
 
     return (
-      <div class={`Dropzone-content staged-content ${size}`} key={name}>
+      <div className={`Dropzone-content staged-content ${size}`} key={name}>
         {!isDocPreUploaded && (
           <img
-            class="Dropzone-file-icon"
+            className="Dropzone-file-icon"
             src={require(`assets/files/file-type-${getFileTypeIcon(file ? file.name : '')}.svg`)}
             alt=""
           />
         )}
-        {isDocPreUploaded && fileName && <i class="i i-check-circle pre-uploaded" />}
-        <div class="Dropzone-content-desc">
+        {isDocPreUploaded && fileName && <i className="i i-check-circle pre-uploaded" />}
+        <div className="Dropzone-content-desc">
           {isDocPreUploaded ? (
             fileName ? (
-              <p class="Dropzone-content-desc--primary text-muted">
+              <p className="Dropzone-content-desc--primary text-muted">
                 {downloadUrl ? (
                   <a href={downloadUrl} target="_blank" rel="noreferrer noopener">
                     {fileName}
@@ -93,12 +93,12 @@ export default class Staged extends React.Component {
                 )}
               </p>
             ) : (
-              <p class="Dropzone-content-desc--primary text-success">
+              <p className="Dropzone-content-desc--primary text-success">
                 {preUploadedImgFileUrl ? (
                   <img src={preUploadedImgFileUrl} height="48" />
                 ) : (
                   <>
-                    <i class="i i-check" />
+                    <i className="i i-check" />
                     File Already Uploaded
                   </>
                 )}
@@ -106,17 +106,17 @@ export default class Staged extends React.Component {
             )
           ) : (
             <React.Fragment>
-              <p class="Dropzone-content-desc--primary staged-desc text-muted">
+              <p className="Dropzone-content-desc--primary staged-desc text-muted">
                 {file.name} {showFileSize && readableFileSize(file.size)}
               </p>
               {showOnlyFileSize && (
-                <p class="Dropzone-content-desc--primary text-muted">
+                <p className="Dropzone-content-desc--primary text-muted">
                   {readableFileSize(file.size)}
                 </p>
               )}
               {showStagedFileStatus && (
                 // eslint-disable-next-line no-use-before-define
-                <p class="text-muted text-small">{stagedStatusMsgMap[currentStatus]}</p>
+                <p className="text-muted text-small">{stagedStatusMsgMap[currentStatus]}</p>
               )}
             </React.Fragment>
           )}
@@ -127,7 +127,7 @@ export default class Staged extends React.Component {
           currentStatus !== 'process' &&
           (removeFileButtonLabel ? (
             <span
-              class="btn-link Dropzone-close"
+              className="btn-link Dropzone-close"
               data-testid="btn-dropzone-close"
               onClick={onCloseClick}
             >
@@ -135,15 +135,15 @@ export default class Staged extends React.Component {
             </span>
           ) : (
             <span
-              class="icon i-close Dropzone-close"
+              className="icon i-close Dropzone-close"
               data-testid="btn-dropzone-close"
               onClick={onCloseClick}
             />
           ))}
         {hideLoader ? null : (
-          <div class="Loader">
+          <div className="Loader">
             <div
-              class="Loader-progress"
+              className="Loader-progress"
               id={`${name}--progress`}
               style={{
                 transform: `translateX(${loader.progress}%)`,

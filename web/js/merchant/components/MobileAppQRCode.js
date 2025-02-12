@@ -10,14 +10,14 @@ function MobileAppQRCode(props) {
     : 'https://cdn.razorpay.com/static/assets/mobile-app-camp/Prospects_QR-code.jpeg';
 
   return (
-    <div class="MobileAppQRCode--container">
+    <div className="MobileAppQRCode--container">
       <ModalHeader title="Scan to Download" onCloseClick={props.closeModal} />
-      <div class="qrcode">
+      <div className="qrcode">
         <div>
           <img src={qrCodeUrl} />
         </div>
       </div>
-      <div class="note">
+      <div className="note">
         <p>Scan the QR code above from the camera app in your mobile to download.</p>
       </div>
     </div>

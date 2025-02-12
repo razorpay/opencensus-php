@@ -16,7 +16,7 @@ import { ClickOutside } from './ClickOutside';
 
 interface SelectProps {
   selected: (Operator | Option | Parameter | MappedProiders | LogicalOperator)[];
-  class?: string;
+  className?: string;
   placeholder: string;
   options: (Operator | Option | Parameter | MappedProiders | LogicalOperator)[];
   multiple?: boolean;
@@ -28,7 +28,7 @@ interface SelectProps {
 const Select = (props: SelectProps) => {
   const {
     selected: props_selected,
-    class: custom_class,
+    className: custom_class,
     placeholder,
     options,
     multiple: isMultiple,

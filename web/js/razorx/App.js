@@ -129,15 +129,15 @@ export const Sidebar = ({ user, handleLogout, isSplitz }) => (
               <i className="fa fa-question-circle" />
               How to use
             </a>
-            <NavLink class="main-nav" to="/razorx">
+            <NavLink className="main-nav" to="/razorx">
               {/* <i className="i-flask" /> */}
-              <i class="fa fa-xing" />
+              <i className="fa fa-xing" />
               Go to RazorX
             </NavLink>
           </React.Fragment>
         ) : (
-          <NavLink class="main-nav" to="/splitz">
-            <i class="fa fa-xing" />
+          <NavLink className="main-nav" to="/splitz">
+            <i className="fa fa-xing" />
             Go to Splitz
           </NavLink>
         )}
@@ -157,7 +157,7 @@ export const Sidebar = ({ user, handleLogout, isSplitz }) => (
         </a>
         <AsyncButton
           onClick={handleLogout}
-          class="logout-btn btn-default"
+          className="logout-btn btn-default"
           pendingClass="logout-btn btn-default btn-pending"
         >
           Logout

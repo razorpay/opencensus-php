@@ -27,7 +27,7 @@ const batchStatus = {
   value: (item) => (
     <Fragment>
       {status.value(item)}
-      {item.status === 'created' && <i class="i i-refresh refresh-batch-btn" />}
+      {item.status === 'created' && <i className="i i-refresh refresh-batch-btn" />}
     </Fragment>
   ),
 };
@@ -78,12 +78,10 @@ class BatchList extends ListContainer {
       });
   };
 
-  @RTracking(() =>
+  openUploadModal = (renderUploadModal) => () => {
     window.rzpQ.onbr().success('dash.pl_action', {
       action: 'Upload_Batch_PL_File',
-    }),
-  )
-  openUploadModal = (renderUploadModal) => () => {
+    });
     const { openModal } = this.props;
     openModal({
       size: 'large',
@@ -139,7 +137,7 @@ class BatchList extends ListContainer {
         extra={
           <>
             <ShowWhen additionalCondition={() => sampleUrl}>
-              <a class="btn btn-link" href={sampleUrl} onClick={this.downloadSampleFile}>
+              <a className="btn btn-link" href={sampleUrl} onClick={this.downloadSampleFile}>
                 Download Sample File
               </a>
             </ShowWhen>
@@ -158,21 +156,21 @@ class BatchList extends ListContainer {
             >
               {docUrl && (
                 <DocLink
-                  class="btn btn-link"
+                  className="btn btn-link"
                   href={docUrl}
                   target="_blank"
                   onClick={this.trackViewDocumentation}
                 >
-                  Documentation &nbsp; <i class="i i-external-link" />
+                  Documentation &nbsp; <i className="i i-external-link" />
                 </DocLink>
               )}
             </ShowWhen>
 
             {showBatchUploadButton &&
               (this.props.multiBatch ? (
-                <div class="pull-right MultiBatch--action">
-                  <div class="btn btn-primary">Upload New Batch</div>
-                  <PopoverComponent align="bottom" class="MultiBatch--popover">
+                <div className="pull-right MultiBatch--action">
+                  <div className="btn btn-primary">Upload New Batch</div>
+                  <PopoverComponent align="bottom" className="MultiBatch--popover">
                     <PopoverTitle>
                       <h4>
                         <strong>Upload New Batch</strong>
@@ -186,7 +184,7 @@ class BatchList extends ListContainer {
                   <span className="tabbed-header-actions">
                     <span className="cta-container">
                       <button
-                        class="btn btn-primary"
+                        className="btn btn-primary"
                         onClick={this.openUploadModal(this.props.renderUploadModal)}
                       >
                         Click here to upload
@@ -200,7 +198,7 @@ class BatchList extends ListContainer {
         }
       >
         <content>
-          <div class="content-wrapper batch-upload-wrapper">
+          <div className="content-wrapper batch-upload-wrapper">
             <BatchListFilter
               form="batchListFilter"
               onSearchAnalytics={() => {
@@ -250,9 +248,9 @@ function batchActions(onDownloadClick, otherBatchActions = []) {
     title: 'Actions',
     value: (item) =>
       item.status === 'processed' && (
-        <div class="btn-toolbar">
-          <button class="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
-            <i class="i i-download" /> Download
+        <div className="btn-toolbar">
+          <button className="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
+            <i className="i i-download" /> Download
           </button>
           {otherBatchActions.map((batchAction) => batchAction(item))}
         </div>

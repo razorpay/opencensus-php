@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import LazyLoad from 'react-lazyload';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { HeadphonesIcon, Box, Button, UserIcon, Text, Heading } from '@razorpay/blade/components';
 import BusinessImage from 'assets/business.svg';
 import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
@@ -35,25 +35,11 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import ConnectedProfileDropdown from '../ConnectedNavigation/ConnectedProfileDropdown';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import { isJKOfflineMerchant } from '../Sidebar/helpers';
+import { compose } from 'redux';
 
 const trustedBadgeTooltipInfo =
   'You are a trusted business and the Razorpay trusted business badge is now being displayed on checkout for customers to see';
 
-@withI18Service
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-      user: state.session.user,
-      isMobileResolution: state.app.isMobileResolution,
-      trustedBadge: state.trustedBadge.status,
-      isWebView: state.app.isWebView,
-    };
-  },
-  { logout, closeModal, openModal, updateSession },
-)
-@RTracking(() => window.rzpQ.component('ProfileDropdown'))
 class ProfileDropdown extends Component {
   state = {
     showRazorpayxToolTip: false,
@@ -610,4 +596,22 @@ class ProfileDropdown extends Component {
   }
 }
 
-export default withRouter(withSplitzService(ProfileDropdown));
+export default compose(
+  withRouter,
+  withSplitzService,
+  withI18Service,
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        ...state.config.config,
+        user: state.session.user,
+        isMobileResolution: state.app.isMobileResolution,
+        trustedBadge: state.trustedBadge.status,
+        isWebView: state.app.isWebView,
+      };
+    },
+    { logout, closeModal, openModal, updateSession },
+  ),
+  rTracking(() => window.rzpQ.component('ProfileDropdown')),
+)(ProfileDropdown);

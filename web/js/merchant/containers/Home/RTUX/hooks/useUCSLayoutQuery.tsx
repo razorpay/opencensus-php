@@ -1,9 +1,11 @@
+import React from 'react';
 import { QueryKey, useQuery } from '@tanstack/react-query';
 import { AxiosRequestConfig } from 'axios';
+
 import { fetchUCS } from 'common/services/rest/rest-fetch';
-import React from 'react';
-import { isRTUXHomepageEnabled } from '../utils';
 import { User } from 'common/typings';
+
+import { isRTUXHomepageEnabled } from '../utils';
 
 // Todo : Add type for return value
 export const useUCSLayoutQuery = (
@@ -30,7 +32,6 @@ export const useUCSLayoutQuery = (
     networkMode: 'always',
   });
 
-
 interface RTUXComponentProps {
   user: User;
   splitz: {
@@ -38,7 +39,9 @@ interface RTUXComponentProps {
   };
 }
 
-export const withRtuxLayoutData = <P extends RTUXComponentProps>(WrappedComponent: React.ComponentType<P>) => {
+export const withRtuxLayoutData = <P extends RTUXComponentProps>(
+  WrappedComponent: React.ComponentType<P>,
+) => {
   const ComponentWithQuery = (props: P) => {
     const {
       user,

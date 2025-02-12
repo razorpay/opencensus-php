@@ -67,18 +67,18 @@ export default class TabsContainer extends Component {
     const currentContent = children[this.state.currentActiveIdx];
 
     return (
-      <div class={className}>
-        <ul class="tabs-nav">
+      <div className={className}>
+        <ul className="tabs-nav">
           {tabNames.map((tab, index) => {
             let icon;
             if (iconBoolList && iconBoolList.indexOf(index + 1) > -1) {
-              icon = <i class={iconClass} />;
+              icon = <i className={iconClass} />;
             }
 
             return (
               <li
                 key={index}
-                class={this.state.currentActiveIdx === index ? 'selected' : ''}
+                className={this.state.currentActiveIdx === index ? 'selected' : ''}
                 onClick={() => this.goTo(index)}
               >
                 {icon}
@@ -87,7 +87,7 @@ export default class TabsContainer extends Component {
             );
           })}
         </ul>
-        <div class="tabs-content">{currentContent}</div>
+        <div className="tabs-content">{currentContent}</div>
 
         {enableController && (
           <TabControl
@@ -103,15 +103,15 @@ export default class TabsContainer extends Component {
 }
 
 const TabControl = ({ goPrev, goNext, currentActiveIdx, totalTabs }) => (
-  <div class="tabs-control">
+  <div className="tabs-control">
     <span
-      class={`m-l pill label-semi-muted prev ${currentActiveIdx === 0 && 'hide'}`}
+      className={`m-l pill label-semi-muted prev ${currentActiveIdx === 0 && 'hide'}`}
       onClick={goPrev}
     >
       {'< Prev'}
     </span>
     <span
-      class={`m-r pill label-semi-muted next ${currentActiveIdx === totalTabs - 1 && 'hide'}`}
+      className={`m-r pill label-semi-muted next ${currentActiveIdx === totalTabs - 1 && 'hide'}`}
       onClick={goNext}
     >
       {'Next >'}

@@ -79,7 +79,7 @@ export const ModalAsideNav = (_) => {
 
             return (
               <li
-                class={classList(
+                className={classList(
                   isActiveClass,
                   isTabValid && 'text-success',
                   hasError && 'text-danger',
@@ -94,9 +94,9 @@ export const ModalAsideNav = (_) => {
                 )}
                 {hasError && <i className="i i-error text-danger" />}
                 {typeof t === 'object' ? (
-                  <span class="li--broad">
+                  <span className="li--broad">
                     {t.title}
-                    <div class="description large">{t.desc}</div>
+                    <div className="description large">{t.desc}</div>
                   </span>
                 ) : (
                   t

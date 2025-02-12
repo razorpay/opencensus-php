@@ -1,22 +1,16 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import { Bar } from 'react-chartjs-2';
-import CreditPullScoreBreakdown from 'merchant/containers/CreditPullModal/components/CreditPullScoreBreakdown';
+import { connect } from 'react-redux';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { APPLICATION_STATES, TOOLTIP_DESCRIPTIONS } from '../constants';
+import CreditPullScoreBreakdown from 'merchant/containers/CreditPullModal/components/CreditPullScoreBreakdown';
+import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
+
 import Note from '../../components/Note';
 import { isCashAdvanceProduct } from '../../utils';
+import { APPLICATION_STATES, TOOLTIP_DESCRIPTIONS } from '../constants';
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    fetchLoanApplicationMeta,
-  },
-)
 class CreditScoreBreakdown extends Component {
   constructor(props) {
     super(props);
@@ -93,8 +87,8 @@ class CreditScoreBreakdown extends Component {
   };
 
   generateRowData = (reportData, label, key, classes) => {
-    let rowData = [];
-    for (let iter in label) {
+    const rowData = [];
+    for (const iter in label) {
       rowData.push({
         desc: label[iter],
         value: reportData[key[iter]],
@@ -116,7 +110,7 @@ class CreditScoreBreakdown extends Component {
 
     if (showNTCScreen || !score) {
       return (
-        <div class="pending-note-wrapper">
+        <div className="pending-note-wrapper">
           <Note
             product={product}
             showRazorpaySupportInstruction={false}
@@ -131,7 +125,7 @@ class CreditScoreBreakdown extends Component {
               Back
             </Button.Transparent>
             <AsyncBtn.Primary
-              class="m-l"
+              className="m-l"
               onClick={() => {
                 this.props._trackNavigationActions(
                   'NEXT',
@@ -153,7 +147,7 @@ class CreditScoreBreakdown extends Component {
 
     return (
       <div>
-        <div class="credit-score-breakdown">
+        <div className="credit-score-breakdown">
           <div className="col-md-4 rep-container rep-container-1">
             <div className="tab-title">
               Credit Score
@@ -161,7 +155,7 @@ class CreditScoreBreakdown extends Component {
                 <i className="i i-info-outline" />
                 <Popover align="top" theme="dark">
                   <PopoverBody>
-                    <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['credit_score']}</div>
+                    <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS.credit_score}</div>
                   </PopoverBody>
                 </Popover>
               </small>
@@ -178,34 +172,32 @@ class CreditScoreBreakdown extends Component {
               <div className="credit-min">{this.lowerScore}</div>
             </div>
           </div>
-          <React.Fragment>
-            <div className="col-md-7 rep-container-row2">
-              <CreditPullScoreBreakdown
-                title="No. of Accounts"
-                total={report.count_of_accounts}
-                rowData={this.generateRowData(
-                  report,
-                  ['Active', 'Closed'],
-                  ['active_accounts', 'closed_accounts'],
-                  ['success', 'danger'],
-                )}
-              />
-            </div>
-            <div className="col-md-7 rep-container-row2">
-              <CreditPullScoreBreakdown
-                title="Outstanding Balance"
-                total={report.total_outstanding_balance}
-                amount={true}
-                rowData={this.generateRowData(
-                  report,
-                  ['Secured', 'Un-secured'],
-                  ['secured_account_outstanding_balance', 'un_secured_account_outstanding_balance'],
-                  ['success', 'danger'],
-                )}
-              />
-            </div>
-          </React.Fragment>
-          <div class="shared-note orange-pad">
+          <div className="col-md-7 rep-container-row2">
+            <CreditPullScoreBreakdown
+              title="No. of Accounts"
+              total={report.count_of_accounts}
+              rowData={this.generateRowData(
+                report,
+                ['Active', 'Closed'],
+                ['active_accounts', 'closed_accounts'],
+                ['success', 'danger'],
+              )}
+            />
+          </div>
+          <div className="col-md-7 rep-container-row2">
+            <CreditPullScoreBreakdown
+              title="Outstanding Balance"
+              total={report.total_outstanding_balance}
+              amount={true}
+              rowData={this.generateRowData(
+                report,
+                ['Secured', 'Un-secured'],
+                ['secured_account_outstanding_balance', 'un_secured_account_outstanding_balance'],
+                ['success', 'danger'],
+              )}
+            />
+          </div>
+          <div className="shared-note orange-pad">
             <span>Your full credit report has been shared on your e-mail.</span>
           </div>
           {score > 450 && (
@@ -215,7 +207,7 @@ class CreditScoreBreakdown extends Component {
                 Back
               </Button.Transparent>
               <AsyncBtn.Primary
-                class="m-l"
+                className="m-l"
                 onClick={() => {
                   this.props._trackNavigationActions(
                     'NEXT',
@@ -240,4 +232,11 @@ class CreditScoreBreakdown extends Component {
   }
 }
 
-export default CreditScoreBreakdown;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    fetchLoanApplicationMeta,
+  },
+)(CreditScoreBreakdown);

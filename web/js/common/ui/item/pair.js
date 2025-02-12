@@ -72,9 +72,9 @@ export const customer = {
   title: 'Customer',
   value: (item) => (
     <div>
-      <span class="contact">{getI18FormattedPhoneNumber(item.contact)}</span>
+      <span className="contact">{getI18FormattedPhoneNumber(item.contact)}</span>
       <br />
-      <span class="email">{item.email}</span>
+      <span className="email">{item.email}</span>
     </div>
   ),
 };
@@ -264,7 +264,7 @@ export const itemName = {
   title: 'Item Name',
   value: (item) =>
     item.payment_page_items.map((payment_page_item) => (
-      <div key={payment_page_item.item.id} class="item-ellipsis">
+      <div key={payment_page_item.item.id} className="item-ellipsis">
         {payment_page_item.item.name}
       </div>
     )),
@@ -273,7 +273,7 @@ export const unitsSold = {
   title: 'Units Sold',
   value: (item) =>
     item.payment_page_items.map((payment_page_item) => (
-      <div key={payment_page_item.id} class="item-ellipsis">
+      <div key={payment_page_item.id} className="item-ellipsis">
         {payment_page_item.quantity_sold}
       </div>
     )),
@@ -338,7 +338,7 @@ export const description = {
 
 export const qrUsage = {
   title: 'QR Usage',
-  value: (item) => <div class="qr_usage">{titleCase(item.usage) || '-'}</div>,
+  value: (item) => <div className="qr_usage">{titleCase(item.usage) || '-'}</div>,
 };
 
 export const amountReceived = {

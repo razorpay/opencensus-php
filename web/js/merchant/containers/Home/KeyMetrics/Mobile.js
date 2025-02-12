@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
 
 import Change from 'common/ui/Change';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
@@ -120,10 +121,6 @@ const Tab = ({
   );
 };
 
-@connect((state) => ({
-  user: state.session.user,
-  org: state.session.org,
-}))
 class MobileKeyMetrics extends Component {
   // eslint-disable-next-line no-useless-constructor
   constructor(props) {
@@ -170,4 +167,9 @@ class MobileKeyMetrics extends Component {
   }
 }
 
-export default MobileKeyMetrics;
+export default compose(
+  connect((state) => ({
+    user: state.session.user,
+    org: state.session.org,
+  })),
+)(MobileKeyMetrics);

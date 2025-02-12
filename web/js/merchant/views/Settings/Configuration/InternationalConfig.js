@@ -227,12 +227,10 @@ function withInternationalConfig(WrappedComponent) {
       });
     };
 
-    @RTracking(() =>
+    toggleInternationalization = (enableInternational, postActionCB) => {
       window.rzpQ.onbr().initiated('dash.settings_action', {
         action: 'Toggle_International_Payments',
-      }),
-    )
-    toggleInternationalization = (enableInternational, postActionCB) => {
+      });
       this.analytics(enableInternational ? 'Enable' : 'Disable');
       selfServeTrackInitiate({
         selfServeAction: 'International Payments Applied',

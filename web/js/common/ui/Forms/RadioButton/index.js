@@ -3,7 +3,7 @@ export default props => {
   var inputValue = input.value;
   input.value = htmlValue;
   return (
-    <div class="RadioButton">
+    <div className="RadioButton">
       <label>
         <input
           type="radio"
@@ -12,8 +12,8 @@ export default props => {
           checked={htmlValue === inputValue}
         />
         <div>
-          <div class="RadioButton__button" />
-          <div class="RadioButton__label">
+          <div className="RadioButton__button" />
+          <div className="RadioButton__label">
             {typeof label === 'function' ? label() : label}
           </div>
         </div>

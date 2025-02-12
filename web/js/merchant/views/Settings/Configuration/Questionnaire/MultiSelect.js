@@ -40,7 +40,7 @@ const MultiSelect = ({
 
   return (
     <div
-      class={classList(
+      className={classList(
         'Input',
         required && 'Input--required',
         error ? 'error' : '',
@@ -48,8 +48,8 @@ const MultiSelect = ({
         disabled && 'Input--disabled',
       )}
     >
-      <div class="Input-label">{label}</div>
-      <div class="Input-content">
+      <div className="Input-label">{label}</div>
+      <div className="Input-content">
         <PowerSelectMultiple
           options={options}
           selected={[]}
@@ -69,11 +69,11 @@ const MultiSelect = ({
           }}
           triggerComponent={({ select }) => {
             return (
-              <div class="trigger" data-testid="select-items">
+              <div className="trigger" data-testid="select-items">
                 <p style={{ padding: '10px' }}>
                   {selected.length ? `${selected.length} items selected` : placeholder}
                 </p>
-                <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`} />
+                <i className={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`} />
               </div>
             );
           }}
@@ -88,8 +88,8 @@ const MultiSelect = ({
             const checked = selected.indexOf(option) > -1;
 
             return (
-              <div class="option">
-                <label for={option}>{option}</label>
+              <div className="option">
+                <label htmlFor={option}>{option}</label>
                 <input value={option} id={option} type="checkbox" checked={checked} />
               </div>
             );
@@ -101,7 +101,7 @@ const MultiSelect = ({
             return (
               showSpecifyOthersOption && (
                 <div>
-                  <div class="more-item">
+                  <div className="more-item">
                     {takeInput ? (
                       <input
                         type="text"
@@ -116,18 +116,18 @@ const MultiSelect = ({
                       <div>
                         <span>{additionalField}</span>
                         <span data-testid="editAdditionalField" onClick={() => setTakeInput(true)}>
-                          <i class="i i-edit" />
+                          <i className="i i-edit" />
                         </span>
                       </div>
                     ) : (
-                      <button class="btn btn-link" onClick={() => setTakeInput(true)}>
+                      <button className="btn btn-link" onClick={() => setTakeInput(true)}>
                         {'+Others Specify'}
                       </button>
                     )}
                   </div>
-                  <div class="after-options">
+                  <div className="after-options">
                     <button
-                      class="btn btn-primary m-l"
+                      className="btn btn-primary m-l"
                       onClick={() => {
                         select.actions.close();
                         setTakeInput(false);
@@ -141,7 +141,7 @@ const MultiSelect = ({
             );
           }}
         />
-        {error ? <div class="Input-error">{error}</div> : ''}
+        {error ? <div className="Input-error">{error}</div> : ''}
       </div>
     </div>
   );

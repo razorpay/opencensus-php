@@ -1,23 +1,24 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import Croppie from 'croppie';
+import { connect } from 'react-redux';
+
 import Button from 'common/new-ui/Button';
-import CreatorModal from '../CreatorModal';
-import FileUpload from 'merchant/components/File/Upload';
-import { uploadImageInDescription } from '../../../model';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { classList } from 'common/utils/rzp-utils';
+import FileUpload from 'merchant/components/File/Upload';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { uploadImageInDescription } from '../../../model';
+import CreatorModal from '../CreatorModal';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 
-@connect(state => ({}), { showNotification })
-export default class ImageCropper extends React.PureComponent {
+class ImageCropper extends React.PureComponent {
   state = { showImgCropper: false };
   fileName;
 
   componentDidMount() {
     if (this.props.imgUrl) {
-      window.setTimeout(_ => this.initImgCropper(this.props.imgUrl));
+      window.setTimeout((_) => this.initImgCropper(this.props.imgUrl));
     }
   }
 
@@ -59,7 +60,7 @@ export default class ImageCropper extends React.PureComponent {
       });
 
       uploadImageInDescription(file)
-        .then(res => {
+        .then((res) => {
           if (res && res.success) {
             const url = res.data[0];
 
@@ -84,24 +85,23 @@ export default class ImageCropper extends React.PureComponent {
       });
 
       this.props.onError && this.props.onError('Select a valid Image');
-      return;
     }
   }
 
   onSaveImage = () => {
     const self = this;
 
-    this.vanilla.result('blob').then(function(blob) {
+    this.vanilla.result('blob').then(function (blob) {
       self.handleImageUpload.call(self, blob);
     });
   };
 
-  addFile = file => {
+  addFile = (file) => {
     const self = this;
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         self.fileName = file.name;
         self.initImgCropper(e.target.result);
       };
@@ -110,24 +110,24 @@ export default class ImageCropper extends React.PureComponent {
     }
   };
 
-  onBiggerFileSize = _ => {
+  onBiggerFileSize = (_) => {
     this.props.showNotification({
       type: 'error',
       message: `Image too large. Max limit ${THUMBNAIL_SIZE_LIMIT / 1024}KB`,
     });
   };
 
-  setRef = el => (this.cropperAreaEl = el);
+  setRef = (el) => (this.cropperAreaEl = el);
 
   render() {
     const { closeCropperModal } = this.props;
 
     return (
-      <div class="Input-ImageCropper">
+      <div className="Input-ImageCropper">
         <div
-          class={classList(
+          className={classList(
             'Cropper-area',
-            this.state.showImgCropper && 'Cropper-area--enabled'
+            this.state.showImgCropper && 'Cropper-area--enabled',
           )}
           ref={this.setRef}
         >
@@ -144,10 +144,8 @@ export default class ImageCropper extends React.PureComponent {
           )}
         </div>
 
-        <div class="btn-group pull-right">
-          <Button.Transparent onClick={closeCropperModal}>
-            Cancel
-          </Button.Transparent>
+        <div className="btn-group pull-right">
+          <Button.Transparent onClick={closeCropperModal}>Cancel</Button.Transparent>
 
           {this.state.showImgCropper && (
             <Button.Primary onClick={this.onSaveImage}>Save</Button.Primary>
@@ -160,15 +158,13 @@ export default class ImageCropper extends React.PureComponent {
 
 export const ImageCropperModal = ({ imgUrl, onSave, closeCropperModal }) => {
   return (
-    <CreatorModal class="ImageCropper" onClose={closeCropperModal}>
-      <div class="modal-title">Upload Image</div>
-      <div class="modal-description">Add thumbnail image for the item</div>
+    <CreatorModal className="ImageCropper" onClose={closeCropperModal}>
+      <div className="modal-title">Upload Image</div>
+      <div className="modal-description">Add thumbnail image for the item</div>
 
-      <ImageCropper
-        imgUrl={imgUrl}
-        onSave={onSave}
-        closeCropperModal={closeCropperModal}
-      />
+      <ImageCropper imgUrl={imgUrl} onSave={onSave} closeCropperModal={closeCropperModal} />
     </CreatorModal>
   );
 };
+
+export default connect((state) => ({}), { showNotification })(ImageCropper);

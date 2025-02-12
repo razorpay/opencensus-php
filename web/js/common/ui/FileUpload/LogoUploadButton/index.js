@@ -17,10 +17,10 @@ export default class LogoUploadButton extends Component {
     let { onChange, text, uploadedFileName, ...otherProps } = this.props;
 
     return (
-      <div class="col-md-offset-2 upload-container col-md-1">
-        <div class="upload-inner">
+      <div className="col-md-offset-2 upload-container col-md-1">
+        <div className="upload-inner">
           <FileUploadButton
-            class="upload-btn"
+            className="upload-btn"
             text={'Upload App Icon'}
             pendingText={'Uploading'}
             fulFilledText={'Icon uploaded'}

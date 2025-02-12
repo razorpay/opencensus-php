@@ -3,9 +3,7 @@ import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 
 import BatchList from 'merchant/containers/BatchNew/List';
-
 import setGaTrack from 'merchant/containers/BatchNew/ga';
-
 import {
   fetchHostMandateBatches as fetchAll,
   fetchHostMandateAuthLinkBatches,
@@ -29,9 +27,9 @@ const typeColumn = {
 };
 
 const BatchTypeFilterField = () => (
-  <div class="form-group list-filter-item">
+  <div className="form-group list-filter-item">
     <label>Batch Type</label>
-    <Field name="type" component="select" class="form-control input-sm">
+    <Field name="type" component="select" className="form-control input-sm">
       <option value="">Both</option>
       <option value="auth_link">Registration Link</option>
       <option value="recurring_charge">Recurring Charge</option>
@@ -39,11 +37,7 @@ const BatchTypeFilterField = () => (
   </div>
 );
 
-@connect((state) => ({ user: state.session.user }), {
-  fetchAll,
-  fetchHostMandateAuthLinkBatches,
-})
-export default class BatchListContainer extends Component {
+class BatchListContainer extends Component {
   fetchAll = (filter) => {
     if (this.props.user.isRegistrationLinkSupervisorRole) {
       return this.props.fetchHostMandateAuthLinkBatches(filter);
@@ -71,3 +65,8 @@ export default class BatchListContainer extends Component {
     );
   }
 }
+
+export default connect((state) => ({ user: state.session.user }), {
+  fetchAll,
+  fetchHostMandateAuthLinkBatches,
+})(BatchListContainer);

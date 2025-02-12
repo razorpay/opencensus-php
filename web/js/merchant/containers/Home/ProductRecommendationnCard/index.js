@@ -218,7 +218,7 @@ const RecommendationWidget = ({
                     </span>
                   )}
                   <span className="card-cta">{primaryCardCta}</span>
-                  {!user.activated && <i class="i i-arrow-forward text-primary" />}
+                  {!user.activated && <i className="i i-arrow-forward text-primary" />}
                 </div>
               </div>
             </div>

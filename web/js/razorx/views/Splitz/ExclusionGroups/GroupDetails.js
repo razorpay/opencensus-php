@@ -144,7 +144,7 @@ class GroupDetails extends React.Component {
                   <b>ID: </b> {project.id}
                 </div>
               </div>
-              <Link class="link" to={`/splitz/projects/${project.id}`}>
+              <Link className="link" to={`/splitz/projects/${project.id}`}>
                 View Project
               </Link>
             </div>
@@ -164,7 +164,7 @@ class GroupDetails extends React.Component {
                       <b>{experiment.entity_id}</b>
                     </div>
                   </div>
-                  <Link class="link" to={`/splitz/experiments/${experiment.entity_id}`}>
+                  <Link className="link" to={`/splitz/experiments/${experiment.entity_id}`}>
                     View Experiment
                   </Link>
                 </div>

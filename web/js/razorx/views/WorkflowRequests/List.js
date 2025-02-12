@@ -61,13 +61,13 @@ export default class WorkflowRequestsList extends Component {
     const { selectedType, workflows } = this.state;
 
     return (
-      <div class="parent-container workflow_requests-container">
-        <div class="header">
-          <span class="title">Workflow Requests</span>
+      <div className="parent-container workflow_requests-container">
+        <div className="header">
+          <span className="title">Workflow Requests</span>
         </div>
-        <div class="container-group">
-          <div class="list-container">
-            <Form onSubmit={this.onSubmit} class="filters">
+        <div className="container-group">
+          <div className="list-container">
+            <Form onSubmit={this.onSubmit} className="filters">
               <Field
                 label="Search Entity Id"
                 onChange={this.selectId}
@@ -108,7 +108,7 @@ export default class WorkflowRequestsList extends Component {
                 />
               )}
 
-              <button class="btn btn--primary field">Search</button>
+              <button className="btn btn--primary field">Search</button>
             </Form>
 
             <div>
@@ -120,7 +120,7 @@ export default class WorkflowRequestsList extends Component {
                   info={false}
                 />
               ) : (
-                <div class="table-pending" />
+                <div className="table-pending" />
               )}
             </div>
           </div>
@@ -145,7 +145,7 @@ const fields = [
   ['Created At', item => formatDate(item.created_at)],
   [
     'State',
-    item => <span class={`pill ${item.state}-state`}>{item.state}</span>,
+    item => <span className={`pill ${item.state}-state`}>{item.state}</span>,
   ],
 ];
 

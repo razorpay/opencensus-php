@@ -2,8 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { eventsLink, visitBanner } from './ga';
-
-@connect((state) => ({ user: state.session.user }))
+import { compose } from 'redux';
 class FTXPassAnnouncement extends React.PureComponent {
   componentDidMount() {
     visitBanner();
@@ -14,7 +13,7 @@ class FTXPassAnnouncement extends React.PureComponent {
 
     return (
       <AnnouncementBanner
-        class="settlement-anc"
+        className="settlement-anc"
         theme="purply"
         title="Razorpay FTX"
         canBeClosed={false}
@@ -25,7 +24,7 @@ class FTXPassAnnouncement extends React.PureComponent {
             Join us for the largest Indian FinTech conference happening in Bengaluru on 7th Dec.
           </span>{' '}
           <a
-            class="btn-link"
+            className="btn-link"
             target="_blank"
             rel="noreferrer noopener"
             href={`https://razorpay.com/events/ftx/?source=dashboard&mid=${user.current}`}
@@ -39,4 +38,4 @@ class FTXPassAnnouncement extends React.PureComponent {
   }
 }
 
-export default FTXPassAnnouncement;
+export default compose(connect((state) => ({ user: state.session.user })))(FTXPassAnnouncement);

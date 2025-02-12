@@ -106,7 +106,7 @@ class TransferDetailsContainer extends Component {
     }
 
     return (
-      <div class={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
+      <div className={`transfer-details-container ${reversal_id ? 'multi-content' : ''}`}>
         <TransferDetails
           transfer={entity}
           reversals={reversals}

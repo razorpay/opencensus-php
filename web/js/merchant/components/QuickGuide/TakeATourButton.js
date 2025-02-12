@@ -41,8 +41,8 @@ class TakeATourButton extends Component {
   render() {
     return (
       <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-        <span class="btn btn-link" onClick={this.onClick}>
-          <i class="i i-lightbulb" /> Need help? Take a tour
+        <span className="btn btn-link" onClick={this.onClick}>
+          <i className="i i-lightbulb" /> Need help? Take a tour
         </span>
       </ShowWhen>
     );

@@ -4,7 +4,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { keysToSentence } from 'common/utils/rzp-utils';
@@ -37,14 +37,8 @@ import PaymentPagesV3Entity from 'merchant/views/PaymentPages/PaymentPages/Detai
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 import { fetchCapturedPaymentPagePayments } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { compose } from 'redux';
 
-@connect((state) => ({ user: state.session.user }), {
-  updatePPInReduxList,
-  showNotification,
-  closeModal,
-  openModal,
-})
-@RTracking(() => window.rzpQ.component('PaymentPagesDetails'))
 class Details extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -527,4 +521,14 @@ class Details extends React.Component {
   }
 }
 
-export default withSplitzService(withRouter(Details));
+export default compose(
+  withSplitzService,
+  withRouter,
+  connect((state) => ({ user: state.session.user }), {
+    updatePPInReduxList,
+    showNotification,
+    closeModal,
+    openModal,
+  }),
+  rTracking(() => window.rzpQ.component('PaymentPagesDetails')),
+)(Details);

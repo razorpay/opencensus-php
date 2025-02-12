@@ -159,10 +159,10 @@ class WhitelistExperiment extends React.Component {
     const { isSaving, variants, selectedWhitelistTypes, segments, selectedSegments } = this.state;
 
     return (
-      <ModalContent class="modal-features modal-json-edit" header="Whitelist Entity IDs">
+      <ModalContent className="modal-features modal-json-edit" header="Whitelist Entity IDs">
         <Form
           onSubmit={this.onSubmit}
-          class="full-span full-elements"
+          className="full-span full-elements"
           style={{ opacity: isSaving ? 0.5 : 1 }}
         >
           {isSaving && <div className="spinner center" />}

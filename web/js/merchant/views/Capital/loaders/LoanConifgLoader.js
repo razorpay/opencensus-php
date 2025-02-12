@@ -24,11 +24,11 @@ export default class LoansConfigLoader extends BaseConfigLoader {
             <span>Get competitive interest rates for your risk profile</span>
           </React.Fragment>,
           <React.Fragment key={2}>
-            <i class="i i-bullet" />
+            <i className="i i-bullet" />
             <span>Apply online in 5 minutes with support when you need</span>
           </React.Fragment>,
           <React.Fragment key={3}>
-            <i class="i i-bullet" />
+            <i className="i i-bullet" />
             <span>Repay easily from daily settlements with more options</span>
           </React.Fragment>,
         ],

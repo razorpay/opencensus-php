@@ -25,9 +25,9 @@ export default class extends React.PureComponent {
 
     const Icons = (
       <React.Fragment>
-        <span class="facebook" />
-        <span class="twitter" />
-        <span class="whatsapp" />
+        <span className="facebook" />
+        <span className="twitter" />
+        <span className="whatsapp" />
       </React.Fragment>
     );
 
@@ -36,15 +36,15 @@ export default class extends React.PureComponent {
         {allowSocialShare ? (
           <React.Fragment>
             <label>Share this on:</label>
-            <div class="share-icons">
+            <div className="share-icons">
               {Icons}
               <RemoveBtn onClick={() => this.onUpdate(false)} />
             </div>
           </React.Fragment>
         ) : (
-          <span class="help-content">
+          <span className="help-content">
             <Button.Transparent
-              class="btn-link"
+              className="btn-link"
               onClick={() => {
                 analyticsTrack({
                   objectName: 'social share',

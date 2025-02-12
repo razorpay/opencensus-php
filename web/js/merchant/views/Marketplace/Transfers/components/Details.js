@@ -1,25 +1,27 @@
-import AsyncButton from 'react-async-button';
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
 import moment from 'moment';
-import ShowWhen from 'merchant/components/ShowWhen';
-import Alert from 'common/ui/Forms/Alert';
+import AsyncButton from 'react-async-button';
+import { SingleDatePicker } from 'react-dates';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
 import Amount from 'common/ui/Amount';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Definition from 'common/ui/Definition';
+import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
-import { SingleDatePicker } from 'react-dates';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { nextWorkingDay, isHoliday } from 'common/utils/bankHolidays';
 import { titleCase } from 'common/utils/rzp-utils';
-import { connect } from 'react-redux';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Fee from './Fee';
-import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
-import TransferSource from './TransferSource';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
 import { updateTranferInList } from 'merchant/reducers/marketplace/transfers/list';
-import CustomClipboard from 'common/ui/Clipboard/Custom';
+import TransferReversal from 'merchant/views/Marketplace/Transfers/components/TransferReversal';
+
+import Fee from './Fee';
+import TransferSource from './TransferSource';
 
 let initialState = {
   onHold: 'false',
@@ -70,7 +72,7 @@ const SettlementText = ({ data, transfer, onEdit }) => {
     );
   } else {
     status = (
-      <span class={SETTLEMENT_STATUS_COLOR_MAP[transfer.settlement_status]}>
+      <span className={SETTLEMENT_STATUS_COLOR_MAP[transfer.settlement_status]}>
         {titleCase(transfer.settlement_status) || 'Not Applicable'}
       </span>
     );
@@ -84,13 +86,13 @@ const SettlementText = ({ data, transfer, onEdit }) => {
         <ShowWhen
           additionalCondition={(user) => user.isAllowedEdit('payments') && showChangeButton}
         >
-          <a href class="btn-link" onClick={onEdit}>
+          <a href className="btn-link" onClick={onEdit}>
             Change
           </a>
         </ShowWhen>
       </div>
       {showBusinessHolidaysInfo && (
-        <div class="text-fade">
+        <div className="text-fade">
           Transfers scheduled to settle on bank holidays will get settled on the next working day.
         </div>
       )}
@@ -108,17 +110,7 @@ const SettlementText = ({ data, transfer, onEdit }) => {
   );
 };
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    updateTranferInList,
-  },
-)
-export default class TransferDetails extends Component {
+class TransferDetails extends Component {
   constructor(props) {
     super(props);
 
@@ -231,25 +223,25 @@ export default class TransferDetails extends Component {
     const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               {onClose && (
-                <button type="button" class="close close-secondary" onClick={onClose}>
-                  <i class="i i-arrow-back" />
-                  <i class="i i-close" />
+                <button type="button" className="close close-secondary" onClick={onClose}>
+                  <i className="i i-arrow-back" />
+                  <i className="i i-close" />
                 </button>
               )}
               Transfer ID: <strong>{transfer.id}</strong>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 {transfer.recipient_details && transfer.recipient_details.name && (
                   <EntityDetailRow label="Linked Account">
                     <Definition>
@@ -265,7 +257,7 @@ export default class TransferDetails extends Component {
                 <EntityDetailRow label="Amount">
                   <ContentToggler>
                     <Amount value={transfer.amount} currency={transfer.currency} />
-                    <div class="m-t">
+                    <div className="m-t">
                       <Fee
                         totalFee={transfer.fees}
                         rzpFee={transfer.fees - transfer.tax}
@@ -286,10 +278,10 @@ export default class TransferDetails extends Component {
                 <EntityDetailRow label="Transfer Status">
                   <RouteTransfersStatusLabel status={transfer.status} />
                   {transfer.status === 'failed' && transfer.error?.description && (
-                    <div class="text-danger m-t">{transfer.error.description}.</div>
+                    <div className="text-danger m-t">{transfer.error.description}.</div>
                   )}
                   {transfer.status === 'failed' && ERROR_CODE_CTAS_MAP[transfer.error?.code] && (
-                    <div class="text-danger">{ERROR_CODE_CTAS_MAP[transfer.error.code]}</div>
+                    <div className="text-danger">{ERROR_CODE_CTAS_MAP[transfer.error.code]}</div>
                   )}
                 </EntityDetailRow>
 
@@ -299,7 +291,7 @@ export default class TransferDetails extends Component {
                       <p>
                         <b>Change settlement schedule</b>
                       </p>
-                      <div class="RadioButton">
+                      <div className="RadioButton">
                         <label>
                           <input
                             type="radio"
@@ -309,8 +301,8 @@ export default class TransferDetails extends Component {
                             onChange={this.onScheduleChange}
                           />
                           <div>
-                            <div class="RadioButton__button" />
-                            <div class="RadioButton__label">
+                            <div className="RadioButton__button" />
+                            <div className="RadioButton__label">
                               <div>
                                 <span>Schedule settlement on</span>
                               </div>
@@ -318,7 +310,7 @@ export default class TransferDetails extends Component {
                           </div>
                         </label>
                       </div>
-                      <div class="transfers-onhold-datepicker">
+                      <div className="transfers-onhold-datepicker">
                         <SingleDatePicker
                           id="holdUntil"
                           name="holdUntil"
@@ -337,12 +329,12 @@ export default class TransferDetails extends Component {
                           onFocusChange={({ focused }) => this.setState({ focused })}
                         />
                         {this.state.dateError && (
-                          <div class="text-small text-danger text-right">
+                          <div className="text-small text-danger text-right">
                             Please select a schedule date
                           </div>
                         )}
                       </div>
-                      <div class="RadioButton">
+                      <div className="RadioButton">
                         <label>
                           <input
                             type="radio"
@@ -352,17 +344,17 @@ export default class TransferDetails extends Component {
                             onChange={this.onScheduleChange}
                           />
                           <div>
-                            <div class="RadioButton__button" />
-                            <div class="RadioButton__label">
+                            <div className="RadioButton__button" />
+                            <div className="RadioButton__label">
                               <span>Put on hold</span>
-                              <div class="text-fade">
+                              <div className="text-fade">
                                 The settlement will be on hold till specified otherwise.
                               </div>
                             </div>
                           </div>
                         </label>
                       </div>
-                      <div class="RadioButton">
+                      <div className="RadioButton">
                         <label>
                           <input
                             type="radio"
@@ -372,10 +364,10 @@ export default class TransferDetails extends Component {
                             onChange={this.onScheduleChange}
                           />
                           <div>
-                            <div class="RadioButton__button" />
-                            <div class="RadioButton__label">
+                            <div className="RadioButton__button" />
+                            <div className="RadioButton__label">
                               <span>Settle Now</span>
-                              <div class="text-fade">
+                              <div className="text-fade">
                                 This transfer will be settled in next available settlement slot
                               </div>
                             </div>
@@ -389,17 +381,17 @@ export default class TransferDetails extends Component {
                           })}
                         </div>
                       )}
-                      <div class="btn-toolbar text-center">
+                      <div className="btn-toolbar text-center">
                         <button
                           type="button"
-                          class="btn btn-default btn-half"
+                          className="btn btn-default btn-half"
                           onClick={this.onDismiss}
                         >
                           Cancel
                         </button>
                         <AsyncButton
                           type="submit"
-                          class="btn btn-primary btn-half"
+                          className="btn btn-primary btn-half"
                           text="Save"
                           pendingText="Saving..."
                           onClick={this.onSubmit}
@@ -434,15 +426,15 @@ export default class TransferDetails extends Component {
                     (Object.keys(transfer.notes).length === 0
                       ? '--'
                       : Object.keys(transfer.notes).map((key, index) => (
-                          <div class="m-b" key={index}>
+                          <div className="m-b" key={index}>
                             <Definition>
                               {key}
                               {String(transfer.notes[key])}
                               {!!transfer.linked_account_notes &&
                                 transfer.linked_account_notes.indexOf(key) > -1 && (
                                   <span>
-                                    <i class="i i-info-outline" /> This note is shown to the linked
-                                    account
+                                    <i className="i i-info-outline" /> This note is shown to the
+                                    linked account
                                   </span>
                                 )}
                               <i />
@@ -458,3 +450,14 @@ export default class TransferDetails extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  {
+    updateTranferInList,
+  },
+)(TransferDetails);

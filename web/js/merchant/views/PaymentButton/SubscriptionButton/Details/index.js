@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { keysToSentence } from 'common/utils/rzp-utils';
 import { updateItem } from 'common/utils/immutable';
@@ -24,14 +24,8 @@ import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/M
 import Details from './Details';
 import track from './track';
 import { fetchCapturedPaymentPagePayments as fetchPaymentsListForSubscriptionButton } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { compose } from 'redux';
 
-@connect(null, {
-  showNotification,
-  closeModal,
-  openModal,
-  updateSubscriptionButtonInReduxList,
-})
-@RTracking(() => window.rzpQ.component('PaymentButtonDetails'))
 class PaymentButtonDetails extends React.Component {
   state = {
     subscriptionButtonEntity: {},
@@ -345,8 +339,8 @@ class PaymentButtonDetails extends React.Component {
 
     if (loading) {
       return (
-        <div class="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentbutton">
-          <div class="page-spinner-container">
+        <div className="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentbutton">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         </div>
@@ -355,7 +349,7 @@ class PaymentButtonDetails extends React.Component {
 
     if (!loading && !Object.keys(subscriptionButtonEntity).length) {
       return (
-        <div class="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentbutton">
+        <div className="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentbutton">
           <NoEntityResultsFound
             error={
               <span>
@@ -381,4 +375,14 @@ class PaymentButtonDetails extends React.Component {
   }
 }
 
-export default withSplitzService(withRouter(PaymentButtonDetails));
+export default compose(
+  connect(null, {
+    showNotification,
+    closeModal,
+    openModal,
+    updateSubscriptionButtonInReduxList,
+  }),
+  rTracking(() => window.rzpQ.component('PaymentButtonDetails')),
+  withSplitzService,
+  withRouter,
+)(PaymentButtonDetails);

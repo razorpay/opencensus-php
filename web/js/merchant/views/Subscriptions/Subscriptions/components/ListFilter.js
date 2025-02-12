@@ -24,22 +24,22 @@ const next60DaysEpoch = moment().add(60, 'days').unix();
 export default function SubscriptionsListFilter(props) {
   return (
     <ListFilter {...props} maxMwebFiltersLength={3}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Customer Email</label>
         <Field
           name="customer_email"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={props.onFieldChange}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Cards Expiring In</label>
         <Field
           name="token_expire_before"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={props.onFieldChange}
         >
           <option value="" />
@@ -50,12 +50,12 @@ export default function SubscriptionsListFilter(props) {
       </div>
 
       {props.showSubscriptionExpiryFilter && (
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Subscriptions Completing In</label>
           <Field
             name="complete_before"
             component="select"
-            class="form-control input-sm"
+            className="form-control input-sm"
             onChange={props.onFieldChange}
           >
             <option value="" />
@@ -66,27 +66,27 @@ export default function SubscriptionsListFilter(props) {
         </div>
       )}
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Subscription Id</label>
         <Field
           name="id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={props.onFieldChange}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Plan ID</label>
         <Field
           name="plan_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={props.onFieldChange}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Status</label>
         <Field
           name="status"
@@ -95,10 +95,10 @@ export default function SubscriptionsListFilter(props) {
               options={statusList}
               selected={renderProps.input.value}
               showClear={false}
-              class="custom-powerselect"
+              className="custom-powerselect"
               selectedOptionComponent={({ option }) => <div>{humanize(option)}</div>}
               optionComponent={({ option }) => (
-                <div class="custom-powerselect-options">{humanize(option)}</div>
+                <div className="custom-powerselect-options">{humanize(option)}</div>
               )}
               searchEnabled={false}
               onChange={({ option }) => {
@@ -110,7 +110,7 @@ export default function SubscriptionsListFilter(props) {
         />
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -118,7 +118,7 @@ export default function SubscriptionsListFilter(props) {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={props.onFieldChange}
         />
       </div>

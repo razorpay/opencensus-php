@@ -156,12 +156,12 @@ class Entity extends React.Component {
     if (!id) {
       content = null;
     } else if (isFetching) {
-      content = <div class="spinner center" />;
+      content = <div className="spinner center" />;
     } else if (!isFetching && !data) {
       content = (
-        <div class="page-center empty-entity">
-          <i class="i-layers" />
-          <div class="description">
+        <div className="page-center empty-entity">
+          <i className="i-layers" />
+          <div className="description">
             <div>ID: {id}</div>
             No Feature found!
           </div>
@@ -181,7 +181,7 @@ class Entity extends React.Component {
       );
     }
 
-    return <div class="entity-container">{content}</div>;
+    return <div className="entity-container">{content}</div>;
   }
 }
 
@@ -194,18 +194,18 @@ const Details = ({
   goToExperiment,
 }) => {
   return (
-    <div class="entity-details">
-      <div class="sub-description">
+    <div className="entity-details">
+      <div className="sub-description">
         <span>
           <b>ID:</b> {data.id}
         </span>
         {experiments && !experiments?.live?.total ? (
-          <span class="to-right">
-            <a class="link text-bold" onClick={showFeatureModal}>
+          <span className="to-right">
+            <a className="link text-bold" onClick={showFeatureModal}>
               Edit Feature
             </a>{' '}
             ({' '}
-            <a class="link text-bold" onClick={showJSONModal}>
+            <a className="link text-bold" onClick={showJSONModal}>
               RAW
             </a>{' '}
             )
@@ -213,17 +213,17 @@ const Details = ({
         ) : null}
       </div>
 
-      <div class="pad-highlight">
-        <div class="title">{data.name}</div>
-        <div class="description">
+      <div className="pad-highlight">
+        <div className="title">{data.name}</div>
+        <div className="description">
           {data.description}
-          <div class="sub-description">
+          <div className="sub-description">
             <b>Created by</b> {titleCase(data.created_by)}{' '}
-            <span class="inline-block">on {formatDate(data.created_at)}</span>
+            <span className="inline-block">on {formatDate(data.created_at)}</span>
             {data.updated_at !== data.created_at && (
               <div>
                 <b>Last Updated at</b>
-                <span class="inline-block">on {formatDate(data.updated_at)}</span>
+                <span className="inline-block">on {formatDate(data.updated_at)}</span>
               </div>
             )}
           </div>
@@ -231,10 +231,10 @@ const Details = ({
       </div>
       <br />
       <div>
-        <div class="label">Variants</div>
+        <div className="label">Variants</div>
         {data.variants.map((v, i) => (
           <div key={i}>
-            <span class="square-pills">{v}</span>
+            <span className="square-pills">{v}</span>
           </div>
         ))}
       </div>
@@ -246,13 +246,13 @@ const Details = ({
           <div>
             {experiments.activated ? (
               <div>
-                <div class="label">Active Experiment</div>
+                <div className="label">Active Experiment</div>
 
-                <div class="sub-description column">
+                <div className="sub-description column">
                   <div>
                     <b>ID: </b> {experiments.activated.id}
                     <Link
-                      class="link m-l"
+                      className="link m-l"
                       to={`/experiments/${experiments.activated.id}?feature_id=${data.id}`}
                     >
                       View
@@ -261,7 +261,7 @@ const Details = ({
                 </div>
               </div>
             ) : (
-              <div class="label">No Active Experiment</div>
+              <div className="label">No Active Experiment</div>
             )}
           </div>
 
@@ -279,15 +279,15 @@ const Details = ({
           <br />
 
           <div>
-            <div class="label">Total Experiments</div>
+            <div className="label">Total Experiments</div>
             {
               <div>
-                <div class="sub-description column">
+                <div className="sub-description column">
                   <div>
                     <b>LIVE: </b> {experiments.live.total}
                     {!!experiments.live.total && (
                       <a
-                        class="link m-l"
+                        className="link m-l"
                         onClick={goToExperiment('live', `/experiments?feature_id=${data.id}`)}
                       >
                         View
@@ -298,7 +298,7 @@ const Details = ({
                     <b>TEST: </b> {experiments.test.total}
                     {!!experiments.test.total && (
                       <a
-                        class="link m-l"
+                        className="link m-l"
                         onClick={goToExperiment('test', `/experiments?feature_id=${data.id}`)}
                       >
                         View
@@ -313,15 +313,15 @@ const Details = ({
           <br />
 
           <div>
-            <div class="label">Total Pending Experiments</div>
+            <div className="label">Total Pending Experiments</div>
             {
               <div>
-                <div class="sub-description column">
+                <div className="sub-description column">
                   <div>
                     <b>LIVE: </b> {experiments.live.created}
                     {!!experiments.live.created && (
                       <a
-                        class="link m-l"
+                        className="link m-l"
                         onClick={goToExperiment(
                           'live',
                           `/experiments?feature_id=${data.id}&status=created`,
@@ -335,7 +335,7 @@ const Details = ({
                     <b>TEST: </b> {experiments.test.created}
                     {!!experiments.test.created && (
                       <a
-                        class="link m-l"
+                        className="link m-l"
                         onClick={goToExperiment(
                           'test',
                           `/experiments?feature_id=${data.id}&status=created`,

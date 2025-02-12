@@ -88,7 +88,7 @@ const SettleNowButton = ({
     <div
       onMouseEnter={() => handleMouseActivityOverSettleBtn('mouseEnter')}
       onMouseLeave={() => handleMouseActivityOverSettleBtn('mouseLeave')}
-      class="settle-btn settle-now--desktop"
+      className="settle-btn settle-now--desktop"
     >
       <Suspense
         fallback={<DefaultSettlementBtn onClick={handleSettleNowClick} disabled={disabled} />}

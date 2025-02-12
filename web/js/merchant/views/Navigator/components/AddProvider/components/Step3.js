@@ -110,7 +110,7 @@ export function Step3({
                 <div className="col-xs-12">
                   <div className="row">
                     <div className="col-xs-3">
-                      <label for="name" className="gateway-detail-title">
+                      <label htmlFor="name" className="gateway-detail-title">
                         {label}
                       </label>
                     </div>
@@ -187,7 +187,7 @@ export function Step3({
               <div className="col-xs-12" key={label}>
                 <div className="row tpv-field-wrapper">
                   <div className="col-xs-3">
-                    <label for="name" className="gateway-detail-title">
+                    <label htmlFor="name" className="gateway-detail-title">
                       <span>{label}</span>
                       <small className="help-content ml-4">
                         <i className="i i-info-circle" />
@@ -224,7 +224,7 @@ export function Step3({
             <div className="col-xs-12" key={label}>
               <div className="row">
                 <div className="col-xs-3">
-                  <label for="name" className="gateway-detail-title">
+                  <label htmlFor="name" className="gateway-detail-title">
                     <span>{titleCase(label)}</span>
                   </label>
                 </div>
@@ -249,7 +249,7 @@ export function Step3({
             <div className="col-xs-12" key={label}>
               <div className="row">
                 <div className="col-xs-3">
-                  <label for="name" className="gateway-detail-title">
+                  <label htmlFor="name" className="gateway-detail-title">
                     {label}
                   </label>
                 </div>
@@ -300,7 +300,7 @@ export function Step3({
               <div className="col-xs-12" key={label}>
                 <div className="row">
                   <div className="col-xs-3">
-                    <label for="name" className="gateway-detail-title">
+                    <label htmlFor="name" className="gateway-detail-title">
                       {titleCase(label)}
                     </label>
                   </div>

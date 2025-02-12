@@ -1,25 +1,26 @@
 import React, { Component } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
-import debounce from 'common/utils/debounce';
-import { showNotification } from 'merchant_common/reducers/notifications';
+
 import { analyticsTrack } from 'common/utils/analytics';
+import debounce from 'common/utils/debounce';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { fetch } from 'merchant/reducers/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import { groupValues, groupMeta, getQuery, getPieData } from './data';
-import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
-import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
+import Legend from 'merchant/components/Home/Legend';
 import { API_ERROR, API_INVALID_RESP, getPlatformColor } from 'merchant/components/Home/data';
-import { trackError, trackNoData } from 'merchant/containers/Home/ga';
-
+import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import Mobile from 'merchant/containers/Home/Traffic/Mobile';
+import { trackError, trackNoData } from 'merchant/containers/Home/ga';
+import { fetch } from 'merchant/reducers/pokedex';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { groupValues, groupMeta, getQuery, getPieData } from './data';
 
 const aggTypes = groupValues.map((value) => groupMeta[value]);
 
@@ -38,8 +39,6 @@ const chartOptions = {
 };
 const csvDateFormat = 'DD-MM-YYYY';
 
-// eslint-disable-next-line react/no-unsafe
-@connect((state) => ({ user: state.session.user }))
 class Traffic extends Component {
   constructor(props) {
     super(props);
@@ -63,9 +62,9 @@ class Traffic extends Component {
 
     this.requestId = 0;
 
-    this.onGroupChange = ::this.onGroupChange;
-    this.handleImageExportClick = ::this.handleImageExportClick;
-    this.handleResize = debounce(::this.handleResize, 250);
+    this.onGroupChange = this.onGroupChange.bind(this);
+    this.handleImageExportClick = this.handleImageExportClick.bind(this);
+    this.handleResize = debounce(this.handleResize.bind(this), 250);
 
     this.data = null;
   }

@@ -414,7 +414,7 @@ class CongfigurationContainer extends Component {
       <div className={['content-wrapper content-sm', className].join(' ')} id="settings-content">
         {isConfigLoading || isFeaturesLoading ? (
           isOldFlow ? (
-            <div class="page-spinner-container">
+            <div className="page-spinner-container">
               <Spinner />
             </div>
           ) : (

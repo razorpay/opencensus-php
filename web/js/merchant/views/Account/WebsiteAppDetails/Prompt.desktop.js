@@ -86,7 +86,7 @@ function PromptDesktop({
         <ModalHeader title={title} />
         {!user.isWebsiteComplianceModalNonDismissible ? (
           <span className="prompt-modal-close">
-            <i class="i i-close" onClick={onCloseClick} />
+            <i className="i i-close" onClick={onCloseClick} />
           </span>
         ) : null}
         <div className="prompt-description">

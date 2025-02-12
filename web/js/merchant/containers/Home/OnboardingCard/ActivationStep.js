@@ -343,7 +343,7 @@ class ActivationStep extends Component {
 
     return (
       <WrapperElement
-        class="Onboarding__Step"
+        className="Onboarding__Step"
         mode={mode}
         isActivated={isActivated}
         isSubmitted={isSubmitted}
@@ -365,7 +365,7 @@ class ActivationStep extends Component {
             clarificationMode={clarificationMode}
           />
         </div>
-        <div class="media-body">
+        <div className="media-body">
           <div className="activation-progress-cont">
             <div>
               <b>

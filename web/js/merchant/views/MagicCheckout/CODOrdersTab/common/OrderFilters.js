@@ -60,7 +60,7 @@ const OrderFilters = ({
       <CODAutomationBanner />
       <ListFilter form={`${formName}-form`} onSubmit={onSubmitHandler} resetHandler={resetHandler}>
         <div className="form-group list-filter-item">
-          <label for="magic-prepay-order-id">Razorpay Order Id</label>
+          <label htmlFor="magic-prepay-order-id">Razorpay Order Id</label>
           <input
             id="magic-prepay-order-id"
             type="text"
@@ -71,7 +71,7 @@ const OrderFilters = ({
           />
         </div>
         <div className="form-group list-filter-item">
-          <label for="magic-prepay-receipt">Receipt</label>
+          <label htmlFor="magic-prepay-receipt">Receipt</label>
           <input
             id="magic-prepay-receipt"
             type="text"
@@ -82,7 +82,7 @@ const OrderFilters = ({
           />
         </div>
         <div className="form-group list-filter-item">
-          <label for="riskTier">RTO Risk</label>
+          <label htmlFor="riskTier">RTO Risk</label>
           <Input.Select
             id="riskTier"
             name="riskTier"
@@ -108,7 +108,7 @@ const OrderFilters = ({
         </div>
         {showReviewModeFilter ? (
           <div className="form-group list-filter-item">
-            <label for="reviewMode">Review Mode</label>
+            <label htmlFor="reviewMode">Review Mode</label>
             <Input.Select
               id="reviewMode"
               name="reviewMode"
@@ -120,7 +120,7 @@ const OrderFilters = ({
           </div>
         ) : null}
         <div className="form-group list-filter-item count">
-          <label for="count">Count</label>
+          <label htmlFor="count">Count</label>
           <Input.Select
             id="count"
             name="count"

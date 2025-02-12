@@ -58,7 +58,7 @@ export default function TokenDetailsForm({
   const renderTokenExpiryField = () => {
     if (method === PAYMENT_METHODS.EMANDATE || method === PAYMENT_METHODS.NACH) {
       return (
-        <Input.Group label="Expiry of Token " class="InputGroup--vTop">
+        <Input.Group label="Expiry of Token " className="InputGroup--vTop">
           <Input.ToCalendar
             data-testid="mandateExpireAt-date-input"
             disablePastDates
@@ -66,7 +66,7 @@ export default function TokenDetailsForm({
             placeholder="Expiry (DD-MM-YYYY)"
             placement="topLeft"
             size="half_big"
-            addonAfter={<i class="i i-date-range" />}
+            addonAfter={<i className="i i-date-range" />}
             description="Token expires in 40 years, unless otherwise specified."
             onChange={handleDateChange('mandateExpireAt')}
             data-name="token_expiry_date"
@@ -80,7 +80,7 @@ export default function TokenDetailsForm({
       );
     }
     return (
-      <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+      <Input.Group label="Expiry of Token" className="InputGroup--vTop">
         <Input.Check
           fieldLabel="Until cancelled"
           name="tokenHasNoExpiry"
@@ -96,7 +96,7 @@ export default function TokenDetailsForm({
           placeholder="Expiry (DD-MM-YYYY)"
           placement="topLeft"
           size="half_big"
-          addonAfter={<i class="i i-date-range" />}
+          addonAfter={<i className="i i-date-range" />}
           description="Expiry of Token"
           onChange={handleDateChange('mandateExpireAt')}
           disabled={!!Number(tokenHasNoExpiry)}
@@ -118,7 +118,7 @@ export default function TokenDetailsForm({
       onBlur={onBlurElement}
       addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
       size="half_big"
-      class="Input--Amount"
+      className="Input--Amount"
       value={mandateMaxAmount}
       {...maxAmountProps}
     />
@@ -138,17 +138,17 @@ export default function TokenDetailsForm({
   );
 
   const renderDebitPatternField = () => (
-    <Input.Group class="InputGroup--inline" label="Debit pattern (optional)">
-      <div class="Input-content debit-pattern">
+    <Input.Group className="InputGroup--inline" label="Debit pattern (optional)">
+      <div className="Input-content debit-pattern">
         <Input.Select
-          class="Input--half_small"
+          className="Input--half_small"
           name="recurringType"
           data-name="recurring_type"
           options={RECURRING_TYPE}
           defaultValue={recurringType}
         />
         <Input
-          class={`Input--half_small ${isValidRecurringValue ? 'is-invalid' : ''}`}
+          className={`Input--half_small ${isValidRecurringValue ? 'is-invalid' : ''}`}
           name="recurringValue"
           data-name="recurring_value"
           type="number"
@@ -176,7 +176,7 @@ export default function TokenDetailsForm({
       placeholder={defaultFirstChargeAmount}
       size="half_big"
       label="First Charge Amount"
-      class="Input--Amount"
+      className="Input--Amount"
       description="Amount of First Charge"
       data-name="first_payment_amount"
       onBlur={onBlurElement}
@@ -191,14 +191,14 @@ export default function TokenDetailsForm({
       case PAYMENT_METHODS.WALLET:
         return (
           <>
-            <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+            <Input.Group label="Expiry of Token" className="InputGroup--vTop">
               <Input.ToCalendar
                 disablePastDates
                 name="mandateExpireAt"
                 placeholder="Expiry (DD-MM-YYYY)"
                 placement="topLeft"
                 size="half_big"
-                addonAfter={<i class="i i-date-range" />}
+                addonAfter={<i className="i i-date-range" />}
                 onChange={handleDateChange('mandateExpireAt')}
                 data-name="token_expiry_date"
                 onBlur={onBlurElement}
@@ -209,7 +209,7 @@ export default function TokenDetailsForm({
             <Input
               type="number"
               size="big"
-              class="Input--Amount"
+              className="Input--Amount"
               name="mandateMaxAmount"
               data-name="token_max_amount"
               label="Maximum Auto-debit Amount"
@@ -225,7 +225,7 @@ export default function TokenDetailsForm({
         return (
           <>
             {renderFrequencyField()}
-            <Input.Group label="Expiry of Token" class="InputGroup--vTop">
+            <Input.Group label="Expiry of Token" className="InputGroup--vTop">
               <Input.Check
                 fieldLabel="Same as expiry of customer’s card"
                 name="tokenHasNoExpiry"
@@ -240,7 +240,7 @@ export default function TokenDetailsForm({
                 placeholder="Expiry (DD-MM-YYYY)"
                 placement="topLeft"
                 size="half_big"
-                addonAfter={<i class="i i-date-range" />}
+                addonAfter={<i className="i i-date-range" />}
                 onChange={handleDateChange('mandateExpireAt')}
                 disabled={!!Number(tokenHasNoExpiry)}
                 data-name="token_expiry_date"
@@ -248,8 +248,8 @@ export default function TokenDetailsForm({
                 defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
               />
               {!tokenHasNoExpiry && (
-                <div class="Input Input--half_big disable-past-year Input--Calendar">
-                  <div class="Input-content Input-desc">
+                <div className="Input Input--half_big disable-past-year Input--Calendar">
+                  <div className="Input-content Input-desc">
                     If the chosen date is beyond the expiry date of the customer’s card, then it
                     will be reset to the card expiry date
                   </div>
@@ -259,7 +259,7 @@ export default function TokenDetailsForm({
             <Input
               type="number"
               size="big"
-              class="Input--Amount"
+              className="Input--Amount"
               name="mandateMaxAmount"
               data-name="token_max_amount"
               label={() => getCardLabelText(org.custom_code)}

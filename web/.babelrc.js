@@ -9,9 +9,6 @@ module.exports = {
         loose: true,
       },
     ],
-    '@babel/plugin-proposal-do-expressions',
-    '@babel/plugin-proposal-function-bind',
-    './babel-plugin-react-html-attrs',
     [
       '@babel/plugin-transform-spread',
       {

@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
@@ -11,10 +12,6 @@ import { isPresent } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
-@withRouter
-@connect((state) => ({ ...state.commAggSingleDay, user: state?.session?.user }), {
-  fetchSingleDayAggregate,
-})
 class CommissionsDailyEntity extends Component {
   componentDidMount() {
     this.fetchData(Number(this.props.timestamp));
@@ -36,31 +33,31 @@ class CommissionsDailyEntity extends Component {
     const data = entity.data;
     return (
       <div
-        class="content-wrapper content-sm txn-details Commission--Detail"
+        className="content-wrapper content-sm txn-details Commission--Detail"
         data-testid="daily-details-panel"
       >
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               Date <strong>{moment(props.timestamp, 'X').format('ll')}</strong>
             </div>
             <Alert type="error" message={error} />
             {isPresent(entity) && (
-              <div class="SliderPanel__Body">
-                <div class="panel-body">
-                  <div class="list-group details-row-container">
-                    <div class="sub-heading">
+              <div className="SliderPanel__Body">
+                <div className="panel-body">
+                  <div className="list-group details-row-container">
+                    <div className="sub-heading">
                       <strong>{props.subHeading} </strong>
                     </div>
 
                     {/* provide all props to renderBreakup */}
                     {renderBreakups(this.props)}
 
-                    <div class="sub-heading">
+                    <div className="sub-heading">
                       <strong>Transactions</strong>
                     </div>
 
@@ -91,24 +88,24 @@ class CommissionsDailyEntity extends Component {
 
 export function EarningsBreakup(props) {
   return (
-    <div class="pair-group-item vertical">
-      <div class="pair-label">{props.label}</div>
-      <div class="pair-value EarningsBreakup">
+    <div className="pair-group-item vertical">
+      <div className="pair-label">{props.label}</div>
+      <div className="pair-value EarningsBreakup">
         <FeeBreakup type={props.feeBreakupType}>
           <>
-            <div class="EarningsBreakup--Total">
+            <div className="EarningsBreakup--Total">
               <Amount value={props.value} currency={props.currency} />
             </div>
             <small>Total</small>
           </>
           <>
-            <div class="EarningsBreakup--Components">
+            <div className="EarningsBreakup--Components">
               <Amount value={props.value - props.tax} currency={props.currency} />
             </div>
             <small>{props.label}</small>
           </>
           <>
-            <div class="EarningsBreakup--Components">
+            <div className="EarningsBreakup--Components">
               <Amount value={props.tax} currency={props.currency} />
             </div>
             <small>{props.isRzpOrg ? 'GST' : 'Tax'}</small>
@@ -119,4 +116,9 @@ export function EarningsBreakup(props) {
   );
 }
 
-export default withRouter(CommissionsDailyEntity);
+export default compose(
+  connect((state) => ({ ...state.commAggSingleDay, user: state?.session?.user }), {
+    fetchSingleDayAggregate,
+  }),
+  withRouter,
+)(CommissionsDailyEntity);

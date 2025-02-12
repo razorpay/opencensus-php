@@ -28,7 +28,7 @@ export const ToggleField = ({
 
   if (isLACreationDisabled && isLAEmailAbsent) {
     return (
-      <small class="help-content">
+      <small className="help-content">
         {_SwitchField}
         <Popover align="top" theme="dark">
           <PopoverBody>This action is not allowed for your business type</PopoverBody>
@@ -39,7 +39,7 @@ export const ToggleField = ({
 
   if (isLAEmailAbsent) {
     return (
-      <small class="help-content">
+      <small className="help-content">
         {_SwitchField}
         <Popover align="top" theme="dark">
           <PopoverBody>
@@ -48,7 +48,7 @@ export const ToggleField = ({
                 ? 'Please add Email id for this linked account to grant dashboard access'
                 : 'Please add Email id for this linked account to allow refunds'}
               <br />
-              <button class="btn-link pull-right" onClick={onEdit}>
+              <button className="btn-link pull-right" onClick={onEdit}>
                 Add Email
               </button>
             </div>
@@ -94,7 +94,7 @@ const AccountsListItem = ({
               </Popover>
             )}
             <button
-              class="btn btn-link no-padding"
+              className="btn btn-link no-padding"
               onClick={() => {
                 selfServeTrackInitiate({
                   selfServeAction: 'Email added',
@@ -152,8 +152,8 @@ const AccountsListItem = ({
       {/* TODO: Enable this once prefill account id add to direct transfers from
       {isDirectTransferEnabled && (
         <td style={{ textAlign: 'center' }}>
-          <NavLink class="btn btn-default btn-xs" to="/route/transfers/direct_transfer">
-            <i class="i i-plus" />
+          <NavLink className="btn btn-default btn-xs" to="/route/transfers/direct_transfer">
+            <i className="i i-plus" />
             Create Direct Transfer
           </NavLink>
         </td>
@@ -175,8 +175,8 @@ export default function AccountsList({
 }) {
   const user = getUser();
   return (
-    <div class="table-responsive">
-      <table class="table table-hover" id="accounts-list">
+    <div className="table-responsive">
+      <table className="table table-hover" id="accounts-list">
         <thead>
           <tr>
             <th>Account Id</th>
@@ -190,8 +190,8 @@ export default function AccountsList({
             {onToggleAllowRefunds && !user.isOrgCurlec && (
               <th style={{ textAlign: 'center' }}>
                 Allow Refunds
-                <small class="help-content" style={{ paddingLeft: '4px' }}>
-                  <i class="i i-help" />
+                <small className="help-content" style={{ paddingLeft: '4px' }}>
+                  <i className="i i-help" />
                   <Popover align="right" theme="dark">
                     <PopoverBody>
                       <div style={{ textAlign: 'left' }}>

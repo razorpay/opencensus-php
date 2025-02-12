@@ -1,45 +1,30 @@
 /* eslint-disable no-restricted-imports */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
-import HeaderAction from 'common/ui/HeaderAction';
-import Alert from 'common/ui/Forms/Alert';
-
-import Rewards from 'merchant/views/CheckoutRewards/Rewards';
 import { Route, Routes, NavLink } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
-import TestModeBanner from 'merchant/components/TestModeBanner';
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import Alert from 'common/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
 import { RZPFeatures } from 'merchant/helpers/data';
-import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import DocsLink from 'merchant/components/DocsLink';
 
-import OnBoarding, { getIsRewardsEnabled, getIsAllowedResetRewardsOnBoarding } from './OnBoarding';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ShowWhen from 'merchant/components/ShowWhen';
-
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import { withRouter } from 'common/deprecated/withRouter';
+import Rewards from 'merchant/views/CheckoutRewards/Rewards';
+import OnBoarding, { getIsRewardsEnabled, getIsAllowedResetRewardsOnBoarding } from './OnBoarding';
 
-@connect(
-  (state) => {
-    return {
-      rewards: state.rewards,
-      user: state.session.user,
-      rewardsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.REWARDS),
-    };
-  },
-  {
-    handleProductQuickGuide,
-  },
-)
-@RTracking(() => window.rzpQ.component('CheckoutRewardsIndex'))
 class CheckoutRewardsIndex extends Component {
   componentDidMount() {
     this.props.tracking.trackEvent(
@@ -160,4 +145,19 @@ class CheckoutRewardsIndex extends Component {
   }
 }
 
-export default withRouter(CheckoutRewardsIndex);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        rewards: state.rewards,
+        user: state.session.user,
+        rewardsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.REWARDS),
+      };
+    },
+    {
+      handleProductQuickGuide,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('CheckoutRewardsIndex')),
+  withRouter,
+)(CheckoutRewardsIndex);

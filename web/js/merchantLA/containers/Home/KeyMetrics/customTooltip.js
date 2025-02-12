@@ -17,7 +17,7 @@ let isTooltipHovered = false,
   shouldShowTooltip = false; //set unset by chartjs
 
 tooltipDOM.id = 'chartjs-tooltip';
-tooltipDOM.innerHTML = '<div class="custom-tooltip-inner">' + '</div>';
+tooltipDOM.innerHTML = '<div className="custom-tooltip-inner">' + '</div>';
 
 const caret = document.createElement('div'),
   caretWidth = 20,
@@ -149,16 +149,16 @@ const customToolTip = function(tooltipModel) {
 
     // appending title to innerHtml
     innerHtml +=
-      `<div class="tooltip-title">` +
+      `<div className="tooltip-title">` +
       `<div>` +
-      `<div class="tooltip-amount">${
+      `<div className="tooltip-amount">${
         isCurrency
           ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
           : getFormattedNumber(sumOfAllDataPoints)
       }</div>` +
-      `<div class="sec-text tooltip-date">${formattedDate}</div>` +
+      `<div className="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
-      `<a href="${url}" class="ex-link deepdive-link"` +
+      `<a href="${url}" className="ex-link deepdive-link"` +
       ` target="_blank">` +
       `<svg xmlns="http://www.w3.org/2000/svg">` +
       `<path d="M1.444 11.556V1.444H5.5V0H1.444C.65 0 0 .65 0 1.444v10.112C0 12.35.65 13 1.444 13h10.112C12.35 13 13 12.35 13 11.556V7.5h-1.444v4.056H1.444zM8.873 1.444h1.671L3.467 8.522l1.01 1.011 7.079-7.077v1.671H13V0H8.873v1.444z"/>` +
@@ -181,12 +181,12 @@ const customToolTip = function(tooltipModel) {
           dataPoint = dataPoints[index],
           value = dataPoint.yLabel;
 
-        const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
+        const labelIcon = `<span className="label-icon" style="background-color: ${backgroundColor}"></span>`;
 
-        const labelHTML = `<span class="label sec-text">${label}</span>`;
+        const labelHTML = `<span className="label sec-text">${label}</span>`;
 
         const labelValue =
-          `<span class="label-value">` +
+          `<span className="label-value">` +
           `${
             isCurrency
               ? getFormattedAmountNew(rupeesToPaise(value), true)
@@ -195,11 +195,11 @@ const customToolTip = function(tooltipModel) {
           `</span>`;
 
         // appending rows with each line
-        rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
+        rows += `<div className="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
       });
 
       // adding rows to innerHtml
-      innerHtml += `<div class="tooltip-body">${rows}</div>`;
+      innerHtml += `<div className="tooltip-body">${rows}</div>`;
     } else {
       tooltipDOM.className = 'no-grouping';
     }

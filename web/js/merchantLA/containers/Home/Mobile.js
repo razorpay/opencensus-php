@@ -2,20 +2,16 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
-import Sticky from 'common/ui/Sticky';
 import DateRangePicker from 'common/ui/DateRangePicker';
-
+import Header from 'common/ui/Header';
+import Sticky from 'common/ui/Sticky';
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
 import Traffic from 'merchantLA/containers/Home/Traffic';
 
 import { trackPresetChange, trackSettlementsClick } from './ga';
 
-@connect(state => ({
-  windowWidth: state.app.windowWidth,
-}))
 class AnalyticsMobile extends Component {
   constructor(props) {
     super(props);
@@ -39,13 +35,6 @@ class AnalyticsMobile extends Component {
       tabsMeta,
       analyticsFetch,
       onFilterChange,
-      expandOnboardingBanner,
-      showOnboardingBanner,
-      payments,
-      onHideOnboardingBanner,
-      onFirstStepClose,
-      showOnboardingBannerFirstStep,
-      keymetricsSectionTitle,
       recentActivityTitle,
       trafficSectionTitle,
       windowWidth,
@@ -53,15 +42,14 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
-        <div ref={node => onExtraContentMount(node)} className="extra-content">
+        <div ref={(node) => onExtraContentMount(node)} className="extra-content">
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left">
               Balance:{' '}
               <b>
-                {!current_balance.loading &&
-                  typeof current_balance.data.balance === 'number' && (
-                    <Amount value={current_balance.data.balance} />
-                  )}
+                {!current_balance.loading && typeof current_balance.data.balance === 'number' && (
+                  <Amount value={current_balance.data.balance} />
+                )}
               </b>
             </div>
             <div className="pull-right">
@@ -85,10 +73,7 @@ class AnalyticsMobile extends Component {
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
-            <div
-              id="analytics-daterange-picker"
-              className="date-range-container"
-            >
+            <div id="analytics-daterange-picker" className="date-range-container">
               <DateRangePicker
                 presets={dateRangePresets}
                 onDatesChange={onDatesChange}
@@ -102,7 +87,9 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360 ? 40 : 57
+                      : windowWidth > 360
+                      ? 40
+                      : 57
                     : 0
                 }
               />
@@ -116,7 +103,7 @@ class AnalyticsMobile extends Component {
             oldestTransactionDate={oldestTransactionDate}
             mode={mode}
             showGroupingByPtfm={showGroupingByPtfm}
-            sectionTitle={''}
+            sectionTitle=""
             tabsMeta={tabsMeta}
             isAdmin={isAdmin}
             analyticsFetch={analyticsFetch}
@@ -131,7 +118,7 @@ class AnalyticsMobile extends Component {
                 endDate={endDate}
                 mode={mode}
                 analyticsFetch={analyticsFetch}
-                sectionTitle={''}
+                sectionTitle=""
                 isMobile={true}
               />
             </React.Fragment>
@@ -142,4 +129,6 @@ class AnalyticsMobile extends Component {
   }
 }
 
-export default AnalyticsMobile;
+export default connect((state) => ({
+  windowWidth: state.app.windowWidth,
+}))(AnalyticsMobile);

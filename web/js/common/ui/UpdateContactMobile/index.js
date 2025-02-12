@@ -48,12 +48,9 @@ class UpdateContactMobile extends React.Component {
     };
   };
 
-  @RTracking((props) => {
-    return props.tracking.trackEvent(
-      window.rzpQ.merchantActions().success('change_contact_mobile'),
-    );
-  })
   onContactMobileUpdateComplete = (data) => {
+    this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('change_contact_mobile'));
+
     // Passing contact_mobile_verified hardcoded as true in callback
     // Ideally this should come from API, but BE is unable send that as response
     // in current state
@@ -112,8 +109,8 @@ class UpdateContactMobile extends React.Component {
       title="Verify your mobile number"
       renderMessage={() => (
         <>
-          <p class="m-b">An SMS with 6-digit OTP has been sent to {this.contactMobile}</p>
-          <p class="m-t m-b">OTP will expire in 5 mins.</p>
+          <p className="m-b">An SMS with 6-digit OTP has been sent to {this.contactMobile}</p>
+          <p className="m-t m-b">OTP will expire in 5 mins.</p>
         </>
       )}
       isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
@@ -213,7 +210,7 @@ class UpdateContactMobile extends React.Component {
         onResend={this.triggerVerificationOtp}
         title="Change mobile number"
         renderMessage={() => (
-          <p class="m-b">
+          <p className="m-b">
             Changing mobile number requires you to enter OTP sent over to your{' '}
             {hasOnlyEmail && (
               <>

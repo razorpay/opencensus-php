@@ -1,8 +1,9 @@
 import React from 'react';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import Button from 'common/new-ui/Button';
 
 import FeatureEnableButton from './FeatureEnableButton';
+import { compose } from 'redux';
 
 class FeatureEnableSliderButton extends React.PureComponent {
   onClickFeatureEnableSliderButton = (...args) => {
@@ -33,7 +34,7 @@ class FeatureEnableSliderButton extends React.PureComponent {
     return (
       <FeatureEnableButton.Primary
         {...extraProps}
-        class="Forward-Button"
+        className="Forward-Button"
         pendingText="Enabling..."
         onClick={this.onClickFeatureEnableSliderButton}
       >
@@ -60,7 +61,7 @@ class NextButton extends React.PureComponent {
     return (
       <Button.Primary
         feature={this.props.feature}
-        class="Forward-Button"
+        className="Forward-Button"
         iconAfter="arrow-forward"
         pendingText="Enabling..."
         onClick={this.onClickNext}
@@ -71,8 +72,7 @@ class NextButton extends React.PureComponent {
   }
 }
 
-@RTracking((props) => window.rzpQ.component(`${props.feature}_skip_and_get_started_btn`))
-class SkipAndGetStartedButton extends React.PureComponent {
+class SkipAndGetStartedButtonComponent extends React.PureComponent {
   onClickFeatureEnableButton = (...args) => {
     const { props } = this;
 
@@ -107,5 +107,9 @@ class SkipAndGetStartedButton extends React.PureComponent {
     );
   }
 }
+
+const SkipAndGetStartedButton = compose(
+  rTracking((props) => window.rzpQ.component(`${props.feature}_skip_and_get_started_btn`)),
+)(SkipAndGetStartedButtonComponent);
 
 export { NextButton, SkipAndGetStartedButton, FeatureEnableSliderButton };

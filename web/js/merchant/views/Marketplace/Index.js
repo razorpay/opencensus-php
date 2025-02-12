@@ -1,38 +1,37 @@
 import React from 'react';
+import { Alert, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { RZPFeatures } from 'merchant/helpers/data';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { matchPath, Navigate, Route, Routes } from 'react-router-dom';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import { BlockCustomerFeeBearerOnboarding } from 'merchant/components/BlockOnBoarding';
+import DocsLink from 'merchant/components/DocsLink';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import { RZPFeatures } from 'merchant/helpers/data';
+import { fetchTransfers } from 'merchant/reducers/collection';
+import { updateFeatures } from 'merchant/reducers/config';
+import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import { updateFeatures } from 'merchant/reducers/config';
-import { fetchTransfers } from 'merchant/reducers/collection';
-import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
-
+import lazy from 'merchant/routes/LazyLoader';
 import AccountsList from 'merchant/views/Marketplace/Accounts/List';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import BatchesList from 'merchant/views/Marketplace/Batch/List';
-import { BlockCustomerFeeBearerOnboarding } from 'merchant/components/BlockOnBoarding';
-import DocsLink from 'merchant/components/DocsLink';
+import OptimizerAccountsList from 'merchant/views/Marketplace/OptimizerAccounts/List';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';
 import ReversalsList from 'merchant/views/Marketplace/Reversals/List';
 import TransfersList from 'merchant/views/Marketplace/Transfers/List';
-import OptimizerAccountsList from 'merchant/views/Marketplace/OptimizerAccounts/List';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 import Wrapper from './RouteWrapper';
-
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import lazy from 'merchant/routes/LazyLoader';
-import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
-import { Alert, Box } from '@razorpay/blade/components';
 import PaymentsDetails from '../Transactions/v2/Payments/components/PaymentsDetails';
-import { withRouter } from 'common/deprecated/withRouter';
 import { isTransactionCleanupEnabled } from '../Transactions/v2/common/utils';
 
 //lazy loads
@@ -41,25 +40,6 @@ const PlatformFeeList = lazy(() => import('merchant/views/Marketplace/PlatformFe
 const ClonedPaymentsList = (props) => (
   <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
 );
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      mode: state.session.mode,
-      transfers: state.transfers,
-      accounts: state.accounts,
-      routeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.ROUTE),
-    };
-  },
-  {
-    ...ModalActions,
-    fetchAccounts,
-    updateFeatures,
-    showNotification,
-    fetchTransfers,
-    handleProductQuickGuide,
-  },
-)
 class MarketplaceContainer extends React.Component {
   componentDidMount() {
     this.initMarketPlace();
@@ -265,4 +245,25 @@ class MarketplaceContainer extends React.Component {
   }
 }
 
-export default withRouter(MarketplaceContainer);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        mode: state.session.mode,
+        transfers: state.transfers,
+        accounts: state.accounts,
+        routeProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.ROUTE),
+      };
+    },
+    {
+      ...ModalActions,
+      fetchAccounts,
+      updateFeatures,
+      showNotification,
+      fetchTransfers,
+      handleProductQuickGuide,
+    },
+  ),
+  withRouter,
+)(MarketplaceContainer);

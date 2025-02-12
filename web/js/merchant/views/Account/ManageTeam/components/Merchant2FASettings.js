@@ -78,8 +78,8 @@ class Merchant2FASettings extends React.PureComponent {
 
 function Merchant2FATitle() {
   return (
-    <span class="title">
-      <i class="i i-phonelink-lock" /> 2-Step verification to the team
+    <span className="title">
+      <i className="i i-phonelink-lock" /> 2-Step verification to the team
     </span>
   );
 }

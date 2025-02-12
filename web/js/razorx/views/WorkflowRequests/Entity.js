@@ -91,7 +91,7 @@ class RequestEntity extends Component {
 
   render() {
     if (this.pending) {
-      return <div class="spinner center" />;
+      return <div className="spinner center" />;
     }
 
     const { entityData } = this.state;
@@ -101,17 +101,17 @@ class RequestEntity extends Component {
     const url = `${entityMap[data.entity_name]}/${data.entity_id}`;
 
     return (
-      <div class="parent-container requests-container">
-        <div class="header">
-          <span class="title">
+      <div className="parent-container requests-container">
+        <div className="header">
+          <span className="title">
             Experiment:{' '}
             <a className="link" href={`/razorx/${url}`} target="_blank" rel="noopener noreferrer">
               {entityData && entityData.description}
             </a>
           </span>
         </div>
-        <div class="container-group requests-content">
-          <div class="list-container">
+        <div className="container-group requests-content">
+          <div className="list-container">
             <div className="box container">
               {/* Header */}
               <div className="heading">
@@ -126,7 +126,7 @@ class RequestEntity extends Component {
               </div>
             </div>
 
-            <div class="box container">
+            <div className="box container">
               <ExperimentsEntity
                 id={data.entity_id}
                 updateEntityData={this.updateEntityData}

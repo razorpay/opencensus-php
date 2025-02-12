@@ -102,31 +102,6 @@ const stateFormMap = {
   [APPLICATION_STATES.CREDIT_DISBURSED]: DisbursalEntity,
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    fetchLoanApplicationMeta,
-    fetchBusinessDetails,
-    fetchApplicantDetails,
-    getApplications,
-    fetchD2cReport,
-    ...NotificationsActions,
-    fetchDocumentGroups,
-    fetchCreditOffers,
-    getAcceptedOffer,
-    getAgreementStatus,
-    getNach,
-    changeActiveState,
-    fetchProducts,
-    getBusinessByMerchantId,
-    getLenderDetails,
-    getDisbursalDetails,
-    getScheduleDetails,
-    getOfferVerificationTasks,
-  },
-)
 class FormSectionRenderer extends Component {
   componentDidUpdate(prevProps) {
     const { meta, context } = this.props.loanApplicationDetails;
@@ -836,4 +811,28 @@ class FormSectionRenderer extends Component {
   }
 }
 
-export default withRouter(FormSectionRenderer);
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    fetchLoanApplicationMeta,
+    fetchBusinessDetails,
+    fetchApplicantDetails,
+    getApplications,
+    fetchD2cReport,
+    ...NotificationsActions,
+    fetchDocumentGroups,
+    fetchCreditOffers,
+    getAcceptedOffer,
+    getAgreementStatus,
+    getNach,
+    changeActiveState,
+    fetchProducts,
+    getBusinessByMerchantId,
+    getLenderDetails,
+    getDisbursalDetails,
+    getScheduleDetails,
+    getOfferVerificationTasks,
+  },
+)(withRouter(FormSectionRenderer));

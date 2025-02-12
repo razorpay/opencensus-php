@@ -119,11 +119,11 @@ const RequestInitiateModal = ({
   };
 
   return (
-    <div class="Modal__Request-initiate-modal">
+    <div className="Modal__Request-initiate-modal">
       <ModalHeader title="Enable International Payments" onCloseClick={closeModal} />
-      <div class="modal-body">
+      <div className="modal-body">
         {getDescriptionContent()}
-        <div class="Modal__actions text-right">
+        <div className="Modal__actions text-right">
           <Button.Primary onClick={onProvideDetailsClick} disabled={isProvideDetailsDisabled()}>
             Provide Details
           </Button.Primary>

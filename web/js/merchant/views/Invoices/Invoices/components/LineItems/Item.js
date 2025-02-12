@@ -13,27 +13,11 @@ import Item from 'merchant/models/Item';
 import { track } from 'merchant/views/Invoices/ga';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { TAX_DIVISOR, TAX_PERCENTAGE_DIVISOR } from '../../helpers';
+import { compose } from 'redux';
 
 const selector = formValueSelector('newInvoice');
 
-// eslint-disable-next-line react/no-unsafe
-@connect(
-  (state) => {
-    return {
-      session: state.session,
-      invoice_line_items: selector(state, 'line_items'),
-    };
-  },
-  {
-    ...ModalActions,
-    showNotification,
-  },
-)
-@reduxForm({
-  form: 'newInvoice',
-  destroyOnUnmount: false,
-})
-export default class InvoiceLineItem extends React.Component {
+class InvoiceLineItem extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -490,17 +474,19 @@ export default class InvoiceLineItem extends React.Component {
     const applyTaxes = this.props.applyTaxes && selectedCurrency === 'INR'; // Selected Item won't be exists for non-inr items
 
     return (
-      <tr class={`${isEmptyRow ? 'lineItem--empty' : ''} ${disabled ? 'lineItem--disabled' : ''}`}>
-        <td class={`lineItem__item ${selectedOption.item_id ? 'lineItem__item--added' : ''}`}>
-          <span class="remove-row-action" onClick={this.onRemove}>
-            <i class="i-close" />
+      <tr
+        className={`${isEmptyRow ? 'lineItem--empty' : ''} ${disabled ? 'lineItem--disabled' : ''}`}
+      >
+        <td className={`lineItem__item ${selectedOption.item_id ? 'lineItem__item--added' : ''}`}>
+          <span className="remove-row-action" onClick={this.onRemove}>
+            <i className="i-close" />
           </span>
 
-          <div class="item-ac-container">
+          <div className="item-ac-container">
             <div>
               {selectedOption && selectedOption.item_id && !disabled && (
                 <button
-                  class="btn btn-sm btn-text btn-purple edit-in-input ps-item__editbtn"
+                  className="btn btn-sm btn-text btn-purple edit-in-input ps-item__editbtn"
                   onClick={this.quickEditItem}
                 >
                   Edit
@@ -511,7 +497,7 @@ export default class InvoiceLineItem extends React.Component {
                   formName="newInvoice"
                   name={`${fieldName}.name`}
                   component="input"
-                  class="material-input"
+                  className="material-input"
                   readOnly
                 />
               ) : (
@@ -519,7 +505,7 @@ export default class InvoiceLineItem extends React.Component {
                   keepValueInBG={false}
                   formName="newInvoice"
                   name={`${fieldName}.item_id`}
-                  class="material-input"
+                  className="material-input"
                   component={TypeAhead}
                   labelWhenSearchTermBlank="Create new Item"
                   labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
@@ -544,29 +530,29 @@ export default class InvoiceLineItem extends React.Component {
                 />
               )}
             </div>
-            <p class="lineItem__description">{selectedOption.description}</p>
+            <p className="lineItem__description">{selectedOption.description}</p>
             {itemHSNSAC && applyTaxes && (
               <p>
-                <span class="light">{HSNSACLabel} - </span>
+                <span className="light">{HSNSACLabel} - </span>
                 <strong>{itemHSNSAC}</strong>
               </p>
             )}
           </div>
         </td>
 
-        <td class="lineItem__amount">
+        <td className="lineItem__amount">
           <InlineField
             keepValueInBG={false}
             formName="newInvoice"
             name={`${fieldName}.amountInINR`}
             component="input"
-            class="material-input text-right"
+            className="material-input text-right"
             type="number"
             rightAlign={true}
             disabled={disabled}
           />
           {selectedOption.item_id && applyTaxes && (
-            <div class="tax-details">
+            <div className="tax-details">
               {gstSlab &&
                 gstSlab.groups.map((group) => (
                   <p key={`${selectedOption.item_id}_${group}`}>
@@ -578,13 +564,13 @@ export default class InvoiceLineItem extends React.Component {
           )}
         </td>
 
-        <td class="lineItem__qty">
+        <td className="lineItem__qty">
           <InlineField
             keepValueInBG={false}
             formName="newInvoice"
             name={`${fieldName}.quantity`}
             component={InputField}
-            class="material-input text-right"
+            className="material-input text-right"
             type="number"
             min={1}
             rightAlign={true}
@@ -593,12 +579,12 @@ export default class InvoiceLineItem extends React.Component {
           />
         </td>
 
-        <td class="text-right lineItem__total">
-          <div class="item-total">
+        <td className="text-right lineItem__total">
+          <div className="item-total">
             <Amount value={lineItemTotal * 100} currency={invoiceCurrency} />
           </div>
           {selectedOption.item_id && applyTaxes && (
-            <div class="tax-details">
+            <div className="tax-details">
               {gstSlab &&
                 gstSlab.groups.map((group) => (
                   <p key={`${selectedOption.item_id}_${group}_rate`}>
@@ -633,7 +619,7 @@ export default class InvoiceLineItem extends React.Component {
                 </p>
               )}
               {(gstSlab || cess) && (
-                <div class="tax-calc-details">
+                <div className="tax-calc-details">
                   <p>
                     <em>Tax {selectedOption.tax_inclusive ? 'Inclusive' : 'Exclusive'},</em>
                   </p>
@@ -649,3 +635,22 @@ export default class InvoiceLineItem extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        session: state.session,
+        invoice_line_items: selector(state, 'line_items'),
+      };
+    },
+    {
+      ...ModalActions,
+      showNotification,
+    },
+  ),
+  reduxForm({
+    form: 'newInvoice',
+    destroyOnUnmount: false,
+  }),
+)(InvoiceLineItem);

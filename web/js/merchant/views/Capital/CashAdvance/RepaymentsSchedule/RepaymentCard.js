@@ -125,15 +125,15 @@ const Summary = ({ totalOwedAmount, loading, setView, installments }) => {
 
   return (
     <div className="repayment-summary">
-      <div class="top-section flex">
-        <div class="left">
+      <div className="top-section flex">
+        <div className="left">
           <p className="title">Total Owed Amount</p>
           <div className="large-amount">
             {loading ? <PlaceholderLoader /> : <Amount value={totalOwedAmount} />}
           </div>
         </div>
         {totalOwedAmount > 0 && (
-          <div class="right">
+          <div className="right">
             <button
               className="btn btn-primary"
               onClick={() => setView(REPAYMENT_VIEWS.REPAY_AMOUNT)}
@@ -143,9 +143,9 @@ const Summary = ({ totalOwedAmount, loading, setView, installments }) => {
           </div>
         )}
       </div>
-      <div class="footer">
+      <div className="footer">
         {loading ? (
-          <div class="loader-wrapper">
+          <div className="loader-wrapper">
             <PlaceholderLoader />
             <PlaceholderLoader />
           </div>

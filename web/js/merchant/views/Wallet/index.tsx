@@ -71,7 +71,7 @@ const WalletContainer = (session: WalletSession): JSX.Element => {
             >
               <div className="pull-right MultiBatch--action">
                 <div className="btn btn-primary">Upload New Batch</div>
-                <PopoverComponent align="bottom" class="MultiBatch--popover">
+                <PopoverComponent align="bottom" className="MultiBatch--popover">
                   <PopoverTitle>
                     <h4>
                       <strong>Upload New Batch</strong>

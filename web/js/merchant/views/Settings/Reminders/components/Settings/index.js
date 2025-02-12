@@ -224,10 +224,10 @@ class ReminderSettings extends React.Component {
     const { type, totalUnpaidLinks, maxReminderCount, user } = this.props;
 
     return (
-      <div class={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
-        <div class="panel panel-default">
-          <div class="panel-section--theme">
-            <div class="panel-heading">
+      <div className={`setting-item ${isEnabled ? 'enabled' : 'disabled'}`}>
+        <div className="panel panel-default">
+          <div className="panel-section--theme">
+            <div className="panel-heading">
               <Header
                 type={type}
                 isEnabled={isEnabled}
@@ -237,7 +237,7 @@ class ReminderSettings extends React.Component {
             </div>
 
             {isEnabled && (
-              <div class="panel-body">
+              <div className="panel-body">
                 {/* This can only be used inside a component rendered by a Data Router. */}
                 {/* <Prompt when={this.isChanged()} message={this.handleRouteChange} /> */}
 

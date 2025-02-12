@@ -6,7 +6,7 @@ export default function({ accountId, onSubmitSuccessCB, onClose }) {
     <ModalMask
       maskClosable={true}
       onClose={() => onClose(accountId)}
-      class={'Account-Activation'}
+      className={'Account-Activation'}
     >
       <ActivationForm
         onClose={() => onClose(accountId)}
@@ -21,8 +21,8 @@ export default function({ accountId, onSubmitSuccessCB, onClose }) {
 }
 
 const HelpText = ({ msg, ...restProps }) => (
-  <div class="help-text" {...restProps}>
-    <i class="i i-info-outline" />
+  <div className="help-text" {...restProps}>
+    <i className="i i-info-outline" />
     <div>{msg}</div>
   </div>
 );

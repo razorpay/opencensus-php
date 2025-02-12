@@ -23,7 +23,7 @@ const XCAInterested = ({
       <div className="xcaMainSection--strike" />
       <p dangerouslySetInnerHTML={{ __html: sanitizer(XCASubText) }} />
       <div className="btn-wrapper">
-        <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={trackCTAClick}>
+        <AsyncBtn.Primary type="submit" className="btn btn-primary" onClick={trackCTAClick}>
           I am Interested ✨
         </AsyncBtn.Primary>
       </div>

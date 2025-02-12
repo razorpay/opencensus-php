@@ -150,8 +150,8 @@ const UpdateDNSModal = ({
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Update DNS values
         </div>
@@ -164,8 +164,8 @@ const UpdateDNSModal = ({
             <b>{staticData.type} record </b>
             value for your domain. This will point {domainName} to Razorpay.
           </div>
-          <div class="table-responsive">
-            <table class="table table-hover">
+          <div className="table-responsive">
+            <table className="table table-hover">
               <thead>
                 <tr>
                   <th>Type</th>
@@ -178,7 +178,7 @@ const UpdateDNSModal = ({
                   <td>{staticData.type}</td>
                   <td>{staticData.host}</td>
                   <td>
-                    <span class="m-r">
+                    <span className="m-r">
                       {staticData.pointsTo[window.APP_ENV] || staticData.pointsTo.production}
                     </span>
                     <CustomClipboard
@@ -186,10 +186,10 @@ const UpdateDNSModal = ({
                     >
                       <button
                         type="button"
-                        class="btn btn-default btn-xs"
+                        className="btn btn-default btn-xs"
                         onClick={track.settings.copyDnsConfig}
                       >
-                        <i class="i i-copy" />
+                        <i className="i i-copy" />
                         COPY
                       </button>
                     </CustomClipboard>
@@ -199,7 +199,7 @@ const UpdateDNSModal = ({
             </table>
           </div>
 
-          <div class="help-text">
+          <div className="help-text">
             <b>Need help?</b> Refer to our guides for{' '}
             <a href={staticData.helpLinks.goDaddy} target="_blank" rel="noreferrer noopener">
               GoDaddy
@@ -219,7 +219,7 @@ const UpdateDNSModal = ({
             or{' '}
             <DocLink href="https://razorpay.com/docs/payments/payment-pages/domain-linking#connect-your-domain-link">
               others
-              <i class="i i-external-link" />
+              <i className="i i-external-link" />
             </DocLink>
           </div>
           <Input.Check
@@ -231,12 +231,12 @@ const UpdateDNSModal = ({
           />
         </main>
         <footer>
-          <Button.Transparent class="Cancel-btn" type="button" onClick={handleClose}>
+          <Button.Transparent className="Cancel-btn" type="button" onClick={handleClose}>
             Cancel
           </Button.Transparent>
 
           <AsyncBtn.Primary
-            class="Save-btn"
+            className="Save-btn"
             type="submit"
             onClick={handleSubmit}
             disabled={!isChecked}

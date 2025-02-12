@@ -42,15 +42,15 @@ const PlanConfirmationModal = ({ openModal, closeModal, planDetails }) => {
 
   return (
     <ModalContent>
-      <div class="main-title">
-        <div class="heading">
+      <div className="main-title">
+        <div className="heading">
           <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Confirm your plan
         </div>
         <i className="i i-close" onClick={handleClose} />
       </div>
       <main>
-        <div class="plan-card plan-card--selected">
+        <div className="plan-card plan-card--selected">
           <div>
             <span>{planDetails.name}</span>
             {planDetails.metadata.per_month_amount !== planDetails.metadata.plan_amount && (
@@ -61,11 +61,11 @@ const PlanConfirmationModal = ({ openModal, closeModal, planDetails }) => {
             <span>Plan renews on</span>
             <span>{planDetails.next_billing_at}</span>
           </div>
-          <div class="highlight">
+          <div className="highlight">
             <b>Total price</b>
             <b>
               {!!planDetails.metadata.discount && (
-                <span class="badge bg-success">SAVE {planDetails.metadata.discount}%</span>
+                <span className="badge bg-success">SAVE {planDetails.metadata.discount}%</span>
               )}{' '}
               <span>&nbsp; ₹{getFormattedNumber(planDetails.metadata.plan_amount)}</span>
             </b>
@@ -76,7 +76,7 @@ const PlanConfirmationModal = ({ openModal, closeModal, planDetails }) => {
           These charges will be deducted from your settlement balance after you connect your domain.
         </div>
         <br />
-        <div class="help-text">
+        <div className="help-text">
           You can cancel your plan at anytime. By paying, you also agree to the{' '}
           <a
             href="https://razorpay.com/payments/terms/vas"
@@ -90,11 +90,11 @@ const PlanConfirmationModal = ({ openModal, closeModal, planDetails }) => {
         <br />
       </main>
       <footer>
-        <Button.Transparent class="Cancel-btn" type="button" onClick={handleGoBack}>
+        <Button.Transparent className="Cancel-btn" type="button" onClick={handleGoBack}>
           Go back
         </Button.Transparent>
 
-        <Button.Primary class="Save-btn" type="submit" onClick={handleContinue}>
+        <Button.Primary className="Save-btn" type="submit" onClick={handleContinue}>
           Continue
         </Button.Primary>
       </footer>

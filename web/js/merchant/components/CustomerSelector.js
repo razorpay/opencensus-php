@@ -5,16 +5,9 @@ import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { TypeAhead } from 'react-power-select';
 import QuickAdd from 'common/ui/Select/QuickAdd';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      customers: state.customers,
-    };
-  },
-  { fetchCustomersForAutocomplete, ...ModalActions },
-)
-export default class CustomerSelector extends Component {
+class CustomerSelector extends Component {
   state = { customer: this.props.value || {} };
 
   get isControlled() {
@@ -62,7 +55,7 @@ export default class CustomerSelector extends Component {
       <TypeAhead
         showClear
         options={customers.items}
-        class="ps-in-modal"
+        className="ps-in-modal"
         searchIndices={['id', 'name', 'email', 'contact']}
         placeholder={`${customers.loading ? 'Loading...' : 'Select or Add a New Customer'}`}
         disabled={customers.loading || this.props.disabled}
@@ -81,9 +74,20 @@ export default class CustomerSelector extends Component {
 
 const CustomCustomerOption = ({ option }) => {
   return (
-    <div class="custom-powerselect-options">
-      {option.name && <b>{option.name} : </b>}
+    <div className="custom-powerselect-options">
+      {Boolean(option.name) ? <b>{option.name} : </b> : null}
       {option.email || option.contact}
     </div>
   );
 };
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        customers: state.customers,
+      };
+    },
+    { fetchCustomersForAutocomplete, ...ModalActions },
+  ),
+)(CustomerSelector);

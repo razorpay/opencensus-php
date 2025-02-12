@@ -7,8 +7,8 @@ import { MultiSliderOverlay, multiSliderAttributes } from './MultiSliderStyle';
 import MultiSliderComponent from './MultiSlider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
 
-@connect((state) => state.multiSlider, { emptySliderStack })
 class MultiSlider extends Component {
   disableScrolling = () => {
     document.body.style.height = '100%';
@@ -103,7 +103,10 @@ const MultiSliderFallback = connect(null, { showNotification: showNotificationPr
   },
 );
 
-const MultiSliderMain = withRouter(MultiSlider);
+const MultiSliderMain = compose(
+  withRouter,
+  connect((state) => state.multiSlider, { emptySliderStack }),
+)(MultiSlider);
 
 const MultiSliderWrapper = () => {
   return (

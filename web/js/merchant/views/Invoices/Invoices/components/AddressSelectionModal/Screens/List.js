@@ -7,21 +7,11 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import Address from 'merchant/views/Invoices/Invoices/components/Address';
 import PropTypes from 'prop-types';
 import { reduxForm, formValueSelector } from 'redux-form';
+import { compose } from 'redux';
 
 const selector = formValueSelector('addressSelectionList');
 
-@connect(
-  state => ({
-    address_id: selector(state, 'address_id'),
-  }),
-  {
-    ...ModalActions,
-  }
-)
-@reduxForm({
-  form: 'addressSelectionList',
-})
-export default class List extends Component {
+class List extends Component {
   static propTypes = {
     /**
      * Array of Addresses (objects)
@@ -74,26 +64,19 @@ export default class List extends Component {
   /**
    * Invokes the onSave callback.
    */
-  save = props => {
+  save = (props) => {
     const { address_id } = props;
 
     const { addresses } = this.props;
 
-    const address = addresses.find(addr => addr.id === address_id);
+    const address = addresses.find((addr) => addr.id === address_id);
 
     this.props.onSave(address);
     return address;
   };
 
   render() {
-    const {
-      closeModal,
-      onAddClick,
-      addresses,
-      header,
-      handleSubmit,
-      address_id,
-    } = this.props;
+    const { closeModal, onAddClick, addresses, header, handleSubmit, address_id } = this.props;
 
     const { selected } = this.state;
 
@@ -103,44 +86,38 @@ export default class List extends Component {
       <div>
         <ModalHeader title={header} onCloseClick={closeModal} />
 
-        <div class="modal-body AddressSelectionModal AddressSelectionModal__full">
+        <div className="modal-body AddressSelectionModal AddressSelectionModal__full">
           <Alert type="error" message={this.state.errors} />
-          <div class="row AddressSelectionModal__shrunk">
-            <div class="col-md-12">
+          <div className="row AddressSelectionModal__shrunk">
+            <div className="col-md-12">
               <label>All Addresses</label>
             </div>
           </div>
           <form onSubmit={handleSubmit(this.save)}>
-            <div class="AddressSelectionModal__list">
+            <div className="AddressSelectionModal__list">
               {addresses.map((address, i) => (
-                <Address
-                  address={address}
-                  key={`address_list_address_${address.id}_${i}`}
-                />
+                <Address address={address} key={`address_list_address_${address.id}_${i}`} />
               ))}
             </div>
 
-            <div class="AddressSelectionModal__shrunk AddressSelectionModal__bottom">
+            <div className="AddressSelectionModal__shrunk AddressSelectionModal__bottom">
               {showAddButton ? (
                 <div
-                  class="text-primary cursor-pointer AddressSelectionModal__other-cta"
+                  className="text-primary cursor-pointer AddressSelectionModal__other-cta"
                   onClick={onAddClick}
                 >
                   + Add new Address
                 </div>
               ) : (
-                <p>
-                  No new addresses can be added for this customer at this
-                  moment.
-                </p>
+                <p>No new addresses can be added for this customer at this moment.</p>
               )}
 
-              <div class="row">
-                <div class="col-md-12">
-                  <div class="Modal__actions">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="Modal__actions">
                     <AsyncButton
                       type="submit"
-                      class="btn btn-primary btn-block"
+                      className="btn btn-primary btn-block"
                       text="Select Address"
                       pendingText="Saving..."
                       disabled={!address_id}
@@ -156,3 +133,17 @@ export default class List extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      address_id: selector(state, 'address_id'),
+    }),
+    {
+      ...ModalActions,
+    },
+  ),
+  reduxForm({
+    form: 'addressSelectionList',
+  }),
+)(List);

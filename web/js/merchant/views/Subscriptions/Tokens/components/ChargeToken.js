@@ -1,21 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-
-import { rupeesToPaise } from 'common/utils/rzp-utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-import ModalHeader from 'common/ui/ModalHeader';
-
+import { AsyncBtn } from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { AsyncBtn } from 'common/new-ui/Button';
-
-import { chargeToken } from 'merchant/reducers/token';
 import { AmountTooltip } from 'common/ui/Amount';
+import ModalHeader from 'common/ui/ModalHeader';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { chargeToken } from 'merchant/reducers/token';
 import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect((state) => ({ user: state.session.user }), { chargeToken, showNotification })
 class ChargeToken extends Component {
   state = {};
 
@@ -86,15 +82,15 @@ class ChargeToken extends Component {
     return (
       <div>
         <ModalHeader title={`Charge  ${token.id}`} onCloseClick={this.props.closeModal} />
-        <div class="modal-body">
+        <div className="modal-body">
           <Form onSubmit={this.chargeToken} onChange={this.handleChange}>
-            <main class="form-container">
+            <main className="form-container">
               <Input
                 name="amount"
                 label="Amount"
                 addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
                 required
-                class="Input--Amount Input--vTop"
+                className="Input--Amount Input--vTop"
               />
               {amount && isDomesticCard ? (
                 <span>
@@ -105,15 +101,15 @@ class ChargeToken extends Component {
               ) : (
                 ''
               )}
-              <Input name="receipt" label="Receipt No." class="Input--vTop" />
+              <Input name="receipt" label="Receipt No." className="Input--vTop" />
 
-              <Input.Textarea name="description" label="Description" class="Input--vTop" />
+              <Input.Textarea name="description" label="Description" className="Input--vTop" />
             </main>
-            <footer class="m-t">
+            <footer className="m-t">
               <AsyncBtn.Primary
                 type="submit"
                 pendingState="Charging..."
-                class="Button--full-width"
+                className="Button--full-width"
                 onClick={this.chargeToken}
               >
                 Charge Token
@@ -126,4 +122,7 @@ class ChargeToken extends Component {
   }
 }
 
-export default withRouter(ChargeToken);
+export default connect((state) => ({ user: state.session.user }), {
+  chargeToken,
+  showNotification,
+})(withRouter(ChargeToken));

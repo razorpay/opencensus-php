@@ -95,11 +95,11 @@ const Paypal = ({ user, instrument, terminals, isIERevamp }) => {
       )}
     </>
   ) : (
-    <li class="paypal-leaf-item">
+    <li className="paypal-leaf-item">
       <div className={`status-bar ${showStatus ? 'bar-wrap' : 'bar-nowrap'}`}>
         <div className="instrument">
           {instrument.icon && (
-            <div class="icon">
+            <div className="icon">
               <img
                 src={getIcon(instrument.icon)}
                 alt={instrument.name}
@@ -111,13 +111,13 @@ const Paypal = ({ user, instrument, terminals, isIERevamp }) => {
                 }}
               />
               {!isImageLoaded && (
-                <div class="flex">
+                <div className="flex">
                   <p className="PlaceholderLoader" />
                 </div>
               )}
             </div>
           )}
-          <div class="detail">
+          <div className="detail">
             <strong>{instrument.name}</strong>
           </div>
           {showStatus ? (
@@ -145,15 +145,14 @@ const Paypal = ({ user, instrument, terminals, isIERevamp }) => {
         />
       </div>
       {terminals.length === 0 && instrument.description && (
-        <p class="desc">{instrumentDescription}</p>
+        <p className="desc">{instrumentDescription}</p>
       )}
-
       {!user?.isOrgCurlec && !disabled && (
-        <div class="paypal-info mt20">
+        <div className="paypal-info mt20">
           <p>
             You can accept Payments in <strong>International Currencies only</strong> using PayPal
           </p>
-          <p class="mt10">You CANNOT accept Payments in INR</p>
+          <p className="mt10">You CANNOT accept Payments in INR</p>
         </div>
       )}
     </li>

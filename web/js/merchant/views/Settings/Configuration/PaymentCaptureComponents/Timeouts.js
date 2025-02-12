@@ -4,9 +4,9 @@ function Timeouts({ config }) {
   const capture_options = config.capture_options;
 
   return (
-    <div class="timeouts-container">
+    <div className="timeouts-container">
       {capture_options.automatic_expiry_period && (
-        <div class="timeout-item">
+        <div className="timeout-item">
           Auto capture timeout{' '}
           <strong>
             {renderTimeoutAsString(parseTimeoutValues(capture_options, 'automatic_expiry_period'))}
@@ -14,14 +14,14 @@ function Timeouts({ config }) {
         </div>
       )}
       {capture_options.manual_expiry_period && (
-        <div class="timeout-item">
+        <div className="timeout-item">
           Manual capture timeout{' '}
           <strong>
             {renderTimeoutAsString(parseTimeoutValues(capture_options, 'manual_expiry_period'))}
           </strong>
         </div>
       )}
-      <div class="timeout-item">
+      <div className="timeout-item">
         {capture_options.refund_speed === 'normal' ? 'Normal' : 'Instant'} refund after{' '}
         <strong>
           {renderTimeoutAsString(

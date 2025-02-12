@@ -1,9 +1,8 @@
 import { connect } from 'react-redux';
 
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
-
 import { closeModal } from 'merchant_common/reducers/modals';
 
 const MAX_ACCOUNTS = 10;
@@ -11,10 +10,7 @@ const IFSC_LENGTH = 11;
 const ACC_MIN_LENGTH = 5;
 const ACC_MAX_LENGTH = 35;
 
-@connect(null, {
-  closeModal,
-})
-export default class ConfigureBankAccounts extends React.Component {
+class ConfigureBankAccounts extends React.Component {
   constructor(props) {
     super(props);
 
@@ -25,9 +21,7 @@ export default class ConfigureBankAccounts extends React.Component {
     };
 
     this.state = {
-      bankAccounts: props.bankAccounts.length
-        ? props.bankAccounts
-        : [this.DUMMY_ACCOUNT_DETAILS],
+      bankAccounts: props.bankAccounts.length ? props.bankAccounts : [this.DUMMY_ACCOUNT_DETAILS],
     };
   }
 
@@ -48,27 +42,26 @@ export default class ConfigureBankAccounts extends React.Component {
   };
 
   handleSubmit = () => {
-    const bankAccounts = this.state.bankAccounts.map(
-      ({ account_number, ifsc }) => ({ account_number, ifsc })
-    );
+    const bankAccounts = this.state.bankAccounts.map(({ account_number, ifsc }) => ({
+      account_number,
+      ifsc,
+    }));
 
     this.props.onSave(bankAccounts);
 
     this.props.closeModal();
   };
 
-  handleRemoveAccount = id => () => {
-    const bankAccounts = this.state.bankAccounts.filter(
-      account => account.id != id
-    );
+  handleRemoveAccount = (id) => () => {
+    const bankAccounts = this.state.bankAccounts.filter((account) => account.id != id);
 
     this.setState({
       bankAccounts,
     });
   };
 
-  onChange = id => event => {
-    const newBankAccounts = this.state.bankAccounts.map(account => {
+  onChange = (id) => (event) => {
+    const newBankAccounts = this.state.bankAccounts.map((account) => {
       if (account.id === id) {
         const name = event.target.getAttribute('data-name');
 
@@ -90,10 +83,10 @@ export default class ConfigureBankAccounts extends React.Component {
     const { bankAccounts } = this.state;
 
     return (
-      <div class="PopOver--Modal">
-        <div class="title">Authorised Accounts</div>
+      <div className="PopOver--Modal">
+        <div className="title">Authorised Accounts</div>
         <Form onSubmit={this.handleSubmit}>
-          {bankAccounts.map(account => (
+          {bankAccounts.map((account) => (
             <BankAccountDetailsInputForm
               key={account.id}
               {...account}
@@ -102,9 +95,9 @@ export default class ConfigureBankAccounts extends React.Component {
             />
           ))}
 
-          <div class="Modal-actions">
+          <div className="Modal-actions">
             <Button.Transparent
-              class="Cancel-btn"
+              className="Cancel-btn"
               type="button"
               onClick={this.props.closeModal}
             >
@@ -112,29 +105,28 @@ export default class ConfigureBankAccounts extends React.Component {
               Cancel
             </Button.Transparent>
 
-            <Button.Transparent class="Save-btn" type="submit">
-              <span class="icon i-check" />
+            <Button.Transparent className="Save-btn" type="submit">
+              <span className="icon i-check" />
               Save
             </Button.Transparent>
           </div>
         </Form>
 
-        <div class="actions">
+        <div className="actions">
           {bankAccounts.length >= MAX_ACCOUNTS ? (
             'No more accounts can be added'
           ) : (
             <>
               <button
                 type="button"
-                class="btn-link add-account-btn"
+                className="btn-link add-account-btn"
                 onClick={this.addBankAccount}
               >
                 + Add Another Account{' '}
               </button>
 
-              <span class="message">
-                ({MAX_ACCOUNTS - bankAccounts.length} more accounts can be
-                added)
+              <span className="message">
+                ({MAX_ACCOUNTS - bankAccounts.length} more accounts can be added)
               </span>
             </>
           )}
@@ -154,7 +146,7 @@ const BankAccountDetailsInputForm = ({
   <Input.Group>
     <Input
       name={`ifsc__${id}`}
-      class="Input--vTop"
+      className="Input--vTop"
       label="IFSC Code"
       defaultValue={ifsc}
       data-name="ifsc"
@@ -166,7 +158,7 @@ const BankAccountDetailsInputForm = ({
 
     <Input
       name={`account_number__${id}`}
-      class="Input--vTop"
+      className="Input--vTop"
       label="Account Number"
       data-name="account_number"
       placeholder="Enter acc. number"
@@ -177,18 +169,22 @@ const BankAccountDetailsInputForm = ({
       validator={validateAccountNumber}
     />
 
-    <i class="i i-delete-outline" onClick={handleRemoveAccount} />
+    <i className="i i-delete-outline" onClick={handleRemoveAccount} />
   </Input.Group>
 );
 
-const validateIFSC = value => {
+const validateIFSC = (value) => {
   if (value.length !== IFSC_LENGTH) {
     return 'Must be 11 characters long';
   }
 };
 
-const validateAccountNumber = value => {
+const validateAccountNumber = (value) => {
   if (value.length < ACC_MIN_LENGTH) {
     return 'Must be at least 5 characters';
   }
 };
+
+export default connect(null, {
+  closeModal,
+})(ConfigureBankAccounts);

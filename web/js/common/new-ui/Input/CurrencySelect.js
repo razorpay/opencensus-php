@@ -14,7 +14,7 @@ function currencyOption({ option }, noTick = false) {
   return (
     <div>
       <span>
-        <span class="currency-symbol">{option.sym}</span> - {option.label} ({option.name})
+        <span className="currency-symbol">{option.sym}</span> - {option.label} ({option.name})
       </span>
       {noTick && <i className="i-check text-success" />}
     </div>
@@ -25,7 +25,7 @@ function OptionComponent({ option }, noTick = false) {
   return (
     <div>
       <span>
-        <span class="currency-symbol">{option.sym}</span> - {option.label} ({option.name})
+        <span className="currency-symbol">{option.sym}</span> - {option.label} ({option.name})
       </span>
       {noTick && <i className="i-check text-success" />}
     </div>
@@ -148,7 +148,7 @@ class CurrencySelect extends Component {
         resetOnProps
       >
         <div
-          class={classList(
+          className={classList(
             'Input Input--Currency',
             this.props.fullDisplay && 'Input--Currency--fullDisplay',
             (!this.isInternationalEnabled || this.props.disabled) && 'Input--noMargin',
@@ -158,9 +158,9 @@ class CurrencySelect extends Component {
           {this.props.label && <Label text={this.props.label} />}
 
           {this.isInternationalEnabled && !this.props.disabled ? (
-            <div class="Input-content">
-              <div class="Input-elWrapper">
-                <div class="Input-el">
+            <div className="Input-content">
+              <div className="Input-elWrapper">
+                <div className="Input-el">
                   <input
                     name={props.name || 'currency'}
                     value={this.state.currency.name}
@@ -170,7 +170,7 @@ class CurrencySelect extends Component {
                   />
                   <PowerSelect
                     name="currency"
-                    class="Input--Currency-dropdown ps-in-modal"
+                    className="Input--Currency-dropdown ps-in-modal"
                     options={this.state.currencyList}
                     searchIndices={['name', 'label']}
                     placeholder="Select currency"
@@ -187,7 +187,7 @@ class CurrencySelect extends Component {
               </div>
             </div>
           ) : (
-            <div class="value">
+            <div className="value">
               {props.name && (
                 <input name={props.name} value={this.state.currency.name} hidden readOnly />
               )}

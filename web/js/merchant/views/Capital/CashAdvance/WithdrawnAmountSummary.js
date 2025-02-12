@@ -54,7 +54,7 @@ function WithdrawnAmountSummary({
                 <i className="i i-info-outline" />
                 <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
                   <PopoverBody>
-                    <div class="text-center">{getPopoverContent()}</div>
+                    <div className="text-center">{getPopoverContent()}</div>
                   </PopoverBody>
                 </Popover>
               </small>
@@ -68,7 +68,7 @@ function WithdrawnAmountSummary({
         </div>
       </div>
       {showFirstWithdrawalOffer ? (
-        <div class="withdrawals__footer-first-withdrawal-info">
+        <div className="withdrawals__footer-first-withdrawal-info">
           The interest charged will be deposited back into your bank account within a day of
           repayment.
         </div>

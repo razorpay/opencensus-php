@@ -12,24 +12,24 @@ const CreatorModal = ({
   // If not available, then opens modal in center of screen
 
   const modalContent = (
-    <ModalContent class="Modal-content--PaymentButton-CreateForm">
+    <ModalContent className="Modal-content--PaymentButton-CreateForm">
       {children}
     </ModalContent>
   );
 
   return overElement ? (
     <React.Fragment>
-      <div class={className} />
-      <Modal class={className} showCloseBtn={false} allowScroll={allowScroll}>
-        <div class="mimic-expand" />
+      <div className={className} />
+      <Modal className={className} showCloseBtn={false} allowScroll={allowScroll}>
+        <div className="mimic-expand" />
         {modalContent}
       </Modal>
     </React.Fragment>
   ) : (
-    <ModalMask maskClosable={false} class="PaymentButton-CreateForm-editor">
+    <ModalMask maskClosable={false} className="PaymentButton-CreateForm-editor">
       <Modal
         onClose={onClose}
-        class={classList('animate-appear', className)}
+        className={classList('animate-appear', className)}
         showCloseBtn
         allowScroll={allowScroll}
       >

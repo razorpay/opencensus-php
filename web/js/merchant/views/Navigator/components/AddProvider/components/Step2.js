@@ -2,11 +2,11 @@ import Input from 'common/new-ui/Input';
 
 export const Step2 = ({ steps, provider, changeProviderDetails, isProviderNameValid }) => {
   return (
-    <div class="row">
+    <div className="row">
       <div className="col-xs-12">
         <div className="row">
           <div className="col-xs-2">
-            <label for="name" className="title-left">
+            <label htmlFor="name" className="title-left">
               Provider Name
             </label>
           </div>
@@ -16,7 +16,7 @@ export const Step2 = ({ steps, provider, changeProviderDetails, isProviderNameVa
             ) : (
               <Input
                 id="name"
-                class="Input--vLeft"
+                className="Input--vLeft"
                 name="name"
                 value={provider.Provider_name}
                 placeholder="Provider Name"
@@ -42,7 +42,7 @@ export const Step2 = ({ steps, provider, changeProviderDetails, isProviderNameVa
       <div className="col-xs-12">
         <div className="row description-row">
           <div className="col-xs-2">
-            <label for="description" className="title-left">
+            <label htmlFor="description" className="title-left">
               Description
             </label>
           </div>
@@ -52,7 +52,7 @@ export const Step2 = ({ steps, provider, changeProviderDetails, isProviderNameVa
             ) : (
               <textarea
                 id="description"
-                class="Input--vLeft form-control"
+                className="Input--vLeft form-control"
                 value={provider.Description}
                 name="Description"
                 placeholder="Description"

@@ -3,8 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
-import { without } from 'common/utils/rzp-utils';
+import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import {
   resendInvitation,
   updateInvitation,
@@ -13,25 +12,16 @@ import {
 } from 'merchant/reducers/team';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import { RegistrationLinkRoles } from '../../../../helpers/data';
+import { compose } from 'redux';
 
-let ROLES = without(roles, rolesList.OWNER);
-@connect(state => state.session, {
-  fetchTeamDetails,
-  resendInvitation,
-  cancelInvitation,
-  updateInvitation,
-  ...NotificationsActions,
-})
-@reduxForm({})
-export default class EditInvitation extends Component {
+class EditInvitation extends Component {
   UNSAFE_componentWillMount() {
     this.props.initialize({
       role: this.props.invite.role,
     });
   }
 
-  updateInvitation = fieldProps => {
+  updateInvitation = (fieldProps) => {
     return this.props
       .updateInvitation(this.props.invite.id, fieldProps)
       .then(() => {
@@ -41,7 +31,7 @@ export default class EditInvitation extends Component {
           message: "Team member's role has been changed successfully",
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -59,7 +49,7 @@ export default class EditInvitation extends Component {
           message: "Team member's invitation has been removed successfully",
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -81,7 +71,7 @@ export default class EditInvitation extends Component {
           message: `Invitation has been successfully resent to ${invite.email}`,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -126,41 +116,38 @@ export default class EditInvitation extends Component {
       <tr>
         <td>{invite.email}</td>
         <td>
-          <Field
-            name="role"
-            component="select"
-            class="form-control"
-            disabled={!isAllowedEdit}
-          >
-            {Object.keys(ROLES).map((
-              role // Only limited roles allowed to be managed in pending invitation
-            ) => (
-              <option key={role} value={role}>
-                {ROLES[role].label}
-              </option>
-            ))}
+          <Field name="role" component="select" className="form-control" disabled={!isAllowedEdit}>
+            {Object.keys(ROLES).map(
+              (
+                role, // Only limited roles allowed to be managed in pending invitation
+              ) => (
+                <option key={role} value={role}>
+                  {ROLES[role].label}
+                </option>
+              ),
+            )}
           </Field>
         </td>
 
         <td>
           {isAllowedEdit && (
-            <div class="btn-toolbar">
+            <div className="btn-toolbar">
               <AsyncButton
-                class="btn btn-sm btn-success"
+                className="btn btn-sm btn-success"
                 text="Update"
                 data-tip="Update role of the invited user"
                 onClick={handleSubmit(this.updateInvitation)}
               />
 
               <AsyncButton
-                class="btn btn-sm btn-danger"
+                className="btn btn-sm btn-danger"
                 text="Cancel"
                 data-tip="Cancels invitation"
                 onClick={handleSubmit(this.cancelInvitation)}
               />
 
               <AsyncButton
-                class="btn btn-sm btn-primary"
+                className="btn btn-sm btn-primary"
                 text="Resend"
                 data-tip="Resend invitation email"
                 onClick={handleSubmit(this.resendInvitation)}
@@ -172,3 +159,14 @@ export default class EditInvitation extends Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => state.session, {
+    fetchTeamDetails,
+    resendInvitation,
+    cancelInvitation,
+    updateInvitation,
+    ...NotificationsActions,
+  }),
+  reduxForm({}),
+)(EditInvitation);

@@ -54,8 +54,8 @@ const LoggedInUserDetails = ({
   };
 
   return (
-    <div class="panel panel-default">
-      <div class="list-group details-row-container">
+    <div className="panel panel-default">
+      <div className="list-group details-row-container">
         <DetailRow label="User Name" value={() => <span>{titleCase(loggedInUser.name)}</span>} />
         <DetailRow
           label="Login Email"
@@ -68,7 +68,7 @@ const LoggedInUserDetails = ({
                     onClick={handleUpdateClick}
                     data-testid="loggedin-user-email-edit"
                   >
-                    <i class="i i-edit p-l" />
+                    <i className="i i-edit p-l" />
                   </Button.Transparent>
                 ) : null}
               </span>

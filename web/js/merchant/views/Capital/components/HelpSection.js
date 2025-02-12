@@ -78,13 +78,13 @@ function HelpSection({
     },
   ];
   return (
-    <div class="help-section">
+    <div className="help-section">
       {instructions.map((instruction) => (
         // eslint-disable-next-line react/jsx-key
-        <div class="help-action-row">
-          <div class="help-description-wrapper">
+        <div className="help-action-row">
+          <div className="help-description-wrapper">
             {instruction.description && (
-              <p class="instruction-description">{instruction.description}</p>
+              <p className="instruction-description">{instruction.description}</p>
             )}
             {instruction._cta}
           </div>

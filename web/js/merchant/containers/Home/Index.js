@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import moment from 'moment';
+import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { withI18Service } from 'common/i18';
+import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { customRangeText } from 'common/ui/DateRangePicker';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCookie } from 'common/utils/cookies';
+import debounce from 'common/utils/debounce';
+import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
@@ -11,31 +22,52 @@ import {
   groupByPlatform,
   OTHERS,
 } from 'common/utils/pokedex';
-import lazyLoader from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { getItem, setItem, removeItem } from 'common/utils/localStorage';
-import { getCookie } from 'common/utils/cookies';
-import debounce from 'common/utils/debounce';
-import { getFormattedAmountNew, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import rolesList from 'merchant/helpers/permissions/roles-list';
-import * as HomeActions from 'merchant/reducers/home';
-import { fetch } from 'merchant/reducers/pokedex';
-import { fetchPayments } from 'merchant/reducers/collection';
-import { fetchLateAuthConfig } from 'merchant/reducers/config';
-import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
-import WelcomeModal from 'merchant/components/Home/WelcomeModal';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
+import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
-import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
 import KYCStatusModalOld from 'merchant/components/Home/KYCStatusModal-old';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
-import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
+import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
+import TnCModal from 'merchant/components/Home/TnCModal';
+import WelcomeModal from 'merchant/components/Home/WelcomeModal';
+import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
+import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { fetchPayments } from 'merchant/reducers/collection';
+import { fetchLateAuthConfig } from 'merchant/reducers/config';
+import { fetchAmount } from 'merchant/reducers/fetchTransaction';
+import * as HomeActions from 'merchant/reducers/home';
+import { fetch } from 'merchant/reducers/pokedex';
+import { showOrHideHighlightMode, updateSession } from 'merchant/reducers/session';
+import { fetchSupportDetail } from 'merchant/reducers/support_detail';
+import * as EventActions from 'merchant/reducers/trackEvents';
+import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
+import {
+  fetchActivationDetails,
+  getBannerAndModalVisibility,
+  fetchMerchantWebsiteDetails,
+} from 'merchant/reducers/websitecompliance';
+import lazyLoader from 'merchant/routes/LazyLoader';
+import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
+import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
+import {
+  isBankAccountDetailsAllowed,
+  isPaymentMethodEnabled,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
+import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
+import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import FestiveAnimation from './FestiveAnimation';
+import { isRTUXHomepageEnabled } from './RTUX/utils';
 import {
   trackError,
   trackDatesChange,
@@ -45,36 +77,6 @@ import {
   trackIAClose,
   iaActivations,
 } from './ga';
-import RTracking from 'react-tracking';
-import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
-import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
-import TnCModal from 'merchant/components/Home/TnCModal';
-import { fetchSupportDetail } from 'merchant/reducers/support_detail';
-import { showOrHideHighlightMode, updateSession } from 'merchant/reducers/session';
-import { merchantFetch } from 'merchant/utils/ajax';
-import User from 'merchant/models/User';
-import { analyticsTrack } from 'common/utils/analytics';
-import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
-import * as EventActions from 'merchant/reducers/trackEvents';
-import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import {
-  fetchActivationDetails,
-  getBannerAndModalVisibility,
-  fetchMerchantWebsiteDetails,
-} from 'merchant/reducers/websitecompliance';
-import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
-import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
-import {
-  isBankAccountDetailsAllowed,
-  isPaymentMethodEnabled,
-} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
-import FestiveAnimation from './FestiveAnimation';
-import { withI18Service } from 'common/i18';
-import { withSplitzService } from 'common/splitz';
-import { isRTUXHomepageEnabled } from './RTUX/utils';
-import { isExperimentEnabled } from 'common/splitz/utils';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -105,49 +107,6 @@ const paymentInsightsTitle = 'Payment Insights';
 const trafficSectionTitle = 'Traffic split on platforms';
 const recentActivityTitle = 'Recent Activity';
 
-// eslint-disable-next-line react/no-unsafe
-@withI18Service
-@withSplitzService
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      mode: state.session.mode,
-      current_balance: state.home.current_balance,
-      ondemand_restrictions: state.home.ondemand_restrictions,
-      merchantBalanceConfigs: state.home.merchantBalanceConfigs,
-      showInstantActivationSuccess: state.home.instantActivations.showInstantActivationSuccess,
-      showKYCDetails: state.home.instantActivations.showKYCDetails,
-      showPANStatus: state.home.instantActivations.showPANStatus,
-      showKYCStatus: state.home.instantActivations.showKYCStatus,
-      showInstantActivationFraudModal:
-        state.home.instantActivations.showInstantActivationFraudModal,
-      kycStatusModalType: state.home.kycStatusModalType,
-      kycStatusActivationDuration: state.home.kycStatusActivationDuration,
-      settlement_amount: state.home.settlement_amount,
-      lateAuthConfig: state.config.lateAuthConfig,
-      support_detail: state.supportdetails.merchantSupportDetail,
-      showTnCModal: state.home.showTnCModal,
-      referee: state.merchantReferral.data.referee,
-      websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
-    };
-  },
-  {
-    ...HomeActions,
-    ...ModalActions,
-    showNotification,
-    fetchPayments,
-    fetchLateAuthConfig,
-    fetchSupportDetail,
-    showOrHideHighlightMode,
-    updateSession,
-    ...EventActions,
-    fetchMerchantWebsiteDetails,
-    getBannerAndModalVisibility,
-    fetchActivationDetails,
-  },
-)
-@RTracking(() => window.rzpQ.component('HomeContainer'))
 class HomeContainer extends Component {
   constructor(props) {
     super(props);
@@ -560,7 +519,7 @@ class HomeContainer extends Component {
   componentWillUnmount() {
     document.body.className = document.body.className.replace(bodyClass, '');
     window.removeEventListener('resize', this.onResize);
-    window.removeEventListener('click', () => { });
+    window.removeEventListener('click', () => {});
   }
 
   setScrollAmountToStickHeader() {
@@ -862,7 +821,6 @@ class HomeContainer extends Component {
       onFetchPayments,
       onExtraContentMount,
       setScrollAmountToStickHeader,
-      settleNowRestrictionMsg,
       closePartnerExplore,
     } = this;
 
@@ -989,7 +947,7 @@ class HomeContainer extends Component {
       (user.isSubscriptionsEnabled || user.isChargeAtWillEnabled) &&
       !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc');
     return (
-      <div class="react-root dashboard-home">
+      <div className="react-root dashboard-home">
         <FestiveAnimation isMobile={isMobile} user={user.user} />
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.onboarding')}>
           {showRBIChangesBanners ? (
@@ -1215,4 +1173,51 @@ class HomeContainer extends Component {
   }
 }
 
-export default withRouter(HomeContainer);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        mode: state.session.mode,
+        current_balance: state.home.current_balance,
+        ondemand_restrictions: state.home.ondemand_restrictions,
+        merchantBalanceConfigs: state.home.merchantBalanceConfigs,
+        showInstantActivationSuccess: state.home.instantActivations.showInstantActivationSuccess,
+        showKYCDetails: state.home.instantActivations.showKYCDetails,
+        showPANStatus: state.home.instantActivations.showPANStatus,
+        showKYCStatus: state.home.instantActivations.showKYCStatus,
+        showInstantActivationFraudModal:
+          state.home.instantActivations.showInstantActivationFraudModal,
+        kycStatusModalType: state.home.kycStatusModalType,
+        kycStatusActivationDuration: state.home.kycStatusActivationDuration,
+        settlement_amount: state.home.settlement_amount,
+        virtualAccounts: state.virtualaccounts,
+        lateAuthConfig: state.config.lateAuthConfig,
+        support_detail: state.supportdetails.merchantSupportDetail,
+        showTnCModal: state.home.showTnCModal,
+        referee: state.merchantReferral.data.referee,
+        websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+      };
+    },
+    {
+      ...HomeActions,
+      ...ModalActions,
+      showNotification,
+      fetchPayments,
+      fetchVirtualAccounts,
+      fetchLateAuthConfig,
+      fetchSupportDetail,
+      showOrHideHighlightMode,
+      updateSession,
+      ...EventActions,
+      fetchAmount,
+      fetchMerchantWebsiteDetails,
+      getBannerAndModalVisibility,
+      fetchActivationDetails,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('HomeContainer')),
+  withRouter,
+  withSplitzService,
+  withI18Service,
+)(HomeContainer);

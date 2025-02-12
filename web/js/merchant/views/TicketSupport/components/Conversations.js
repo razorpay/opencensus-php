@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -29,7 +30,9 @@ import {
   getTicketStatus,
   createWorkFlowTicket,
 } from 'merchant/views/TicketSupport/utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
+import FailedScreen from './FailedScreen';
 import Reply from './Reply';
 import {
   SAMPLE_TICKET,
@@ -38,27 +41,9 @@ import {
   PRERECORDED_RESPONSES,
   TICKET_STATUS_LABELS,
 } from './data';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
-import FailedScreen from './FailedScreen';
 
 const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
 
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-      scheduleCallConfig: state.config.scheduleCallConfig,
-      user: state.session.user,
-    };
-  },
-  {
-    fetchSupportTickets,
-    showNotification,
-    replyToConversation,
-  },
-)
 class Conversations extends React.Component {
   state = {
     ticket: SAMPLE_TICKET,
@@ -756,4 +741,22 @@ class Conversations extends React.Component {
   }
 }
 
-export default withRouter(withSplitzService(Conversations));
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        ...state.config.config,
+        scheduleCallConfig: state.config.scheduleCallConfig,
+        user: state.session.user,
+      };
+    },
+    {
+      fetchSupportTickets,
+      showNotification,
+      replyToConversation,
+    },
+  ),
+  withRouter,
+  withSplitzService,
+)(Conversations);

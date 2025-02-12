@@ -126,29 +126,29 @@ class ToggleSetting extends Component {
     const { title, desc, hashedWith } = this.props;
 
     return (
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <span class="title">
+      <div className="panel panel-default">
+        <div className="panel-heading">
+          <span className="title">
             <TextHighlighter hashedWith={hashedWith}>{title}</TextHighlighter>
           </span>
 
-          <span class="toggler-btn">
+          <span className="toggler-btn">
             <SwitchField
               defaultChecked={!!isFeatureFlagEnabled}
               onChange={(isChecked, cb) => this.toggleFeatureSetting(isChecked, cb)}
               type="prime"
             />
             {isFeatureFlagEnabled ? (
-              <b class="text-primary">Enabled</b>
+              <b className="text-primary">Enabled</b>
             ) : (
-              <b class="text-faded">Disabled</b>
+              <b className="text-faded">Disabled</b>
             )}
           </span>
         </div>
 
-        <div class="panel-body">
-          <form class="form-horizontal">
-            <div class="description">{desc}</div>
+        <div className="panel-body">
+          <form className="form-horizontal">
+            <div className="description">{desc}</div>
           </form>
         </div>
       </div>

@@ -89,10 +89,10 @@ class EmailReport extends React.Component {
     const { emails, user, isFormDisabled } = this.props;
     const { selectedEmails } = this.state;
     return (
-      <div class="Input EmailReport">
-        <div class="Input-content">
-          <div class="Input">
-            <div class={classList('Input-label', isFormDisabled && 'Input--disabled')}>
+      <div className="Input EmailReport">
+        <div className="Input-content">
+          <div className="Input">
+            <div className={classList('Input-label', isFormDisabled && 'Input--disabled')}>
               Email Report To
             </div>
             {emails.length && !emails.every((email) => email === null) ? (
@@ -113,7 +113,7 @@ class EmailReport extends React.Component {
             !user.user?.signup_via_email ? (
               <Button.Transparent
                 type="button"
-                class="Btn--link"
+                className="Btn--link"
                 onClick={this.openAddEmailModal}
                 disabled={isFormDisabled}
               >
@@ -122,10 +122,10 @@ class EmailReport extends React.Component {
             ) : null}
           </div>
           {emails.length && !emails.every((email) => email === null) ? (
-            <div class="Input ChooseEmail">
+            <div className="Input ChooseEmail">
               <Button.Transparent
                 type="button"
-                class="Btn--Link"
+                className="Btn--Link"
                 onClick={this.openChooseEmailModal}
                 disabled={isFormDisabled}
               >
@@ -140,7 +140,7 @@ class EmailReport extends React.Component {
 }
 
 function NoOfEmailsSelected({ noOfEmails }) {
-  return <div class="NoOfEmailsSelected">{noOfEmails} Emails selected</div>;
+  return <div className="NoOfEmailsSelected">{noOfEmails} Emails selected</div>;
 }
 
 function SelectEmailCheckBox({ selectedEmails, onChange, defaultEmail, isFormDisabled }) {

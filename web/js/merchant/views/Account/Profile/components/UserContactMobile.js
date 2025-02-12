@@ -81,13 +81,13 @@ function ContactMobileValue({ contactMobile, onChangeContactMobile }) {
     <span>
       <ShowWhen additionalCondition={(user) => user.isTwoFactorSetupDone}>
         <span className="text-success m-r">
-          <i class="i i-done-all" />
+          <i className="i i-done-all" />
         </span>
       </ShowWhen>
       {contactMobile || null}
       <ShowWhen additionalCondition={(user) => user.isContactMobileChangeAllowed}>
         <Button.Transparent onClick={onChangeContactMobile}>
-          {contactMobile ? <i class="i i-edit p-l" /> : 'Set Contact Number'}
+          {contactMobile ? <i className="i i-edit p-l" /> : 'Set Contact Number'}
         </Button.Transparent>
       </ShowWhen>
     </span>

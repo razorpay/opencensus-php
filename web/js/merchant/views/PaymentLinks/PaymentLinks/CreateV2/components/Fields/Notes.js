@@ -3,7 +3,7 @@ import track from '../../track';
 
 const Notes = (props) => (
   <Input.PairList
-    class="Input--vTop"
+    className="Input--vTop"
     name="notes"
     label="Notes"
     labelClass="Input-label pb-8"

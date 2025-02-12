@@ -230,27 +230,27 @@ class ListFilter extends Component {
       <form
         name={form}
         onSubmit={handleSubmit(this.handleOnSubmit)}
-        class={`list-filter-container ${
+        className={`list-filter-container ${
           this.props.additionalClass ? this.props.additionalClass : ''
         }`}
       >
         {visibleFilters}
 
-        <div class="form-group list-filter-item btn-toolbar">
+        <div className="form-group list-filter-item btn-toolbar">
           {hasMoreFilters && (
             <button
-              class="btn btn-sm"
+              className="btn btn-sm"
               onClick={() => {
                 this.setState({ showAllFilters: !showAllFilters });
               }}
             >
               {showAllFilters ? 'Hide Filters' : 'Show All Filters'}
-              <i class={`m-l i i-chevron-${showAllFilters ? 'up' : 'down'}`} />
+              <i className={`m-l i i-chevron-${showAllFilters ? 'up' : 'down'}`} />
             </button>
           )}
           <ButtonWrapper>
-            <button class="btn btn-primary btn-sm">Search</button>
-            <AsyncButton class="btn btn-sm btn-text" onClick={this.resetForm} text="Clear" />
+            <button className="btn btn-primary btn-sm">Search</button>
+            <AsyncButton className="btn btn-sm btn-text" onClick={this.resetForm} text="Clear" />
           </ButtonWrapper>
         </div>
       </form>

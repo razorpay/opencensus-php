@@ -51,14 +51,14 @@ export default class InvoicesOnboarding extends Component {
     const { currentFormStep } = this.state;
 
     return (
-      <div class="InvoicesOnboardingModal">
+      <div className="InvoicesOnboardingModal">
         <ModalHeader title="Configure Invoices" onCloseClick={onCloseClick} />
-        <div class="modal-body">
+        <div className="modal-body">
           <Alert type="error" message={this.state.errors} />
-          <div class="row">
-            <div class="col-md-12">
-              <div class="row">
-                <div class="col-md-12">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="row">
+                <div className="col-md-12">
                   <p>
                     Confirm the following details first to start creating GST
                     invoices:

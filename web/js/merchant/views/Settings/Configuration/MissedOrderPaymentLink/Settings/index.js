@@ -57,8 +57,8 @@ const Settings = ({ closeModal, openModal, missed_order_payment_link }) => {
         {closeModal && (
           <div>
             {' '}
-            <button type="button" class="close" onClick={closeModal}>
-              <i class="i i-close" />
+            <button type="button" className="close" onClick={closeModal}>
+              <i className="i i-close" />
             </button>
           </div>
         )}

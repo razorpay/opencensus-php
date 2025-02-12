@@ -39,7 +39,7 @@ const AffordabilityWidgetOnboarding = withRouter((props) => {
   };
   return (
     <tabbed-container>
-      <OnBoardingWrapper class="AffordabilityWidget">
+      <OnBoardingWrapper className="AffordabilityWidget">
         <div className="Slider">
           <Routes>
             <Route

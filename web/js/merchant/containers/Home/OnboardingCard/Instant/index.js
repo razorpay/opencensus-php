@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
 import ImgTopBg from 'assets/onboarding/top_bg.png';
@@ -26,29 +26,11 @@ import {
   trackDotClick,
   trackClose,
 } from './ga';
+import { compose } from 'redux';
 
 // eslint-disable-next-line react/no-unsafe
-@connect(
-  (state) => ({
-    ...state.session,
-    config: state.config.config,
-    windowWidth: state.app.windowWidth,
-    internationalProductsStatus: state.config.internationalProductsStatus,
-    isNcEligibile: state.home.isNcEligibile,
-  }),
-  {
-    showAcceptPaymentsModal,
-    hideAcceptPaymentsModal,
-    openModal,
-    closeModal,
-    fetchInternationalProductsStatus,
-    fetchAddWebsiteWorkflowStatus,
-  },
-)
-@RTracking(() => {
-  return window.rzpQ.component('OnboardingCardInstant');
-})
-export default class OnboardingCardInstant extends Component {
+
+class OnboardingCardInstant extends Component {
   constructor(props) {
     super(props);
 
@@ -239,7 +221,7 @@ export default class OnboardingCardInstant extends Component {
             <div className="onboarding-illustration-top">
               <Image src={ImgTopBg} alt="Top" isWebP />
             </div>
-            <div class="onboarding-illustration">
+            <div className="onboarding-illustration">
               <img
                 src={OnboardingPreview}
                 alt="onboarding"
@@ -272,3 +254,26 @@ export default class OnboardingCardInstant extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      ...state.session,
+      config: state.config.config,
+      windowWidth: state.app.windowWidth,
+      internationalProductsStatus: state.config.internationalProductsStatus,
+      isNcEligibile: state.home.isNcEligibile,
+    }),
+    {
+      showAcceptPaymentsModal,
+      hideAcceptPaymentsModal,
+      openModal,
+      closeModal,
+      fetchInternationalProductsStatus,
+      fetchAddWebsiteWorkflowStatus,
+    },
+  ),
+  rTracking(() => {
+    return window.rzpQ.component('OnboardingCardInstant');
+  }),
+)(OnboardingCardInstant);

@@ -127,8 +127,8 @@ export default function OverView(props) {
   }
   errors.creation_terms_accepted = validateTermsAndConditions(values.creation_terms_accepted);
   return (
-    <div class="Subscription--New-review">
-      <div class="Payments">
+    <div className="Subscription--New-review">
+      <div className="Payments">
         <WorkFlow>
           <WorkSection heading="Description">
             <DualColumnTable heading="Display Text">{display_text}</DualColumnTable>

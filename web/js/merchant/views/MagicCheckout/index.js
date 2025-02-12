@@ -62,7 +62,7 @@ const MagicCheckout = ({
     return (
       <JoinWaitlistButton>
         {(onClick, buttonText, isPending) => (
-          <div class="Button-Container callout-button">
+          <div className="Button-Container callout-button">
             <AsyncBtn.Secondary onClick={onClick} isPending={isPending}>
               {buttonText}
             </AsyncBtn.Secondary>
@@ -88,7 +88,7 @@ const MagicCheckout = ({
   }
 
   return (
-    <OnBoardingWrapper class="MagicCheckout">
+    <OnBoardingWrapper className="MagicCheckout">
       {isMagicXPublicappCodEnabled && user.isC360OnboardingStarted ? (
         <MagicXControlCenter />
       ) : (

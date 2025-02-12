@@ -155,7 +155,7 @@ export default [
         if (currentBusinessType && !activation.props.accountId) {
           if (currentBusinessType == INDIVIDUAL) {
             return (
-              <div class="warning-svg red">
+              <div className="warning-svg red">
                 {WarningSvg()}
                 <span>{individualMsg}</span>
               </div>
@@ -179,7 +179,7 @@ export default [
         {
           label: 'without website/app',
           description: (
-            <ul class="Input-desc-list">
+            <ul className="Input-desc-list">
               <li>
                 You can accept payments by sending out Payment Links and Invoices from Dashboard.
               </li>

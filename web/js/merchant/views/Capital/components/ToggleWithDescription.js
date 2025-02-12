@@ -3,11 +3,11 @@ import React from 'react';
 const DescriptionWrapper = ({ description, meta, expanded, selected }) => {
   if ((selected && meta) || expanded) return meta;
 
-  return <p class="toggle-description">{description}</p>;
+  return <p className="toggle-description">{description}</p>;
 };
 
 const HintWrapper = ({ hint }) => {
-  if (hint && typeof hint === 'string') return <span class="text-faded">&nbsp;{hint}</span>;
+  if (hint && typeof hint === 'string') return <span className="text-faded">&nbsp;{hint}</span>;
 
   return hint || null;
 };
@@ -35,7 +35,7 @@ const ToggleWithDescription = ({
       onClick={() => {
         if (!disabled && !selected) onClick();
       }}
-      class={`toggle-with-description ${disabled ? 'disabled' : ''} ${
+      className={`toggle-with-description ${disabled ? 'disabled' : ''} ${
         selected ? 'selected' : ''
       } ${size} ${className}`}
       role="button"
@@ -43,8 +43,8 @@ const ToggleWithDescription = ({
         ...style,
       }}
     >
-      <div class="title-content-wrapper flex">
-        <div class="toggle-title flex">
+      <div className="title-content-wrapper flex">
+        <div className="toggle-title flex">
           {icon ? (
             <span>
               <i className={icon} />

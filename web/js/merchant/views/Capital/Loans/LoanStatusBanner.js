@@ -66,7 +66,7 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState, isCashAd
     //             We couldn't find any credit records on your name. But, you may still be eligible for
     //             {isCashAdvanceProduct ? ' Cash Advance' : ' a loan'}. &nbsp;
     //             <Button.Transparent
-    //               class="no-margin"
+    //               className="no-margin"
     //               onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
     //             >
     //               View Credit Report
@@ -86,7 +86,7 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState, isCashAd
     //           Based on your credit history, you are eligible for{' '}
     //           {isCashAdvanceProduct ? 'Cash Advance' : 'a loan'}. &nbsp;
     //           <Button.Transparent
-    //             class="no-margin"
+    //             className="no-margin"
     //             onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
     //           >
     //             View Credit Report

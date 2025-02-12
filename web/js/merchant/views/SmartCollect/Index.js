@@ -1,43 +1,28 @@
 import React from 'react';
+import { Alert, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
-import { RZPFeatures } from 'merchant/helpers/data';
-
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
-
-import OnBoarding from './OnBoarding';
-import QuickGuide from './QuickGuide';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import BlockOnBoarding, {
   BlockCustomerFeeBearerOnboarding,
 } from 'merchant/components/BlockOnBoarding';
-
 import ShowWhen from 'merchant/components/ShowWhen';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
-import { updateVirtualAccountBulkEditStatus } from 'merchant/reducers/virtualaccounts';
-import { Alert, Box } from '@razorpay/blade/components';
 import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
-    };
-  },
-  {
-    handleProductQuickGuide,
-    showNotification,
-    fetchFeatureStatus,
-    updateVirtualAccountBulkEditStatus,
-  },
-)
-export default class SmartCollectContainer extends React.Component {
+import { RZPFeatures } from 'merchant/helpers/data';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
+import { updateVirtualAccountBulkEditStatus } from 'merchant/reducers/virtualaccounts';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import OnBoarding from './OnBoarding';
+import QuickGuide from './QuickGuide';
+
+class SmartCollectContainer extends React.Component {
   componentDidMount() {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
@@ -129,3 +114,18 @@ export default class SmartCollectContainer extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
+    };
+  },
+  {
+    handleProductQuickGuide,
+    showNotification,
+    fetchFeatureStatus,
+    updateVirtualAccountBulkEditStatus,
+  },
+)(SmartCollectContainer);

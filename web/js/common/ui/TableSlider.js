@@ -67,13 +67,13 @@ export default class TableSlider extends Component {
     delete newProps.slideUnit;
 
     return (
-      <div class="table-slider">
+      <div className="table-slider">
         {this.state.currentMargin !== 0 && (
           <button
-            class="slider-tabs btn-default left-btn"
+            className="slider-tabs btn-default left-btn"
             onClick={() => this.handleSlideClick('left')}
           >
-            <i class="i i-arrow-back" />
+            <i className="i i-arrow-back" />
           </button>
         )}
 
@@ -81,10 +81,10 @@ export default class TableSlider extends Component {
 
         {this.state.currentMargin !== -this.gutter && (
           <button
-            class="slider-tabs btn-default right-btn"
+            className="slider-tabs btn-default right-btn"
             onClick={() => this.handleSlideClick('right')}
           >
-            <i class="i i-arrow-forward" />
+            <i className="i i-arrow-forward" />
           </button>
         )}
       </div>

@@ -1,31 +1,22 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import moment from 'moment';
+import { connect } from 'react-redux';
 
-import { merchantFetch } from 'merchant/utils/ajax';
-import { isPresent } from 'common/utils/rzp-utils';
-import Tooltip from 'common/ui/Tooltip';
 import Amount from 'common/ui/Amount';
-import Time from 'common/ui/Time';
-import Spinner from 'common/ui/Spinner';
 import Definition from 'common/ui/Definition';
 import Alert from 'common/ui/Forms/Alert';
-import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import Tooltip from 'common/ui/Tooltip';
+import { isPresent } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import ProcessInvoice from './ProcessInvoice';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import { fetchCommissionInvoiceDetails } from 'merchant/reducers/commissionInvoices/details';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(
-  (state) => ({
-    ...state.commissionInvoice,
-    user: state.session.user,
-  }),
-  {
-    showNotification,
-    fetchCommissionInvoiceDetails,
-  },
-)
+import ProcessInvoice from './ProcessInvoice';
+
 class InvoiceDetails extends Component {
   componentDidMount() {
     const { id, fetchCommissionInvoiceDetails } = this.props;
@@ -75,8 +66,8 @@ class InvoiceDetails extends Component {
     const commissionTo = commissionRange.endOf('month').format('DD MMM YYYY');
 
     return (
-      <div class="panel-body" data-testid="invoice-details-panel">
-        <div class="list-group pair-row-container">
+      <div className="panel-body" data-testid="invoice-details-panel">
+        <div className="list-group pair-row-container">
           <EntityDetailRow
             label="Amount"
             value={() => (
@@ -126,8 +117,8 @@ class InvoiceDetails extends Component {
 
     if (loading) {
       return (
-        <div class="content-wrapper content-sm txn-details">
-          <div class="page-spinner-container">
+        <div className="content-wrapper content-sm txn-details">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         </div>
@@ -135,21 +126,21 @@ class InvoiceDetails extends Component {
     }
 
     return (
-      <div class="content-wrapper content-sm txn-details">
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
+      <div className="content-wrapper content-sm txn-details">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
             Invoice Id: <strong>{this.props.id}</strong>
             {isPresent(commissionInvoice) && (
-              <div class="btn-toolbar pull-right">
-                <button class="btn Button--primary--invert" onClick={this.downloadInvoice}>
-                  <i class="i i-download" />
+              <div className="btn-toolbar pull-right">
+                <button className="btn Button--primary--invert" onClick={this.downloadInvoice}>
+                  <i className="i i-download" />
                   <Tooltip theme="dark">Download Invoice</Tooltip>
                 </button>
               </div>
             )}
           </div>
 
-          <div class="SliderPanel__Body">
+          <div className="SliderPanel__Body">
             {commissionInvoice.status === 'issued' && (
               <div className="alert alert-warning rzp-banner commission-payment-wrapper">
                 <span className="rzp-banner-text">
@@ -192,4 +183,13 @@ function renderAmountBreakup(commissionInvoice, currency, isOrgRZP) {
   );
 }
 
-export default InvoiceDetails;
+export default connect(
+  (state) => ({
+    ...state.commissionInvoice,
+    user: state.session.user,
+  }),
+  {
+    showNotification,
+    fetchCommissionInvoiceDetails,
+  },
+)(InvoiceDetails);

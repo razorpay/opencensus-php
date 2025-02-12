@@ -124,12 +124,12 @@ const Webhooks = ({ loading, fetchWebhookEventList, items, match }) => {
     <div className="developers-container" style={{ padding: 20 }}>
       <div className="mb-20">
         <NavLink to="/developers/webhooks">
-          <i class="i i-arrow-back" />
+          <i className="i i-arrow-back" />
           Webhooks
         </NavLink>
       </div>
       <div className="filters-container content-wrapper mb-20">
-        <div class="form-group datepicker-group">
+        <div className="form-group datepicker-group">
           <label>Duration (can only be fetched for max. past 14 days)</label>
           <DateRangePicker
             presets={dateRangePresets}
@@ -139,7 +139,7 @@ const Webhooks = ({ loading, fetchWebhookEventList, items, match }) => {
             callPresetChangeOnCustomOption
           />
         </div>
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Event Type</label>
           <TypeAhead
             options={items}

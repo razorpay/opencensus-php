@@ -1,10 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
-import { FieldWithAmountLimits } from '../../AmountDetails/AdvancedForm';
-
 import debounce from 'common/utils/debounce';
 import {
   updatePaymentButtonData,
@@ -12,14 +11,11 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
-@connect(null, {
-  updatePaymentButtonData,
-  updateAmountField,
-  updateStepReviewProgress,
-})
-export default class MainAmountField extends React.Component {
+import { FieldWithAmountLimits } from '../../AmountDetails/AdvancedForm';
+
+class MainAmountField extends React.Component {
   state = {
-    hasDescription: this.props.field.description ? true : false,
+    hasDescription: !!this.props.field.description,
   };
 
   handleToggleAddDescription = () => {
@@ -57,7 +53,7 @@ export default class MainAmountField extends React.Component {
     this.debounce_onChange(name, value);
   };
 
-  onChangeCurrency = selectedCurrency => {
+  onChangeCurrency = (selectedCurrency) => {
     const newCurrencyISO = selectedCurrency.name;
 
     this.props.updatePaymentButtonData({
@@ -78,16 +74,16 @@ export default class MainAmountField extends React.Component {
 
     return (
       <Form onChange={this.handleChange}>
-        <div class="Form-content">
+        <div className="Form-content">
           <Input.Group>
             <Input
-              class="Input--vTop"
+              className="Input--vTop"
               label="Field Label"
               name="name"
               required
               placeholder="Enter field label"
               defaultValue={field.item.name}
-              validator={val => {
+              validator={(val) => {
                 if (!val) {
                   return 'Field label is required';
                 }
@@ -102,23 +98,18 @@ export default class MainAmountField extends React.Component {
                   return 'Field label must have at least 1 character';
                 }
 
-                if (
-                  this.props.validateSameTitleExists(
-                    val,
-                    this.props.indexInOrder
-                  )
-                ) {
+                if (this.props.validateSameTitleExists(val, this.props.indexInOrder)) {
                   return 'Field label cannot be same as other field';
                 }
               }}
             />
             {hasDescription ? (
               <Input.TextareaAutoResize
-                class="Input--description"
+                className="Input--description"
                 name="description"
                 placeholder="Enter field description"
                 defaultValue={field.description}
-                validator={val => {
+                validator={(val) => {
                   if (val && val.length > 128) {
                     return 'Field description cannot be more than 128 characters';
                   }
@@ -127,10 +118,7 @@ export default class MainAmountField extends React.Component {
             ) : (
               // Had to had Input.Group for consistency with corresponding Currency Field
               <Input.Group>
-                <Button.Transparent
-                  type="button"
-                  onClick={this.handleToggleAddDescription}
-                >
+                <Button.Transparent type="button" onClick={this.handleToggleAddDescription}>
                   <b>+ Add description</b>
                 </Button.Transparent>
               </Input.Group>
@@ -140,7 +128,7 @@ export default class MainAmountField extends React.Component {
           <Input.Group>
             <Input.CurrencySelect
               label="Donation Currency"
-              class="Input--vTop"
+              className="Input--vTop"
               defaultValue={currency}
               disabled={isEditExistingId}
               onChange={this.onChangeCurrency}
@@ -158,3 +146,9 @@ export default class MainAmountField extends React.Component {
     );
   }
 }
+
+export default connect(null, {
+  updatePaymentButtonData,
+  updateAmountField,
+  updateStepReviewProgress,
+})(MainAmountField);

@@ -152,7 +152,7 @@ class KeysListContainer extends ListContainer {
           {!isMobileResolution ? <WebsiteComplianceBanner screen="API Keys" /> : null}
         </div>
         <WebsiteComplianceNudge screen="API Keys" />
-        <div class="content-wrapper">
+        <div className="content-wrapper">
           <Alert type={status.type} message={status.message} />
           <KeysList
             user={user}

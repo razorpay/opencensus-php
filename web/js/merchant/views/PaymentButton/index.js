@@ -2,42 +2,24 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import { RZPFeatures } from 'merchant/helpers/data';
-
+import { updateFeatures } from 'merchant/reducers/config';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-
-import { updateFeatures } from 'merchant/reducers/config';
 import { fetchUser } from 'merchant/reducers/session';
+import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 
 import OnBoarding, {
   getIsPaymentButtonsEnabled,
   getIsAllowedResetPaymentButtonsOnBoarding,
 } from './OnBoarding';
 import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
-import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import { withRouter } from 'common/deprecated/withRouter';
 
-@withRouter
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      mode: state.session.mode,
-      paymentbuttons: state.paymentbuttons,
-      paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
-    };
-  },
-  {
-    handleProductQuickGuide,
-    fetchUser,
-    updateFeatures,
-  },
-)
 class PaymentButtonsContainer extends React.Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.paymentbuttons.loading !== this.props.paymentbuttons.loading) {
@@ -130,4 +112,18 @@ class PaymentButtonsContainer extends React.Component {
   }
 }
 
-export default withRouter(PaymentButtonsContainer);
+export default connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      mode: state.session.mode,
+      paymentbuttons: state.paymentbuttons,
+      paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
+    };
+  },
+  {
+    handleProductQuickGuide,
+    fetchUser,
+    updateFeatures,
+  },
+)(withRouter(PaymentButtonsContainer));

@@ -49,18 +49,18 @@ const SwitchToPaymentLinksV2 = React.memo((props) => {
       bannerKey={`switch-to-payment-links-v2-${props.user.current}`}
       card_id="switch-to-payment-links-v2-banner"
     >
-      <span class="display-inline">{bannerText}</span>
+      <span className="display-inline">{bannerText}</span>
       <a
         href={cta1Link}
         target="_blank"
         rel="noreferrer noopener"
-        class="btn btn-link"
+        className="btn btn-link"
         style={{ paddingLeft: '2px' }}
         onClick={trackKnowMoreClick}
       >
         {cta1Text}
       </a>{' '}
-      <Button.Secondary class="pull-right" onClick={openModal}>
+      <Button.Secondary className="pull-right" onClick={openModal}>
         {cta2Text}
       </Button.Secondary>
     </AnnouncementBanner>

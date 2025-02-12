@@ -5,29 +5,29 @@ import track from './track';
 export default (props) => {
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>QR Code Id</label>
         <Field
           name="qr_code_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.field}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Id</label>
         <Field
           name="payment_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.field}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field name="status" component="select" className="form-control input-sm">
           <option value="">All</option>
           <option value="authorized">Authorized</option>
           <option value="captured">Captured</option>
@@ -36,33 +36,33 @@ export default (props) => {
         </Field>
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Email</label>
         <Field
           name="email"
           component="input"
           type="email"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.field}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Bank Reference Number</label>
         <Field
           name="provider_reference_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.field}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" onBlur={track.field} />
+        <Field name="notes" component="input" className="form-control input-sm" onBlur={track.field} />
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -70,7 +70,7 @@ export default (props) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={track.field}
         />
       </div>

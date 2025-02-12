@@ -77,7 +77,7 @@ export default class InvoicesQuickGuide extends React.Component {
     const orgCustomCode = org.custom_code;
 
     return (
-      <QuickStepGuide activeStep={activeStep} class="Invoices" title={Title} closeBtn={CloseBtn}>
+      <QuickStepGuide activeStep={activeStep} className="Invoices" title={Title} closeBtn={CloseBtn}>
         <QuickGuideStep
           status={invoiceStatus}
           step="Invoices"

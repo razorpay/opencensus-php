@@ -260,7 +260,7 @@ const VerifyOtp = ({
 
   return (
     <>
-      <div class="Input-label otp-label" style={{ textAlign: 'left' }}>
+      <div className="Input-label otp-label" style={{ textAlign: 'left' }}>
         Aadhaar Verification <br /> ( via OTP )
       </div>
       <div className="disabled-aadhaar">

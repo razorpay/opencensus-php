@@ -11,7 +11,7 @@ const StatusLabel = ({ statusCode }) => {
     labelClass = 'label-success';
   }
 
-  return <span class={`status-label label ${labelClass}`}>{statusCode}</span>;
+  return <span className={`status-label label ${labelClass}`}>{statusCode}</span>;
 };
 
 export default StatusLabel;

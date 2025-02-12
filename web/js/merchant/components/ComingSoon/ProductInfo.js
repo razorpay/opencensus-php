@@ -5,14 +5,14 @@ import Banner from './Banner';
 
 const ProductInfo = (props) => {
   return (
-    <div class="ComingSoon--ProductInfo">
-      <div class="title">
+    <div className="ComingSoon--ProductInfo">
+      <div className="title">
         {props.title}
-        <span class="badge coming-soon-badge m-l">Coming Soon!</span>
+        <span className="badge coming-soon-badge m-l">Coming Soon!</span>
       </div>
-      <div class="description">{props.description}</div>
+      <div className="description">{props.description}</div>
 
-      <div class="features-list">
+      <div className="features-list">
         {props.features.map((data, key) => (
           <Feature {...data} key={key} />
         ))}

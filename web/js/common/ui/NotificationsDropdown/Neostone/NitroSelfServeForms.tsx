@@ -195,7 +195,7 @@ const NitroSelfServeForms = ({
             We have taken your request. We will get in touch with you as soon as we can service your
             business and location.
           </div>
-          <Button.Primary type="button" class="btn btn-primary submit-btn" onClick={handleClose}>
+          <Button.Primary type="button" className="btn btn-primary submit-btn" onClick={handleClose}>
             Okay
           </Button.Primary>
         </div>
@@ -241,7 +241,7 @@ const NitroSelfServeForms = ({
             </Button.Transparent>
             <Button.Primary
               type="submit"
-              class="btn btn-primary submit-btn"
+              className="btn btn-primary submit-btn"
               iconAfter="arrow-forward"
               onClick={handleSubmit}
               disabled={isProceedDisabled}

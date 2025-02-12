@@ -296,7 +296,7 @@ class RecentActivity extends Component {
                   <i className="i i-early-settlement" />
                   <span className="early-stl-label">You are eligible for instant settlements</span>
                 </span>
-                <Button.Secondary class="settle-btn-act" onClick={this.props.onSelect}>
+                <Button.Secondary className="settle-btn-act" onClick={this.props.onSelect}>
                   Settle Now
                 </Button.Secondary>
               </React.Fragment>
@@ -308,11 +308,11 @@ class RecentActivity extends Component {
               featureEnabled: 'disable_instant_refunds',
             }) &&
             this.props.default_refund_speed == 'normal' ? (
-              <div class="pull-left main-page-process-instantly">
+              <div className="pull-left main-page-process-instantly">
                 <p>
-                  <i class="i i-instant-refund" /> Process all refunds instantly
+                  <i className="i i-instant-refund" /> Process all refunds instantly
                   <Link to="/config#instantrefunds">
-                    <button onClick={this.enableInstantRefunds} class="btn btn-outline">
+                    <button onClick={this.enableInstantRefunds} className="btn btn-outline">
                       <b>Enable Now</b>
                     </button>
                   </Link>

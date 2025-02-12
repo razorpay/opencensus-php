@@ -1,20 +1,17 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import InputCurrencyAmount from '../../components/InputCurrencyAmount';
-
 import debounce from 'common/utils/debounce';
 import {
   updateAmountField,
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
-@connect(null, {
-  updateAmountField,
-  updateStepReviewProgress,
-})
-export default class PresetAmountField extends React.Component {
+import InputCurrencyAmount from '../../components/InputCurrencyAmount';
+
+class PresetAmountField extends React.Component {
   onChange(name, value) {
     // 1.
     this.markReviewUnDone();
@@ -49,16 +46,16 @@ export default class PresetAmountField extends React.Component {
 
     return (
       <Form onChange={this.handleChange}>
-        <div class="Form-content">
+        <div className="Form-content">
           <Input
-            class="Input--vTop"
+            className="Input--vTop"
             label="Field Label"
             placeholder="Enter field label"
             name="name"
             defaultValue={field.item.name}
             required
             disabled={disabled}
-            validator={val => {
+            validator={(val) => {
               if (!val) {
                 return 'Field label is required';
               }
@@ -73,9 +70,7 @@ export default class PresetAmountField extends React.Component {
                 return 'Field label must have at least 1 character';
               }
 
-              if (
-                this.props.validateSameTitleExists(val, this.props.indexInOrder)
-              ) {
+              if (this.props.validateSameTitleExists(val, this.props.indexInOrder)) {
                 return 'Field label cannot be same as other field';
               }
             }}
@@ -85,7 +80,7 @@ export default class PresetAmountField extends React.Component {
             key={currency}
             label="Amount"
             name="amount"
-            class="Input--vTop Input--CurrencyAmount"
+            className="Input--vTop Input--CurrencyAmount"
             placeholder="0.00"
             defaultValueCurrency={currency}
             defaultValueAmount={field.item.amount}
@@ -95,15 +90,18 @@ export default class PresetAmountField extends React.Component {
           />
 
           <span
-            class="remove-preset-btn"
-            onClick={() =>
-              this.props.handleRemovePresetAmountField(indexInOrder)
-            }
+            className="remove-preset-btn"
+            onClick={() => this.props.handleRemovePresetAmountField(indexInOrder)}
           >
-            <i class="i i-delete-outline" />
+            <i className="i i-delete-outline" />
           </span>
         </div>
       </Form>
     );
   }
 }
+
+export default connect(null, {
+  updateAmountField,
+  updateStepReviewProgress,
+})(PresetAmountField);

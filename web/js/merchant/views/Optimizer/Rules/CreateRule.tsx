@@ -1162,7 +1162,7 @@ const CreateRule = (props, context): JSX.Element => {
                             ) : (
                               <span>
                                 Add conditions to identify payments.{' '}
-                                {/* <a class="nav-link">Learn More</a>{' '} */}
+                                {/* <a className="nav-link">Learn More</a>{' '} */}
                               </span>
                             )}
                           </p>
@@ -1238,7 +1238,7 @@ const CreateRule = (props, context): JSX.Element => {
                         {steps?.[3].edit ? (
                           <p className="desc">
                             Add desired payment provider through which the payment has to be routed.{' '}
-                            {/* <a class="nav-link">Learn More</a> */}
+                            {/* <a className="nav-link">Learn More</a> */}
                           </p>
                         ) : null}
                       </div>

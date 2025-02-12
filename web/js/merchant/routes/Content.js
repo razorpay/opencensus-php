@@ -72,6 +72,7 @@ import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
+import { compose } from 'redux';
 
 // eslint-disable-next-line require-await
 const loadModule = async ({ module, scope }) =>
@@ -664,21 +665,6 @@ const ConnectedNavigationContent = lazy(() =>
   ),
 );
 
-@withI18Service
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    isMobile: state.app.isMobileResolution,
-    org: state.session.org,
-  }),
-  {
-    setBaseLocation,
-    setActiveEntity,
-    setSecActiveEntity,
-    openSlider,
-  },
-)
 class Content extends Component {
   checkIsTransactionsV2Enabled = () => {
     const { splitz, user } = this.props;
@@ -2783,7 +2769,7 @@ class Content extends Component {
         <ModalMask
           maskClosable={false}
           onClose={this.closeModalView}
-          class={ModalFormView.MODAL_MASK_CLASS}
+          className={ModalFormView.MODAL_MASK_CLASS}
         >
           <Suspense fallback={<Loader />}>
             <ModalFormView
@@ -2805,7 +2791,7 @@ class Content extends Component {
     return (
       // to add a new class alognside main-content if we are in the test mode and in m-web
       <main
-        class={classList(
+        className={classList(
           !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
           !fullPageView && !isWebView && this.props.isRTUXHomepage ? 'main-content--rtux' : '',
           !fullPageView && !isWebView && isConnectedNavigation
@@ -2853,4 +2839,22 @@ class Content extends Component {
   }
 }
 
-export default withSplitzService(withRouter(Content));
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      isMobile: state.app.isMobileResolution,
+      org: state.session.org,
+    }),
+    {
+      setBaseLocation,
+      setActiveEntity,
+      setSecActiveEntity,
+      openSlider,
+    },
+  ),
+  withRouter,
+  withSplitzService,
+  withI18Service,
+)(Content);

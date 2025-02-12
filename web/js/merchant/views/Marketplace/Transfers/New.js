@@ -36,8 +36,8 @@ const Label = ({ text, htmlFor, required }) => {
   const classes = typeof required !== 'undefined' ? 'label-required' : '';
 
   return (
-    <div class="pair-label">
-      <label for={htmlFor} class={classes}>
+    <div className="pair-label">
+      <label htmlFor={htmlFor} className={classes}>
         {text}
       </label>
     </div>
@@ -218,35 +218,35 @@ class TransferNew extends Component {
     const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
-      <div class="content-wrapper content-sm txn-details">
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
+      <div className="content-wrapper content-sm txn-details">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
             {this.props.onClose && (
-              <button type="button" class="close close-secondary" onClick={this.props.onClose}>
-                <i class="i i-arrow-back" />
-                <i class="i i-close" />
+              <button type="button" className="close close-secondary" onClick={this.props.onClose}>
+                <i className="i i-arrow-back" />
+                <i className="i i-close" />
               </button>
             )}
-            <i class="i i-plan text-main icon--formal" /> <strong>Create New Transfer</strong>
+            <i className="i i-plan text-main icon--formal" /> <strong>Create New Transfer</strong>
           </div>
 
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
               {isDirectTransferEnabled && <DirectTransferBanner />}
 
               <form
-                class="panel-body create-payment-transfer"
+                className="panel-body create-payment-transfer"
                 name="createPaymentTransfer"
                 onSubmit={handleSubmit(this.save)}
               >
                 <FormItem
                   label={() => <Label text="Account" required />}
                   field={() => (
-                    <div class="custom-select auto-complete-search">
+                    <div className="custom-select auto-complete-search">
                       <TypeAhead
                         options={accountsList}
                         disabled={!accountsList}
-                        class="ps-in-modal"
+                        className="ps-in-modal"
                         searchIndices={['id', 'name', 'email']}
                         placeholder={`${
                           !accountsList ? 'Loading...' : 'Account ID, Account Name, Email Address'
@@ -256,7 +256,7 @@ class TransferNew extends Component {
                         selectedOptionLabelPath="name"
                         optionComponent={({ option }) => {
                           return (
-                            <div class="custom-powerselect-options">
+                            <div className="custom-powerselect-options">
                               <div>
                                 <b>{titleCase(option.name)}</b> ({option.code || option.id})
                               </div>
@@ -264,14 +264,14 @@ class TransferNew extends Component {
                             </div>
                           );
                         }}
-                        beforeOptionsComponent={() => <div class="heading">Recent</div>}
+                        beforeOptionsComponent={() => <div className="heading">Recent</div>}
                         onChange={this.handleSelect}
                         onKeyDown={this.handleKeyDown}
                       />
-                      <div class="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
+                      <div className="typeAheadSkin" ref={(c) => (this.typeAheadSkin = c)}>
                         {this.state.selectedAccount ? (
                           <div>
-                            <b class="option-title">{this.state.selectedAccount.name}</b>
+                            <b className="option-title">{this.state.selectedAccount.name}</b>
                             <span> - {this.state.selectedAccount.id} </span>
                           </div>
                         ) : null}
@@ -288,13 +288,13 @@ class TransferNew extends Component {
                         name="amount"
                         component={InputGroupField}
                         prefix={this.getCurrency()}
-                        class="form-control"
+                        className="form-control"
                         validate={required('Transfer amount is required')}
                         placeholder="0.00"
                         type="text"
                       />
-                      <span class="help-block label--secondary">
-                        <i class="i i-info-outline" />
+                      <span className="help-block label--secondary">
+                        <i className="i i-info-outline" />
                         <b>Transfer amount</b> can not exceed payment amount.
                       </span>
                     </div>
@@ -313,7 +313,7 @@ class TransferNew extends Component {
                         label={() => (
                           <div>
                             <span>Settle Now</span>
-                            <div class="text-fade">
+                            <div className="text-fade">
                               This transfer will be settled in next available settlement slot.
                             </div>
                           </div>
@@ -330,7 +330,7 @@ class TransferNew extends Component {
                           </div>
                         )}
                       />
-                      <div class="transfers-onhold-datepicker">
+                      <div className="transfers-onhold-datepicker">
                         <SuspenseWithLoader>
                           <Field
                             component={DatePickerField}
@@ -354,7 +354,7 @@ class TransferNew extends Component {
                         label={() => (
                           <div>
                             <span>Put on hold</span>
-                            <div class="text-fade">
+                            <div className="text-fade">
                               The settlement will be on hold till specified otherwise.
                             </div>
                           </div>
@@ -376,11 +376,11 @@ class TransferNew extends Component {
                 />
 
                 <Alert type="error" message={this.state.errors} />
-                <div class="btn-toolbar text-center">
+                <div className="btn-toolbar text-center">
                   {typeof this.props.onClose === 'function' && (
                     <button
                       type="button"
-                      class="btn btn-default btn-half"
+                      className="btn btn-default btn-half"
                       onClick={() => {
                         this.context
                           .confirm({
@@ -398,7 +398,7 @@ class TransferNew extends Component {
                   )}
                   <AsyncButton
                     type="submit"
-                    class="btn btn-primary btn-half"
+                    className="btn btn-primary btn-half"
                     text="Create Transfer"
                     pendingText="Creating..."
                     onClick={handleSubmit(this.save)}

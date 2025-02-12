@@ -57,8 +57,8 @@ export default class InputCurrencyAmount extends React.Component {
     } = this.props;
 
     return (
-      <Input.Group label={label} class={`InputGroup--inline ${className}`} required={required}>
-        <div class="Input-content">
+      <Input.Group label={label} className={`InputGroup--inline ${className}`} required={required}>
+        <div className="Input-content">
           <Input.CurrencySelect
             name="currency"
             defaultValue={this.state.currency}
@@ -72,7 +72,7 @@ export default class InputCurrencyAmount extends React.Component {
 
           <Input
             ref={(e) => (this.ele = e)}
-            class="Input--Amount"
+            className="Input--Amount"
             name={this.amountFieldName}
             placeholder={placeholder}
             description={description}

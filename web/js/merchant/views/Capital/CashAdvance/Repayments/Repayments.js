@@ -1,15 +1,16 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import moment from 'moment';
+import { connect } from 'react-redux';
 
-import { CASH_ADVANCE_SECTIONS, COLLECTIONS_PRODUCT_TYPES } from '../constants';
-import RepaymentListFilter from '../CommonListFilter';
-import RepaymentList from './RepaymentsList';
+import fileDownload from 'common/utils/file-download';
+import { arrayObjToCsv } from 'common/utils/rzp-utils';
 import { fetchRepayments as fetchRepaymentsList } from 'merchant/reducers/capital/repayments';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { arrayObjToCsv } from 'common/utils/rzp-utils';
-import fileDownload from 'common/utils/file-download';
+
+import RepaymentList from './RepaymentsList';
+import RepaymentListFilter from '../CommonListFilter';
 import OverviewFooter from '../OverviewFooter/index';
+import { CASH_ADVANCE_SECTIONS, COLLECTIONS_PRODUCT_TYPES } from '../constants';
 
 const getBreakupByBalanceType = (breakups, balanceType) => {
   return breakups
@@ -38,18 +39,6 @@ const exportAsCSV = (repayments) => {
   fileDownload(csvData, 'repayments_export.csv');
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    data: state.repayments.list.data,
-    loading: state.repayments.list.loading,
-    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
-  }),
-  {
-    fetchRepayments: fetchRepaymentsList,
-    showNotification,
-  },
-)
 class Repayments extends React.Component {
   defaultCount = 15;
   pagination = {
@@ -148,4 +137,15 @@ class Repayments extends React.Component {
   }
 }
 
-export default Repayments;
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    data: state.repayments.list.data,
+    loading: state.repayments.list.loading,
+    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
+  }),
+  {
+    fetchRepayments: fetchRepaymentsList,
+    showNotification,
+  },
+)(Repayments);

@@ -63,11 +63,11 @@ class MerchantConfigForm extends PureComponent {
             this.props.closeModal(args);
           }}
         />
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="label-required">{this.props.label}</label>
-            <div class="pull-right">
-              <button type="button" class="btn btn-link no-padding" onClick={this.resetValue}>
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="label-required">{this.props.label}</label>
+            <div className="pull-right">
+              <button type="button" className="btn btn-link no-padding" onClick={this.resetValue}>
                 Reset
               </button>
             </div>
@@ -76,17 +76,17 @@ class MerchantConfigForm extends PureComponent {
               component={InputField}
               placeholder={this.props.label}
               name={this.props.attribute}
-              class="form-control"
+              className="form-control"
               validate={[required(), ...validateConfig]}
               autoFocus={true}
             />
-            <small class="help-block">{this.props.desc}</small>
+            <small className="help-block">{this.props.desc}</small>
           </div>
 
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncButton
               type="submit"
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               text="Update"
               pendingText="Updating..."
               onClick={this.handleSubmit}

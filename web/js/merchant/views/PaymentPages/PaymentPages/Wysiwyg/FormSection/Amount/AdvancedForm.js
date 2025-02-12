@@ -1,18 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
-
 import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
-@connect((state) => ({
-  user: state.session.user,
-}))
-export default class AdvancedForm extends React.PureComponent {
+class AdvancedForm extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -52,11 +47,11 @@ export default class AdvancedForm extends React.PureComponent {
 
     return (
       <Input.Radio
-        class="Input--isStockSet Input--vTop"
+        className="Input--isStockSet Input--vTop"
         label={() => (
           <React.Fragment>
             Units Available
-            <div class="modal-description">in stock</div>
+            <div className="modal-description">in stock</div>
           </React.Fragment>
         )}
         onChange={this.toggleAddStock}
@@ -64,7 +59,7 @@ export default class AdvancedForm extends React.PureComponent {
           'Unlimited',
           {
             label: (
-              <div class="Input--stock">
+              <div className="Input--stock">
                 <span>Limited</span>
                 {isStockSet && (
                   <Input
@@ -168,8 +163,11 @@ export default class AdvancedForm extends React.PureComponent {
     const maxAmount = field.max_amount || '';
 
     return (
-      <Input.Group class="InputGroup--inline Input--vTop Input--limits" label="Input Price Limits">
-        <div class="Input-content Input-content--limits">
+      <Input.Group
+        className="InputGroup--inline Input--vTop Input--limits"
+        label="Input Price Limits"
+      >
+        <div className="Input-content Input-content--limits">
           <Input.CurrencySelect
             defaultValue={currency}
             disabled
@@ -187,9 +185,9 @@ export default class AdvancedForm extends React.PureComponent {
           />
         </div>
 
-        <span class="separator">-</span>
+        <span className="separator">-</span>
 
-        <div class="Input-content Input-content--limits">
+        <div className="Input-content Input-content--limits">
           <Input.CurrencySelect
             defaultValue={currency}
             disabled
@@ -271,13 +269,13 @@ export default class AdvancedForm extends React.PureComponent {
     const maxPurchase = field.max_purchase || '';
 
     return (
-      <Input.Group class="InputGroup--inline  Input--vTop Input--limits">
-        <div class="Input-label">
+      <Input.Group className="InputGroup--inline  Input--vTop Input--limits">
+        <div className="Input-label">
           Quantity Limit
-          <div class="modal-description">per order</div>
+          <div className="modal-description">per order</div>
         </div>
 
-        <div class="Input-content Input-content--limits">
+        <div className="Input-content Input-content--limits">
           <Input
             setRef={this.setRefMinPurchaseLimit}
             name="min_purchase"
@@ -289,9 +287,9 @@ export default class AdvancedForm extends React.PureComponent {
           />
         </div>
 
-        <span class="separator">-</span>
+        <span className="separator">-</span>
 
-        <div class="Input-content Input-content--limits">
+        <div className="Input-content Input-content--limits">
           <Input
             setRef={this.setRefMaxPurchaseLimit}
             name="max_purchase"
@@ -352,8 +350,8 @@ export default class AdvancedForm extends React.PureComponent {
 
     return (
       <div>
-        <div class="modal-title">Advanced Options</div>
-        <div class="modal-description">
+        <div className="modal-title">Advanced Options</div>
+        <div className="modal-description">
           Add quantity, define rules around quantity and price, etc.
         </div>
 
@@ -363,7 +361,7 @@ export default class AdvancedForm extends React.PureComponent {
           {this.fieldsForFieldType}
 
           <footer>
-            <Button.Transparent class="" type="button" onClick={onCloseForm}>
+            <Button.Transparent className="" type="button" onClick={onCloseForm}>
               Cancel
             </Button.Transparent>
 
@@ -376,3 +374,7 @@ export default class AdvancedForm extends React.PureComponent {
     );
   }
 }
+
+export default connect((state) => ({
+  user: state.session.user,
+}))(AdvancedForm);

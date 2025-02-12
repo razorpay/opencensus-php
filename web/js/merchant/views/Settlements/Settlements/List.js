@@ -429,7 +429,7 @@ class SettlementsListContainer extends ListContainer {
 
     return (
       <content>
-        <div class="content-wrapper">
+        <div className="content-wrapper">
           {user.isSettlementV3RevampEnabled ? (
             <StyledWrapper>
               <SettlementListFilterV3

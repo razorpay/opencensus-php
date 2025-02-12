@@ -47,8 +47,8 @@ const OnboardingCoupons = ({
 
   return (
     <div className="Onboarding-coupon">
-      <button type="button" class="close btn" onClick={closeModal}>
-        <i class="i i-close" />
+      <button type="button" className="close btn" onClick={closeModal}>
+        <i className="i i-close" />
       </button>
       <div className="content">
         <div className="offer-period">Limited time offer</div>

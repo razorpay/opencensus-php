@@ -37,7 +37,7 @@ const WebViewHeader = ({ history }) => {
         <img
           src={`${cdnBaseUrl}/static/assets/support-page/left-arrow-white.svg`}
           alt="Back"
-          class="webview-header-back-icon"
+          className="webview-header-back-icon"
           onClick={handleBackClick}
         />
       )}
@@ -45,7 +45,7 @@ const WebViewHeader = ({ history }) => {
       <img
         src={`${cdnBaseUrl}/static/assets/support-page/cross.svg`}
         alt="cross"
-        class="webview-header-cross-icon"
+        className="webview-header-cross-icon"
         onClick={handleClose}
       />
     </header>

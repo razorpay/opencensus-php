@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import * as LocalStorageService from 'common/utils/localStorage';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
@@ -21,16 +21,9 @@ import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    showProducts: state.home.instantActivations.showProductsModal,
-    isNcEligibile: state.home.isNcEligibile,
-  }),
-  { showProductsModal, openModal, closeModal, hideProductsModal },
-)
-@RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
-export default class InstantActivationAnnouncements extends Component {
+class InstantActivationAnnouncements extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -115,8 +108,8 @@ export default class InstantActivationAnnouncements extends Component {
       theme = 'warning';
       title = 'Complete KYC details';
       content = (
-        <div class="announcement-container">
-          <div class="announcement-info">
+        <div className="announcement-container">
+          <div className="announcement-info">
             Please submit your KYC details to get your account activated and start accepting
             payments{' '}
           </div>
@@ -133,8 +126,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Business not supported';
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Your current business category is not supported by our banking partners. If you wish
                 to reconsider and update, please reach out to us via support.
               </div>
@@ -154,8 +147,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'warning';
           title = 'Complete KYC details';
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Please submit your KYC details to get your account activated and start accepting
                 payments{' '}
               </div>
@@ -191,8 +184,8 @@ export default class InstantActivationAnnouncements extends Component {
             </div>
           );
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Our compliance team and banking partners are reviewing your KYC and your payments
                 have been temporarily paused. We will reach out to you for any clarifications.
                 within 3-4 days Meanwhile you can generate your Tnc page{' '}
@@ -248,8 +241,8 @@ export default class InstantActivationAnnouncements extends Component {
             </div>
           );
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 You can accept unlimited payments now. Settlements will be enabled after we
                 successfully review your KYC details. It usually takes 3-4 business days. Generate
                 TnC page at the earliest, failing which KYC review might get delayed{' '}
@@ -299,8 +292,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = user.isOrgAxis ? 'burgundy' : 'warning';
           title = <div>Generate TnC Page</div>;
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Generate the terms and conditions page for your business. KYC review might get
                 delayed in case of delays in generating TnC{' '}
               </div>
@@ -338,8 +331,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'KYC Clarification';
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Your KYC details require further clarifications. Update required details within 1
                 day, otherwise your settlements might get paused.{' '}
               </div>
@@ -353,8 +346,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'settlements have been paused';
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Your funds are on hold now. Update required details immediately to unblock your
                 settlements{' '}
               </div>
@@ -368,8 +361,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'KYC Clarification';
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 We need some clarfication regarding your KYC details. Please clarify at the earliest
                 to get your KYC approved{' '}
               </div>
@@ -383,18 +376,18 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            <div class="announcement-container">
+            <div className="announcement-container">
               <div>
-                <div class="announcement-info-header">
+                <div className="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
-                <div class="full-width-info">
+                <div className="full-width-info">
                   {`You will not be able to receive payments in your bank account if the required details are not updated before ${expiryDate}`}
                 </div>
               </div>
               <div className="big-circle-seprator" />
               <button
-                class="btn-link"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   this.trackNCEasyRedirect({
@@ -414,19 +407,19 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            <div class="announcement-container">
+            <div className="announcement-container">
               <div>
-                <div class="announcement-info-header">
+                <div className="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
-                <div class="full-width-info">
+                <div className="full-width-info">
                   You’ll be able to collect payments and receive them in your bank account only
                   after the required details are updated
                 </div>
               </div>
               <div className="big-circle-seprator" />
               <button
-                class="btn-link"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   this.trackNCEasyRedirect({
@@ -446,19 +439,19 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            <div class="announcement-container">
+            <div className="announcement-container">
               <div>
-                <div class="announcement-info-header">
+                <div className="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
-                <div class="full-width-info">
+                <div className="full-width-info">
                   Your payments acceptance and settlement to your bank account will be made live
                   after getting the required inputs
                 </div>
               </div>
               <div className="big-circle-seprator" />
               <button
-                class="btn-link"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   this.trackNCEasyRedirect({
@@ -478,8 +471,8 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Account Rejected';
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 We can't support your business because it doesn't meet our compliance requirements.
                 Please raise a ticket to request for settlement of payments accepted via your
                 account{' '}
@@ -539,8 +532,8 @@ export default class InstantActivationAnnouncements extends Component {
             </div>
           );
           content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
+            <div className="announcement-container">
+              <div className="announcement-info">
                 Your payments can now be settled to your bank account according to your settlement
                 schedule. As part of the routine compliance checks mandated by our banking partners,
                 we will review your kyc and reach out for further
@@ -709,18 +702,18 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            <div class="announcement-container">
+            <div className="announcement-container">
               <div>
-                <div class="announcement-info-header">
+                <div className="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
-                <div class="full-width-info">
+                <div className="full-width-info">
                   {`You will not be able to receive payments in your bank account if the required details are not updated before ${expiryDate}`}
                 </div>
               </div>
               <div className="big-circle-seprator" />
               <button
-                class="btn-link"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   this.trackNCEasyRedirect({
@@ -738,19 +731,19 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            <div class="announcement-container">
+            <div className="announcement-container">
               <div>
-                <div class="announcement-info-header">
+                <div className="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
-                <div class="full-width-info">
+                <div className="full-width-info">
                   You’ll be able to receive collected payments in your account only after the
                   required details are updated
                 </div>
               </div>
               <div className="big-circle-seprator" />
               <button
-                class="btn-link"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   this.trackNCEasyRedirect({
@@ -768,19 +761,19 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            <div class="announcement-container">
+            <div className="announcement-container">
               <div>
-                <div class="announcement-info-header">
+                <div className="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
-                <div class="full-width-info">
+                <div className="full-width-info">
                   You’ll be able to collect payments and receive them in your bank account only
                   after the required details are updated
                 </div>
               </div>
               <div className="big-circle-seprator" />
               <button
-                class="btn-link"
+                className="btn-link"
                 type="button"
                 onClick={() => {
                   this.trackNCEasyRedirect({
@@ -989,3 +982,14 @@ export default class InstantActivationAnnouncements extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      showProducts: state.home.instantActivations.showProductsModal,
+      isNcEligibile: state.home.isNcEligibile,
+    }),
+    { showProductsModal, openModal, closeModal, hideProductsModal },
+  ),
+  rTracking(() => window.rzpQ.component('InstantActivationAnnouncements')),
+)(InstantActivationAnnouncements);

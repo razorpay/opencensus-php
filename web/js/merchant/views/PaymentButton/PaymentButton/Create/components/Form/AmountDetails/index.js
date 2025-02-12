@@ -2,24 +2,19 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
-import EditableDisplayField from './EditableDisplayField';
-// eslint-disable-next-line import/no-named-as-default
-import FieldsDropdown from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldsDropdown';
 
+// eslint-disable-next-line import/no-named-as-default
+
+import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
+import FieldsDropdown from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldsDropdown';
 
-import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
+import EditableDisplayField from './EditableDisplayField';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  { updateStepReviewProgress },
-)
-export default class AmountDetails extends React.Component {
+class AmountDetails extends React.Component {
   constructor(props) {
     super(props);
 
@@ -79,8 +74,8 @@ export default class AmountDetails extends React.Component {
     const currency = paymentButtonEntity.currency;
 
     return (
-      <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
-        <div class="PaymentButtonForm-AmountDetails Form-content">
+      <div className="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
+        <div className="PaymentButtonForm-AmountDetails Form-content">
           {amountFields.map((field, index) => (
             <EditableDisplayField
               key={field.item.name}
@@ -99,7 +94,7 @@ export default class AmountDetails extends React.Component {
           )}
         </div>
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Transparent
             type="button"
             onClick={() => {
@@ -112,7 +107,7 @@ export default class AmountDetails extends React.Component {
           </Button.Transparent>
 
           <Button.Primary type="button" disabled={!amountFields.length} onClick={this.goNext}>
-            Next <i class="i i-chevron-right" />
+            Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>
       </div>
@@ -163,7 +158,10 @@ class AddAmountFieldButton extends React.Component {
           type="amount"
           options={allowedAmountTypesList}
           trigger={
-            <Button class="Button--primary--invert addFieldBtn" onClick={track.onClickAmountField}>
+            <Button
+              className="Button--primary--invert addFieldBtn"
+              onClick={track.onClickAmountField}
+            >
               <b>+ Add Amount Field</b>
             </Button>
           }
@@ -174,3 +172,10 @@ class AddAmountFieldButton extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  { updateStepReviewProgress },
+)(AmountDetails);

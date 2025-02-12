@@ -36,7 +36,7 @@ export default class QRCodesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class={`QRCode ${className}`}
+        className={`QRCode ${className}`}
         title={Title}
         closeBtn={closeBtn}
       >

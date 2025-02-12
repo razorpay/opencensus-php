@@ -1,28 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { states } from 'merchant/helpers/data';
 import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, BUSINESS_TYPES, VERIFICATION_TIME_SLOTS } from '../constants';
-import { states } from 'merchant/helpers/data';
 import { isPreceedingState } from '../../utils';
+import { APPLICATION_STATES, BUSINESS_TYPES, VERIFICATION_TIME_SLOTS } from '../constants';
 
 const DOCUMENT_TYPE_LABELS = {
   business: 'Business',
   personal: 'Personal',
 };
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-    user: state.session.user,
-  }),
-  {
-    fetchLoanApplicationMeta,
-    showNotification,
-  },
-)
 class DocumentCollectionInformation extends Component {
   getMasterDocument = (masterDocId) => {
     const { loanApplicationDetails } = this.props;
@@ -70,9 +62,9 @@ class DocumentCollectionInformation extends Component {
     };
 
     return (
-      <div class="documents-wrapper flex">
+      <div className="documents-wrapper flex">
         {Object.entries(requiredDocuments).map(([documentType, documents]) => (
-          <div class="section">
+          <div className="section">
             {documents.map((document) => (
               <p>
                 {this.getMasterDocument(document.document_master_id)
@@ -108,10 +100,10 @@ class DocumentCollectionInformation extends Component {
     };
 
     return (
-      <div class="document-types flex">
+      <div className="document-types flex">
         {Object.entries(requiredDocuments).map(([documentType, documents]) => (
           <div className="section">
-            <p class="text-faded">{DOCUMENT_TYPE_LABELS[documentType]}</p>
+            <p className="text-faded">{DOCUMENT_TYPE_LABELS[documentType]}</p>
           </div>
         ))}
       </div>
@@ -137,10 +129,10 @@ class DocumentCollectionInformation extends Component {
     );
 
     return (
-      <div class="verification-schedule-details">
+      <div className="verification-schedule-details">
         <div className="panel panel-default slot-details">
           <div className="panel-body no-margin full-width">
-            <div class="document-types flex">
+            <div className="document-types flex">
               <div className="section">
                 <strong>{hasDocumentsCollected ? 'Picked at' : 'Date & Time'}</strong>
               </div>
@@ -148,8 +140,8 @@ class DocumentCollectionInformation extends Component {
                 <strong>{hasDocumentsCollected ? 'From' : 'Address'}</strong>
               </div>
             </div>
-            <div class="documents-wrapper flex slot-details-wrapper">
-              <div class="section">
+            <div className="documents-wrapper flex slot-details-wrapper">
+              <div className="section">
                 <p>
                   {
                     VERIFICATION_TIME_SLOTS.find(
@@ -159,7 +151,7 @@ class DocumentCollectionInformation extends Component {
                 </p>
                 <p>{moment(scheduleDetails.slot_date).format('ll')}</p>
               </div>
-              <div class="section">
+              <div className="section">
                 {`${slotAddress.line_1}, ${slotAddress.city}, ${states[slotAddress.state]} - ${
                   slotAddress.pin_code
                 }`}
@@ -210,4 +202,13 @@ class DocumentCollectionInformation extends Component {
   }
 }
 
-export default DocumentCollectionInformation;
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+    user: state.session.user,
+  }),
+  {
+    fetchLoanApplicationMeta,
+    showNotification,
+  },
+)(DocumentCollectionInformation);

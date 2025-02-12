@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fetchReversal } from 'merchantLA/reducers/marketplace/reversal';
+
 import ReversalDetails from 'merchantLA/components/Marketplace/Reversals/Details';
+import { fetchReversal } from 'merchantLA/reducers/marketplace/reversal';
 
 import setGaTrack from './ga';
 
 const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
-@connect(state => ({ ...state.reversal, ...state.session }), {
-  fetchReversal,
-})
-export default class ReversalDetailsContainer extends Component {
+class ReversalDetailsContainer extends Component {
   fetchData(reversalId) {
     if (!reversalId) {
       return;
@@ -61,3 +59,7 @@ export default class ReversalDetailsContainer extends Component {
     );
   }
 }
+
+export default connect((state) => ({ ...state.reversal, ...state.session }), {
+  fetchReversal,
+})(ReversalDetailsContainer);

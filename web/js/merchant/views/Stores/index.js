@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Routes, NavLink, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import StoreOnboarding from './Onboarding';
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -18,19 +18,8 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import track from './Onboarding/track';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { withRouter } from 'common/deprecated/withRouter';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    store: state.storefront,
-  }),
-  {
-    closeModal,
-    openModal,
-    showNotification,
-    fetchStore,
-  },
-)
-@RTracking(() => window.rzpQ.component('StoresContainer'))
 class StoresContainer extends React.Component {
   state = {
     isSettingsOpen: false,
@@ -75,7 +64,7 @@ class StoresContainer extends React.Component {
 
     if (store.entity.loading) {
       content = (
-        <div class="loader-container">
+        <div className="loader-container">
           <Spinner />
         </div>
       );
@@ -91,38 +80,44 @@ class StoresContainer extends React.Component {
           </div>
           {isSettingsOpen && <StoresSettingsModal onClose={this.toggleSettingsModal} />}
           <tabbed-container>
-            <div class="store-header">
+            <div className="store-header">
               <div>
                 <h3>{store.entity.data.title}</h3>
-                <span class="tag">LIVE</span>
+                <span className="tag">LIVE</span>
               </div>
               <div>
                 <a
-                  class="m-r"
+                  className="m-r"
                   target="_blank"
                   href={store.entity.data.store_url}
                   rel="noreferrer noopener"
                   onClick={track.storeLinkClick}
                 >
-                  <span class="mr-5">
+                  <span className="mr-5">
                     stores.razorpay.com/ <strong>{store.entity.data.slug}</strong>
                   </span>
-                  <i class="i i-external-link" />
+                  <i className="i i-external-link" />
                 </a>
-                <span class="actions-group">
-                  <button class="Button Button--primary--invert" onClick={this.toggleShareModal}>
-                    <i class="i i-share-outline mr-5" /> Share
+                <span className="actions-group">
+                  <button
+                    className="Button Button--primary--invert"
+                    onClick={this.toggleShareModal}
+                  >
+                    <i className="i i-share-outline mr-5" /> Share
                   </button>
-                  <button class="Button Button--primary--invert" onClick={this.toggleSettingsModal}>
-                    <i class="i i-settings-outline mr-5" /> Settings
+                  <button
+                    className="Button Button--primary--invert"
+                    onClick={this.toggleSettingsModal}
+                  >
+                    <i className="i i-settings-outline mr-5" /> Settings
                   </button>
                   <Link
-                    class="Button Button--primary"
+                    className="Button Button--primary"
                     to="/stores/products/new"
                     onClick={track.addProductDashboardBtn}
                   >
                     <span>
-                      <i class="i i-plus mr-5" /> Add Product
+                      <i className="i i-plus mr-5" /> Add Product
                     </span>
                   </Link>
                 </span>
@@ -164,4 +159,18 @@ class StoresContainer extends React.Component {
   }
 }
 
-export default withRouter(StoresContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      store: state.storefront,
+    }),
+    {
+      closeModal,
+      openModal,
+      showNotification,
+      fetchStore,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('StoresContainer')),
+)(StoresContainer);

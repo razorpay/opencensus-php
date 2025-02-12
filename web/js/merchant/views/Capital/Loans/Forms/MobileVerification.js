@@ -1,31 +1,21 @@
 import React, { Component } from 'react';
-import { OtpInput } from 'merchant/components/OtpInput';
 import { connect } from 'react-redux';
-import ajax from 'merchant/utils/ajax';
+
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { Modal, ModalMask } from 'common/new-ui/Modal';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { OtpInput } from 'merchant/components/OtpInput';
 import {
   fetchLoanApplicationMeta,
   saveD2cReportDetails,
   submitOtp,
 } from 'merchant/reducers/capital';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
+import ajax from 'merchant/utils/ajax';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import { Modal, ModalMask } from 'common/new-ui/Modal';
 import { HOTJAR_TRIGGERS, APPLICATION_STATES } from '../constants';
 
-@connect(
-  (state) => ({
-    merchantDetails: state.session.user,
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    submitOtp,
-    saveD2cReportDetails,
-    fetchLoanApplicationMeta,
-    ...NotificationsActions,
-  },
-)
 class MobileVerification extends Component {
   constructor(props) {
     super(props);
@@ -169,7 +159,7 @@ class MobileVerification extends Component {
     return (
       <ModalMask>
         <Modal
-          class="credit-pull-otp-error"
+          className="credit-pull-otp-error"
           onClose={() => {
             this.setState({
               hasError: false,
@@ -177,18 +167,18 @@ class MobileVerification extends Component {
             });
           }}
         >
-          <div className={`modal-header`}>
+          <div className="modal-header">
             <h3 className="modal-title">
-              <img src={require("assets/capital/otp_error.svg")} alt="Loading icon" />
+              <img src={require('assets/capital/otp_error.svg')} alt="Loading icon" />
               Something went Wrong!
             </h3>
           </div>
           <div className="modal-body">
             Sorry, we're facing connectivity issues. Please try after sometimes.
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncBtn.Primary
                 disabled={this.state.otp.trim().length < 4}
-                class="m-l full-width no-margin"
+                className="m-l full-width no-margin"
                 onClick={this.handleSubmit}
               >
                 Try Again
@@ -203,7 +193,7 @@ class MobileVerification extends Component {
   render() {
     const { loanApplicationDetails } = this.props;
     return (
-      <div class="creditpull-verification-container">
+      <div className="creditpull-verification-container">
         {this.state.generatingToken ? (
           <FormLoader />
         ) : (
@@ -253,12 +243,12 @@ class MobileVerification extends Component {
         )}
         <div className="loan-application-form-footer m-l m-r pull-right">
           <Button.Transparent onClick={this.goBack}>
-            <i class="i i-chevron-left" />
+            <i className="i i-chevron-left" />
             Back
           </Button.Transparent>
           <AsyncBtn.Primary
             disabled={this.state.otp.trim().length < 4}
-            class="m-l"
+            className="m-l"
             onClick={this.handleSubmit}
           >
             Submit
@@ -269,4 +259,15 @@ class MobileVerification extends Component {
   }
 }
 
-export default MobileVerification;
+export default connect(
+  (state) => ({
+    merchantDetails: state.session.user,
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    submitOtp,
+    saveD2cReportDetails,
+    fetchLoanApplicationMeta,
+    ...NotificationsActions,
+  },
+)(MobileVerification);

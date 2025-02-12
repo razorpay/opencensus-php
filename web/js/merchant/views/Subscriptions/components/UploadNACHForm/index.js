@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import PropTypes from 'prop-types';
 import { findBy, normalizeDate, classList } from 'common/utils/rzp-utils';
 
@@ -27,6 +27,7 @@ import {
   trackClickPersonalDetails,
   trackClickBankDetails,
 } from './ga';
+import { compose } from 'redux';
 
 const MandateFields = ['amount', 'frequency', 'debit_type'];
 
@@ -55,11 +56,7 @@ const initState = {
   },
 };
 
-@connect(null, {
-  showNotification,
-})
-@RTracking(() => window.rzpQ.component('UploadNACHForm'))
-export default class UploadNACHForm extends React.Component {
+class UploadNACHForm extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -232,7 +229,7 @@ export default class UploadNACHForm extends React.Component {
     if (uploading) {
       return (
         <>
-          <i class="i i-info-circle" /> Please wait while we upload NACH form.
+          <i className="i i-info-circle" /> Please wait while we upload NACH form.
         </>
       );
     }
@@ -240,8 +237,8 @@ export default class UploadNACHForm extends React.Component {
     if (this.errorsList.length) {
       return (
         <>
-          <h5 class="text-danger">
-            <i class="i i-info-circle" /> Details do not match
+          <h5 className="text-danger">
+            <i className="i i-info-circle" /> Details do not match
           </h5>
           <p>
             The highlighted details on the uploaded NACH form do not match. Please ensure you are
@@ -254,14 +251,14 @@ export default class UploadNACHForm extends React.Component {
     if (errors.heading) {
       return (
         <>
-          <h5 class="text-danger">
-            <i class="i i-info-circle" /> {errors.heading}
+          <h5 className="text-danger">
+            <i className="i i-info-circle" /> {errors.heading}
           </h5>
 
-          {errors.description && <p class="description">{errors.description}</p>}
+          {errors.description && <p className="description">{errors.description}</p>}
 
           {errors.hint && (
-            <Alert class="hint" type="warning" message={errors.hint} showDismiss={false} />
+            <Alert className="hint" type="warning" message={errors.hint} showDismiss={false} />
           )}
         </>
       );
@@ -274,7 +271,7 @@ export default class UploadNACHForm extends React.Component {
 
     const child = key === 'amount' ? <Amount value={value} /> : value;
 
-    return <div class={classList(isError && 'text-danger')}>{child}</div>;
+    return <div className={classList(isError && 'text-danger')}>{child}</div>;
   };
 
   renderNachDetails = () => {
@@ -351,7 +348,7 @@ export default class UploadNACHForm extends React.Component {
 
     const contentView = (
       <div
-        class={classList(
+        className={classList(
           'Links--Create',
           'Wizard',
           'UploadNACH',
@@ -359,9 +356,9 @@ export default class UploadNACHForm extends React.Component {
         )}
       >
         <main>
-          <main-title class="main-title">Upload NACH Form</main-title>
+          <main-title className="main-title">Upload NACH Form</main-title>
 
-          <p class="file-desc">
+          <p className="file-desc">
             If you received the customer&#39;s signed NACH form, you can upload it here.
           </p>
 
@@ -388,9 +385,9 @@ export default class UploadNACHForm extends React.Component {
             )}
           />
 
-          <div class="Desc">{this.renderDesc()}</div>
+          <div className="Desc">{this.renderDesc()}</div>
 
-          <div class="Details">{this.renderNachDetails()}</div>
+          <div className="Details">{this.renderNachDetails()}</div>
         </main>
 
         <footer>
@@ -408,11 +405,11 @@ export default class UploadNACHForm extends React.Component {
     );
 
     if (!isModalView) {
-      return <div class="StandAloneContainer">{contentView}</div>;
+      return <div className="StandAloneContainer">{contentView}</div>;
     }
 
     return (
-      <Modal class={classList('UploadNACHForm animate-down')} onClose={this.onClose}>
+      <Modal className={classList('UploadNACHForm animate-down')} onClose={this.onClose}>
         <ModalContent>{contentView}</ModalContent>
       </Modal>
     );
@@ -452,3 +449,10 @@ function getErrorMessage([error, status]) {
     heading: error,
   };
 }
+
+export default compose(
+  connect(null, {
+    showNotification,
+  }),
+  rTracking(() => window.rzpQ.component('UploadNACHForm')),
+)(UploadNACHForm);

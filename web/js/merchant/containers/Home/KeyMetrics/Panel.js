@@ -4,6 +4,7 @@ import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';
 import Change from 'common/ui/Change';
@@ -31,13 +32,13 @@ import GenericPanel, {
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import Legend from 'merchant/components/Home/Legend';
 import Tooltip from 'merchant/components/Home/Tooltip';
+import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 
 import customToolTip, { positioner } from './customTooltip';
 import { tabsMeta, breakdownVals, breakdownValsMap, PLATFORM, CUMULATIVE } from './data';
 import { trackGoToLinks } from './ga';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -97,10 +98,6 @@ const _getChartData = (data, selectedGrouping, canvas) => {
  */
 
 // eslint-disable-next-line react/no-unsafe
-@connect((state) => ({
-  user: state.session.user,
-  org: state.session.org,
-}))
 class Panel extends Component {
   constructor(props) {
     super(props);
@@ -112,12 +109,12 @@ class Panel extends Component {
       hideGraph: false,
     };
 
-    this.handleGroupingChange = ::this.handleGroupingChange;
-    this.handleBreakdownChange = ::this.handleBreakdownChange;
-    this.handleBreakdownSelectChange = ::this.handleBreakdownSelectChange;
-    this.handleImageExportClick = ::this.handleImageExportClick;
-    this.handleFilterChange = ::this.handleFilterChange;
-    this.handleResize = debounce(::this.handleResize, 250);
+    this.handleGroupingChange = this.handleGroupingChange.bind(this);
+    this.handleBreakdownChange = this.handleBreakdownChange.bind(this);
+    this.handleBreakdownSelectChange = this.handleBreakdownSelectChange.bind(this);
+    this.handleImageExportClick = this.handleImageExportClick.bind(this);
+    this.handleFilterChange = this.handleFilterChange.bind(this);
+    this.handleResize = debounce(this.handleResize.bind(this), 250);
   }
 
   getVisibleGroups(showGroupingByPtfm) {
@@ -470,4 +467,9 @@ class Panel extends Component {
   }
 }
 
-export default Panel;
+export default compose(
+  connect((state) => ({
+    user: state.session.user,
+    org: state.session.org,
+  })),
+)(Panel);

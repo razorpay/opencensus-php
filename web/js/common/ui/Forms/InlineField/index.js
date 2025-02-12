@@ -2,10 +2,8 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, formValueSelector } from 'redux-form';
+import { compose } from 'redux';
 
-@connect(state => ({
-  state,
-}))
 class InlineField extends Component {
   UNSAFE_componentWillMount() {
     this.selector = formValueSelector(this.props.formName);
@@ -28,17 +26,13 @@ class InlineField extends Component {
     if (keepValueInBG) {
       valueInBG = (
         <span
-          class={`${valueInBGClass} inlineField__value-container ${
+          className={`${valueInBGClass} inlineField__value-container ${
             rightAlign ? 'right' : 'left'
           }`}
         >
-          <span
-            class={`${
-              currentValue ? 'inlineField__value' : 'inlineField__placeholder'
-            }`}
-          >
+          <span className={`${currentValue ? 'inlineField__value' : 'inlineField__placeholder'}`}>
             {currentValue || placeholder}
-            {!this.props.disabled ? <i class="i i-edit" /> : ''}
+            {!this.props.disabled ? <i className="i i-edit" /> : ''}
           </span>
         </span>
       );
@@ -46,13 +40,11 @@ class InlineField extends Component {
 
     return (
       <div
-        class={`inlineField ${
-          this.props.disabled ? 'inlineField--disabled' : ''
-        } ${rightAlign ? 'inlineField--right' : 'inlineField--left'}`}
+        className={`inlineField ${this.props.disabled ? 'inlineField--disabled' : ''} ${
+          rightAlign ? 'inlineField--right' : 'inlineField--left'
+        }`}
       >
-        <Field
-          {...{ ...otherProps, placeholder: keepValueInBG ? '' : placeholder }}
-        />
+        <Field {...{ ...otherProps, placeholder: keepValueInBG ? '' : placeholder }} />
         {valueInBG}
       </div>
     );
@@ -60,7 +52,7 @@ class InlineField extends Component {
 }
 
 InlineField.defaultProps = {
-  normalizeValue: value => value,
+  normalizeValue: (value) => value,
   keepValueInBG: false,
   valueInBGClass: '',
 };
@@ -73,4 +65,8 @@ InlineField.propTypes = {
   valueInBGClass: PropTypes.string,
 };
 
-export default InlineField;
+export default compose(
+  connect((state) => ({
+    state,
+  })),
+)(InlineField);

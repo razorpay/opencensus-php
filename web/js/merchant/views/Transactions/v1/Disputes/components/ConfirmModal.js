@@ -67,18 +67,18 @@ const ConfirmModal = (props) => {
     return null;
   };
   return (
-    <div class="dispute-confirmation">
+    <div className="dispute-confirmation">
       <ModalHeader title={title} />
-      <div class="modal-body">
-        <div class="alert alert-warning">{description}</div>
-        <div class="dispute-cta">
-          <button class="btn btn-outline" type="button" onClick={closeModal}>
+      <div className="modal-body">
+        <div className="alert alert-warning">{description}</div>
+        <div className="dispute-cta">
+          <button className="btn btn-outline" type="button" onClick={closeModal}>
             No, Don&#39;t!
           </button>
           <AsyncButton
             text={`Yes, ${context === 'accept' ? 'Accept' : 'Contest'}`}
             pendingText="Please wait..."
-            class="btn btn-primary"
+            className="btn btn-primary"
             onClick={handlePrimaryClick}
           />
         </div>

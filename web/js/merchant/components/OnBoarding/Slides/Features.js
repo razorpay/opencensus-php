@@ -1,5 +1,5 @@
 import React from 'react';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { getCustomURL } from 'merchant/components/DocsLink';
 import FeatureCard from 'merchant/components/Feature';
@@ -8,9 +8,35 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import Button from 'common/new-ui/Button';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { compose } from 'redux';
 
-@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
-export default class OnBoardingFeatures extends React.PureComponent {
+class FeatureLinkComponent extends React.PureComponent {
+  handleFeatureLink = () => {
+    const { ga, url, page, feature, onClick } = this.props;
+
+    window.rzpAnalytics?.({
+      eventCategory: `Onboarding Card (${feature})`,
+      eventAction: `Page ${page} - ${ga}`,
+    });
+    track.introductionHyperlink(feature);
+    if (onClick) onClick();
+    window.open(getCustomURL(url));
+  };
+
+  render() {
+    return (
+      <a className="external-link" onClick={this.handleFeatureLink}>
+        {this.props.label}
+      </a>
+    );
+  }
+}
+
+const FeatureLink = compose(
+  rTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`)),
+)(FeatureLinkComponent);
+
+class OnBoardingFeatures extends React.PureComponent {
   handleBackButton = () => {
     const { handleBackButton: handleBackButtonFromProps, prev, feature, active } = this.props;
 
@@ -89,25 +115,6 @@ export default class OnBoardingFeatures extends React.PureComponent {
   }
 }
 
-@RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`))
-class FeatureLink extends React.PureComponent {
-  handleFeatureLink = () => {
-    const { ga, url, page, feature, onClick } = this.props;
-
-    window.rzpAnalytics?.({
-      eventCategory: `Onboarding Card (${feature})`,
-      eventAction: `Page ${page} - ${ga}`,
-    });
-    track.introductionHyperlink(feature);
-    if (onClick) onClick();
-    window.open(getCustomURL(url));
-  };
-
-  render() {
-    return (
-      <a className="external-link" onClick={this.handleFeatureLink}>
-        {this.props.label}
-      </a>
-    );
-  }
-}
+export default compose(
+  rTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_page`)),
+)(OnBoardingFeatures);

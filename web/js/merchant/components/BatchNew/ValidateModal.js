@@ -260,7 +260,7 @@ class BatchValidateModal extends Component {
                     ) : null}
                   </ol>
                 ) : (
-                  <ol class="validate-modal-ul">
+                  <ol className="validate-modal-ul">
                     <li>
                       Each row must contain a unique Customer Identifier ID and it should not
                       already be in expired or closed state.

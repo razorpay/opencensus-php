@@ -41,7 +41,7 @@ export default class Pager extends Component {
 
     return (
       <div
-        class="clearfix text-center pager"
+        className="clearfix text-center pager"
         style={{
           margin: '20px',
         }}
@@ -50,19 +50,19 @@ export default class Pager extends Component {
           <div className="btn-group pull-right">
             <button
               type="button"
-              class="btn btn-default btn-sm i"
+              className="btn btn-default btn-sm i"
               disabled={prevDisabled}
               onClick={this.onPrev}
             >
-              <i class="i i-chevron-left" />
+              <i className="i i-chevron-left" />
             </button>
             <button
               type="button"
-              class="btn btn-default btn-sm i"
+              className="btn btn-default btn-sm i"
               disabled={nextDisabled || !hasMoreData}
               onClick={this.onNext}
             >
-              <i class="i i-chevron-right" />
+              <i className="i i-chevron-right" />
             </button>
           </div>
         ) : null}

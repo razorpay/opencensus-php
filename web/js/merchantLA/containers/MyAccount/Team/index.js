@@ -9,26 +9,14 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';
 import User from './User';
+import { compose } from 'redux';
 
 const DOCS_URL = {
   IN: 'https://razorpay.com/docs/team-support/',
   MY: 'https://curlec.com/docs/team-support/',
 };
 
-@connect(
-  (state) => {
-    return {
-      invitations: state.team.invitations,
-      users: state.team.users,
-      merchant: state.session.user,
-    };
-  },
-  {
-    fetchTeamDetails,
-    ...NotificationsActions,
-  },
-)
-export default class TeamContainer extends Component {
+class TeamContainer extends Component {
   UNSAFE_componentWillMount() {
     if (this.props.merchant.userRole === 'linked_account_owner') {
       this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
@@ -43,26 +31,26 @@ export default class TeamContainer extends Component {
     return this.props.merchant.userRole === 'linked_account_owner' ? (
       <div>
         <HeaderAction>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <DocLink
-              class="btn btn-link"
+              className="btn btn-link"
               href={DOCS_URL[this.props.merchant?.merchant?.country_code || 'IN']}
               target="_blank"
             >
               Documentation &nbsp;
-              <i class="icon icon-external-link" />
+              <i className="icon icon-external-link" />
             </DocLink>
           </div>
         </HeaderAction>
-        <div class="content-wrapper content-sm">
+        <div className="content-wrapper content-sm">
           <NewInvitation />
 
           {otherUsers.length ? (
             <div>
-              <div class="panel-heading">
+              <div className="panel-heading">
                 <b>Team Members</b>
               </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
+              <table className="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
                   {otherUsers.map((user) => (
                     <User key={user.id} user={user} form={`editUser_${user.id}`} />
@@ -72,14 +60,14 @@ export default class TeamContainer extends Component {
             </div>
           ) : null}
 
-          {!!otherUsers.length && <div class="section-divide" />}
+          {!!otherUsers.length && <div className="section-divide" />}
 
           {invitations.length ? (
             <div>
-              <div class="panel-heading">
+              <div className="panel-heading">
                 <b>Pending Invitations</b>
               </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
+              <table className="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
                   {invitations.map((invite) => (
                     <Invitation
@@ -99,3 +87,19 @@ export default class TeamContainer extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        invitations: state.team.invitations,
+        users: state.team.users,
+        merchant: state.session.user,
+      };
+    },
+    {
+      fetchTeamDetails,
+      ...NotificationsActions,
+    },
+  ),
+)(TeamContainer);

@@ -4,30 +4,23 @@ import Group, { GroupItem } from 'common/ui/Group';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
-import SymbolCard from "assets/symbols/card.svg";
-import SymbolSC from "assets/symbols/sc.svg";
-import SymbolPL from "assets/symbols/pl.svg";
-import SymbolInv from "assets/symbols/inv.svg";
+import SymbolCard from 'assets/symbols/card.svg';
+import SymbolPL from 'assets/symbols/pl.svg';
+import SymbolInv from 'assets/symbols/inv.svg';
+import { compose } from 'redux';
 
-// eslint-disable-next-line no-unused-vars
-@RTracking((state, props, args) => {
-  return window.rzpQ.component('InstantActivationSuccess');
-})
-export default class InstantActivationSuccess extends Component {
+class InstantActivationSuccess extends Component {
   constructor(props) {
     super(props);
-
     this.handleProductsView = this.handleProductsView.bind(this);
   }
 
-  @RTracking(() =>
+  handleProductsView() {
     window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
       action: 'View_Products',
-    }),
-  )
-  handleProductsView() {
+    });
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
     this.props.track.trackViewProducts();
     onClose();
@@ -99,3 +92,9 @@ export default class InstantActivationSuccess extends Component {
     );
   }
 }
+
+export default compose(
+  rTracking(() => {
+    return window.rzpQ.component('InstantActivationSuccess');
+  }),
+)(InstantActivationSuccess);

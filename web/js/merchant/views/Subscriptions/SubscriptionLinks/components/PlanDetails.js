@@ -96,13 +96,13 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         {props.disableEdit && props.isEdit && (
           <div>
             <Alert
-              class="alert-sm"
+              className="alert-sm"
               type="warning"
               message={
                 <>
                   For this subscription, only the offer can be updated.{' '}
                   <DocLink
-                    class="btn-link"
+                    className="btn-link"
                     href="https://razorpay.com/docs/payments/subscriptions/update/"
                     target="_blank"
                   >
@@ -114,15 +114,15 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
             />
           </div>
         )}
-        <div class={classList('Input', !props.isEdit && 'Input--required')}>
+        <div className={classList('Input', !props.isEdit && 'Input--required')}>
           <Label text="Select Plan" />
-          <div class="Input-content">
-            <div class="Input-elWrapper">
+          <div className="Input-content">
+            <div className="Input-elWrapper">
               <TypeAhead
                 // Exclusively pass showClear as false so that in the DOM, PowerSelect__Clear element is removed
                 showClear={false}
                 options={plans}
-                class="ps-in-modal"
+                className="ps-in-modal"
                 selected={selectedPlan}
                 optionComponent={PlanOption}
                 placeholder={planPlaceholder}
@@ -155,7 +155,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
             <Input.Check
               required={!props.isEdit}
               label="Start Date"
-              class="Input--vTop"
+              className="Input--vTop"
               data-name="_startsImmediately"
               disabled={props.isEdit && dateInMoment}
               checked={internals._startsImmediately}
@@ -168,8 +168,8 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
               }}
             />
 
-            <Input.Group class="InputGroup--inline InputGroup--near">
-              <div class="Input-content">
+            <Input.Group className="InputGroup--inline InputGroup--near">
+              <div className="Input-content">
                 <Input.ToCalendar
                   readOnly
                   allowToday
@@ -181,7 +181,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                   defaultValue={dateInMoment}
                   disabled={internals._startsImmediately}
                   onChange={props.onDateChange('start_at')}
-                  addonAfter={<i class="i i-date-range" />}
+                  addonAfter={<i className="i i-date-range" />}
                   onBlur={() => {
                     analytics.track(
                       'subscription.create.start_date_trial',
@@ -197,7 +197,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                     name="start_at_time"
                     placeholder="HH:MM A"
                     defaultValue={dateInMoment}
-                    addonAfter={<i class="i i-time" />}
+                    addonAfter={<i className="i i-time" />}
                     disabled={internals._startsImmediately}
                     onChange={props.onTimeChange('start_at_time')}
                     onBlur={() => {
@@ -232,10 +232,10 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         />
 
         {props.showOffers && (
-          <div class="Input offer-selector">
+          <div className="Input offer-selector">
             <Label text="Offer" />
-            <div class="Input-content">
-              <div class="Input-elWrapper">
+            <div className="Input-content">
+              <div className="Input-elWrapper">
                 <TypeAhead
                   showClear={true}
                   options={props.offers.items}
@@ -252,14 +252,14 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
                 />
 
                 {fields.offer_id && (
-                  <button onClick={this.removeSelectedOffer} class="btn btn-link">
+                  <button onClick={this.removeSelectedOffer} className="btn btn-link">
                     {' '}
                     Remove{' '}
                   </button>
                 )}
               </div>
               {fields.offer_id && (
-                <div class="m-t terms">
+                <div className="m-t terms">
                   {this.selectedOffer.display_text}
                   <p>{this.selectedOffer.terms}</p>
                 </div>
@@ -274,7 +274,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
 
 function PlanOption({ option }) {
   return (
-    <div class="custom-powerselect-options">
+    <div className="custom-powerselect-options">
       <p>{option.name}</p>
       <Amount value={option.amount} currency={option.currency} /> per unit
     </div>
@@ -283,7 +283,7 @@ function PlanOption({ option }) {
 
 function OfferOption({ option }) {
   return (
-    <div class="custom-powerselect-options">
+    <div className="custom-powerselect-options">
       <p>{option.display_text}</p>
     </div>
   );

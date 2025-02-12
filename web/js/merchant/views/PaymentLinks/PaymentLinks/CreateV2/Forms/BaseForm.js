@@ -17,11 +17,11 @@ export default function BaseForm(props) {
 
   if (props.isModalView) {
     return (
-      <Modal class={classList('PaymentLink--CreateV2', 'animate-down')} showCloseBtn={false}>
+      <Modal className={classList('PaymentLink--CreateV2', 'animate-down')} showCloseBtn={false}>
         <ModalContent>{content}</ModalContent>
       </Modal>
     );
   }
 
-  return <div class="StandAloneContainer">{content}</div>;
+  return <div className="StandAloneContainer">{content}</div>;
 }

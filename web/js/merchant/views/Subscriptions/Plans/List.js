@@ -21,18 +21,6 @@ import { getSubscriptionQuickGuideIsClosed } from 'merchant/views/Subscriptions/
 import analytics from 'merchant/views/Subscriptions/analytics';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
-@connect(
-  (state) => ({
-    ...state.plans,
-    user: state.session.user,
-    subscriptions: state.subscriptions,
-  }),
-  {
-    ...ModalActions,
-    fetchAll,
-    fetchSubscriptions,
-  },
-)
 class PlansListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics?.({
@@ -148,4 +136,15 @@ function EmptyComponent() {
   );
 }
 
-export default withRouter(PlansListContainer);
+export default connect(
+  (state) => ({
+    ...state.plans,
+    user: state.session.user,
+    subscriptions: state.subscriptions,
+  }),
+  {
+    ...ModalActions,
+    fetchAll,
+    fetchSubscriptions,
+  },
+)(withRouter(PlansListContainer));

@@ -4,14 +4,14 @@ import Amount from 'common/ui/Amount';
 
 const TotalAmount = ({ type, value, infoText, infoComp, isNew, currency }) => {
   return (
-    <span class="settled-amount">
+    <span className="settled-amount">
       Total {type} amount:{' '}
       {isNew && type === 'debit' ? (
         <Amount value={value * -1} currency={currency} />
       ) : (
         <Amount value={value} currency={currency} />
       )}
-      <i class="i i-info-circle">
+      <i className="i i-info-circle">
         <PopoverComponent align="bottom" theme="dark" data-testid="total-amount-popover">
           <PopoverBody>{infoComp ? <span>{infoComp}</span> : <span>{infoText}</span>}</PopoverBody>
         </PopoverComponent>

@@ -20,7 +20,7 @@ export default React.memo(({ fromWhere, bannerKey }) => {
         href="https://zapier.com/apps/razorpay-1/integrations/?utm_source=GrowthAsset"
         target="_blank"
         rel="noreferrer noopener"
-        class="Button--primary Button scheduled-btn-act btn-border"
+        className="Button--primary Button scheduled-btn-act btn-border"
       >
         <b>Try Now</b>
       </a>{' '}

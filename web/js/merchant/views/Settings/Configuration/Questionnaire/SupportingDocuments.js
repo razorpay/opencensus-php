@@ -151,8 +151,8 @@ const SupportingDocuments = ({
   }
 
   return (
-    <div class="supporting-documents">
-      <div class="main-title pb-20">SUPPORTING DOCUMENTS</div>
+    <div className="supporting-documents">
+      <div className="main-title pb-20">SUPPORTING DOCUMENTS</div>
       <Input.Radio
         required
         name="accepts_intl_txns"
@@ -167,7 +167,7 @@ const SupportingDocuments = ({
         defaultValue={formikProps.values.accepts_intl_txns}
         propagatedError={getError('accepts_intl_txns')}
       />
-      <div class="spacer" />
+      <div className="spacer" />
       <Input
         name="import_export_code"
         label="Import Export Code"
@@ -234,15 +234,15 @@ const SupportingDocuments = ({
       })}
 
       {!disabled && (
-        <div class="Input">
-          <div class="Input-label">Add Document</div>
-          <div class="Input-content">
+        <div className="Input">
+          <div className="Input-label">Add Document</div>
+          <div className="Input-content">
             <PowerSelect
               options={fileTypes}
               optionLabelPath="label"
               searchEnabled={false}
               placeholder="--Select-- (Optional)"
-              optionComponent={({ option }) => <div class="option">{option.label}</div>}
+              optionComponent={({ option }) => <div className="option">{option.label}</div>}
               afterOptionsComponent={({ select }) => {
                 return (
                   <AddOtherDoc
@@ -260,7 +260,7 @@ const SupportingDocuments = ({
               }}
               onChange={handleAddDocument}
             />
-            <div class="Input-desc">
+            <div className="Input-desc">
               It is advisable to upload as many documents available from the above list to present a
               strong case for approval
             </div>
@@ -279,7 +279,7 @@ const AddOtherDoc = ({
   const [takeInput, setTakeInput] = useState(false);
   const [input, setInput] = useState('');
   return (
-    <div class="more-item">
+    <div className="more-item">
       {takeInput ? (
         <>
           <input
@@ -291,7 +291,7 @@ const AddOtherDoc = ({
             autoFocus
           />
           <button
-            class="btn btn-link add"
+            className="btn btn-link add"
             onClick={() => {
               if (input) onActionClick(input);
             }}
@@ -300,7 +300,7 @@ const AddOtherDoc = ({
           </button>
         </>
       ) : (
-        <button class="btn btn-link" onClick={() => setTakeInput(true)}>
+        <button className="btn btn-link" onClick={() => setTakeInput(true)}>
           {label}
         </button>
       )}

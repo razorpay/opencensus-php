@@ -83,13 +83,13 @@ function CaptureMode(props) {
 
   return (
     <>
-      <div class="capture-mode-container">
+      <div className="capture-mode-container">
         <ModalHeader title="Capture Settings" onCloseClick={onClose} />
-        <div class="content">
-          <div class={`upper-panel ${captureMode ? 'flex-7' : ''}`}>
-            <div class="panel-rows">
-              <div class={`${captureMode ? handleLayout().upper : ``}`}>
-                <div class="left-col">
+        <div className="content">
+          <div className={`upper-panel ${captureMode ? 'flex-7' : ''}`}>
+            <div className="panel-rows">
+              <div className={`${captureMode ? handleLayout().upper : ``}`}>
+                <div className="left-col">
                   <input
                     type="radio"
                     onClick={(_) => {
@@ -98,7 +98,7 @@ function CaptureMode(props) {
                     checked={captureMode === 'automatic'}
                   />
                 </div>
-                <div class="right-col">
+                <div className="right-col">
                   <strong
                     onClick={(_) => {
                       setcaptureMode(`automatic`);
@@ -106,7 +106,7 @@ function CaptureMode(props) {
                   >
                     Automatic Capture
                   </strong>
-                  <p class="highlight__subtext">
+                  <p className="highlight__subtext">
                     Sit back, relax! Authorised payments will be captured automatically.
                   </p>
 
@@ -118,13 +118,13 @@ function CaptureMode(props) {
                         defaultValue={timeoutValue}
                         onChange={onTimeoutValueChange}
                       />
-                      <p class="highlight__subtext">Minimum 12 mins and maximum 3 days</p>
+                      <p className="highlight__subtext">Minimum 12 mins and maximum 3 days</p>
                     </>
                   )}
                 </div>
               </div>
-              <div class={`highlight-border-top ${captureMode ? handleLayout().lower : ``}`}>
-                <div class="left-col">
+              <div className={`highlight-border-top ${captureMode ? handleLayout().lower : ``}`}>
+                <div className="left-col">
                   <input
                     type="radio"
                     onClick={(_) => {
@@ -133,7 +133,7 @@ function CaptureMode(props) {
                     checked={captureMode === 'manual'}
                   />
                 </div>
-                <div class="right-col">
+                <div className="right-col">
                   <strong
                     onClick={(_) => {
                       setcaptureMode(`manual`);
@@ -141,7 +141,7 @@ function CaptureMode(props) {
                   >
                     Manual Capture
                   </strong>
-                  <p class="highlight__subtext">
+                  <p className="highlight__subtext">
                     Payments have to be captured manually by you via the API or the dashboard
                   </p>
 
@@ -155,15 +155,15 @@ function CaptureMode(props) {
                         defaultValue={timeoutValue}
                         onChange={onTimeoutValueChange}
                       />
-                      <p class="highlight__subtext">Minimum 12 mins and maximum 3 days</p>
+                      <p className="highlight__subtext">Minimum 12 mins and maximum 3 days</p>
                     </React.Fragment>
                   )}
                 </div>
               </div>
             </div>
           </div>
-          <div class={`lower-panel ${captureMode ? `flex-3` : ''}`}>
-            <div class="note">
+          <div className={`lower-panel ${captureMode ? `flex-3` : ''}`}>
+            <div className="note">
               <p>
                 <strong>Note</strong> : Payments not captured within 3 days of creation will be auto
                 refunded
@@ -171,13 +171,13 @@ function CaptureMode(props) {
             </div>
           </div>
         </div>
-        <div class="actions">
-          <div class="stepper">
-            <span class="active" />
+        <div className="actions">
+          <div className="stepper">
+            <span className="active" />
             <span />
           </div>
           <div>
-            <button class="btn btn-primary" onClick={onClickNext} disabled={!captureMode}>
+            <button className="btn btn-primary" onClick={onClickNext} disabled={!captureMode}>
               Next
             </button>
           </div>

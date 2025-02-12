@@ -4,30 +4,30 @@ import { Field } from 'redux-form';
 export default ({ ...props }) => {
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Id</label>
         <Field
           name="id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('payment_id')}
         />
       </div>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Customer Identifier Id</label>
         <Field
           name="virtual_account_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('virtual_account_id')}
         />
       </div>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Status</label>
         <Field
           name="status"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('status')}
         >
           <option value="">All</option>
@@ -37,35 +37,35 @@ export default ({ ...props }) => {
           <option value="failed">Failed</option>
         </Field>
       </div>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Email</label>
         <Field
           name="email"
           component="input"
           type="email"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('email')}
         />
       </div>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Bank Reference Number</label>
         <Field
           name="va_transaction_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('va_transaction_id')}
         />
       </div>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Notes</label>
         <Field
           name="notes"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('notes')}
         />
       </div>
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -73,7 +73,7 @@ export default ({ ...props }) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onBlur={props.onEleBlur('count')}
         />
       </div>

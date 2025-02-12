@@ -1,25 +1,16 @@
+import React from 'react';
 import { connect } from 'react-redux';
+
+import { loadColorJs } from 'common/utils/color';
+import { classList } from 'common/utils/rzp-utils';
+import { DocLink } from 'merchant/components/DocsLink';
+import { updateBrandColorContrast } from 'merchant/reducers/config';
 
 import CustomerDetailsPreview from './Types/CustomerDetailsPreview';
 import WidgetPreview from './Types/WidgetPreview';
 import { totalTabs } from '../Form';
-import { DocLink } from 'merchant/components/DocsLink'
 
-
-import { loadColorJs } from 'common/utils/color';
-import { classList } from 'common/utils/rzp-utils';
-
-import { updateBrandColorContrast } from 'merchant/reducers/config';
-
-@connect(
-  (state) => ({
-    config: state.config,
-  }),
-  {
-    updateBrandColorContrast,
-  },
-)
-export default class Preview extends React.Component {
+class Preview extends React.Component {
   totalTabs = totalTabs;
 
   componentDidMount() {
@@ -90,37 +81,46 @@ export default class Preview extends React.Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'PaymentButton-Create-Preview',
           !content && 'PaymentButton-Create-Preview--hide',
         )}
       >
-        <div class="Preview-title">Preview</div>
+        <div className="Preview-title">Preview</div>
         {content}
 
-        <div class="GuideBox">
-          <div class="title">
+        <div className="GuideBox">
+          <div className="title">
             {/* TODO: Compress the icons svg file */}
-            <i class="i i-help-outline" />
+            <i className="i i-help-outline" />
             Need help
           </div>
 
           {/*
-            <div class="see-video-btn">
+            <div className="see-video-btn">
               TODO: For i-play compress the svg file
-              See video guide for button <i class="i i-play" />
+              See video guide for button <i className="i i-play" />
             </div>
           */}
 
           <DocLink
-            class="doc-link"
+            className="doc-link"
             target="_blank"
             href="https://razorpay.com/docs/payment-button/subscription-buttons/"
           >
-            Visit our Documentation <i class="i i-external-link" />
+            Visit our Documentation <i className="i i-external-link" />
           </DocLink>
         </div>
       </div>
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    config: state.config,
+  }),
+  {
+    updateBrandColorContrast,
+  },
+)(Preview);

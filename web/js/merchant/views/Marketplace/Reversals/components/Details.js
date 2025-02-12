@@ -1,43 +1,39 @@
 import { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+
 import Amount from 'common/ui/Amount';
 import Definition from 'common/ui/Definition';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
-import { connect } from 'react-redux';
 
-@connect((state) => {
-  return {
-    user: state.session.user,
-  };
-}, null)
-export default class ReversalDetails extends Component {
+class ReversalDetails extends Component {
   render() {
     const { reversal, transfer, isLoading, onClose, merchant } = this.props;
     const isLAInitiator = (reversal.initiator_id || '').replace('acc_', '') !== merchant.id;
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               {onClose && (
-                <button type="button" class="close close-secondary" onClick={onClose}>
-                  <i class="i i-arrow-back" />
-                  <i class="i i-close" />
+                <button type="button" className="close close-secondary" onClick={onClose}>
+                  <i className="i i-arrow-back" />
+                  <i className="i i-close" />
                 </button>
               )}
               Reversal ID: <strong>{reversal.id}</strong>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 {transfer.recipient_details && (
                   <EntityDetailRow label="Linked Account">
                     <Definition>
@@ -96,15 +92,15 @@ export default class ReversalDetails extends Component {
                     (Object.keys(reversal.notes).length === 0
                       ? '--'
                       : Object.keys(reversal.notes).map((key, index) => (
-                          <div class="m-b" key={index}>
+                          <div className="m-b" key={index}>
                             <Definition>
                               {key}
                               {String(reversal.notes[key])}
                               {!!reversal.linked_account_notes &&
                                 reversal.linked_account_notes.indexOf(key) > -1 && (
                                   <span>
-                                    <i class="i i-info-outline" /> This note is shown to the linked
-                                    account
+                                    <i className="i i-info-outline" /> This note is shown to the
+                                    linked account
                                   </span>
                                 )}
                             </Definition>
@@ -119,3 +115,9 @@ export default class ReversalDetails extends Component {
     );
   }
 }
+
+export default connect((state) => {
+  return {
+    user: state.session.user,
+  };
+}, null)(ReversalDetails);

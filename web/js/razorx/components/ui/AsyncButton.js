@@ -8,7 +8,7 @@ export default class AsyncButton extends Component {
     pending: false,
   };
 
-  onClick = ::this.onClick;
+  onClick = this.onClick.bind(this);
 
   onClick(e) {
     if (this.props.confirm) {
@@ -60,7 +60,7 @@ export default class AsyncButton extends Component {
     }
 
     return (
-      <div class={className} onClick={this.onClick}>
+      <div className={className} onClick={this.onClick}>
         {this.props.text || this.props.children}
       </div>
     );

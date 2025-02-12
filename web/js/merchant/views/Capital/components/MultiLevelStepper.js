@@ -34,7 +34,7 @@ const ParentStep = ({
       <div className="multilevel-step__wrapper">
         <span className="multilevel-step__status">
           {status.includes('completed') && (
-            <i class="i i-check" style={{ fontSize: 10 }} />
+            <i className="i i-check" style={{ fontSize: 10 }} />
           )}
           {status.includes('pending') && (
             <img
@@ -44,7 +44,7 @@ const ParentStep = ({
           )}
           {status.includes('error') && (
             <i
-              class="i i-info-circle"
+              className="i i-info-circle"
               style={{ fontSize: 20, color: '#EE6619' }}
             />
           )}
@@ -74,7 +74,7 @@ const Step = ({ status, title, onClick, disabled }) => {
         <span className="multilevel-step__status">
           {status.includes('completed') && (
             //move these to stylesheet
-            <i class="i i-check" style={{ fontSize: 10 }} />
+            <i className="i i-check" style={{ fontSize: 10 }} />
           )}
           {status.includes('pending') && (
             <img
@@ -84,7 +84,7 @@ const Step = ({ status, title, onClick, disabled }) => {
           )}
           {status.includes('error') && (
             <i
-              class="i i-info-circle"
+              className="i i-info-circle"
               style={{ fontSize: 14, color: '#EE6619' }}
             />
           )}

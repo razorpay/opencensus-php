@@ -22,35 +22,35 @@ export default class LowerGMVCashAdvanceConfigLoader extends BaseConfigLoader {
         heroImageSource: 'loc_onboarding_hero',
         secondaryHeroImageSource: 'loc_secondary_hero',
         pros: [
-          <div class="flex" key="1">
+          <div className="flex" key="1">
             <img src={require('assets/capital/internal_credit.svg')} alt="landing-image" />
-            <div class="p-l m-l m-t">
+            <div className="p-l m-l m-t">
               <strong>
                 <p>Withdraw Cash Instantly</p>
               </strong>
-              <p class="privilege-description">
+              <p className="privilege-description">
                 Once enabled, transfer additional money to your account under 10 seconds
               </p>
             </div>
           </div>,
-          <div class="flex m-t" key="2">
+          <div className="flex m-t" key="2">
             <img src={require('assets/capital/auto_repayment.svg')} alt="landing-image" />
             <div className="p-l m-l m-t">
               <strong>
                 <p>Auto-repay from settlements</p>
               </strong>
-              <p class="privilege-description">
+              <p className="privilege-description">
                 Withdraw expected customer payments now and repay from future settlements
               </p>
             </div>
           </div>,
-          <div class="flex m-t" key="3">
+          <div className="flex m-t" key="3">
             <img src={require('assets/capital/flexible_interest.svg')} alt="landing-image" />
             <div className="p-l m-l m-t">
               <strong>
                 <p>Pay Interest only when you withdraw</p>
               </strong>
-              <p class="privilege-description">
+              <p className="privilege-description">
                 Pay interest on the amount you actually use and for time before repayment
               </p>
             </div>

@@ -17,7 +17,7 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
         <Field
           name="issuing_account_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           data-testid="account_id"
         />
       </div>
@@ -27,7 +27,7 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
         <Field
           name="user_id"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           data-testid="user_id"
         />
       </div>
@@ -37,19 +37,19 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
         <Field
           name="contact"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           data-testid="contact"
         />
       </div>
 
       <div className="form-group list-filter-item">
         <label>Email Id</label>
-        <Field name="email" component="input" class="form-control input-sm" data-testid="email" />
+        <Field name="email" component="input" className="form-control input-sm" data-testid="email" />
       </div>
 
       <div className="form-group list-filter-item">
         <label>Type</label>
-        <Field name="type" component="select" class="form-control input-sm" data-testid="type">
+        <Field name="type" component="select" className="form-control input-sm" data-testid="type">
           <option value="">All</option>
           <option value="container">Container</option>
           <option value="giftcard">Gift Card</option>
@@ -59,7 +59,7 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
 
       <div className="form-group list-filter-item">
         <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm" data-testid="status">
+        <Field name="status" component="select" className="form-control input-sm" data-testid="status">
           <option value="">All</option>
           <option value="active">Active</option>
           <option value="deactivated">Deactivated</option>

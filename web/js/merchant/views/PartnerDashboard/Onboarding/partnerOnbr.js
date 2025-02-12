@@ -13,24 +13,12 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { track } from './ga';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { getCookie } from 'common/utils/cookies';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import { compose } from 'redux';
 
-@RTracking(() => window.rzpQ.component('partnerOnbr'))
-@connect(
-  (state) => ({
-    session: state.session,
-    user: state.session.user,
-    isMobileResolution: state.app.isMobileResolution,
-  }),
-  {
-    updateSession,
-    showNotification,
-    openModal,
-  },
-)
 class BaseScreen extends React.Component {
   state = { role: 'reseller' };
   constructor(props) {
@@ -298,11 +286,11 @@ class BaseScreen extends React.Component {
         {!this.props.disableClose && (
           <button
             type="button"
-            class="close"
+            className="close"
             onClick={this.handleCloseClick}
             style={{ position: 'absolute', top: '20px', right: '20px' }}
           >
-            <i class="i i-close" />
+            <i className="i i-close" />
           </button>
         )}
       </div>
@@ -310,4 +298,19 @@ class BaseScreen extends React.Component {
   }
 }
 
-export default withRouter(BaseScreen);
+export default compose(
+  rTracking(() => window.rzpQ.component('partnerOnbr')),
+  connect(
+    (state) => ({
+      session: state.session,
+      user: state.session.user,
+      isMobileResolution: state.app.isMobileResolution,
+    }),
+    {
+      updateSession,
+      showNotification,
+      openModal,
+    },
+  ),
+  withRouter,
+)(BaseScreen);

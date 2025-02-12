@@ -6,7 +6,7 @@ import moment from 'moment';
 import qs from 'query-string';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { bindActionCreators, compose } from 'redux';
 
 import Wrapper from 'common/components/Bootstrap/Wrapper';
@@ -50,6 +50,8 @@ import NavigationLayout from 'merchant/components/NavigationLayout/NavigationLay
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import currencies from 'merchant/constants/currency';
 import { DEFAULT_TIMEOUT_IN_SECONDS, LOGOUT_ERROR } from 'merchant/constants/dates';
+import { withRtuxComponentData } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
+import { withRtuxLayoutData } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import User, { ORG_CUSTOM_CODE_MAP, setFeatures } from 'merchant/models/User';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
@@ -79,8 +81,6 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
-import { withRtuxLayoutData } from 'merchant/containers/Home/RTUX/hooks/useUCSLayoutQuery';
-import { withRtuxComponentData } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
 
 import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
@@ -106,9 +106,7 @@ const scheduleIdleTask =
   };
 
 initSentry('Merchant');
-@withRtuxComponentData
-@withRtuxLayoutData
-@RTracking()
+
 class App extends Component {
   pendingRequests = [];
 
@@ -1491,8 +1489,7 @@ const mapDispatchToProps = (dispatch) =>
 export default compose(
   withRouter,
   connect(mapStateToProps, mapDispatchToProps),
-  // eslint-disable-next-line babel/new-cap
-  RTracking(
+  rTracking(
     ({ user, mode, isWebView }) => {
       let utm = null;
       let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
@@ -1547,4 +1544,9 @@ export default compose(
       },
     },
   ),
-)(withI18Service(withI18nifyState(withSplitzService(App))));
+  withI18Service,
+  withI18nifyState,
+  withSplitzService,
+  withRtuxComponentData,
+  withRtuxLayoutData,
+)(App);

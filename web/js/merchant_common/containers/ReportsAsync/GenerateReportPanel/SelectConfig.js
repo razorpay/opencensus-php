@@ -34,7 +34,7 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
                 searchEnabled
                 searchIndices={['label', 'name']}
                 searchPlaceholder="Search..."
-                class="ps-in-modal"
+                className="ps-in-modal"
                 showClear={false}
               />
             </div>
@@ -42,7 +42,7 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
           {selectedConfig &&
             (selectedConfig.id === 'invoice' ||
               selectedConfig.name === 'Monthly Invoice Report') && (
-              <span class="faq-link">
+              <span className="faq-link">
                 The December invoice is for the billing cycle starting on Dec 01, 2020 to Dec 30,
                 2020 and is generated on Dec-31, 2020 due to new GST guidelines effective from 1st
                 Jan 2020. The charges for Dec 31, 2020 will be added to the next billing cycle.{' '}
@@ -73,7 +73,7 @@ function getConfigOptions(configs = []) {
 function ConfigOption({ option }) {
   const { description, name } = option;
   return (
-    <div class="SelectConfig__Dropdown_Option custom-powerselect-options m-b">
+    <div className="SelectConfig__Dropdown_Option custom-powerselect-options m-b">
       <p>
         <strong>{name}</strong>
       </p>

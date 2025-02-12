@@ -52,14 +52,14 @@ const DisputesListFilter = (props) => {
   };
   return (
     <ListFilter date={date} {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Dispute Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="payment_id" component="input" class="form-control input-sm" />
+        <Field name="payment_id" component="input" className="form-control input-sm" />
       </div>
 
       <div className="form-group datepicker-group">
@@ -71,12 +71,12 @@ const DisputesListFilter = (props) => {
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Dispute Type</label>
         <Field
           name="phase"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={(...args) => {
             track({ type: 'filter', args });
           }}
@@ -90,12 +90,12 @@ const DisputesListFilter = (props) => {
         </Field>
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Dispute State</label>
         <Field
           name="status"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={(...args) => {
             track({ type: 'filter', args });
             trackStatusFilter({ status: humanize(args[1]) || ALL_LABEL, pathname });

@@ -45,13 +45,13 @@ export default ({
 
   return (
     <ListFilter {...props} onSubmit={onSubmitWrapper}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>{`${isRepaymentView ? 'Repayment' : 'Withdrawal'}`} ID</label>
-        <Field name="reference_id" component="input" class="form-control input-sm" />
+        <Field name="reference_id" component="input" className="form-control input-sm" />
       </div>
       <div className="form-group list-filter-item">
         <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field name="status" component="select" className="form-control input-sm">
           <option value="">All</option>
           {Object.entries(STATUS_OPTIONS).map(([value, label], idx) => (
             <option value={value} key={idx}>
@@ -82,7 +82,7 @@ export default ({
           min={10}
           max={maxCountLimit}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
     </ListFilter>

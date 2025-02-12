@@ -1,17 +1,17 @@
 import { Component } from 'react';
+import OnboardingPreview from 'assets/onboarding.svg';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import ShowWhen from 'merchant/components/ShowWhen';
 import Group, { GroupItem } from 'common/ui/Group';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import ActivationStep from './ActivationStep';
 import Integration from './Integration';
 import { onBoardingItems, LIVE_MODE } from './data';
 import { trackWelcomeCTAClick, trackCloseOnboarding } from './ga';
-import OnboardingPreview from 'assets/onboarding.svg';
 
-@connect((state) => ({ ...state.session, config: state.config.config }))
-export default class OnboardingCard extends Component {
+class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
@@ -66,8 +66,8 @@ export default class OnboardingCard extends Component {
 
     if (isFirstStep) {
       FirstStep = (
-        <div class="media-body">
-          <div class="media-heading">
+        <div className="media-body">
+          <div className="media-heading">
             <span className="highlight">W</span>elcome{user.isOrgRZP ? ' to Razorpay!' : '!'}
             Let's get you going.
           </div>
@@ -75,7 +75,7 @@ export default class OnboardingCard extends Component {
             Your {user.isOrgRZP ? 'Razorpay' : 'dashboard'} account is ready to use! There is a lot
             that you can do on the Dashboard. Here are some of the actions that you can take:
           </div>
-          <div class="row">
+          <div className="row">
             {onBoardingItems(user).map((item, index) => {
               return (
                 <div className="col-md-4" key={index}>
@@ -90,16 +90,16 @@ export default class OnboardingCard extends Component {
             })}
           </div>
 
-          <button class="btn btn-default onboarding-cta" onClick={this.gotoNextStep}>
+          <button className="btn btn-default onboarding-cta" onClick={this.gotoNextStep}>
             <span>Okay, got it</span>
-            <i class="i i-chevron-right" />
+            <i className="i i-chevron-right" />
           </button>
         </div>
       );
     } else {
       FirstStep = (
-        <div class="media-body">
-          <div class="media-heading">
+        <div className="media-body">
+          <div className="media-heading">
             <span className="highlight">G</span>etting Started{' '}
             {user.isOrgRZP ? 'with Razorpay' : ''}
           </div>
@@ -153,9 +153,9 @@ export default class OnboardingCard extends Component {
     return (
       <div className="onboarding-card-wrapper">
         <div className={`onboarding-card-wrapper-content${isFirstStep ? ' first-step' : ''}`}>
-          <div class="media onboarding-card">
+          <div className="media onboarding-card">
             {FirstStep}
-            <div class="onboarding-illustration">
+            <div className="onboarding-illustration">
               <img
                 src={OnboardingPreview}
                 alt="onboarding"
@@ -177,3 +177,7 @@ export default class OnboardingCard extends Component {
     );
   }
 }
+
+export default compose(connect((state) => ({ ...state.session, config: state.config.config })))(
+  OnboardingCard,
+);

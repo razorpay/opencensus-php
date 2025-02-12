@@ -8,8 +8,8 @@ const PLFeaturesModal = ({ closeModal }) => {
   return (
     <div className='pl-catalyst-modal'>
       <div className='white-circle'></div>
-      <button type="button" class="close" onClick={closeModal}>
-        <i class="i i-close" />
+      <button type="button" className="close" onClick={closeModal}>
+        <i className="i i-close" />
       </button>
       <div className='modal-body'>
         <h3 className='heading nomob'>
@@ -37,18 +37,18 @@ const PLFeaturesModal = ({ closeModal }) => {
               <li className='nomob'>Create multiple links in one go</li>
               <li className='nomob'>Recapture failed payments instantly</li>
             </ul>
-            <Link to='/paymentlinks/new' class='modal-cta' onClick={closeModal}>
-              <Button.Primary class="btn btn-primary" type="button">
+            <Link to='/paymentlinks/new' className='modal-cta' onClick={closeModal}>
+              <Button.Primary className="btn btn-primary" type="button">
                 Create a Payment Link
               </Button.Primary>
             </Link>
           </div>
           <div className='right-section nomob'>
             <div className='x-dashboard-view'>
-              <div class="tab-section">
-                <span class="dot" id="red"></span>
-                <span class="dot" id="orange"></span>
-                <span class="dot" id="green"></span>
+              <div className="tab-section">
+                <span className="dot" id="red"></span>
+                <span className="dot" id="orange"></span>
+                <span className="dot" id="green"></span>
               </div>
               <img src='https://cdn.razorpay.com/static/assets/payment-links/pl-creation-steps.gif' alt='Steps to create a Payment Link'/>
             </div>

@@ -25,7 +25,7 @@ const IntermediateList = ({ instrument }) => {
     });
   };
   return (
-    <div class="level-2">
+    <div className="level-2">
       <ul>
         {instrument.intermediateList.map((intermediateItem, index) => {
           if (

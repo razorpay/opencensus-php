@@ -53,7 +53,7 @@ const CurrencyField = (props) => {
         <input type="hidden" name="amount" value={paiseToRupees(dispute?.amount)} />
         {isDipsuteOpen && !disabled && (
           <div>
-            <a class="bold" onClick={() => setShowEditDisputeAmount(true)}>
+            <a className="bold" onClick={() => setShowEditDisputeAmount(true)}>
               Edit
             </a>{' '}
             to contest for a partial amount

@@ -51,12 +51,12 @@ class DebitRefundAnnouncement extends Component {
 
   render() {
     return (
-      <div class="debit-refund-notif">
+      <div className="debit-refund-notif">
         <Fragment>
-          <div class="panel-body debit-refund-panel-body" style={{ paddingBottom: '8px' }}>
+          <div className="panel-body debit-refund-panel-body" style={{ paddingBottom: '8px' }}>
             <div className="row">
               <div className="col-xs-6">
-                <h3 class="title">Instant Refunds on Debit Card payments is here!</h3>
+                <h3 className="title">Instant Refunds on Debit Card payments is here!</h3>
               </div>
               <div className="col-xs-6"></div>
             </div>
@@ -70,7 +70,7 @@ class DebitRefundAnnouncement extends Component {
             </div>
             <div className="row">
               <div className="col-xs-6">
-                <h4 class="changing">What's Changing?</h4>
+                <h4 className="changing">What's Changing?</h4>
                 <ul>
                   <li>
                     You can now process refunds instantly for payments made on - Credit Cards, Debit
@@ -126,7 +126,7 @@ class DebitRefundAnnouncement extends Component {
             </div>
             <div className="banner">
               <div className="svg-bg"></div>
-              <div class="banner-bg"></div>
+              <div className="banner-bg"></div>
               <img src="https://razorpay.com/assets/instant-refunds/illustration.webp" alt="" />
             </div>
           </div>

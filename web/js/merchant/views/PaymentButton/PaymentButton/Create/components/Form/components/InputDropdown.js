@@ -105,19 +105,19 @@ export default class InputDropdown extends React.Component {
     const { selectedOption } = this.state;
 
     return (
-      <div class={`Input Input--PowerSelect ${className}`}>
+      <div className={`Input Input--PowerSelect ${className}`}>
         <Label text={label} />
 
-        <div class="Input-content">
-          <div class="Input-elWrapper">
-            <div class="Input-el">
+        <div className="Input-content">
+          <div className="Input-elWrapper">
+            <div className="Input-el">
               {name && (
                 <input name={name} value={selectedOption?.[optionValuePath]} hidden readOnly />
               )}
               <ErrorBoundary resetOnProps rank={Ranks.P2}>
                 <PowerSelect
                   ref={this.ref}
-                  class={dropdownElementClass}
+                  className={dropdownElementClass}
                   placeholder={placeholder}
                   options={options}
                   optionLabelPath={optionLabelPath}

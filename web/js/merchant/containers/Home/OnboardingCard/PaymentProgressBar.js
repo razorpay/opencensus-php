@@ -148,9 +148,9 @@ const ProgressBarInfo = ({ accepted, credits }) => {
 
   return (
     <div className="progressbar">
-      <div class="amount-total">
+      <div className="amount-total">
         <span
-          class="amount-accepted"
+          className="amount-accepted"
           style={{ color: percentage >= 100 ? '#D12D2D' : 'rgb(62, 122, 235)' }}
         >
           ₹ {formatNumberWithCommas(accepted)}

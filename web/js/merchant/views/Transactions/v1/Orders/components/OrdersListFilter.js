@@ -14,34 +14,34 @@ const OrdersListFilter = (props) => {
   } = props;
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Order Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Receipt</label>
-        <Field name="receipt" component="input" class="form-control input-sm" />
+        <Field name="receipt" component="input" className="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Notes</label>
         <Field
           name="notes"
           component="input"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={(...args) => {
             track({ type: 'search', args });
           }}
         />
       </div>
 
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Status</label>
         <Field
           name="status"
           component="select"
-          class="form-control input-sm"
+          className="form-control input-sm"
           onChange={(...args) => {
             track({ type: 'filter', args });
             trackStatusFilter({ status: humanize(args[1]) || ALL_LABEL, pathname });
@@ -54,7 +54,7 @@ const OrdersListFilter = (props) => {
         </Field>
       </div>
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -62,7 +62,7 @@ const OrdersListFilter = (props) => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
     </ListFilter>

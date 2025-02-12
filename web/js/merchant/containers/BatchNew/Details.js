@@ -1,30 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
+import { batchDownload } from 'merchant/reducers/batches';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { batchDownload } from 'merchant/reducers/batches';
 
-import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
-
-@connect(
-  (state) => {
-    const batchDetails = state.batchDetails;
-    return {
-      isLoading: batchDetails.loading,
-      error: batchDetails.error,
-      ...batchDetails.entity,
-    };
-  },
-  {
-    batchDownload,
-    ...ModalActions,
-    ...NotificationsActions,
-  },
-)
-@RTracking(() => window.rzpQ.component('BatchDetails'))
 class BatchDetailsContainer extends Component {
   handleDownload = (id) => {
     this.props.tracking.trackEvent(
@@ -71,4 +55,22 @@ class BatchDetailsContainer extends Component {
   }
 }
 
-export default withRouter(BatchDetailsContainer);
+export default compose(
+  connect(
+    (state) => {
+      const batchDetails = state.batchDetails;
+      return {
+        isLoading: batchDetails.loading,
+        error: batchDetails.error,
+        ...batchDetails.entity,
+      };
+    },
+    {
+      batchDownload,
+      ...ModalActions,
+      ...NotificationsActions,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('BatchDetails')),
+  withRouter,
+)(BatchDetailsContainer);

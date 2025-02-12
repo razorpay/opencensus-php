@@ -32,7 +32,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
         />
 
         <Input.Check
-          class="Input--vTop"
+          className="Input--vTop"
           label="Notify Customer"
           name="customer_notify"
           checked={props.fields.customer_notify}
@@ -46,7 +46,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
         {showScheduleChange && (
           <Input.Radio
             label="Apply Changes"
-            class="Input--vTop"
+            className="Input--vTop"
             options={CHANGES_OPTIONS}
             disabled={props.disableEdit}
             name="schedule_change_at"

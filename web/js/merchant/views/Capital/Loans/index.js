@@ -93,25 +93,6 @@ const parseApplicationMetaData = (loanApplicationDetails) => {
   return { loading, product, status };
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    fetchSeedData,
-    fetchLoanApplicationMeta,
-    registerNewLoanApplication,
-    openModal,
-    closeModal,
-    changeActiveState,
-    getApplications,
-    getLenderDetails,
-    fetchProducts,
-    registerProduct,
-    resetCapitalLendingData,
-  },
-)
 class LoanApplicationOverview extends React.Component {
   constructor(props) {
     super(props);
@@ -638,4 +619,22 @@ class LoanApplicationOverview extends React.Component {
   }
 }
 
-export default withRouter(LoanApplicationOverview);
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    fetchSeedData,
+    fetchLoanApplicationMeta,
+    registerNewLoanApplication,
+    openModal,
+    closeModal,
+    changeActiveState,
+    getApplications,
+    getLenderDetails,
+    fetchProducts,
+    registerProduct,
+    resetCapitalLendingData,
+  },
+)(withRouter(LoanApplicationOverview));

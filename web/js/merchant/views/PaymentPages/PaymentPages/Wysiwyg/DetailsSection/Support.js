@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
 import { isEmail, isPhone } from 'common/utils/validators';
-
-import { prefillContactDetails } from 'merchant/reducers/wysiwyg';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
+import { prefillContactDetails } from 'merchant/reducers/wysiwyg';
+
 import track from '../track';
 
 const phoneIcon = (
@@ -22,16 +22,7 @@ const emailIcon = (
   </svg>
 );
 
-@connect(
-  (state) => ({
-    globalSupportDetails: state.supportdetails.merchantSupportDetail.data,
-  }),
-  {
-    prefillContactDetails,
-    fetchSupportDetail,
-  },
-)
-export default class extends React.PureComponent {
+class WysiwygSupport extends React.PureComponent {
   componentDidMount() {
     if (!this.props.support_email || !this.props.support_contact) {
       // checking if global support details populated
@@ -122,10 +113,20 @@ const SupportSubFieldForwardRef = React.forwardRef((props, ref) => {
   const { icon, addButtonLabel, reference, ...rest } = props;
 
   return (
-    <div class="sub-detail">
+    <div className="sub-detail">
       {icon}
       <Input name={name} ref={ref} {...rest} />
     </div>
   );
 });
 const SupportSubField = React.memo(SupportSubFieldForwardRef);
+
+export default connect(
+  (state) => ({
+    globalSupportDetails: state.supportdetails.merchantSupportDetail.data,
+  }),
+  {
+    prefillContactDetails,
+    fetchSupportDetail,
+  },
+)(WysiwygSupport);

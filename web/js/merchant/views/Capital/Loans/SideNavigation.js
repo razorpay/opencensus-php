@@ -1,25 +1,18 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
+import { changeActiveState } from 'merchant/reducers/capital';
+import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
+
+import { trackPromoterDetailsAfterOtp, trackPromoterDetailsBeforeOtp } from './Forms/ga';
 import {
   ERROR_STATES,
   PENDING_APPLICATION_STATES,
   GA_CATEGORY_BY_PRODUCT,
   APPLICATION_STATES,
 } from './constants';
-import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
-import { connect } from 'react-redux';
-import { changeActiveState } from 'merchant/reducers/capital';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
-import { trackPromoterDetailsAfterOtp, trackPromoterDetailsBeforeOtp } from './Forms/ga';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    changeActiveState,
-  },
-)
 class SideNavigation extends Component {
   constructor(props) {
     super(props);
@@ -31,7 +24,8 @@ class SideNavigation extends Component {
   }
 
   _getParentStepLabel = (step) => {
-    const SIDE_NAVIGATION_STATE_GROUPS = this.getUserFlowConfiguration().getSideNavigationStateGroups();
+    const SIDE_NAVIGATION_STATE_GROUPS =
+      this.getUserFlowConfiguration().getSideNavigationStateGroups();
 
     return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter((meta) =>
       Object.values(meta.steps)
@@ -50,7 +44,8 @@ class SideNavigation extends Component {
   };
 
   _trackNavigationEvent = (_to, _from) => {
-    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+    const APPLICATION_STATE_DESCRIPTIONS =
+      this.getUserFlowConfiguration().getApplicationStateDescriptions();
 
     const _toStepLabel = APPLICATION_STATE_DESCRIPTIONS[_to].short_description;
     const _fromStepLabel = APPLICATION_STATE_DESCRIPTIONS[_from].short_description;
@@ -209,7 +204,8 @@ class SideNavigation extends Component {
       return classList;
     };
 
-    const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
+    const APPLICATION_STATE_DESCRIPTIONS =
+      this.getUserFlowConfiguration().getApplicationStateDescriptions();
 
     return Object.entries(parentStepMeta.steps).map(([step, steps]) => {
       const statuses = getStatus(step, steps);
@@ -245,15 +241,23 @@ class SideNavigation extends Component {
     const configuration = this.getUserFlowConfiguration();
 
     return (
-      <div class="progress-overview-container">
+      <div className="progress-overview-container">
         <MultiLevelStepper>
-          {Object.entries(
-            configuration.getSideNavigationStateGroups(),
-          ).map(([parentStep, parentStepMeta]) => this.getParentStep(parentStep, parentStepMeta))}
+          {Object.entries(configuration.getSideNavigationStateGroups()).map(
+            ([parentStep, parentStepMeta]) => this.getParentStep(parentStep, parentStepMeta),
+          )}
         </MultiLevelStepper>
       </div>
     );
   }
 }
 
-export default SideNavigation;
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    changeActiveState,
+  },
+)(SideNavigation);

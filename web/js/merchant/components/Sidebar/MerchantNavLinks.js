@@ -154,7 +154,7 @@ function MerchantNavLinks(props) {
           additionalCondition={(currentUser) => currentUser.isRiskAndFraudEnabled}
         />
 
-        <div class="divider" />
+        <div className="divider" />
 
         <MainNavLink
           label="Loans (Cash Advance)"
@@ -473,7 +473,7 @@ function MerchantNavLinks(props) {
         />
       </ShowWhen>
 
-      <div class="divider" />
+      <div className="divider" />
 
       <MainNavLink
         label="Reports"

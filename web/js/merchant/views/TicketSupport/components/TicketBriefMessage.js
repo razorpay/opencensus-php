@@ -14,10 +14,10 @@ export default function TicketBriefMessage(props) {
   const expectedResponseDate = getFormattedDate(new Date(props.ticket.fr_due_by));
   const isEscalated = getEscalationType(props.ticket) == 'escalated';
   return (
-    <div class="Ticket-Brief-Message">
+    <div className="Ticket-Brief-Message">
       {props.ticketType === 'agent' ? (
-        <div class="Ticket-Brief-Message-Status-Desc text-danger">
-          <i class="i i-clock ticket-message-icn" /> Reply Before <b>{expectedResponseDate}</b>
+        <div className="Ticket-Brief-Message-Status-Desc text-danger">
+          <i className="i i-clock ticket-message-icn" /> Reply Before <b>{expectedResponseDate}</b>
         </div>
       ) : [
           TICKET_STATUS_LABELS.BEING_PROCESSED,
@@ -25,9 +25,9 @@ export default function TicketBriefMessage(props) {
           TICKET_STATUS_LABELS.IN_PROGRESS,
         ].includes(ticketStatus) ? (
         isEscalated ? (
-          <div class="Ticket-Brief-Message-Status-Desc">
+          <div className="Ticket-Brief-Message-Status-Desc">
             <span>
-              <i class="i i-forward ticket-escalated-icon" />
+              <i className="i i-forward ticket-escalated-icon" />
               <Popover align="right" theme="dark">
                 <PopoverBody>
                   <div>Follow-up requested on this query.</div>
@@ -37,8 +37,8 @@ export default function TicketBriefMessage(props) {
             Response expected within <b>4-8 business hours</b>
           </div>
         ) : (
-          <div class="Ticket-Brief-Message-Status-Desc">
-            <i class="i i-clock ticket-message-icn" /> Response expected within{' '}
+          <div className="Ticket-Brief-Message-Status-Desc">
+            <i className="i i-clock ticket-message-icn" /> Response expected before{' '}
             <b>4-8 business hours</b>
           </div>
         )

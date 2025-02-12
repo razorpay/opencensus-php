@@ -87,13 +87,13 @@ export default class OfferValidity extends React.Component {
 
     const startAtProps = this.getStartAtProps();
     return (
-      <div class="offers-duration-container">
+      <div className="offers-duration-container">
         <Input.DateTime
           isInline
           label="Starting On"
           description="Start date for offer"
           checkboxFieldLabel="Starts Immediately"
-          class="Input--vTop"
+          className="Input--vTop"
           onChange={this.handleStartDate}
           disabled={isFormLocked}
           {...startAtProps}
@@ -105,7 +105,7 @@ export default class OfferValidity extends React.Component {
           label="Expires On"
           defaultValue={defaultEndDate}
           description="Expiry date for offer"
-          class="Input--vTop"
+          className="Input--vTop"
           onChange={this.handleEndDate}
           disabled={isFormLocked}
         />

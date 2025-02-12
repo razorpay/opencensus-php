@@ -7,7 +7,7 @@ export default class AppWebhook extends Component {
     if (this.props.loading) {
       // Edit WebhookCreation won't send appId when it's edit webhook for this application
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );

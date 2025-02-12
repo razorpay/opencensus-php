@@ -7,12 +7,12 @@ import { fetchAddWebsiteWorkflowStatusHandler } from './mocks/handlers';
 jest.mock('merchant/views/Settings/Keys/List', () => ({
   __esModule: true,
   default: ({ onWebsiteAdd, isWebsiteInWorkflow }) => (
-    <div class="table-responsive">
+    <div className="table-responsive">
       <button data-testid="add-website" onClick={onWebsiteAdd}>
         Add website
       </button>
       <span>{!isWebsiteInWorkflow ? 'false' : 'true'}</span>
-      <table class="table table-hover">
+      <table className="table table-hover">
         <thead>
           <tr data-test="key-id-header-row">
             <th>Key Id</th>
@@ -31,9 +31,9 @@ jest.mock('merchant/views/Settings/Keys/List', () => ({
             </td>
             <td>Never</td>
             <td>
-              <div class="row-action">
-                <button class="btn btn-xs btn-primary">
-                  <i class="i i-refresh" />
+              <div className="row-action">
+                <button className="btn btn-xs btn-primary">
+                  <i className="i i-refresh" />
                   <span data-test="regenerate-api-key">Regenerate Live Key</span>
                 </button>
               </div>

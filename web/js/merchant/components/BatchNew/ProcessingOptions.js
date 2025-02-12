@@ -15,29 +15,29 @@ class BatchProcessingOptions extends React.Component {
         <h5>
           <strong>BATCH PROCESSING SCHEDULE</strong>
         </h5>
-        <div class="row">
-          <div class="col-md-3 m-t">
+        <div className="row">
+          <div className="col-md-3 m-t">
             <Field
               name="processing"
               htmlValue="immediate"
               component={RadioButton}
               label="Process Now"
-              class="form-control"
+              className="form-control"
             />
           </div>
-          <div class="col-md-3 m-t">
+          <div className="col-md-3 m-t">
             <Field
               name="processing"
               htmlValue="scheduled"
               component={RadioButton}
               label="Schedule for Later"
-              class="form-control"
+              className="form-control"
             />
           </div>
           {processingType === 'scheduled' && (
             <>
-              <div class="col-md-3">
-                <div class="form-group">
+              <div className="col-md-3">
+                <div className="form-group">
                   <label>
                     <small>Start on</small>
                   </label>
@@ -51,8 +51,8 @@ class BatchProcessingOptions extends React.Component {
                   />
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="form-group">
+              <div className="col-md-3">
+                <div className="form-group">
                   <label>
                     <small>Start at</small>
                   </label>

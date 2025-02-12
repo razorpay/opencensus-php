@@ -33,12 +33,10 @@ class WebhooksContainer extends ListContainer {
     return this.props.fetchWebhooks(params);
   }
 
-  @RTracking(() =>
+  showNewWebhookModal = () => {
     window.rzpQ.onbr().initiated('dash.settings_action', {
       action: 'Initiate_Webhook_Setup',
-    }),
-  )
-  showNewWebhookModal = () => {
+    });
     const tracking = this.props.tracking;
     const {
       webhooks: { webhooks },
@@ -73,12 +71,10 @@ class WebhooksContainer extends ListContainer {
     });
   };
 
-  @RTracking(() =>
+  highlightRowAndClose = (webhook) => {
     window.rzpQ.onbr().initiated('dash.settings_action', {
       action: 'Submit_Webhook_Details',
-    }),
-  )
-  highlightRowAndClose = (webhook) => {
+    });
     this.props.luminateRow(webhook.id);
     this.props.closeModal();
   };

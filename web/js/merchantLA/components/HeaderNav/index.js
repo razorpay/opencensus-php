@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import NavFragment from 'merchant/components/HeaderNav/NavFragment';
 import ProfileDropdown from 'merchantLA/containers/Header/ProfileDropdown';
 import { toggleMobileMenu } from 'merchantLA/reducers/app';
-
-import NavFragment from 'merchant/components/HeaderNav/NavFragment';
 
 const analytics = (action) => {
   window.rzpAnalytics({
@@ -13,13 +12,7 @@ const analytics = (action) => {
   });
 };
 
-@connect(
-  (state) => ({
-    activePageName: state.app.activePageName,
-  }),
-  { toggleMobileMenu },
-)
-export default class HeaderNav extends Component {
+class HeaderNav extends Component {
   constructor(props) {
     super(props);
 
@@ -85,3 +78,10 @@ export default class HeaderNav extends Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    activePageName: state.app.activePageName,
+  }),
+  { toggleMobileMenu },
+)(HeaderNav);

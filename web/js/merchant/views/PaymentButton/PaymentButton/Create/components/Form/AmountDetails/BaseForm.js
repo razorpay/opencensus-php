@@ -1,38 +1,28 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
+import { getCurrency } from 'common/ui/Amount';
 import ModalHeader from 'common/ui/ModalHeader';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import { validateAmount } from 'common/utils/validators';
 import EditorModal from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/EditorModal';
 
 // eslint-disable-next-line import/no-named-as-default
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
+import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import FieldOptionsDropdown, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+
 import AdvancedForm from './AdvancedForm';
 import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldTypesRepresentations';
 
-import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
-import { getCurrency } from 'common/ui/Amount';
-import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { validateAmount } from 'common/utils/validators';
-
-import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
-
-@connect(
-  (state) => ({
-    user: state.session.user,
-  }),
-  {
-    openModal,
-    closeModal,
-  },
-)
-export default class BaseForm extends React.Component {
+class BaseForm extends React.Component {
   constructor(props) {
     super(props);
 
@@ -208,7 +198,7 @@ export default class BaseForm extends React.Component {
           <div>
             <ModalHeader title="Change Currency?" />
 
-            <div class="modal-body">
+            <div className="modal-body">
               <div>
                 You're changing currency from <b>{this.props.currency}</b> to{' '}
                 <b>{newCurrencyISO}</b>.
@@ -216,7 +206,7 @@ export default class BaseForm extends React.Component {
               <div>On saving this item, this currency will apply to all items on this page.</div>
               <br />
               <footer>
-                <Button.Primary class="Button--full-width" onClick={this.props.closeModal}>
+                <Button.Primary className="Button--full-width" onClick={this.props.closeModal}>
                   Ok
                 </Button.Primary>
               </footer>
@@ -235,20 +225,20 @@ export default class BaseForm extends React.Component {
       <FieldOptionsDropdown
         trigger={
           <Button.Transparent onClick={track.amountScreenOpenMoreOptions}>
-            <i class="i i-ellipsis-v" />
+            <i className="i i-ellipsis-v" />
           </Button.Transparent>
         }
       >
         <OptionsItem isSelected={!isMandatory}>
           <div onClick={this.handleToggleMakeMandatory}>
-            <i class="i i-optional_mark" />
+            <i className="i i-optional_mark" />
             Optional Item
           </div>
         </OptionsItem>
 
         <OptionsItem isSelected={!!hasDescription}>
           <div onClick={this.handleToggleAddDescription}>
-            <i class="i i-sort i-fix-sort" />
+            <i className="i i-sort i-fix-sort" />
             {hasDescription ? 'Remove Description' : 'Add Description'}
           </div>
         </OptionsItem>
@@ -261,18 +251,18 @@ export default class BaseForm extends React.Component {
               track.openAdvanceOptions();
             }}
           >
-            <i class="i i-options" />
+            <i className="i i-options" />
             <div>
               Advanced Options
-              <div class="subOption">Add quantity, define rules around quantity, etc.</div>
+              <div className="subOption">Add quantity, define rules around quantity, etc.</div>
             </div>
           </div>
         </OptionsItem>
 
         {typeof indexInOrder !== 'undefined' && handleDeleteField && (
           <OptionsItem>
-            <div class="OptionsDropdown-item--delete" onClick={handleDeleteField}>
-              <i class="i i-delete" />
+            <div className="OptionsDropdown-item--delete" onClick={handleDeleteField}>
+              <i className="i i-delete" />
               <div>Delete Field</div>
             </div>
           </OptionsItem>
@@ -285,10 +275,10 @@ export default class BaseForm extends React.Component {
     const { disableSubmit } = this.state;
 
     return (
-      <div class="CreatorModal-BaseForm-footer">
+      <div className="CreatorModal-BaseForm-footer">
         <button
           type="button"
-          class="cancel-btn Button--transparent Button"
+          className="cancel-btn Button--transparent Button"
           onClick={() => {
             this.props.handleClose();
 
@@ -299,8 +289,12 @@ export default class BaseForm extends React.Component {
           Cancel
         </button>
 
-        <button type="submit" class="save-btn Button--transparent Button" disabled={disableSubmit}>
-          <span class="icon i-check" />
+        <button
+          type="submit"
+          className="save-btn Button--transparent Button"
+          disabled={disableSubmit}
+        >
+          <span className="icon i-check" />
           Save
         </button>
       </div>
@@ -321,7 +315,7 @@ export default class BaseForm extends React.Component {
     let inputField = (
       <Input
         name={disableAmountInput ? undefined : 'amount'}
-        class="placeholder-field Input--Amount"
+        className="placeholder-field Input--Amount"
         placeholder={placeholder}
         defaultValue={amount}
         validator={(val) => validateAmount(val, minAmountAllowed, currency)}
@@ -340,8 +334,8 @@ export default class BaseForm extends React.Component {
     }
 
     return (
-      <Input.Group label="Value" class="InputGroup--inline">
-        <div class="Input-content">
+      <Input.Group label="Value" className="InputGroup--inline">
+        <div className="Input-content">
           <Input.CurrencySelect
             defaultValue={currency}
             parentQuerySelector=".Modal-content--PaymentButton-CreateForm"
@@ -394,16 +388,16 @@ export default class BaseForm extends React.Component {
 
     return (
       <React.Fragment>
-        <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
+        <EditorModal className="CreatorModal-BaseForm" overElement allowScroll>
           <Form
             onSubmit={this.handleSubmitBaseForm}
             onChange={this.handleChange}
             setRef={this.setRefForm}
           >
-            <Input.Group label="Field Label" class="Input--vTop" required>
+            <Input.Group label="Field Label" className="Input--vTop" required>
               <Input
                 name="name"
-                class="Input--vTop"
+                className="Input--vTop"
                 placeholder="Enter field label"
                 defaultValue={field.item.name}
                 autoFocus
@@ -431,12 +425,12 @@ export default class BaseForm extends React.Component {
               />
             </Input.Group>
 
-            <Input.Group class="Input--vTop">
+            <Input.Group className="Input--vTop">
               {this.amountFieldForFieldType}
 
               {hasDescription && (
                 <Input.TextareaAutoResize
-                  class="Input--description"
+                  className="Input--description"
                   name="description"
                   placeholder="Enter field description"
                   defaultValue={field.description}
@@ -469,3 +463,13 @@ export default class BaseForm extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    openModal,
+    closeModal,
+  },
+)(BaseForm);

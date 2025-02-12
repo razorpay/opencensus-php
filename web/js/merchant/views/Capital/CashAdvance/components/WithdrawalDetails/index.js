@@ -104,7 +104,7 @@ const WithdrawalDetails = ({
   const currentStatus = {
     title: 'Status',
     value: ({ repayment_status }) => (
-      <span class={`status-label label ${StatusPillClasses[repayment_status]}`}>
+      <span className={`status-label label ${StatusPillClasses[repayment_status]}`}>
         {STATUS_LABELS[repayment_status]}
       </span>
     ),

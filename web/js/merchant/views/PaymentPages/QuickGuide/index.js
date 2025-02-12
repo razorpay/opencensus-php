@@ -39,7 +39,7 @@ class PaymentPagesQuickGuide extends React.Component {
     return isBatchPaymentPages ? (
       <QuickStepGuide
         activeStep={activeStep}
-        class={`PaymetPages ${className} batch-payment-page`}
+        className={`PaymetPages ${className} batch-payment-page`}
         title={Title}
         closeBtn={CloseBtn}
       >
@@ -67,7 +67,7 @@ class PaymentPagesQuickGuide extends React.Component {
     ) : (
       <QuickStepGuide
         activeStep={activeStep}
-        class={`PaymetPages ${className}`}
+        className={`PaymetPages ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >

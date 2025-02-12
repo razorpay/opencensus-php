@@ -8,7 +8,7 @@ export default ({ disabled, type, isEnabled, onToggle }) => (
     </span>
     <span className="enable-wrapper">
       <SwitchField
-        class="m-l"
+        className="m-l"
         type="prime"
         checked={isEnabled}
         disabled={disabled}

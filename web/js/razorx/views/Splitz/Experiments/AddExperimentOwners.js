@@ -61,7 +61,7 @@ const ExperimentOwnersForm = ({ data, onEdit, header }) => {
   };
 
   return (
-    <ModalContent class="modal-features" header={header}>
+    <ModalContent className="modal-features" header={header}>
       <Form onSubmit={handleAddOwner}>
         <div>
           {owners.map((owner, index) => (

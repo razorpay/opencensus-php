@@ -165,7 +165,7 @@ const BankAccountUpdateAsyncFlow = ({
           />
         </Radio>
       </div>
-      <div class="form-group">
+      <div className="form-group">
         <FileUpload
           name="bank-proof"
           size="small"
@@ -181,10 +181,10 @@ const BankAccountUpdateAsyncFlow = ({
           files={files}
         />
       </div>
-      <div class="form-actions">
+      <div className="form-actions">
         <AsyncButton
           type="button"
-          class="btn"
+          className="btn"
           text="Submit"
           pendingText="Submitting..."
           disabled={!files.length}

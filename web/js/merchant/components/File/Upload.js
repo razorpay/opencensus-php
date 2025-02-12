@@ -399,7 +399,7 @@ export default class FileUpload extends React.Component {
               this.state.isFileDraggedInside && !isDragDropDisabled && 'Dropzone-cavity--highlight',
             )}
             onClick={this.onClickToFileUploadClick}
-            for={`fileInput-${name}`}
+            htmlFor={`fileInput-${name}`}
             onDrop={isDocPreUploaded || isDragDropDisabled ? undefined : this.handleDrop}
             onDragOver={isDocPreUploaded || isDragDropDisabled ? undefined : this.handleDragOver}
             onDragEnter={
@@ -416,7 +416,7 @@ export default class FileUpload extends React.Component {
                   />
                   <div className="Dropzone-content-desc">
                     <p className="Dropzone-content-desc--primary upload-file-heading">
-                      Drop file here or <b class="text-primary">click to upload</b>{' '}
+                      Drop file here or <b className="text-primary">click to upload</b>{' '}
                       {maxSize && !hideMaxSize ? (
                         <React.Fragment>({readableFileSize(maxSize)} Max)</React.Fragment>
                       ) : null}

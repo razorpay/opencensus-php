@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -16,16 +16,8 @@ import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collect
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 import { checkIfVirtualAccountRoute } from 'merchant/views/SmartCollect/utils';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    ...state.scPayments,
-    user: state.session.user,
-    isVaEditBulkMid: state.virtualaccount.isVaEditBulkMid,
-  }),
-  { fetchAll },
-)
-@RTracking(() => window.rzpQ.component('VAPaymentsListContainer'))
 class VAPaymentsListContainer extends ListContainer {
   constructor(props) {
     super(props);
@@ -180,7 +172,7 @@ class VAPaymentsListContainer extends ListContainer {
         }
       >
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <TestModeBanner />
             <PaymentsListFilter
               form="paymentListFilter"
@@ -213,4 +205,15 @@ class VAPaymentsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(VAPaymentsListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.scPayments,
+      user: state.session.user,
+      isVaEditBulkMid: state.virtualaccount.isVaEditBulkMid,
+    }),
+    { fetchAll },
+  ),
+  rTracking(() => window.rzpQ.component('VAPaymentsListContainer')),
+)(VAPaymentsListContainer);

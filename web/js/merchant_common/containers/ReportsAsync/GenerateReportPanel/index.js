@@ -1,11 +1,9 @@
 import React from 'react';
-import errorService from '@razorpay/universe-utils/errorService';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
-
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 import { withI18Service } from 'common/i18';
 import { AsyncBtn } from 'common/new-ui/Button';
-import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import SelectAccount from 'common/ui/AccountsList';
@@ -21,7 +19,7 @@ import SelectFormat from './SelectFormat';
 import SelectPeriod from './SelectPeriod';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
-@RTracking(() => window.rzpQ.component('GenerateReportPanel'))
+
 class GenerateReportPanel extends React.PureComponent {
   static defaultProps = {
     customConfigs: [],
@@ -89,27 +87,6 @@ class GenerateReportPanel extends React.PureComponent {
     });
   };
 
-  // eslint-disable-next-line consistent-return
-  @RTracking((props, state) => {
-    try {
-      const { selectedConfig: { id, name, report_type } = {} } = state;
-      const { tracking } = props;
-      return tracking.trackEvent(
-        window.rzpQ.reporting().initiated('reporting.generate_report', {
-          config_id: id,
-          config_name: name,
-          config_report_type: report_type,
-        }),
-      );
-    } catch (error) {
-      errorService.captureError(error, {
-        tags: {
-          team: Teams.COMMON,
-        },
-        rank: Ranks.P2,
-      });
-    }
-  })
   onGenerateReport = () => {
     const { selectedConfig, selectedAccount = {} } = this.state;
 
@@ -275,8 +252,8 @@ class GenerateReportPanel extends React.PureComponent {
             onDateRangeChanges={this.onDateRangeChanges}
           />
 
-          <Input.Group class="InputGroup--inline">
-            <div class="Input-content">
+          <Input.Group className="InputGroup--inline">
+            <div className="Input-content">
               {/* there is no format option in case of custom configs */}
               {!isCustomConfig && (
                 <SelectFormat
@@ -300,7 +277,7 @@ class GenerateReportPanel extends React.PureComponent {
               type="submit"
               onClick={this.onGenerateReport}
               disabled={isFormDisabled || !!dateRangeError || !emailReportOptions.length}
-              class="m-t"
+              className="m-t"
             >
               {isCustomConfig ? 'Download Report' : 'Generate Report'}
             </AsyncBtn.Primary>
@@ -322,7 +299,8 @@ function getDateRangeError(startAt, endAt, aggregatedPartnerReport) {
   return false;
 }
 
-export default connect(
-  (state) => ({ user: state.session.user }),
-  null,
-)(withI18Service(GenerateReportPanel));
+export default compose(
+  withI18Service,
+  connect((state) => ({ user: state.session.user }), null),
+  rTracking(() => window.rzpQ.component('GenerateReportPanel')),
+)(GenerateReportPanel);

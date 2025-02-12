@@ -27,17 +27,17 @@ const MWebContactDetails = (props) => {
   };
   return (
     <Input.Group
-      class="InputGroup--inline InputGroup--vTop customer-details hidden-lg"
+      className="InputGroup--inline InputGroup--vTop customer-details hidden-lg"
       label="Customer Details"
       disabled={props.disabled}
     >
-      <div class="mob-customer-details">
+      <div className="mob-customer-details">
         <Input
           autoRender
           name="email"
           placeholder="john@example.com"
           type="email"
-          addonBefore={<i class="i i-email-outline" />}
+          addonBefore={<i className="i i-email-outline" />}
           defaultValue={props.defaultEmailAddress}
           onBlur={track.lj.fields.email}
         />
@@ -50,13 +50,13 @@ const MWebContactDetails = (props) => {
           defaultValue={props.defaultEmailValue}
         />
       </div>
-      <div class="mob-customer-details">
+      <div className="mob-customer-details">
         <Input
           autoRender
           name="contact"
           type="tel"
           placeholder={props.contactPlaceholder}
-          addonBefore={<i class="i i-phone-outline" />}
+          addonBefore={<i className="i i-phone-outline" />}
           defaultValue={props.defaultContactNumber}
           onBlur={track.lj.fields.contact}
         />

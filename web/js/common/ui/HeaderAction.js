@@ -37,8 +37,8 @@ const HeaderAction = ({
         target={target}
         attachment="top right"
         targetAttachment="top right"
+        className={org.custom_code}
         offset={offset}
-        class={org.custom_code}
       >
         <div />
         <ErrorBoundary FallbackComponent={FallbackComponent}>{children}</ErrorBoundary>

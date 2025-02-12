@@ -14,11 +14,11 @@ function WithdrawalErrorReason({
   comparsionIcon,
 }) {
   return (
-    <div class="repayment-modal withdrawals">
+    <div className="repayment-modal withdrawals">
       <ModalHeader
-        class="header"
+        className="header"
         title={
-          <div class="flex">
+          <div className="flex">
             <img src={require(`assets/capital/question_circle.svg`)} alt="Loading icon" /> &nbsp;
             <p>Why Can’t I withdraw?</p>
           </div>
@@ -30,23 +30,23 @@ function WithdrawalErrorReason({
           closeModal();
         }}
       />
-      <small class="text-fade description">Check the reason for not able to withdraw money.</small>
+      <small className="text-fade description">Check the reason for not able to withdraw money.</small>
       <div className="overflow-box">
-        <div class="repayment-amount-details">
-          <p class="no-margin">{description}</p>
+        <div className="repayment-amount-details">
+          <p className="no-margin">{description}</p>
         </div>
-        <div class="flex p-l p-r m-all">
+        <div className="flex p-l p-r m-all">
           <div
-            class="panel-body full-width table-bordered no-margin"
+            className="panel-body full-width table-bordered no-margin"
             style={{ borderColor: 'rgba(240, 81, 80, 0.82)' }}
           >
-            <div class="no-margin">
+            <div className="no-margin">
               <Amount value={amounts.requested} parentQuerySelector=".repayment-modal" />
             </div>
             <span className="amount__title">{texts.amount.left.title}</span>
-            <p class="text-small text-faded amount__subTitle">{texts.amount.left.subtitle}</p>
+            <p className="text-small text-faded amount__subTitle">{texts.amount.left.subtitle}</p>
           </div>
-          <h3 class="p-all"> {comparsionIcon} </h3>
+          <h3 className="p-all"> {comparsionIcon} </h3>
           <div className="panel-body full-width table-bordered no-margin">
             <div className="no-margin">
               <Amount value={amounts.threshold} parentQuerySelector=".repayment-modal" />

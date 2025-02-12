@@ -48,17 +48,17 @@ export default class ProductCard extends React.Component {
   render() {
     const { title, description, imgSrc, primaryLink, secondaryLink } = this.props;
     return (
-      <div class="ProductCard">
-        <img class="ProductCard-img" src={imgSrc} />
+      <div className="ProductCard">
+        <img className="ProductCard-img" src={imgSrc} />
 
-        <div class="ProductCard-details">
-          <div class="title">{title}</div>
+        <div className="ProductCard-details">
+          <div className="title">{title}</div>
           <p>{description}</p>
 
-          <div class="ProductCard-actionBtns">
+          <div className="ProductCard-actionBtns">
             {!!primaryLink && (
               <a
-                class="Button--primary--invert Button"
+                className="Button--primary--invert Button"
                 href={primaryLink}
                 target="_blank"
                 rel="noreferrer noopener"
@@ -68,13 +68,13 @@ export default class ProductCard extends React.Component {
             )}
             {!!secondaryLink && (
               <a
-                class="Button--Link Button--transparent Button"
+                className="Button--Link Button--transparent Button"
                 href={secondaryLink}
                 target="_blank"
                 rel="noreferrer noopener"
               >
                 <b>
-                  {secondaryCTAText} <i class="i-external-link" />
+                  {secondaryCTAText} <i className="i-external-link" />
                 </b>
               </a>
             )}

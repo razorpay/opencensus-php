@@ -48,7 +48,7 @@ export default class extends React.Component {
     const { variantsList } = this.props;
 
     return (
-      <div class="Input--SegmentList">
+      <div className="Input--SegmentList">
         {this.state.segmentsList.map((s, ix) => (
           <Segment
             key={ix}
@@ -62,11 +62,11 @@ export default class extends React.Component {
         ))}
         <button
           type="button"
-          class="btn btn--pill"
+          className="btn btn--pill"
           onClick={this.addNewSegment}
           style={{ marginTop: 12 }}
         >
-          <i class="i i-return-key" /> Add Segment
+          <i className="i i-return-key" /> Add Segment
         </button>
       </div>
     );
@@ -173,7 +173,7 @@ class Segment extends React.Component {
     this.props.updateSegmentsList(this.props.index, this.state.segment);
   }
 
-  updateSegment = debounce(::this.updateSegment, 50);
+  updateSegment = debounce(this.updateSegment.bind(this), 50);
 
   removeSegment = _ => {
     this.props.removeSegment(this.props.index);
@@ -183,8 +183,8 @@ class Segment extends React.Component {
     const segment = this.state.segment;
 
     return (
-      <div class="Input-Segment">
-        <span class="Input-el-btn" onClick={this.removeSegment}>
+      <div className="Input-Segment">
+        <span className="Input-el-btn" onClick={this.removeSegment}>
           &times;
         </span>
 

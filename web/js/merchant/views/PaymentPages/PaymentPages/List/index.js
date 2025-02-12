@@ -3,7 +3,7 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import ProductWrapper from 'common/ui/ProductWrapper';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import track from './track';
 import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
@@ -43,23 +43,8 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getPaymentPagesTabs } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { compose } from 'redux';
 
-@connect(
-  (state) => ({
-    ...state.invoices,
-    ...state.session,
-    isStorefrontPage: state.paymentPageStorefront.isStorefrontPage,
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
-  }),
-  {
-    showNotification,
-    populateRPLReduxList,
-    populateStorefrontReduxList,
-    handleProductQuickGuide,
-    setIsStorefrontPage,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 class PaymentPagesContainer extends ListContainer {
   constructor(props) {
     super(props);
@@ -302,7 +287,7 @@ class PaymentPagesContainer extends ListContainer {
 
     if (loadingAllList) {
       content = (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -348,14 +333,14 @@ class PaymentPagesContainer extends ListContainer {
                 onClick={track.viewDoc}
               >
                 Documentation&nbsp;
-                <i class="i i-external-link" />
+                <i className="i i-external-link" />
               </DocLink>
             </ShowWhen>
 
             {isRoleAllowedEdit && (
-              <span class="cta-container">
-                <span class="btn btn-primary" onClick={this.handleProductQuickGuide}>
-                  <i class="i i-plus" />
+              <span className="cta-container">
+                <span className="btn btn-primary" onClick={this.handleProductQuickGuide}>
+                  <i className="i i-plus" />
                   <span onClick={this.trackCreatePaymentPage}>Create Payment Page</span>
                 </span>
               </span>
@@ -372,7 +357,7 @@ class PaymentPagesContainer extends ListContainer {
               setIsStorefrontPage={this.props.setIsStorefrontPage}
             />
           )}
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             <TestModeBanner />
             <ListFilter
               form="PaymentPagesPaymentListFilter"
@@ -380,22 +365,22 @@ class PaymentPagesContainer extends ListContainer {
               onSearchAnalytics={this.onSearchAnalytics}
               onClearAnalytics={this.onClearAnalytics}
             >
-              <div class="form-group list-filter-item">
+              <div className="form-group list-filter-item">
                 <label>Title</label>
                 <Field
                   name="title"
                   component="input"
-                  class="form-control input-sm"
+                  className="form-control input-sm"
                   onBlur={track.searchTitle}
                 />
               </div>
 
-              <div class="form-group list-filter-item">
+              <div className="form-group list-filter-item">
                 <label>Status</label>
                 <Field
                   name="status"
                   component="select"
-                  class="form-control input-sm"
+                  className="form-control input-sm"
                   onChange={track.searchStatus}
                 >
                   <option value="">All</option>
@@ -404,7 +389,7 @@ class PaymentPagesContainer extends ListContainer {
                 </Field>
               </div>
 
-              <div class="form-group list-filter-item count">
+              <div className="form-group list-filter-item count">
                 <label>Count</label>
                 <Field
                   name="count"
@@ -412,7 +397,7 @@ class PaymentPagesContainer extends ListContainer {
                   min={1}
                   max={100}
                   type="number"
-                  class="form-control input-sm"
+                  className="form-control input-sm"
                   onBlur={track.searchCount}
                 />
               </div>
@@ -436,4 +421,22 @@ const EmptyComponent = ({ isStorefrontPage }) => (
   />
 );
 
-export default withRouter(PaymentPagesContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.invoices,
+      ...state.session,
+      isStorefrontPage: state.paymentPageStorefront.isStorefrontPage,
+      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
+    }),
+    {
+      showNotification,
+      populateRPLReduxList,
+      populateStorefrontReduxList,
+      handleProductQuickGuide,
+      setIsStorefrontPage,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentPagesContainer')),
+)(PaymentPagesContainer);

@@ -189,7 +189,7 @@ class ProjectDetails extends React.Component {
                       <div>
                         <b>ACTIVE: {this.experimentsActiveCount} </b>
                         <br />
-                        <Link class="link" to={`/splitz/experiments?project_id=${data.id}`}>
+                        <Link className="link" to={`/splitz/experiments?project_id=${data.id}`}>
                           View all experiments
                         </Link>
                       </div>

@@ -1,31 +1,19 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
+import { AsyncBtn } from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
+import Input from 'common/new-ui/Input';
+import ModalHeader from 'common/ui/ModalHeader';
+import { isPhone } from 'common/utils/validators';
+import { OtpInput } from 'merchant/components/OtpInput';
+import { updateSelfContact } from 'merchant/reducers/team';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import ModalHeader from 'common/ui/ModalHeader';
-import { updateSelfContact } from 'merchant/reducers/team';
 import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 
-import { OtpInput } from 'merchant/components/OtpInput';
-import Form from 'common/new-ui/Form';
-import { AsyncBtn } from 'common/new-ui/Button';
-import Input from 'common/new-ui/Input';
-
-import { isPhone } from 'common/utils/validators';
-
-@connect(
-  (state) => ({
-    contact_mobile: (state.session.user.user || {}).contact_mobile,
-  }),
-  {
-    closeModal,
-    openModal,
-    updateSelfContact,
-    showNotification,
-  },
-)
-export default class UpdateSelfContactMobile extends Component {
+class UpdateSelfContactMobile extends Component {
   state = {
     values: {
       contact_mobile: this.props.contact_mobile,
@@ -81,9 +69,9 @@ export default class UpdateSelfContactMobile extends Component {
 
   render() {
     return (
-      <div class="2fa-modal">
+      <div className="2fa-modal">
         <ModalHeader title="Setting up 2-step verification" onCloseClick={this.onCloseClick} />
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
             Let's setup a mobile number where you will receive an SMS with OTP everytime you log in.
           </p>
@@ -91,7 +79,7 @@ export default class UpdateSelfContactMobile extends Component {
             <Input
               name="contact_mobile"
               type="text"
-              class="Input--vTop is-focused"
+              className="Input--vTop is-focused"
               autoFocus
               label="Enter your phone number"
               defaultValue={this.props.contact_mobile}
@@ -101,7 +89,7 @@ export default class UpdateSelfContactMobile extends Component {
             <AsyncBtn.Primary
               pendingState="Updating"
               type="submit"
-              class="Button--full-width"
+              className="Button--full-width"
               onClick={this.onSubmit}
               disabled={!this.isFormValid()}
             >
@@ -114,13 +102,21 @@ export default class UpdateSelfContactMobile extends Component {
   }
 }
 
-@connect(null, {
-  verifyTwoFactorOtp,
-  showNotification,
-  openModal,
-  closeModal,
-})
-class VerifyOtp extends Component {
+export default compose(
+  connect(
+    (state) => ({
+      contact_mobile: (state.session.user.user || {}).contact_mobile,
+    }),
+    {
+      closeModal,
+      openModal,
+      updateSelfContact,
+      showNotification,
+    },
+  ),
+)(UpdateSelfContactMobile);
+
+class VerifyOtpComponent extends Component {
   state = {};
 
   onConfirm = () => {
@@ -175,35 +171,35 @@ class VerifyOtp extends Component {
     return (
       <div>
         <ModalHeader title="Verify Mobile Number" onCloseClick={this.onCloseClick} />
-        <div class="modal-body">
-          <p class="m-b">
+        <div className="modal-body">
+          <p className="m-b">
             An SMS with 6-digit OTP has been sent to {contactMobile}{' '}
             <a onClick={this.onChangeMobileNumber}>[Change]</a>
           </p>
 
-          <p class="m-t m-b">OTP will expire in 5mins.</p>
+          <p className="m-t m-b">OTP will expire in 5mins.</p>
 
           <OtpInput
             onComplete={this.updateOtpValue}
             onChange={this.updateOtpValue}
             wrong={this.state.wrongOtp}
           />
-          <p class="m-t m-b">
+          <p className="m-t m-b">
             Didn’t receive an SMS?{' '}
             <AsyncBtn.Transparent
               pendingState="Sending OTP..."
               onClick={this.onResend}
-              class="m-l"
+              className="m-l"
               showLoader={false}
             >
               Send OTP
             </AsyncBtn.Transparent>
           </p>
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncBtn.Primary
               pendingState="Updating"
               type="submit"
-              class="Button--full-width"
+              className="Button--full-width"
               onClick={this.onConfirm}
             >
               Update
@@ -214,3 +210,9 @@ class VerifyOtp extends Component {
     );
   }
 }
+const VerifyOtp = connect(null, {
+  verifyTwoFactorOtp,
+  showNotification,
+  openModal,
+  closeModal,
+})(VerifyOtpComponent);

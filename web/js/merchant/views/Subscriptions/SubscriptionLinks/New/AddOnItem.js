@@ -2,19 +2,16 @@ import { Component } from 'react';
 import { TypeAhead } from 'react-power-select';
 import { connect } from 'react-redux';
 
-import NewItem from 'merchant/views/Invoices/Items/New';
 import Amount from 'common/ui/Amount';
 import QuickAdd from 'common/ui/Select/QuickAdd';
-
 import { isPresent } from 'common/utils/rzp-utils';
-
+import NewItem from 'merchant/views/Invoices/Items/New';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import QuantitySelector from './QuantitySelector';
 import analytics from '../../analytics';
 
-@connect(null, { openModal, closeModal })
-export default class AddOnItem extends Component {
+class AddOnItem extends Component {
   addNewItem = () => {
     const { closeModal: closeModalcb, currency, cloneOptions } = this.props;
 
@@ -41,7 +38,7 @@ export default class AddOnItem extends Component {
   render() {
     const props = this.props;
     return (
-      <div class="Addon--Item">
+      <div className="Addon--Item">
         <TypeAhead
           showClear={false}
           name={`${props.name}.item`}
@@ -53,7 +50,7 @@ export default class AddOnItem extends Component {
           selectedOptionLabelPath="name"
           onChange={props.onSelectItem}
           selected={props.selectedItem.item}
-          class="ps-in-modal"
+          className="ps-in-modal"
           afterOptionsComponent={(select) => <QuickAdd {...select} onClick={this.addNewItem} />}
         />
 
@@ -73,7 +70,7 @@ export default class AddOnItem extends Component {
 
 function ItemOption({ option }) {
   return (
-    <div class="custom-powerselect-options">
+    <div className="custom-powerselect-options">
       <p>{option.name}</p>
       <Amount value={option.amount} currency={option.currency} />
     </div>
@@ -87,3 +84,5 @@ function getInformativeMessage(totalAmount, currency) {
     </p>
   );
 }
+
+export default connect(null, { openModal, closeModal })(AddOnItem);

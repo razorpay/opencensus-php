@@ -74,7 +74,7 @@ export const getTimeLine = (hasAppliedCa, caStatus, activatedAt) => {
     return (
       <div className="ca-apply-timeline">
         {getTimeDiff(activatedAt, 16) <= 0 ? (
-          <i class="fa fa-times-circle date-extention-icon" aria-hidden="true" />
+          <i className="fa fa-times-circle date-extention-icon" aria-hidden="true" />
         ) : (
           <img src="/img/inactive-circle.svg" alt="Clients" />
         )}
@@ -96,7 +96,7 @@ export const getTimeLine = (hasAppliedCa, caStatus, activatedAt) => {
         <div className="inactive">Apply by {timeLineStatus?.applyCADate}</div>
         <div className="dash-separator">- - - - - - </div>
         {getTimeDiff(activatedAt, 61) <= 0 ? (
-          <i class="fa fa-times-circle date-extention-icon" aria-hidden="true" />
+          <i className="fa fa-times-circle date-extention-icon" aria-hidden="true" />
         ) : (
           <img src="/img/inactive-circle.svg" alt="Clients" />
         )}

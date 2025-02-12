@@ -9,9 +9,9 @@ export const ProgressBar = ({ value, min, max, type, className, color }) => {
   };
 
   return (
-    <div class={`progress ${className}`}>
-      <div class={`progress-bar progress-bar-${type}`} style={style}>
-        <span class="sr-only">
+    <div className={`progress ${className}`}>
+      <div className={`progress-bar progress-bar-${type}`} style={style}>
+        <span className="sr-only">
           {completionPercentage} Complete ({type})
         </span>
       </div>
@@ -62,9 +62,9 @@ export class TimedProgressBar extends React.PureComponent {
     return (
       <div
         ref={this.progressBarRef}
-        class={classList('progress', 'timed-progress', className)}
+        className={classList('progress', 'timed-progress', className)}
       >
-        <div class={`progress-bar progress-bar-${type}`} style={style}>
+        <div className={`progress-bar progress-bar-${type}`} style={style}>
           {children}
         </div>
       </div>

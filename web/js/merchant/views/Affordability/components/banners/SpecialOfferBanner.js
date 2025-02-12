@@ -28,7 +28,7 @@ const SpecialOfferBanner = ({ pricing, trialDays }) => {
       title="🎉 Limited period offer"
       theme="purply"
     >
-      <span class="display-inline">
+      <span className="display-inline">
         Affordability widget gets more affordable! Avail{' '}
         {pricing.default && pricing.rate < pricing.default ? (
           <>

@@ -20,7 +20,7 @@ function TicketsContainer(props) {
     : QUERY_REQUEST_ROUTE_LINK__AGENT;
 
   return (
-    <div class="content-wrapper content-sm ticket-support support-history-container">
+    <div className="content-wrapper content-sm ticket-support support-history-container">
       <NavLink
         className={({ isActive }) => `btn btn-outline btn-top-tab${isActive ? ' active' : ''}`}
         to={supportQueruesRouteLink}

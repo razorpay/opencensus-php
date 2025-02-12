@@ -1,22 +1,19 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
-import SwitchField from 'common/ui/Forms/SwitchField';
 import Button from 'common/new-ui/Button';
-import EditableDisplayField from './EditableDisplayField';
-
+import SwitchField from 'common/ui/Forms/SwitchField';
 import {
   updateStepReviewProgress,
   filterSubscriptionPaymentItems,
   removeAllOneTimePaymentFields,
 } from 'merchant/reducers/subscriptionButtons/create';
 
+import EditableDisplayField from './EditableDisplayField';
+
 // import track from '../../../track';
 
-@connect((state) => ({}), {
-  updateStepReviewProgress,
-  removeAllOneTimePaymentFields,
-})
-export default class OneTimePaymentsDetails extends React.Component {
+class OneTimePaymentsDetails extends React.Component {
   maxFieldsLimit = 5;
 
   state = {
@@ -81,8 +78,8 @@ export default class OneTimePaymentsDetails extends React.Component {
 
     const currency = subscriptionButtonEntity.currency;
 
-    const fields = this.oneTimePaymentFields,
-      items = [];
+    const fields = this.oneTimePaymentFields;
+    const items = [];
 
     fields.items.forEach((field, index) => {
       items.push(
@@ -97,16 +94,16 @@ export default class OneTimePaymentsDetails extends React.Component {
     });
 
     return (
-      <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
+      <div className="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
         {
-          <div class="PaymentButtonForm-AmountDetails Form-content">
+          <div className="PaymentButtonForm-AmountDetails Form-content">
             <label style={{ marginBottom: 40 }}>
               <SwitchField
                 type="prime round"
                 checked={hasOneTimePayments}
                 onChange={this.handleToggle}
               />
-              <span class="m-l" style={{ cursor: 'pointer' }}>
+              <span className="m-l" style={{ cursor: 'pointer' }}>
                 Add one-time payment options
               </span>
             </label>
@@ -121,7 +118,7 @@ export default class OneTimePaymentsDetails extends React.Component {
                     validateSameTitleExists={this.validateSameTitleExists}
                   >
                     <Button
-                      class="Button--primary--invert addFieldBtn"
+                      className="Button--primary--invert addFieldBtn"
                       // onClick={track.lj.trackCustomerScreenInputField}
                     >
                       <b>+ Add One-Time Item</b>
@@ -133,7 +130,7 @@ export default class OneTimePaymentsDetails extends React.Component {
           </div>
         }
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Transparent
             type="button"
             onClick={() => {
@@ -146,10 +143,15 @@ export default class OneTimePaymentsDetails extends React.Component {
           </Button.Transparent>
 
           <Button.Primary type="button" disabled={!paymentFields.length} onClick={this.goNext}>
-            Next <i class="i i-chevron-right" />
+            Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>
       </div>
     );
   }
 }
+
+export default connect((state) => ({}), {
+  updateStepReviewProgress,
+  removeAllOneTimePaymentFields,
+})(OneTimePaymentsDetails);

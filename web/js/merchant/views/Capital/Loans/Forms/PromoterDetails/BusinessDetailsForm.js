@@ -186,7 +186,7 @@ const BusinessDetailsForm = ({
           allowToday
           placeholder="DD-MM-YYYY"
           onChange={handleDateChange}
-          addonAfter={<i class="i i-date-range" />}
+          addonAfter={<i className="i i-date-range" />}
           placement="bottomLeft"
           value={formData.date_of_incorporation}
           disabledDate={disableFutureMonths}
@@ -270,7 +270,7 @@ const BusinessDetailsForm = ({
               name="state"
               options={statesOptions}
               required
-              class="InputGroup--vTop"
+              className="InputGroup--vTop"
               disabled={!canModify}
             />
           </Input.Group>

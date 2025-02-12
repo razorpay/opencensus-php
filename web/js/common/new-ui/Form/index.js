@@ -36,7 +36,7 @@ export default class Form extends React.PureComponent {
         ref={setRef}
         noValidate
         {...rest}
-        class={this.formClass()}
+        className={this.formClass()}
         onSubmit={this.onSubmit}
       />
     );

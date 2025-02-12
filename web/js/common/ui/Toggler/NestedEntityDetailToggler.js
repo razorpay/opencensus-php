@@ -16,7 +16,7 @@ export default class NestedEntityDetailToggler extends BaseToggler {
         value={() => (
           <div>
             <AsyncButton
-              class="btn btn-xs btn-default"
+              className="btn btn-xs btn-default"
               text="Show/Hide"
               pendingText="Fetching..."
               onClick={this.toggle}

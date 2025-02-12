@@ -45,7 +45,7 @@ export default class MerchantEvaluation extends React.Component {
     let result;
 
     if (isFetching) {
-      result = <span class="dot-loader">.</span>;
+      result = <span className="dot-loader">.</span>;
     } else if (evaluationResult === false) {
       result = (
         <span>
@@ -55,13 +55,13 @@ export default class MerchantEvaluation extends React.Component {
     } else if (evaluationResult === null) {
       result = <span>Evaluate Something!</span>;
     } else if (evaluationResult) {
-      result = <span class="highlight">{evaluationResult}</span>;
+      result = <span className="highlight">{evaluationResult}</span>;
     }
 
     return (
-      <div class="parent-container merchant-evaluation-container">
-        <div class="header">
-          <span class="title">Merchant Evaluation</span>
+      <div className="parent-container merchant-evaluation-container">
+        <div className="header">
+          <span className="title">Merchant Evaluation</span>
           <SwitchField
             name="mode"
             defaultValue={AppStore.mode}
@@ -72,9 +72,9 @@ export default class MerchantEvaluation extends React.Component {
             onChange={AppStore.updateMode}
           />
         </div>
-        <div class="container-group">
-          <div class="list-container">
-            <Form onSubmit={this.evaluateMerchant} class="filters">
+        <div className="container-group">
+          <div className="list-container">
+            <Form onSubmit={this.evaluateMerchant} className="filters">
               <Field name="merchant_id" label="Merchant Id" />
               <Field name="feature_flag" label="Feature Name" />
 
@@ -85,12 +85,12 @@ export default class MerchantEvaluation extends React.Component {
                   </option>
                 ))}
               </SelectField>
-              <button class="btn btn--primary field">Evaluate</button>
+              <button className="btn btn--primary field">Evaluate</button>
             </Form>
-            <div class="evaluation-result">
+            <div className="evaluation-result">
               <div>
-                <i class="i i-flask" />
-                <div class="title">RESULT</div>
+                <i className="i i-flask" />
+                <div className="title">RESULT</div>
                 {result}
               </div>
             </div>

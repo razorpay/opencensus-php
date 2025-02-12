@@ -199,10 +199,10 @@ const CustomURL = ({
   */
   if (!isCustomDomainFeatureEnabled) {
     return (
-      <div class={WRAPPER_CLASS} tabIndex={-1}>
+      <div className={WRAPPER_CLASS} tabIndex={-1}>
         <Input
           name={INPUT_NAME}
-          class={INPUT_CLASS}
+          className={INPUT_CLASS}
           label={LABEL}
           defaultValue={slug}
           addonValueBefore={RZP_PAGES_URL}
@@ -218,18 +218,18 @@ const CustomURL = ({
   }
 
   return (
-    <div class={WRAPPER_CLASS} tabIndex={-1}>
+    <div className={WRAPPER_CLASS} tabIndex={-1}>
       {isLoading ? (
         <>
-          <div class="Input-label m-b">{LABEL}</div>
-          <div class="text-center">
+          <div className="Input-label m-b">{LABEL}</div>
+          <div className="text-center">
             <Spinner />
           </div>
         </>
       ) : isError ? (
         <>
-          <div class="Input-label m-b">{LABEL}</div>
-          <div class="text-danger">
+          <div className="Input-label m-b">{LABEL}</div>
+          <div className="text-danger">
             Failed to fetch custom domain details for this page, please try again later
           </div>
         </>
@@ -238,7 +238,7 @@ const CustomURL = ({
           <Input
             name={INPUT_NAME}
             autoRender
-            class={INPUT_CLASS}
+            className={INPUT_CLASS}
             label={LABEL}
             defaultValue={slug}
             addonValueBefore={urlType === 'rzp' ? RZP_PAGES_URL : `https://${value}/`}
@@ -254,7 +254,7 @@ const CustomURL = ({
                     { label: 'Use my domain', value: 'custom' },
                     { label: `Use Razorpay's domain`, value: 'rzp' },
                   ]}
-                  class="Input--vTop"
+                  className="Input--vTop"
                   defaultValue={urlType}
                   onChange={(e) => {
                     setUrlType(e.target.value);
@@ -270,10 +270,10 @@ const CustomURL = ({
           {!isTestMode &&
             (!isCustomDomainSetup ? (
               <>
-                <div class="or-separator">- OR -</div>
-                <div class="cta-section">
-                  <div class="body">
-                    <span class="lock-wrapper">
+                <div className="or-separator">- OR -</div>
+                <div className="cta-section">
+                  <div className="body">
+                    <span className="lock-wrapper">
                       <img src={LockImage} alt="lock" width="24px" height="24px" />
                       <Popover
                         align="bottom"
@@ -288,9 +288,9 @@ const CustomURL = ({
                     </span>
                     <span>Already have a domain?</span>
                   </div>
-                  <span class="action">
+                  <span className="action">
                     <button
-                      class="Button--primary--invert Button"
+                      className="Button--primary--invert Button"
                       onClick={handleConnectDomain}
                       type="button"
                     >
@@ -301,13 +301,13 @@ const CustomURL = ({
               </>
             ) : (
               urlType === 'custom' && (
-                <div class="custom-url-options">
-                  <div class="remove-domain" onClick={handleRemoveDomain}>
-                    <i class="i i-delete-outline" />
+                <div className="custom-url-options">
+                  <div className="remove-domain" onClick={handleRemoveDomain}>
+                    <i className="i i-delete-outline" />
                     Remove domain
                   </div>
                   <div onClick={handlePlanDetails}>
-                    <i class="i i-star-outline" />
+                    <i className="i i-star-outline" />
                     Plan details
                   </div>
                 </div>

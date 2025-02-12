@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Button from 'common/new-ui/Button';
@@ -30,16 +31,6 @@ const TABS = {
   REPAYMENT_DETAILS: 'REPAYMENT_DETAILS',
 };
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-    user: state.session.user,
-  }),
-  {
-    fetchLoanApplicationMeta,
-    closeModal,
-  },
-)
 class CashAdvanceApproved extends Component {
   constructor() {
     super();
@@ -82,12 +73,12 @@ class CashAdvanceApproved extends Component {
     );
 
     return (
-      <div class="credit-offer-container no-padding">
+      <div className="credit-offer-container no-padding">
         <div className="loan-offer-wrapper">
-          <div class="block-note success m-b">
+          <div className="block-note success m-b">
             <strong>Credit Offer Details</strong>
             <div>
-              <span class="text-small">
+              <span className="text-small">
                 The one time fees will be charged after the application approval
               </span>
             </div>
@@ -100,10 +91,10 @@ class CashAdvanceApproved extends Component {
             product={CAPITAL_PRODUCT_CODES.CASH_ADVANCE}
           />
         </div>
-        <div class="loan-offer-wrapper m-t m-b">
+        <div className="loan-offer-wrapper m-t m-b">
           <div className="block-note warning">
             <strong>Withdrawal Details</strong>
-            <div class="pull-right">
+            <div className="pull-right">
               <Button.Transparent onClick={() => this.setActiveTab(TABS.WITHDRAWAL_DETAILS)}>
                 {this.state.activeTab === TABS.WITHDRAWAL_DETAILS ? 'Hide Details' : 'View Details'}
                 <i
@@ -167,7 +158,7 @@ class CashAdvanceApproved extends Component {
                     <i className="i i-info-outline" onMouseOver={trackMouseOver} />
                     <Popover align="top" theme="dark">
                       <PopoverBody>
-                        <div class="text-left">{TOOLTIP_DESCRIPTIONS.disbursing_account}</div>
+                        <div className="text-left">{TOOLTIP_DESCRIPTIONS.disbursing_account}</div>
                       </PopoverBody>
                     </Popover>
                   </small>
@@ -186,7 +177,7 @@ class CashAdvanceApproved extends Component {
                       <i className="i i-info-outline" onMouseOver={trackMouseOver} />
                       <Popover align="top" theme="dark">
                         <PopoverBody>
-                          <div class="text-left">{TOOLTIP_DESCRIPTIONS.ifsc_code}</div>
+                          <div className="text-left">{TOOLTIP_DESCRIPTIONS.ifsc_code}</div>
                         </PopoverBody>
                       </Popover>
                     </small>
@@ -226,7 +217,7 @@ class CashAdvanceApproved extends Component {
             </div>
           )}
         </div>
-        <div class="loan-offer-wrapper">
+        <div className="loan-offer-wrapper">
           <div className="loan-offer-action pull-right">
             <Button.Transparent
               onClick={() => {
@@ -251,4 +242,16 @@ class CashAdvanceApproved extends Component {
   }
 }
 
-export default withRouter(CashAdvanceApproved);
+export default compose(
+  connect(
+    (state) => ({
+      loanApplicationDetails: state.loanApplicationDetails,
+      user: state.session.user,
+    }),
+    {
+      fetchLoanApplicationMeta,
+      closeModal,
+    },
+  ),
+  withRouter,
+)(CashAdvanceApproved);

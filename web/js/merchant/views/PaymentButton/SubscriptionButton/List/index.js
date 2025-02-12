@@ -27,6 +27,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import track from './track';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import EmptyListImage from 'assets/payment_button/empty-list.svg';
+import { compose } from 'redux';
 
 const TABS_DATA = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: [
@@ -40,7 +41,7 @@ const getActions = (openGetCodeModal) => ({
   title: 'Actions',
   columnClass: 'action-col',
   value: (item) => (
-    <a class="get-code-btn" onClick={() => openGetCodeModal(item)}>
+    <a className="get-code-btn" onClick={() => openGetCodeModal(item)}>
       GET BUTTON CODE
     </a>
   ),
@@ -63,7 +64,7 @@ const itemNames = {
     return (
       <React.Fragment>
         <div>
-          <span class={classList(recurringItems.length && 'Button--transparent Button')}>
+          <span className={classList(recurringItems.length && 'Button--transparent Button')}>
             Recurring Plans ({recurringItems.length})
             {!!recurringItems.length && (
               <Popover align={isMobileDevice() ? 'top' : 'right'}>
@@ -72,14 +73,14 @@ const itemNames = {
                     <thead>
                       <tr>
                         <th>Plan Name</th>
-                        <th class="text-right">Subscriptions</th>
+                        <th className="text-right">Subscriptions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {recurringItems.map((_item, index) => (
                         <tr key={index}>
                           <td>{_item.item.name}</td>
-                          <td class="text-right">{_item.quantity_sold}</td>
+                          <td className="text-right">{_item.quantity_sold}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -91,7 +92,7 @@ const itemNames = {
         </div>
 
         <div>
-          <span class={classList(oneTimeItems.length && 'Button--transparent Button ')}>
+          <span className={classList(oneTimeItems.length && 'Button--transparent Button ')}>
             One-Time Items ({oneTimeItems.length})
             {!!oneTimeItems.length && (
               <Popover align="right">
@@ -100,7 +101,7 @@ const itemNames = {
                     <thead>
                       <tr>
                         <th>Item Name</th>
-                        <th class="text-right">Units Sold</th>
+                        <th className="text-right">Units Sold</th>
                       </tr>
                     </thead>
 
@@ -108,7 +109,7 @@ const itemNames = {
                       {oneTimeItems.map((_item, index) => (
                         <tr key={index}>
                           <td>{_item.item.name}</td>
-                          <td class="text-right">{_item.quantity_sold}</td>
+                          <td className="text-right">{_item.quantity_sold}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -152,14 +153,6 @@ export const status = {
   value: (item) => <PaymentPagesStatusLabel status={item.status} />,
 };
 
-@connect(
-  (state) => ({
-    ...state.subscription_buttons,
-    ...state.session,
-  }),
-  { fetchAll, openModal, closeModal, handleProductQuickGuide },
-)
-@RTracking(() => window.rzpQ.component('SubscriptionButtonsList'))
 class SubscriptionButtonsList extends ListContainer {
   state = {
     isSubscriptionButtonOpen: false,
@@ -253,9 +246,9 @@ class SubscriptionButtonsList extends ListContainer {
             <DocsLink url="CREATE_SUBS_BUTTON_DOC_URL" />
 
             {isRoleAllowedEdit && user.isSubscriptionButtonEnabled && (
-              <span class="cta-container">
-                <span class="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
-                  <i class="i i-plus" />
+              <span className="cta-container">
+                <span className="btn btn-primary" onClick={this.openSubscriptionButtonsNewPage}>
+                  <i className="i i-plus" />
                   <span>Create Subscription Button</span>
                 </span>
               </span>
@@ -264,7 +257,7 @@ class SubscriptionButtonsList extends ListContainer {
         }
       >
         <content>
-          <div class="PaymentButtons--ListingPage content-wrapper">
+          <div className="PaymentButtons--ListingPage content-wrapper">
             <TestModeBanner />
             <ListFilter
               form="paymentButtonListFilter"
@@ -298,10 +291,10 @@ class SubscriptionButtonsList extends ListContainer {
 
 function EmptyComponent() {
   return (
-    <div class="PaymentButton-empty-list">
+    <div className="PaymentButton-empty-list">
       <img src={EmptyListImage} width="280px" />
 
-      <div class="description">
+      <div className="description">
         <h4>It’s Lonely Here!</h4>
         <div>Create a Subscription Button to get Started</div>
         <br />
@@ -310,11 +303,21 @@ function EmptyComponent() {
           target="_blank"
           href="https://razorpay.com/docs/payment-button/subscription-buttons/"
         >
-          started guide <i class="i i-external-link" />
+          started guide <i className="i i-external-link" />
         </DocLink>
       </div>
     </div>
   );
 }
 
-export default withRouter(SubscriptionButtonsList);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.subscription_buttons,
+      ...state.session,
+    }),
+    { fetchAll, openModal, closeModal, handleProductQuickGuide },
+  ),
+  RTracking(() => window.rzpQ.component('SubscriptionButtonsList')),
+)(SubscriptionButtonsList);

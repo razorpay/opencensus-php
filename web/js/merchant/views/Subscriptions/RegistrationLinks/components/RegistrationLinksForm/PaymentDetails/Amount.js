@@ -10,8 +10,8 @@ export default function Amount({
   ...props
 }) {
   return (
-    <Input.Group class="InputGroup--inline" label="Authorisation Amount">
-      <div class="Input-content">
+    <Input.Group className="InputGroup--inline" label="Authorisation Amount">
+      <div className="Input-content">
         <Input
           required
           name="amount"
@@ -20,7 +20,7 @@ export default function Amount({
           value={amount}
           validator={amountValidator}
           size="half_big"
-          class="Input--Amount"
+          className="Input--Amount"
           onBlur={onBlurElement}
           data-name="amount"
           addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}

@@ -45,8 +45,8 @@ export default class ReviewAndCreate extends React.Component {
     const { isInProgress } = this.state;
 
     return (
-      <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
-        <div class="PaymentButtonForm-ReviewAndCreate Form-content">
+      <div className="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
+        <div className="PaymentButtonForm-ReviewAndCreate Form-content">
           <ButtonDetailsPreview {...this.props} />
 
           {!this.isQuickPayTemplate && <AmountDetailsPreview {...this.props} />}
@@ -54,7 +54,7 @@ export default class ReviewAndCreate extends React.Component {
           <CustomerDetailsPreview {...this.props} />
         </div>
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Transparent
             type="submit"
             onClick={() => {

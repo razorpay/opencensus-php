@@ -44,7 +44,7 @@ class PaymentButtonsQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class={`PaymentButton ${className}`}
+        className={`PaymentButton ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >

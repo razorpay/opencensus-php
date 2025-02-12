@@ -276,7 +276,7 @@ const CODOrderAutomation = ({
               ))}
               {configs.length !== 3 ? (
                 <div
-                  class="add-configs-cta font-12 font-bold pointer display-inline"
+                  className="add-configs-cta font-12 font-bold pointer display-inline"
                   onClick={addMoreConfigs}
                 >
                   + Add more conditions

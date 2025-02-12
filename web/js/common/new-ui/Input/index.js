@@ -126,7 +126,7 @@ export class Info extends React.Component {
 
     if (text) {
       return (
-        <div class="Input-info">
+        <div className="Input-info">
           {typeof text === 'object' ? (
             <ul>
               {Object.keys(text).map((key) => (
@@ -150,7 +150,7 @@ export class Description extends React.Component {
     const text = this.props.text;
     if (this.props.text) {
       return (
-        <div class={classList('Input-desc', this.props.className)}>
+        <div className={classList('Input-desc', this.props.className)}>
           {typeof text === 'function' ? text() : text}
         </div>
       );
@@ -164,7 +164,7 @@ export class Label extends React.Component {
     const text = this.props.text;
     if (text) {
       return (
-        <div class={classList('Input-label', this.props.className)} {...this.props}>
+        <div className={classList('Input-label', this.props.className)} {...this.props}>
           {typeof text === 'function' ? text() : text}
         </div>
       );
@@ -176,7 +176,7 @@ export class Label extends React.Component {
 export class Error extends React.Component {
   render() {
     if (this.props.text) {
-      return <div class="Input-error">{this.props.text}</div>;
+      return <div className="Input-error">{this.props.text}</div>;
     }
     return null;
   }
@@ -399,7 +399,7 @@ export default class Field extends React.Component {
         onFocus={this.focus}
         onBlur={this.blur}
         onChange={this.change}
-        class={classList(
+        className={classList(
           'Input-el',
           allProps.addonBefore && 'Input-el--before',
           allProps.addonAfter && 'Input-el--after',
@@ -410,25 +410,25 @@ export default class Field extends React.Component {
     );
 
     return (
-      <div class={inputClass(this)}>
+      <div className={inputClass(this)}>
         <Label text={allProps.label} className={classList('Input-label', this.props.labelClass)} />
-        <div class="Input-content">
+        <div className="Input-content">
           {allProps.extraChildren}
           <div
-            class={classList(
+            className={classList(
               'Input-elWrapper',
               InputTag.toLowerCase() === 'select' && 'Select-elWrapper',
             )}
           >
             {allProps.addonBefore && (
-              <span class="Input-addons Input-addons--before">{allProps.addonBefore}</span>
+              <span className="Input-addons Input-addons--before">{allProps.addonBefore}</span>
             )}
             {allProps.addonValueBefore && (
-              <span class="Input-valueBefore">{allProps.addonValueBefore}</span>
+              <span className="Input-valueBefore">{allProps.addonValueBefore}</span>
             )}
             {InputComponent}
             {allProps.addonAfter && (
-              <span class="Input-addons Input-addons--after">{allProps.addonAfter}</span>
+              <span className="Input-addons Input-addons--after">{allProps.addonAfter}</span>
             )}
             {allProps.showCharacterLength && this.state.character_length && (
               <span className="character-length">{this.state.character_length}</span>
@@ -469,7 +469,7 @@ class Check extends Field {
   render() {
     const { label, fieldLabel, description, props } = separateDomProps(this.props);
     return (
-      <div class={inputClass(this)}>
+      <div className={inputClass(this)}>
         {label && (
           <Label text={label} className={classList('Input-label', this.props.labelClass)} />
         )}
@@ -479,20 +479,20 @@ class Check extends Field {
             this.props.extraClassName ? this.props.extraClassName : '',
           )}
         >
-          <div class="Input-elWrapper">
+          <div className="Input-elWrapper">
             <label>
               <input
                 {...props}
                 defaultChecked={
                   typeof this.props.checked !== 'undefined' ? undefined : this.checked
                 }
-                class="Input-el"
+                className="Input-el"
                 type="checkbox"
                 onChange={this.toggle}
                 disabled={this.props.disabled}
               />
               {this.props.checkboxMaskLabel ? (
-                <span class="Input-checkbox--label btn-link no-padding">
+                <span className="Input-checkbox--label btn-link no-padding">
                   {this.props.checkboxMaskLabel[+this.checked]}
                 </span>
               ) : (
@@ -553,10 +553,10 @@ class Radio extends Field {
     let selectedDescription;
 
     return (
-      <div class={inputClass(this)}>
+      <div className={inputClass(this)}>
         <Label text={label} className={classList('Input-label', this.props.labelClass)} />
-        <div class="Input-content">
-          <div class="Input--radioLabels">
+        <div className="Input-content">
+          <div className="Input--radioLabels">
             {options.map((o, i) => {
               const stringOption = typeof o == 'string';
               const labelInput = stringOption ? o : o.label;
@@ -582,7 +582,7 @@ class Radio extends Field {
                     defaultChecked={selected}
                     onChange={this.toggle}
                     value={value}
-                    class="Input-el"
+                    className="Input-el"
                     onBlur={this.onBlur}
                   />
                   <div className="Input-radio" />
@@ -611,9 +611,9 @@ Field.File = (_) => {
   const { label, description, propagatedError } = separateDomProps(_);
 
   return (
-    <div class={inputClass({ props: _ })}>
+    <div className={inputClass({ props: _ })}>
       <Label text={label} />
-      <div class="Input-content Input-File">
+      <div className="Input-content Input-File">
         <FileUpload
           name={_.name}
           maxSize={_.maxSize}
@@ -668,7 +668,7 @@ Field.Select = ({ options = [], ...props }) => (
 /* Fields to be shown visually closer than other fields in form*/
 Field.Group = ({ label, className, children, labelClass, ...otherProps }) => {
   return (
-    <div class={classList('InputGroup', className, inputClass({ props: otherProps }))}>
+    <div className={classList('InputGroup', className, inputClass({ props: otherProps }))}>
       <Label text={label} />
       {children}
     </div>
@@ -682,7 +682,7 @@ Field.EnumList = EnumList;
 
 const ToCalendar = React.forwardRef((props, ref) => (
   <CalendarPicker
-    class="disable-past-year"
+    className="disable-past-year"
     postSelectionValue={(val) => val.endOf('day')}
     {...props}
     ref={ref}

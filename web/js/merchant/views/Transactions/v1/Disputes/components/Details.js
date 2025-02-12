@@ -31,11 +31,11 @@ import UpdatedBy from './UpdatedBy';
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
   if (daysLeft < 0) {
-    return <span class="text-muted">Passed</span>;
+    return <span className="text-muted">Passed</span>;
   } else if (daysLeft === 0) {
-    return <strong class="text-danger">Today</strong>;
+    return <strong className="text-danger">Today</strong>;
   } else if (daysLeft === 1) {
-    return <strong class="text-danger">Tomorrow</strong>;
+    return <strong className="text-danger">Tomorrow</strong>;
   } else {
     return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
   }
@@ -163,27 +163,27 @@ const DisputeDetails = (props) => {
   };
 
   return (
-    <div class="content-wrapper content-sm txn-details dispute-details">
+    <div className="content-wrapper content-sm txn-details dispute-details">
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
             {onCloseSecView && (
-              <button type="button" class="close close-secondary" onClick={onCloseSecView}>
-                <i class="i i-arrow-back" />
-                <i class="i i-close" />
+              <button type="button" className="close close-secondary" onClick={onCloseSecView}>
+                <i className="i i-arrow-back" />
+                <i className="i i-close" />
               </button>
             )}
             Dispute Id: <strong>{dispute.id}</strong>
           </div>
           <Alert type="error" message={error} />
-          <div class="SliderPanel__Body">
+          <div className="SliderPanel__Body">
             {!isDisputePresentmentEnabled && isDisputeOpen && (
-              <div class="alert alert-warning rzp-banner">
-                <div class="rzp-banner-text">
+              <div className="alert alert-warning rzp-banner">
+                <div className="rzp-banner-text">
                   {/* text required only for fraud dispute */}
                   {dispute.phase === 'fraud' && (
                     <p>
@@ -218,8 +218,8 @@ const DisputeDetails = (props) => {
             )}
 
             {isDisputePresentmentEnabled && isDisputeOpen && (
-              <div class="alert alert-warning dispute-banner">
-                <div class="rzp-banner-text">
+              <div className="alert alert-warning dispute-banner">
+                <div className="rzp-banner-text">
                   {dispute.phase === 'fraud' ? (
                     <p>
                       <span>
@@ -264,9 +264,9 @@ const DisputeDetails = (props) => {
                   )}
                 </div>
                 {daysFromToday(dispute.respond_by) >= 0 && (
-                  <div class="dispute-cta">
+                  <div className="dispute-cta">
                     <button
-                      class="btn btn-primary"
+                      className="btn btn-primary"
                       disabled={!canUserTakeAction}
                       onClick={contestDispute}
                     >
@@ -275,7 +275,7 @@ const DisputeDetails = (props) => {
                     {dispute?.isBalanceSufficient ||
                     !dispute.hasOwnProperty('isBalanceSufficient') ? (
                       <button
-                        class="btn btn-outline"
+                        className="btn btn-outline"
                         disabled={!canUserTakeAction}
                         onClick={acceptDispute}
                       >
@@ -285,7 +285,7 @@ const DisputeDetails = (props) => {
                       <Tooltip content={CANNOT_ACCEPT_DISPUTE_TOOLTIP_TEXT}>
                         <TooltipInteractiveWrapper>
                           <button
-                            class="btn btn-outline"
+                            className="btn btn-outline"
                             disabled={!(canUserTakeAction && dispute?.isBalanceSufficient)}
                             onClick={acceptDispute}
                           >
@@ -299,8 +299,8 @@ const DisputeDetails = (props) => {
               </div>
             )}
 
-            <div class="panel-body">
-              <div class="list-group details-row-container">
+            <div className="panel-body">
+              <div className="list-group details-row-container">
                 {/* disputed amount */}
                 <EntityDetailRow label="Dispute amount">
                   <Amount value={dispute.amount} currency={dispute.currency} />
@@ -311,8 +311,8 @@ const DisputeDetails = (props) => {
               <EntityDetailRow label="Status">
                 <DisputeStatusLabel status={dispute.status} />
                 {dispute.amount_deducted > 0 && (
-                  <div class="alert alert-info status-alert">
-                    <div class="rzp-banner-text">
+                  <div className="alert alert-info status-alert">
+                    <div className="rzp-banner-text">
                       <p>
                         <Amount value={dispute.amount_deducted} currency={dispute.currency} /> has
                         been debited from your Razorpay account balance

@@ -1,8 +1,8 @@
 import { PowerSelect, TypeAhead } from 'react-power-select';
 
 const AddItemActionLabel = ({ options, select }) => (
-  <div class="quick-create">
-    <i class="i i-plus" />
+  <div className="quick-create">
+    <i className="i i-plus" />
     <span>Add Item {select.searchTerm && <b>{select.searchTerm}...</b>}</span>
   </div>
 );

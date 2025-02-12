@@ -42,20 +42,20 @@ export default (props) => {
   }, []);
 
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div className="content-wrapper content-sm txn-details">
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
             Order Id: <b>{order.id}</b>
           </div>
 
-          <div class="SliderPanel__Body">
+          <div className="SliderPanel__Body">
             <Alert type={statusMsg.type} message={statusMsg.message} />
-            <div class="panel-body">
+            <div className="panel-body">
               <EntityDetailRow label="Order Type" value={() => <MagicCheckoutLabel />} />
 
               {order.line_items && (
@@ -116,8 +116,8 @@ export default (props) => {
               ) : null}
             </div>
           </div>
-          <div class="SliderPanel__Extra">
-            <div class="panel-body">
+          <div className="SliderPanel__Extra">
+            <div className="panel-body">
               <EntityDetailRow label="Customer Details">
                 {order.customer_details ? (
                   <Definition>

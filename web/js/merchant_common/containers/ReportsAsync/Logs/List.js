@@ -1,7 +1,8 @@
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
-
+import React from 'react';
+import { compose } from 'redux';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import Spinner from 'common/ui/Spinner';
@@ -9,9 +10,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import LogItem from './Item';
 
-@RTracking(() => window.rzpQ.component('LogList'))
-@connect(null, { showNotification })
-export default class LogList extends React.PureComponent {
+class LogList extends React.PureComponent {
   onDownloadClick = ({ target }, reportType, format, startTime, endTime) => {
     const { fileId, consumerId } = target.dataset;
     const accountId =
@@ -62,14 +61,14 @@ export default class LogList extends React.PureComponent {
   render() {
     const { pending, items, allConfigs, ...props } = this.props;
     return (
-      <div class="LogList">
+      <div className="LogList">
         {pending && items.length < 1 ? (
           <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
           <>
-            <div class="LogList__header">
+            <div className="LogList__header">
               <strong>Recent Reports</strong>
             </div>
             {items.map((item) => (
@@ -103,8 +102,13 @@ function LoadMoreAction({ onLoadMoreClick, pending, allFetched }) {
   if (allFetched) return <em>Nothing more to load</em>;
 
   return (
-    <button onClick={onLoadMoreClick} class="btn btn-link">
+    <button onClick={onLoadMoreClick} className="btn btn-link">
       Load More
     </button>
   );
 }
+
+export default compose(
+  rTracking(() => window.rzpQ.component('LogList')),
+  connect(null, { showNotification }),
+)(LogList);

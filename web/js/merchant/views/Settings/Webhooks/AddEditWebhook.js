@@ -452,7 +452,7 @@ class webhookForm extends Component {
                 <Field
                   name="url"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   autoFocus={true}
                   validate={[required(), this.validateUrl]}
                   placeholder="HTTPS URL is recommended"
@@ -484,7 +484,7 @@ class webhookForm extends Component {
                     name="secret"
                     type={this.state.showSecret ? 'text' : 'password'}
                     component={InputField}
-                    class="form-control"
+                    className="form-control"
                     autoComplete="new-password"
                   />
                 )}
@@ -514,7 +514,7 @@ class webhookForm extends Component {
                   name="alert_email"
                   component={InputField}
                   type="email"
-                  class="form-control"
+                  className="form-control"
                   validate={email('Alert email must be a single valid email address')}
                   placeholder={userData.merchant.transaction_report_email}
                 />
@@ -532,7 +532,7 @@ class webhookForm extends Component {
                     name="search"
                     component={InputField}
                     type="input"
-                    class="form-control"
+                    className="form-control"
                     placeholder="Search"
                     value={searchEventsQuery}
                     onChange={(e) => this.filterWebhooks(e.target.value)}
@@ -556,7 +556,7 @@ class webhookForm extends Component {
                           this.filterWebhooks('');
                           this.props.change('search', '');
                         }}
-                        class="i i-close"
+                        className="i i-close"
                         style={{
                           cursor: 'pointer',
                           color: '#C8C8C8',
@@ -718,7 +718,7 @@ class webhookForm extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary"
+              className="btn btn-primary"
               text={webhook ? 'Save Webhook' : 'Create Webhook'}
               pendingText="Saving..."
               onClick={handleSubmit(this.save)}

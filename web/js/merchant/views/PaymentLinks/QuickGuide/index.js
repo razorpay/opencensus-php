@@ -48,7 +48,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class={`Route ${className}`}
+        className={`Route ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >

@@ -23,11 +23,11 @@ const AccountDetailsSummary = ({
   });
 
   return (
-    <div class="VirtualAccountSummary">
+    <div className="VirtualAccountSummary">
       <ModalHeader title={modalTitle} onCloseClick={closeModal} />
 
-      <div class="modal-body">
-        <p class="text-muted">
+      <div className="modal-body">
+        <p className="text-muted">
           Share the following information with the customer to accept payments
         </p>
 
@@ -55,7 +55,7 @@ const AccountDetailsSummary = ({
             onCopy(virtualAccount);
           }}
         >
-          <button type="button" class="btn btn-primary btn-block m-t">
+          <button type="button" className="btn btn-primary btn-block m-t">
             Copy Customer Identifier Details
           </button>
         </CustomClipboard>

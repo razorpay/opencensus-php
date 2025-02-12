@@ -52,13 +52,13 @@ class AnnouncementBannerComponent extends Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'announcement-banner-container',
           fullPage && 'announcement-banner-container--fullpage',
         )}
       >
         <AnnouncementBanner
-          class={classList('Announcement_Banner', className)}
+          className={classList('Announcement_Banner', className)}
           onClose={canBeClosed && this.handleClose}
           fullPage={fullPage}
           hidden={hidden}

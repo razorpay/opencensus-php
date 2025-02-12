@@ -1,20 +1,17 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import Spinner from 'common/ui/Spinner';
 import Input from 'common/new-ui/Input';
-import ModalHeader from 'common/ui/ModalHeader';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
-
+import ModalHeader from 'common/ui/ModalHeader';
+import Spinner from 'common/ui/Spinner';
+import { DocLink } from 'merchant/components/DocsLink';
 import { fetchPaymentPageEntity as fetchPaymentButtonEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { setIsPaymentButtonCodeUsed } from '../../utils';
-import { DocLink } from 'merchant/components/DocsLink'
 
-@connect((state) => ({
-  user: state.session.user,
-  mode: state.session.mode,
-}))
-export default class GetCodeModal extends React.Component {
+import { setIsPaymentButtonCodeUsed } from '../../utils';
+
+class GetCodeModal extends React.Component {
   constructor(props) {
     super(props);
 
@@ -70,7 +67,7 @@ export default class GetCodeModal extends React.Component {
   render() {
     if (this.state.isLoading) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -86,43 +83,43 @@ export default class GetCodeModal extends React.Component {
 
     if (!children) {
       children = (
-        <div class="docs-link m-t">
+        <div className="docs-link m-t">
           How to use this code?{' '}
           <DocLink
             target="_black"
             href="https://razorpay.com/docs/payment-button/"
             onClick={this.props.onClickSeeDocumentation}
           >
-            See documentation <i class="i i-external-link" />
+            See documentation <i className="i i-external-link" />
           </DocLink>
         </div>
       );
     }
 
     return (
-      <div class={className}>
+      <div className={className}>
         <ModalHeader title={title} onCloseClick={closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <div>Your payment button is ready to go!</div>
 
-          <div class="embed-button-form">
+          <div className="embed-button-form">
             <Input.Textarea
               label={() => (
                 <div>
                   <strong>HTML Code</strong>
-                  <div class="description">
+                  <div className="description">
                     Copy & Paste this HTML in your code
                     <CustomClipboard value={embedBtnCode}>
-                      <button onClick={this.onClickCopy} class="btn btn-xs copy-btn">
-                        <i class="i i-copy m-r" />
+                      <button onClick={this.onClickCopy} className="btn btn-xs copy-btn">
+                        <i className="i i-copy m-r" />
                         COPY CODE
                       </button>
                     </CustomClipboard>
                   </div>
                 </div>
               )}
-              class="Input--vTop"
+              className="Input--vTop"
               value={embedBtnCode.trim()}
               readOnly
               setRef={(textarea) => (this.textarea = textarea)}
@@ -134,8 +131,12 @@ export default class GetCodeModal extends React.Component {
 
           {children}
 
-          <div class="btn-toolbar">
-            <Link class="btn btn-default btn-block m-t" to="/paymentbuttons" onClick={closeModal}>
+          <div className="btn-toolbar">
+            <Link
+              className="btn btn-default btn-block m-t"
+              to="/paymentbuttons"
+              onClick={closeModal}
+            >
               <b>Back to Dashboard</b>
             </Link>
           </div>
@@ -144,3 +145,8 @@ export default class GetCodeModal extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({
+  user: state.session.user,
+  mode: state.session.mode,
+}))(GetCodeModal);

@@ -35,13 +35,7 @@ import {
 } from 'merchant_common/reducers/twoFactor';
 
 const selector = formValueSelector('newInvitation');
-@reduxForm({
-  form: 'newInvitation',
-  initialValues: {
-    email: '',
-    role: rolesList.MANAGER,
-  },
-})
+
 class NewInvitation extends Component {
   state = {};
   static defaultProps = {
@@ -118,7 +112,7 @@ class NewInvitation extends Component {
             failureReason: err?.errors[0],
             role: body?.role,
             ...getCommonAnalyticsProperties(window.rzp_user),
-        },
+          },
         });
         this.props.showNotification({
           type: 'error',
@@ -200,7 +194,7 @@ class NewInvitation extends Component {
           onResend={this.sendVerificationOtp(true)}
           title="Invite new member"
           renderMessage={() => (
-            <p class="m-b">
+            <p className="m-b">
               Inviting new member requires you to enter OTP sent over to your{' '}
               {hasOnlyEmail && (
                 <>
@@ -288,14 +282,14 @@ class NewInvitation extends Component {
     return (
       <form>
         <div>
-          <div class="form-group">
+          <div className="form-group">
             <label>Member Details</label>
             {visibleFields.email && (
-              <div class="input-container">
+              <div className="input-container">
                 <Field
                   name="email"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Email"
                   autoFocus={true}
                   validate={[
@@ -313,11 +307,11 @@ class NewInvitation extends Component {
               </div>
             )}
             {visibleFields.contactMobile && (
-              <div class="input-container">
+              <div className="input-container">
                 <Field
                   name="contact_mobile"
                   component={InputField}
-                  class="form-control"
+                  className="form-control"
                   placeholder="Phone Number"
                   validate={[
                     required(),
@@ -336,10 +330,10 @@ class NewInvitation extends Component {
           </div>
           {visibleFields.role && (
             <>
-              <div class="form-group">
+              <div className="form-group">
                 <label>Role</label>
-                <div class="input-container">
-                  <Field name="role" component="select" class="form-control">
+                <div className="input-container">
+                  <Field name="role" component="select" className="form-control">
                     {Object.keys(ROLES).map((role) => (
                       <option key={role} value={role}>
                         {ROLES[role].label}
@@ -348,9 +342,9 @@ class NewInvitation extends Component {
                   </Field>
                 </div>
               </div>
-              <div class="form-group">
+              <div className="form-group">
                 {!shouldShowNonPOSAlert && ROLES[selectedRole]?.desc ? (
-                  <div class="alert alert-info text-center">{ROLES[selectedRole].desc}</div>
+                  <div className="alert alert-info text-center">{ROLES[selectedRole].desc}</div>
                 ) : null}
                 {shouldShowNonPOSAlert ? (
                   <Alert
@@ -364,9 +358,9 @@ class NewInvitation extends Component {
               </div>
             </>
           )}
-          <div class="form-group">
+          <div className="form-group">
             <AsyncButton
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               text={props.ctaText}
               type="submit"
               pendingText="Processing..."
@@ -396,6 +390,13 @@ export default withSplitzService(
       showNotification,
       closeModal,
       openModal,
+    }),
+    reduxForm({
+      form: 'newInvitation',
+      initialValues: {
+        email: '',
+        role: rolesList.MANAGER,
+      },
     }),
   )(NewInvitation),
 );

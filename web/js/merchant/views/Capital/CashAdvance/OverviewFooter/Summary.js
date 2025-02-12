@@ -55,7 +55,7 @@ const Summary = ({
             ) : null}
             <Link
               to={`/capital/cash-advance/${CASH_ADVANCE_SECTIONS.REPAYMENTS_SCHEDULE}`}
-              class="btn btn-outline"
+              className="btn btn-outline"
               onClick={() => trackViewRepayments(pathname)}
             >
               View Past Repayments

@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
-import { connect } from 'react-redux';
 import qs from 'query-string';
-import { getIcon } from './paymentMethodIcons';
+import { connect } from 'react-redux';
+
 import {
   setInstrument,
   clearIntermediateInstrument,
   clearLeafInstrument,
 } from 'merchant/reducers/instrumentRequests';
+
+import { getIcon } from './paymentMethodIcons';
 
 const ListItem = ({
   index,
@@ -46,15 +48,15 @@ const ListItem = ({
   return (
     <li
       onClick={() => handleSetInstrument(instrument, from)}
-      class={`${clickedName === instrument.name ? 'highlight' : ''}`}
+      className={`${clickedName === instrument.name ? 'highlight' : ''}`}
     >
-      {instrument.icon && <div class="icon">{getIcon(instrument.icon)}</div>}
-      <div class="detail">
+      {instrument.icon && <div className="icon">{getIcon(instrument.icon)}</div>}
+      <div className="detail">
         <strong>
           {instrument.name}&nbsp;
           {instrumentActions ? (
             <span>
-              <span class="notify-badge">{instrumentActions}</span>
+              <span className="notify-badge">{instrumentActions}</span>
               {/* <Popover align="bottom" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>
@@ -68,9 +70,11 @@ const ListItem = ({
         <p>{instrument.description}</p>
       </div>
       <div
-        class={`expand show-expand ${clickedName === instrument.name ? 'highlight-expand' : ''}`}
+        className={`expand show-expand ${
+          clickedName === instrument.name ? 'highlight-expand' : ''
+        }`}
       >
-        <i class="i i-chevron-right" />
+        <i className="i i-chevron-right" />
       </div>
     </li>
   );

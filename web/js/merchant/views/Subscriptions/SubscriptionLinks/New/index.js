@@ -1,26 +1,15 @@
 import React from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
+import moment from 'moment';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-import { fetchPlans } from 'merchant/reducers/plans';
-import {
-  fetchSubscriptionItems,
-  fetchSubscription,
-  saveSubscription,
-  fetchSubscriptionOffers,
-  fetchSettings,
-} from 'merchant/reducers/subscriptions';
-import { fetchAddOns } from 'merchant/reducers/addons';
-import { fetchCustomer } from 'merchant/reducers/customers';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import DocsLink from 'merchant/components/DocsLink';
+import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
-
-import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
-import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-
+import Form from 'common/new-ui/Form';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import Spinner from 'common/ui/Spinner';
 import {
   isPresent,
   findBy,
@@ -29,22 +18,32 @@ import {
   deepClone,
   classList,
 } from 'common/utils/rzp-utils';
-import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
-
-import AddOnDetails from './AddOnDetails';
-import LinkDetails from './LinkDetails';
-import PlanDetails from 'merchant/views/Subscriptions/SubscriptionLinks/components/PlanDetails';
-import Review from './Review';
-import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
-import Spinner from 'common/ui/Spinner';
-import moment from 'moment';
+import DocsLink from 'merchant/components/DocsLink';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+import { fetchAddOns } from 'merchant/reducers/addons';
+import { fetchCustomer } from 'merchant/reducers/customers';
+import { fetchPlans } from 'merchant/reducers/plans';
+import {
+  fetchSubscriptionItems,
+  fetchSubscription,
+  saveSubscription,
+  fetchSubscriptionOffers,
+  fetchSettings,
+} from 'merchant/reducers/subscriptions';
+import PlanDetails from 'merchant/views/Subscriptions/SubscriptionLinks/components/PlanDetails';
+import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
 import {
   trackSaveDuplicateSubscription,
   trackAddAddon,
   trackAddPlans,
 } from 'merchant/views/Subscriptions/SubscriptionLinks/ga';
 import analytics from 'merchant/views/Subscriptions/analytics';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import AddOnDetails from './AddOnDetails';
+import LinkDetails from './LinkDetails';
+import Review from './Review';
 import './index.styl';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
@@ -52,24 +51,6 @@ const tabs = ['Plan Details', 'Add Ons', 'Link Details', 'Review'];
 
 // eslint-disable-next-line react/no-unsafe
 
-@connect(
-  (state) => ({
-    plans: state.plans,
-    items: state.items,
-    user: state.session.user,
-    subscriptionOffers: state.subscriptions.offers,
-  }),
-  {
-    fetchSubscription,
-    fetchCustomer,
-    fetchPlans,
-    fetchSubscriptionItems,
-    saveSubscription,
-    showNotification,
-    fetchSettings,
-    fetchSubscriptionOffers,
-  },
-)
 class NewSubscriptionLink extends React.Component {
   state = {
     currentTab: 0,
@@ -586,7 +567,7 @@ class NewSubscriptionLink extends React.Component {
     return (
       // need to improve this css styling
       <div
-        class={classList(
+        className={classList(
           'Links--Create SubscriptionLinks--new Wizard',
           showUPIUnAvlBanner && 'upi-banner-visible',
         )}
@@ -602,12 +583,12 @@ class NewSubscriptionLink extends React.Component {
           disableTabCondition={(tabIndex) => tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]}
         />
         {isFetchingSubscription ? (
-          <div class="page-center">
+          <div className="page-center">
             <Spinner />
           </div>
         ) : (
           <>
-            <main class="form-container">
+            <main className="form-container">
               {(!this.isMobileDevice || isStandAlone) && (
                 <main-title>{tabs[currentTab]}</main-title>
               )}
@@ -618,12 +599,12 @@ class NewSubscriptionLink extends React.Component {
             <footer>
               {this.props.user.isCardRecurringPaymentsBlocked && (
                 <div
-                  class={classList(
+                  className={classList(
                     'card-blocked-banner',
                     showUPIUnAvlBanner && 'upi-banner-visible',
                   )}
                 >
-                  <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily
+                  <i className="i i-info-circle" /> Cards issued by Indian banks are temporarily
                   disabled for new subscriptions.{' '}
                   <DocsLink
                     url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
@@ -636,7 +617,7 @@ class NewSubscriptionLink extends React.Component {
 
               {currentTab > 0 && (
                 <Button
-                  class="btn-outline"
+                  className="btn-outline"
                   onClick={() => {
                     analytics.track(`subscription.create.previous${currentTab}`);
                     this.changeTab(-1);
@@ -677,13 +658,13 @@ class NewSubscriptionLink extends React.Component {
     const isModalView = this.props.onClose;
 
     return isModalView ? (
-      <Modal class="NewSubscriptionLink animate-down" onClose={this.props.onClose} fullWidth>
+      <Modal className="NewSubscriptionLink animate-down" onClose={this.props.onClose} fullWidth>
         <ModalContent header={this.isMobileDevice ? tabs[this.state.currentTab] : null}>
           {this.renderWizard(false)}
         </ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">{this.renderWizard(true)}</div>
+      <div className="StandAloneContainer">{this.renderWizard(true)}</div>
     );
   }
 }
@@ -714,4 +695,25 @@ function isFormValid(formIndex, fields, internals, validateTotalCount = () => {}
   }
 }
 
-export default withRouter(withI18Service(NewSubscriptionLink));
+export default compose(
+  connect(
+    (state) => ({
+      plans: state.plans,
+      items: state.items,
+      user: state.session.user,
+      subscriptionOffers: state.subscriptions.offers,
+    }),
+    {
+      fetchSubscription,
+      fetchCustomer,
+      fetchPlans,
+      fetchSubscriptionItems,
+      saveSubscription,
+      showNotification,
+      fetchSettings,
+      fetchSubscriptionOffers,
+    },
+  ),
+  withRouter,
+  withI18Service,
+)(NewSubscriptionLink);

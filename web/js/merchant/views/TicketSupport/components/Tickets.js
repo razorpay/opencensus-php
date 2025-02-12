@@ -1,30 +1,21 @@
 import React from 'react';
+import { Box, Button } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { statuses, MAX_PAGE_SIZE } from './data';
-import { fetchSupportTickets } from 'merchant/reducers/config';
-import Spinner from 'common/ui/Spinner';
-import TicketBrief from './TicketBrief';
-import { isPaginationEnabled, raiseTicket } from 'merchant/views/TicketSupport/utils';
-import FailedScreen from './FailedScreen';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
+import Spinner from 'common/ui/Spinner';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getPosActivationStatus, isHelpWidgetDisabled } from 'merchant/components/Support/utils';
-import { Box, Button } from '@razorpay/blade/components';
-@connect(
-  (state) => {
-    return {
-      ...state.session,
-      ...state.config.config,
-      support_tickets: state.config.support_tickets,
-      user: state.session.user,
-    };
-  },
-  {
-    fetchSupportTickets,
-  },
-)
+import { fetchSupportTickets } from 'merchant/reducers/config';
+import { isPaginationEnabled, raiseTicket } from 'merchant/views/TicketSupport/utils';
+
+import FailedScreen from './FailedScreen';
+import TicketBrief from './TicketBrief';
+import { statuses, MAX_PAGE_SIZE } from './data';
+
 class Tickets extends React.Component {
   componentDidMount() {
     this.goNext(1, true);
@@ -313,4 +304,20 @@ class Tickets extends React.Component {
   }
 }
 
-export default withRouter(withSplitzService(Tickets));
+export default compose(
+  connect(
+    (state) => {
+      return {
+        ...state.session,
+        ...state.config.config,
+        support_tickets: state.config.support_tickets,
+        user: state.session.user,
+      };
+    },
+    {
+      fetchSupportTickets,
+    },
+  ),
+  withRouter,
+  withSplitzService,
+)(Tickets);

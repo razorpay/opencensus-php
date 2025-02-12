@@ -1,34 +1,24 @@
 import React, { Component } from 'react';
-import { Navigate } from 'react-router-dom';
-import { connect } from 'react-redux';
-import { openModal } from 'merchant_common/reducers/modals';
-import Onboarding from './onboarding';
 import axios from 'axios';
+import { connect } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+import { compose } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import {
   fetchWithdrawalConfiguration,
   fetchWithdrawals,
   fetchFunctionalWithdrawalConfigByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
-import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, LINE_OF_CREDIT_BASE_URL } from './constants';
 import {
   getProductType,
   canViewCashAdvanceProduct,
   isCashAdvanceProductActive,
 } from 'merchant/views/Capital/utils';
-import { withRouter } from 'common/deprecated/withRouter';
-@connect(
-  (state) => ({
-    user: state.session.user,
-    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
-    list: state.withdrawals.list,
-  }),
-  {
-    openModal,
-    fetchWithdrawals,
-    fetchWithdrawalConfiguration,
-    fetchFunctionalWithdrawalConfigByMerchantID,
-  },
-)
+import { openModal } from 'merchant_common/reducers/modals';
+
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, LINE_OF_CREDIT_BASE_URL } from './constants';
+import Onboarding from './onboarding';
 class WithdrawalsRoot extends Component {
   state = {
     // eslint-disable-next-line react/no-unused-state
@@ -129,4 +119,19 @@ class WithdrawalsRoot extends Component {
   }
 }
 
-export default withRouter(WithdrawalsRoot);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+      withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
+      list: state.withdrawals.list,
+    }),
+    {
+      openModal,
+      fetchWithdrawals,
+      fetchWithdrawalConfiguration,
+      fetchFunctionalWithdrawalConfigByMerchantID,
+    },
+  ),
+  withRouter,
+)(WithdrawalsRoot);

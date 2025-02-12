@@ -9,12 +9,12 @@ export default React.memo(function DirectTransferBanner() {
   track.onViewBanner();
 
   return (
-    <div class="direct-transfer-banner">
+    <div className="direct-transfer-banner">
       <Banner>
-        <i class="i i-route" />
-        <div class="content">
+        <i className="i i-route" />
+        <div className="content">
           <h4>Introducing Direct Transfers on Route</h4>
-          <div class="desc">
+          <div className="desc">
             Now create <b>Direct Transfers</b> to your linked accounts <b>from Route!</b>
             <DocsLink
               url="https://razorpay.com/docs/route/dashboard/"
@@ -24,7 +24,7 @@ export default React.memo(function DirectTransferBanner() {
           </div>
           <Link
             to="/route/transfers"
-            class="btn Button--primary--invert explore-now-btn"
+            className="btn Button--primary--invert explore-now-btn"
             onClick={track.onClickCTA}
           >
             Explore Now

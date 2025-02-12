@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import PropTypes from 'prop-types';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'common/new-ui/Alert';
@@ -43,6 +43,7 @@ import {
 import { generateField } from './Utils';
 import track from './track';
 import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
+import { compose } from 'redux';
 
 const FORM_FIELDS = {
   title: 'Payment Link',
@@ -168,52 +169,6 @@ function WizardFields(field) {
   return component;
 }
 
-@connect(
-  (state) => {
-    const namespace = state.session.user.isPaymentlinksV2Enabled
-      ? 'payment_link_v2'
-      : 'payment_link';
-
-    const paymentLinksRemindersSettings =
-      findBy(state.reminders.reminders.items, 'namespace', namespace) || {};
-
-    let withExpireRemindersCount = 0;
-    let withOutExpireRemindersCount = 0;
-
-    state.reminders.merchant_config.items.forEach((ele) => {
-      if (ele.reminder_config.config_template.attr_key === 'expire_by') {
-        withExpireRemindersCount += 1;
-
-        return;
-      }
-
-      withOutExpireRemindersCount += 1;
-    });
-
-    return {
-      ...state.session,
-      paymentLinksRemindersSettings: {
-        isEnabled: paymentLinksRemindersSettings.active,
-        count: {
-          withExpireRemindersCount,
-          withOutExpireRemindersCount,
-        },
-      },
-      reminders: state.reminders,
-    };
-  },
-  {
-    updatePLInReduxList,
-    showNotification,
-    fetchReminders,
-    fetchRemindersMerchantConfigs,
-    fetchPaymentLinkDetails,
-    openModal,
-    closeModal,
-    luminateRow,
-  },
-)
-@RTracking(() => window.rzpQ.component('CreateNewContainer'))
 class CreateNewContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -724,12 +679,12 @@ class CreateNewContainer extends React.Component {
         return (
           <Input.Group
             key={i}
-            class={classList('InputGroup--inline', className)}
+            className={classList('InputGroup--inline', className)}
             label={label}
             disabled={this.state.parentFormLock}
             required={!!isRequired}
           >
-            <div class="Input-content">{f.inlineFields.map(WizardFields, this)}</div>
+            <div className="Input-content">{f.inlineFields.map(WizardFields, this)}</div>
           </Input.Group>
         );
       }
@@ -846,7 +801,7 @@ class CreateNewContainer extends React.Component {
 
     return IS_MODAL_VIEW ? (
       <Modal
-        class={classList('PaymentLinks', content && 'animate-down')}
+        className={classList('PaymentLinks', content && 'animate-down')}
         onClose={(e) => {
           this.onFormAbruptClose(e);
           track.segment.form.close('close');
@@ -856,7 +811,7 @@ class CreateNewContainer extends React.Component {
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">{content}</div>
+      <div className="StandAloneContainer">{content}</div>
     );
   }
 }
@@ -870,9 +825,9 @@ class CreateWizard extends React.Component {
     const { disableSubmit, mode, isLoading } = this.props;
 
     return (
-      <div class="PaymentLinks--Create Wizard">
-        <main class="form-container">
-          <main-title class="main-title">Create {FORM_FIELDS.title}</main-title>
+      <div className="PaymentLinks--Create Wizard">
+        <main className="form-container">
+          <main-title className="main-title">Create {FORM_FIELDS.title}</main-title>
 
           {/* ALERTS */}
           {mode === 'test' && (
@@ -889,7 +844,7 @@ class CreateWizard extends React.Component {
           ) : (
             /* FORM */
             <Form
-              class="PaymentLinks--Create-Form"
+              className="PaymentLinks--Create-Form"
               onChange={this.props.onChange}
               layout="tabular"
               key={FORM_FIELDS.title}
@@ -922,4 +877,52 @@ class CreateWizard extends React.Component {
   }
 }
 
-export default withRouter(CreateNewContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      const namespace = state.session.user.isPaymentlinksV2Enabled
+        ? 'payment_link_v2'
+        : 'payment_link';
+
+      const paymentLinksRemindersSettings =
+        findBy(state.reminders.reminders.items, 'namespace', namespace) || {};
+
+      let withExpireRemindersCount = 0;
+      let withOutExpireRemindersCount = 0;
+
+      state.reminders.merchant_config.items.forEach((ele) => {
+        if (ele.reminder_config.config_template.attr_key === 'expire_by') {
+          withExpireRemindersCount += 1;
+
+          return;
+        }
+
+        withOutExpireRemindersCount += 1;
+      });
+
+      return {
+        ...state.session,
+        paymentLinksRemindersSettings: {
+          isEnabled: paymentLinksRemindersSettings.active,
+          count: {
+            withExpireRemindersCount,
+            withOutExpireRemindersCount,
+          },
+        },
+        reminders: state.reminders,
+      };
+    },
+    {
+      updatePLInReduxList,
+      showNotification,
+      fetchReminders,
+      fetchRemindersMerchantConfigs,
+      fetchPaymentLinkDetails,
+      openModal,
+      closeModal,
+      luminateRow,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('CreateNewContainer')),
+)(CreateNewContainer);

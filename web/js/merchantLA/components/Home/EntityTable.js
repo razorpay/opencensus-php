@@ -2,16 +2,12 @@ import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import LoaderDots from 'common/ui/LoaderDots';
 
-import {
-  PaymentStatusLabel,
-  SettlementStatusLabel,
-} from 'merchant/components/StatusLabel';
+import { PaymentStatusLabel, SettlementStatusLabel } from 'merchant/components/StatusLabel';
 
 import { titleCase, formatFromNow } from 'common/utils/rzp-utils';
 
 const StatusLabel = ({ status, entity, children, ...otherProps }) => {
-  let Label =
-    entity === 'settlement' ? SettlementStatusLabel : PaymentStatusLabel;
+  const Label = entity === 'settlement' ? SettlementStatusLabel : PaymentStatusLabel;
   status = status || 'reversed';
 
   return (
@@ -21,77 +17,68 @@ const StatusLabel = ({ status, entity, children, ...otherProps }) => {
   );
 };
 
-export default ({
-  entity,
-  data,
-  loading,
-  onSeeAll = () => {},
-  onOpenDetails = () => {},
-}) => {
-  let items = data.items;
+export default ({ entity, data, loading, onSeeAll = () => {}, onOpenDetails = () => {} }) => {
+  const items = data.items;
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="centered">
+          <LoaderDots />
+        </div>
+      );
+    }
+
+    if (items.length) {
+      return (
+        <div className="table-responsive EntityTable">
+          <table className="table table-hover table-noborder">
+            <tbody>
+              {items.slice(0, 5).map((item, index) => (
+                <tr key={index}>
+                  <td>
+                    <Link to={`/${entity}s/${item.id}`} onClick={onOpenDetails}>
+                      <code>{item.id}</code>
+                      <div className="text-muted font-xs">{formatFromNow(item.created_at)}</div>
+                    </Link>
+                  </td>
+                  <td>
+                    <StatusLabel
+                      entity={entity}
+                      status={item.status}
+                      data-tip={titleCase(item.status) || null}
+                      data-place="bottom"
+                    >
+                      <Amount value={item.amount} currency={item.currency} />
+                    </StatusLabel>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    return <h5 style={{ marginTop: '30px' }}>No Recent {titleCase(entity)}s</h5>;
+  };
+
   return (
-    <div class="col-md-4 col-sm-6 col-xs-12">
-      <div class="WidgetContainer">
-        <div class="panel">
-          <div class="panel-body">
+    <div className="col-md-4 col-sm-6 col-xs-12">
+      <div className="WidgetContainer">
+        <div className="panel">
+          <div className="panel-body">
             <Link
               data-tip={`See All ${titleCase(entity)}s`}
-              class="pull-right"
+              className="pull-right"
               to={`/${entity}s`}
               onClick={onSeeAll}
             >
-              <i class="i i-arrow-forward" />
+              <i className="i i-arrow-forward" />
             </Link>
 
             <h4>Recent {titleCase(entity)}s</h4>
-            {do {
-              if (loading) {
-                <div class="centered">
-                  <LoaderDots />
-                </div>;
-              } else if (items.length) {
-                <div class="table-responsive EntityTable">
-                  <table class="table table-hover table-noborder">
-                    <tbody>
-                      {items.slice(0, 5).map((item, index) => {
-                        return (
-                          <tr key={index}>
-                            <td>
-                              <Link
-                                to={`/${entity}s/${item.id}`}
-                                onClick={onOpenDetails}
-                              >
-                                <code>{item.id}</code>
-                                <div class="text-muted font-xs">
-                                  {formatFromNow(item.created_at)}
-                                </div>
-                              </Link>
-                            </td>
-                            <td>
-                              <StatusLabel
-                                entity={entity}
-                                status={item.status}
-                                data-tip={titleCase(item.status) || null}
-                                data-place="bottom"
-                              >
-                                <Amount
-                                  value={item.amount}
-                                  currency={item.currency}
-                                />
-                              </StatusLabel>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>;
-              } else {
-                <h5 style={{ marginTop: '30px' }}>
-                  No Recent {titleCase(entity)}s
-                </h5>;
-              }
-            }}
+            {renderContent()}
           </div>
         </div>
       </div>

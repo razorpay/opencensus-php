@@ -30,19 +30,19 @@ export default class AmountDetailsPreview extends React.Component {
       amountToDisplay = (
         <React.Fragment>
           {_amountToDisplay[0]}
-          <span class="currency-decimal">.{_amountToDisplay[1]}</span>
+          <span className="currency-decimal">.{_amountToDisplay[1]}</span>
         </React.Fragment>
       );
     }
 
     return (
       <React.Fragment>
-        <div class="Field-label">{field.item.name}</div>
+        <div className="Field-label">{field.item.name}</div>
         {/* TODO: add dropdown icon for dropdown field */}
-        <div class="Field-el">
-          <span class="Field-el-addon">{currencySymbol}</span> {amountToDisplay}
+        <div className="Field-el">
+          <span className="Field-el-addon">{currencySymbol}</span> {amountToDisplay}
         </div>
-        <div class="Field-description">{field.item.description}</div>
+        <div className="Field-description">{field.item.description}</div>
       </React.Fragment>
     );
   }
@@ -100,13 +100,13 @@ export default class AmountDetailsPreview extends React.Component {
 
     if (amountFields && amountFields.length) {
       previewContent = amountFields.map((field, index) => (
-        <div class="Field--dummy Field--dummy--amount" key={index}>
+        <div className="Field--dummy Field--dummy--amount" key={index}>
           {this.getAmountField(field)}
         </div>
       ));
     } else {
       previewContent = (
-        <span class="empty-msg page-center">Add amount fields to see their preview</span>
+        <span className="empty-msg page-center">Add amount fields to see their preview</span>
       );
     }
 

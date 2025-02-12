@@ -7,29 +7,29 @@ export default props => {
 
   return (
     <ListFilter {...props}>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Reversal Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="id" component="input" className="form-control input-sm" />
       </div>
 
       {isRefundsAllowed && (
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Customer Refund Id</label>
           <Field
             name="customer_refund_id"
             component="input"
-            class="form-control input-sm"
+            className="form-control input-sm"
           />
         </div>
       )}
 
       {isRefundsAllowed && (
-        <div class="form-group list-filter-item">
+        <div className="form-group list-filter-item">
           <label>Initiated by</label>
           <Field
             name="initiator_id"
             component="select"
-            class="form-control input-sm"
+            className="form-control input-sm"
           >
             <option value="">All</option>
             <option value={merchant.id}>{merchant.billing_label}</option>
@@ -40,7 +40,7 @@ export default props => {
         </div>
       )}
 
-      <div class="form-group list-filter-item count">
+      <div className="form-group list-filter-item count">
         <label>Count</label>
         <Field
           name="count"
@@ -48,12 +48,12 @@ export default props => {
           min={1}
           max={100}
           type="number"
-          class="form-control input-sm"
+          className="form-control input-sm"
         />
       </div>
-      <div class="form-group list-filter-item">
+      <div className="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field name="notes" component="input" className="form-control input-sm" />
       </div>
     </ListFilter>
   );

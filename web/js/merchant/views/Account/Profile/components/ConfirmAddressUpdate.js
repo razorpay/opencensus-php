@@ -31,9 +31,9 @@ function ConfirmAddressUpdate({ handleUpdate, closeModal, updateOptOutSuccess, s
         extraClass="gst-confirmation-header"
       />
 
-      <div class="Modal__actions">
-        <div class="modal-body rzp-gst-content">
-          <div class="gst-help-block">
+      <div className="Modal__actions">
+        <div className="modal-body rzp-gst-content">
+          <div className="gst-help-block">
             <span>
               You have chosen not to update your business address to the same address mentioned on
               your GST certificate. In such cases, we will not be able to register your invoice on
@@ -48,10 +48,10 @@ function ConfirmAddressUpdate({ handleUpdate, closeModal, updateOptOutSuccess, s
               to learn more about GST E-Invoicing.
             </span>
           </div>
-          <button class="btn btn-primary btn-block" onClick={handleClick}>
+          <button className="btn btn-primary btn-block" onClick={handleClick}>
             I understand and don’t wish to update
           </button>
-          <button class="btn btn-default btn-block btn-highlight" onClick={closeModal}>
+          <button className="btn btn-default btn-block btn-highlight" onClick={closeModal}>
             No, cancel
           </button>
         </div>

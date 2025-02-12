@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Spinner from 'common/ui/Spinner';
@@ -34,18 +35,6 @@ const TPVDetails = ({ tpv }) => {
   return null;
 };
 
-@connect(
-  (state) => {
-    return {
-      user: state?.session?.user,
-      providers: state.navigator.terminalProviders,
-    };
-  },
-  {
-    ...ModalActions,
-    ...NotificationsActions,
-  },
-)
 class ProviderDetails extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -213,4 +202,18 @@ class ProviderDetails extends Component {
   }
 }
 
-export default withRouter(ProviderDetails);
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state?.session?.user,
+        providers: state.navigator.terminalProviders,
+      };
+    },
+    {
+      ...ModalActions,
+      ...NotificationsActions,
+    },
+  ),
+  withRouter,
+)(ProviderDetails);

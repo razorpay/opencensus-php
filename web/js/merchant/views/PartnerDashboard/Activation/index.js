@@ -645,7 +645,7 @@ const Activation = (props) => {
       )}
       <div>
         <Modal
-          class="animate-down Activation--wizard"
+          className="animate-down Activation--wizard"
           onClose={() => {
             props.history.push('/partners');
           }}
@@ -670,10 +670,10 @@ const Activation = (props) => {
                   <span className="Loader" />
                 ) : (
                   <div>
-                    <main-title class="main-title">
+                    <main-title className="main-title">
                       {activeTab != 0 && (
                         <Button
-                          class="device--mobile btn--back"
+                          className="device--mobile btn--back"
                           iconBefore="arrow-back"
                           onClick={prevTab}
                         />

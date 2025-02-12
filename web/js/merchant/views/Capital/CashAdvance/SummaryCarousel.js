@@ -1,20 +1,21 @@
 import React, { useLayoutEffect, useState, useEffect, useRef, useCallback } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
 import moment from 'moment';
+import { connect } from 'react-redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import Repayments from 'merchant/models/Capital/Repayments';
+import Withdrawal from 'merchant/models/Capital/Withdrawals';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 import Carousel from './Carousel';
+import carouselRuleValidators from './CarouselRules';
 import CashAdvanceCarouselSlide from './CashAdvanceCarouselSlide';
 import {
   CASH_ADVANCE_CAROUSEL_VIEW_RULES,
   CASH_ADVANCE_SECTIONS,
   COLLECTIONS_PRODUCT_TYPES,
 } from './constants';
-import carouselRuleValidators from './CarouselRules';
 import { getSlideByRule, getSlideContent } from './utils';
-import Withdrawal from 'merchant/models/Capital/Withdrawals';
-import Repayments from 'merchant/models/Capital/Repayments';
-import { getProductType } from 'merchant/views/Capital/utils';
 
 const Information = ({ message, backgroundColor }) => {
   return (
@@ -29,7 +30,7 @@ const Information = ({ message, backgroundColor }) => {
               className="background-pattern-image"
               height="120%"
               width="120%"
-              src={require("assets/capital/carousel-bg-pattern.svg")}
+              src={require('assets/capital/carousel-bg-pattern.svg')}
             />
             {message}
           </div>
@@ -311,12 +312,6 @@ function SummaryCarousel(props) {
   );
 }
 
-@connect((state) => {
-  return {
-    user: state.session.user,
-    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
-  };
-})
 class CarouselContainer extends React.Component {
   render() {
     const { withdrawalConfigurationDetails } = this.props;
@@ -331,4 +326,9 @@ class CarouselContainer extends React.Component {
     return <SummaryCarousel {...this.props} view={CASH_ADVANCE_SECTIONS.WITHDRAWALS} />;
   }
 }
-export default withRouter(CarouselContainer);
+export default connect((state) => {
+  return {
+    user: state.session.user,
+    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
+  };
+})(withRouter(CarouselContainer));

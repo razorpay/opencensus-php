@@ -411,10 +411,10 @@ class AddEditExperiment extends React.Component {
     ));
 
     return (
-      <ModalContent class="modal-features modal-json-edit" header={header}>
+      <ModalContent className="modal-features modal-json-edit" header={header}>
         <Form
           onSubmit={this.onSubmit}
-          class="full-span full-elements"
+          className="full-span full-elements"
           style={{ opacity: isLoading ? 0.5 : 1 }}
         >
           <React.Fragment>

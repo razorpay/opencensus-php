@@ -90,7 +90,7 @@ class BatchCreateModal extends Component {
           onResend={this.sendVerificationOtp(true)}
           title="Invite new member"
           renderMessage={() => (
-            <p class="m-b">
+            <p className="m-b">
               Inviting new member requires you to enter OTP sent over to your{' '}
               {hasOnlyEmail && (
                 <>
@@ -176,11 +176,11 @@ class BatchCreateModal extends Component {
       is2faExperimentActive && isBatchCreate && !isCurlec && !isPartnerDashboard;
 
     return (
-      <div class={`modal-body ${batch_type_refund ? 'batch-refund-create-modal' : ''}`}>
+      <div className={`modal-body ${batch_type_refund ? 'batch-refund-create-modal' : ''}`}>
         <div onClick={this.props.trackSampleInterpretation}>
           {batch_type_refund && (
-            <div class="panel create-modal-panel">
-              <div class="panel-header">
+            <div className="panel create-modal-panel">
+              <div className="panel-header">
                 <h3>
                   <img
                     style={{ marginRight: '8px' }}
@@ -189,7 +189,7 @@ class BatchCreateModal extends Component {
                   You have uploaded batch of {processableCount} payments.
                 </h3>
               </div>
-              <div class="panel-body" style={{ paddingBottom: '8px', paddingLeft: '8px' }}>
+              <div className="panel-body" style={{ paddingBottom: '8px', paddingLeft: '8px' }}>
                 <ul>
                   {speedCount && speedCount.normal ? (
                     <li>
@@ -217,7 +217,7 @@ class BatchCreateModal extends Component {
                           : 'Instant(Optimum)'}{' '}
                         Speed{this.props.default_refund_speed === 'normal' ? '' : '*'}{' '}
                         <span>
-                          <i class="i i-help" />
+                          <i className="i i-help" />
                           <PopoverComponent
                             align="right"
                             theme="dark"
@@ -255,7 +255,7 @@ class BatchCreateModal extends Component {
                                   marginBottom: 0,
                                 }}
                               >
-                                <i style={{ marginRight: '5px' }} class="i i-instant-refund" /> Fee
+                                <i style={{ marginRight: '5px' }} className="i i-instant-refund" /> Fee
                                 for Instant Refund
                               </div>
                             ),
@@ -273,7 +273,7 @@ class BatchCreateModal extends Component {
                           cursor: 'pointer',
                           marginTop: '12px',
                         }}
-                        class="highlight"
+                        className="highlight"
                       >
                         check pricing
                       </strong>
@@ -296,7 +296,7 @@ class BatchCreateModal extends Component {
             />
           </div>
         </div>
-        <div class="modal-info stretch create">
+        <div className="modal-info stretch create">
           <form
             onSubmit={() => {
               let label = [];
@@ -316,21 +316,21 @@ class BatchCreateModal extends Component {
           >
             {
               <Fragment>
-                <h5 class="file-name-head">
+                <h5 className="file-name-head">
                   <strong>
                     BATCH FILE NAME{' '}
                     <i
-                      class="i i-info-circle m-l"
+                      className="i i-info-circle m-l"
                       title="Maximum filename length is 255 characters."
                     />
                   </strong>
                 </h5>
-                <div class="form-group">
+                <div className="form-group">
                   <Field
                     name="name"
                     key="field"
                     component={InputField}
-                    class="form-control"
+                    className="form-control"
                     autoFocus={true}
                     validate={[required()]}
                     maxLength="255"
@@ -346,7 +346,7 @@ class BatchCreateModal extends Component {
             {/* extra fields sent with create batch */}
             {children}
             {batch_type_refund ? (
-              <p class="text-center">
+              <p className="text-center">
                 <i className="i i-info-circle" /> Once the batch file is submitted, it will be
                 processed after 70 mins.
               </p>
@@ -354,7 +354,7 @@ class BatchCreateModal extends Component {
 
             <AsyncButton
               type="button"
-              class={`btn btn-primary ${batch_type_refund ? 'process-refunds-btn' : ''}`}
+              className={`btn btn-primary ${batch_type_refund ? 'process-refunds-btn' : ''}`}
               text={ctaText}
               pendingText={pendingText}
               onClick={

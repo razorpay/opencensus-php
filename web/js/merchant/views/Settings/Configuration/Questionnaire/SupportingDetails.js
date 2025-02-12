@@ -25,9 +25,9 @@ const SupportingDetails = ({ disabled, isRevampFlow, saveFormData }) => {
   const isRiskCheckOtherThanNone = !formikProps.values.existing_risk_checks?.includes('None');
 
   return (
-    <div class="supporting-details">
-      <div class="main-title">SUPPORTING DETAILS AND BEST PRACTICES</div>
-      <div class="sub-title">
+    <div className="supporting-details">
+      <div className="main-title">SUPPORTING DETAILS AND BEST PRACTICES</div>
+      <div className="sub-title">
         Unlike Domestic transactions, International transactions are not protected by 3D secure
         systems. Hence setting up internal checks by businesses to prevent frauds are highly
         recommended.

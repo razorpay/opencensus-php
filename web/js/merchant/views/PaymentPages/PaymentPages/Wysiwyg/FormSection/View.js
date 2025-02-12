@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { isMobileDevice } from 'merchant/components/Home/data';
 import {
@@ -38,13 +38,13 @@ import {
   SEC_REF_ID_MAX_ERROR,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { compose } from 'redux';
 
 const SortableUDFDisplayField = sortableElement(UDFDisplayField);
 const SortableAmountDisplayField = sortableElement(AmountDisplayField);
 const SortableLateFeeField = sortableElement(DisplayField);
 
-@sortableContainer
-class SortableFormItemsList extends React.Component {
+class SortableFormItemsListComponent extends React.Component {
   render() {
     const {
       isPaymentPageEditMode,
@@ -139,17 +139,9 @@ class SortableFormItemsList extends React.Component {
   }
 }
 
-@connect((state) => ({ ...state.wysiwyg, user: state.session.user, org: state.session.org }), {
-  updateData,
-  deleteInFormItems,
-  updateInFormItems,
-  reorderFormItems,
-  updateReceiptDetails,
-  showNotification,
-  updateMagicData,
-})
-@RTracking(() => window.rzpQ.component('wysiwyg_view'))
-export default class View extends React.Component {
+const SortableFormItemsList = compose(sortableContainer)(SortableFormItemsListComponent);
+
+class View extends React.Component {
   state = {
     isListSorting: false,
     totalAmountItems: null,
@@ -412,8 +404,8 @@ export default class View extends React.Component {
 
     if (paymentPageEntity.id && typeof paymentPageEntity.title === 'undefined') {
       return (
-        <div class="spinner-container">
-          <div class="spin-btn large visible" />
+        <div className="spinner-container">
+          <div className="spin-btn large visible" />
         </div>
       );
     }
@@ -426,14 +418,14 @@ export default class View extends React.Component {
     const isPaymentPageEditMode = !!paymentPageEntity.id; // If it has reached uptil here, and id exist, then it's edit mode of existing payment page.
 
     return (
-      <div class="UI-form">
+      <div className="UI-form">
         {!this.state.totalAmountItems && (
-          <div class="Field Field-dummyAmount">
-            <div class="Field-label" style={{ opacity: 0.6 }}>
+          <div className="Field Field-dummyAmount">
+            <div className="Field-label" style={{ opacity: 0.6 }}>
               Amount
             </div>
 
-            <div class="Field-content">
+            <div className="Field-content">
               <AddAmountButton
                 field={{ item: { name: 'Amount' } }}
                 currency={paymentPageEntity.currency}
@@ -480,14 +472,14 @@ export default class View extends React.Component {
           isPIDSIDLabelDisabled={isPIDSIDLabelDisabled}
         />
 
-        {this.props.isShiprocketOpened && <div class="shiprocket-blank-preview" />}
+        {this.props.isShiprocketOpened && <div className="shiprocket-blank-preview" />}
 
-        <div class="Field Field-add-new" style={{ margin: '32px 0 0' }}>
-          <div class="Field-label" style={{ opacity: 0.6 }}>
+        <div className="Field Field-add-new" style={{ margin: '32px 0 0' }}>
+          <div className="Field-label" style={{ opacity: 0.6 }}>
             Add new
           </div>
 
-          <div class="Field-content">
+          <div className="Field-content">
             <AddUDFButton
               onDeleteFormItem={this.onDeleteUDFItem}
               onSubmitUDFField={this.onSubmitUDFField}
@@ -535,3 +527,16 @@ export default class View extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect((state) => ({ ...state.wysiwyg, user: state.session.user, org: state.session.org }), {
+    updateData,
+    deleteInFormItems,
+    updateInFormItems,
+    reorderFormItems,
+    updateReceiptDetails,
+    showNotification,
+    updateMagicData,
+  }),
+  rTracking(() => window.rzpQ.component('wysiwyg_view')),
+)(View);

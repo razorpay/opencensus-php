@@ -11,7 +11,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import List from 'merchant/views/Offers/List';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { withSplitzService } from 'common/splitz';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -26,25 +26,14 @@ import {
 import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 import { withI18Service } from 'common/i18';
 import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
+import { compose } from 'redux';
 
 // eslint-disable-next-line react/no-unsafe
 const OfferIndexWrapper = (props) => {
   const navigate = useNavigate();
   return <OfferIndex navigate={navigate} {...props} />;
 };
-@connect(
-  (state) => {
-    return {
-      offers: state.offers,
-      user: state.session.user,
-      offersProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.OFFERS),
-    };
-  },
-  {
-    handleProductQuickGuide,
-  },
-)
-@RTracking(() => window.rzpQ.component('OfferIndex'))
+
 class OfferIndex extends Component {
   componentDidMount() {
     if (window.rzpQ && window.rzpQ.merchantActions) {
@@ -205,4 +194,21 @@ class OfferIndex extends Component {
   }
 }
 
-export default withRouter(withSplitzService(withI18Service(OfferIndexWrapper)));
+export default compose(
+  connect(
+    (state) => {
+      return {
+        offers: state.offers,
+        user: state.session.user,
+        offersProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.OFFERS),
+      };
+    },
+    {
+      handleProductQuickGuide,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('OfferIndex')),
+  withRouter,
+  withSplitzService,
+  withI18Service,
+)(OfferIndexWrapper);

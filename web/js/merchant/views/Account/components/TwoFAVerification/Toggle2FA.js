@@ -1,35 +1,27 @@
+import { Component, createRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
 import qs from 'query-string';
-import { Component, createRef } from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-
-import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 import SwitchField from 'common/ui/Forms/SwitchField';
-import { updateSession } from 'merchant/reducers/session';
-import { updateSelfContact } from 'merchant/reducers/team';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { analyticsTrack } from 'common/utils/analytics';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { updateSession } from 'merchant/reducers/session';
+import { updateSelfContact } from 'merchant/reducers/team';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import {
   ACTION_QUERY_PARAM_KEY,
   ENABLE_2FA,
 } from 'merchant/views/Account/Profile/deeplink-constants';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect((state) => ({ user: state.session.user }), {
-  openModal,
-  closeModal,
-  updateSelfContact,
-  updateSession,
-  showNotification,
-})
 class Toggle2FA extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -48,7 +40,6 @@ class Toggle2FA extends Component {
   };
 
   verifyPassword = (flag) => {
-    const user = this.props.user;
     const secondFactorAuthPayload = { second_factor_auth: flag };
 
     this.sendUpdateSecondFactorAuthRequest(secondFactorAuthPayload);
@@ -315,7 +306,16 @@ class Toggle2FA extends Component {
   };
 }
 
-// eslint-disable-next-line babel/new-cap
-export default RTracking(() => {
-  return window.rzpQ.component('Toggle2FA');
-})(withRouter(Toggle2FA));
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    openModal,
+    closeModal,
+    updateSelfContact,
+    updateSession,
+    showNotification,
+  }),
+  rTracking(() => {
+    return window.rzpQ.component('Toggle2FA');
+  }),
+  withRouter,
+)(Toggle2FA);

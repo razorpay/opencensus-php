@@ -78,7 +78,7 @@ class GroupList extends React.Component {
 
     return (
       <div className="list-container">
-        <Form onSubmit={this.filterList} class="filters">
+        <Form onSubmit={this.filterList} className="filters">
           <SearchableSelectField
             disabled={isFetchingProjects}
             name="project_id"

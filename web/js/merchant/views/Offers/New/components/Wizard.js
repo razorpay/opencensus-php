@@ -81,7 +81,7 @@ export default class CreateOfferWizard extends React.Component {
     const { currentTab } = this.state;
     if (this.props.isLoading) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -127,7 +127,7 @@ export default class CreateOfferWizard extends React.Component {
     return (
       <Modal isOpen={true} onDismiss={this.props.onClose ?? noop} size="large">
         <ModalBody padding="spacing.0">
-          <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
+          <div className="PaymentLinks--Create SubscriptionLinks--new Wizard">
             <ModalAsideNav
               title={props.title || 'Create an Offer'}
               description={
@@ -154,10 +154,10 @@ export default class CreateOfferWizard extends React.Component {
               }}
             />
 
-            <main class="form-container">
+            <main className="form-container">
               <Heading size="medium">{this.TABS_DATA[currentTab].name}</Heading>
 
-              <Form class={CLASS_NAME} layout={layout} onChange={props.onChange}>
+              <Form className={CLASS_NAME} layout={layout} onChange={props.onChange}>
                 {this.renderForm()}
               </Form>
             </main>
@@ -211,12 +211,12 @@ export default class CreateOfferWizard extends React.Component {
   render() {
     if (this.IS_MODAL_VIEW) {
       return (
-        <div class="NewSubscriptionLink Offers--Create ">
+        <div className="NewSubscriptionLink Offers--Create ">
           <div>{this.renderWizard()}</div>
         </div>
       );
     }
 
-    return <div class="StandAloneContainer">{this.renderWizard()}</div>;
+    return <div className="StandAloneContainer">{this.renderWizard()}</div>;
   }
 }

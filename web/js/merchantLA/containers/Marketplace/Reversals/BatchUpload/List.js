@@ -3,25 +3,18 @@ import { connect } from 'react-redux';
 
 import BatchList from 'merchant/containers/BatchNew/List';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
-import { openModal } from 'merchant_common/reducers/modals';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
 import {
   fetchLAReversalsBatches as fetchAll,
   createLinkedAccountReversalsBatch as createBatch,
   validateLinkedAccountReversalsBatch as validateBatch,
   batchDownload,
 } from 'merchantLA/reducers/batches';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { openModal } from 'merchant_common/reducers/modals';
 
 const gaEvents = setGaTrack('LA Dashboard - Reversals BU');
 
-@connect(state => state.batches, {
-  fetchAll,
-  createBatch,
-  validateBatch,
-  openModal,
-  batchDownload,
-})
-export default class BatchListContainer extends Component {
+class BatchListContainer extends Component {
   renderUploadModal = () => {
     return (
       <BatchUpload
@@ -54,3 +47,11 @@ export default class BatchListContainer extends Component {
     );
   }
 }
+
+export default connect((state) => state.batches, {
+  fetchAll,
+  createBatch,
+  validateBatch,
+  openModal,
+  batchDownload,
+})(BatchListContainer);

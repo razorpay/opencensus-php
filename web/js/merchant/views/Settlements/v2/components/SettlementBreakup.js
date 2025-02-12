@@ -29,7 +29,7 @@ const SettlementBreakup = (props) => {
   // show spinner unless settlements and breakup data is available
   if (loading) {
     return (
-      <div class="div--loading">
+      <div className="div--loading">
         <Spinner />
       </div>
     );

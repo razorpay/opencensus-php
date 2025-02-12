@@ -159,8 +159,8 @@ function WebsiteFields({
             label={
               <>
                 {FORM_FIELDS.PRICING_DETAILS.label}
-                <small class="help-content">
-                  <i class="i i-info-circle" />
+                <small className="help-content">
+                  <i className="i i-info-circle" />
                   <Popover align="top" theme="dark" parentQuerySelector=".modal-body">
                     <PopoverBody>
                       <div>
@@ -236,7 +236,7 @@ function WebsiteFields({
         }}
       />
       {flowType === FLOWS.ADDITIONAL_WEBSITE && (
-        <div class="upload-invoice">
+        <div className="upload-invoice">
           <label>Upload invoice</label>
           <FileUpload
             accept={['jpg', 'png', 'pdf']}
@@ -248,7 +248,7 @@ function WebsiteFields({
             onFileChange={handleFileChange}
             onCloseClick={onCloseClick}
           />
-          {file?.message ? <label class="notify-error">{file.message}</label> : null}
+          {file?.message ? <label className="notify-error">{file.message}</label> : null}
         </div>
       )}
     </>
@@ -820,17 +820,17 @@ function UpdateWebsiteDetails(props) {
     <div>
       <ModalHeader title="Update Website/App" onCloseClick={props.closeModal} />
 
-      <div class="modal-body website-update-form">
+      <div className="modal-body website-update-form">
         <form onSubmit={save}>
-          <div class="help-block">
+          <div className="help-block">
             Submit the url of your new website/app and the urls of all the other pages listed below
           </div>
 
-          <div class="actions-header">
+          <div className="actions-header">
             <div>
               <input
                 type="radio"
-                class="radio-pointer"
+                className="radio-pointer"
                 name="website"
                 onChange={(e) => {
                   onTypeCheckboxClick(e.target.name, e.target.value);
@@ -843,7 +843,7 @@ function UpdateWebsiteDetails(props) {
             <div>
               <input
                 type="radio"
-                class="radio-pointer"
+                className="radio-pointer"
                 name="app"
                 onChange={(e) => {
                   onTypeCheckboxClick(e.target.name, e.target.value);
@@ -854,7 +854,7 @@ function UpdateWebsiteDetails(props) {
             </div>
           </div>
 
-          <div class="form-group">
+          <div className="form-group">
             <Input
               label={type === 'website' ? 'Website url' : 'App url'}
               autoFocus
@@ -892,11 +892,11 @@ function UpdateWebsiteDetails(props) {
             )}
           </div>
 
-          <div class="form-group">
-            <span class="info-container">
+          <div className="form-group">
+            <span className="info-container">
               <strong>Test account credentials</strong>
-              <small class="help-content">
-                <i class="i i-info-circle" />
+              <small className="help-content">
+                <i className="i i-info-circle" />
                 <Popover align="top" theme="dark" parentQuerySelector=".modal-body">
                   <PopoverBody>
                     <div>
@@ -950,11 +950,11 @@ function UpdateWebsiteDetails(props) {
               </>
             )}
 
-            {type === 'app' && <div class="note">{appNote}</div>}
+            {type === 'app' && <div className="note">{appNote}</div>}
           </div>
 
-          <div class="Modal__actions">
-            <button type="submit" class="btn btn-primary btn-block" disabled={isFormDisabled}>
+          <div className="Modal__actions">
+            <button type="submit" className="btn btn-primary btn-block" disabled={isFormDisabled}>
               Submit {type} for review
             </button>
           </div>

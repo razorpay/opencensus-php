@@ -1,39 +1,26 @@
 import React, { Component } from 'react';
 import moment from 'moment';
-import AmountWithdraw from './AmountWithdraw';
-import WithdrawalListFilter from './CommonListFilter';
-import WithdrawalsTable from './WithdrawalsTable';
 import { connect } from 'react-redux';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { Navigate } from 'react-router-dom';
+
+import Amount from 'common/ui/Amount';
+import Pager from 'common/ui/Pager';
 import {
   fetchSeedData,
   fetchWithdrawalConfiguration,
   fetchWithdrawals,
 } from 'merchant/reducers/capital/withdrawals';
-import Amount from 'common/ui/Amount';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
-import Pager from 'common/ui/Pager';
-import WithdrawalsRoot from './index';
-import { Navigate } from 'react-router-dom';
 import { getProductType } from 'merchant/views/Capital/utils';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
-    list: state.withdrawals.list,
-    seedData: state.withdrawals.seedData,
-  }),
-  {
-    fetchWithdrawalConfiguration,
-    fetchSeedData,
-    fetchWithdrawals,
-    openModal,
-    closeModal,
-    showNotification,
-  },
-)
+import AmountWithdraw from './AmountWithdraw';
+import WithdrawalListFilter from './CommonListFilter';
+import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
+import WithdrawalsTable from './WithdrawalsTable';
+
+import WithdrawalsRoot from './index';
+
 class Withdrawals extends Component {
   gaEventDispatcher = (eventObject) => {
     const { state: { eventCategory = null } = {} } = this.props.location || {};
@@ -225,12 +212,12 @@ class Withdrawals extends Component {
     const withdrawConfigLoading = this.props.withdrawalConfigurationDetails.loading;
     if (!this.props.user.isWithdrawFeatureEnabled) return <Navigate to="/" replace />;
     return (
-      <div class="FlashWithdrawals--Container">
+      <div className="FlashWithdrawals--Container">
         <AmountWithdraw repayDues={this.repay} />
         <tabbed-container>
           <content>
-            <div class="content-wrapper">
-              <div class="filters-wrapper">
+            <div className="content-wrapper">
+              <div className="filters-wrapper">
                 <WithdrawalListFilter
                   form="withdrawalListFilter"
                   count={25}
@@ -240,7 +227,7 @@ class Withdrawals extends Component {
                 />
                 {withdrawConfigLoading || !withdrawalConfigurationDetails ? (
                   <div className="flex repay-cta-container">
-                    <span class="PlaceholderLoader" />
+                    <span className="PlaceholderLoader" />
                     <span className="PlaceholderLoader m-l" />
                   </div>
                 ) : (
@@ -255,7 +242,7 @@ class Withdrawals extends Component {
                     }`}
                   >
                     <strong>
-                      <span class="text-muted">Due Repayments:</span>
+                      <span className="text-muted">Due Repayments:</span>
                       &nbsp;
                     </strong>
                     <Amount
@@ -287,4 +274,19 @@ class Withdrawals extends Component {
   }
 }
 
-export default Withdrawals;
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
+    list: state.withdrawals.list,
+    seedData: state.withdrawals.seedData,
+  }),
+  {
+    fetchWithdrawalConfiguration,
+    fetchSeedData,
+    fetchWithdrawals,
+    openModal,
+    closeModal,
+    showNotification,
+  },
+)(Withdrawals);

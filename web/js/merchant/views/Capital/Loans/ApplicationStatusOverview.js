@@ -28,15 +28,6 @@ const parseApplicationMetaData = (loanApplicationDetails) => {
   return { loading, product, status, text };
 };
 
-@connect(
-  (state) => ({
-    loanApplicationDetails: state.loanApplicationDetails,
-  }),
-  {
-    fetchLoanApplicationMeta,
-    registerNewLoanApplication,
-  },
-)
 class ApplicationStatusOverview extends Component {
   constructor() {
     super();
@@ -171,7 +162,7 @@ class ApplicationStatusOverview extends Component {
         action={
           <div>
             {classList.includes('completed') ? (
-              <div class="flex">
+              <div className="flex">
                 {isFinalState && text && (
                   <button
                     className="btn btn-primary multilevel-step__step-action m-r"
@@ -196,7 +187,7 @@ class ApplicationStatusOverview extends Component {
                   className="link"
                 >
                   View application
-                  <i class="i i-chevron-right" />
+                  <i className="i i-chevron-right" />
                 </a>
               ) : (
                 <button
@@ -258,7 +249,7 @@ class ApplicationStatusOverview extends Component {
             <div className="tips-container">
               {tips.map((item) => (
                 <div className="flex wrapper">
-                  <i class="i i-check text-success" />
+                  <i className="i i-check text-success" />
                   <p className="tip description">{item}</p>
                 </div>
               ))}
@@ -299,4 +290,12 @@ class ApplicationStatusOverview extends Component {
   }
 }
 
-export default withRouter(ApplicationStatusOverview);
+export default connect(
+  (state) => ({
+    loanApplicationDetails: state.loanApplicationDetails,
+  }),
+  {
+    fetchLoanApplicationMeta,
+    registerNewLoanApplication,
+  },
+)(withRouter(ApplicationStatusOverview));

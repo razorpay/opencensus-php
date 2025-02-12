@@ -10,9 +10,9 @@ const PaddedImageWithZoom = ({ openModal, closeModal, brandColor, ...rest }) => 
       size: 'xlarge',
       className: 'App-store-app--Modal',
       component: (
-        <div class="app-store-setup-image-modal">
+        <div className="app-store-setup-image-modal">
           <ModalHeader onCloseClick={closeModal} />
-          <div class="modal-body">
+          <div className="modal-body">
             <Image className="content-zoomed-image" {...rest} />
           </div>
         </div>

@@ -9,12 +9,12 @@ const Amount = (props) => {
 
   return (
     <Input.Group
-      class="InputGroup--inline InputGroup--vTop amount"
+      className="InputGroup--inline InputGroup--vTop amount"
       label="Amount"
       required
       disabled={disabled}
     >
-      <div class="Input-content pt-8">
+      <div className="Input-content pt-8">
         <Input.CurrencySelect
           autoRender
           name="currency"

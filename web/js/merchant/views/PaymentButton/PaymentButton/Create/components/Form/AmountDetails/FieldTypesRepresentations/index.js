@@ -1,3 +1,3 @@
-export DynamicAmount from './DynamicAmount';
-export FixedAmount from './FixedAmount';
-export FixedAmountWithQuantity from './FixedAmountWithQuantity';
+export { default as DynamicAmount } from './DynamicAmount';
+export { default as FixedAmount } from './FixedAmount';
+export { default as FixedAmountWithQuantity } from './FixedAmountWithQuantity';

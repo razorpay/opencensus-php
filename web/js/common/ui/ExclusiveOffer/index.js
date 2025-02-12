@@ -123,7 +123,7 @@ const ExclusiveOffer = ({
             id="btn-close-modal-exclusive-offer"
             onClick={closeModal}
           >
-            <i class="i i-close" />
+            <i className="i i-close" />
           </button>
           <div className="exclusive-offer-modal-self-serve" id="exclusive-offer-modal-self-serve">
             <img
@@ -174,7 +174,7 @@ const ExclusiveOffer = ({
         id="btn-close-modal-exclusive-offer"
         onClick={closeModal}
       >
-        <i class="i i-close" />
+        <i className="i i-close" />
       </button>
       <div
         className="exclusive-offer-loader-modal-self-serve"

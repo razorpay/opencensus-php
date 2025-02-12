@@ -27,7 +27,7 @@ const renderFldgSideModal = () => {
           <div className="tips-container">
             {tips.map((item) => (
               <div key={item} className="flex wrapper">
-                <i class="i i-check text-success" />
+                <i className="i i-check text-success" />
                 <p className="text tip">{item}</p>
               </div>
             ))}
@@ -53,9 +53,9 @@ const NonFldgLoans = ({ user }) => {
   if (!user.isNonFldgLoansEnabled) return <Navigate to="/" replace />;
 
   return (
-    <OnBoardingWrapper class="Loans">
+    <OnBoardingWrapper className="Loans">
       <div className="Landing--Image">
-        <div class="image-wrapper">
+        <div className="image-wrapper">
           <img src={require("assets/capital/los_onboarding_hero.svg")} alt="landing-image" />
         </div>
       </div>

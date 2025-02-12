@@ -72,12 +72,12 @@ class ModalCloseReasons extends Component {
       return <ISPlusPlusReasons onFinish={onFinish} fromWhere={fromWhere} />;
     }
     return (
-      <div class="reasons-close-modal">
-        <ModalHeader class="header" title="Reason" />
-        <div class="modal-body">
+      <div className="reasons-close-modal">
+        <ModalHeader className="header" title="Reason" />
+        <div className="modal-body">
           {CLOSE_OPTIONS.map((choice) => {
             return (
-              <div key={`parent-choice-${choice.value}`} class="es-close-choices">
+              <div key={`parent-choice-${choice.value}`} className="es-close-choices">
                 <label key={`lab-${choice.value}`}>
                   <input
                     type="radio"
@@ -92,11 +92,11 @@ class ModalCloseReasons extends Component {
             );
           })}
         </div>
-        <div class="flex Input-textarea-container">
+        <div className="flex Input-textarea-container">
           <Input.Textarea
             label="Write a brief"
             size="small"
-            class="Input-description Input--vTop m-b p-b"
+            className="Input-description Input--vTop m-b p-b"
             placeholder="Write a brief description"
             value={brief}
             onChange={this.handleBriefChange}
@@ -110,14 +110,14 @@ class ModalCloseReasons extends Component {
           closeOrigin={closeOrigin}
         />
 
-        <div class="flex action-container">
-          <Button.Transparent onClick={this.handleGoBackClick} class="go-back">
+        <div className="flex action-container">
+          <Button.Transparent onClick={this.handleGoBackClick} className="go-back">
             Go Back
           </Button.Transparent>
           <Button.Primary
             onClick={this.submitCloseReason}
             disabled={!this.state.closeReason}
-            class="confirm-close"
+            className="confirm-close"
           >
             Confirm & Close
           </Button.Primary>

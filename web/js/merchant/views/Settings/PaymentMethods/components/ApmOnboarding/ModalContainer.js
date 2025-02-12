@@ -274,7 +274,7 @@ const ModalContainer = ({
                 <div className={`head-wrapper${isTabValid ? ' valid' : ''}`}>
                   {selectedTab !== 0 ? (
                     <Button
-                      class="device--mobile btn--back"
+                      className="device--mobile btn--back"
                       iconBefore="arrow-back"
                       onClick={onPrev}
                     />

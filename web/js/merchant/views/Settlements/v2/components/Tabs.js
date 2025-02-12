@@ -25,17 +25,17 @@ const Tabs = (props) => {
 
     return Object.keys(tabNamesObj).map((tabKey, index) => {
       return (
-        <div class={`tab ${tabKey === sanitizeTabName(activeTab) ? 'active' : ''}`} key={index}>
+        <div className={`tab ${tabKey === sanitizeTabName(activeTab) ? 'active' : ''}`} key={index}>
           <span id="source_type" onClick={props.handleTabChange}>
             {titleCase(tabKey)}{' '}
           </span>
-          <b class="count">({tabNamesObj[tabKey]})</b>
+          <b className="count">({tabNamesObj[tabKey]})</b>
         </div>
       );
     });
   };
 
-  return <div class="entity-tabs">{renderTabNames()}</div>;
+  return <div className="entity-tabs">{renderTabNames()}</div>;
 };
 
 const mapStateToProps = (state) => ({ user: state.session.user });

@@ -15,12 +15,12 @@ const PaymentDisputes = ({ disputes, onDisputeClick }) => {
           <a onClick={() => onDisputeClick(`disputes/${dispute.id}`)}>
             <code>{dispute.id}</code>
           </a>
-          <div class="m-t">
+          <div className="m-t">
             <Amount value={dispute.amount} currency={dispute.currency} className="p-r m-r" />
             <StatusLabel status={dispute.status} />
           </div>
           {dispute.status === 'open' ? (
-            <div class="alert alert-warning banner">
+            <div className="alert alert-warning banner">
               <p>
                 Your customer has raised a {dispute.phase} on this payment. To avoid losing the
                 dispute&nbsp;

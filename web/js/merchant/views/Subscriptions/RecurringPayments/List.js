@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { fetchEmandatePayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -14,9 +14,8 @@ import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 import { isTransactionCleanupEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { onSearch } from 'merchant/views/Transactions/v2/common/utils';
+import { compose } from 'redux';
 
-@connect((state) => ({ ...state.payments, user: state.session.user }), { fetchAll })
-@RTracking(() => window.rzpQ.component('EmandatePayments'))
 class RecurringPaymentsListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'payment.search' });
@@ -39,9 +38,9 @@ class RecurringPaymentsListContainer extends ListContainer {
   render() {
     const { history, loading, user } = this.props;
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction responsive>
-          <div class="btn-toolbar">
+          <div className="btn-toolbar">
             <DocsLink url="https://razorpay.com/docs/recurring-payments/" />
           </div>
         </HeaderAction>
@@ -76,4 +75,8 @@ class RecurringPaymentsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(RecurringPaymentsListContainer);
+export default compose(
+  withRouter,
+  connect((state) => ({ ...state.payments, user: state.session.user }), { fetchAll }),
+  rTracking(() => window.rzpQ.component('EmandatePayments')),
+)(RecurringPaymentsListContainer);

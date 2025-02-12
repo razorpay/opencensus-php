@@ -1,34 +1,27 @@
 import { Component } from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
-import { connect } from 'react-redux';
-import Banner from 'common/ui/Banner';
 import { TypeAhead } from 'react-power-select';
+import { connect } from 'react-redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
+import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import Form from 'common/new-ui/Form';
-import Button from 'common/new-ui/Button';
+import Banner from 'common/ui/Banner';
 import QuickAdd from 'common/ui/Select/QuickAdd';
-
 import { getKeysSeparatedByPipe, classList } from 'common/utils/rzp-utils';
 import {
   validateAlphanumericWithMaxLength,
   validateAlphanumericWithStrictLength,
 } from 'common/utils/validators';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { luminateRow } from 'merchant/reducers/app';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import {
   saveVirtualAccount,
   fetchConfigForVirtualAccount,
 } from 'merchant/reducers/virtualaccounts';
-
 import CustomerCreation from 'merchant/views/Customers/New';
-
 import AccountDetailsSummary from 'merchant/views/SmartCollect/VirtualAccounts/components/Modals/AccountDetailsSummary';
-
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
   DESCRIPTOR_LENGTH_VPA,
@@ -38,38 +31,18 @@ import {
   getStyle_AddOnBefore_VPA,
   getStyle_AddOnAfter_VPA,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const CustomCustomerOption = ({ option }) => {
   return (
-    <div class="custom-powerselect-options">
+    <div className="custom-powerselect-options">
       {option.name && <b>{option.name} : </b>}
       {option.email || option.contact}
     </div>
   );
 };
 
-@connect(
-  (state) => {
-    const customers = state.customers.items;
-
-    return {
-      customers,
-      customersLoading: state.customers.loading,
-      ...state.config.config,
-      user: state.session.user,
-      va_config: state.virtualaccounts.va_config,
-      isTestMode: state.session.mode === 'test',
-    };
-  },
-  {
-    luminateRow,
-    showNotification,
-    saveVirtualAccount,
-    fetchCustomersForAutocomplete,
-    fetchConfigForVirtualAccount,
-    ...ModalActions,
-  },
-)
 class CreateVirtualAccount extends Component {
   state = {
     notes: {},
@@ -269,7 +242,7 @@ class CreateVirtualAccount extends Component {
     }
 
     const content = (
-      <div class="VirtualAccount--Create Wizard">
+      <div className="VirtualAccount--Create Wizard">
         <Form
           onChange={this.props.onChange}
           onSubmit={this.handleSubmit}
@@ -277,26 +250,26 @@ class CreateVirtualAccount extends Component {
           ref={this.setRefForm}
         >
           <main>
-            <div class="form-title">Create Customer Identifier</div>
+            <div className="form-title">Create Customer Identifier</div>
 
             {user.isVACreationBankAccountDisabled && (
               <Banner>
                 Customer Identifier transfer is temporarily unavailable. Use UPI transfer option to
                 create Virtual UPI ID to accept payments.{' '}
                 <a
-                  class="highlight"
+                  className="highlight"
                   target="_blank"
                   href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
                   rel="noreferrer noopener"
                 >
                   Know more
-                  <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+                  <i className="i i-external-link" style={{ marginLeft: '5px' }} />
                 </a>
               </Banner>
             )}
 
-            <div class="form-group">
-              <Input.Group class="Input--vTop" label="Accept Payment Via">
+            <div className="form-group">
+              <Input.Group className="Input--vTop" label="Accept Payment Via">
                 <div>
                   <Input.Check
                     _name="hasBankAccount"
@@ -407,14 +380,14 @@ class CreateVirtualAccount extends Component {
                 )}
               </Input.Group>
 
-              <div class="Input">
-                <div class="Input-label">Customer</div>
+              <div className="Input">
+                <div className="Input-label">Customer</div>
 
-                <div class="Input-content">
+                <div className="Input-content">
                   <TypeAhead
                     options={customers}
                     disabled={customersLoading}
-                    class="ps-in-modal"
+                    className="ps-in-modal"
                     searchIndices={['id', 'name', 'email', 'contact']}
                     placeholder={`${customersLoading ? 'Loading...' : 'Select a customer'}`}
                     showClear={true}
@@ -430,14 +403,14 @@ class CreateVirtualAccount extends Component {
               </div>
 
               <Input.TextareaAutoResize
-                class="Input--vTop"
+                className="Input--vTop"
                 name="description"
                 label="Customer Identifier Description"
                 description="Description is shown only on the dashboard and not to customers"
               />
 
               <Input.DateTime
-                class="Input--vTop"
+                className="Input--vTop"
                 label="Close By"
                 checkboxFieldLabel="Disable Auto Close"
                 onChange={this.updateDate}
@@ -446,7 +419,7 @@ class CreateVirtualAccount extends Component {
               />
 
               <Input.PairList
-                class="Input--vTop"
+                className="Input--vTop"
                 name="notes"
                 label="Internal Notes"
                 onChange={this.handleNotesChange}
@@ -458,7 +431,7 @@ class CreateVirtualAccount extends Component {
           <footer>
             {/* Action Button 1 */}
             {IS_MODAL_VIEW && (
-              <Button class="btn-outline" type="button" onClick={onClose}>
+              <Button className="btn-outline" type="button" onClick={onClose}>
                 Cancel
               </Button>
             )}
@@ -473,13 +446,34 @@ class CreateVirtualAccount extends Component {
     );
 
     return IS_MODAL_VIEW ? (
-      <Modal class={classList('VirtualAccount', content && 'animate-down')} onClose={onClose}>
+      <Modal className={classList('VirtualAccount', content && 'animate-down')} onClose={onClose}>
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">{content}</div>
+      <div className="StandAloneContainer">{content}</div>
     );
   }
 }
 
-export default withRouter(CreateVirtualAccount);
+export default connect(
+  (state) => {
+    const customers = state.customers.items;
+
+    return {
+      customers,
+      customersLoading: state.customers.loading,
+      ...state.config.config,
+      user: state.session.user,
+      va_config: state.virtualaccounts.va_config,
+      isTestMode: state.session.mode === 'test',
+    };
+  },
+  {
+    luminateRow,
+    showNotification,
+    saveVirtualAccount,
+    fetchCustomersForAutocomplete,
+    fetchConfigForVirtualAccount,
+    ...ModalActions,
+  },
+)(withRouter(CreateVirtualAccount));

@@ -34,6 +34,7 @@ import { track, trackSearchFilterForInternational } from 'merchant/views/Invoice
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { compose } from 'redux';
 
 const EmptyComponent = () => (
   <EmptyList
@@ -46,17 +47,6 @@ const EmptyComponent = () => (
   />
 );
 
-@withI18Service
-@connect(
-  (state) => {
-    return {
-      ...state.invoices,
-      ...state.session,
-      invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
-    };
-  },
-  { ...InvoiceActions, handleProductQuickGuide },
-)
 class InvoicesListContainer extends ListContainer {
   UNSAFE_componentWillMount() {
     // eslint-disable-next-line babel/new-cap
@@ -211,7 +201,7 @@ class InvoicesListContainer extends ListContainer {
 
     if (loadingAllList) {
       content = (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -267,9 +257,9 @@ class InvoicesListContainer extends ListContainer {
       );
     }
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.INVOICE} />
             </ShowWhen>
@@ -279,8 +269,8 @@ class InvoicesListContainer extends ListContainer {
                 (mode !== 'live' || !_user.isRejected) && _user.isAllowedEdit('invoices')
               }
             >
-              <span class="btn btn-primary" onClick={this.onClickNewInvoice}>
-                <i class="i i-plus" />
+              <span className="btn btn-primary" onClick={this.onClickNewInvoice}>
+                <i className="i i-plus" />
                 <span>Create Invoice</span>
               </span>
             </ShowWhen>
@@ -293,4 +283,17 @@ class InvoicesListContainer extends ListContainer {
   }
 }
 
-export default withRouter(InvoicesListContainer);
+export default compose(
+  withRouter,
+  withI18Service,
+  connect(
+    (state) => {
+      return {
+        ...state.invoices,
+        ...state.session,
+        invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
+      };
+    },
+    { ...InvoiceActions, handleProductQuickGuide },
+  ),
+)(InvoicesListContainer);

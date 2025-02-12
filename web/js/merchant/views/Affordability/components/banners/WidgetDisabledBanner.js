@@ -67,11 +67,11 @@ const WidgetDisabledBanner = (props) => {
 
   return (
     <AnnouncementBanner className="widget-disabled-banner" title="Widget Disabled" theme="danger">
-      <span class="display-inline">
+      <span className="display-inline">
         Affordability Widget is currently deactivated. Click on Enable Widget to grow your business
         again
       </span>
-      <button class="btn btn-primary" onClick={toggleEnableModal}>
+      <button className="btn btn-primary" onClick={toggleEnableModal}>
         Enable Widget
       </button>
     </AnnouncementBanner>

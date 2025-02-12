@@ -1,13 +1,7 @@
-import { connect } from 'react-redux';
 import React from 'react';
+import { connect } from 'react-redux';
 
-@connect(
-  (state) => ({
-    config: state.config.config,
-  }),
-  null,
-)
-export default class PreviewEmbedButton extends React.Component {
+class PreviewEmbedButton extends React.Component {
   state = {
     textColor: '#fff',
   };
@@ -91,3 +85,10 @@ export default class PreviewEmbedButton extends React.Component {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    config: state.config.config,
+  }),
+  null,
+)(PreviewEmbedButton);

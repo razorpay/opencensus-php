@@ -30,7 +30,7 @@ class _MerchantLogoTooltip extends React.Component {
 
   render() {
     return (
-      <div class={TOOLTIP_CLASS_NAME} onClick={this.handleTooltip}>
+      <div className={TOOLTIP_CLASS_NAME} onClick={this.handleTooltip}>
         Add your logo here
         {this.state.show && (
           <Popover align="bottom" theme="dark" persistent>
@@ -42,7 +42,7 @@ class _MerchantLogoTooltip extends React.Component {
                 style={{ marginLeft: 4 }}
                 rel="noreferrer noopener"
               >
-                settings page. <i class="i i-external-link" />
+                settings page. <i className="i i-external-link" />
               </a>
               <br />
               It can also be uploaded after completing this page.

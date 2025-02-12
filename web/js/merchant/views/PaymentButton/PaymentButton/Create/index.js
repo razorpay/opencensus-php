@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { Link } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
@@ -43,6 +43,7 @@ import {
 
 import track from './track';
 import track_details from 'merchant/views/PaymentButton/PaymentButton/Details/track';
+import { compose } from 'redux';
 
 const docTitles = {
   DEFAULT: 'Razorpay Dashboard',
@@ -50,26 +51,6 @@ const docTitles = {
   EDIT: 'Edit Payment Button',
 };
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    mode: state.session.mode,
-    org: state.session.org,
-    payment_button: state.payment_button_create,
-  }),
-  {
-    resetPageData,
-    fetchPaymentButtonDetails,
-    updateTemplateType,
-    updateReceiptDetails,
-    updatePaymentButtonData,
-    closeModal,
-    openModal,
-    showNotification,
-    updateHighlightButtonSettings,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentButtonCreate'))
 class PaymentButtonCreate extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -266,7 +247,7 @@ class PaymentButtonCreate extends React.Component {
     this.context.confirm({
       header: 'Go back to Dashboard',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>Unsaved changes will be lost. Do you want to continue?</p>
         </div>
       ),
@@ -635,12 +616,12 @@ class PaymentButtonCreate extends React.Component {
       <Button.Transparent
         type="button"
         style={{ color: '#fff' }}
-        class="payment-receipt-btn"
+        className="payment-receipt-btn"
         onClick={this.handleTogglePageReceiptModal}
         disabled={!isEntityLoaded}
       >
         <span>
-          <i class="i i-document" /> Payment Receipts
+          <i className="i i-document" /> Payment Receipts
         </span>
       </Button.Transparent>
     ) : null;
@@ -681,7 +662,7 @@ class PaymentButtonCreate extends React.Component {
 
   get ErrorView() {
     return (
-      <div class="page-center">
+      <div className="page-center">
         Payment Button with id <b>{this.paymentButtonId}</b> doesn&apos;t exist.
         <br />
         Go to <Link to="/paymentbuttons/">Payment Buttons list</Link>{' '}
@@ -690,7 +671,7 @@ class PaymentButtonCreate extends React.Component {
   }
 
   get NoTemplateSelectedView() {
-    return <div class="page-center">No template was selected! Please reload the page.</div>;
+    return <div className="page-center">No template was selected! Please reload the page.</div>;
   }
 
   get ContentView() {
@@ -706,10 +687,10 @@ class PaymentButtonCreate extends React.Component {
     const isEditExistingId = !!this.paymentButtonId;
 
     return (
-      <div class="PaymentButton-Create-Content">
-        <div class="PaymentButton-Create-Content-container">
+      <div className="PaymentButton-Create-Content">
+        <div className="PaymentButton-Create-Content-container">
           {!isEntityLoaded ? (
-            <div class="page-center">
+            <div className="page-center">
               <Spinner />
             </div>
           ) : (
@@ -787,7 +768,7 @@ class PaymentButtonCreate extends React.Component {
 
   render() {
     return (
-      <div id="payment-buttons-create-container" class="desktop-view">
+      <div id="payment-buttons-create-container" className="desktop-view">
         {this.state.isPageReceiptModalOpened && this.ReceiptModal}
         {this.state.isTemplatesSelectionOpened && this.TemplateSelectionModal}
 
@@ -807,4 +788,26 @@ function setWindowTitle(title) {
   document.title = 'Razorpay Dashboard';
 }
 
-export default withRouter(PaymentButtonCreate);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      user: state.session.user,
+      mode: state.session.mode,
+      org: state.session.org,
+      payment_button: state.payment_button_create,
+    }),
+    {
+      resetPageData,
+      fetchPaymentButtonDetails,
+      updateTemplateType,
+      updateReceiptDetails,
+      updatePaymentButtonData,
+      closeModal,
+      openModal,
+      showNotification,
+      updateHighlightButtonSettings,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentButtonCreate')),
+)(PaymentButtonCreate);

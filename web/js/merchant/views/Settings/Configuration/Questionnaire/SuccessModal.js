@@ -6,7 +6,7 @@ const SuccessModal = ({ closeModal }) => {
   return (
     <Modal className="success" showCloseBtn={false}>
       <ModalContent>
-        <div class="header">
+        <div className="header">
           <h4>Application Under Review</h4>
           <p>We are reviewing your business details</p>
         </div>

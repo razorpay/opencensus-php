@@ -10,7 +10,7 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, isRT
   const isTestMode = mode === 'test';
   return (
     <Dropdown disabled={dropdownDisabled}>
-      <DropdownTrigger class="dropdown-toggle switch-modes-toggle">
+      <DropdownTrigger className="dropdown-toggle switch-modes-toggle">
         {isRTUXHomepage ? (
           <ModesDropdownWrapper
             onClick={() => {
@@ -28,7 +28,7 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, isRT
           >
             <Box display="flex" alignItems="center" justifyContent="center" marginTop="spacing.2">
               <i
-                class={
+                className={
                   isTestMode
                     ? 'i i-info-circle ModeIndicator--test'
                     : 'i i-done ModeIndicator--live-icon'
@@ -56,30 +56,30 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, isRT
           >
             {isTestMode ? (
               <>
-                <i class="i i-info-circle ModeIndicator--test" /> {modeFormatted} Mode
+                <i className="i i-info-circle ModeIndicator--test" /> {modeFormatted} Mode
               </>
             ) : (
               <>
-                <i class="i i-done ModeIndicator--live-icon" /> {modeFormatted} Mode
+                <i className="i i-done ModeIndicator--live-icon" /> {modeFormatted} Mode
               </>
             )}{' '}
-            {!dropdownDisabled && <span class="caret" />}
+            {!dropdownDisabled && <span className="caret" />}
           </div>
         )}
       </DropdownTrigger>
       <DropdownContent>
-        <ul class="dropdown-menu switch-modes-menu nav nav-stacked">
+        <ul className="dropdown-menu switch-modes-menu nav nav-stacked">
           <li data-test="Test Mode">
-            <a onClick={() => onSwitchMode('test')} class={classList(isTestMode && 'selected')}>
-              <i class="i i-info-circle ModeIndicator--test" /> Test Mode
+            <a onClick={() => onSwitchMode('test')} className={classList(isTestMode && 'selected')}>
+              <i className="i i-info-circle ModeIndicator--test" /> Test Mode
             </a>
           </li>
           <li data-test="Live Mode">
             <a
               onClick={() => onSwitchMode('live')}
-              class={classList(mode === 'live' && 'selected')}
+              className={classList(mode === 'live' && 'selected')}
             >
-              <i class="i i-done ModeIndicator--live-icon" /> Live Mode
+              <i className="i i-done ModeIndicator--live-icon" /> Live Mode
             </a>
           </li>
         </ul>

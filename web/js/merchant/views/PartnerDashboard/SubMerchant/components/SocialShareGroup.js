@@ -83,16 +83,16 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
 
   return (
     <div>
-      <div class="input-group" style={{ marginTop: '8px' }}>
+      <div className="input-group" style={{ marginTop: '8px' }}>
         <CustomClipboard value={referralUrl}>
           <input
-            class="form-control input"
+            className="form-control input"
             value={referralUrl}
             style={{ minWidth: '200px' }}
             readOnly
           />
           <button
-            class="btn btn-primary"
+            className="btn btn-primary"
             style={{
               width: '100px',
               borderRadius: '0px 2px 2px 0px',
@@ -103,7 +103,7 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
           </button>
         </CustomClipboard>
       </div>
-      <div class="social-share-btn-grp">
+      <div className="social-share-btn-grp">
         <div>
           <strong>
             <p>Or Share Via</p>

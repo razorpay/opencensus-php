@@ -9,7 +9,7 @@ export default function () {
       card_id="introducing-payment-receipts-banner"
     >
       Send automated payment receipts for transactions on your Payment Pages.{' '}
-      <span class="big-dot-separator" />
+      <span className="big-dot-separator" />
       <DocLink href="https://razorpay.com/docs/payment-pages/receipt-80g" target="_blank">
         Learn More
       </DocLink>

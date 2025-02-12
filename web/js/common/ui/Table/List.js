@@ -1,9 +1,9 @@
 export default ({ item, rows }) => {
   return (
-    <div class="details-row-container">
+    <div className="details-row-container">
       {rows.map((row, index) => (
-        <div class={`details-row ${row.rowClass || ''}`} key={index}>
-          <span class="details-cell">{row.title}</span>
+        <div className={`details-row ${row.rowClass || ''}`} key={index}>
+          <span className="details-cell">{row.title}</span>
           {row.value(item)}
         </div>
       ))}

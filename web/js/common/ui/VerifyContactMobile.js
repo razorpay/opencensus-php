@@ -3,7 +3,7 @@ import React from 'react';
 import Button from 'common/new-ui/Button';
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 import UpdateContactMobile from 'common/ui/UpdateContactMobile';
-
+import { compose } from 'redux';
 import {
   triggerOtpOnMobileForVerification,
   verifyContactMobile,
@@ -12,19 +12,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateUser } from 'merchant_common/reducers/user';
 
-@connect(
-  (state) => ({
-    contactMobile: state.session.user.user.contact_mobile,
-  }),
-  {
-    openModal,
-    closeModal,
-    updateUser,
-    showNotification,
-    verifyContactMobile,
-  },
-)
-export default class VerifyContactMobile extends React.Component {
+class VerifyContactMobile extends React.Component {
   state = {};
 
   onCloseClick = () => {
@@ -86,12 +74,12 @@ export default class VerifyContactMobile extends React.Component {
         title="Verify your Mobile"
         renderMessage={() => (
           <>
-            <p class="m-b">
+            <p className="m-b">
               An SMS with 6-digit OTP has been sent to {this.props.contactMobile}&nbsp;
               <Button.Transparent onClick={this.onChangeClick}>Change</Button.Transparent>
             </p>
 
-            <p class="m-t m-b">OTP will expire in 5 mins.</p>
+            <p className="m-t m-b">OTP will expire in 5 mins.</p>
           </>
         )}
         isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
@@ -99,3 +87,18 @@ export default class VerifyContactMobile extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => ({
+      contactMobile: state.session.user.user.contact_mobile,
+    }),
+    {
+      openModal,
+      closeModal,
+      updateUser,
+      showNotification,
+      verifyContactMobile,
+    },
+  ),
+)(VerifyContactMobile);

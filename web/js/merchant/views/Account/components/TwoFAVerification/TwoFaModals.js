@@ -9,12 +9,13 @@ import { Field, reduxForm } from 'redux-form';
 import InputField from 'common/ui/Forms/InputField';
 import { required, phone, mobile } from 'common/utils/validators';
 import { OtpInput } from 'merchant/components/OtpInput';
+import { compose } from 'redux';
 
 // This file has similar components to
 // Account/Profile/components/UpdateSelfContactMobile.js
 // refactor ASAP to remove redundancy
-@connect(null, { showNotification })
-class VerifyOtp extends Component {
+
+class VerifyOtpComponent extends Component {
   state = {};
   onConfirm = () => {
     return this.props
@@ -43,7 +44,7 @@ class VerifyOtp extends Component {
     });
   };
 
-  updateOtpValue = otp => {
+  updateOtpValue = (otp) => {
     this.otpValue = otp;
   };
 
@@ -53,11 +54,7 @@ class VerifyOtp extends Component {
     return (
       <div>
         <ModalHeader title="Verify Mobile Number" onCloseClick={closeModal} />
-        <div
-          class={`modal-body ${
-            this.props.customClass ? this.props.customClass : ''
-          }`}
-        >
+        <div className={`modal-body ${this.props.customClass ? this.props.customClass : ''}`}>
           <p>
             {this.props.customMessage
               ? this.props.customMessage
@@ -74,15 +71,15 @@ class VerifyOtp extends Component {
           <p>
             Didn’t receive an SMS?
             <AsyncButton
-              class="btn btn-link"
+              className="btn btn-link"
               text="Send OTP"
               pendingText="Sending OTP..."
               onClick={this.onResend}
             />
           </p>
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncButton
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               onClick={this.onConfirm}
               text="Confirm"
               pendingText="Sending OTP..."
@@ -94,19 +91,8 @@ class VerifyOtp extends Component {
   }
 }
 
-@connect(
-  state => ({
-    initialValues: {
-      contact_mobile: (state.session.user.user || {}).contact_mobile,
-    },
-  }),
-  { showNotification }
-)
-@reduxForm({
-  form: 'askPhone',
-})
-class AskMobileNumber extends Component {
-  onSubmit = data => {
+class AskMobileNumberComponent extends Component {
+  onSubmit = (data) => {
     return this.props.onSubmit(data);
   };
 
@@ -120,28 +106,24 @@ class AskMobileNumber extends Component {
   render() {
     const { closeModal, handleSubmit } = this.props;
     return (
-      <div class="2fa-modal">
+      <div className="2fa-modal">
         <ModalHeader
-          title={
-            this.props.customTitle
-              ? this.props.customTitle
-              : `Setting up 2-step verification`
-          }
+          title={this.props.customTitle ? this.props.customTitle : `Setting up 2-step verification`}
           onCloseClick={closeModal}
         />
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
             {this.props.customMessage
               ? this.props.customMessage
               : `Let's setup a mobile number where you will receive an SMS with OTP everytime you log in.`}
           </p>
           <form style={{ marginBottom: '35px' }}>
-            <div class="form-group">
+            <div className="form-group">
               <label>Enter your phone number </label>
               <Field
                 name="contact_mobile"
                 component={InputField}
-                class="form-control"
+                className="form-control"
                 placeholder="Phone Number"
                 validate={[
                   required(),
@@ -151,9 +133,9 @@ class AskMobileNumber extends Component {
                 ]}
               />
             </div>
-            <div class="form-group">
+            <div className="form-group">
               <AsyncButton
-                class="btn btn-primary btn-block"
+                className="btn btn-primary btn-block"
                 text="Send OTP"
                 pendingText="Sending OTP..."
                 onClick={handleSubmit(this.onSubmit)}
@@ -165,5 +147,21 @@ class AskMobileNumber extends Component {
     );
   }
 }
+
+const VerifyOtp = compose(connect(null, { showNotification }))(VerifyOtpComponent);
+
+const AskMobileNumber = compose(
+  connect(
+    (state) => ({
+      initialValues: {
+        contact_mobile: (state.session.user.user || {}).contact_mobile,
+      },
+    }),
+    { showNotification },
+  ),
+  reduxForm({
+    form: 'askPhone',
+  }),
+)(AskMobileNumberComponent);
 
 export { AskMobileNumber, VerifyOtp };

@@ -2,21 +2,22 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { analyticsTrack } from 'common/utils/analytics';
-import Spinner from 'common/ui/Spinner';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
-import { getItem } from 'common/utils/localStorage';
-import LogList from './Logs/List';
-import GenerateReportPanel from './GenerateReportPanel';
-import EasterEgg from 'merchant/components/EasterEgg';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
-@connect(null, { showNotification })
-export default class ReportHome extends React.PureComponent {
+import DashboardBanner from 'common/ui/DashboardBanner';
+import Spinner from 'common/ui/Spinner';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getItem } from 'common/utils/localStorage';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import EasterEgg from 'merchant/components/EasterEgg';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import GenerateReportPanel from './GenerateReportPanel';
+import LogList from './Logs/List';
+
+class ReportHome extends React.PureComponent {
   componentDidMount() {
     this.props.fetchConfigs();
     this.props.fetchLogs({ count: 5 });
@@ -213,3 +214,5 @@ export default class ReportHome extends React.PureComponent {
     );
   }
 }
+
+export default connect(null, { showNotification })(ReportHome);

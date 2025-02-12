@@ -51,10 +51,10 @@ function batchActions({
     issueAll,
     title: 'Actions',
     value: (item) => (
-      <div class="btn-toolbar">
+      <div className="btn-toolbar">
         {STATUS_VALUES.includes(item.status) && (
           <button
-            class="btn btn-xs btn-default btn-outline cancel-batch-btn"
+            className="btn btn-xs btn-default btn-outline cancel-batch-btn"
             onClick={() => {
               window.rzpAnalytics?.({
                 eventCategory: `Batch ${titleCase(batchType)}`,
@@ -73,7 +73,7 @@ function batchActions({
             Cancel
           </button>
         )}
-        <button class="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
+        <button className="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
           Download
         </button>
         {item.status === 'processed' &&
@@ -89,7 +89,7 @@ function handleLinks({ viewAll, issueAll, item, plType, issuableIdList }) {
   if (item.type === plType) {
     if (viewAll) {
       elem = (
-        <button class="btn btn-default btn-xs" onClick={(_) => viewAll(item)}>
+        <button className="btn btn-default btn-xs" onClick={(_) => viewAll(item)}>
           view all links
         </button>
       );
@@ -101,7 +101,7 @@ function handleLinks({ viewAll, issueAll, item, plType, issuableIdList }) {
       (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
     ) {
       elem = (
-        <button class="btn btn-default btn-xs" onClick={(_) => issueAll(item)}>
+        <button className="btn btn-default btn-xs" onClick={(_) => issueAll(item)}>
           Issue all links
         </button>
       );
@@ -198,10 +198,10 @@ class BatchList extends Component {
     const items = this.props.items;
 
     const headerActionChildren = (
-      <div class="btn-toolbar pull-right">
+      <div className="btn-toolbar pull-right">
         {sampleUrl && (
           <a
-            class="btn btn-link"
+            className="btn btn-link"
             href={sampleUrl}
             onClick={gaEvents.trackSampleFileDownload('From List View')}
             role="link"
@@ -212,14 +212,14 @@ class BatchList extends Component {
         <ShowWhen additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}>
           {docUrl && (
             <a
-              class="btn btn-link"
+              className="btn btn-link"
               href={docUrl}
               target="_blank"
               rel="noopener noreferrer"
               role="link"
             >
               Documentation &nbsp;
-              <i class="i i-external-link" />
+              <i className="i i-external-link" />
             </a>
           )}
         </ShowWhen>
@@ -227,7 +227,7 @@ class BatchList extends Component {
         {(session.mode !== 'live' || !user.isRejected) && (
           /* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */
           <span className="cta-container">
-            <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
+            <button className="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
               Click here to upload
             </button>
           </span>
@@ -236,7 +236,7 @@ class BatchList extends Component {
     );
 
     return (
-      <div class="content-wrapper" data-testid="batchrefunds-batchlist">
+      <div className="content-wrapper" data-testid="batchrefunds-batchlist">
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderActions>{headerActionChildren}</HeaderActions>
 
@@ -335,16 +335,16 @@ class CancelConfirmation extends Component {
   };
   render() {
     return (
-      <div class="batch-cancel-confirmation">
-        <div class="content-header">Are you sure you want to cancel the batch file?</div>
-        {/* <div class="content-sub-header">
+      <div className="batch-cancel-confirmation">
+        <div className="content-header">Are you sure you want to cancel the batch file?</div>
+        {/* <div className="content-sub-header">
           Many of the refunds might have been processed already
         </div> */}
-        <div class="content">
-          <button class="btn btn-default" onClick={this.props.closeModal}>
+        <div className="content">
+          <button className="btn btn-default" onClick={this.props.closeModal}>
             No don't
           </button>
-          <button disabled={this.state.loading} onClick={this.cancel} class="btn btn-primary">
+          <button disabled={this.state.loading} onClick={this.cancel} className="btn btn-primary">
             {this.state.loading ? <span>Please Wait..</span> : <span>Yes, cancel</span>}
           </button>
         </div>

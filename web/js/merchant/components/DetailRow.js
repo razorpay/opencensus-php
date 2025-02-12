@@ -4,7 +4,7 @@ export default ({ label, value, ...otherProps }) => {
   }
 
   return (
-    <div class="list-group-item" {...otherProps}>
+    <div className="list-group-item" {...otherProps}>
       {typeof label === 'function' ? label() : <span>{label}</span>}
       {typeof value === 'function' ? value() : <span>{value + ''}</span>}
     </div>

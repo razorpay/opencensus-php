@@ -7,7 +7,7 @@ export default ({ userId }) => {
 
   return (
     <AnnouncementBanner
-      class="settlement-anc"
+      className="settlement-anc"
       theme="primary"
       title="Instant Settlements"
       canBeClosed={true}
@@ -15,7 +15,7 @@ export default ({ userId }) => {
       card_id="instant-settlements-banner"
     >
       Get your payments settled within a few hours and never have a shortfall of working capital{' '}
-      <span class="big-dot-separator" />
+      <span className="big-dot-separator" />
       <Link
         to="/settlements#requestearlyaccess"
         onClick={() => trackInstantSettlementsBanner('Click Link')}

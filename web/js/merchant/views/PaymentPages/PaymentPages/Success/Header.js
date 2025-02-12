@@ -11,12 +11,12 @@ const Header = (props) => {
   };
 
   return (
-    <div class="page-nav-container">
-      <div class="payment-page-nav">
-        <div class="nav-left">
-          <div class="nav-title">Page Published</div>
+    <div className="page-nav-container">
+      <div className="payment-page-nav">
+        <div className="nav-left">
+          <div className="nav-title">Page Published</div>
         </div>
-        <div class="nav-right">
+        <div className="nav-right">
           <Button.Primary type="button" onClick={onBackToDashboardClick}>
             <span>Back to Dashboard</span>
           </Button.Primary>

@@ -1,19 +1,14 @@
 import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import Attachment from './Attachment';
 import sanitizer from 'common/utils/xss-sanitizer';
+
+import Attachment from './Attachment';
 
 const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
-@connect((state) => {
-  return {
-    ...state.session,
-    ...state.config.config,
-    user: state.session.user,
-  };
-})
 class Message extends React.Component {
   state = {
     showCompleteReply: this.props.showExpandedReply,
@@ -142,4 +137,10 @@ class Message extends React.Component {
   }
 }
 
-export default withRouter(Message);
+export default connect((state) => {
+  return {
+    ...state.session,
+    ...state.config.config,
+    user: state.session.user,
+  };
+})(withRouter(Message));

@@ -25,7 +25,7 @@ const PlanSelection = ({ closeModal, missed_order_payment_link, isPlanNew = true
         {subscription?.free_trial_eligible && (
           <div className="free-eligible">
             <div className="info-wrapper">
-              <i class="i i-info-outline" />
+              <i className="i i-info-outline" />
             </div>
             <div>
               <b>Try 30 days for free.</b> After this, charges will be deducted every month

@@ -1,25 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
+
+import ShowWhen from 'merchant/components/ShowWhen';
 import { updateData } from 'merchant/reducers/wysiwyg';
-import Title from './Title';
+
 import Description from './Description';
+import DonationGoalTracker from './DonationGoalTracker';
 import Share from './Share';
 import Support from './Support';
 import Terms from './Terms';
-import DonationGoalTracker from './DonationGoalTracker';
-import ShowWhen from 'merchant/components/ShowWhen';
+import Title from './Title';
 
-@connect(
-  (state) => ({
-    user: state.session.user,
-    paymentPageEntity: state.wysiwyg.paymentPageEntity,
-    isPageDirty: state.wysiwyg.isPageDirty,
-  }),
-  {
-    updateData,
-  },
-)
-export default class View extends React.PureComponent {
+class View extends React.PureComponent {
   updateData({ target }) {
     const { name } = target;
     let { value } = target;
@@ -51,8 +43,8 @@ export default class View extends React.PureComponent {
 
     if (paymentPageEntity.id && typeof paymentPageEntity.title === 'undefined') {
       return (
-        <div class="spinner-container">
-          <div class="spin-btn large visible" />
+        <div className="spinner-container">
+          <div className="spin-btn large visible" />
         </div>
       );
     }
@@ -101,3 +93,14 @@ export default class View extends React.PureComponent {
     );
   }
 }
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    paymentPageEntity: state.wysiwyg.paymentPageEntity,
+    isPageDirty: state.wysiwyg.isPageDirty,
+  }),
+  {
+    updateData,
+  },
+)(View);

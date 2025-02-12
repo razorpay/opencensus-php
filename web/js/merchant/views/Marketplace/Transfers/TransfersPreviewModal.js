@@ -25,10 +25,10 @@ const SLIDER_DATA = [
 ];
 
 export default ({ closeModal }) => (
-  <div class="TransfersPreviewModal">
+  <div className="TransfersPreviewModal">
     <ModalHeader onCloseClick={closeModal} />
 
-    <div class="modal-body">
+    <div className="modal-body">
       <TimedSlider AfterFrame={TimedSliderTabs}>
         {SLIDER_DATA.map((data, idx) => (
           <TimedSlide key={idx} {...data}>
@@ -37,7 +37,7 @@ export default ({ closeModal }) => (
         ))}
       </TimedSlider>
 
-      <div class="got-it-button" onClick={closeModal}>
+      <div className="got-it-button" onClick={closeModal}>
         Ok, Got it
       </div>
     </div>

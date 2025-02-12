@@ -87,7 +87,7 @@ const ServiceabilitySettingsModal = ({
         </div>
         <div>
           <div className="filter-item link-account-instruction">
-            <label className="serviceability-setting-label font-bold" for="warehouse-pincode">
+            <label className="serviceability-setting-label font-bold" htmlFor="warehouse-pincode">
               Warehouse Pincode<sup className="magic-checkout-color-red">*</sup>
             </label>
             <Input
@@ -101,7 +101,7 @@ const ServiceabilitySettingsModal = ({
             />
           </div>
           <div className="filter-item link-account-instruction">
-            <label className="serviceability-setting-label" for="cod-availability">
+            <label className="serviceability-setting-label" htmlFor="cod-availability">
               COD Availablity <sup className="magic-checkout-color-red">*</sup>
             </label>
             <Input.Select

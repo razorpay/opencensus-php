@@ -91,13 +91,13 @@ export default class extends React.PureComponent {
 
     const askToShare = (
       <React.Fragment>
-        <span class="label--faded" style={{ float: 'left' }}>
+        <span className="label--faded" style={{ float: 'left' }}>
           Share via SMS or email
         </span>
-        <Button.Transparent style={{ float: 'right' }} type="submit" class="Button--Link">
+        <Button.Transparent style={{ float: 'right' }} type="submit" className="Button--Link">
           <b>
             Send
-            <i class="i i-arrow-forward" />
+            <i className="i i-arrow-forward" />
           </b>
         </Button.Transparent>
       </React.Fragment>
@@ -110,7 +110,7 @@ export default class extends React.PureComponent {
             isNew ? (
               <span>
                 <i
-                  class="i i-done text-success"
+                  className="i i-done text-success"
                   style={{
                     fontSize: 16,
                     verticalAlign: 'middle',
@@ -133,12 +133,12 @@ export default class extends React.PureComponent {
           }}
         />
 
-        <div class="modal-body" style={{ paddingTop: 0 }}>
-          <div class="ModalForm ModalForm--Share">
+        <div className="modal-body" style={{ paddingTop: 0 }}>
+          <div className="ModalForm ModalForm--Share">
             {isNew && (
-              <div class="Share-section">
+              <div className="Share-section">
                 {!isPaymentPagesV2 && (
-                  <div class="label--faded m-b">Use the following url to accept payments.</div>
+                  <div className="label--faded m-b">Use the following url to accept payments.</div>
                 )}
                 <div>
                   <CustomClipboard
@@ -153,9 +153,9 @@ export default class extends React.PureComponent {
                       name="short_url"
                       value={url}
                       readOnly={true}
-                      class="Input--inline is-focused"
+                      className="Input--inline is-focused"
                     />
-                    <Button.Primary class="Button--input--right">Copy URL</Button.Primary>
+                    <Button.Primary className="Button--input--right">Copy URL</Button.Primary>
                   </CustomClipboard>
                 </div>
                 {AddonAction}
@@ -163,14 +163,14 @@ export default class extends React.PureComponent {
             )}
 
             {isPaymentPagesV2 && isNew && (
-              <div class="Share-section">
-                <span class="label--faded">
-                  <i class="i i-embed-btn" />
+              <div className="Share-section">
+                <span className="label--faded">
+                  <i className="i i-embed-btn" />
                   Embed Hyperlink Button
                 </span>
                 <div style={{ display: 'inline-block' }}>
-                  <span class="help-content">
-                    <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                  <span className="help-content">
+                    <i className="i i-info-outline" style={{ marginLeft: 4 }} />
                     <Popover align="top" theme="dark" parentQuerySelector=".ReactModal__Content">
                       <PopoverBody>
                         Your customers can pay from your website by clicking on this Hyperlink
@@ -181,7 +181,7 @@ export default class extends React.PureComponent {
                 </div>
                 <Button.Transparent
                   type="button"
-                  class="Button--Link"
+                  className="Button--Link"
                   onClick={this.openEmbedButtonView}
                   style={{ float: 'right' }}
                 >
@@ -190,9 +190,9 @@ export default class extends React.PureComponent {
               </div>
             )}
 
-            <div class="Share-section">
-              <span class="label--faded">
-                <i class="i i-share-circle" /> Share{' '}
+            <div className="Share-section">
+              <span className="label--faded">
+                <i className="i i-share-circle" /> Share{' '}
               </span>
               <SocialShareOptions
                 msgInPost={this.props.title}
@@ -201,7 +201,7 @@ export default class extends React.PureComponent {
               />
             </div>
 
-            <Form class="Share-section" onSubmit={this.onSubmit}>
+            <Form className="Share-section" onSubmit={this.onSubmit}>
               {isPaymentPagesV2 && (
                 <div
                   style={{
@@ -217,7 +217,7 @@ export default class extends React.PureComponent {
                 name="contact"
                 type="tel"
                 placeholder="Mobile"
-                addonBefore={<i class="i i-phone" />}
+                addonBefore={<i className="i i-phone" />}
                 validator={(val) => {
                   if (!isPhone(val)) {
                     return 'Invalid phone';
@@ -230,7 +230,7 @@ export default class extends React.PureComponent {
                 name="email"
                 type="email"
                 placeholder="Email"
-                addonBefore={<i class="i i-email" />}
+                addonBefore={<i className="i i-email" />}
                 validator={(val) => {
                   if (!isEmail(val)) {
                     return 'Invalid email';
@@ -251,7 +251,7 @@ export default class extends React.PureComponent {
               )}
               {isPaymentPagesV2 && (
                 <Link
-                  class="Button Button--primary"
+                  className="Button Button--primary"
                   to="/paymentpages"
                   style={{ marginTop: 20, width: '100%', textAlign: 'center' }}
                   onClick={closeModal}

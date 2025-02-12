@@ -1,17 +1,14 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
-import EditableDisplayField from './EditableDisplayField';
-
-import { getFieldTypes } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 import { updateStepReviewProgress } from 'merchant/reducers/subscriptionButtons/create';
+import { getFieldTypes } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
+import EditableDisplayField from './EditableDisplayField';
 import track from '../../../track';
 
-@connect(null, {
-  updateStepReviewProgress,
-})
-export default class CustomerDetails extends React.Component {
+class CustomerDetails extends React.Component {
   maxFieldsLimit = 5;
 
   get defaultNewUDF() {
@@ -50,8 +47,8 @@ export default class CustomerDetails extends React.Component {
     const { udfFields, subscriptionButtonEntity } = this.props;
 
     return (
-      <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
-        <div class="PaymentButtonForm-CustomerDetails Form-content">
+      <div className="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
+        <div className="PaymentButtonForm-CustomerDetails Form-content">
           {udfFields.map((field, index) => (
             <EditableDisplayField
               key={field.title}
@@ -68,7 +65,7 @@ export default class CustomerDetails extends React.Component {
               validateSameTitleExists={this.validateSameTitleExists}
             >
               <Button
-                class="Button--primary--invert addFieldBtn"
+                className="Button--primary--invert addFieldBtn"
                 onClick={track.lj.trackCustomerScreenInputField}
               >
                 <b>+ Add Another Input Field</b>
@@ -77,7 +74,7 @@ export default class CustomerDetails extends React.Component {
           )}
         </div>
 
-        <div class="Form-controls">
+        <div className="Form-controls">
           <Button.Transparent
             type="button"
             onClick={() => {
@@ -90,10 +87,14 @@ export default class CustomerDetails extends React.Component {
           </Button.Transparent>
 
           <Button.Primary type="button" onClick={this.goNext}>
-            Next <i class="i i-chevron-right" />
+            Next <i className="i i-chevron-right" />
           </Button.Primary>
         </div>
       </div>
     );
   }
 }
+
+export default connect(null, {
+  updateStepReviewProgress,
+})(CustomerDetails);

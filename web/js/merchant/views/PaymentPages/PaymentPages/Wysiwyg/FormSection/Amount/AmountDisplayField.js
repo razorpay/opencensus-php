@@ -16,8 +16,8 @@ import {
 import CreatorManager from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/CreatorManager';
 
 const DragHandle = sortableHandle(() => (
-  <span class="dragHandle">
-    <i class="i i-dotter" />
+  <span className="dragHandle">
+    <i className="i i-dotter" />
   </span>
 ));
 
@@ -37,7 +37,7 @@ const displayField = ({
   const amountDisplay = field.item.amount && formatNumberByParts(field.item.amount, { currency });
 
   let fieldEl = amountDisplay && (
-    <div class="Field-el">
+    <div className="Field-el">
       <label>
         <b>{amountDisplay.integer}</b>
         {amountDisplay.decimal && amountDisplay.fraction && (
@@ -60,11 +60,11 @@ const displayField = ({
         hasCheckBox = true;
 
         addOnAfter = (
-          <div class="Field Field--CheckBox">
-            <div class="Field-content">
-              <div class="Field-wrapper">
-                <label class="Field-el">
-                  <span class="CheckBox-mark" />
+          <div className="Field Field--CheckBox">
+            <div className="Field-content">
+              <div className="Field-wrapper">
+                <label className="Field-el">
+                  <span className="CheckBox-mark" />
                 </label>
               </div>
             </div>
@@ -76,19 +76,19 @@ const displayField = ({
     }
 
     case FIELD_TYPES.dynamic_price.key: {
-      fieldEl = <input class="Field-el" type="number" placeholder={placeHolder} disabled />;
+      fieldEl = <input className="Field-el" type="number" placeholder={placeHolder} disabled />;
 
       break;
     }
 
     case FIELD_TYPES.multiple_purchase.key: {
       addOnAfter = (
-        <div class="Field Field--counter">
-          <div class="Field-content">
-            <div class="Field-wrapper">
+        <div className="Field Field--counter">
+          <div className="Field-content">
+            <div className="Field-wrapper">
               <button type="button">-</button>
               <input
-                class="Field-el counter-value"
+                className="Field-el counter-value"
                 type="number"
                 value={field.min_purchase}
                 readOnly
@@ -111,7 +111,7 @@ const displayField = ({
 
   return (
     <EditLayer
-      class={classList(
+      className={classList(
         'Field Field--amount Field--disabled',
         field.mandatory && 'Field--required',
         field.image_url && 'Field--has-image',
@@ -123,24 +123,24 @@ const displayField = ({
     >
       <DragHandle />
 
-      <div class="Field-label">
+      <div className="Field-label">
         {field.item.name}
-        {!field.mandatory && <div class="text-optional">(Optional)</div>}
-        {/*{field.mandatory && <span class="symbol--red">*</span>}*/}
+        {!field.mandatory && <div className="text-optional">(Optional)</div>}
+        {/*{field.mandatory && <span className="symbol--red">*</span>}*/}
       </div>
-      <div class="Field-content">
-        <div class={classList('Field-wrapper', field._type && `Field-wrapper--${field._type}`)}>
-          <span class="Field-addon Field-addon--before">
+      <div className="Field-content">
+        <div className={classList('Field-wrapper', field._type && `Field-wrapper--${field._type}`)}>
+          <span className="Field-addon Field-addon--before">
             <span>
               {field.image_url && <img src={field.image_url} />}
-              <b class="currency-symbol">{currencySymbol}</b>
+              <b className="currency-symbol">{currencySymbol}</b>
             </span>
           </span>
 
           {fieldEl}
 
           <span
-            class={classList(
+            className={classList(
               `Field-addon Field-addon--after`,
               hasCheckBox && 'Field-addon--after--CheckBox',
             )}
@@ -148,9 +148,9 @@ const displayField = ({
             {addOnAfter}
           </span>
         </div>
-        {field?.item?.description && <div class="Field-description">{field.item.description}</div>}
+        {field?.item?.description && <div className="Field-description">{field.item.description}</div>}
       </div>
-      {openBaseForm && <i class="i i-edit" />}
+      {openBaseForm && <i className="i i-edit" />}
     </EditLayer>
   );
 };

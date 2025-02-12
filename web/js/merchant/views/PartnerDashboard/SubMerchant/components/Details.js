@@ -225,15 +225,15 @@ const Details = (props) => {
     fetchCreateBureauLink();
   };
   return (
-    <div class={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
+    <div className={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
       {isLoading || isCapitalLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel SubmerchantDetail__Panel">
-          <div class="panel-heading">
-            <div class="submerchant-name">
+        <div className="panel panel-default SliderPanel SubmerchantDetail__Panel">
+          <div className="panel-heading">
+            <div className="submerchant-name">
               {(isReseller || isPlatformPartnerWithPGInviteFlow) &&
               isPGProduct &&
               isSubMerchantKycEnabled
@@ -242,11 +242,11 @@ const Details = (props) => {
             </div>
             <ShowWhen additionalCondition={(user) => !user.isPartner('pure_platform')}>
               {submerchant.user && (
-                <div class="btn-toolbar pull-right">
+                <div className="btn-toolbar pull-right">
                   <AsyncButton
                     text="Invite Again"
                     pendingText="Sending Invite..."
-                    class="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm"
                     onClick={onResendInvite}
                   />
                 </div>
@@ -254,9 +254,9 @@ const Details = (props) => {
             </ShowWhen>
           </div>
           <Alert type="error" message={error} />
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
-              <div class="list-group details-row-container">
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
+              <div className="list-group details-row-container">
                 {/* sub-merchant Id */}
                 <EntityDetailRow value={submerchant.id} label="Account ID" />
 
@@ -287,7 +287,7 @@ const Details = (props) => {
                     submerchant.details && submerchant.details.activation_status ? (
                       <ActivationStatusLabel status={submerchant.details.activation_status} />
                     ) : (
-                      <span class="label status-label label-warning">Not Submitted</span>
+                      <span className="label status-label label-warning">Not Submitted</span>
                     )}
                   </EntityDetailRow>
 
@@ -345,7 +345,7 @@ const Details = (props) => {
                   myRole="owner admin manager"
                   additionalCondition={(user) => user.isPartner('aggregator') && isPGProduct}
                 >
-                  <div class="pair-group-item">
+                  <div className="pair-group-item">
                     {submerchant.user ? (
                       <Fragment>
                         <strong>{submerchant.user.email}</strong> is managing the dashboard for this
@@ -353,7 +353,7 @@ const Details = (props) => {
                       </Fragment>
                     ) : (
                       <Fragment>
-                        <a class="btn-link" onClick={props.onInviteMerchant}>
+                        <a className="btn-link" onClick={props.onInviteMerchant}>
                           Invite
                         </a>{' '}
                         the account to sign up, and manage their dashboard

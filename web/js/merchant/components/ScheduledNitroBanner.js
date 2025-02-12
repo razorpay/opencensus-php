@@ -37,10 +37,10 @@ class ScheduledNitroBanner extends Component {
 
   render() {
     return (
-      <div class="schedule-enable-container">
-        <span class="display-inline">{this.getTitle()}</span>{' '}
+      <div className="schedule-enable-container">
+        <span className="display-inline">{this.getTitle()}</span>{' '}
         <a
-          class="Button--secondary Button scheduled-btn-act btn-border"
+          className="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {

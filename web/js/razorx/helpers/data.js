@@ -7,7 +7,7 @@ const statusPillClasses = {
 
 export const statusPill = (status, emptyValue = '--') => {
   return status ? (
-    <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
+    <span className={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
       {titleCase(status)}
     </span>
   ) : (

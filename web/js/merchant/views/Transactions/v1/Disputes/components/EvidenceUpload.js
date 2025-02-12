@@ -171,7 +171,7 @@ const EvidenceUpload = (props) => {
   ));
 
   return (
-    <div class="evidence-upload">
+    <div className="evidence-upload">
       {documents}
       {dispute.status === 'open' && canUserTakeAction && (
         <EntityDetailRow label="Add Document">
@@ -182,7 +182,7 @@ const EvidenceUpload = (props) => {
             className="evidence-option"
             placeholder="--Select evidence type--"
             beforeOptionsTxt="Select evidence type"
-            optionComponent={({ option }) => <div class="option">{option.label}</div>}
+            optionComponent={({ option }) => <div className="option">{option.label}</div>}
             afterOptionsComponent={({ select }) => {
               return (
                 <AddOtherDoc
@@ -216,7 +216,7 @@ const DismissableFileInput = ({
   ...rest
 }) => {
   return (
-    <div key={`${key}-${rest.defaultValue?.[0]}`} class="remove-wrapper">
+    <div key={`${key}-${rest.defaultValue?.[0]}`} className="remove-wrapper">
       <EntityDetailRow label={<strong>{label}</strong>}>
         <FileUpload
           name={name}

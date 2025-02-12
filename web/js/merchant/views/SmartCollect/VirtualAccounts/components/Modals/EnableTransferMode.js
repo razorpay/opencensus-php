@@ -1,23 +1,16 @@
 import React from 'react';
-
 import { connect } from 'react-redux';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import ModalHeader from 'common/ui/ModalHeader';
+
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-
-import { fetchConfigForVirtualAccount } from 'merchant/reducers/virtualaccounts';
-
+import ModalHeader from 'common/ui/ModalHeader';
 import Spinner from 'common/ui/Spinner';
-
 import { classList } from 'common/utils/rzp-utils';
-
 import {
   validateAlphanumericWithMaxLength,
   validateAlphanumericWithStrictLength,
 } from 'common/utils/validators';
-import { closeModal } from 'merchant_common/reducers/modals';
-
+import { fetchConfigForVirtualAccount } from 'merchant/reducers/virtualaccounts';
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
   DESCRIPTOR_LENGTH_VPA,
@@ -27,13 +20,10 @@ import {
   getStyle_AddOnBefore_VPA,
   getStyle_AddOnAfter_VPA,
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
+import { closeModal } from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
-@connect((state) => ({ va_config: state.virtualaccounts.va_config }), {
-  closeModal,
-  ...NotificationsActions,
-  fetchConfigForVirtualAccount,
-})
-export default class EnableTransferMode extends React.Component {
+class EnableTransferMode extends React.Component {
   state = {
     descriptorLength: 0,
   };
@@ -79,7 +69,7 @@ export default class EnableTransferMode extends React.Component {
 
     if (!va_config) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
@@ -117,12 +107,12 @@ export default class EnableTransferMode extends React.Component {
 
         field = (
           <Input
-            class="Input--vTop no-margin  "
+            className="Input--vTop no-margin  "
             label="Virtual UPI ID"
             name="descriptor"
             description={
               <>
-                <div class="remaining-count">
+                <div className="remaining-count">
                   {this.state.descriptorLength}/{descriptorLimit_VPA}
                 </div>
                 <br />
@@ -176,12 +166,12 @@ export default class EnableTransferMode extends React.Component {
 
         field = (
           <Input
-            class="Input--vTop no-margin"
+            className="Input--vTop no-margin"
             label="Account Number"
             name="descriptor"
             description={
               <>
-                <div class="remaining-count">
+                <div className="remaining-count">
                   {this.state.descriptorLength}/{descriptorLimit_BankAccount}
                 </div>
                 <br />
@@ -214,13 +204,13 @@ export default class EnableTransferMode extends React.Component {
     }
 
     return (
-      <div class="EnableTransferModeModal">
+      <div className="EnableTransferModeModal">
         <ModalHeader title={formTitle} onCloseClick={this.props.closeModal} />
-        <div class="modal-body">
-          <Form onSubmit={this.onSubmit} class="filters">
+        <div className="modal-body">
+          <Form onSubmit={this.onSubmit} className="filters">
             {field}
             <br />
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               {toAutoCreateDescriptor && (
                 <button type="button" className="btn btn-default" onClick={this.props.closeModal}>
                   No, Cancel
@@ -228,7 +218,7 @@ export default class EnableTransferMode extends React.Component {
               )}
 
               <button
-                class={classList(
+                className={classList(
                   'btn btn-primary',
                   toAutoCreateDescriptor ? 'pull-right' : 'btn-block',
                 )}
@@ -242,3 +232,9 @@ export default class EnableTransferMode extends React.Component {
     );
   }
 }
+
+export default connect((state) => ({ va_config: state.virtualaccounts.va_config }), {
+  closeModal,
+  ...NotificationsActions,
+  fetchConfigForVirtualAccount,
+})(EnableTransferMode);

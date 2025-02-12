@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import arta from 'react-syntax-highlighter/dist/esm/styles/hljs/arta';
+
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import * as ApiLogsActions from 'merchant/reducers/developers/apiLogs';
 import RequestResponseDetails from 'merchant/views/Developers/components/RequestResponseDetails';
+import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
 import {
   trackApiLogDetailsOpened,
   trackApiLogRequestResponseDetailsOpened,
 } from 'merchant/views/Developers/events';
-import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
 
 const syntaxHighlighterCustomStyles = {
   background: '#1E222E',
@@ -30,10 +31,7 @@ const defaultApiLog = {
   },
 };
 
-@connect((state) => ({ ...state.apiLogs }), {
-  ...ApiLogsActions,
-})
-export default class RequestDetails extends Component {
+class RequestDetails extends Component {
   componentDidMount() {
     trackApiLogDetailsOpened();
   }
@@ -141,3 +139,7 @@ export default class RequestDetails extends Component {
     );
   }
 }
+
+export default connect((state) => ({ ...state.apiLogs }), {
+  ...ApiLogsActions,
+})(RequestDetails);

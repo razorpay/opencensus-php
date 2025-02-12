@@ -168,7 +168,7 @@ const StorefrontReceiptSettings = ({
                       ),
                     },
                   ]}
-                  class="Input--vTop Input--theme"
+                  className="Input--vTop Input--theme"
                 />
 
                 <div className="doc-links">

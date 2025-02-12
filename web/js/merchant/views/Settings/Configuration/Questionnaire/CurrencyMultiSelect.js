@@ -65,7 +65,7 @@ const CurrencyMultiSelect = ({
 
   return (
     <div
-      class={classList(
+      className={classList(
         'Input',
         required && 'Input--required',
         error && 'error',
@@ -73,8 +73,8 @@ const CurrencyMultiSelect = ({
         disabled && 'Input--disabled',
       )}
     >
-      <div class="Input-label">{label}</div>
-      <div class="Input-content">
+      <div className="Input-label">{label}</div>
+      <div className="Input-content">
         <PowerSelectMultiple
           options={currencies}
           selected={[]}
@@ -92,7 +92,7 @@ const CurrencyMultiSelect = ({
             }
           }}
           triggerComponent={({ select }) => (
-            <div class="trigger">
+            <div className="trigger">
               <p style={{ padding: '8px 12px' }}>
                 {selected.length
                   ? `${selected.length} ${
@@ -100,7 +100,7 @@ const CurrencyMultiSelect = ({
                     } selected`
                   : placeholder}
               </p>
-              <i class={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`} />
+              <i className={`i ${select.isOpen ? 'i-arrow-up' : 'i-arrow-down'}`} />
             </div>
           )}
           optionComponent={({ option }) => {
@@ -109,14 +109,14 @@ const CurrencyMultiSelect = ({
               setTouched(true);
             }
             return (
-              <div class="option">
-                <label for={option.currency}>
-                  <span class="currency">{option.currency}</span>&nbsp;
-                  <span class="symbol">({option.symbol})</span>
+              <div className="option">
+                <label htmlFor={option.currency}>
+                  <span className="currency">{option.currency}</span>&nbsp;
+                  <span className="symbol">({option.symbol})</span>
                 </label>
 
                 <div>
-                  <span class="name">{option.name}</span>
+                  <span className="name">{option.name}</span>
                   <input
                     value={option.currency}
                     id={option.currency}
@@ -129,8 +129,8 @@ const CurrencyMultiSelect = ({
           }}
           beforeOptionsComponent={({ select }) => {
             return (
-              <div class="search">
-                <i class="i i-search" />
+              <div className="search">
+                <i className="i i-search" />
                 <input
                   type="text"
                   placeholder="Search for country or currency"
@@ -142,7 +142,7 @@ const CurrencyMultiSelect = ({
             );
           }}
         />
-        {error ? <div class="Input-error">{error}</div> : ''}
+        {error ? <div className="Input-error">{error}</div> : ''}
       </div>
     </div>
   );

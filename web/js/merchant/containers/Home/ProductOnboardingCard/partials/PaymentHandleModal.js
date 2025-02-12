@@ -146,8 +146,8 @@ const PaymentHandleModal = (props) => {
           closeModal();
         }}
       />
-      <div class="modal-body">
-        <div class="form-group handle-input-container">
+      <div className="modal-body">
+        <div className="form-group handle-input-container">
           {/* 
           //! Commenting this because Edit Payment Link feature is called off from Product
           //! Slack Reference - https://razorpay.slack.com/archives/C043K5N223F/p1668411467771009?thread_ts=1668410847.606959&cid=C043K5N223F
@@ -158,19 +158,19 @@ const PaymentHandleModal = (props) => {
             updateIsHandleValid={setIsHandleValid}
             updatePaymentHandleData={updatePaymentHandleData}
           /> */}
-          <div class="handle-link">
+          <div className="handle-link">
             <span>{`${handleEntities.domain}${handleEntities.prefix}`}</span>
             <span>{handleEntities.slug}</span>
           </div>
         </div>
-        <div class="form-group" className="amount-input-container">
+        <div className="form-group" className="amount-input-container">
           <PaymentHandleAmount required={false} defaultAmount="" onChange={onAmountInputChange} />
         </div>
         <div>
           You can add a specific amount for your customer to pay. This will not affect your default
           link.
         </div>
-        <div class="Modal__actions">
+        <div className="Modal__actions">
           <button className="btn btn-primary" disabled={isCtaDisabled} onClick={onSubmit}>
             {isSaving
               ? 'Saving...'

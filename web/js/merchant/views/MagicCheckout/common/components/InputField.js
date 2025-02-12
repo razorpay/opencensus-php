@@ -4,7 +4,7 @@ const InputField = (props) => {
   const { label, id, value, setValue, autoFocus, placeholder, type, validator } = props;
   return (
     <div className="filter-item">
-      <label for={id} className="color-black">
+      <label htmlFor={id} className="color-black">
         {label} <sup className="magic-checkout-color-red"> *</sup>
       </label>
       <Input

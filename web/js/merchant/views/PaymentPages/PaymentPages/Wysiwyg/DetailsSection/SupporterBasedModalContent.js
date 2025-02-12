@@ -37,8 +37,8 @@ const SupporterBasedModalContent = ({
 
   return (
     <>
-      <div class="main-title">Configure Your Goal Tracker</div>
-      <Form class="goal-tracker-form--supporter" onChange={handleFormChange}>
+      <div className="main-title">Configure Your Goal Tracker</div>
+      <Form className="goal-tracker-form--supporter" onChange={handleFormChange}>
         <div className="modal-section">
           <Label text="Goal tracking options" />
           {meta_data.display_sold_units === '0' &&
@@ -62,9 +62,9 @@ const SupporterBasedModalContent = ({
             defaultChecked={meta_data.display_sold_units === '1'}
           />
 
-          <div class="Input--custom">
+          <div className="Input--custom">
             <Input.Group>
-              <div class="Input-content">
+              <div className="Input-content">
                 <Input.Check
                   autoRender
                   fieldLabel="I have limited stocks/units available"
@@ -87,7 +87,7 @@ const SupporterBasedModalContent = ({
                   }}
                   value={meta_data.available_units}
                   defaultValue={meta_data.available_units}
-                  class="Input--stock-limit"
+                  className="Input--stock-limit"
                   // disabled={meta_data.display_available_units !== '1'}
                   validator={validateAvailableUnits}
                 />

@@ -5,7 +5,7 @@ export default ({ error }) => {
         <div className="js-error-content">
           <div className="js-error-illustration m-b" />
           <div className="js-error-text">
-            <p class="small">{error || 'No Results found'}</p>
+            <p className="small">{error || 'No Results found'}</p>
           </div>
         </div>
       </div>

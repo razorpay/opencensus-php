@@ -1,11 +1,13 @@
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import track from 'merchant/views/PaymentHandle/track';
+import { withSplitzService } from 'common/splitz';
+import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
+import track from 'merchant/views/PaymentHandle/track';
 import PaymentsListFilter from 'merchant/views/PaymentHandle/views/List/PaymentsList/PaymentsListFilter';
-import { withSplitzService } from 'common/splitz';
 import {
   fetchPaymentPagePayments as fetchPaymentHandlePayments,
   isFetchViaNCA,
@@ -25,10 +27,6 @@ const PaymentsTable = (props) => {
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
-@connect(
-  (state) => ({ payments: state.payments, ncaPayments: state.invoices.storefrontPayments }),
-  { fetchPaymentHandlePayments },
-)
 class PaymentsList extends ListContainer {
   fetchEntityList = (params) => {
     const { paymentPageId, splitz } = this.props;
@@ -42,7 +40,7 @@ class PaymentsList extends ListContainer {
     const entityData = isFetchViaNCA(splitz) ? ncaPayments : payments;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         {children}
         <PaymentsListFilter
           form="paymentListFilter"
@@ -62,4 +60,11 @@ class PaymentsList extends ListContainer {
   }
 }
 
-export default withSplitzService(withRouter(PaymentsList));
+export default compose(
+  connect(
+    (state) => ({ payments: state.payments, ncaPayments: state.invoices.storefrontPayments }),
+    { fetchPaymentHandlePayments },
+  ),
+  withRouter,
+  withSplitzService,
+)(PaymentsList);

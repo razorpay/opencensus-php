@@ -6,8 +6,8 @@ import { emptySliderStack } from 'merchant_common/reducers/multiSlider';
 import { MultiSlider__Component } from './MultiSliderStyle';
 import { classList } from 'common/utils/rzp-utils';
 import PropTypes from 'prop-types';
+import { compose } from 'redux';
 
-@connect((state) => state.multiSlider, { emptySliderStack })
 class MultiSliderComponent extends Component {
   componentWillUnmount = () => {
     const { onClose } = this.props;
@@ -27,7 +27,7 @@ class MultiSliderComponent extends Component {
       >
         <div className="MultiSlider__Content">
           <button type="button" className="close close-primary" onClick={emptySliderStack}>
-            <i class="i i-close" />
+            <i className="i i-close" />
           </button>
           {children}
         </div>
@@ -52,4 +52,7 @@ MultiSliderComponent.propTypes = {
   classString: PropTypes.string,
 };
 
-export default withRouter(MultiSliderComponent);
+export default compose(
+  connect((state) => state.multiSlider, { emptySliderStack }),
+  withRouter,
+)(MultiSliderComponent);

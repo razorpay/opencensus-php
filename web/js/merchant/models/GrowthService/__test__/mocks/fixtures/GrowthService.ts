@@ -42,7 +42,7 @@ const ANNOUNCEMENT_ASSET_DATA_RES = [
               },
             ],
             content:
-              '<div class="paragraph"><b>Hi,</b><p class="paragraph">Please be informed that the TLS/SSL certificate associated with the Razorpay API will expire soon. We are scheduled to renew and import the new certificate on June 1st,2022. </p><p class="paragraph">This doesn\'t require any action on your end if you haven\'t whitelisted/pinned our certificate. But if you have done so, please make sure you import and whitelist our new certificate on or before June 1st, 2022. You can download the new certificate from the button below. </p><p class="paragraph">If you are not the right audience for this communication, please forward this to your tech/infra team.</p></div>',
+              '<div className="paragraph"><b>Hi,</b><p className="paragraph">Please be informed that the TLS/SSL certificate associated with the Razorpay API will expire soon. We are scheduled to renew and import the new certificate on June 1st,2022. </p><p className="paragraph">This doesn\'t require any action on your end if you haven\'t whitelisted/pinned our certificate. But if you have done so, please make sure you import and whitelist our new certificate on or before June 1st, 2022. You can download the new certificate from the button below. </p><p className="paragraph">If you are not the right audience for this communication, please forward this to your tech/infra team.</p></div>',
           },
           start_ts: 1653463337,
           title: 'SSL Certificate Update for Razorpay API',

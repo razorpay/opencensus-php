@@ -50,7 +50,7 @@ export default class EditBusinessSegment extends React.Component {
 
   render() {
     return (
-      <EntityDetailRow label={<div class="m-t">{this.TYPE}</div>}>
+      <EntityDetailRow label={<div className="m-t">{this.TYPE}</div>}>
         <Input.Select
           name="notes"
           onChange={this.saveAndUpdate}

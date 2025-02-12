@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 
 import { classList } from 'common/utils/rzp-utils';
 
@@ -29,6 +29,7 @@ import GetCodeModal from '../components/GetCodeModal';
 import SettingsModal from '../components/SettingsModal';
 
 import track from './track';
+import { compose } from 'redux';
 
 /*
   Human readable reason to be displayed
@@ -40,27 +41,7 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the payment button',
 };
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-      isTestMode: state.session.mode === 'test',
-      reportConfigs: state.reports.reportConfigs,
-      currentHighlightedButtonSettings:
-        state.payment_button_create.current_highlighted_button_settings,
-    };
-  },
-  {
-    showNotification,
-    openModal,
-    closeModal,
-    saveReportConfigs,
-    addPollInstance,
-    updateHighlightButtonSettings,
-  },
-)
-@RTracking(() => window.rzpQ.component('PaymentButtonEntity'))
-export default class PaymentButtonEntity extends React.Component {
+class PaymentButtonEntity extends React.Component {
   constructor(props) {
     super(props);
 
@@ -268,46 +249,46 @@ export default class PaymentButtonEntity extends React.Component {
     return (
       <React.Fragment>
         <div
-          class={classList(
+          className={classList(
             'content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3',
             'Entity--paymentbutton',
             this.state.detailsCollapse && 'Entity--paymentpage-collapse',
           )}
         >
-          <div class="content-header">
+          <div className="content-header">
             <Link to="/paymentbuttons">
-              <i class="i i-arrow-back" /> Button List
+              <i className="i i-arrow-back" /> Button List
             </Link>
-            <i class="i i-chevron-right" /> {paymentButtonEntity.title}
+            <i className="i i-chevron-right" /> {paymentButtonEntity.title}
           </div>
 
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <div class="text">{paymentButtonEntity.title}</div>
-              <div class="page-options">
+          <div className="panel panel-default">
+            <div className="panel-heading">
+              <div className="text">{paymentButtonEntity.title}</div>
+              <div className="page-options">
                 <Link
-                  class="Button Button--primary--invert"
+                  className="Button Button--primary--invert"
                   to={`/paymentbuttons/${paymentButtonEntity.id}/edit`}
                   onClick={track.optionsOpenEdit}
                 >
-                  <i class="i i-edit-outline" />
+                  <i className="i i-edit-outline" />
                 </Link>
 
                 <Link
-                  class="Button Button--primary--invert"
+                  className="Button Button--primary--invert"
                   to={`/paymentbuttons/new?duplicate_id=${paymentButtonEntity.id}`}
                   onClick={track.optionsOpenDuplicate}
                 >
-                  <i class="i i-copy" />
+                  <i className="i i-copy" />
                 </Link>
 
                 <Dropdown>
                   <DropdownTrigger
-                    class="dropdown-toggle Button Button--primary--invert"
+                    className="dropdown-toggle Button Button--primary--invert"
                     onClick={this.onClickOptions}
                   >
-                    <i class="i i-settings-outline" />
-                    <i class="i i-chevron-down" />
+                    <i className="i i-settings-outline" />
+                    <i className="i i-chevron-down" />
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
                         <PopoverBody>
@@ -317,13 +298,13 @@ export default class PaymentButtonEntity extends React.Component {
                     )}
                   </DropdownTrigger>
                   <DropdownContent>
-                    <ul class="dropdown-menu nav nav-stacked">
+                    <ul className="dropdown-menu nav nav-stacked">
                       <li onClick={this.togglePageReceiptModal}>
-                        <i class="i i-document" /> Payment Receipts
+                        <i className="i i-document" /> Payment Receipts
                       </li>
                       <li onClick={this.openSettingsModal}>
                         {/* TODO:  Compress the i-checked-document svg icon */}
-                        <i class="i i-checked-document" /> Post Payment Actions
+                        <i className="i i-checked-document" /> Post Payment Actions
                       </li>
                     </ul>
                   </DropdownContent>
@@ -333,8 +314,8 @@ export default class PaymentButtonEntity extends React.Component {
               </div>
             </div>
 
-            <div class="panel-body">
-              <div class="entity-details">
+            <div className="panel-body">
+              <div className="entity-details">
                 <EntityDetailRow label="Button ID" value={paymentButtonEntity.id} />
 
                 <EntityDetailRow
@@ -344,7 +325,7 @@ export default class PaymentButtonEntity extends React.Component {
                       <PaymentPagesStatusLabel status={paymentButtonEntity.status} />
 
                       <Button.Transparent
-                        class="Button--Link"
+                        className="Button--Link"
                         style={{ marginLeft: 12 }}
                         onClick={isActive ? toggleManualActivation : reActivateLink}
                       >
@@ -375,26 +356,26 @@ export default class PaymentButtonEntity extends React.Component {
                 </EntityDetailRow>
               </div>
 
-              <div class="item-details">
-                <div class="table-container">
+              <div className="item-details">
+                <div className="table-container">
                   {paymentButtonEntity.payment_page_items.map((pi, ix) => (
-                    <div key={ix} class="table">
+                    <div key={ix} className="table">
                       <div>
                         <b>{pi.item.name}</b>
                       </div>
                       <div>
-                        <div class="title">Revenue</div>
+                        <div className="title">Revenue</div>
                         <Amount
                           value={pi.total_amount_paid}
                           currency={paymentButtonEntity.currency}
                         />
                       </div>
                       <div>
-                        <div class="title">Price</div>
+                        <div className="title">Price</div>
                         <Amount value={pi.item.amount} currency={paymentButtonEntity.currency} />
                       </div>
-                      <div class="item-details-units">
-                        <div class="title">Units Sold</div>
+                      <div className="item-details-units">
+                        <div className="title">Units Sold</div>
                         <EditStock
                           isRoleAllowedEdit
                           totalStock={pi.stock}
@@ -412,43 +393,43 @@ export default class PaymentButtonEntity extends React.Component {
           </div>
           <button
             type="button"
-            class="btn btn-primary btn-sm panel-collapser collapsable-btn"
+            className="btn btn-primary btn-sm panel-collapser collapsable-btn"
             onClick={() =>
               this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
             }
           >
             {this.state.detailsCollapse ? (
               <span>
-                Show More <i class="i i-chevron-down" />
+                Show More <i className="i i-chevron-down" />
               </span>
             ) : (
               <span>
-                Show Less <i class="i i-chevron-up" />
+                Show Less <i className="i i-chevron-up" />
               </span>
             )}
           </button>
         </div>
 
-        <div class="content-sm txn-details Entity--paymentpage-v3 Entity--paymentbutton">
+        <div className="content-sm txn-details Entity--paymentpage-v3 Entity--paymentbutton">
           {this.props.isTestMode && <TestModeBanner />}
 
-          <div class="stats">
-            <div class="info">
-              <b class="bold">Transactions</b>
+          <div className="stats">
+            <div className="info">
+              <b className="bold">Transactions</b>
               {this.getStatsTable(paymentButtonEntity).map((st, ix) => (
                 <div key={ix}>
                   {st.title}
-                  <b class="bold">{st.value}</b>
+                  <b className="bold">{st.value}</b>
                 </div>
               ))}
             </div>
 
-            <div class="report-download btn-toolbar">
+            <div className="report-download btn-toolbar">
               <div
-                class="btn btn-default Button--invert report-download-trigger"
+                className="btn btn-default Button--invert report-download-trigger"
                 disabled={this.state.isExportInProgress}
               >
-                <i class="i i-download m-r" />
+                <i className="i i-download m-r" />
                 {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
               </div>
               <Popover align="bottom">
@@ -457,7 +438,7 @@ export default class PaymentButtonEntity extends React.Component {
                     <li
                       key={index}
                       type="button"
-                      class="btn"
+                      className="btn"
                       onClick={() => this.downloadReport(o.name)}
                       disabled={this.state.isExportInProgress}
                     >
@@ -488,3 +469,26 @@ export default class PaymentButtonEntity extends React.Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        user: state.session.user,
+        isTestMode: state.session.mode === 'test',
+        reportConfigs: state.reports.reportConfigs,
+        currentHighlightedButtonSettings:
+          state.payment_button_create.current_highlighted_button_settings,
+      };
+    },
+    {
+      showNotification,
+      openModal,
+      closeModal,
+      saveReportConfigs,
+      addPollInstance,
+      updateHighlightButtonSettings,
+    },
+  ),
+  rTracking(() => window.rzpQ.component('PaymentButtonEntity')),
+)(PaymentButtonEntity);

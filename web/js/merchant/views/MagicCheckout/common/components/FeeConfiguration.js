@@ -74,7 +74,7 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, required = true, i
 
   return (
     <div className="filter-item link-account-instruction display-flex c-fee-configuration">
-      <div className="serviceability-setting-label font-bold" for="cod-availability">
+      <div className="serviceability-setting-label font-bold" htmlFor="cod-availability">
         {label} {required && <sup className="magic-checkout-color-red">*</sup>}
         {isPaymentPage && (
           <i className="i i-info-outline">

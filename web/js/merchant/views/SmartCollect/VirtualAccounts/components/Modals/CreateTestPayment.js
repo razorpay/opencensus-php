@@ -8,28 +8,9 @@ import { amount } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { createTestPayment, fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
+import { compose } from 'redux';
 
-@connect(
-  (state) => {
-    return {
-      mode: state.session.mode,
-    };
-  },
-  {
-    closeModal,
-    showNotification,
-    fetchItem,
-    fetchVAPayments,
-    createTestPayment,
-  },
-)
-@reduxForm({
-  form: 'createTestPayment',
-  initialValues: {
-    mode: 'neft',
-  },
-})
-export default class CreateTestPayment extends Component {
+class CreateTestPayment extends Component {
   state = {};
 
   componentDidMount() {
@@ -88,13 +69,13 @@ export default class CreateTestPayment extends Component {
       <div>
         <ModalHeader title="Create a Test Payment" onCloseClick={this.props.closeModal} />
 
-        <div class="modal-body">
+        <div className="modal-body">
           <form onSubmit={handleSubmit(this.createTestPayment)}>
-            <div class="form-group">
+            <div className="form-group">
               <label>Amount (INR)</label>
               <Field
                 name="amount"
-                class="form-control"
+                className="form-control"
                 component={InputField}
                 placeholder="Amount in INR"
                 autoFocus={true}
@@ -102,18 +83,18 @@ export default class CreateTestPayment extends Component {
               />
             </div>
 
-            <div class="form-group">
+            <div className="form-group">
               <label>Method</label>
-              <Field name="mode" component="select" class="form-control">
+              <Field name="mode" component="select" className="form-control">
                 <option value="neft">NEFT</option>
                 <option value="rtgs">RTGS</option>
                 <option value="imps">IMPS</option>
               </Field>
             </div>
 
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
-                class="btn btn-primary btn-block"
+                className="btn btn-primary btn-block"
                 text="Create"
                 pendingText="Creating..."
                 onClick={handleSubmit(this.createTestPayment)}
@@ -125,3 +106,26 @@ export default class CreateTestPayment extends Component {
     );
   }
 }
+
+export default compose(
+  connect(
+    (state) => {
+      return {
+        mode: state.session.mode,
+      };
+    },
+    {
+      closeModal,
+      showNotification,
+      fetchItem,
+      fetchVAPayments,
+      createTestPayment,
+    },
+  ),
+  reduxForm({
+    form: 'createTestPayment',
+    initialValues: {
+      mode: 'neft',
+    },
+  }),
+)(CreateTestPayment);

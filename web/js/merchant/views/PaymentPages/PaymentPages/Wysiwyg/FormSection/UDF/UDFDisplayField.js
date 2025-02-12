@@ -4,8 +4,8 @@ import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditL
 
 import { sortableHandle } from 'react-sortable-hoc';
 const DragHandle = sortableHandle(() => (
-  <span class="dragHandle">
-    <i class="i i-dotter" />
+  <span className="dragHandle">
+    <i className="i i-dotter" />
   </span>
 ));
 
@@ -23,7 +23,7 @@ const displayField = ({ field, openBaseForm, tooltipTxt, setRef, isListSorting, 
 
   return (
     <EditLayer
-      class={classList(
+      className={classList(
         'Field Field--disabled',
         _RepresentationClass,
         field.required && 'Field--required',
@@ -36,17 +36,17 @@ const displayField = ({ field, openBaseForm, tooltipTxt, setRef, isListSorting, 
     >
       <DragHandle />
 
-      <div data-testid={field.title} class="Field-label">
+      <div data-testid={field.title} className="Field-label">
         {field.title}
-        {!field.required && <div class="text-optional">(Optional)</div>}
+        {!field.required && <div className="text-optional">(Optional)</div>}
       </div>
-      <div class="Field-content">
-        <div class={classList('Field-wrapper', field.type && `Field-wrapper--${field.type}`)}>
-          <RepresentationEl class="Field-el" disabled />
+      <div className="Field-content">
+        <div className={classList('Field-wrapper', field.type && `Field-wrapper--${field.type}`)}>
+          <RepresentationEl className="Field-el" disabled />
         </div>
-        {field.description && <div class="Field-description">{field.description}</div>}
+        {field.description && <div className="Field-description">{field.description}</div>}
       </div>
-      {openBaseForm && <i class="i i-edit" />}
+      {openBaseForm && <i className="i i-edit" />}
     </EditLayer>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
@@ -22,6 +22,7 @@ import track from './track';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { compose } from 'redux';
 
 const tabsData = [
   { title: 'QR Codes', url: '/qr_codes' },
@@ -48,7 +49,7 @@ const paymentListRowItem = (item) => (
       >
         <code>{item.id}</code>
       </NavLink>
-      <tr class="mobile-text">{truncatedString(item.email)}</tr>
+      <tr className="mobile-text">{truncatedString(item.email)}</tr>
     </td>
     <td>
       <Amount value={item.amount} currency={item.currency} />
@@ -59,17 +60,6 @@ const paymentListRowItem = (item) => (
   </EntityItemRow>
 );
 
-@connect(
-  (state) => ({
-    ...state.qrCodePayments,
-    isTestMode: state.session.mode === 'test',
-    isMobileResolution: state.app.isMobileResolution,
-  }),
-  {
-    fetchAll,
-  },
-)
-@RTracking(() => window.rzpQ.component('QRPaymentsListContainer'))
 class QRPaymentsListContainer extends ListContainer {
   get paymentIdCol() {
     return {
@@ -118,7 +108,7 @@ class QRPaymentsListContainer extends ListContainer {
         }
       >
         <content>
-          <div class="content-wrapper">
+          <div className="content-wrapper">
             {isTestMode && <TestModeBanner />}
 
             <PaymentsListFilter
@@ -152,4 +142,17 @@ class QRPaymentsListContainer extends ListContainer {
   }
 }
 
-export default withRouter(QRPaymentsListContainer);
+export default compose(
+  withRouter,
+  rTracking(() => window.rzpQ.component('QRPaymentsListContainer')),
+  connect(
+    (state) => ({
+      ...state.qrCodePayments,
+      isTestMode: state.session.mode === 'test',
+      isMobileResolution: state.app.isMobileResolution,
+    }),
+    {
+      fetchAll,
+    },
+  ),
+)(QRPaymentsListContainer);

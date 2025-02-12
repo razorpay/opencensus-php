@@ -18,7 +18,7 @@ const Banner = ({ ticket }) => {
       <div className="row escalate-banner escalation-warning">
         <div className="col-xs-2" />
         <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-          <i class="i i-forward ticket-escalated-icon" />
+          <i className="i i-forward ticket-escalated-icon" />
           <span className="message-escalation">Response expected before: {expectedResponseBy}</span>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ProductWrapper from 'common/ui/ProductWrapper';
@@ -33,13 +34,6 @@ const settlementStatus = {
   value: (item) => <SettlementStatus status={item.settlement_status} />,
 };
 
-@connect(
-  (state) => ({
-    ...state.transfers,
-    user: state.session.user,
-  }),
-  { fetchAll },
-)
 class TransfersListContainer extends ListContainer {
   render() {
     const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
@@ -53,8 +47,8 @@ class TransfersListContainer extends ListContainer {
             <DocsLink url="ROUTE_TRANSFER_DOC_URL" />
 
             {user.isDirectTransferEnabled && (
-              <NavLink class="btn btn-primary" to="/route/transfers/direct_transfer">
-                <i class="i i-plus" />
+              <NavLink className="btn btn-primary" to="/route/transfers/direct_transfer">
+                <i className="i i-plus" />
                 Create Direct Transfer
               </NavLink>
             )}
@@ -93,4 +87,13 @@ class TransfersListContainer extends ListContainer {
   }
 }
 
-export default withRouter(TransfersListContainer);
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.transfers,
+      user: state.session.user,
+    }),
+    { fetchAll },
+  ),
+)(TransfersListContainer);

@@ -65,8 +65,8 @@ const StatusBanner = (props) => {
       message = '';
   }
   return (
-    <div class="alert alert-info">
-      <div class="rzp-banner-text">
+    <div className="alert alert-info">
+      <div className="rzp-banner-text">
         <p>{message}</p>
       </div>
     </div>

@@ -31,10 +31,10 @@ export default class TimePicker extends React.Component {
     const { onFocus, onBlur, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
 
     return (
-      <div class={inputClass(this)}>
+      <div className={inputClass(this)}>
         <Label text={this.props.label} />
-        <div class="Input-content">
-          <div class="Input-elWrapper" tabIndex="0">
+        <div className="Input-content">
+          <div className="Input-elWrapper" tabIndex="0">
             <Datetime
               defaultValue={allProps.defaultValue}
               value={this.state.value}
@@ -50,7 +50,7 @@ export default class TimePicker extends React.Component {
               timeConstraints={this.props.timeConstraints || {}}
             />
             {this.props.addonAfter && (
-              <span class="Input-addons  Input-addons--after">{this.props.addonAfter}</span>
+              <span className="Input-addons  Input-addons--after">{this.props.addonAfter}</span>
             )}
           </div>
         </div>

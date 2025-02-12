@@ -36,27 +36,27 @@ export default class SubscriptionUsageDetails extends React.Component {
       isError,
     } = this.state;
     return (
-      <div class="subscription-details">
+      <div className="subscription-details">
         {isError ? (
-          <div class="error">
+          <div className="error">
             Oops, looks like an unexpected error occured for offer overview.Please refresh this page
             or try again after sometime.
           </div>
         ) : (
           <React.Fragment>
             <div>
-              <div class="heading">Offer Usage</div>
-              <div class="count">{isLoading ? <PlaceholderLoader /> : offer_usage}</div>
+              <div className="heading">Offer Usage</div>
+              <div className="count">{isLoading ? <PlaceholderLoader /> : offer_usage}</div>
             </div>
-            <div class="divider" />
+            <div className="divider" />
             <div>
-              <div class="heading">Active On</div>
-              <div class="count">{isLoading ? <PlaceholderLoader /> : active_on}</div>
+              <div className="heading">Active On</div>
+              <div className="count">{isLoading ? <PlaceholderLoader /> : active_on}</div>
             </div>
-            <div class="divider" />
+            <div className="divider" />
             <div>
-              <div class="heading">Total Discounts Applied</div>
-              <div class="count">
+              <div className="heading">Total Discounts Applied</div>
+              <div className="count">
                 {isLoading ? <PlaceholderLoader /> : <Amount value={total_discount} />}
               </div>
             </div>

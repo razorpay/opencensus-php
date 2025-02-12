@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -9,18 +10,6 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { RulesTable } from './RulesTable';
 import { getRuleStatus } from './util';
 
-@connect(
-  (state) => {
-    return {
-      loading: state.navigator.reorder_loading,
-    };
-  },
-  {
-    fetchRule,
-    closeModal,
-    fetchRules,
-  },
-)
 export class ReorderRules extends Component {
   state = {
     sequence: null,
@@ -29,7 +18,7 @@ export class ReorderRules extends Component {
   render() {
     const RULES = this.props.rules.filter((r) => getRuleStatus(r) == 'live' || r.current);
     return (
-      <div class="deactivate-rule-modal">
+      <div className="deactivate-rule-modal">
         <ModalHeader
           title="Set Rule Priority"
           onCloseClick={() => {
@@ -39,8 +28,8 @@ export class ReorderRules extends Component {
           }}
         />
 
-        <div class="modal-body" style={{ paddingTop: '5px' }}>
-          <p class="m-b" style={{ marginBottom: '16px' }}>
+        <div className="modal-body" style={{ paddingTop: '5px' }}>
+          <p className="m-b" style={{ marginBottom: '16px' }}>
             Optimizer processes your payments via rules as per the priority defined.
           </p>
           <RulesTable
@@ -53,7 +42,7 @@ export class ReorderRules extends Component {
         <div className="modal-footer">
           <button
             disabled={this.props.loading}
-            class="btn btn-primary"
+            className="btn btn-primary"
             onClick={() => {
               if (this.props.onSuccess) {
                 this.props.onSuccess(this.state.sequence ? this.state.sequence : RULES);
@@ -68,4 +57,18 @@ export class ReorderRules extends Component {
   }
 }
 
-export default withRouter(ReorderRules);
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        loading: state.navigator.reorder_loading,
+      };
+    },
+    {
+      fetchRule,
+      closeModal,
+      fetchRules,
+    },
+  ),
+)(ReorderRules);

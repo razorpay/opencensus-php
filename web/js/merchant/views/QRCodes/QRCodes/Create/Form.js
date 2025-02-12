@@ -1,18 +1,18 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import moment from 'moment';
+import { connect } from 'react-redux';
 
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { onChangeNotes } from 'common/new-ui/Input/PairList';
-import CustomerSelector from 'merchant/components/CustomerSelector';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import { timeCalculator } from 'common/new-ui/Input/Time';
-
-import { validateAmount } from 'common/utils/validators';
 import { rupeesToPaise, classList } from 'common/utils/rzp-utils';
+import { validateAmount } from 'common/utils/validators';
+import CustomerSelector from 'merchant/components/CustomerSelector';
+import { isMobileDevice } from 'merchant/components/Home/data';
+
 import track from './track';
 
 const FORM_CLASS_NAME = 'QRCode--Create-Form';
@@ -50,10 +50,7 @@ const QR_TYPES = [
   },
 ];
 
-@connect((state) => ({
-  user: state.session.user,
-}))
-export default class CreationForm extends React.Component {
+class CreationForm extends React.Component {
   state = {
     isSubmitting: false,
     isSubmitDisabled: false,
@@ -293,24 +290,24 @@ export default class CreationForm extends React.Component {
       isDedicatedTerminalEnabled && formData.type === 'upi_qr' && formData.usage === 'multiple_use';
 
     return (
-      <div class="QRCode--Create-wizard">
-        <div class={props.isModalView ? 'title' : 'title mt-16'}>
+      <div className="QRCode--Create-wizard">
+        <div className={props.isModalView ? 'title' : 'title mt-16'}>
           Create QR Code
           {isMobileDevice() && (
             <span onClick={this.redirectToListView}>
-              <i class="i i-close" />
+              <i className="i i-close" />
             </span>
           )}
         </div>
-        <div class="form-container">
-          <Form class={FORM_CLASS_NAME} onChange={this.onFieldChange} onSubmit={this.onSubmit}>
+        <div className="form-container">
+          <Form className={FORM_CLASS_NAME} onChange={this.onFieldChange} onSubmit={this.onSubmit}>
             <main>
               {props.user.isBharatQREnabled && (
                 <Input.Radio
                   autoRender
                   label="QR Type"
                   name="type"
-                  class="Input--vTop"
+                  className="Input--vTop"
                   labelClass="pb-8"
                   options={QR_TYPES}
                   disabled={isSubmitting}
@@ -323,7 +320,7 @@ export default class CreationForm extends React.Component {
                 autoRender
                 label="QR Usage"
                 name="usage"
-                class="Input--vTop"
+                className="Input--vTop"
                 labelClass="pb-8"
                 options={USAGE_OPTIONS}
                 disabled={isSubmitting}
@@ -335,11 +332,11 @@ export default class CreationForm extends React.Component {
               formData.type === 'upi_qr' &&
               formData.usage === 'single_use' ? (
                 <Input.Group
-                  class="InputGroup--inline Input--vTop"
+                  className="InputGroup--inline Input--vTop"
                   required
                   label="Enter the amount"
                 >
-                  <div class="Input-content">
+                  <div className="Input-content">
                     <Input.CurrencySelect
                       autoRender
                       disabled
@@ -349,7 +346,7 @@ export default class CreationForm extends React.Component {
                     <Input
                       autoRender
                       required
-                      class="Input--vTop"
+                      className="Input--vTop"
                       name="payment_amount"
                       placeholder="0.00"
                       validator={amountValidator}
@@ -364,7 +361,7 @@ export default class CreationForm extends React.Component {
                     autoRender
                     label="Accept only fixed amount on this QR?"
                     name="fixed_amount"
-                    class="Input--vTop"
+                    className="Input--vTop"
                     labelClass="pb-8"
                     defaultValue={formData.fixed_amount}
                     options={FIXED_AMOUNT_OPTIONS}
@@ -373,13 +370,13 @@ export default class CreationForm extends React.Component {
                   />
 
                   {formData.fixed_amount === '1' && (
-                    <div class="Input--custom">
+                    <div className="Input--custom">
                       <Input.Group
-                        class="InputGroup--inline"
+                        className="InputGroup--inline"
                         required
-                        label={<small class="help-content">Enter the amount</small>}
+                        label={<small className="help-content">Enter the amount</small>}
                       >
-                        <div class="Input-content">
+                        <div className="Input-content">
                           <Input.CurrencySelect
                             autoRender
                             disabled
@@ -410,36 +407,39 @@ export default class CreationForm extends React.Component {
                     Description <small>(Optional)</small>
                   </>
                 }
-                class="Input--vTop"
+                className="Input--vTop"
                 labelClass="pb-8"
                 placeholder="Description will be visible on the QR Code."
                 maxLength="120"
                 description={
-                  <div class="text-right">{(formData.description || '').length} / 120</div>
+                  <div className="text-right">{(formData.description || '').length} / 120</div>
                 }
                 disabled={isSubmitting}
                 onBlur={this.onFieldBlur}
               />
 
               <div
-                class={classList('additional-options-btn', showAdditionalOptions && 'btn-hide')}
+                className={classList('additional-options-btn', showAdditionalOptions && 'btn-hide')}
                 onClick={this.handleAdditionalOptions}
               >
                 <div>
-                  <div class="heading">
+                  <div className="heading">
                     {showAdditionalOptions ? 'Hide' : 'View'} Advance Options
                   </div>
-                  <div class="description">
+                  <div className="description">
                     QR Name {!hideCloseBy && ', auto-closing date'} and internal notes
                   </div>
                 </div>
                 <i
-                  class={classList('i', showAdditionalOptions ? 'i-chevron-up' : 'i-chevron-down')}
+                  className={classList(
+                    'i',
+                    showAdditionalOptions ? 'i-chevron-up' : 'i-chevron-down',
+                  )}
                 />
               </div>
 
               {showAdditionalOptions && (
-                <div class="AdditionalOptions">
+                <div className="AdditionalOptions">
                   {!hideCloseBy && (
                     <>
                       <Input.Check
@@ -451,15 +451,15 @@ export default class CreationForm extends React.Component {
                         }
                         fieldLabel="Close this QR code after"
                         labelClass="pb-8"
-                        class="Input--vTop"
+                        className="Input--vTop"
                         onChange={this.handleHasNoCloseBy}
                       />
 
                       <Input.Group
-                        class="InputGroup--near InputGroup--inline closeBy"
+                        className="InputGroup--near InputGroup--inline closeBy"
                         disabled={!state.noCloseBy}
                       >
-                        <div class="Input-content">
+                        <div className="Input-content">
                           <Input.ToCalendar
                             readOnly
                             allowToday
@@ -469,14 +469,14 @@ export default class CreationForm extends React.Component {
                             size="half"
                             ref={this.closeByRef}
                             onChange={this.onDateChange}
-                            addonAfter={<i class="i i-date-range" />}
+                            addonAfter={<i className="i i-date-range" />}
                           />
                           {!!formData.close_by && (
                             <Input.TimePicker
                               readOnly
                               placeholder="11:59PM"
                               onChange={this.onTimeChange}
-                              addonAfter={<i class="i i-time" />}
+                              addonAfter={<i className="i i-time" />}
                             />
                           )}
                         </div>
@@ -484,12 +484,12 @@ export default class CreationForm extends React.Component {
                     </>
                   )}
 
-                  <div class="Input Input--vTop Input--SelectCustomer">
-                    <div class="Input-label pb-8">
+                  <div className="Input Input--vTop Input--SelectCustomer">
+                    <div className="Input-label pb-8">
                       Customer <small>(Optional)</small>
                     </div>
 
-                    <div class="Input-content">
+                    <div className="Input-content">
                       <CustomerSelector
                         disabled={isSubmitting}
                         onChange={this.handleSelectCustomer}
@@ -499,7 +499,7 @@ export default class CreationForm extends React.Component {
 
                   <Input
                     autoRender
-                    class="Input--vTop name"
+                    className="Input--vTop name"
                     name="name"
                     label={
                       <>
@@ -513,7 +513,7 @@ export default class CreationForm extends React.Component {
                   />
 
                   <Input.PairList
-                    class="Input--vTop"
+                    className="Input--vTop"
                     name="notes"
                     label="Internal Notes"
                     labelClass="pb-8"
@@ -527,7 +527,7 @@ export default class CreationForm extends React.Component {
 
             <footer>
               {props.isModalView && (
-                <Button class="btn-outline" type="button" onClick={props.onClose}>
+                <Button className="btn-outline" type="button" onClick={props.onClose}>
                   Cancel
                 </Button>
               )}
@@ -557,3 +557,7 @@ export default class CreationForm extends React.Component {
 function amountValidator(value) {
   return validateAmount(value);
 }
+
+export default connect((state) => ({
+  user: state.session.user,
+}))(CreationForm);

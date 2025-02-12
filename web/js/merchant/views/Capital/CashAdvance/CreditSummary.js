@@ -7,7 +7,7 @@ import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, ONHOLD_REASONS } from './
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const Loader = () => (
-  <div class="flex">
+  <div className="flex">
     <p className="PlaceholderLoader" />
     <p className="PlaceholderLoader" />
   </div>

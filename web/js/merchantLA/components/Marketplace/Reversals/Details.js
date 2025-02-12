@@ -30,29 +30,29 @@ export default class ReversalDetails extends Component {
         reversal.initiator_id.replace('acc_', '') === merchant.id;
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               {onClose && (
                 <button
                   type="button"
-                  class="close close-secondary"
+                  className="close close-secondary"
                   onClick={onClose}
                 >
-                  <i class="i i-arrow-back" />
-                  <i class="i i-close" />
+                  <i className="i i-arrow-back" />
+                  <i className="i i-close" />
                 </button>
               )}
               Reversal ID: <strong>{reversal.id}</strong>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
                 <EntityDetailRow label="Amount">
                   <Amount
                     value={reversal.amount}

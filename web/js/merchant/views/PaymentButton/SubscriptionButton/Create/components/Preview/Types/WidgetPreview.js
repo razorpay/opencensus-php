@@ -21,12 +21,12 @@ export default class WidgetPreview extends React.Component {
       : i18CurrencyConversionFromCommonUnitToMinorUnit(field.item.amount, currency);
 
     return (
-      <label class="item-label">
-        <div class="item">
-          <div class="item-title">{field.item?.name ?? '--'}</div>
-          {field.item?.description && <div class="item-description">{field.item.description}</div>}
+      <label className="item-label">
+        <div className="item">
+          <div className="item-title">{field.item?.name ?? '--'}</div>
+          {field.item?.description && <div className="item-description">{field.item.description}</div>}
 
-          <div class="item-details">
+          <div className="item-details">
             {amount ? (
               <span className="amount">
                 <b>
@@ -36,7 +36,7 @@ export default class WidgetPreview extends React.Component {
             ) : null}
 
             {!showOneTimePayments && (
-              <div class="item-details-description">
+              <div className="item-details-description">
                 Frequency:{' '}
                 {getPeriodLabel(
                   field.product_config.plan_details.period,
@@ -57,16 +57,16 @@ export default class WidgetPreview extends React.Component {
     const otherTabFields = filterSubscriptionPaymentItems(paymentFields, !showOneTimePayments);
 
     return (
-      <div class="WidgetPreview">
+      <div className="WidgetPreview">
         {!!currentTabFields.length && !!otherTabFields.length && (
-          <div class="billing-cycle-type-options">
+          <div className="billing-cycle-type-options">
             <label>
-              <div class={classList('option', !showOneTimePayments && 'highlight')}>
+              <div className={classList('option', !showOneTimePayments && 'highlight')}>
                 Subscription
               </div>
             </label>
             <label>
-              <div class={classList('option', showOneTimePayments && 'highlight')}>OneTime</div>
+              <div className={classList('option', showOneTimePayments && 'highlight')}>OneTime</div>
             </label>
           </div>
         )}
@@ -77,9 +77,9 @@ export default class WidgetPreview extends React.Component {
               <React.Fragment key={index}>{this.getPaymentField(field)}</React.Fragment>
             ))
           ) : (
-            <label class="item-label item-label--empty">
-              <div class="item">
-                <div class="item-details">
+            <label className="item-label item-label--empty">
+              <div className="item">
+                <div className="item-details">
                   {showOneTimePayments
                     ? 'Add one-time items to see their preview'
                     : 'Add plans to see their preview'}

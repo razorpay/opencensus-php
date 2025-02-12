@@ -67,11 +67,11 @@ const SupportBasedGoalTrackerPreview = ({
         </div>
         {isMain && (
           <div className="goal--tracker-action-buttons">
-            <Button type="button" class="Button--transparent" onClick={editGoal}>
+            <Button type="button" className="Button--transparent" onClick={editGoal}>
               <i className="i i-edit-outline" /> Edit
             </Button>
             <div className="vertical-divider" />
-            <Button type="button" class="Button--transparent" onClick={removeGoal}>
+            <Button type="button" className="Button--transparent" onClick={removeGoal}>
               <i className="i i-delete-outline" /> Remove
             </Button>
           </div>
@@ -111,11 +111,11 @@ const SupportBasedGoalTrackerPreview = ({
       </div>
       {isMain && (
         <div className="goal--tracker-action-buttons">
-          <Button type="button" class="Button--transparent" onClick={editGoal}>
+          <Button type="button" className="Button--transparent" onClick={editGoal}>
             <i className="i i-edit-outline" /> Edit
           </Button>
           <div className="vertical-divider" />
-          <Button type="button" class="Button--transparent" onClick={removeGoal}>
+          <Button type="button" className="Button--transparent" onClick={removeGoal}>
             <i className="i i-delete-outline" /> Remove
           </Button>
         </div>
@@ -181,11 +181,11 @@ const AmountBasedGoalTrackerPreview = ({
       </div>
       {isMain && (
         <div className="goal--tracker-action-buttons">
-          <Button type="button" class="Button--transparent" onClick={editGoal}>
+          <Button type="button" className="Button--transparent" onClick={editGoal}>
             <i className="i i-edit-outline" /> Edit
           </Button>
           <div className="vertical-divider" />
-          <Button type="button" class="Button--transparent" onClick={removeGoal}>
+          <Button type="button" className="Button--transparent" onClick={removeGoal}>
             <i className="i i-delete-outline" /> Remove
           </Button>
         </div>

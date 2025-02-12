@@ -60,7 +60,7 @@ const OrderFilters = (props) => {
         additionalClass={additionalClass}
       >
         <div className="form-group list-filter-item">
-          <label for="order-id">Razorpay Order Id</label>
+          <label htmlFor="order-id">Razorpay Order Id</label>
           <Input
             id="order-id"
             type="text"
@@ -72,7 +72,7 @@ const OrderFilters = (props) => {
           />
         </div>
         <div className="form-group list-filter-item">
-          <label for="receipt">Receipt</label>
+          <label htmlFor="receipt">Receipt</label>
           <Input
             id="receipt"
             type="text"
@@ -85,7 +85,7 @@ const OrderFilters = (props) => {
         </div>
         {showRTORisk && (
           <div className="form-group list-filter-item">
-            <label for="riskTier">RTO Risk</label>
+            <label htmlFor="riskTier">RTO Risk</label>
             <Input.Select
               id="riskTier"
               name="riskTier"
@@ -96,7 +96,7 @@ const OrderFilters = (props) => {
           </div>
         )}
         <div className="form-group datepicker-group">
-          <label for="duration">Duration</label>
+          <label htmlFor="duration">Duration</label>
           <DateRangePicker
             presets={DATE_RANGE_PRESETS}
             onDatesChange={onDatesChange}
@@ -110,7 +110,7 @@ const OrderFilters = (props) => {
           />
         </div>
         <div className="form-group list-filter-item">
-          <label for="paymentStatus">Conversion Status</label>
+          <label htmlFor="paymentStatus">Conversion Status</label>
           <Input.Select
             id="paymentLinkStatus"
             name="paymentLinkStatus"
@@ -120,7 +120,7 @@ const OrderFilters = (props) => {
           />
         </div>
         <div className="form-group list-filter-item count">
-          <label for="count">Count</label>
+          <label htmlFor="count">Count</label>
           <Input.Select id="count" name="count" options={COUNT} value={count} onChange={setField} />
         </div>
       </ListFilter>

@@ -44,23 +44,23 @@ class ProceedFormFields extends Component {
     const { handleSubmit } = this.props;
 
     return (
-      <div class="proceed-upload-modal">
+      <div className="proceed-upload-modal">
         <ModalHeader title="Batch Upload" onCloseClick={this.props.closeModal} />
-        <form class="form-horizontal">
-          <div class="modal-body">
+        <form className="form-horizontal">
+          <div className="modal-body">
             <div>
               <p>Send link and payment instructions to...</p>
 
-              <div class="rzpCheckbox">
+              <div className="rzpCheckbox">
                 <Field name="sms_notify" id="sms_notify" component="input" type="checkbox" />
-                <label for="sms_notify" class="icon i-check">
+                <label htmlFor="sms_notify" className="icon i-check">
                   Sms Notify
                 </label>
               </div>
 
-              <div class="rzpCheckbox">
+              <div className="rzpCheckbox">
                 <Field name="email_notify" id="email_notify" component="input" type="checkbox" />
-                <label for="email_notify" class="icon i-check">
+                <label htmlFor="email_notify" className="icon i-check">
                   Email Notify
                 </label>
               </div>
@@ -70,10 +70,10 @@ class ProceedFormFields extends Component {
               A <b>payment link</b> will also be created.
             </div>
 
-            <div class="Modal__actions">
+            <div className="Modal__actions">
               <AsyncButton
                 type="submit"
-                class="btn btn-primary btn-block btn-lg"
+                className="btn btn-primary btn-block btn-lg"
                 text="Submit"
                 pendingText="Submitting..."
                 onClick={handleSubmit(this.onSubmitClick)}

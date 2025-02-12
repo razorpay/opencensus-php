@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import Amount from 'common/ui/Amount';
@@ -33,7 +34,9 @@ const helperCues = {
     return (
       <div style={{ color: 'green' }}>
         <span>
-          <i class={classList('i i-undo cue', hasReversals ? 'cue--active' : 'cue--inactive')} />
+          <i
+            className={classList('i i-undo cue', hasReversals ? 'cue--active' : 'cue--inactive')}
+          />
           <Popover align="top">
             <PopoverBody>
               <div>
@@ -50,7 +53,9 @@ const helperCues = {
         </span>
 
         <span>
-          <i class={classList('i i-notes cue', notesLength ? 'cue--active' : 'cue--inactive')} />
+          <i
+            className={classList('i i-notes cue', notesLength ? 'cue--active' : 'cue--inactive')}
+          />
           <Popover align="top">
             <PopoverBody>
               <div>{notesMsg}</div>
@@ -62,13 +67,6 @@ const helperCues = {
   },
 };
 
-@connect(
-  (state) => ({
-    ...state.transfers,
-    isShowParentPaymentIdEnabled: state.session.user.isShowParentPaymentIdEnabled,
-  }),
-  { fetchAll },
-)
 class TransfersListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const { pathname } = this.props.location;
@@ -100,14 +98,14 @@ class TransfersListContainer extends ListContainer {
       : [transferId, amount, createdAt, settlementStatus, helperCues];
 
     return (
-      <div class="transfers-list">
+      <div className="transfers-list">
         <tabbed-container>
           <header id="marketplace-header">
             <NavLink to="/transfers">Transfers</NavLink>
           </header>
           <TestModeBanner />
           <content>
-            <div class="content-wrapper">
+            <div className="content-wrapper">
               <TransfersListFilter
                 form="transfersListFilter"
                 count={this.state.count}
@@ -133,4 +131,10 @@ class TransfersListContainer extends ListContainer {
   }
 }
 
-export default withRouter(TransfersListContainer);
+export default connect(
+  (state) => ({
+    ...state.transfers,
+    isShowParentPaymentIdEnabled: state.session.user.isShowParentPaymentIdEnabled,
+  }),
+  { fetchAll },
+)(withRouter(TransfersListContainer));

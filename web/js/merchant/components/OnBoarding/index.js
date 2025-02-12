@@ -1,35 +1,27 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 
+import track from './track';
+import { NextButton, SkipAndGetStartedButton, FeatureEnableSliderButton } from './utilButtons';
 import {
   getIsAllowedResetBoarding,
   getOnBoardingKey,
   setOnBoardingDataInLocalState,
   getOnBoardingDataFromLocalState,
 } from './utils';
-import track from './track';
-
-import { NextButton, SkipAndGetStartedButton, FeatureEnableSliderButton } from './utilButtons';
 
 export default (params) => {
   const { feature: FEATURE } = params;
 
   let WrappedComponent;
-  @RTracking(() => window.rzpQ.component('OnboardingContainer'))
-  @connect(
-    (state) => ({
-      currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
-    }),
-    {
-      handleProductQuickGuide,
-    },
-  )
+
   class OnBoardingHOC extends React.Component {
     constructor(props) {
       super(props);
@@ -79,15 +71,27 @@ export default (params) => {
     }
   }
 
+  const ConnectedOnBoardingHOC = compose(
+    connect(
+      (state) => ({
+        currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
+      }),
+      {
+        handleProductQuickGuide,
+      },
+    ),
+    rTracking(() => window.rzpQ.component('OnboardingContainer')),
+  )(OnBoardingHOC);
+
   return (_WrappedComponent) => {
     WrappedComponent = _WrappedComponent;
 
-    return OnBoardingHOC;
+    return ConnectedOnBoardingHOC;
   };
 };
 
 export const OnBoardingWrapper = ({ className, children }) => (
-  <div class={`OnBoarding OnBoarding--${className}`}>{children}</div>
+  <div className={`OnBoarding OnBoarding--${className}`}>{children}</div>
 );
 
 export {

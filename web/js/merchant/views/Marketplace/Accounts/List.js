@@ -1,6 +1,7 @@
 import { Box } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
@@ -33,20 +34,6 @@ import { navItems } from 'merchant/views/Marketplace/NavItems';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-@connect(
-  (state) => {
-    return {
-      ...state.accounts,
-      user: state.session.user,
-    };
-  },
-  {
-    ...AccountActions,
-    ...ModalActions,
-    showNotification,
-    luminateRow,
-  },
-)
 class AccountsListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -498,4 +485,21 @@ export function validateAllowRefundsMessages(account, checked) {
   };
 }
 
-export default withSplitzService(withRouter(AccountsListContainer));
+export default compose(
+  withSplitzService,
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state.accounts,
+        user: state.session.user,
+      };
+    },
+    {
+      ...AccountActions,
+      ...ModalActions,
+      showNotification,
+      luminateRow,
+    },
+  ),
+)(AccountsListContainer);
