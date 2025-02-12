@@ -2237,28 +2237,48 @@ class Service extends Base\Service
             DetailConstants::CREATED_AT => (new Value())->setStringValue($timestamp),
         ]);
 
-        $manualRekycList = new ListValue();
-        $statuses = $details[DetailConstants::MANUAL_REKYC][DetailConstants::STATUS];
+        $rekycStatusList = new ListValue();
+        $statuses = $details[DetailConstants::MANUAL_REKYC][DetailConstants::STATUS] ?? [];
         foreach ($statuses as $item) {
             $entry = new Struct();
             $entry->setFields([
                 DetailConstants::REKYC_STATUS => (new Value())->setStringValue($item[DetailConstants::REKYC_STATUS]),
                 DetailConstants::CREATED_AT => (new Value())->setStringValue($item[DetailConstants::CREATED_AT]),
             ]);
-            $manualRekycList->getValues()[] = (new Value())->setStructValue($entry);
+            $rekycStatusList->getValues()[] = (new Value())->setStructValue($entry);
         }
-        $manualRekycList->getValues()[] = (new Value())->setStructValue($newEntry);
 
-        $detailConstants = new Struct();
-        $detailConstants->setFields([
-            DetailConstants::MANUAL_REKYC => (new Value())->setStructValue(
-                (new Struct())->setFields([
-                    DetailConstants::STATUS => (new Value())->setListValue($manualRekycList)
-                ])
-            )
+        $rekycStatusList->getValues()[] = (new Value())->setStructValue($newEntry);
+
+        $detailsStruct = new Struct();
+
+        if ($details!=null) {
+            $detailsStruct->mergeFromJsonString(json_encode($details));
+        }
+
+        $manualRekycStruct = $detailsStruct->getFields()["manual_rekyc"] ?? null;
+        $fields = [
+            "status" => (new Value())->setListValue($rekycStatusList)
+        ];
+
+        if ($manualRekycStruct == null ) {
+            $manualRekycStruct = new Struct();
+        }else{
+            $manualRekycStruct = $manualRekycStruct->getStructValue();
+        }
+
+
+        if (isset($manualRekycStruct->getFields()["verifications"])) {
+            $fields["verifications"] = $manualRekycStruct->getFields()["verifications"];
+        }
+
+        $manualRekycStruct->setFields($fields);
+
+        $detailsStruct->setFields([
+            "manual_rekyc" => (new Value())->setStructValue($manualRekycStruct)
         ]);
 
-       return (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantId, $detailConstants, $fieldListForAsv);
+       return (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantId, $detailsStruct, $fieldListForAsv);
     }
 
     protected function invalidatePreviousRequestForEmailUpdate($merchant, $currentOwnerUser)
