@@ -1237,7 +1237,11 @@ class Service extends Base\Service
             case Payment\Method::UPI:
                 return $this->authorizeFailedUpiPayment($input);
 
-                //ToDo: Cards team to handle their case here
+            case Payment\Method::WALLET:
+            case Payment\Method::NETBANKING:
+                return $this->authorizeFailedNbplusPayment($input);
+
+            //ToDo: Cards team to handle their case here
 
             default:
                 throw new Exception\BadRequestValidationFailureException(
