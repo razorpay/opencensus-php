@@ -8,7 +8,9 @@ const Image = styled.img<{ styles }>(({ styles }) => styles);
 
 export const StatusImage = ({ status }: { status: string }) => {
   const image = getSettlementStatusImage(status);
-  const [imageSource, setImageSource] = useState(`/img/rtux/${image?.name}`);
+  const [imageSource, setImageSource] = useState(
+    `${window.cdnBaseUrl}/static/assets/rtux/${image?.name}`,
+  );
   const [isAnimating, setIsAnimating] = useState(true);
   const { isHovered } = useIsSettlementHovered();
 
@@ -22,7 +24,7 @@ export const StatusImage = ({ status }: { status: string }) => {
     if (isHovered && !isAnimating) {
       setImageSource('');
       x = setTimeout(() => {
-        setImageSource(`${window.cdnBaseUrl}/${image?.name}`);
+        setImageSource(`${window.cdnBaseUrl}/static/assets/rtux/${image?.name}`);
         setIsAnimating(true);
       }, 0);
     }
