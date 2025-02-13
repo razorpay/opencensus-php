@@ -26,6 +26,30 @@ test.describe.parallel(
         CONTENT_SELECTORS.HOME_PAGE.RESELLER_PARTNER_WELCOME_TEXT,
         CONTENT_SELECTORS.CLIENTS_LIST.INVITE_ACCEPTED_ON,
       );
+      if (
+        await page
+          .getByText('Payments in test mode are', { timeout: 10000 })
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await page.locator('strong').filter({ hasText: 'GOT IT' }).click();
+      }
+      if (
+        await page
+          .getByText('All Affiliate Accounts that', { timeout: 10000 })
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await page.getByRole('button', { name: 'GOT IT' }).click();
+      }
+      if (
+        await page
+          .getByText('List of all invites you have', { timeout: 10000 })
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await page.getByRole('button', { name: 'GOT IT' }).click();
+      }
     });
     test('should load the Single Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
       page,

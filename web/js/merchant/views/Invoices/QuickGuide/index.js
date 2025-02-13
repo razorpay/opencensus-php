@@ -11,6 +11,7 @@ import QuickStepGuide, {
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
+import { compose } from 'redux';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
@@ -48,17 +49,8 @@ const getStatus = ({ invoices }) => {
     paymentReceiveStatus,
   };
 };
-@QuickGuide({
-  feature: RZPFeatures.INVOICE,
-  data_points: ['invoices'],
-  dataTransformer: (key, state) => {
-    return {
-      ...state.invoices,
-      items: state.invoices.invoices,
-    };
-  },
-})
-export default class InvoicesQuickGuide extends React.Component {
+
+class InvoicesQuickGuide extends React.Component {
   getCloseBtn = (isCompleted) => {
     return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
@@ -77,7 +69,12 @@ export default class InvoicesQuickGuide extends React.Component {
     const orgCustomCode = org.custom_code;
 
     return (
-      <QuickStepGuide activeStep={activeStep} className="Invoices" title={Title} closeBtn={CloseBtn}>
+      <QuickStepGuide
+        activeStep={activeStep}
+        className="Invoices"
+        title={Title}
+        closeBtn={CloseBtn}
+      >
         <QuickGuideStep
           status={invoiceStatus}
           step="Invoices"
@@ -95,6 +92,19 @@ export default class InvoicesQuickGuide extends React.Component {
     );
   }
 }
+
+export default compose(
+  QuickGuide({
+    feature: RZPFeatures.INVOICE,
+    data_points: ['invoices'],
+    dataTransformer: (key, state) => {
+      return {
+        ...state.invoices,
+        items: state.invoices.invoices,
+      };
+    },
+  }),
+)(InvoicesQuickGuide);
 
 export const getInvoicesQuickGuideIsClosed = (props) => {
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.INVOICE);

@@ -10,16 +10,13 @@ import QuickStepGuide, {
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
+import { compose } from 'redux';
 
 const { done, locked, active } = PossibleStatuses;
 
 const Title = <QuickGuideTitle />;
 
-@quickGuide({
-  feature: RZPFeatures.QR_CODES,
-  data_points: ['qr_codes'],
-})
-export default class QRCodesQuickGuide extends React.Component {
+class QRCodesQuickGuide extends React.Component {
   render() {
     const { qrCodeStatus, paymentReceiveStatus } = getStatus(this.props.qr_codes);
 
@@ -57,6 +54,13 @@ export default class QRCodesQuickGuide extends React.Component {
     );
   }
 }
+
+export default compose(
+  quickGuide({
+    feature: RZPFeatures.QR_CODES,
+    data_points: ['qr_codes'],
+  }),
+)(QRCodesQuickGuide);
 
 function getCloseBtn(isCompleted, onClickClose) {
   return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={onClickClose} />;

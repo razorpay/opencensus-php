@@ -12,6 +12,7 @@ import QuickStepGuide, {
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
+import { compose } from 'redux';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
@@ -25,12 +26,7 @@ const SubscriptionsStates = {
   COMPLETED: 'completed',
 };
 const Title = <QuickGuideTitle />;
-
-@QuickGuide({
-  feature: RZPFeatures.SUBSCRIPTIONS,
-  data_points: ['subscriptions', 'plans'],
-})
-export default class SubscriptionQuickGuide extends React.Component {
+class SubscriptionQuickGuide extends React.Component {
   getCloseBtn = (isCompleted) => {
     return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
@@ -82,6 +78,14 @@ export default class SubscriptionQuickGuide extends React.Component {
     );
   }
 }
+
+export default compose(
+  // eslint-disable-next-line
+  QuickGuide({
+    feature: RZPFeatures.SUBSCRIPTIONS,
+    data_points: ['subscriptions', 'plans'],
+  }),
+)(SubscriptionQuickGuide);
 
 export const getSubscriptionQuickGuideIsClosed = (props) => {
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.SUBSCRIPTIONS);

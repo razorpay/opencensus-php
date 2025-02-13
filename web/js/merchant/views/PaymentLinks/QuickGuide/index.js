@@ -13,22 +13,13 @@ import QuickStepGuide, {
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
+import { compose } from 'redux';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
 const Title = <QuickGuideTitle />;
 
-@QuickGuide({
-  feature: RZPFeatures.PL,
-  data_points: ['paymentlinks'],
-  dataTransformer: (key, state) => {
-    return {
-      ...state.paymentlinks,
-      items: state.paymentlinks.paymentlinks,
-    };
-  },
-})
-export default class PaymentPagesQuickGuide extends React.Component {
+class PaymentPagesQuickGuide extends React.Component {
   getCloseBtn = (isCompleted) => {
     return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
@@ -69,6 +60,19 @@ export default class PaymentPagesQuickGuide extends React.Component {
     );
   }
 }
+
+export default compose(
+  QuickGuide({
+    feature: RZPFeatures.PL,
+    data_points: ['paymentlinks'],
+    dataTransformer: (key, state) => {
+      return {
+        ...state.paymentlinks,
+        items: state.paymentlinks.paymentlinks,
+      };
+    },
+  }),
+)(PaymentPagesQuickGuide);
 
 export function getPaymentLinksQuickGuideIsClosed(props) {
   const isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PL);

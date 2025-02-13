@@ -1,7 +1,7 @@
 module.exports = {
   presets: ['@razorpay/universe-cli/babel.react.typescript.legacy'],
   plugins: [
-    ['@babel/plugin-proposal-decorators', { legacy: true }],
+    process.env.PROJECT === 'razorx' && ['@babel/plugin-proposal-decorators', { legacy: true }],
     ['@babel/plugin-proposal-private-methods', { loose: true }],
     [
       '@babel/plugin-proposal-class-properties',
@@ -17,5 +17,5 @@ module.exports = {
     ],
     ['babel-plugin-graphql-tag'],
     'react-require',
-  ],
+  ].filter(Boolean),
 };

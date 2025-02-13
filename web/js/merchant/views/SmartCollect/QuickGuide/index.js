@@ -13,15 +13,12 @@ import QuickStepGuide, {
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
+import { compose } from 'redux';
 
 const { done, locked, active, loading } = PossibleStatuses;
 const Title = <QuickGuideTitle />;
 
-@QuickGuide({
-  feature: RZPFeatures.VA,
-  data_points: ['virtualaccounts'],
-})
-export default class InvoicesQuickGuide extends React.Component {
+class InvoicesQuickGuide extends React.Component {
   getCloseBtn = (isCompleted) => {
     return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
@@ -63,6 +60,13 @@ export default class InvoicesQuickGuide extends React.Component {
     );
   }
 }
+
+export default compose(
+  QuickGuide({
+    feature: RZPFeatures.VA,
+    data_points: ['virtualaccounts'],
+  }),
+)(InvoicesQuickGuide);
 
 export const getVAQuickGuideIsClosed = (props) => {
   const isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.VA);
