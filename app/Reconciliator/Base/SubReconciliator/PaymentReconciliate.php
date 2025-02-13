@@ -2555,8 +2555,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
             }
-            else if ($this->payment->hasBeenCaptured() === false)
+            // Since there is no transaction getting created in API service for external payments hence returning the
+            // flow from here only for cps_route=5 payments.
+            else if (($this->payment->hasBeenCaptured() === false) and
+                ($this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
             {
+
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
             }
         }
