@@ -15,6 +15,7 @@ export const ERROR_MESSAGES = {
   REQUIRED_FIELD_MESSAGE: 'This field is required',
   INVALID_DEBIT_CARD: 'Please enter valid Debit Card',
   GENERIC_ERROR_MESSAGE: 'Some error occurred while',
+  UPLOAD_CUSTOM_PRICING_MESSAGE: 'Please upload custom pricing',
 };
 
 export const STATUS_TEXT = {

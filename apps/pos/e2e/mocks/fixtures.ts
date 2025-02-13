@@ -12,8 +12,7 @@ import {
 import {
   deviceSelectionStepMock,
   incompleteDeviceSelectionStepMock,
-} from 'apps/pos/e2e/mocks/deviceSelectionMock';
-
+} from 'apps/pos/e2e/mocks/deviceSelection';
 import {
   paymentMethodsAndServiceSelectionMock,
   incompletePricingStepAggregatorModelMock,

@@ -20,6 +20,14 @@ import {
   brandInformationValidationAggregatorModelMock,
   nextStepNACHAggregatorModelMock,
 } from './paymentMethodAndService';
+import {
+  addToCartMock,
+  proceedToCartMock,
+  confirmOrderMock,
+  confirmDeliveryAddressMock,
+  confirmedPaymentMock,
+  paymentPendingMock,
+} from './deviceSelection';
 import { MERCHANT_API_LIVE_ENDPOINT } from 'apps/pos/e2e/constants';
 
 /**
@@ -212,6 +220,68 @@ export const queryMocks = {
       });
     },
   ),
+  AddToCartMock: graphql.mutation('MerchantModularOnboardingDetailsUpdateAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsUpdateAsSales: addToCartMock,
+      },
+    });
+  }),
+  ProceedToCartMock: graphql.mutation('MerchantModularOnboardingDetailsUpdateAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsUpdateAsSales: proceedToCartMock,
+      },
+    });
+  }),
+  CustomDeviceChargesProof: http.post(
+    `${MERCHANT_API_LIVE_ENDPOINT}/merchant/documents/upload`,
+    () => {
+      return HttpResponse.json({
+        status_code: 200,
+        success: true,
+        data: {
+          custom_device_charges_proof: {
+            file_id: 'PsouitDtdwtMFQ',
+            source: 'UFH',
+            file_name: 'api/PmTPcHMAUczy56/3505b/test-document',
+            original_file_name: 'test-document.png',
+          },
+        },
+      });
+    },
+  ),
+  ConfirmOrderMock: graphql.mutation('MerchantModularOnboardingDetailsUpdateAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsUpdateAsSales: confirmOrderMock,
+      },
+    });
+  }),
+  ConfirmDeliveryAddressMock: graphql.mutation(
+    'MerchantModularOnboardingDetailsUpdateAsSales',
+    () => {
+      return HttpResponse.json({
+        data: {
+          merchantModularOnboardingDetailsUpdateAsSales: confirmDeliveryAddressMock,
+        },
+      });
+    },
+  ),
+  ConfirmedPaymentMock: graphql.mutation('MerchantModularOnboardingDetailsUpdateAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsUpdateAsSales: confirmedPaymentMock,
+      },
+    });
+  }),
+  PaymentPendingMock: graphql.mutation('MerchantModularOnboardingDetailsUpdateAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsUpdateAsSales: paymentPendingMock,
+      },
+    });
+  }),
   MerchantById: graphql.query('MerchantById', () => {
     return HttpResponse.json({
       data: {
