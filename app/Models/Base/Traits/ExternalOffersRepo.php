@@ -131,13 +131,13 @@ trait ExternalOffersRepo
         return $this->findByIdAndMerchantId($id, $merchant->getId(), $connectionType);
     }
 
-    public function findManyFromOE(array $offerIds, $merchantId)
+    public function findManyFromOE(array $offerIds, $merchantId, array $input = [])
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
             try
             {
-                $offers = $this->fetchExternalEntitiesBulk($merchantId, $offerIds);
+                $offers = $this->fetchExternalEntitiesBulk($merchantId, $offerIds, $input);
 
                 if (empty($offers) === true)
                 {

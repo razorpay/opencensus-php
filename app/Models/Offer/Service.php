@@ -261,8 +261,12 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSignMultiple($offerIds);
 
+        $getOffersInput = [
+            'include_platform_offers' => true
+        ];
+
         // fetches normal offers from OE and limited offers from API db
-        $offers = $this->repo->offer->findManyFromOE($offerIds, $this->merchant->getId());
+        $offers = $this->repo->offer->findManyFromOE($offerIds, $this->merchant->getId(), $getOffersInput);
         // iterating over all offers
         foreach ($offers as $offer) {
             $checker = new Checker($offer, $verbose);
