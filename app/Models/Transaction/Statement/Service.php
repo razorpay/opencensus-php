@@ -107,6 +107,12 @@ class Service extends Transaction\Service
                 ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE)->toArrayPublic();
         }
 
+        $this->trace->info(TraceCode::TRANSACTION_STATEMENT_FETCH_MULTIPLE_FALLBACK_FLOW,
+            [
+                'input' => $input,
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+
         /** @var PublicCollection $transactions */
         $transactions = $this->repo->statement->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
@@ -134,6 +140,8 @@ class Service extends Transaction\Service
                 ->toArrayPublic();
         }
 
+        $ledgerFlow = false;
+
         // In case feature flag is added to the merchant, only in that case ledger service will be called.
         // Since here depending on the transaction, we cannot find whether this transaction is for VA or CA,
         // without depending on the transaction table, so only merchant feature flag check is enough.
@@ -151,7 +159,15 @@ class Service extends Transaction\Service
                     ]);
                 return $ledgerTransaction;
             }
+            $ledgerFlow = true;
         }
+
+        $this->trace->info(TraceCode::TRANSACTION_STATEMENT_FETCH_FALLBACK_FLOW,
+            [
+                'id' => $id,
+                'ledger_flow' => $ledgerFlow,
+                'merchant_id' => $this->merchant->getId(),
+            ]);
 
         /** @var Entity $transaction */
         $transaction = $this->repo
