@@ -13986,6 +13986,10 @@ class Processor
 
         if (isset($gatewayInput['otp']) === false)
         {
+            if(app()->isEnvironmentProduction() === true  and ($this->mode === Mode::TEST))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH);
+            }
             return;
         }
 

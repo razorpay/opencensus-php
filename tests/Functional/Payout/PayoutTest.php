@@ -41518,7 +41518,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testAsyncPayoutApproveProcessingRateLimited()
     {
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
 
         $this->liveSetUp();
 
