@@ -325,8 +325,6 @@ final class RazorxTreatment
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION = 'system_based_needs_clarification';
 
-    const SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER = 'system_based_needs_clarification_for_partner';
-
     const PARTNER_KYC_COMMUNICATION = 'partner_kyc_communication';
 
     const PARTNER_SUBMERCHANT_INVITE_SMS = 'partner_submerchant_invite_sms';
@@ -611,7 +609,6 @@ final class RazorxTreatment
     const AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION = "aadhaar_front_and_back_joint_validation";
 
     // Experiment to use the flow in which there is improvement in GET - /submerchants latency
-    const SUBMERCHANTS_FETCH_API_LATENCY_IMPROVE = 'submerchants_fetch_api_latency_improve';
 
     // Experiment to control Emandate Nach payments processing through async worker queues
     const EMANDATE_ASYNC_PAYMENT_PROCESSING_ENABLED = 'emandate_async_payment_processing_enabled';
@@ -753,9 +750,6 @@ final class RazorxTreatment
 
     //Experiment to disable card flow for sihub post tokenization deadline
     const SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION = 'sihub_disable_card_flow_post_tokenization';
-
-    //Experiment used to control for the flow of create account API for performance analysis
-    const CREATE_ACCOUNT_API_PERFORMANCE_ANALYSIS = 'create_account_api_performance_analysis';
 
     const TRIGGER_NEW_ONBOARDING_ESCALATION_FLOW = 'trigger_new_onboarding_escalation_flow';
 

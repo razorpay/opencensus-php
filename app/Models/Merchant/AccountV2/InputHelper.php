@@ -120,7 +120,7 @@ class InputHelper
             $detailInput[Detail\Entity::CONTACT_MOBILE] = $input[Constants::PHONE];
         }
 
-        if (strtolower($input[Constants:: IS_IGNORE_TOS_ACCEPTANCE]) != Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        if (strtolower($input[Constants:: IS_IGNORE_TOS_ACCEPTANCE]) != true)
         {
             $customFields                              = self::getCustomFieldsFromInput($input);
             if (empty($customFields) === false)

@@ -8144,23 +8144,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $whitelistedPartnerIds = explode(',', $app['config']->get('app.email_optional_partner_MIDs'));
 
-            if (in_array($partnerId, $whitelistedPartnerIds) === false)
-            {
-                return false;
-            }
+            return (in_array($partnerId, $whitelistedPartnerIds) === true);
 
-            // TODO: remove this once the feature is stable in prod for WhatsApp
-            $variant = $app['razorx']->getTreatment($partnerId,
-                                                    RazorxTreatment::ALLOW_EMAIL_OPTIONAL_FOR_PARTNER,
-                                                    $app['rzp.mode'] ?? Mode::LIVE
-            );
 
-            $app['trace']->info(TraceCode::EMAIL_OPTIONAL_FOR_PARTNER_EXP_RESULT, [
-                "partner_id" => $partnerId,
-                "variant"    => $variant,
-            ]);
-
-            return (strtolower($variant) === 'on');
         }
         catch (\Exception $e)
         {

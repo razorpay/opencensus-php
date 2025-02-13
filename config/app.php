@@ -1213,6 +1213,12 @@ return array(
 
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
 
+    'partner_qr_code_feature_override_exp_id'=> env('PARTNER_QR_CODE_OVERRIDE_EXP_ID'),
+
+    'ignore_tos_acceptance_exp_id'=> env('IGNORE_TOS_ACCEPTANCE_EXP_ID'),
+
+    'payment_method_config_update_exp_id'=> env('PAYMENT_METHOD_CONFIG_UPDATE_EXP_ID'),
+
     'line_item_min_amount_validator_splitz_exp_id' => env('LINE_ITEM_MIN_AMOUNT_VALIDATOR_SPLITZ_EXP_ID'),
 
     'p2p' => [

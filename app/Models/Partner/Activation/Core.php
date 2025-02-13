@@ -631,14 +631,11 @@ class Core extends Base\Core
      */
     protected function sendNeedsClarificationEvents(Merchant\Entity $merchant, Entity $partnerActivation)
     {
-        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
-        if ($partnerKycCommEnabled === true)
-        {
+
             $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
             $this->sendNeedsClarificationSms($merchant);
             $this->sendNeedsClarificationWhatsappCommunication($merchant, $partnerActivation);
-        }
+
     }
 
     /**
@@ -700,13 +697,6 @@ class Core extends Base\Core
 
     private function sendRejectionEmail(Merchant\Entity $merchant)
     {
-        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
-
-        if ($partnerKycCommEnabled !== true)
-        {
-            return;
-        }
 
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
@@ -830,13 +820,6 @@ class Core extends Base\Core
      */
     private function sendPartnerActivationEvents(Merchant\Entity $merchant)
     {
-        $partnerKycCommEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::PARTNER_KYC_COMMUNICATION);
-
-        if ($partnerKycCommEnabled !== true)
-        {
-            return;
-        }
 
         $email = new ActivationMail($merchant->getId());
 

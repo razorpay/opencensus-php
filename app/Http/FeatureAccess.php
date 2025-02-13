@@ -498,8 +498,8 @@ class FeatureAccess
             return;
         }
 
-        $isFeatureOverrideAllowedForPartner = (new Merchant\Core)->isRazorxExperimentEnable($partner->getId(),
-            Merchant\RazorxTreatment::PARTNER_QR_CODE_FEATURE_OVERRIDE);
+
+        $isFeatureOverrideAllowedForPartner = $this->isPartnerQrCodeFeatureOverrideExpEnable($partner->getId());
 
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_ACCESS,
@@ -548,5 +548,14 @@ class FeatureAccess
                 );
             }
         }
+    }
+    private function isPartnerQrCodeFeatureOverrideExpEnable(String $partnerMerchant) : bool
+    {
+        $properties = [
+            'id'            => $partnerMerchant,
+            'experiment_id' => $this->app['config']->get('app.partner_qr_code_feature_override_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }
