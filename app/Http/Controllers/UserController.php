@@ -1,13 +1,12 @@
 <?php
 namespace App\Http\Controllers;
 
-use Auth;
-use Exception;
 use Input;
 use Cookie;
 use Request;
 use Session;
 use App\User;
+use Exception;
 use App\Admin;
 use App\Merchant;
 use App\Lib\Util;
@@ -24,6 +23,7 @@ use Illuminate\Http\Response;
 use GuzzleHttp\Client as Guzzle;
 use App\User\RecoverableException;
 use Razorpay\Api\Errors\ErrorCode;
+use Illuminate\Support\Facades\Auth;
 use Razorpay\Api\Errors\BadRequestError;
 use App\Splitz\Service as SplitzService;
 use App\Constants\Constants as AppConstants;
@@ -670,6 +670,18 @@ class UserController extends Controller
         return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 
+    private function getUserLandingPageMetricDimensions(): array
+    {
+        return [
+            MetricConstants::USER_AUTHENTICATED         => Auth::check(),
+            MetricConstants::LABEL_HTTP_REQUESTS_ROUTE  => \Route::currentRouteName(),
+            MetricConstants::LABEL_HTTP_REQUESTS_ORIGIN => ApiUrl::getRequestOrigin(),
+            MetricConstants::LABEL_HTTP_REQUESTS_DOMAIN => \Request::server('SERVER_NAME'),
+            MetricConstants::LABEL_HTTP_REQUESTS_REFERRER   => ApiUrl::getReferrerDomain(),
+            MetricConstants::LABEL_HTTP_REQUESTS_FORWARDED_HOST => ApiUrl::getForwardedHost(),
+        ];
+    }
+
     /**
      * Returns the base template for angular.
      *
@@ -683,6 +695,10 @@ class UserController extends Controller
 
         $currentRouteName = \Route::currentRouteName();
         $authSource = app('request')->input('auth_source', '');
+
+        $dimension = $this->getUserLandingPageMetricDimensions();
+
+        $this->metrics->count(MetricConstants::METRIC_USER_LANDING_PAGE_REQUESTS, MetricConstants::EVENT_COUNT_ONE, $dimension);
 
         if ($currentRouteName === 'dashboard'
             && $authSource !== 'website'

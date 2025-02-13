@@ -105,7 +105,7 @@ class AdminController extends Controller
                 $env = \App::environment();
                 $cdn = \Config::get('app.cdn_dashboard_url');
                 $cdnDashboardAssetsUrl = \Config::get('app.cdn_dashboard_assets_url');
-                
+
                 if ($currentRouteName === 'razorx_catchall' and (empty($org['custom_code'] === false) and ($org['custom_code'] === 'rzp'))) {
                     $view = 'admin.razorx';
                 }

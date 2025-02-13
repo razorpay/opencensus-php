@@ -174,4 +174,11 @@ class Constants
   const LABEL_API_BASE_URL          = 'API_BASE_URL';
 
   const METRIC_COUNTER_CACHE_RESULT = 'cache_result';
+
+  const LABEL_HTTP_REQUESTS_REFERRER      = 'referrer';
+
+  const LABEL_HTTP_REQUESTS_FORWARDED_HOST = 'forwarded_host';
+  const USER_AUTHENTICATED                = 'user_authenticated';
+
+  const METRIC_USER_LANDING_PAGE_REQUESTS = 'user_landing_page_requests';
 }

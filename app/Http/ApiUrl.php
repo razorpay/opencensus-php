@@ -115,6 +115,32 @@ class ApiUrl
         return $originDomain;
     }
 
+    public static function getReferrerDomain(): string
+    {
+        $referrer = self::getReferrerUrl();
+
+        return  empty($referrer) ? 'unknown_referrer' : parse_url($referrer, PHP_URL_HOST);
+    }
+
+    public static function getReferrerUrl()
+    {
+        $referrer = request()->headers->get('referer');
+
+        if (empty($referrer) === true)
+        {
+            $referrer = request()->server('HTTP_REFERER');
+        }
+
+        return  $referrer;
+    }
+
+    public static function getForwardedHost(): string
+    {
+        $forwardedHost = request()->headers->get('x-forwarded-host');
+
+        return empty($forwardedHost) ? 'unknown_forwarded_host' : $forwardedHost;
+    }
+
     public static function isBankingOriginRequest($shouldUseBankingOriginRequestV2 = false)
     {
         $originDomain = self::getRequestOriginUrl();
