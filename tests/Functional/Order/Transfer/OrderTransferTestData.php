@@ -949,5 +949,19 @@ return [
         'response' => [
             'content' => []
         ],
-    ]
+    ],
+    'testOrderTransferProcessViaRouteService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/order_transfers/process_rearch',
+            'content' => [
+                'payment_id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'ok'
+            ],
+        ],
+    ],
 ];
