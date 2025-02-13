@@ -18751,6 +18751,7 @@ class Route
             'setl_fetch_multiple_proxy',
             'merchant_analytics',
             'feature_add',
+            'upi_terminal_onboarding_bulk'
         ],
 
         'route' => [
