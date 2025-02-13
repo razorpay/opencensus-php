@@ -339,12 +339,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
-        self::MERCHANT_DOCUMENT_UPLOAD                  => 30,
+        self::MERCHANT_DOCUMENT_UPLOAD                  => 35,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,
         self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2        => 15,
         self::ONBOARDING_CREATE_OR_FETCH                => 30,
+        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION    => 35,
 
         // TODO: Revert back once the root cause for OBS latency is found and fixed.
         // This is temporarily being increased to unblock curlec signup flows.
