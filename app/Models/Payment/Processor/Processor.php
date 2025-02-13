@@ -2039,7 +2039,9 @@ class Processor
             if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
                 ($merchant->isFeatureEnabled('skip_cvv') === true))
             {
-               if($routeMotoToRearch === false)
+                $skipCvvRearch = $this->shouldRouteSkipCvvViaCPS($merchant->getOrgId());
+
+               if($skipCvvRearch === false)
                {
                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                        'reason' => "merchant_feature",
@@ -15359,4 +15361,41 @@ public function isNBPlusRearchMarketPlace($merchant): bool
         return false;
     }
 
+    /**
+     * shouldRouteSkipCvvViaCPS check if skip_cvv feature flag merchant payments should be ramped on re-arch
+     *
+     * @param string $orgId
+     * @return boolean
+     */
+    private function shouldRouteSkipCvvViaCPS($orgId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.skip_cvv_card_payments_rearch_experiment_id'),
+                'request_data'  => json_encode(['org_id' => $orgId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::SKIP_CVV_CARD_PAYMENTS_REARCH_SPLITZ_VARIANT, [
+                'org_id' => $orgId,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::SKIP_CVV_CARD_PAYMENTS_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
 }
