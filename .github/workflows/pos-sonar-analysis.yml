@@ -42,7 +42,7 @@ jobs:
 
       - name: Run SonarQube PR analysis on Dev Project
         id: pr_sonarqube_analysis
-        uses: sonarsource/sonarcloud-github-action@v1.6
+        uses: sonarsource/sonarcloud-github-action@v4.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONARQUBE_HOST }}
@@ -60,7 +60,6 @@ jobs:
         id: pr-code-coverage-check
         working-directory: ./apps/pos
         run: ./sonar-analysis.sh
-        continue-on-error: true
         env:
           SONAR_HOST: ${{ secrets.SONARQUBE_HOST }}
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
@@ -73,5 +72,25 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
-          header: POSApp
+          header: POSApp - Code Coverage
           path: ./apps/pos/comment.txt
+
+      # Perform new code coverage check on PR changes
+      - name: PR new code coverage check
+        id: pr-new-code-coverage-check
+        working-directory: ./apps/pos
+        run: node ./new-coverage.js
+        env:
+          SONAR_HOST: ${{ secrets.SONARQUBE_HOST }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          PROJECT_KEY_DEV: DashboardPOSMicroAppDev
+          PROJECT_KEY_PROD: DashboardPOSMicroApp
+          FILE_NAME: quality-gate.txt
+          FILE_HEADING: "Sonar Analysis Quality Gate Report"
+
+      - name: Update Sonar Analysis Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          header: POSApp - Quality Gate
+          path: ./apps/pos/quality-gate.txt

@@ -45,15 +45,4 @@ echo code_duplication_prod_percentage: $code_duplication_prod_percentage
 echo code_duplication_dev_lines: $code_duplication_dev_lines
 echo code_duplication_prod_lines: $code_duplication_prod_lines
 
-if [ -z "$code_coverage_dev" ] || [ $code_coverage_dev = null ]; then
-    echo "**Status**: 🚫 Sonar Checks Failed, code coverage for this PR is not found"  >> $FILE_NAME
-    exit 1
-fi
 
-if [ $code_coverage_exact_dev -lt $code_coverage_exact_prod ]; then
-    echo "**Status**: 🚫 Sonar Checks Failed, current code coverage of production ($code_coverage_exact_prod) is getting reduced. Try pulling the latest master in your branch or try covering the new code in your test cases." >> $FILE_NAME
-    exit 1
-else
-    echo "**Status**: ✅ Sonar Checks Passed, code coverage threshold met" >> $FILE_NAME
-    exit 0
-fi
