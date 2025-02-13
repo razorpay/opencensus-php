@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { Tour, TourStep, TourStepTitle, TourStepBody } from 'common/ui/Tour';
-import { setItem } from 'common/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 import scrollTo from 'common/utils/scrollTo';
 import { showOrHideTour } from 'merchant/reducers/session';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -26,7 +26,7 @@ class MerchantTour extends Component {
   showTour = () => {
     this.props.closeModal();
 
-    setItem('tour_shown', true);
+    LocalStorageService.setItem('tour_shown', true);
     this.setState({
       isTourActive: true,
       showOnboardingTour: true,

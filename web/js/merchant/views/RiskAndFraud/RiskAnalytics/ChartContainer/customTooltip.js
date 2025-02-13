@@ -11,7 +11,7 @@ function customTooltip(tooltipModel) {
     tooltipEl = document.createElement('div');
     tooltipEl.id = 'chartjs-tooltip';
     tooltipEl.innerHTML = sanitizer(
-      '<div className="tooltip-wrapper"></div><div className="tooltip-caret"></div>',
+      '<div class="tooltip-wrapper"></div><div class="tooltip-caret"></div>',
     );
     document.body.appendChild(tooltipEl);
   }
@@ -50,13 +50,13 @@ function customTooltip(tooltipModel) {
   tooltipCaret.classList.add('left');
 
   if (body) {
-    let innerHtml = '<div className="title-wrap">';
+    let innerHtml = '<div class="title-wrap">';
 
     title.forEach((title) => {
-      innerHtml += `<div className="title">${title}</div>`;
+      innerHtml += `<div class="title">${title}</div>`;
     });
 
-    innerHtml += '</div><div className="tooltip-body-wrap">';
+    innerHtml += '</div><div class="tooltip-body-wrap">';
 
     body.forEach(({ lines }, i) => {
       const { backgroundColor, borderColor } = labelColors[i] || {
@@ -64,9 +64,9 @@ function customTooltip(tooltipModel) {
         borderColor: '',
       };
       const colorBoxStyle = `background: ${backgroundColor}; border-color: ${borderColor};`;
-      const colorBox = `<span className="label-box" style="${colorBoxStyle}"></span>`;
-      innerHtml += `<div className="tooltip-body-list">
-        <div className="tooltip-body">${colorBox}${lines[0]}</div>
+      const colorBox = `<span class="label-box" style="${colorBoxStyle}"></span>`;
+      innerHtml += `<div class="tooltip-body-list">
+        <div class="tooltip-body">${colorBox}${lines[0]}</div>
       </div>`;
     });
 

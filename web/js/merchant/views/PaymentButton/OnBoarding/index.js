@@ -179,8 +179,8 @@ export default compose(
       paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
     }),
     { handleProductQuickGuide },
-    onBoarding({
-      feature: RZPFeatures.PB,
-    }),
   ),
+  onBoarding({
+    feature: RZPFeatures.PB,
+  }),
 )(PaymentButtonOnBoarding);

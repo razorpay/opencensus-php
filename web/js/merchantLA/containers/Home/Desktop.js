@@ -8,7 +8,7 @@ import DateRangePicker from 'common/ui/DateRangePicker';
 import Group, { GroupItem } from 'common/ui/Group';
 import Header from 'common/ui/Header';
 import Sticky from 'common/ui/Sticky';
-import { getItem, setItem } from 'common/utils/localStorage';
+import LocalStorageService from 'common/utils/localStorage';
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
 import Traffic from 'merchantLA/containers/Home/Traffic';
@@ -23,7 +23,8 @@ class AnalyticsDesktop extends Component {
     const { isAdmin, mode } = props;
 
     this.state = {
-      hasNewAnalyticsTour: !isAdmin && mode === 'live' && !getItem('hide_new_analytics_banner'),
+      hasNewAnalyticsTour:
+        !isAdmin && mode === 'live' && !LocalStorageService.getItem('hide_new_analytics_banner'),
       dismissNewAnalyticsBanner: false, // used for transition
     };
 
@@ -41,7 +42,7 @@ class AnalyticsDesktop extends Component {
   }
 
   onHideNewAnalyticsBanner(cb) {
-    setItem('hide_new_analytics_banner', true);
+    LocalStorageService.setItem('hide_new_analytics_banner', true);
 
     this.setState(
       {

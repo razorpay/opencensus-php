@@ -57,17 +57,17 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'import/no-unresolved': 'off',
     'import/extensions': 'off',
-    'import/order': [
-      'warn',
-      {
-        groups: [['builtin', 'external'], 'internal', ['parent', 'sibling'], 'type'],
-        pathGroups: [{ group: 'builtin', pattern: 'react', position: 'before' }],
-        pathGroupsExcludedImportTypes: ['builtin'],
-        distinctGroup: false,
-        'newlines-between': 'always',
-        alphabetize: { order: 'asc', caseInsensitive: false },
-      },
-    ],
+    // 'import/order': [
+    //   'warn',
+    //   {
+    //     groups: [['builtin', 'external'], 'internal', ['parent', 'sibling'], 'type'],
+    //     pathGroups: [{ group: 'builtin', pattern: 'react', position: 'before' }],
+    //     pathGroupsExcludedImportTypes: ['builtin'],
+    //     distinctGroup: false,
+    //     'newlines-between': 'always',
+    //     alphabetize: { order: 'asc', caseInsensitive: false },
+    //   },
+    // ],
     'react/display-name': 'off',
     'react/no-find-dom-node': 'warn',
     'no-relative-import-paths/no-relative-import-paths': [
