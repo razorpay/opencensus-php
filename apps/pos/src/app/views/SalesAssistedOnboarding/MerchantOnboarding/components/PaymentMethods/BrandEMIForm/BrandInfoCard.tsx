@@ -49,6 +49,12 @@ const getBadgeDetails = (
         color: 'notice',
         icon: ClockIcon,
       };
+    case BRAND_EMI_VERIFICATION_STATUS_ENUM.REJECTED:
+      return {
+        badgeText: 'Failed',
+        color: 'negative',
+        icon: AlertTriangleIcon,
+      };
     default:
       return {
         badgeText: 'Unknown status',
@@ -138,6 +144,16 @@ const BrandInfoCard = ({
             emphasis="subtle"
             isDismissible={false}
             title="Auto-verification failed"
+            icon={AlertCircleIcon}
+          />
+        )}
+        {brand.verificationStatus === BRAND_EMI_VERIFICATION_STATUS_ENUM.REJECTED && (
+          <Alert
+            color="negative"
+            description="This brand could not be verified."
+            emphasis="subtle"
+            isDismissible={false}
+            title="Verification failed"
             icon={AlertCircleIcon}
           />
         )}

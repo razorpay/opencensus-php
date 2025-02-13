@@ -428,6 +428,7 @@ export enum BRAND_EMI_VERIFICATION_STATUS_ENUM {
   VERIFIED = 'verified',
   FAILED = 'failed',
   PENDING = 'pending',
+  REJECTED = 'rejected',
 }
 // Brand emi summary item
 export interface BrandItem {

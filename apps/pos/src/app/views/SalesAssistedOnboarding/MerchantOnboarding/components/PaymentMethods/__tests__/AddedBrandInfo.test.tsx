@@ -37,7 +37,7 @@ describe('<AddedBrandInfo/>', () => {
     expect(screen.getByText(/KO11/i)).toBeInTheDocument();
     expect(screen.getByText(/Pending validation/i)).toBeInTheDocument();
   });
-  test('should show alert when status is failed', () => {
+  test('should show alert when auto verification fails', () => {
     const mockProps = {
       ...props,
       brands: [
@@ -55,6 +55,25 @@ describe('<AddedBrandInfo/>', () => {
     render(<AddedBrandInfo {...mockProps} />);
     expect(screen.getByText(/Auto-verification failed/i)).toBeInTheDocument();
     expect(screen.getByText(/Records will be validated manually/i)).toBeInTheDocument();
+  });
+  test('should show alert when manual verification fails', () => {
+    const mockProps = {
+      ...props,
+      brands: [
+        {
+          label: 'Samsung',
+          name: 'samsung',
+          dealerCode: 'YU12',
+          distributorCode: 'OP23',
+          stateCode: 'KO11',
+          verificationDetailsId: 'JIP323hI',
+          verificationStatus: BRAND_EMI_VERIFICATION_STATUS_ENUM.REJECTED,
+        },
+      ],
+    };
+    render(<AddedBrandInfo {...mockProps} />);
+    expect(screen.getByText(/Verification failed/i)).toBeInTheDocument();
+    expect(screen.getByText(/This brand could not be verified/i)).toBeInTheDocument();
   });
   test('should call add new brand handler when clicked', async () => {
     render(<AddedBrandInfo {...props} />);
