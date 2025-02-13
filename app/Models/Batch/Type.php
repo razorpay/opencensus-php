@@ -118,6 +118,8 @@ class Type
 
     const TERMINAL_CREATION         = 'terminal_creation';
 
+    const DEVICE_TERMINAL_MAPPING    = 'device_terminal_mapping';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -330,6 +332,7 @@ class Type
     ];
 
     public static $appTypes = [
+        self::DEVICE_TERMINAL_MAPPING,
         self::INSTANT_ACTIVATION,
         self::RECONCILIATION,
         self::EMANDATE,
@@ -665,6 +668,7 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
+        self::DEVICE_TERMINAL_MAPPING,
         self::TALLY_PAYOUT,
         self::PAYOUT_LINK_BULK,
         self::PAYOUT_LINK_BULK_V2,
@@ -780,6 +784,7 @@ class Type
 
     // map of type of batch -> permission
     public static $batchToAdminPermissionMapping = [
+        self::DEVICE_TERMINAL_MAPPING            => Name::EDIT_TERMINAL,
         self::ADJUSTMENT                         => Name::ADJUSTMENT_BATCH_UPLOAD,
         self::REPORT                             => Name::REPORTING_BATCH_UPLOAD,
         self::CREDIT                             => Name::CREDITS_BATCH_UPLOAD,

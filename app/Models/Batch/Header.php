@@ -1027,6 +1027,10 @@ class Header
     const TERMINAL_CREATION_STATUS               = 'Status';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Bulk Terminal Creation Headers
+    const DEVICE_TERMINAL_MAPPING_TERMINAL_ID                 = 'Terminal Id';
+    const DEVICE_TERMINAL_MAPPING_DEVICE_ID                   = 'Device Id';
+
     // Upi Onboarded Terminal edit Headers
     const UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID           =   'Terminal Id';
     const UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY               =   'Gateway';
@@ -7532,6 +7536,19 @@ class Header
                 self::E20,
                 self::E21,
             ]
+        ],
+
+        Type::DEVICE_TERMINAL_MAPPING => [
+            self::INPUT => [
+                self::DEVICE_TERMINAL_MAPPING_TERMINAL_ID,
+                self::DEVICE_TERMINAL_MAPPING_DEVICE_ID,
+            ],
+            self::OUTPUT => [
+                self::TERMINAL_ID,
+                self::DEVICE_TERMINAL_MAPPING_DEVICE_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ]
 
     ];
