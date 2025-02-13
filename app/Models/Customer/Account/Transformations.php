@@ -17,9 +17,11 @@ class Transformations
             Entity::CONTACT        => $v2Data[Entity::CONTACT] ?? null,
             Entity::GSTIN          => $v2Data['tax_details'][0]['value'] ?? null,
             Entity::NOTES          => $v2Data[Entity::NOTES] ?? [],
+
         ];
         $customer->fill($entityData);
         $customer->setAttribute(Entity::CREATED_AT, $v2Data[Entity::CREATED_AT]);
+        $customer->setAttribute(Entity::MERCHANT_ID, $v2Data[Entity::MERCHANT_ID]);
 
         if (array_key_exists('global_customer_id', $v2Data['custom_data']))
         {
