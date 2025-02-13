@@ -12,6 +12,7 @@ import {
   matchModal as matchModalx,
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
+import { Box } from '@razorpay/blade/components';
 
 import lazy from './LazyLoader';
 import { isExperimentEnabled } from 'common/splitz/utils';
@@ -395,10 +396,11 @@ const OptimizerAccountDetails = lazy(() =>
 const MagicFPVWithHeader = () => (
   <>
     <ConfigurationHeader />
-    <MagicCheckoutConfiguration />
+    <Box overflowY="auto" height="90vh">
+      <MagicCheckoutConfiguration />
+    </Box>
   </>
 );
-
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/v2/transfers/new': {
     component: PaymentTransferNew,
