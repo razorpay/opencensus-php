@@ -1265,6 +1265,8 @@ return array(
 
     'order_payments_parity_producer' => env('ORDER_PAYMENT_PARITY_PRODUCER'),
 
+    'payments_fetch_multiple_parity_producer' => env('PAYMENTS_FETCH_MULTIPLE_PARITY_PRODUCER'),
+
     'internal_order_payments_experiment_id' => env('INTERNAL_ORDER_PAYMENTS_EXPERIMENT_ID'),
 
     'reserve_balance_read_experiment_id'    => env('RESERVE_BALANCE_READ_EXPERIMENT_ID'),

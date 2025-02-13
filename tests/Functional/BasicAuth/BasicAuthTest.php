@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Error\PublicErrorDescription;
 use RZP\Error\ErrorCode;
 use RZP\Http\Route;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\User\Role;
@@ -37,6 +38,7 @@ class BasicAuthTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use PassportTrait;
+    use MocksSplitz;
 
     /**
      * @var string passport jwks host
@@ -299,6 +301,21 @@ class BasicAuthTest extends TestCase
     public function testWarningOnPassportGenerationAfterModification()
     {
         $this->ba->privateAuth();
+
+        $splitzInput = [
+            'experiment_id' => 'PuLRut9kd5zWkN',
+            'id'            => '10000000000000',
+        ];
+
+        $splitzOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'control',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
         $this->startTest();
 

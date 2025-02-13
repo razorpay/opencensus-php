@@ -8,11 +8,13 @@ use Mail;
 use Crypt;
 use Config;
 use RZP\Constants\Metric as Metrics;
+use RZP\Jobs\OrderPaymentsParity;
 use RZP\Models\Admin;
 use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reminders\ReminderProcessor;
@@ -105,6 +107,7 @@ use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\GenericDocument\Service as DocumentService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Jobs\PaymentsFetchParity;
 use RZP\Services\UpiPayment\Constants as UpsConstants;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
@@ -2374,7 +2377,62 @@ class Service extends Base\Service
            return $this->fetchPaymentDocumentsThroughInvoice($payments, $merchantId);
         }
 
-        return $payments->toArrayPublic();
+        $response = $payments->toArrayPublic();
+
+        if ($this->checkSplitzForPaymentsFetchMultipleParity($merchantId) === true)
+        {
+            $input["ip"]       = $this->app['request']->ip();
+
+            $this->pushFetchMultipleDataForParity($response, $input);
+        }
+
+        return $response;
+    }
+
+    public function checkSplitzForPaymentsFetchMultipleParity(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchantId,
+                "experiment_id" => $this->app['config']->get('app.payments_fetch_multiple_parity_producer'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::ORDER_PAYMENTS_PARITY_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function pushFetchMultipleDataForParity($payments, $input)
+    {
+        try
+        {
+            $microtime = microtime(true);
+
+            // Convert seconds to milliseconds
+            $milliseconds = round($microtime * 1000);
+
+            PaymentsFetchParity::dispatchNow($this->mode, $input, $payments, $milliseconds);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::ORDER_PAYMENTS_PARITY_EXCEPTION,
+                [
+                    "message" => $ex->getMessage()
+                ]);
+        }
     }
 
     public function fetchPaymentNotesKeys(array $input)
