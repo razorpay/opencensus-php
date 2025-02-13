@@ -5,9 +5,13 @@ namespace RZP\Tests\Unit\Models\Base;
 use Database\Connection;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
+use RZP\Models\User;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Exception;
 
 class RepositoryTest extends TestCase
 {
+    use RepositoryUpdateTestAndLive;
     public function testVerifyIdGenerationWhenTestAndLiveEntityAreInSync()
     {
         $repo = (new Merchant\Repository);
@@ -103,4 +107,70 @@ class RepositoryTest extends TestCase
         $this->assertEquals($liveEntity->getArtefactType(), "test_artefact");
         $this->assertEquals($testEntity->getArtefactType(), "test_artefact");
     }
+
+    public function testValidateEntitiesMatchForUser()
+    {
+        $liveUserEntity = new User\Entity();
+        $testUserEntity = new User\Entity();
+
+        $id = $liveUserEntity->generateUniqueId();
+        $liveUserEntity->setId($id);
+        $testUserEntity->setId($id);
+
+        $liveUserEntity->fill([
+           User\Entity::WRONG_2FA_ATTEMPTS => 2,
+           User\Entity::SECOND_FACTOR_AUTH => 1
+        ]);
+
+        $testUserEntity->fill([
+            User\Entity::WRONG_2FA_ATTEMPTS => 0,
+            User\Entity::SECOND_FACTOR_AUTH => 0
+        ]);
+
+        $this->validateEntitiesMatch($testUserEntity, $liveUserEntity);
+
+    }
+
+    public function testValidateEntitiesThrowsException()
+    {
+        $liveMerchantDetailEntity  = new Merchant\Detail\Entity();
+        $testMerchantDetailEntity  = new Merchant\Detail\Entity();
+
+        $id = $liveMerchantDetailEntity->generateUniqueId();
+
+        $promoterPan = 'AAAPA1234J';
+
+        $liveMerchantDetailEntity->fill([
+            Merchant\Detail\Entity::MERCHANT_ID               => $id,
+            Merchant\Detail\Entity::BUSINESS_TYPE             => 5,
+            Merchant\Detail\Entity::BUSINESS_CATEGORY         => Merchant\Detail\BusinessCategoriesV2\BusinessCategory::IT_AND_SOFTWARE,
+            Merchant\Detail\Entity::BUSINESS_SUBCATEGORY      => Merchant\Detail\BusinessCategoriesV2\BusinessCategory::CONSULTING_AND_OUTSOURCING,
+            Merchant\Detail\Entity::ACTIVATION_FLOW           => Merchant\Detail\ActivationFlow::WHITELIST,
+            Merchant\Detail\Entity::PROMOTER_PAN              => $promoterPan,
+            Merchant\Detail\Entity::ACTIVATION_FORM_MILESTONE => Merchant\Detail\Constants::L2_SUBMISSION,
+            Merchant\Detail\Entity::POI_VERIFICATION_STATUS   => Merchant\Detail\Constants::VERIFIED,
+            Merchant\Detail\Entity::ACTIVATION_STATUS         => Merchant\Constants::ACTIVATED,
+            Merchant\Detail\Entity::SUBMITTED                 => true
+        ]);
+
+
+        $testMerchantDetailEntity->fill([
+            Merchant\Detail\Entity::MERCHANT_ID               => $id,
+            Merchant\Detail\Entity::BUSINESS_TYPE             => 4,
+            Merchant\Detail\Entity::BUSINESS_CATEGORY         => Merchant\Detail\BusinessCategoriesV2\BusinessCategory::IT_AND_SOFTWARE,
+            Merchant\Detail\Entity::BUSINESS_SUBCATEGORY      => Merchant\Detail\BusinessCategoriesV2\BusinessCategory::CONSULTING_AND_OUTSOURCING,
+            Merchant\Detail\Entity::ACTIVATION_FLOW           => Merchant\Detail\ActivationFlow::BLACKLIST,
+            Merchant\Detail\Entity::PROMOTER_PAN              => $promoterPan,
+            Merchant\Detail\Entity::ACTIVATION_FORM_MILESTONE => Merchant\Detail\Constants::L1_SUBMISSION,
+            Merchant\Detail\Entity::POI_VERIFICATION_STATUS   => Merchant\Detail\Constants::VERIFIED,
+            Merchant\Detail\Entity::ACTIVATION_STATUS         => Merchant\Detail\Constants::UNDER_REVIEW,
+            Merchant\Detail\Entity::SUBMITTED                 => false
+        ]);
+
+        $this->expectException(Exception\LogicException::class);
+
+        $this->validateEntitiesMatch($testMerchantDetailEntity, $liveMerchantDetailEntity);
+
+    }
+
 }

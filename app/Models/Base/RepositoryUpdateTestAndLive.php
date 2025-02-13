@@ -352,6 +352,17 @@ trait RepositoryUpdateTestAndLive
             $msg = 'Entity: ' . $this->entity . PHP_EOL . $msg;
             $msg .= '. A row in test and live database do not match' . PHP_EOL;
 
+            if($this->entity === \RZP\Constants\Entity::USER)
+            {
+                $this->trace->critical(
+                    TraceCode::USER_ENTITY_OUT_OF_SYNC,
+                    [
+                        'details' => $msg
+                    ]);
+
+                return;
+            }
+
             throw new Exception\LogicException($msg);
         }
     }
