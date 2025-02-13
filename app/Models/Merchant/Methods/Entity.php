@@ -86,7 +86,7 @@ class Entity extends Base\PublicEntity
 
     const IN_APP             = 'in_app';
     const IN_APP_CREDIT_CARD = 'in_app_credit_card';
-
+    const IN_APP_CREDIT_LINE = 'in_app_credit_line';
     const CC_ON_UPI         = 'cc_on_upi';
     const WALLET_ON_UPI     = 'wallet_on_upi';
     const CREDITLINE_ON_UPI = 'creditline_on_upi';
@@ -119,6 +119,7 @@ class Entity extends Base\PublicEntity
     const INTL_BANK_TRANSFER = 'intl_bank_transfer';
 
     const ONLINE_CONVERSION_ENABLED = 'online_conversion_enabled';
+    const CREDIT_LINE = "credit_line";
     protected $primaryKey = self::MERCHANT_ID;
 
     // Table name has been renamed to 'merchant_banks'
@@ -243,6 +244,7 @@ class Entity extends Base\PublicEntity
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
         self::RAZORPAY_GIFTCARD,
+        self::IN_APP_CREDIT_LINE,
     ];
 
     protected $public = [
@@ -312,6 +314,7 @@ class Entity extends Base\PublicEntity
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
         self::RAZORPAY_GIFTCARD,
+        self::IN_APP_CREDIT_LINE,
     ];
 
     protected $appends = [
@@ -341,6 +344,7 @@ class Entity extends Base\PublicEntity
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
         self::RAZORPAY_GIFTCARD,
+        self::IN_APP_CREDIT_LINE,
     ];
 
     protected static $shouldAcceptSubMethods = [
@@ -510,6 +514,7 @@ class Entity extends Base\PublicEntity
             self::CC_ON_UPI,
             self::WALLET_ON_UPI,
             self::CREDITLINE_ON_UPI,
+            self::IN_APP_CREDIT_LINE,
         ],
         self::INTL_BANK_TRANSFER => [
             IntlBankTransfer::ACH,
@@ -1075,6 +1080,10 @@ class Entity extends Base\PublicEntity
             case self::CREDIT_CARD:
                 $inAppPayerAccountType .= '_' . self::CREDIT_CARD;
                 break;
+
+            case self::CREDIT_LINE:
+                $inAppPayerAccountType .= '_' . self::CREDIT_LINE;
+                break;
         }
 
         return (
@@ -1086,6 +1095,11 @@ class Entity extends Base\PublicEntity
     public function isInAppCreditCardEnabled()
     {
         return $this->isInAppEnabled(self::CREDIT_CARD);
+    }
+
+    public function isInAppCreditLineEnabled()
+    {
+        return $this->isInAppEnabled(self::CREDIT_LINE);
     }
 
     public function isSodexoEnabled(): bool
@@ -1441,6 +1455,23 @@ class Entity extends Base\PublicEntity
     public function getInAppCreditCardAttribute()
     {
         return $this->getInAppCreditCard();
+    }
+
+    public function getInAppCreditLine()
+    {
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+
+        if(isset($addonMethods[self::UPI]) and isset($addonMethods[self::UPI][self::IN_APP_CREDIT_LINE]))
+        {
+            return $addonMethods[self::UPI][self::IN_APP_CREDIT_LINE];
+        }
+
+        return 0;
+    }
+
+    public function getInAppCreditLineAttribute()
+    {
+        return $this->getInAppCreditLine();
     }
 
     public function getIntlBankTransferAttribute()

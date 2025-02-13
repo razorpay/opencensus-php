@@ -214,7 +214,7 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForAmazonPay($mcc);
         }
 
-        if (isset($input[Entity::IN_APP]) or isset($input[Entity::IN_APP_CREDIT_CARD]))
+        if (isset($input[Entity::IN_APP]) or isset($input[Entity::IN_APP_CREDIT_CARD]) or isset($input[Entity::IN_APP_CREDIT_LINE]))
         {
             $this->handleEnableDisableForInAppPaymentMethods($methods, $input, $mcc);
         }
@@ -2074,10 +2074,22 @@ class Core extends Base\Core
         if (isset($input[Entity::IN_APP_CREDIT_CARD]) and
             boolval($input[Entity::IN_APP_CREDIT_CARD]) === true)
         {
-            if ($this->isInAppCreditCardEnablementAllowed($methods, $input) === false)
+            if ($this->isInAppSubTypeEnablementAllowed($methods, $input) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "in_app_credit_card cannot be enabled if in_app is not being enabled and not already enabled"
+                );
+            }
+        }
+
+        // in_app_credit_line cannot be enabled if in_app is not being enabled and not already enabled
+        if (isset($input[Entity::IN_APP_CREDIT_LINE]) and
+            boolval($input[Entity::IN_APP_CREDIT_LINE]) === true)
+        {
+            if ($this->isInAppSubTypeEnablementAllowed($methods, $input) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "in_app_credit_line cannot be enabled if in_app is not being enabled and not already enabled"
                 );
             }
         }
@@ -2107,7 +2119,7 @@ class Core extends Base\Core
         return true;
     }
 
-    private function isInAppCreditCardEnablementAllowed(Entity $methods, $input): bool
+    private function isInAppSubTypeEnablementAllowed(Entity $methods, $input): bool
     {
         $isInAppAlreadyEnabled = $methods->isInAppEnabled() === true;
         $isInAppMethodChangeRequest = isset($input[Entity::IN_APP]);

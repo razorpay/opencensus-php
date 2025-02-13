@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Preferences;
 use Monolog\Logger;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
+use RZP\Models\P2p\BankAccount\Type;
 use RZP\Models\P2p\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
@@ -79,6 +80,8 @@ class Processor extends Base\Processor
             $this->setExperimentsInResponse($preferencesResponse);
 
             $this->setPrefetchConfigsInResponse($preferencesResponse);
+
+            $this->setFundsourceMetaDataInResponse($preferencesResponse);
 
             // if order id and customer id are empty
             if ((isset($input[Entity::ORDER_ID]) === false) and (isset($input[Entity::CUSTOMER_ID]) === false))
@@ -536,6 +539,10 @@ class Processor extends Base\Processor
             {
                 $supportedPayerAccountTypes[] = AccountType::CREDIT;
             }
+            if ($merchantMethods->isInAppCreditLineEnabled() === true)
+            {
+                $supportedPayerAccountTypes[] = AccountType::SOD;
+            }
         }
         catch (\Throwable $exception)
         {
@@ -548,4 +555,18 @@ class Processor extends Base\Processor
 
         return $supportedPayerAccountTypes;
     }
+
+    private function setFundsourceMetaDataInResponse(&$preferencesResponse)
+    {
+        // Check if 'features' and 'supported_payer_account_types' are set and contain 'SOD'
+        if (
+            isset($preferencesResponse[Constants::FEATURES]) &&
+            isset($preferencesResponse[Constants::FEATURES][Constants::SUPPORTED_PAYER_ACCOUNT_TYPES]) &&
+            in_array(Constants::SOD, $preferencesResponse[Constants::FEATURES][Constants::SUPPORTED_PAYER_ACCOUNT_TYPES])
+        ) {
+            $fundSourceProviderMetaData = Constants::getInAppCreditFundSourceMetaData();
+            $preferencesResponse[Constants::FUNDSOURCE_METADATA] = $fundSourceProviderMetaData;
+        }
+    }
+
 }

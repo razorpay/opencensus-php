@@ -1626,6 +1626,29 @@ class MethodsTest extends TestCase
         $this->assertTrue($merchantMethods->isInAppCreditCardEnabled());
     }
 
+
+    public function testEnableInAppCreditLine()
+    {
+        $this->testInAppUPI();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'in_app_credit_line' => 1,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isInAppCreditLineEnabled());
+    }
+
     public function testDisableInAppMethods()
     {
         $this->testEnableInAppCreditCard();
