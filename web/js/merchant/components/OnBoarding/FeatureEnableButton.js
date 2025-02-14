@@ -1,17 +1,19 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
 import { AsyncBtn } from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateFeatures } from 'merchant/reducers/config';
 import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchUser } from 'merchant/reducers/session';
-import { setOnBoardingDataInLocalState } from './utils';
-import track from './track';
-import { compose } from 'redux';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-class FeatureEnableButton extends Component {
+import track from './track';
+import { setOnBoardingDataInLocalState } from './utils';
+
+class FeatureEnableButtonComponent extends Component {
   state = {
     isSuccess: false,
   };
@@ -95,15 +97,7 @@ class FeatureEnableButton extends Component {
 const primaryColor = (className) => classList(className, 'Button--primary');
 const transparentColor = (className) => classList(className, 'Button--transparent');
 
-FeatureEnableButton.Primary = (props) => (
-  <FeatureEnableButton {...props} className={primaryColor(props.className)} />
-);
-
-FeatureEnableButton.Transparent = (props) => (
-  <FeatureEnableButton {...props} className={transparentColor(props.className)} />
-);
-
-export default compose(
+const FeatureEnableButton = compose(
   connect(
     (state) => {
       return {
@@ -121,4 +115,14 @@ export default compose(
     },
   ),
   rTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_feature_enable_button`)),
-)(FeatureEnableButton);
+)(FeatureEnableButtonComponent);
+
+FeatureEnableButton.Primary = (props) => (
+  <FeatureEnableButton {...props} className={primaryColor(props.className)} />
+);
+
+FeatureEnableButton.Transparent = (props) => (
+  <FeatureEnableButton {...props} className={transparentColor(props.className)} />
+);
+
+export default FeatureEnableButton;
