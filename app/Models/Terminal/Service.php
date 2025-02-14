@@ -7,6 +7,7 @@ use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ReflectionClass;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Batch;
@@ -525,6 +526,29 @@ class Service extends Base\Service
         $terminal = (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
 
         return $terminal->toArrayAdmin();
+    }
+
+    public function addSubmerchantToTerminalV3($terminalId, $merchantId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        if ($terminal->getGateway() === Gateway::CHECKOUT_DOT_COM)
+        {
+            $payload = [
+                'mode' => $this->mode,
+                'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                'merchant_id' => $merchantId
+            ];
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+        }
+
+        return $this->app['terminals_service']->addSubmerchantsToTerminalV3($terminalId, $merchantId);
+    }
+
+    public function removeSubmerchantFromTerminal($terminalId, $merchantId)
+    {
+        return $this->app['terminals_service']->removeSubmerchantsFromTerminalV3($terminalId, $merchantId);
     }
 
     public function toggleTerminal($id, $input)

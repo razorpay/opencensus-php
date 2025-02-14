@@ -111,6 +111,11 @@ class TerminalsService
     const VALIDATE_DELETE_TERMINAL_V3   = 'validate_delete_terminal_v3';
 
     const REASSIGN_MERCHANT_V3          = 'reassign_merchant_v3';
+
+    const ADD_SUBMERCHANT_TO_TERMINAL_V3 = 'add_submerchant_to_terminal_v3';
+
+    const REMOVE_SUBMERCHANT_FROM_TERMINAL_V3 = 'remove_submerchant_from_terminal_v3';
+
     const CREATE_TERMINAL_V3          = 'create_terminal_v3';
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
 
@@ -232,6 +237,14 @@ class TerminalsService
         ],
         self::DELETE_TERMINAL_V3 => [
             self::PATH   => 'v3/terminals/%s',
+            self::METHOD => Requests::DELETE
+        ],
+        self::ADD_SUBMERCHANT_TO_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/merchants/%s',
+            self::METHOD => Requests::POST
+        ],
+        self::REMOVE_SUBMERCHANT_FROM_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/merchants/%s',
             self::METHOD => Requests::DELETE
         ],
         self::REASSIGN_MERCHANT_V3 => [
@@ -1572,5 +1585,28 @@ class TerminalsService
         $this->throwSyncMethodInstrumentsWarning($parsedResponse);
 
         return $parsedResponse;
+    }
+
+    public function addSubmerchantsToTerminalV3($terminalId, $merchantId)
+    {
+        $params = self::PARAMS[self::ADD_SUBMERCHANT_TO_TERMINAL_V3];
+        $path = sprintf( $params[self::PATH], $terminalId, $merchantId);
+
+        return $this->proxyTerminalService('', $params[self::METHOD], $path);
+    }
+
+    public function removeSubmerchantsFromTerminalV3($terminalId, $merchantId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle(["merchant_id" => $merchantId], []);
+
+        $params = self::PARAMS[self::REMOVE_SUBMERCHANT_FROM_TERMINAL_V3];
+        $path = sprintf( $params[self::PATH], $terminalId, $merchantId);
+
+        return $this->proxyTerminalService('', $params[self::METHOD], $path);
     }
 }
