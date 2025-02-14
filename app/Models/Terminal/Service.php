@@ -660,12 +660,12 @@ class Service extends Base\Service
         return $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
     }
 
-    public function setBanksV3(string $id, array $input): array {
-        return $this->app['terminals_service']->setBanksForTerminalV3($id, $input);
-    }
-
     public function setWallets(string $id, array $input): array
     {
+        if($this->isSplitzEnabled('set_wallets') === true){
+            return $this->app['terminals_service']->setWalletsForTerminalV3($id, $input);
+        }
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->getById($id);
@@ -677,11 +677,8 @@ class Service extends Base\Service
             'bulk_update' => false,
         ];
 
-        $banks = $this->core()->setWalletsForTerminal($terminal, $walletsToEnable, $option);
-
-        return $banks;
+        return $this->core()->setWalletsForTerminal($terminal, $walletsToEnable, $option);
     }
-
 
     /**
      * update enabled_banks for multiple terminal

@@ -115,6 +115,7 @@ class TerminalsService
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
 
     const SET_BANKS_TERMINAL_V3       = 'set_banks_terminal_v3';
+    const SET_WALLETS_TERMINAL_V3   = 'set_wallets_terminal_v3';
 
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
@@ -239,6 +240,10 @@ class TerminalsService
         ],
         self::SET_BANKS_TERMINAL_V3 => [
             self::PATH   => 'v3/terminals/%s/banks',
+            self::METHOD => Requests::PATCH
+        ],
+        self::SET_WALLETS_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/wallets',
             self::METHOD => Requests::PATCH
         ],
     ];
@@ -1535,6 +1540,30 @@ class TerminalsService
             ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
 
         $params = self::PARAMS[self::SET_BANKS_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    /**
+     * @throws MethodInstrumentsTerminalsSyncException
+     */
+    public function setWalletsForTerminalV3($terminalId, $input): array
+    {
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $walletsToEnable = $input[Entity::ENABLED_WALLETS] ?? [];
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([Entity::ENABLED_WALLETS => $terminal->getEnabledWallets()], [Entity::ENABLED_WALLETS => $walletsToEnable]);
+
+        $params = self::PARAMS[self::SET_WALLETS_TERMINAL_V3];
 
         $path = sprintf($params[self::PATH], $terminalId);
 
