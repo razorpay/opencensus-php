@@ -11258,7 +11258,7 @@ class Core extends Base\Core
                     array_key_exists($businessType, BusinessType::$businessTypeExperiments))
                 {
                     $experimentName            = BusinessType::$businessTypeExperiments[$businessType];
-                    $isRazorxExperimentEnabled = array_key_exists($experimentName, BusinessType::$fullyRampedRazorxExp);
+                    $isRazorxExperimentEnabled = in_array($experimentName, BusinessType::$fullyRampedRazorxExp);
 
 
                     $this->trace->info(
