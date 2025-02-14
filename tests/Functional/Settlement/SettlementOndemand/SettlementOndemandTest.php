@@ -3179,6 +3179,13 @@ class SettlementOndemandTest extends TestCase
             'pricing_percent'             => 50,
         ]);
 
+        $this->fixtures->create('methods', [
+            'merchant_id'    => '100DemoAccount',
+            'card'            => '1',
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
         $this->startTest();
 
         $featureConfigs = $this->getEntities(
@@ -3210,7 +3217,7 @@ class SettlementOndemandTest extends TestCase
             ],
             'test');
 
-        $this->assertEquals($pricingRule['percent_rate'], 50);
+        $this->assertEquals(50, $pricingRule['percent_rate']);
 
         $firstMerchantOndemandRestrictedFeature = $this->getDbEntity('feature',
             [   'name'        => 'es_on_demand_restricted',
@@ -3231,7 +3238,6 @@ class SettlementOndemandTest extends TestCase
         $this->assertNull($secondMerchantOndemandRestrictedFeature);
 
         Mail::assertQueued(FullES::class, 0);
-
     }
 
     public function testUpdateFeatureConfigForCrossOrgMerchantFromBatchRoute()
