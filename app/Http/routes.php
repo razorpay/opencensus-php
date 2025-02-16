@@ -159,6 +159,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments')->name('merchant_experiment');
         Route::get('/merchant/features', 'MerchantController@getMerchantFeatures')->name('merchant_features');
         Route::get('/merchant/splitzexperiments', 'MerchantController@getSplitzExperiments')->name('merchant_splitz_experiment');
+        Route::get('/merchant/splitzexperimentsv2', 'MerchantController@getSplitzExperimentsv2')->name('merchant_splitz_experiment_v2');
         Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('merchant_details');
         Route::get('/merchant/tags', 'MerchantController@getMerchantTags')->name('merchant_tags');
         Route::get('/merchant/navigation', 'MerchantController@getMerchantNavigationList')->name('merchant_navigation');

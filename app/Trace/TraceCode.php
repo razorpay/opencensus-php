@@ -10,7 +10,8 @@ class TraceCode
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
     const USER_CONTEXT_LOG                          = 'USER_CONTEXT_LOG';
-
+    const GET_SPLITZ_EXPERIMENTS_ROUTE_INFO_V2   = 'GET_SPLITZ_EXPERIMENTS_ROUTE_INFO_V2';
+    const GET_USER_ID_FAILED                        = 'GET_USER_ID_FAILED';
     const SAML_LOGIN                                = 'SAML_LOGIN';
     const SAML_LOGIN_EXCEPTION                      = 'SAML_LOGIN_EXCEPTION';
     const SAML_CALLBACK                             = 'SAML_CALLBACK';

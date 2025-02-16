@@ -400,6 +400,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getSplitzExperimentsv2()
+    {
+        $data = (new SplitzService())->getSplitzVariantBulkv2();
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
     public function getMerchantDetails()
     {
         $response = [];

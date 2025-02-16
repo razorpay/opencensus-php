@@ -6,8 +6,13 @@ use App\Base;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\User\Constants;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Session;
 use App\Metrics\Constants as MetricsConstants;
 use App\Admin\ApiRequestAny;
+use App\Base\UniqueIdEntity;
 use GuzzleHttp\Client as Guzzle;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Redis;
@@ -58,6 +63,239 @@ class Service extends Base\Service
         $url = 'splitz/bulkEvaluateProxy';
 
         return $this->getVariantBulk($merchantId, config('splitz.experiments'), $clientType, $url, [], $isSplitzCachingEnabled);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSplitzVariantBulkv2(): mixed
+    {
+        $currentUser = Auth::guard('user')->user();
+
+        $currentMerchant  = $currentUser?->currentMerchant();
+
+        return $this->evaluateAndSetCombinedSplitzVariantBulkData($currentMerchant, $currentUser);
+    }
+
+    /**
+     * @param array  $splitzInput
+     * @param array  $options
+     * @param string $url
+     *
+     * @return array
+     */
+    public function getVariantBulkV2(
+        array $splitzInput,
+        array $options = [],
+        string $url = 'splitz/bulkEvaluateProxy'
+    ): array
+    {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_SPLITZ_EXPERIMENTS_ROUTE_INFO_V2, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
+        $responseData = [];
+
+        if (empty($splitzInput) === true)
+        {
+            return $responseData;
+        }
+
+        $request = new ApiRequestAny($options);
+
+        [$error, $data] = $request->processInput($splitzInput)->send($url, 'POST');
+
+        if (empty($error) === false)
+        {
+            $this->trace->info(TraceCode::SPLITZ_BULK_EVALUATE_FAILED, ["error" => $error]);
+
+            return $responseData;
+        }
+
+        $responseData = $this->processBulkSplitzResponse($data);
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_SPLITZ_EXPERIMENTS_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'response'            => $responseData,
+            'end_time'            => $endTime,
+            'duration'            => $duration,
+        ]);
+
+        return $responseData;
+    }
+
+    private function processBulkSplitzResponse($data): array
+    {
+        $responseData = [];
+
+        if (empty($data) === true)
+        {
+            return $responseData;
+        }
+
+        foreach ($data as $output)
+        {
+            if (isset($output['experiment']['id']) === true)
+            {
+                $experimentFeatureFlag = $output['experiment']['id'];
+
+                if (isset($output['variant']) === true)
+                {
+                    $responseData[$experimentFeatureFlag] = $this->transformVariablesFromVariantIfExist($output['variant']);
+                }
+                else
+                {
+                    $responseData[$experimentFeatureFlag] = [];
+                }
+            }
+        }
+
+        return $responseData;
+    }
+
+    private function  getSplitzRequestExpIdsFromCookiesRzpAbUUID(): array
+    {
+        $id = Cookie::get('rzp_ab_uuid') ?? UniqueIdEntity::generateUniqueId();
+
+        return $this->getSplitzExperimentPayloadByExperimenrNames($id, SplitzConstants::RzpAbUUIDExperiments);
+    }
+
+    private function getSplitzRequestExpIdsFromCookiesAbUserID(): array
+    {
+        $id = UniqueIdEntity::generateUniqueId();
+        if (empty($_COOKIE['ab_user_id']) === false) {
+            $id =  $_COOKIE['ab_user_id'];
+        }
+
+        return $this->getSplitzExperimentPayloadByExperimenrNames($id, SplitzConstants::AbUserIDExperiments);
+    }
+
+    private function getSplitzRequestIdsForUUID(): array
+    {
+        $id = UniqueIdEntity::generateUniqueId();
+
+        return $this->getSplitzExperimentPayloadByExperimenrNames($id, SplitzConstants::UUIDExperiments);
+    }
+
+    private function getSplitzRequestExpIdsForMerchantId(string $merchantId): array
+    {
+        $experiments = Config::get(AppConstants::SPLITZ_EXPERIMENTS);
+
+        $experimentIds = [];
+
+        foreach ($experiments as $experimentName => $experimentId)
+        {
+            if (
+                in_array($experimentName, SplitzConstants::RzpAbUUIDExperiments) === false &&
+                in_array($experimentName, SplitzConstants::AbUserIDExperiments) === false &&
+                in_array($experimentName, SplitzConstants::UUIDExperiments) === false &&
+                in_array($experimentName, SplitzConstants::UserIdExperiments) === false
+            ) {
+                $experimentIds[] = $experimentId;
+            }
+        }
+
+        return $this->getSplitzApiPayload($merchantId, $experimentIds, []);
+    }
+
+    private function getSplitzExperimentPayloadByExperimenrNames(string $evaluatingId, array $experimentNames): array
+    {
+        $experimentIds = [];
+
+        foreach ($experimentNames as $experimentName)
+        {
+            $experimentIds[] = Config::get(AppConstants::SPLITZ_EXPERIMENTS)[$experimentName];
+        }
+
+        return $this->getSplitzApiPayload($evaluatingId, $experimentIds, []);
+    }
+
+    private function getCombinedSplitzExperimentInput($currentMerchant, $user): array
+    {
+        $splitzExpIdsInputForUUID = $this->getSplitzRequestIdsForUUID();
+        $splitzExpIdsForAbUserId = $this->getSplitzRequestExpIdsFromCookiesAbUserID();
+        $splitzExpIdsInputForRzpUUID = $this->getSplitzRequestExpIdsFromCookiesRzpAbUUID();
+
+        $splitzExpIdsInputForUserId = [];
+
+        $userId = $this->getUserIdFromUserDetail($user);
+
+        if (empty($userId) === false)
+        {
+            $splitzExpIdsInputForUserId = $this->getSplitzExperimentPayloadByExperimenrNames($userId, SplitzConstants::UserIdExperiments);
+        }
+
+        $validCurrentMerchantId = $this->getMerchantIdFromSessionOrCurrentMerchant($currentMerchant);
+
+        $splitzExpIdsInputForMerchantId = [];
+
+        if (empty($validCurrentMerchantId) === false)
+        {
+            // /merchant/splitzExperiments already handles this case
+            // $splitzExpIdsInputForMerchantId = $this->getSplitzRequestExpIdsForMerchantId($validCurrentMerchantId);
+        }
+
+        return array_merge(
+            $splitzExpIdsInputForUUID,
+            $splitzExpIdsForAbUserId,
+            $splitzExpIdsInputForRzpUUID,
+            $splitzExpIdsInputForUserId,
+            $splitzExpIdsInputForMerchantId
+        );
+    }
+
+    public function getMerchantIdFromSessionOrCurrentMerchant($currentMerchant): string
+    {
+        if (!is_null($currentMerchant))
+        {
+            return $currentMerchant->id;
+        }
+
+        return Session::get('current_merchant_id') ?? "";
+    }
+
+    public function getUserIdFromUserDetail($userDetails): string
+    {
+        $user = Auth::user();
+        $userId = "";
+
+        if (empty($user) === false)
+        {
+            $userId = $user->id;
+        }
+
+        if ((empty($userId) === true) && (empty($userDetails) === false))
+        {
+            try {
+                $userId = array_get($userDetails, 'id', "");
+            } catch (\Throwable $e) {
+                $this->trace->warning(TraceCode::GET_USER_ID_FAILED, [
+                    'message' => $e->getMessage() ?? 'unknown_message',
+                ]);
+            }
+        }
+
+        return $userId;
+    }
+
+    public function evaluateAndSetCombinedSplitzVariantBulkData($currentMerchant, $user)
+    {
+        $finalExperimentIds = $this->getCombinedSplitzExperimentInput($currentMerchant, $user);
+
+        return $this->getVariantBulkV2(
+            $finalExperimentIds,
+            [
+                AppConstants::HTTP_CLIENT => $this->httpClient,
+                'client_type' => 'merchant',
+            ],
+            AppConstants::SPLITZ_BULK_EVALUATE_PATH
+        );
     }
 
     public function generateCacheKey($merchantId, $input)

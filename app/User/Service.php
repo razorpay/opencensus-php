@@ -1446,7 +1446,10 @@ class Service extends Base\Service
             'role'          => $merchantRole,
             'merchant_name' => $merchantName,
             'logo'          => $merchantLogo,
-            'user_id'       => $user->id
+            'user_id'       => $user->id,
+
+            'admin_logged_in_as_merchant'   => (new Admin\Service)->isAdminLoggedIn(),
+            'disable_auto_merchant_login'   => Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false),
         ];
 
         $oauthAction = $this->getUserOauthAction($merchantId, $queryParams);
