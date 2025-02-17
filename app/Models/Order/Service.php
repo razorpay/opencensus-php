@@ -815,7 +815,7 @@ class Service extends Base\Service
                     [
                         "order_id" => $orderId,
                         "passport" => $passport,
-                        "ip"       => $this->app['request']->ip(),
+                        "ip"       => $this->app['request']->getClientIp(),
                     ]
                 );
             }
@@ -831,7 +831,7 @@ class Service extends Base\Service
         if ($this->checkSplitzForOrderPaymentsParity() === true)
         {
             $input["passport"] = $passport;
-            $input["ip"]       = $this->app['request']->ip();
+            $input["ip"]       = $this->app['request']->getClientIp();
 
             $this->pushPaymentsOrderForParity($response, $input);
         }
