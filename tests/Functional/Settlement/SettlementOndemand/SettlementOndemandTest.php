@@ -9,6 +9,8 @@ use Config;
 use Mockery;
 use DateTime;
 use Carbon\Carbon;
+use RZP\Models\Settlement\OndemandFundAccount\Core;
+use RZP\Models\Settlement\OndemandFundAccount\Service;
 use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -5909,17 +5911,16 @@ class SettlementOndemandTest extends TestCase
             "response" => [
                 "variant" => [
                     "variables" => [
-                        [
-                            "key" => "is_enabled",
-                            "value" => "true",
-                        ]
+                        ["key" => "read", "value" => "off"],
+                        ["key" => "write", "value" => "off"],
+                        ["key" => "dual_write", "value" => "off"]
                     ]
                 ]
             ]
         ];
 
         $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.scheduled_es_enablement_migration_experiment_id');
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
         $splitzMock->allows('evaluateRequest')
             ->zeroOrMoreTimes()
             ->with(Mockery::hasKey('experiment_id'))
@@ -6008,6 +6009,173 @@ class SettlementOndemandTest extends TestCase
         $this->assertEquals('failed', $setlod['status']);
 
         $this->assertEquals(1, $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod_'.$setlod['id'].'-ondemand_settlement_processed'])->is_deleted);
+    }
+
+    public function testCreateFundAccountMigrated()
+    {
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        ["key" => "read", "value" => "on"],
+                        ["key" => "write", "value" => "on"],
+                        ["key" => "dual_write", "value" => "on"]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('getFundAccount')
+            ->andThrows(new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,
+                [
+                    'status_code' => 404,
+                    'body' => null,
+                ]));
+
+        $capitalEsMock->allows('dualWriteFundAccount')
+            ->twice()
+            ->andReturns(null);
+
+        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
+        $this->app->instance('razorpayXClient', $payoutsMock);
+
+        $payoutsMock->allows('createContact')
+            ->andReturns(['id'=>'cont_1234567890']);
+
+        $payoutsMock->allows('createFundAccount')
+            ->andReturns(['id'=>'fundacc_1234567890']);
+
+        (new Service())->addOndemandFundAccountForMerchant('10000000000000');
+
+        $fundAccount = $this->getDbLastEntity('settlement.ondemand_fund_account');
+
+        $this->assertEquals('fundacc_1234567890', $fundAccount->getFundAccountId());
+        $this->assertEquals('cont_1234567890', $fundAccount->getContactId());
+    }
+
+    public function testGetFundAccountMigrated_NotFound()
+    {
+        $splitzResp = ["response" => ["variant" => ["variables" => [["key" => "read", "value" => "on"]]]]];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        // Capital ES throws 404
+        $capitalEsMock->allows('getFundAccount')
+            ->andThrows(new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,
+                [
+                    'status_code' => 404,
+                    'body' => null,
+                ]));
+        $fundAccount = (new Core())->getFundAccountByMerchantId('10000000000000');
+        $this->assertNull($fundAccount);
+    }
+
+    public function testGetFundAccountMigrated_ServerError()
+    {
+        $splitzResp = ["response" => ["variant" => ["variables" => [["key" => "read", "value" => "on"]]]]];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('getFundAccount')
+            ->andThrows(new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,
+                [
+                    'status_code' => 500,
+                    'body' => null,
+                ]));
+        try {
+            (new Core())->getFundAccountByMerchantId('10000000000000');
+        } catch (\Throwable $e){
+            $this->assertExceptionClass($e, BadRequestException::class);
+        }
+    }
+
+    public function testGetFundAccountMigrated_NoFundAccountID()
+    {
+        $splitzResp = ["response" => ["variant" => ["variables" => [["key" => "read", "value" => "on"]]]]];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('getFundAccount')
+            ->andReturns([
+                'contact_id' => 'cont_1234',
+                'func_account_id' => ''
+            ]);
+        $fundAccount = (new Core())->getFundAccountByMerchantId('10000000000000');
+        $this->assertEquals('cont_1234', $fundAccount->getContactId());
+        $this->assertNull($fundAccount->fund_account_id);
+    }
+
+    public function testInvalidateFundAccountID()
+    {
+        $splitzResp = [
+            "response" => ["variant" => ["variables" => [["key" => "read", "value" => "off"], ["key" => "dual_write", "value" => "on"]]]]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('getFundAccount')
+            ->andReturns([
+                'contact_id' => 'cont_1234',
+                'func_account_id' => 'fundaccount_1234'
+            ]);
+
+        $capitalEsMock->allows('invalidateAndCreateFundAccount')
+            ->andReturns(null);
+
+        $this->fixtures->create('settlement.ondemand_fund_account',
+            ['contact_id' => 'cont_1234', 'fund_account_id'  => 'fundaccount_1234']);
+
+        (new Core())->invalidateFundAccount('10000000000000');
+
+        $fundAccount = $this->getDbLastEntity('settlement.ondemand_fund_account');
+        $this->assertNull($fundAccount->fund_account_id);
     }
 
     private function mockGetFeatureConfigCallFromCapitalEs($enabled = true)

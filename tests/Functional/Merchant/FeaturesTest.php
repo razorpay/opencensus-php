@@ -21,6 +21,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\NetbankingConfig;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Traits\MocksRazorx;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
@@ -47,7 +48,6 @@ use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
-use RZP\Tests\Traits\MocksSplitz;
 use function Clue\StreamFilter\fun;
 
 class FeaturesTest extends OAuthTestCase
@@ -62,7 +62,6 @@ class FeaturesTest extends OAuthTestCase
     use TestsBusinessBanking;
     use WorkflowTrait;
     use HeimdallTrait;
-
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -982,6 +981,8 @@ class FeaturesTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->mockSplitzForFundAccountsMigration();
+
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
 
         Mail::assertQueued(FullESMail::class, 0);
@@ -991,12 +992,46 @@ class FeaturesTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->mockSplitzForFundAccountsMigration();
+
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
 
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND], 'merchant', '10000000000000');
 
         Mail::assertNotQueued(EsEligibleMail::class);
+    }
+
+    private function mockSplitzForFundAccountsMigration($expStatus = "off")
+    {
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "read",
+                            "value" => $expStatus,
+                        ],
+                        [
+                            "key" => "write",
+                            "value" => $expStatus,
+                        ],
+                        [
+                            "key" => "dual_write",
+                            "value" => $expStatus,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
     }
 
     /*

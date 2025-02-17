@@ -506,6 +506,7 @@ class Route
         'merchant_edit_bank_account'               => ['put',      'bank_accounts/{id}',                             'MerchantController@putBankAccount'                                 ],
         'merchant_bank_account_change_status'      => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
+        'merchant_fetch_bank_account_internal'     => ['get',      'internal/merchants/{id}/bank_account',           'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                 => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
         'merchant_create_terminal_internal_app'    => ['post',     'merchants/{id}/terminals/create/internal',       'MerchantController@postCreateTerminal'                             ],
@@ -6976,6 +6977,7 @@ class Route
         'internal_qr_code_merchant_create',
         'create_qr_for_single_stack',
         'merchant_international_enablement_draft_internal',
+        'merchant_fetch_bank_account_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17727,7 +17729,10 @@ class Route
             'internal_feature_bulk_assign',
             'internal_feature_bulk_remove',
             'pricing_fetch_plan_internal',
-            'pricing_add_plan_rule_bulk'
+            'pricing_add_plan_rule_bulk',
+            'merchant_fetch_bank_account_internal',
+            'contact_create_internal',
+            'fund_account_create_internal',
         ],
 
         'leegality' => [

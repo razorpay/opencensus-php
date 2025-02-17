@@ -27,14 +27,12 @@ class Service extends Base\Service
 
     public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId)
     {
-        /** @var Entity $fundAccount */
-        $fundAccount = (new Repository)->findByMerchantId($merchantId);
+        $this->core()->invalidateFundAccount($merchantId);
 
-        if (empty($fundAccount) === false)
+        if ($this->core()->isFundAccountMigrated('write') === true)
         {
-            $fundAccount->setFundAccountIdNull();
-
-            $this->repo->saveOrFail($fundAccount);
+            $this->app['capital_early_settlements']->invalidateAndCreateFundAccount($merchantId, false);
+            return;
         }
 
         CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
@@ -44,6 +42,12 @@ class Service extends Base\Service
 
     public function dispatchSettlementOndemandFundAccountCreateJob($merchantId)
     {
+        if ($this->core()->isFundAccountMigrated('write') === true)
+        {
+            $this->app['capital_early_settlements']->invalidateAndCreateFundAccount($merchantId, false);
+            return;
+        }
+
         CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
 
         CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);

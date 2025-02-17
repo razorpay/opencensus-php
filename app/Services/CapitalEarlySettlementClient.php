@@ -23,6 +23,10 @@ class CapitalEarlySettlementClient
 
     const GET_FEATURE_CONFIG = 'feature_configs';
 
+    const GET_FUND_ACCOUNT = 'fund_accounts';
+
+    const DUAL_WRITE_FUND_ACCOUNT = 'fund_accounts/dual_write';
+
     protected $app;
 
     protected $trace;
@@ -115,6 +119,48 @@ class CapitalEarlySettlementClient
         );
     }
 
+    public function getFundAccount($merchantId)
+    {
+        $url = self::GET_FUND_ACCOUNT . '?' . http_build_query(['merchant_id' => $merchantId]);
+
+        return $this->sendRequestAndParseResponse($url,
+            [],
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api'
+            ],
+            'GET'
+        );
+    }
+
+    public function invalidateAndCreateFundAccount($merchantId, $skipCreation)
+    {
+        return $this->sendRequestAndParseResponse(self::GET_FUND_ACCOUNT,
+            [
+                'merchant_id' => $merchantId,
+                'sync_mode' => false,
+                'skip_creation' => $skipCreation
+            ],
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api'
+            ],
+            'POST'
+        );
+    }
+
+    public function dualWriteFundAccount($request)
+    {
+        return $this->sendRequestAndParseResponse(self::DUAL_WRITE_FUND_ACCOUNT,
+            $request,
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api'
+            ],
+            'PUT'
+        );
+    }
+
     protected function sendRequestAndParseResponse(
         string $url,
         array $body = [],
@@ -172,7 +218,11 @@ class CapitalEarlySettlementClient
         }
         else if($resp->getStatusCode() >= 400)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null, null, $resp->getBody());
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,
+                [
+                    'status_code' => $resp->getStatusCode(),
+                    'body' => $resp->getBody(),
+                ]);
         }
         else
         {
