@@ -2,7 +2,9 @@
 
 namespace RZP\Listeners;
 
+use Razorpay\Trace\Logger;
 use RZP\Constants;
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
@@ -19,7 +21,6 @@ use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Terminal;
-use Razorpay\Trace\Logger;
 use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
@@ -554,6 +555,10 @@ class ApiEventSubscriber extends Base\Core
                 [
                     'payment_id' => $payment->getId(),
                 ]);
+            $this->trace->count(Metric::SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE, [
+                'payment_method'       => $payment->getMethod(),
+                'flow' => 'onPaymentAuthorized'
+            ]);
         }
 
         // Removed reportInitialPayment from here,
@@ -589,20 +594,35 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === true)
-        {
-            (new Payment\Processor\Processor($payment->merchant))->markSplitPaymentFailed($payment);
-        }
-        if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === false)
-        {
-            (new Payment\Processor\Processor($payment->merchant))->refundSplitPayments($payment);
-        }
+        try{
+            if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === true)
+            {
+                (new Payment\Processor\Processor($payment->merchant))->markSplitPaymentFailed($payment);
+            }
+            if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === false)
+            {
+                (new Payment\Processor\Processor($payment->merchant))->refundSplitPayments($payment);
+            }
 
-        if ($payment->hasSubscription() === true)
-        {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+            if ($payment->hasSubscription() === true)
+            {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+            }
+        }
+        catch (\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUBSCRIPTION_HANDLER_ERROR,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+            $this->trace->count(Metric::SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE, [
+                'payment_method'       => $payment->getMethod(),
+                'flow' => 'onPaymentFailed'
+            ]);
         }
 
         if ($payment->isCardMandateRecurringInitialPayment() === true)
@@ -2702,6 +2722,9 @@ class ApiEventSubscriber extends Base\Core
                     'token_id'     => $token->getId(),
                     'notify_event' => $notifyEvent,
                 ]);
+            $this->trace->count(Metric::TOKEN_CONFIRM_REJECT_NOTIFY_ERROR, [
+                'token_status'       => $token->getRecurringStatus()
+            ]);
         }
 
         return;

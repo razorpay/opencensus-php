@@ -347,4 +347,8 @@ class Metric
 
     const CMS_REQUEST_DURATION_MS = 'cms_request_duration_ms.histogram';
 
+    const SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE = 'subscriptions_payment_notify_failure';
+
+    const TOKEN_CONFIRM_REJECT_NOTIFY_ERROR = 'token_confirm_reject_notify_error';
+
 }
