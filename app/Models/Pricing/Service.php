@@ -1198,7 +1198,7 @@ class Service extends Base\Service
                 'force'      => true,
             ]);
 
-        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
+        $rule = $this->repo->pricing->getPlanRuleLegacy($planId, $ruleId);
 
         $this->app['workflow']
             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())

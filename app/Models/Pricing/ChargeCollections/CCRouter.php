@@ -12,6 +12,12 @@ use RZP\Models\Pricing\Plan as PlanCollection;
 use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Services\ChargeCollections;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
+use RZP\Constants\Environment;
+use RZP\Models\Admin\Org;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Settlement\Channel;
+
 
 
 /*
@@ -105,6 +111,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
+        'RZP\\Models\\Pricing\\Fee\\getPricingPlanForFeesCalculation' => ChargeCollections::GetPricingPlansForFeesCalculationURL,
     );
 
     public function __construct(bool $writes = false, bool $reads = false)
@@ -126,6 +133,12 @@ class CCRouter
     {
         // skip decomp for buy pricing
         if ($buyPricing){
+            $this->trace->count(Metric::CC_BUY_PRICING_REQUEST, [
+                'function' => $fqcn,
+            ]);
+            $this->trace->info(TraceCode::CC_ROUTER_BUY_PRICING_REQUEST, [
+                'function'=> $fqcn,
+            ]);
             $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, self::DISABLE, $sourceInput);
             return call_user_func($legacyCallableWithPhase);
         }
@@ -141,7 +154,7 @@ class CCRouter
         $legacyCallableWithPhase = $this->getLegacyCallableBasedOnParameterCount($legacyCallable, $rampPhase, $sourceInput);
         $metricDimensions = [
             'method' => $methodName,
-            'mode' => $rampPhase,
+            'ramp_phase' => $rampPhase,
         ];
 
         if ($rampPhase == CCRouter::DISABLE || $rampPhase == CCRouter::SHADOW) {
@@ -160,7 +173,7 @@ class CCRouter
                 if (!isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn])) {
                     $this->trace->info(TraceCode::CC_ROUTER_SERVICE_RESPONSE, [
                         'method' => $methodName,
-                        'mode' => CCRouter::SHADOW,
+                        'ramp_phase' => CCRouter::SHADOW,
                         'response' => $ccResponse,
                     ]);
                 }
@@ -188,13 +201,13 @@ class CCRouter
                     $this->trace->histogram(Metric::CC_ROUTER_PRICING_LEGACY_CALL_TIME, $legacyEndTimeMs- $legacyStartTimeMs, $metricDimensions);
                     $this->trace->info(TraceCode::API_PRICING_LEGACY_RESPONSE, [
                         'method' => $methodName,
-                        'mode' => CCRouter::REVERSE_SHADOW,
+                        'ramp_phase' => CCRouter::REVERSE_SHADOW,
                         'response' => $legacyResponse,
                     ]);
                 } catch (\Throwable $e) {
                     $this->trace->traceException($e, Trace::WARNING, TraceCode::API_PRICING_LEGACY_ERROR, [
                         'method' => $methodName,
-                        'mode' => CCRouter::REVERSE_SHADOW,
+                        'ramp_phase' => CCRouter::REVERSE_SHADOW,
                         'code' => $e->getCode(),
                         'message' => $e->getMessage(),
                     ]);
@@ -208,7 +221,7 @@ class CCRouter
 
         $this->trace->error(TraceCode::CC_ROUTER_ROUTE_ERROR, [
             'error' => 'unknown_rampPhase_found',
-            'rampPhase' => $rampPhase,
+            'ramp_phase' => $rampPhase,
         ]);
 
         return ApiResponse::json([
@@ -248,6 +261,11 @@ class CCRouter
             if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
                 $response = $this->app->charge_collections->getPricingPlansSummary($input);
                 return $this->transformSummaryResponse($response);
+            }
+
+            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansForFeesCalculationURL) {
+                $response = $this->app->charge_collections->getPricingPlansForFeesCalculation($input);
+                return $this->transformPricingPlansForFeesCalculation($response, $input);
             }
 
             if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
@@ -430,6 +448,219 @@ class CCRouter
         return $this->transformToPlanModel($responseForPlanMap);
     }
 
+    private function transformPricingPlansForFeesCalculation($response, $input)
+    {
+        $planMap = [];
+        $planId = $input['id'];
+        if (!isset($response['plans']) || count($response['plans']) == 0) {
+            return $planMap;
+        }
+
+        try {
+            foreach ($response['plans'] as $planResponse) {
+                $planModel = $this->transformToPlanModel($planResponse);
+                $planMap[$planResponse['id']] = $planModel;
+            }
+        } catch (\Throwable $e) {
+            throw new \Exception('Could not map charge collections response to entity');
+        }
+        $pricingPlan = $planMap[$planId];
+        return $this->addFallbackPricingRules($pricingPlan, $input, $planMap);
+    }
+
+    private function addFallbackPricingRules(Plan $pricingPlan, $input, $planMap)
+    {
+        $orgId= $input['org_id'];
+
+        // for other orgs we don't merge any pricing plans
+        if ($orgId !== Org\Entity::RAZORPAY_ORG_ID) {
+            return $pricingPlan;
+        }
+
+        $emiSubPricing = $planMap[Pricing\Fee::EMI_SUB_PRICING_PLAN_ID] ?? null;
+        if ($emiSubPricing) {
+            $pricingPlan = $pricingPlan->merge($emiSubPricing);
+        }
+
+        if ($pricingPlan->hasMethod(Payment\Method::BANK_TRANSFER) === false) {
+            $bankTransferPricing = $planMap[Pricing\Fee::DEFAULT_BANK_TRANSFER_PLAN_ID] ?? null;
+            if ($bankTransferPricing) {
+                $pricingPlan = $pricingPlan->merge($bankTransferPricing);
+            }
+        }
+
+        if ($pricingPlan->hasVpaReceiver() === false) {
+            $virtualUpiPricing = $planMap[Pricing\Fee::DEFAULT_VIRTUAL_UPI_PLAN_ID] ?? null;
+            if ($virtualUpiPricing) {
+                $pricingPlan = $pricingPlan->merge($virtualUpiPricing);
+            }
+        }
+
+        if ($pricingPlan->hasQrCodeReceiver() === false) {
+            $qrCodePricing = $planMap[Pricing\Fee::DEFAULT_QR_CODE_PLAN_ID] ?? null;
+            if ($qrCodePricing) {
+                $pricingPlan = $pricingPlan->merge($qrCodePricing);
+            }
+        }
+
+        if ($pricingPlan->hasCreditReceiver() === false) {
+            $ccOnUPIPricing = $planMap[Pricing\Fee::DEFAULT_CC_ON_UPI_PLAN_ID] ?? null;
+            if ($ccOnUPIPricing) {
+                $pricingPlan = $pricingPlan->merge($ccOnUPIPricing);
+            }
+        }
+
+        if ($pricingPlan->hasWalletReceiver() === false) {
+            $ppiWalletOnUPIPricing = $planMap[Pricing\Fee::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID] ?? null;
+            if ($ppiWalletOnUPIPricing) {
+                $pricingPlan = $pricingPlan->merge($ppiWalletOnUPIPricing);
+            }
+        }
+
+        if ($pricingPlan->hasCreditLineReceiver() === false) {
+            $clOnUPIPricing = $planMap[Pricing\Fee::DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID] ?? null;
+            if ($clOnUPIPricing) {
+                $pricingPlan = $pricingPlan->merge($clOnUPIPricing);
+            }
+        }
+
+        if ($pricingPlan->hasMethod(Payment\Method::EMI) === false) {
+            $emiPricing = $planMap[Pricing\Fee::DEFAULT_EMI_PLAN_ID] ?? null;
+            if ($emiPricing) {
+                $pricingPlan = $pricingPlan->merge($emiPricing);
+            }
+        }
+
+        if ($pricingPlan->hasMethod(Payment\Method::COD) === false) {
+            $pricingPlan = $this->addDefaultCoDPricingRules($pricingPlan, $planMap);
+        }
+
+        if ($pricingPlan->hasMethod(Payment\Method::INTL_BANK_TRANSFER) === false) {
+            $pricingPlan = $this->addDefaultIntlBankTransferPricingRules($pricingPlan, $planMap);
+        }
+
+        $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $input, $planMap);
+
+        return $pricingPlan;
+    }
+
+    protected function addDefaultCoDPricingRules(Plan $pricingPlan, $planMap)
+    {
+        $id = $this->app['config']->get('pricing.cod.default_rule_id');
+
+        if (empty($id)) {
+            return $pricingPlan;
+        }
+
+        $codPricing = $planMap[$id] ?? null;
+
+        if ($codPricing === null) {
+            return $pricingPlan;
+        }
+
+        $pricingPlan = $pricingPlan->merge($codPricing);
+
+        return $pricingPlan;
+    }
+
+    protected function addDefaultIntlBankTransferPricingRules(Plan $pricingPlan, $planMap)
+    {
+        if ($this->app['env'] === Environment::TESTING) {
+            $id = $this->app['config']->get('pricing.IntlBankTransfer.default_rule_id');
+
+            if (empty($id)) {
+                return $pricingPlan;
+            }
+
+            $intlBankTransferPricing = $planMap[$id] ?? null;
+
+            if ($intlBankTransferPricing === null) {
+                return $pricingPlan;
+            }
+
+            $pricingPlan = $pricingPlan->merge($intlBankTransferPricing);
+        }
+        return $pricingPlan;
+    }
+
+    protected function addBankingFallbackRulesIfApplicable(Plan $pricingPlan, $input, $planMap)
+    {
+        $orgId = $input['org_id'];
+
+        if (($input['entity_name'] !== EntityConstants::PAYOUT) || ($input['business_banking_enabled'] === false)) {
+            return $pricingPlan;
+        }
+
+        $pricingPlan = $this->addNonAppBankingPayoutFallbackRules($pricingPlan, $orgId, $planMap);
+        return $this->addBankingPayoutAppFallbackRules($pricingPlan, $orgId, $planMap);
+    }
+
+    protected function addNonAppBankingPayoutFallbackRules(Plan $pricingPlan, $orgId, $planMap)
+    {
+        $defaultBankingPlan = $planMap[Pricing\Fee::DEFAULT_BANKING_PLAN_ID];
+        if ($pricingPlan->hasBankingSharedAccountFreePayoutRule() === false) {
+            $bankingSharedAccountFreePayoutPricingRules = $defaultBankingPlan->getBankingSharedAccountFreePayoutPricingRules($orgId);
+            $pricingPlan = $pricingPlan->merge($bankingSharedAccountFreePayoutPricingRules);
+        }
+
+        if ($pricingPlan->hasBankingSharedAccountNonFreePayoutRule() === false) {
+            $bankingSharedAccountNonFreePayoutPricingRules = $defaultBankingPlan->getBankingSharedAccountNonFreePayoutPricingRules($orgId);
+            $pricingPlan = $pricingPlan->merge($bankingSharedAccountNonFreePayoutPricingRules);
+        }
+
+        if ($pricingPlan->hasBankingDirectAccountFreePayoutRule() === false) {
+            $bankingDirectAccountFreePayoutPricingRules = $defaultBankingPlan->getBankingDirectAccountFreePayoutPricingRules($orgId);
+            $pricingPlan = $pricingPlan->merge($bankingDirectAccountFreePayoutPricingRules);
+        }
+
+        $directChannelsWithRulesAbsent = [];
+
+        list($rblRulePresent, $iciciRulePresent, $axisRulePresent, $yesbankRulePresent, $idfcRulePresent) = $pricingPlan->hasBankingDirectAccountNonFreePayoutRule();
+
+        if ($rblRulePresent === false) {
+            $directChannelsWithRulesAbsent[] = Channel::RBL;
+        }
+
+        if ($iciciRulePresent === false) {
+            $directChannelsWithRulesAbsent[] = Channel::ICICI;
+        }
+
+        if ($axisRulePresent === false) {
+            $directChannelsWithRulesAbsent[] = Channel::AXIS;
+        }
+
+        if ($yesbankRulePresent === false) {
+            $directChannelsWithRulesAbsent[] = Channel::YESBANK;
+        }
+
+        if ($idfcRulePresent === false) {
+            $directChannelsWithRulesAbsent[] = Channel::IDFC;
+        }
+
+        if (empty($directChannelsWithRulesAbsent) === false) {
+            $bankingDirectAccountNonFreePayoutPricingRules = $defaultBankingPlan->getBankingDirectAccountNonFreePayoutPricingRules($orgId, $directChannelsWithRulesAbsent);
+            $pricingPlan = $pricingPlan->merge($bankingDirectAccountNonFreePayoutPricingRules);
+        }
+
+        if ($pricingPlan->hasBankingAccountRzpFeesRule() === false) {
+            $bankingAccountRzpFeesRule = $defaultBankingPlan->getBankingAccountRzpFeesRule($orgId);
+            $pricingPlan = $pricingPlan->merge($bankingAccountRzpFeesRule);
+        }
+
+        return $pricingPlan;
+    }
+
+    protected function addBankingPayoutAppFallbackRules(Plan $pricingPlan, $orgId, $planMap)
+    {
+        $defaultBankingPlan = $planMap[Pricing\Fee::DEFAULT_BANKING_PLAN_ID];
+        if ($pricingPlan->hasAppPayoutPricingRule() === false) {
+            $appPayoutRules = $defaultBankingPlan->getAppPayoutPricingRules($orgId);
+            $pricingPlan = $pricingPlan->merge($appPayoutRules);
+        }
+
+        return $pricingPlan;
+    }
+
     public function modifyBulkRequestBasedOnLegacyResponse($legacyResponse, $ccRequest){
         $inputCount = count($legacyResponse['items']);
 
@@ -553,6 +784,10 @@ class CCRouter
                 $this->comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn);
             }
         } catch(\Throwable $e) {
+            $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                'function' => $fqcn,
+                'reason' => 'exception',
+            ]);
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_COMPARE_EXCEPTION, [
                 'method' => $fqcn,
                 'code' => $e->getCode(),
@@ -624,6 +859,7 @@ class CCRouter
                 'value_mismatch' => $valueMismatch,
                 'cc_response' => $ccResponseArray,
                 'legacy_response' => $legacyResponseArray,
+                'reason' => 'key_value_mismatch',
             ]);
             if ($keyAbsent) {
                 $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
@@ -673,8 +909,8 @@ class CCRouter
                $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
                    'function' => $fqcn,
                    'reason' => 'plan_id_name_mismatch',
-                   'cc_response' => $ccResponseArray,
-                   'legacy_response' => $legacyResponseArray,
+                   'cc_response' => $ccSummaryItem,
+                   'legacy_response' => $summaryItem,
                ]);
                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                    'function' => $fqcn,

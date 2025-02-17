@@ -1142,7 +1142,7 @@ class Payment extends Base
                             ]);
 
                         try {
-                            $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($defaultFallbackPlanId);
+                            $pricing = (new Fee())->getPricingPlanForFeesCalculation($defaultFallbackPlanId, $this->entity, $merchant);
                         } catch (\Exception $e) {
                             $this->trace->info("Pricing plan not fetched from repo",
                                 [
@@ -1150,9 +1150,8 @@ class Payment extends Base
                                     "error" => $e->getMessage(),
                                 ]);
                             $defaultFallbackPlanId = Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID;
-                            $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($defaultFallbackPlanId);
+                            $pricing = (new Fee())->getPricingPlanForFeesCalculation($defaultFallbackPlanId, $this->entity, $merchant);
                         }
-                        $pricing = (new Fee())->addFallbackPricingRules($pricing, $this->entity);
 
                         try {
                             if($existingPaymentPricingRule){

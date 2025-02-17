@@ -241,6 +241,7 @@ class Metric
     //ChargeCollections
     const CC_REQUEST_NOT_ROUTED                                 = 'cc_request_not_routed';
     const CC_REQUEST_ROUTED                                     = 'cc_request_routed';
+    const CC_BUY_PRICING_REQUEST                                = 'cc_buy_pricing_request';
     const CC_ROUTER_RESPONSE_MISMATCH                           = 'cc_router_response_mismatch';
     const CC_ROUTER_PRICING_LEGACY_CALL_TIME                    = 'cc_router_pricing_legacy_call_time';
     const CC_ROUTER_SPLITZ_RESPONSE_TIME                        = 'cc_router_splitz_response_time';

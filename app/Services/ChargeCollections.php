@@ -63,6 +63,7 @@ class ChargeCollections
     const GetPricingPlanURL = 'v1/mdr/pricing/plans';
     const GetPricingRuleURL = 'v1/mdr/pricing/rule';
     const GetPricingPlansSummaryURL = 'v1/mdr/pricing/plans_summary';
+    const GetPricingPlansForFeesCalculationURL = 'v1/mdr/pricing/plans/fees_calculation';
     const CreatePricingPlanURL = 'v1/mdr/pricing';
     const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
     const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
@@ -495,6 +496,15 @@ class ChargeCollections
     public function getPricingPlansSummary(array $input, $requestHeaders = [])
     {
         $url = self::GetPricingPlansSummaryURL;
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
+    }
+
+    public function getPricingPlansForFeesCalculation(array $input, $requestHeaders = [])
+    {
+        $url = self::GetPricingPlansForFeesCalculationURL;
+        if (isset($input["id"]) && strlen($input["id"]) > 0) {
+            $url = $url .'/'. $input["id"];
+        }
         return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
     }
 

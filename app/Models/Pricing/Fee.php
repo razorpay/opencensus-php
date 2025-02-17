@@ -18,6 +18,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Pricing\ChargeCollections\CCRouter;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -42,6 +43,8 @@ class Fee extends Base\Core
     protected $trace;
 
     protected $repo;
+
+    protected CCRouter $ccReadRouter;
 
     const DEFAULT_PRICING_PLAN_ID            = '1hDYlICobzOCYt';
     const EMI_SUB_PRICING_PLAN_ID            = '1EmiSubPricing';
@@ -68,6 +71,7 @@ class Fee extends Base\Core
         parent::__construct();
 
         $this->repo = new Pricing\Repository;
+        $this->ccReadRouter = new CCRouter(reads: true);
     }
 
     public function setMerchant(Merchant\Entity $merchant)
@@ -171,16 +175,29 @@ class Fee extends Base\Core
 
         $pricingPlanId = $this->getPricingPlanId($entity);
 
-        // Delete this after 31st Jan
-        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $merchant = $entity->merchant;
 
-        $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId, $merchant);
-
-        $pricing = $this->addFallbackPricingRules($pricing, $entity);
+        $pricing = $this->getPricingPlanForFeesCalculation($pricingPlanId, $entity, $merchant);
 
         return $calculator->calculate($pricing);
+    }
+
+    public function getPricingPlanForFeesCalculation($pricingPlanId, $entity, $merchant) {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($pricingPlanId, $entity, $merchant) {
+            return $this->getPricingPlanForFeesCalculationLegacy($pricingPlanId, $entity, $merchant);
+        };
+        $ccRequest = [
+            'id' => $pricingPlanId,
+            'org_id' => $merchant->getOrgId(),
+            'entity_name' => $entity->getEntityName(),
+            'business_banking_enabled' => $merchant->isBusinessBankingEnabled(),
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing:false);
+    }
+    public function getPricingPlanForFeesCalculationLegacy($pricingPlanId, $entity, $merchant) {
+        $pricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($pricingPlanId, $merchant);
+        return $this->addFallbackPricingRules($pricing, $entity);
     }
 
     public function calculateTerminalRZPFees(Payment\Entity $entity, Pricing\Plan $pricing): array
@@ -320,20 +337,20 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        $emiSubPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::EMI_SUB_PRICING_PLAN_ID);
+        $emiSubPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::EMI_SUB_PRICING_PLAN_ID);
 
         $pricingPlan = $pricingPlan->merge($emiSubPricing);
 
         if ($pricingPlan->hasMethod(Payment\Method::BANK_TRANSFER) === false)
         {
-            $bankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
+            $bankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($bankTransferPricing);
         }
 
         if ($pricingPlan->hasVpaReceiver() === false)
         {
-            $virtualUpiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_VIRTUAL_UPI_PLAN_ID);
+            $virtualUpiPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_VIRTUAL_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($virtualUpiPricing);
         }
@@ -348,34 +365,34 @@ class Fee extends Base\Core
             // 2. If we add it in the code we will have to keep validation on deletion. Because if
             //    a ops guy deletes it it will get created again.
             //
-            $qrCodePricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_QR_CODE_PLAN_ID);
+            $qrCodePricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_QR_CODE_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($qrCodePricing);
         }
 
         if ($pricingPlan->hasCreditReceiver() === false)
         {
-                $ccOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CC_ON_UPI_PLAN_ID);
+                $ccOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_CC_ON_UPI_PLAN_ID);
 
                 $pricingPlan = $pricingPlan->merge($ccOnUPIPricing);
         }
 
         if ($pricingPlan->hasWalletReceiver() === false)
         {
-            $ppiWalletOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID);
+            $ppiWalletOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($ppiWalletOnUPIPricing);
         }
 
         if ($pricingPlan->hasCreditLineReceiver() === false) {
-            $clOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID);
+            $clOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($clOnUPIPricing);
         }
 
         if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)
         {
-            $emiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_EMI_PLAN_ID);
+            $emiPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_EMI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($emiPricing);
         }
@@ -424,7 +441,7 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        $codPricing = $this->repo->getPricingPlanByIdWithoutOrgId($id);
+        $codPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($id);
 
         if ($codPricing === null)
         {
@@ -447,7 +464,7 @@ class Fee extends Base\Core
                 return $pricingPlan;
             }
 
-            $intlBankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId($id);
+            $intlBankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($id);
 
             if ($intlBankTransferPricing === null)
             {
@@ -469,7 +486,7 @@ class Fee extends Base\Core
         //
         if ($pricingPlan->hasBankingSharedAccountFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingSharedAccountFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountFreePayoutDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -480,7 +497,7 @@ class Fee extends Base\Core
         //
         if ($pricingPlan->hasBankingSharedAccountNonFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingSharedAccountNonFreePayouDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountNonFreePayoutDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -492,7 +509,7 @@ class Fee extends Base\Core
         //
         if ($pricingPlan->hasBankingDirectAccountFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingDirectAccountFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingDirectAccountFreePayoutDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -532,7 +549,7 @@ class Fee extends Base\Core
 
         if (empty($directChannelsWithRulesAbsent) === false)
         {
-            $rules = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRules(
+            $rules = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRulesLegacy(
                 Feature::PAYOUT,
                 $merchant,
                 $directChannelsWithRulesAbsent);
@@ -556,7 +573,7 @@ class Fee extends Base\Core
 
         //We are adding Zero Pricing Fee Recovery rule if there is no rules for RZP_FEES
         if ($pricingPlan->hasBankingAccountRzpFeesRule() === false) {
-            $rules = $this->repo->getBankingAccountRzpFeesDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules = $this->repo->getBankingAccountRzpFeesDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -685,7 +702,7 @@ class Fee extends Base\Core
         // add app specific pricing rules, if they are already not included
         if ($pricingPlan->hasAppPayoutPricingRule() === false)
         {
-            $rules       = $this->repo->getAppPayoutPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getAppPayoutPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

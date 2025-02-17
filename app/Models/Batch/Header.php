@@ -1087,6 +1087,7 @@ class Header
     const PRICING_RULE_MAX_FEE                  = 'max_fee';
     const PRICING_RULE_PROCURER                  = 'procurer';
     const PRICING_RULE_UPDATE                   = 'update';
+    const PRICING_RULE_FEE_BEARER               = 'fee_bearer';
 
     // Loc withdrawals
 
@@ -7711,13 +7712,17 @@ class Header
         }
 
         //
-        // For Pricing Rule batch, we want to optionally accept the PRICING_RULE_UPDATE
+        // For Pricing Rule batch, we want to optionally accept the PRICING_RULE_UPDATE and PRICING_RULE_FEE_BEARER
         // headers.
         //
-        if (($type === Type::PRICING_RULE) and
-            ((in_array(self::PRICING_RULE_UPDATE, $actualHeaders, true) === true)))
-        {
-            $expectedHeaders[] = self::PRICING_RULE_UPDATE;
+        if ($type === Type::PRICING_RULE) {
+            if (in_array(self::PRICING_RULE_UPDATE, $actualHeaders, true) === true) {
+                $expectedHeaders[] = self::PRICING_RULE_UPDATE;
+            }
+            if (in_array(self::PRICING_RULE_FEE_BEARER, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::PRICING_RULE_FEE_BEARER;
+            }
         }
 
         if ($type === Type::IIN_NPCI_RUPAY)
