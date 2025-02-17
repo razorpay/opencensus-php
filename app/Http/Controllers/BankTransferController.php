@@ -318,7 +318,6 @@ class BankTransferController extends Controller
         catch (BadRequestValidationFailureException $e)
         {
 
-
             if (TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR === $e ->getMessage()){
                 return array(
                     "error" => array(
@@ -338,6 +337,7 @@ class BankTransferController extends Controller
             }
 
             $this->trace->traceException($e);
+
             return ApiResponse::json(['Status' => 'Failure.'], 400);
         }
         catch (\Throwable $e)
