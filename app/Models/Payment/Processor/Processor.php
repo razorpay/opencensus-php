@@ -7800,11 +7800,7 @@ class Processor
             $this->offer = $offer;
         }
 
-        $core = New Offer\Core();
-
-        $experiments = $core->bulkCalltoSplitz();
-
-        $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input, $experiments);
+        $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
         if ($valid === false)
         {
@@ -7820,35 +7816,42 @@ class Processor
 
             $payment->setAmount($discountedAmount);
 
-            $isReverseShadowEnabled =  $experiments[Offer\Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP];
+            // Reverse shadow is always enabled for production environment
+            $isReverseShadowEnabled = !((app()->isEnvironmentQA() === true) or
+                                        (app()->runningUnitTests() === true));
 
             if (isset($payment[Payment\Entity::OFFER_BENEFITS]))
             {
                 $mismatch = $this->offer->checkDiscountMismatch($orderAmount - $discountedAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
 
                 // perform parity
-                if( $mismatch === true )
+                if ($mismatch === true)
                 {
                     $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
-                    [
-                        'offer_type' => $this->offer->getOfferType(),
-                        'emi_subvention' => $this->offer->getEmiSubvention(),
-                        'route' => app('api.route')->getCurrentRouteName(),
-                    ]);
+                                        [
+                                            'offer_type'     => $this->offer->getOfferType(),
+                                            'emi_subvention' => $this->offer->getEmiSubvention(),
+                                            'route'          => app('api.route')->getCurrentRouteName(),
+                                        ]);
 
                     $this->trace->info(
                         TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
                         [
-                            'API_DISCOUNT' => $orderAmount - $discountedAmount,
+                            'API_DISCOUNT'    => $orderAmount - $discountedAmount,
                             'OFFERS_DISCOUNT' => $payment->getAttribute(Payment\Entity::OFFER_BENEFITS),
                         ]);
 
-                    if ($isReverseShadowEnabled) {
+                    if ($isReverseShadowEnabled)
+                    {
                         throw new Exception\ServerErrorException(
                             'Unable to process this request.', ErrorCode::BAD_REQUEST_OFFERS_ENGINE_DISCOUNT_MISMATCH);
                     }
-                } else if($isReverseShadowEnabled) {
-                    $discount = $this->offer->getDiscountAmountForPaymentFromOE($payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
+                }
+                else if ($isReverseShadowEnabled)
+                {
+                    $discount = $this->offer->getDiscountAmountForPaymentFromOE(
+                        $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
+
                     $payment->setAmount($orderAmount - $discount);
                 }
             }
@@ -7858,14 +7861,10 @@ class Processor
             $input['order_amount'] = $orderAmount;
         }
 
-        // unset the offer_benefits field after parity checks
-        if (isset($payment[Payment\Entity::OFFER_BENEFITS]))
-        {
-            unset($payment[Payment\Entity::OFFER_BENEFITS]);
-        }
+        unset($payment[Payment\Entity::OFFER_BENEFITS]);
     }
 
-    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, array $experiments): bool
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input): bool
     {
         $valid = false;
 
@@ -7901,7 +7900,7 @@ class Processor
 
         $this->offer = $offer;
 
-        if (!$this->validateOffersViaOffersEngine($payment, $offer, $experiments))
+        if (!$this->validateOffersViaOffersEngine($payment, $offer))
         {
             // validateOffersViaOffersEngine should always throw an exception in the account these
             // parameters checked below are true. If the code flow comes here, it's a P0 issue.
@@ -7912,11 +7911,16 @@ class Processor
                 ($offer->shouldBlockPayment() === true))
             {
                 $this->trace->error(TraceCode::PAYMENT_CREATION_SHOULD_BE_BLOCKED, [
-                    'offer_id'   => $offer->getPublicId(),
+                    'offer_id' => $offer->getPublicId(),
                 ]);
 
                 app('trace')->count(Offer\Metric::OFFERS_PAYMENT_CREATION_INVALID);
             }
+
+            $this->trace->info(TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT, [
+                'payment_id' => $payment->getId(),
+                'offer_id'   => $offer->getId()
+            ]);
 
             return $valid;
         }
@@ -7925,7 +7929,8 @@ class Processor
 
         $payment->associateOffer($this->offer);
 
-        if($order !== null){
+        if ($order !== null)
+        {
             $order_id = $order->getPublicId() !== null ? $order->getPublicId() : null;
         }
 
@@ -7934,11 +7939,11 @@ class Processor
             'payment_id' => $payment->getPublicId(),
             'order_id'   => $order_id ?? null,
         ]);
-        return $valid;
 
+        return $valid;
     }
 
-    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, array $experiments): bool
+    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer): bool
     {
         $core = New Offer\Core();
 
@@ -7949,11 +7954,11 @@ class Processor
             return false;
         }
 
-        $isReverseShadowEnabled =  $experiments[Offer\Constants::OFFERS_ENGINE_REVERSE_SHADOW_EXP];
+        // Reverse shadow is always enabled for production environment
+        $isReverseShadowEnabled = !((app()->isEnvironmentQA() === true) or
+                                    (app()->runningUnitTests() === true));
 
-        $shouldValidateOnOffersEngine = $experiments[Offer\Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP];
-
-        $resp = $core->validateOnOffersEngine($shouldValidateOnOffersEngine, $payment, $order, $this->offer, false);
+        $resp = $core->validateOnOffersEngine($isReverseShadowEnabled, $payment, $order, $this->offer, false);
 
         if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === false)
         {
@@ -7967,29 +7972,41 @@ class Processor
         $hasException = false;
         $isOfferAvailed = false;
 
-        if($isOfferValidAtOE)
+        if ($isOfferValidAtOE)
         {
-            try {
-                $isOfferAvailed = $this->setOfferBenefitAndAvailOnOE($payment,
-                    $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'], $offer);
-            } catch (\Exception $e) {
+            try
+            {
+                $isOfferAvailed = $this->setOfferBenefitAndAvailOnOE(
+                    $payment, $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'], $offer);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::OFFERS_ENGINE_AVAIL_FAILURE, [
+                    'offer_id' => optional($this->offer)->getId(),
+                    'route'    => app('api.route')->getCurrentRouteName(),
+                ]);
+
                 $hasException = true;
             }
         }
 
-        if (!$isOfferValidAtOE || $hasException || !$isOfferAvailed) {
-            if($isReverseShadowEnabled && $this->offer->shouldBlockPayment() === true) {
+        if (!$isOfferValidAtOE || $hasException || !$isOfferAvailed)
+        {
+            if ($isReverseShadowEnabled && $this->offer->shouldBlockPayment() === true)
+            {
                 $errorMessage = $this->offer->getErrorMessage();
-                $this->trace->info(
-                    TraceCode::OFFERS_ENGINE_PAYMENT_REVERSE_SHADOW,
-                    [
-                        'OFFER_ID' => $this->offer->getId(),
-                    ]);
+
+                $this->trace->info(TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT, [
+                    'payment_id' => $payment->getId(),
+                    'offer_id'   => $offer->getId()
+                ]);
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
+
             return false;
         }
+
         return true;
     }
 

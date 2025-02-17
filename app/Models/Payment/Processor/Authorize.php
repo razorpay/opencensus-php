@@ -3751,8 +3751,21 @@ trait Authorize
                 ]);
         }
     }
+
+    /**
+     * @deprecated this function shouldn't be used anymore, all validations should be carried
+     * out offers engine. This functions returns if its production environment.
+     */
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
+        $isLowerEnvironment = ((app()->runningUnitTests() === true) or
+                               (app()->isEnvironmentQA() === true));
+
+        if ($isLowerEnvironment === false)
+        {
+            return;
+        }
+
         $offer = $this->offer;
 
         if ($offer !== null)

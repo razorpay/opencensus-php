@@ -1392,22 +1392,6 @@ class OffersEngine extends Base\Core
                 'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
             ]);
-            #TODO ::OFFERS to check why this is there
-            if (isset($response['error']))
-            {
-                // if card number is necessary, rebuild the fact and call again
-                if (in_array($response['error']['internal_error_code'],
-                    [Constants::VALIDATE_CARD_NUMBER_REQUIRED_ERROR,
-                    Constants::VALIDATE_MISSING_FACT_ERROR], true) === true )
-                {
-                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
-
-                    $response = $this->app['offers_engine']->validateOffer($merchantId, [
-                        'offer_id' => $offer->getPublicId(),
-                        'fact' => $fact,
-                    ]);
-                }
-            }
             return $response;
         }
         catch (\Exception $exception)

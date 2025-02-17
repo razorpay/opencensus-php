@@ -222,26 +222,29 @@ class Service extends Base\Service
 
     public function validateCheckoutOffers($input)
     {
-
         $applicableOffers = $this->validatePlatformOffer($input);
 
-        if (sizeof($applicableOffers) > 0) {
+        if (sizeof($applicableOffers) > 0)
+        {
             return $applicableOffers;
         }
 
         (new Validator())->validateInput('validate_checkout_offers', $input);
 
-
         $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
 
-        if (isset($input["card"]["number"]) === false and isset($input["card"]["token"]) === false) {
+        if (isset($input["card"]["number"]) === false and isset($input["card"]["token"]) === false)
+        {
             return $applicableOffers;
         }
         $cardNumber = null;
 
-        if (isset($input["card"]["token"]) === true) {
+        if (isset($input["card"]["token"]) === true)
+        {
             $cardNumber = (new Card\CardVault)->getCardNumber($input["card"]["token"]);
-        } else {
+        }
+        else
+        {
             $cardNumber = $input["card"]["number"];
         }
 
@@ -249,7 +252,8 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($iin);
 
-        if (isset($iinEntity) === false) {
+        if (isset($iinEntity) === false)
+        {
             throw new Exception\BadRequestException('BAD_REQUEST_ERROR', 'iin', null, 'iin not found');
         }
 
@@ -268,10 +272,12 @@ class Service extends Base\Service
         // fetches normal offers from OE and limited offers from API db
         $offers = $this->repo->offer->findManyFromOE($offerIds, $this->merchant->getId(), $getOffersInput);
         // iterating over all offers
-        foreach ($offers as $offer) {
+        foreach ($offers as $offer)
+        {
             $checker = new Checker($offer, $verbose);
             //validating whether offer is applicable for payment or not
-            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true) {
+            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true)
+            {
                 //adding the offer public id to return list
                 $applicableOffers[] = $offer->getPublicId();
             }

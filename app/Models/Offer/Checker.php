@@ -145,6 +145,11 @@ class Checker extends Base\Core
 
         return true;
     }
+
+    /**
+     * @deprecated this function shouldn't be used anymore, all validations should be carried
+     * out offers engine.
+     */
     public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
@@ -205,7 +210,7 @@ class Checker extends Base\Core
 
         // Hardcoding exclusion of Fi Money offer as highlighted due to the above bug.
         if (($shouldSkipApiValidation === true) and
-            ($this->offer->getId() !== 'PjkSHDt8psBZA3'))
+            ($this->offer->getId() !== 'PQIjkSjRnxt3RC'))
         {
             app('trace')->info(TraceCode::OFFER_VALIDATION_LOGGER, [
                 "skip_validation" => true,
@@ -689,8 +694,10 @@ class Checker extends Base\Core
     }
 
 
-    //Checks the number of successfully created payments have been made with that offer, should
-    //not exceed the max offer usage count
+    /**
+     * @deprecated this function shouldn't be used anymore, all validations should be carried
+     * out offers engine.
+     */
     protected function checkMaxOfferUsage(): bool
     {
         if($this->offer->getMaxOfferUsage() === NULL)

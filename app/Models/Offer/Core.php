@@ -268,6 +268,10 @@ class Core extends Base\Core
         return $order;
     }
 
+    /**
+     * @deprecated this function shouldn't be used anymore, all validations should be carried
+     * out offers engine.
+     */
     public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
         $verbose = true;
@@ -827,35 +831,15 @@ class Core extends Base\Core
         return $this;
     }
 
-    //increment the offer usage count after failed payment for max offer validation.
+    /**
+     * @deprecated - currently, all offers reads have been migrated to offers engine, hence this function will just
+     * return the offer back without incrementing usage.
+     */
     public function lockIncrementCurrentOfferUsage(Entity $offer, $payment = null)
     {
         if ($offer !== null)
         {
-            // Keeping duplication in code for readability, will remove this once fully ramped up.
-            if ($offer->isExternalOfferWithGlobalLimits() === true)
-            {
-                // Even though we are making offers with limits source of truth as offers engine,
-                // incrementing the API offer to maintain consistency if need of rollback arises.
-                $this->repo->transaction(function() use ($offer, $payment) {
-                    $apiOffer = $this->repo->offer->lockForUpdate($offer->getId());
-
-                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
-                        "offer_id"          => $offer->getId(),
-                        "external_offer"    => true,
-                        "oe_current_usage"  => $offer->getCurrentOfferUsage(),
-                        "api_current_usage" => $apiOffer->getCurrentOfferUsage(),
-                        "api_new_usage"     => $apiOffer->getCurrentOfferUsage() + 1,
-                        "route_name"        => $this->app['api.route']->getCurrentRouteName() ?? null,
-                        "payment_id"        => optional($payment)->getId(),
-                    ]);
-
-                    $apiOffer->setCurrentUsageCount($apiOffer->getCurrentOfferUsage() + 1);
-
-                    $this->repo->saveOrFail($apiOffer);
-                });
-            }
-            else
+            if ($offer->isExternalOfferWithGlobalLimits() === false)
             {
                 $offer = $this->repo->transaction(function() use ($offer, $payment) {
                     $offer = $this->repo->offer->lockForUpdate($offer->getId());
@@ -872,7 +856,6 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($offer);
 
-                    // not handling this as part of decomp reads as it is part of payment flow and involves usage updates
                     return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
                 });
             }
@@ -881,37 +864,17 @@ class Core extends Base\Core
         }
     }
 
-    //decrement the offer usage count after failed payment for max offer validation.
+    /**
+     * @deprecated - currently, all offers reads have been migrated to offers engine, hence this function will just
+     * return the offer back without decrementing usage.
+     */
     public function lockDecrementCurrentOfferUsage(Payment\Entity $payment)
     {
         $offer = $payment->getOffer();
 
         if ($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
-            // Keeping duplication in code for readability, will remove this once fully ramped up.
-            if ($offer->isExternalOfferWithGlobalLimits() === true)
-            {
-                // Even though we are making offers with limits source of truth as offers engine,
-                // decrementing the API offer to maintain consistency if need of rollback arises.
-                $this->repo->transaction(function() use ($offer, $payment) {
-                    $apiOffer = $this->repo->offer->lockForUpdate($offer->getId());
-
-                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
-                        "offer_id"          => $offer->getId(),
-                        "external_offer"    => true,
-                        "oe_usage"          => $offer->getCurrentOfferUsage(),
-                        "api_current_usage" => $apiOffer->getCurrentOfferUsage(),
-                        "api_new_usage"     => $apiOffer->getCurrentOfferUsage() - 1,
-                        "route_name"        => $this->app['api.route']->getCurrentRouteName() ?? null,
-                        "payment_id"        => optional($payment)->getId(),
-                    ]);
-
-                    $apiOffer->setCurrentUsageCount($apiOffer->getCurrentOfferUsage() - 1);
-
-                    $this->repo->saveOrFail($apiOffer);
-                });
-            }
-            else
+            if ($offer->isExternalOfferWithGlobalLimits() === false)
             {
                 $offer = $this->repo->transaction(function() use ($offer, $payment) {
                     $offer = $this->repo->offer->lockForUpdate($offer->getId());
