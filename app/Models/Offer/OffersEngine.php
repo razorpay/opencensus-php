@@ -1388,9 +1388,11 @@ class OffersEngine extends Base\Core
         {
             $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
 
+            // adding skip_whitelisting attribute to bypass the whiteisting for dummy details
             $response = $this->app['offers_engine']->validateOffer($merchantId, [
                 'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
+                'skip_whitelisting'=> $isDummyPayment,
             ]);
             return $response;
         }
