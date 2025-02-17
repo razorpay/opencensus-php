@@ -115,6 +115,7 @@ class Limit
         Type::BVS_BULK_KYC_VERIFICATION             => 50000,
         Type::UPDATE_ODS_MERCHANT_LIMITS            => 50000,
         Type::CREATE_GIFT_CARD_TRANSFERS            => 10000,
+        Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 => 50000,
     ];
 
     /**

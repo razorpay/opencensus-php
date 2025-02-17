@@ -189,6 +189,8 @@ class Type
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement_ondemand_feature_config';
 
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 = 'settlement_ondemand_feature_config_v2';
+
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
 
     const MERCHANT_CAPITAL_TAGS = 'merchant_capital_tags';
@@ -321,6 +323,7 @@ class Type
 
     const UPDATE_ODS_MERCHANT_LIMITS = 'update_ods_merchant_limits';
 
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -361,6 +364,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
@@ -503,6 +507,7 @@ class Type
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
@@ -690,6 +695,7 @@ class Type
         self::ADJUSTMENT,
         self::VENDOR_ONBOARDING,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
@@ -814,7 +820,6 @@ class Type
         self::HITACHI_CBK_MASTERCARD             => Name::BULK_HITACHI_CHARGEBACK,
         self::HITACHI_CBK_VISA                   => Name::BULK_HITACHI_CHARGEBACK,
         self::HITACHI_CBK_RUPAY                  => Name::BULK_HITACHI_CHARGEBACK,
-
         self::SUBMERCHANT_ASSIGN                 => Name::ADMIN_MANAGE_PARTNERS,
         self::SUBMERCHANT_LINK                   => Name::ADMIN_MANAGE_PARTNERS,
         self::SUBMERCHANT_DELINK                 => Name::ADMIN_MANAGE_PARTNERS,
@@ -880,6 +885,7 @@ class Type
         self::S2P_USERS_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
         self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
         self::UPDATE_ODS_MERCHANT_LIMITS              => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2   => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
     ];
 
     public static $workflowApplicableBatchTypes = [
