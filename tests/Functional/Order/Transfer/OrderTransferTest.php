@@ -622,22 +622,5 @@ class OrderTransferTest extends TestCase
         }
 
     }
-    public function testOrderTransferProcessViaRouteService()
-    {
-        $order = $this->fixtures->create('order', ['status' => 'paid']);
-
-        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $data['request']['content']['payment_id'] = $payment['id'];
-
-        $this->ba->pgRouterAuth();
-
-        $resp = $this->runRequestResponseFlow($data);
-
-        $this->assertEquals('ok', $resp['status']);
-
-    }
 
 }

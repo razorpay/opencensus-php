@@ -2031,19 +2031,6 @@ trait Capture
                 return;
             }
 
-            if ( $this->shouldProcessOrderTransferViaRouteService($payment) === true)
-            {
-                $this->trace->info(
-                    TraceCode::ORDER_TRANSFER_PROCESS_BYPASSED_TO_ROUTE_SERVICE,
-                    [
-                        'order_id'   => $payment->getApiOrderId(),
-                        'payment_id' => $payment->getId(),
-                    ]
-                );
-
-                return;
-            }
-
             $orderId = $payment->getApiOrderId();
 
             $transfersCount = Tracer::inSpan(['name' => 'order.transfer.update_status'], function() use ($orderId)
@@ -2324,20 +2311,6 @@ trait Capture
         }
 
         return true;
-    }
-
-    function shouldProcessOrderTransferViaRouteService(Payment\Entity $payment) : bool
-    {
-        $order = $payment->order;
-
-        $transfers = [];
-
-        if (empty($order) === false )
-        {
-            $transfers = $order->transfers;
-        }
-
-        return count($transfers) === 0;
     }
 
     /**
