@@ -45492,6 +45492,33 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(null, $fr);
     }
 
+
+    public function testCreateSharedPayoutInLedgerShadowModeWithInsufficientBalanceRetry()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $exception = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE ,null,
+        [
+            'response_body' => [
+                'msg'  => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE
+            ]
+        ]
+        );
+        $this->ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+        $this->app->instance('ledger', $this->ledgerMock);
+        $this->ledgerMock->shouldReceive('createJournal')->byDefault()
+            ->andThrow($exception)->times(2); // this validates the insufficient balance retry logic
+
+        $this->startTest();
+
+    }
+
     /*
  * -------------------HELPER FUNCTIONS-------------------
  */
