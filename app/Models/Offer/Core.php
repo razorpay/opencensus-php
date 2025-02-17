@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\CobrandingPartner;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -1210,6 +1211,31 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function shouldEagerLoadOffersFromOE()
+    {
+        $currentRouteName = app('api.route')->getCurrentRouteName();
+
+        $routesAllowedForEagerLoad = [
+            'payment_fetch_by_id',
+            'payment_fetch_multiple'
+        ];
+
+        if (in_array($currentRouteName, $routesAllowedForEagerLoad) === false)
+        {
+            return false;
+        }
+
+        $fetchExperimentEnabled = (new Core())->shouldRouteToOffersEngineForCreation(
+            UniqueIdEntity::generateUniqueId(), Constants::OFFERS_ENGINE_FETCH_EXP);
+
+        app('trace')->info(TraceCode::OFFERS_EAGER_LOAD_INFO, [
+            "experiment_enabled" => $fetchExperimentEnabled,
+            'route_name'         => $currentRouteName,
+        ]);
+
+        return $fetchExperimentEnabled;
     }
 
     public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool

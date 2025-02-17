@@ -5900,6 +5900,84 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->unsetRelation('offers');
     }
 
+    public function getOffersAttribute()
+    {
+        $offerNotFoundInOE = false;
+
+        try
+        {
+            $relationData = null;
+
+            if ($this->relationLoaded('offers') === true)
+            {
+                $relationData = $this->getRelation('offers');
+            }
+
+            if ($relationData !== null)
+            {
+                return $relationData;
+            }
+
+            $offerIds = $this->entityOffer()
+                             ->pluck(Offer\EntityOffer\Entity::OFFER_ID)
+                             ->toArray();
+
+            if (empty($offerIds) === true)
+            {
+                $emptyCollection = new Base\PublicCollection();
+
+                $this->setRelation('offers', $emptyCollection);
+
+                return $emptyCollection;
+            }
+
+            $offersEngineRepo = new Offer\Repository();
+
+            // fetches normal offers from OE and limited offers from API db.
+            // The assumption here is that payment is always associated with one offer_id
+            $offerEntity = $offersEngineRepo->findByIdAndMerchantId(
+                $offerIds[0], $this->getMerchantId(), null, true);
+
+            $offersCollection = new Base\PublicCollection();
+
+            $offersCollection->push($offerEntity);
+
+            $this->setRelation('offers', $offersCollection);
+
+            app('trace')->info(TraceCode::OFFER_FOR_PAYMENT_FOUND, [
+                'offer_id'   => optional($offerEntity)->getId(),
+                'payment_id' => $this->getId(),
+            ]);
+
+            return $offersCollection;
+        }
+        catch (\Throwable $ex)
+        {
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND)
+            {
+                $offerNotFoundInOE = true;
+            }
+
+            app('trace')->count(
+                Offer\Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS, [
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
+
+            app('trace')->traceException($ex, Trace::ERROR, TraceCode::PAYMENT_OFFER_NOT_FOUND, [
+                'data'                  => $ex->getMessage(),
+                'id'                    => $this->getId(),
+                'offer_not_found_in_oe' => $offerNotFoundInOE,
+            ]);
+
+            if ($offerNotFoundInOE === false)
+            {
+                throw $ex;
+            }
+        }
+
+        $this->setRelation('offers', new Base\PublicCollection());
+    }
+
     /**
      * Works cos we only associate one offer with payment
      * @return Offer\Entity
@@ -5966,24 +6044,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
-        // Keeping fallback on API DB for now.
-        $response = $this->offers()->first();
-
-        if (($response !== null) and
-            ($offerNotFoundInOE === true))
+        if ($offerNotFoundInOE === true)
         {
-            app('trace')->count(
-                Offer\Metric::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
-                'route' => app('api.route')->getCurrentRouteName(),
-            ]);
-
-            app('trace')->info(TraceCode::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
-                'payment_id'   => $this->getId(),
-                'api_response' => $response,
-            ]);
+            return null;
         }
 
-        return $response;
+        // Keeping fallback on API DB for now.
+        return $this->offers()->first();
     }
 
     /**
