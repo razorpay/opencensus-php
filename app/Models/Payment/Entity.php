@@ -8133,25 +8133,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function isUpiCollectExpiryDisabled()
     {
-        $app = \App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment(
-            $app['request']->getTaskId(),
-            Merchant\RazorxTreatment::DISABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
-            $app['rzp.mode'] ?? Mode::LIVE
-        );
-
-        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_DISABLE_RAZORX_EXPERIMENT,
-            [
-                'variant'       => $variant,
-                'merchant_id'   => $this->getMerchantId(),
-            ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
         return false;
     }
 
@@ -8163,25 +8144,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function isMerchantDisabledOnCollectExpiry($merchantId)
     {
-        $app = \App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::BLOCK_MERCHANT_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
-            $app['rzp.mode'] ?? Mode::LIVE
-        );
-
-        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_RAZORX_EXPERIMENT, [
-            'payment_id'  => $this->getId(),
-            'variant'     => $variant,
-            'merchant_id' => $this->getMerchantId(),
-            ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
         return false;
     }
 

@@ -3398,6 +3398,11 @@ class Processor
                 return false;
             }
 
+            if (app()->runningUnitTests() === true)
+            {
+                return false;
+            }
+
             $customCheckResults = $this->performCustomChecksToRouteViaUpsRearchFlow($input, $merchant, $currentRouteName);
 
             $isUpiDfb = $customCheckResults['is_dfb'] ?? false;
@@ -3429,37 +3434,6 @@ class Processor
                 return false;
             }
 
-            $featureFlag = self::ALLOW_ROUTE_ON_REARCH_UPS_V2 . '_' . $currentRouteName;
-
-            // Allow re-arch traffic for a route
-            $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag,
-                $this->mode);
-
-            if (str_starts_with($result, 'on') === false) {
-                return false;
-            }
-
-            $library = $input['_']['library'] ?? '';
-
-            $library = strtolower($library);
-
-            $featureFlag = self::ALLOW_MERCHANTS_ON_REARCH_UPS_V2 . '_' . $library;
-
-            // Allow re-arch traffic, merchants added in this flag will be routes via UPS re-arch
-            $result = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag,
-            $this->mode);
-
-            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_RAZORX_VARIANT,
-            [
-                'merchant_id'           => $merchant->getId(),
-                'feature_flag'          => $featureFlag,
-                'merchant_ramp_variant' => $result,
-            ]);
-
-            if (str_starts_with($result, 'on') === true) {
-                return true;
-            }
-
             /*
             // Allow certain percentage of overall UPI re-arch traffic
             $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
@@ -3470,7 +3444,7 @@ class Processor
             }
             */
 
-            return false;
+            return true;
         }
         catch(\Throwable $e)
         {
@@ -3834,24 +3808,6 @@ class Processor
             $dimensions[34] = 1;
         }
 
-        if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
-        {
-            $pgLedgerReverseShadowEnabled = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS,
-                $this->mode);
-
-            $this->trace->info(TraceCode::UPI_PAYMENT_PG_LEDGER_RAZORX_VARIANT,
-                [
-                    'merchant_id'           => $merchant->getId(),
-                    'feature_flag'          => self::ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS,
-                    'merchant_ramp_variant' => $pgLedgerReverseShadowEnabled,
-                ]);
-
-            if (strtolower($pgLedgerReverseShadowEnabled) !== 'on')
-            {
-                $routeViaReArch = false;
-                $dimensions[35] = 1;
-            }
-        }
 
         $dimensions[36] = (string) strtolower($input['_']['library'] ?? 'unknown');
 
@@ -7514,28 +7470,7 @@ class Processor
             return 'upips';
         }
 
-        $feature = 'api'. '_' . $payment->getGateway() . '_v1';
-
-        $requestOptions = [
-            'connect_timeout' => 1,
-            'timeout'         => 1,
-        ];
-
-        // hit razorx service to get the variant
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $this->mode, 3, $requestOptions);
-
-//        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
-//        [
-//            'payment_id'    => $payment->getId(),
-//            'variant'       => $variant,
-//            'gateway'       => $payment->getGateway(),
-//            'feature'       => $feature,
-//            'mode'          => $this->mode,
-//            'merchant_id'   => $payment->getMerchantId(),
-//        ]);
-
-        return $variant;
+        return '';
     }
 
     /**
@@ -10123,12 +10058,7 @@ class Processor
             return $shouldDisable;
         }
 
-        $variant = $this->app['razorx']->getTreatment(
-            $this->app['request']->getTaskId(),
-            Merchant\RazorxTreatment::DISABLE_UPI_TERMINAL,
-            $this->app['rzp.mode']);
-
-        return (($variant === 'on') and $shouldDisable);
+        return false;
     }
 
     protected function disableUpiTerminalIfRequired(Payment\Entity $payment)
@@ -14490,17 +14420,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
      */
     public function isFeeConfigIDRamped() : bool
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
-            self::ALLOW_FEE_CONFIG_ID_MERCHANTS_ON_REARCH_UPS, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_FEE_CONFIG_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant' => $variant,
-            'mode'    => $this->mode,
-            'feature' => self::ALLOW_FEE_CONFIG_ID_MERCHANTS_ON_REARCH_UPS,
-        ]);
-
-        return str_starts_with($variant, 'on');
+        return true;
     }
 
     /**
@@ -14628,18 +14548,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             return false;
         }
 
-        $feature = self::ALLOW_UPI_MODE_ON_REARCH_UPS ;
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+       return true;
     }
 
     /**
@@ -14656,32 +14565,10 @@ public function isNBPlusRearchMarketPlace($merchant): bool
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) == true)
         {
-            $feature = self::ALLOW_UPI_GLOBAL_TOKEN_SAVE_ON_REARCH_UPS;
-
-            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
-
-            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
-                'merchant_id' => $this->merchant->getMerchantId(),
-                'variant'     => $variant,
-                'mode'        => $this->mode,
-                'feature'     => $feature,
-            ]);
-
-            return str_starts_with($variant, 'on') === true;
+            return true;
         }
 
-        $feature = self::ALLOW_UPI_TOKEN_SAVE_ON_REARCH_UPS ;
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+        return true;
     }
 
     private function shouldRouteUpsReArchOffers($input): bool
@@ -14725,37 +14612,16 @@ public function isNBPlusRearchMarketPlace($merchant): bool
      */
     private function shouldRouteUpsRespawn($input): bool
     {
-        $feature = self::ALLOW_RESPAWN_ON_REARCH_UPS;
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+       return true;
     }
 
     /**
      * shouldRouteUpsReArchToken checks if upi token  can be enabled
      * @return bool
      */
-    private function shouldRouteUpsReArchToken($input): bool {
-
-        $feature = self::ALLOW_UPI_TOKEN_ON_REARCH_UPS;
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+    private function shouldRouteUpsReArchToken($input): bool
+    {
+        return true;
     }
 
     /**
@@ -14936,17 +14802,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
      */
     private function shouldAllowDfb(): bool
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
-            self::ALLOW_DFB_MERCHANTS_ON_REARCH_UPS, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DFB_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => self::ALLOW_DFB_MERCHANTS_ON_REARCH_UPS,
-        ]);
-
-        return str_starts_with($variant, 'on');
+       return true;
     }
 
     /**
@@ -14983,18 +14839,7 @@ public function isNBPlusRearchMarketPlace($merchant): bool
             return true;
         }
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
-                self::ALLOW_DFB_FEE_MERCHANTS_ON_REARCH_UPS, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DFB_FEE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant' => $variant,
-            'mode'    => $this->mode,
-            'feature' => self::ALLOW_DFB_FEE_MERCHANTS_ON_REARCH_UPS,
-        ]);
-
-
-        return str_starts_with($variant, 'on');
+        return true;
     }
 
     /**

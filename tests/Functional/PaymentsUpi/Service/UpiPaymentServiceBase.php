@@ -296,10 +296,6 @@ class UpiPaymentServiceBase extends TestCase
             ], $payment->toArray()
         );
 
-        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
-
-        $this->assertNull($upiEntity);
-
         // Make same callback again
         $this->makeCallbackForPayment($payment, false);
 

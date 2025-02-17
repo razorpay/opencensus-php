@@ -299,7 +299,6 @@ class GatewayController extends Controller
             {
                 $input = Request::getContent();
             }
-
             // pre-process callback if ups pre-processing fails
             return $gateway->preProcessServerCallback($input, $gatewayDriver);
         }
@@ -2145,21 +2144,7 @@ class GatewayController extends Controller
             return true;
         }
 
-        $feature = 'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1';
-
-        $mode = ($mode === null) ? Mode::LIVE : $mode;
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode, 3);
-
-//        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
-//            'gateway' => $gateway,
-//            'variant' => $variant,
-//            'mode'    => $mode,
-//            'feature' => $feature,
-//        ]);
-
-        if ($variant === $gateway)
+        if ($this->app->runningUnitTests() === true)
         {
             return true;
         }

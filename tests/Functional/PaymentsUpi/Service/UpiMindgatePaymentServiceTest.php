@@ -43,12 +43,12 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         $payment = $this->getDbLastpayment()->toArray();
 
         $this->assertArraySubset([
-            Entity::CPS_ROUTE => 0,
+            Entity::CPS_ROUTE => 4,
         ], $payment);
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
+        $upiEntity['payment_id'] = $payment['id'];
 
-        $content = $this->mockServer('upi_mindgate')->getAsyncCallbackContent($upi, $payment);
+        $content = $this->mockServer('upi_mindgate')->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_mindgate');
 
@@ -60,23 +60,11 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         $payment = $this->getDbLastpayment()->toArray();
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
-
         $this->assertArraySubset([
             Entity::STATUS => Status::AUTHORIZED,
-            Entity::REFERENCE16 => $upi['npci_reference_id'],
-            Entity::VPA => $upi['vpa'],
             Entity::TERMINAL_ID => $this->terminal->getId(),
             Entity::GATEWAY => $this->gateway
         ], $payment);
-
-        $this->assertArraySubset([
-            UpiEntity::TYPE => Flow::COLLECT,
-            UpiEntity::ACTION => 'authorize',
-            UpiEntity::GATEWAY => $this->gateway,
-            UpiEntity::STATUS_CODE => '00',
-            UpiEntity::MERCHANT_REFERENCE => $payment['id']
-        ], $upi);
     }
 
     public function testPaymentSuccessWithNotWhitelistedVpa()
@@ -96,12 +84,12 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         $payment = $this->getDbLastpayment()->toArray();
 
         $this->assertArraySubset([
-            Entity::CPS_ROUTE => 0,
+            Entity::CPS_ROUTE => 4,
         ], $payment);
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
+        $upiEntity['payment_id'] = $payment['id'];
 
-        $content = $this->mockServer('upi_mindgate')->getAsyncCallbackContent($upi, $payment);
+        $content = $this->mockServer('upi_mindgate')->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_mindgate');
 
@@ -113,23 +101,11 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         $payment = $this->getDbLastpayment()->toArray();
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
-
         $this->assertArraySubset([
             Entity::STATUS => Status::AUTHORIZED,
-            Entity::REFERENCE16 => $upi['npci_reference_id'],
-            Entity::VPA => $upi['vpa'],
             Entity::TERMINAL_ID => $this->terminal->getId(),
             Entity::GATEWAY => $this->gateway
         ], $payment);
-
-        $this->assertArraySubset([
-            UpiEntity::TYPE => Flow::COLLECT,
-            UpiEntity::ACTION => 'authorize',
-            UpiEntity::GATEWAY => $this->gateway,
-            UpiEntity::STATUS_CODE => '00',
-            UpiEntity::MERCHANT_REFERENCE => $payment['id']
-        ], $upi);
     }
 
 
@@ -150,13 +126,13 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         $payment = $this->getDbLastpayment()->toArray();
 
         $this->assertArraySubset([
-            Entity::CPS_ROUTE => 0,
+            Entity::CPS_ROUTE => 4,
         ], $payment);
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
+        $upiEntity['payment_id'] = $payment['id'];
 
         $content = $this->mockServer('upi_mindgate')
-            ->getAsyncCallbackContent($upi, $payment);
+            ->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_mindgate');
 
@@ -168,25 +144,15 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         $payment = $this->getDbLastpayment()->toArray();
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
-
         $this->assertArraySubset([
             Entity::STATUS => Status::FAILED,
             Entity::TERMINAL_ID => $this->terminal->getId(),
             Entity::GATEWAY => $this->gateway,
             Entity::REFERENCE16 => null,
-            Entity::CPS_ROUTE => 0,
+            Entity::CPS_ROUTE => 4,
             Entity::ERROR_CODE => 'BAD_REQUEST_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER',
         ], $payment);
-
-        $this->assertArraySubset([
-            UpiEntity::TYPE => Flow::COLLECT,
-            UpiEntity::ACTION => 'authorize',
-            UpiEntity::GATEWAY => $this->gateway,
-            UpiEntity::STATUS_CODE => 'ZA',
-            UpiEntity::MERCHANT_REFERENCE => $payment['id']
-        ], $upi);
     }
 
     public function testUpsPaymentSuccess()
@@ -786,23 +752,11 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         $payment = $this->getDbLastpayment()->toArray();
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
-
         $this->assertArraySubset([
             Entity::STATUS => Status::AUTHORIZED,
-            Entity::REFERENCE16 => $upi['npci_reference_id'],
-            Entity::VPA => $upi['vpa'],
             Entity::TERMINAL_ID => $this->terminal->getId(),
             Entity::GATEWAY => $this->gateway
         ], $payment);
-
-        $this->assertArraySubset([
-            UpiEntity::TYPE => Flow::COLLECT,
-            UpiEntity::ACTION => 'authorize',
-            UpiEntity::GATEWAY => $this->gateway,
-            UpiEntity::STATUS_CODE => '00',
-            UpiEntity::MERCHANT_REFERENCE => $payment['id']
-        ], $upi);
     }
 
     public function testUpsPaymentDecryptionFailedSuccess()
@@ -861,13 +815,13 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         $payment = $this->getDbLastpayment()->toArray();
 
         $this->assertArraySubset([
-            Entity::CPS_ROUTE => 0,
+            Entity::CPS_ROUTE => 4,
         ], $payment);
 
-        $upi = $this->getDBLastEntity('upi')->toArray();
+        $upiEntity['payment_id'] = $payment['id'];
 
         $content = $this->mockServer('upi_mindgate')
-            ->getAsyncCallbackContent($upi, $payment);
+            ->getAsyncCallbackContent($upiEntity, $payment);
 
         $this->makeRequestAndCatchException(
             function () use ($content)

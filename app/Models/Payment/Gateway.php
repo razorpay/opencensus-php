@@ -6718,6 +6718,10 @@ class Gateway
             self::UPI_ICICI,
             self::UPI_AXIS,
             self::ATOM,
+            self::UPI_SBI,
+            self::UPI_AIRTEL,
+            self::UPI_MINDGATE,
+            self::UPI_JUSPAY,
         ];
 
         return (in_array($gateway, $gateways, true));
