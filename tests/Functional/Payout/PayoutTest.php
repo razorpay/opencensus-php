@@ -46123,5 +46123,132 @@ class PayoutTest extends OAuthTestCase
             }
         }
     }
+
+    public function testCreatePayoutWithLinkedNumber()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $fetchMappedVpaMock = Mockery::mock('RZP\Services\PayoutService\VpaMapperFetch',
+            [$this->app])->makePartial();
+
+        $fetchMappedVpaMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $this->assertEquals('123456789', last(explode('/', $input['url'])));
+
+                $this->assertEquals('GET', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'vpa' => 'shashi@okaxis',
+                    'customer_name' => 'Shashi Kumar'
+                ]);
+
+                $response->status_code = 200;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
+
+        $this->startTest();
+        $this->testCreatePayout();
+    }
+
+    public function testCreatePayoutWithLinkedNumberForVpaNotFound()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $fetchMappedVpaMock = Mockery::mock('RZP\Services\PayoutService\VpaMapperFetch',
+            [$this->app])->makePartial();
+
+        $fetchMappedVpaMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $this->assertEquals('123456789', last(explode('/', $input['url'])));
+
+                $this->assertEquals('GET', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([]);
+
+                $response->status_code = 400;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithLinkedNumberForNameMismatch()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $fetchMappedVpaMock = Mockery::mock('RZP\Services\PayoutService\VpaMapperFetch',
+            [$this->app])->makePartial();
+
+        $fetchMappedVpaMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $this->assertEquals('123456789', last(explode('/', $input['url'])));
+
+                $this->assertEquals('GET', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'vpa' => 'nawed@okaxis',
+                    'customer_name' => 'Example Example'
+                ]);
+
+                $response->status_code = 200;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
+
+        $this->startTest();
+    }
 }
 

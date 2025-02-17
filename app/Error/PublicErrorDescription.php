@@ -251,6 +251,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN                      = 'Payment failed';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER                            = 'Invalid UPI Number. Please enter a valid UPI Number';
+    const BAD_REQUEST_LINKED_NUMBER_INVALID                                     = 'Invalid Linked Number. Please enter a valid Linked Number';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';
     const BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED                             = 'Card used while setting UPI PIN has expired. Please use another debit card to reset UPI PIN or use another bank account for payment';
@@ -530,6 +531,9 @@ class PublicErrorDescription
 
     const SERVER_ERROR_UPI_TRANSFER_PROCESSING_FAILED                           = 'Upi transfer processing failed';
     const SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED                             = 'Qr payment processing failed';
+
+    const SERVER_ERROR_FAILED_TO_FETCH_VPA                                      = 'Failed to Fetch VPA';
+    const BAD_REQUEST_VPA_NOT_FOUND                                             = 'VPA Not Found for the UPI Number';
 
     const BAD_REQUEST_CARD_INVALID_DATA                                         = 'Payment failed as card details (CVV or expiry date) are incorrect. Please check and try again';
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';
@@ -1176,6 +1180,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED                  = 'Cancelling a Fee Recovery Payout is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED                = 'Updating an internal Razorpay Fund Account is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED              = 'Creating a fund account for an Internal Razopay contact is not permitted';
+    const BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA                     = 'Account holder name does not match the customer name associated with the mapped VPA.';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH                       = 'Amount recovered does not match with the total fees calculated for given payouts';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID         = 'Fee Recovery cannot be provided for a certain payout';
     const BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED             = 'Creating a payout to an internal Razorpay Fund Account is not permitted';
@@ -1741,6 +1746,11 @@ class PublicErrorDescription
     const BAD_REQUEST_EMPTY_FILE_UPLOADED                                           = 'Empty file uploaded';
     const BAD_REQUEST_EMPTY_ROW_UPLOADED                                            = 'Empty row uploaded';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_TDS                        = 'Payout with TDS not supported via private auth';
+
+    const BAD_REQUEST_MODE_NOT_ALLOWED_FOR_LINKED_NUMBER                            = 'This mode is not allowed for Linked number Payouts';
+    const BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT                                     = 'Linked number is not present';
+    const BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT                               = 'Account Holder name is not present';
+    const BAD_REQUEST_LINKED_NUMBER_PAYOUT_NOT_ALLOWED                              = 'Payouts using Linked numbers are not allowed.';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS                = 'Payout with attachments not supported via private auth';
     const BAD_REQUEST_INVALID_TAX_PAYMENT_ID                                        = 'Invalid tax_payment_id';
     const SERVER_ERROR_GET_ATTACHMENTS_FAILURE                                      = 'Failed to get attachments for the payouts';

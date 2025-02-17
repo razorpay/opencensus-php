@@ -243,5 +243,17 @@
     "description": "Request failed because another request is in progress with the same Idempotency Key",
     "source": null,
     "reason": "idempotency_key_in_use"
+  },
+
+  "BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA": {
+    "description": "Account holder name does not match the customer name associated with the mapped VPA.",
+    "source": null,
+    "reason": "input_validation_failed"
+  },
+
+  "BAD_REQUEST_VPA_NOT_FOUND": {
+    "description": "VPA Not Found for the UPI Number.",
+    "source": null,
+    "reason": "input_validation_failed"
   }
 }

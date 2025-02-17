@@ -23,6 +23,7 @@ class Entity
     const KEY                        = 'key';
     const P2P                        = 'p2p';
     const VPA                        = 'vpa';
+    const LINKED_NUMBER              = 'linked_number';
     const MPAN                       = 'mpan';
     const CARD                       = 'card';
     const PLAN                       = 'plan';
@@ -1110,6 +1111,7 @@ class Entity
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
         self::VPA                       => \RZP\Models\Vpa::class,
+        self::LINKED_NUMBER             => \RZP\Models\LinkedNumber::class,
         self::WALLET_ACCOUNT            => \RZP\Models\WalletAccount::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,

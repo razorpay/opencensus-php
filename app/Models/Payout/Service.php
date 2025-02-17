@@ -28,6 +28,7 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
+use RZP\Models\LinkedNumber;
 use RZP\Models\PayoutOutbox;
 use RZP\Error\ErrorCode;
 use RZP\Services\UfhService;
@@ -557,6 +558,34 @@ class Service extends Base\Service
 
         (new Validator)->validateAndUpdateCardMode($input);
 
+        $isLinkedNumberPayout = $this->isLinkedNumberPayout($input);
+        $linkedNumber = null;
+
+        if ($isLinkedNumberPayout) {
+            $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT);
+
+            $linkedNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER][FundAccount\Entity::NUMBER] ?? null;
+
+            $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO,
+                [
+                    FundAccount\Entity::LINKED_NUMBER => $linkedNumber,
+                ]);
+
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isPayoutsToPhoneNumberEnabled = $this->core->isSplitzExperimentEnable($properties, 'enable', TraceCode::PAYOUTS_TO_PHONE_NUMBER_SPLITZ_ERROR);
+
+            if (!$isPayoutsToPhoneNumberEnabled) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_LINKED_NUMBER_PAYOUT_NOT_ALLOWED,
+                    null);
+            }
+            (new Validator)->validateLinkedNumber($input);
+        }
+
         $isCompositePayout = false;
 
         if (isset($input[Entity::FUND_ACCOUNT]) === true)
@@ -700,12 +729,18 @@ class Service extends Base\Service
                 'response_time' => $responseTime - $requestTime
             ]);
 
-        if ($payout->getIsPayoutService() === true)
-        {
-            return $payout->payoutServiceResponse;
+        if ($payout->getIsPayoutService() === true) {
+            $payoutArray = $payout->payoutServiceResponse;
+        } else {
+            $payoutArray = $payout->toArrayPublic();
         }
 
-        return $payout->toArrayPublic();
+        if ($isLinkedNumberPayout) {
+            $this->sanitizeResponseForLinkedNumberPayout($payoutArray, $linkedNumber);
+            $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT);
+        }
+
+        return $payoutArray;
     }
 
     /**
@@ -7002,6 +7037,19 @@ class Service extends Base\Service
             );
 
         }
+    }
+
+    private function isLinkedNumberPayout(array $input): bool {
+        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::LINKED_NUMBER;
+    }
+
+    private function sanitizeResponseForLinkedNumberPayout(array &$payoutArray, string $linkedNumber)
+    {
+        $payoutArray[Entity::FUND_ACCOUNT][Entity::ACCOUNT_TYPE] = FundAccount\Entity::LINKED_NUMBER;
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER] = [
+            FundAccount\Entity::NUMBER => $linkedNumber
+        ];
+        unset($payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA]);
     }
 
     public function payoutsDualWriteFailureProcessingCron($input)

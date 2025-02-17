@@ -826,6 +826,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerDuplicatePayoutEvaluateClient();
 
+        $this->registerMappedVpaFetchClient();
+
         $this->registerPayoutServiceWorkflow();
 
         $this->registerPayoutServiceGet();
@@ -2005,6 +2007,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\DuplicatePayoutEvaluate::DUPLICATE_PAYOUT_EVALUATE, function($app)
         {
             return new PayoutService\DuplicatePayoutEvaluate($app);
+        });
+    }
+
+    protected function registerMappedVpaFetchClient()
+    {
+        $this->app->singleton(PayoutService\VpaMapperFetch::MAPPED_VPA_FETCH, function($app)
+        {
+            return new PayoutService\VpaMapperFetch($app);
         });
     }
 

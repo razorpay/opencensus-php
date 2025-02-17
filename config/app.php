@@ -1296,8 +1296,7 @@ return array(
     'cross_border_import_upi_payment_rearch_experiment_id' => env('CROSS_BORDER_IMPORT_UPI_PAYMENT_REARCH_EXPERIMENT_ID'),
 
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
-
-    'subscriptions_intl_auto_payments_handler_exp'  => env('SUBSCRIPTIONS_INTL_AUTO_PAYMENTS_HANDLER_EXP'),
+'subscriptions_intl_auto_payments_handler_exp'  => env('SUBSCRIPTIONS_INTL_AUTO_PAYMENTS_HANDLER_EXP'),
 
     'saved_card_token_payments_via_pg_router' => env('SAVED_CARD_TOKEN_PAYMENTS_VIA_PG_ROUTER'),
 
@@ -1308,10 +1307,13 @@ return array(
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
 
     'send_payout_service_emails_via_stork' => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK'),
-
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
 
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS'),
+
+    'payouts_to_phone_number_splitz_experiment' => env('PAYOUTS_TO_PHONE_NUMBER_SPLITZ_EXPERIMENT_ID'),
+
+    'payouts_to_phone_number_name_match_threshold' => env('PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD'),
 
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 

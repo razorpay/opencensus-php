@@ -26204,6 +26204,149 @@ return [
             ]
         ]
     ],
+    'testCreatePayoutWithLinkedNumber' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'linked_number',
+                    'linked_number' => [
+                        'number'  => '123456789',
+                        'account_holder_name' => 'Shashi Kumar'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"         => "payout",
+                "fund_account"   => [
+                    "contact"        => [
+                        'entity'  => 'contact',
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                    "entity"       => "fund_account",
+                    'account_type' => 'linked_number',
+                    'linked_number' => [
+                        'number'  => '123456789',
+                    ],
+                ],
+                "amount"         => 2000000,
+                "currency"       => "INR",
+                "notes"          => [
+                    "abc" => "xyz",
+                ],
+                "status"         => "processing",
+                "purpose"        => "refund",
+                "mode"           => "UPI",
+                "narration"      => "Batman",
+                "batch_id"       => null,
+                "failure_reason" => null,
+                'merchant_id'    => '10000000000000'
+            ],
+        ],
+    ],
+    'testCreatePayoutWithLinkedNumberForVpaNotFound' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'linked_number',
+                    'linked_number' => [
+                        'number'  => '123456789',
+                        'account_holder_name' => 'Shashi Kumar'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => null,
+                    'description' => 'VPA Not Found for the UPI Number',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VPA_NOT_FOUND,
+        ],
+    ],
+    'testCreatePayoutWithLinkedNumberForNameMismatch' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'linked_number',
+                    'linked_number' => [
+                        'number'  => '123456789',
+                        'account_holder_name' => 'Nawed Diwan'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => null,
+                    'description' => 'Account holder name does not match the customer name associated with the mapped VPA.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA,
+        ],
+    ],
 
     'testCreateSharedPayoutInLedgerShadowModeWithInsufficientBalanceRetry' => [
         'request'  => [

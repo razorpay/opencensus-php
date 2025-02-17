@@ -176,7 +176,16 @@ class Service extends Base\Service
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $entity->toArrayPublic();
+        $linkedNumber = $entity->getLinkedNumber();
+
+        $fundAccountArray = $entity->toArrayPublic();
+
+        // We need to hide VPA for Linked Number Payouts
+        if (!empty($linkedNumber)) {
+            $this->sanitizeResponseForLinkedNumberPayout($fundAccountArray, $linkedNumber);
+        }
+
+        return $fundAccountArray;
     }
 
     /**
@@ -533,5 +542,14 @@ class Service extends Base\Service
 
         return $fundAccount?->getId();
 
+    }
+
+    private function sanitizeResponseForLinkedNumberPayout(array &$fundAccountArray, string $linkedNumber)
+    {
+        $fundAccountArray[Entity::ACCOUNT_TYPE] = Entity::LINKED_NUMBER;
+        $fundAccountArray[Entity::LINKED_NUMBER] = [
+            Entity::NUMBER => $linkedNumber
+        ];
+        unset($fundAccountArray[Entity::VPA]);
     }
 }

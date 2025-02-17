@@ -1201,7 +1201,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only one of card, vpa, bank_account or wallet can be present'
+                    'description' => 'Only one of card, vpa, bank_account, linked_number or wallet can be present'
                 ],
             ],
             'status_code' => 400,

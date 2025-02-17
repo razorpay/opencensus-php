@@ -712,5 +712,17 @@
       "reason": "gateway_down",
       "description": "Payout failed as the partner bank is facing technical issues. Please retry."
     }
+  },
+
+  "BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA": {
+    "description": "Account holder name does not match the customer name associated with the mapped VPA.",
+    "source": null,
+    "reason": "input_validation_failed"
+  },
+
+  "BAD_REQUEST_VPA_NOT_FOUND": {
+    "description": "VPA Not Found for the UPI Number.",
+    "source": null,
+    "reason": "input_validation_failed"
   }
 }

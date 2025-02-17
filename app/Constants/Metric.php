@@ -195,6 +195,8 @@ class Metric
 
     const DUPLICATE_PAYOUT_EVAlUATE_TIME_TAKEN = 'duplicate_payout_evaluate_time_taken';
 
+    const FETCH_MAPPED_VPA_FROM_PS_TIME_TAKEN               = 'fetch_mapped_vpa_from_ps_time_taken';
+
     const PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LAG = 'payout_service_dual_write_direct_push_lag';
 
     // Order Outbox

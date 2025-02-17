@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\UpiNumber;
 use RZP\Constants\Country;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
@@ -1786,6 +1787,43 @@ class Validator extends Base\Validator
             $input[Entity::MODE] = PayoutMode::CARD;
         }
 
+    }
+
+    public function validateLinkedNumber(array &$input)
+    {
+        $allowedModes = [Entity::UPI];
+
+        $mode = strtolower($input[Entity::MODE] ?? '');
+
+        $linkedNumberData = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER] ?? [];
+        $linkedNumber = $linkedNumberData[FundAccount\Entity::NUMBER] ?? null;
+        $accountHolderName = $linkedNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
+
+        $this->validateRequiredField($linkedNumber, ErrorCode::BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT);
+        $this->validateRequiredField($accountHolderName, ErrorCode::BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT);
+        $this->validateLinkedNumberFormat($linkedNumber);
+        $this->validateAllowedMode($mode, $allowedModes);
+    }
+
+    private function validateRequiredField($value, string $errorCode): void
+    {
+        if (empty($value)) {
+            throw new Exception\BadRequestException($errorCode, null);
+        }
+    }
+
+    private function validateLinkedNumberFormat(string $linkedNumber): void
+    {
+        if (!preg_match('/^\d{8,10}$/', $linkedNumber)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LINKED_NUMBER_INVALID, null);
+        }
+    }
+
+    private function validateAllowedMode(string $mode, array $allowedModes): void
+    {
+        if (!in_array($mode, $allowedModes, true)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MODE_NOT_ALLOWED_FOR_LINKED_NUMBER, null);
+        }
     }
 
     public function validateTdsDetails(array $input)

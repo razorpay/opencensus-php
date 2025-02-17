@@ -21,6 +21,7 @@ use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Models\LinkedNumber;
 use RZP\Models\WalletAccount;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
@@ -163,6 +164,10 @@ class Core extends Base\Core
             ($merchant->getId() === Merchant\Account::OKCREDIT))
         {
             $this->modifyRequestForBackwardCompatibility($input);
+        }
+
+        if ($input[Entity::ACCOUNT_TYPE] === Entity::LINKED_NUMBER) {
+            $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input);
         }
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
@@ -1754,5 +1759,35 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /*
+    This function will change the input for fund account creation
+    For UPI Number Payouts because underline payment instrument is VPA
+     */
+    private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input): void
+    {
+        $linkedNumber = isset($input[Entity::ACCOUNT_TYPE], $input[Entity::LINKED_NUMBER][Entity::NUMBER])
+            ? $input[Entity::LINKED_NUMBER][Entity::NUMBER]
+            : '';
+        $accountHolderName = isset($input[Entity::ACCOUNT_TYPE], $input[Entity::LINKED_NUMBER][Entity::ACCOUNT_HOLDER_NAME])
+            ? $input[Entity::LINKED_NUMBER][Entity::ACCOUNT_HOLDER_NAME]
+            : '';
+
+        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($linkedNumber, $accountHolderName);
+
+        $input[Entity::LINKED_NUMBER] = $linkedNumber;
+        $input[Entity::CUSTOMER_NAME] = $mappedVpa[Entity::CUSTOMER_NAME];
+
+        $input[Entity::ACCOUNT_TYPE] = Entity::VPA;
+        $input[Entity::VPA] = [
+            Vpa\Entity::ADDRESS => $mappedVpa[Entity::VPA]
+        ];
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_INPUT_FOR_LINKED_NUMBER,
+            [
+                Entity::LINKED_NUMBER => $linkedNumber,
+                'input'            => $input
+            ]);
     }
 }
