@@ -7,6 +7,7 @@ import {
   MOCK_PRODUCT_PRICING_RESPONSE,
   MOCK_PRODUCT_OFFER_CONFIG,
   MOCK_PRICING_WITH_ONLY_LIFETIME_PLAN,
+  getMockModularResponse,
 } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { UPDATE_CART_ACTIONS } from 'merchant/views/POS/constants';
 import {
@@ -29,6 +30,7 @@ import {
   getAvailablePricingPlans,
   getInitialPlan,
   isPosTabVisible,
+  getDeviceChargesData,
 } from 'merchant/views/POS/helpers';
 import { CartItem, PricingTypes, ProductDescription, ProductPlans } from 'merchant/views/POS/types';
 
@@ -953,5 +955,108 @@ describe('getInitialPlan', () => {
     const mockProductDescription = { ...MOCK_PRODUCT, pricing: MOCK_PRICING_WITH_PRICES };
     const result = getInitialPlan({ productDescription: mockProductDescription });
     expect(result).toBe('monthly');
+  });
+});
+
+describe('getDeviceChargesData', () => {
+  const devices = [
+    {
+      advanced_rental_periods: 0,
+      device_model: 'a50',
+      device_name: 'Android Smart mini Pos',
+      item_id: '2b157faa-b686-4ca8-acca-cd6a189401a1',
+      paper_roll_charge: 15,
+      paper_roll_quantity: 0,
+      quantity: 1,
+      renewal: 'monthly',
+      renewal_display_name: 'Monthly',
+      rental_charge: 275,
+      rental_charge_type: 'standard',
+      rental_discount_periods: 0,
+      setup_charge: 1,
+      setup_charge_type: 'custom',
+      total_advance_rental_charge: 0,
+      total_base_order_amount: 1,
+      total_base_rental_charge: 275,
+      total_gst_order_amount: 0.17999999999999999,
+      total_gst_rental_charge: 49.5,
+      total_order_amount: 1.1799999999999999,
+      total_paper_roll_charge: 0,
+      total_rental_charge: 324.5,
+      total_setup_charge: 1,
+    },
+    {
+      advanced_rental_periods: 0,
+      device_model: 'a910',
+      device_name: 'Android Smart Pos',
+      item_id: '3b33752d-1fcf-4ba8-bf2f-b58a2b633744',
+      paper_roll_charge: 15,
+      paper_roll_quantity: 0,
+      quantity: 1,
+      renewal: 'monthly',
+      renewal_display_name: 'Monthly',
+      rental_charge: 300,
+      rental_charge_type: 'standard',
+      rental_discount_periods: 0,
+      setup_charge: 1000,
+      setup_charge_type: 'standard',
+      total_advance_rental_charge: 0,
+      total_base_order_amount: 1000,
+      total_base_rental_charge: 300,
+      total_gst_order_amount: 180,
+      total_gst_rental_charge: 54,
+      total_order_amount: 1180,
+      total_paper_roll_charge: 0,
+      total_rental_charge: 354,
+      total_setup_charge: 1000,
+    },
+  ];
+  test('should return correct device charges table if payment options component is present', () => {
+    const workflowConfig = getMockModularResponse({
+      consented: '',
+      isAgreementRequired: true,
+      isCustomRateEnabled: false,
+      hasPaymentOptionsComponent: true,
+    });
+    const result = getDeviceChargesData(workflowConfig);
+    expect(result).toMatchObject({
+      tableStructure: [
+        ['Device Type', expect.any(Function)],
+        ['Subscription Plan', expect.any(Function)],
+        ['Rental Fee Per Device Unit', expect.any(Function)],
+        ['Total Device Quantity', expect.any(Function)],
+        ['Advance Rental Period', expect.any(Function)],
+        ['Advance  Rental Fee Payable at Setup (excluding GST)', expect.any(Function)],
+        ['Device Charges (excl GST)', expect.any(Function)],
+        ['Paper Roll Charges (excl GST)', expect.any(Function)],
+        ['Total GST on Fee Payable at Setup', expect.any(Function)],
+      ],
+      data: [devices[0]],
+      overallSetupFee: 1.18,
+    });
+  });
+  test('should return correct device charges table if payment options component is absent', () => {
+    const workflowConfig = getMockModularResponse({
+      consented: '',
+      isAgreementRequired: true,
+      isCustomRateEnabled: false,
+      hasPaymentOptionsComponent: false,
+    });
+    const result = getDeviceChargesData(workflowConfig);
+    expect(result).toMatchObject({
+      tableStructure: [
+        ['Device Type', expect.any(Function)],
+        ['Subscription Plan', expect.any(Function)],
+        ['Rental Fee Per Device Unit', expect.any(Function)],
+        ['Total Device Quantity', expect.any(Function)],
+        ['Advance Rental Period', expect.any(Function)],
+        ['Advance  Rental Fee Payable at Setup (excluding GST)', expect.any(Function)],
+        ['Device Charges (excl GST)', expect.any(Function)],
+        ['Paper Roll Charges (excl GST)', expect.any(Function)],
+        ['Total GST on Fee Payable at Setup', expect.any(Function)],
+      ],
+      data: devices,
+      overallSetupFee: 0,
+    });
   });
 });

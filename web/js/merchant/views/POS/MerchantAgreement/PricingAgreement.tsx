@@ -66,7 +66,11 @@ const PricingAgreement = (): JSX.Element => {
     return allFieldData;
   };
 
-  const { tableStructure, data: devices, overallSetupFee } = getDeviceChargesData(workflowConfig);
+  const {
+    tableStructure,
+    data: devices,
+    overallSetupFee,
+  } = getDeviceChargesData(workflowConfig?.data);
 
   if (isLoading)
     return (

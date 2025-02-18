@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import SoundboxImage from 'assets/pos/main-banner/soundbox-kit.webp';
 
 import store from 'merchant/store';
@@ -983,11 +984,18 @@ export const MOCK_PRODUCT_OFFERS = {
   },
 };
 
+interface GetMockModularResponse {
+  consented?: string;
+  isCustomRateEnabled?: boolean;
+  isAgreementRequired?: boolean;
+  hasPaymentOptionsComponent?: boolean;
+}
 export const getMockModularResponse = ({
   consented = '',
   isCustomRateEnabled = true,
   isAgreementRequired = true,
-}) => ({
+  hasPaymentOptionsComponent = false,
+}: GetMockModularResponse) => ({
   workflow_data: {
     id: 'ORjaqbNGKAqMgg',
     milestones: [
@@ -1192,7 +1200,58 @@ export const getMockModularResponse = ({
                     },
                     name: 'device_order_items_summary_field',
                     user_comments: '',
-                    value: null,
+                    value: [
+                      {
+                        advanced_rental_periods: 0,
+                        device_model: 'a50',
+                        device_name: 'Android Smart mini Pos',
+                        item_id: '2b157faa-b686-4ca8-acca-cd6a189401a1',
+                        paper_roll_charge: 15,
+                        paper_roll_quantity: 0,
+                        quantity: 1,
+                        renewal: 'monthly',
+                        renewal_display_name: 'Monthly',
+                        rental_charge: 275,
+                        rental_charge_type: 'standard',
+                        rental_discount_periods: 0,
+                        setup_charge: 1,
+                        setup_charge_type: 'custom',
+                        total_advance_rental_charge: 0,
+                        total_base_order_amount: 1,
+                        total_base_rental_charge: 275,
+                        total_gst_order_amount: 0.17999999999999999,
+                        total_gst_rental_charge: 49.5,
+                        total_order_amount: 1.1799999999999999,
+                        total_paper_roll_charge: 0,
+                        total_rental_charge: 324.5,
+                        total_setup_charge: 1,
+                      },
+                      {
+                        advanced_rental_periods: 0,
+                        device_model: 'a910',
+                        device_name: 'Android Smart Pos',
+                        item_id: '3b33752d-1fcf-4ba8-bf2f-b58a2b633744',
+                        paper_roll_charge: 15,
+                        paper_roll_quantity: 0,
+                        quantity: 1,
+                        renewal: 'monthly',
+                        renewal_display_name: 'Monthly',
+                        rental_charge: 300,
+                        rental_charge_type: 'standard',
+                        rental_discount_periods: 0,
+                        setup_charge: 1000,
+                        setup_charge_type: 'standard',
+                        total_advance_rental_charge: 0,
+                        total_base_order_amount: 1000,
+                        total_base_rental_charge: 300,
+                        total_gst_order_amount: 180,
+                        total_gst_rental_charge: 54,
+                        total_order_amount: 1180,
+                        total_paper_roll_charge: 0,
+                        total_rental_charge: 354,
+                        total_setup_charge: 1000,
+                      },
+                    ],
                   },
                   {
                     failure_reason: '',
@@ -1638,6 +1697,228 @@ export const getMockModularResponse = ({
                 name: 'device_catalogue_component',
                 progress: 0,
                 status: 'pending',
+                verification: null,
+              },
+              {
+                fields: [
+                  {
+                    failure_reason: '',
+                    failure_reason_type: '',
+                    is_editable: false,
+                    is_hidden: false,
+                    is_internal: true,
+                    is_required: false,
+                    meta: {
+                      data_type: 'deviceOrderItemSummaryList',
+                    },
+                    name: 'final_device_order_items_summary_field',
+                    user_comments: '',
+                    value: [
+                      {
+                        advanced_rental_periods: 0,
+                        device_model: 'a50',
+                        device_name: 'Android Smart mini Pos',
+                        item_id: '2b157faa-b686-4ca8-acca-cd6a189401a1',
+                        paper_roll_charge: 15,
+                        paper_roll_quantity: 0,
+                        quantity: 1,
+                        renewal: 'monthly',
+                        renewal_display_name: 'Monthly',
+                        rental_charge: 275,
+                        rental_charge_type: 'standard',
+                        rental_discount_periods: 0,
+                        setup_charge: 1,
+                        setup_charge_type: 'custom',
+                        total_advance_rental_charge: 0,
+                        total_base_order_amount: 1,
+                        total_base_rental_charge: 275,
+                        total_gst_order_amount: 0.18,
+                        total_gst_rental_charge: 49.5,
+                        total_order_amount: 1.18,
+                        total_paper_roll_charge: 0,
+                        total_rental_charge: 324.5,
+                        total_setup_charge: 1,
+                      },
+                    ],
+                  },
+                  {
+                    failure_reason: '',
+                    failure_reason_type: '',
+                    is_editable: false,
+                    is_hidden: false,
+                    is_internal: true,
+                    is_required: false,
+                    meta: {
+                      data_type: 'deviceOrderSummary',
+                    },
+                    name: 'final_device_order_summary_field',
+                    user_comments: '',
+                    value: {
+                      advance_rental_charge: 0,
+                      custom_pricing_enabled: true,
+                      device_charge: 1,
+                      order_id: '',
+                      paper_roll_charge: 0,
+                      rental_charge: [
+                        {
+                          device_name: 'Android Smart mini Pos',
+                          fee: 275,
+                          gst: 49.5,
+                          renewal: 'monthly',
+                        },
+                      ],
+                      shipping_charge: 0,
+                      total_base_order_charge: 1,
+                      total_base_rental_charge: 275,
+                      total_gst_order_charge: 0.18,
+                      total_gst_rental_charge: 49.5,
+                      total_order_charge: 1.18,
+                      total_rental_charge: 324.5,
+                    },
+                  },
+                ],
+                is_required: true,
+                meta: {
+                  description: 'Make Payment',
+                  is_hidden: true,
+                  template: 'grid',
+                  title: '2. Device Selection & Ordering',
+                },
+                name: 'qr_code_component_v2',
+                progress: 100,
+                status: 'executed',
+                verification: null,
+              },
+              {
+                fields: [
+                  {
+                    failure_reason: '',
+                    failure_reason_type: '',
+                    is_editable: false,
+                    is_hidden: false,
+                    is_internal: true,
+                    is_required: false,
+                    meta: {
+                      data_type: 'deviceOrderItemSummaryList',
+                    },
+                    name: 'final_device_order_items_summary_field',
+                    user_comments: '',
+                    value: [
+                      {
+                        advanced_rental_periods: 0,
+                        device_model: 'a50',
+                        device_name: 'Android Smart mini Pos',
+                        item_id: '2b157faa-b686-4ca8-acca-cd6a189401a1',
+                        paper_roll_charge: 15,
+                        paper_roll_quantity: 0,
+                        quantity: 1,
+                        renewal: 'monthly',
+                        renewal_display_name: 'Monthly',
+                        rental_charge: 275,
+                        rental_charge_type: 'standard',
+                        rental_discount_periods: 0,
+                        setup_charge: 1,
+                        setup_charge_type: 'custom',
+                        total_advance_rental_charge: 0,
+                        total_base_order_amount: 1,
+                        total_base_rental_charge: 275,
+                        total_gst_order_amount: 0.18,
+                        total_gst_rental_charge: 49.5,
+                        total_order_amount: 1.18,
+                        total_paper_roll_charge: 0,
+                        total_rental_charge: 324.5,
+                        total_setup_charge: 1,
+                      },
+                    ],
+                  },
+                  {
+                    failure_reason: '',
+                    failure_reason_type: '',
+                    is_editable: false,
+                    is_hidden: false,
+                    is_internal: true,
+                    is_required: false,
+                    meta: {
+                      data_type: 'deviceOrderSummary',
+                    },
+                    name: 'final_device_order_summary_field',
+                    user_comments: '',
+                    value: {
+                      advance_rental_charge: 0,
+                      custom_pricing_enabled: true,
+                      device_charge: 1,
+                      order_id: '',
+                      paper_roll_charge: 0,
+                      rental_charge: [
+                        {
+                          device_name: 'Android Smart mini Pos',
+                          fee: 275,
+                          gst: 49.5,
+                          renewal: 'monthly',
+                        },
+                      ],
+                      shipping_charge: 0,
+                      total_base_order_charge: 1,
+                      total_base_rental_charge: 275,
+                      total_gst_order_charge: 0.18,
+                      total_gst_rental_charge: 49.5,
+                      total_order_charge: 1.18,
+                      total_rental_charge: 324.5,
+                    },
+                  },
+                ],
+                is_required: true,
+                meta: {
+                  description: 'Make Payment',
+                  template: 'grid',
+                  title: '2. Device Selection & Ordering',
+                },
+                name: 'sales_assisted_payment_link_component',
+                progress: 100,
+                status: 'executed',
+                verification: null,
+              },
+              {
+                fields: [
+                  {
+                    failure_reason: '',
+                    failure_reason_type: '',
+                    is_editable: false,
+                    is_hidden: false,
+                    is_internal: false,
+                    is_required: false,
+                    meta: {
+                      data_type: 'radio',
+                      default_value: 'qr_code',
+                      options: [
+                        {
+                          help_text: 'Generate QR Code for instant scan',
+                          label: 'Scan and Pay',
+                          value: 'qr_code',
+                        },
+                        {
+                          help_text: 'For Net banking, Cards, UPI',
+                          label: 'Payment Link',
+                          value: 'payment_link',
+                        },
+                      ],
+                      selection_type: 'single',
+                      title: 'Payment Options',
+                    },
+                    name: 'payment_options_field',
+                    user_comments: '',
+                    value: 'payment_link',
+                  },
+                ],
+                is_required: true,
+                meta: {
+                  description: 'Make Payment',
+                  template: 'grid',
+                  title: '2. Device Selection & Ordering',
+                },
+                name: hasPaymentOptionsComponent ? 'payment_options_component' : 'test_comp',
+                progress: 100,
+                status: 'executed',
                 verification: null,
               },
             ],
@@ -2178,21 +2459,6 @@ export const getMockPropsForPosProductCardComponent = ({
         mobile: 'https://localhost:8080/public/dist/images/thumbnail-5.4e36abc249a68137.webp',
         thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-5.4e36abc249a68137.webp',
       },
-      {
-        main: 'https://localhost:8080/public/dist/images/main-2.bd0fbe5dcdc230fd.webp',
-        mobile: 'https://localhost:8080/public/dist/images/thumbnail-2.787af7c200cc3aae.webp',
-        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-2.787af7c200cc3aae.webp',
-      },
-      {
-        main: 'https://localhost:8080/public/dist/images/main-3.821901066a03b60d.webp',
-        mobile: 'https://localhost:8080/public/dist/images/thumbnail-3.5f7bd97fefffad91.webp',
-        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-3.5f7bd97fefffad91.webp',
-      },
-      {
-        main: 'https://localhost:8080/public/dist/images/main-4.f436f16d456f8b04.webp',
-        mobile: 'https://localhost:8080/public/dist/images/thumbnail-4.1234fe01013c3d4a.webp',
-        thumbnail: 'https://localhost:8080/public/dist/images/thumbnail-4.1234fe01013c3d4a.webp',
-      },
     ],
     code: 'wd10',
     name: 'android-mini-pos',
@@ -2255,18 +2521,6 @@ export const getMockPropsForPosProductCardComponent = ({
         description: 'Instant audio confirmation on successful UPI payments',
         isImageFirst: false,
       },
-      {
-        image: 'https://localhost:8080/public/dist/images/thumbnail-3.5f7bd97fefffad91.webp',
-        title: 'Always Connected',
-        description: 'Connect seamlessly using a SIM card',
-        isImageFirst: true,
-      },
-      {
-        image: 'https://localhost:8080/public/dist/images/thumbnail-4.1234fe01013c3d4a.webp',
-        title: 'Long-lasting battery life',
-        description: 'Powerful battery that charges via micro USB',
-        isImageFirst: false,
-      },
     ],
     infoBanner: {
       image: 'https://localhost:8080/public/dist/images/info-banner.6b899853c88b2950.webp',
@@ -2277,109 +2531,12 @@ export const getMockPropsForPosProductCardComponent = ({
           icon: 'https://localhost:8080/public/dist/images/brightness.bbb7bf4376eef61d.svg',
           text: 'Clear QR code display',
         },
-        {
-          icon: 'https://localhost:8080/public/dist/images/connectivity.a388f587d8b775ca.svg',
-          text: 'LED indicators to confirm connectivity',
-        },
-        {
-          icon: 'https://localhost:8080/public/dist/images/alarm.468ac42463ee8fcd.svg',
-          text: 'Sound notifications on updates and charging',
-        },
-        {
-          icon: 'https://localhost:8080/public/dist/images/transaction-history.eb2b73a748f06372.svg',
-          text: 'Transaction history available on the mPOS app',
-        },
       ],
     },
     technicalSpecifications: [
       {
         category: 'Model',
         value: 'WD10 (With optional dynamic QR display)',
-      },
-      {
-        category: 'Processor',
-        value: '32-bit ARM based',
-      },
-      {
-        category: 'Memory',
-        value: 'RAM: 16MB ROM:16MB',
-      },
-      {
-        category: 'Speaker',
-        value: '403W, 1105dB >( 1M)',
-      },
-      {
-        category: 'Charging',
-        value: 'DC 5V/1A, USB Type-C connector',
-      },
-      {
-        category: 'SIM',
-        value: 'Single nano SIM slot',
-      },
-      {
-        category: 'QR code size',
-        value: 'Maximum 50mm',
-      },
-      {
-        category: 'Ideal runtime',
-        value: '200broadcastsadayfor 3days',
-      },
-      {
-        category: 'Application',
-        value: 'Supermarket, Convenience Store, Restaurant, Parking lot, Beauty Salon, Hotel',
-      },
-      {
-        category: 'Language Support',
-        value: 'Hindi, English (Other languages are customizable)',
-      },
-      {
-        category: 'Operating Voltage',
-        value: '3.7V - 4.2V',
-      },
-      {
-        category: 'Standby current',
-        value: '4G: 10mA; WIFI: 40mA',
-      },
-      {
-        category: 'Data encryption mode',
-        value: 'TLS',
-      },
-      {
-        category: 'Communication Network',
-        value: '2G,4G CAT1 / GPRS; WIFI (Optional)',
-      },
-      {
-        category: 'Communication protocol',
-        value: 'MQT',
-      },
-      {
-        category: 'Frequency band',
-        value: 'TDD-LTE: B34/B38/B39/B40/B41; GSM:900MHz/1800MHz',
-      },
-      {
-        category: 'Environment',
-        value: 'Operating temperature: -10°C ~ +60°C; Storage temperature: -20°C ~+70°C',
-      },
-      {
-        category: 'Button',
-        value: '1*Power Key 1*Function Key 2*Volume Up/Down Keys',
-      },
-      {
-        category: 'Indicator Lights',
-        value: '3color LED indicator light (blue, green and red)',
-      },
-      {
-        category: 'Weight',
-        value: '330g',
-      },
-      {
-        category: 'Dimension',
-        value:
-          'Sound box size: 114mm*56mm*59mm | Panel size: Length xbreadth 114mm*155mm (Thickness:3.5mm)',
-      },
-      {
-        category: 'Battery',
-        value: '3.7V 2000mAh lithium manganate battery; Standby: ≥120H',
       },
     ],
     offer: hasOffer

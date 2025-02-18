@@ -28,6 +28,12 @@ import {
   DEVICE_SELECTION_STEP,
   SOUNDBOX,
   STANDEEANDSTICKER,
+  PAYMENT_OPTIONS_COMPONENT,
+  PAYMENT_OPTIONS_FIELD,
+  QR_CODE,
+  QR_CODE_COMPONENT_V2,
+  PAYMENT_LINK,
+  SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
 } from './constants';
 import {
   CartItem,
@@ -1270,25 +1276,78 @@ export const getAgreementStatus = (workflowConfig) => {
   return { is_required: agreementField?.is_required, status: agreementField?.value };
 };
 
+const TABLE_STRUCTURE_FOR_POS_PRICING_AGREEMENT: Array<[string, (item: any) => string]> = [
+  ['Device Type', (item) => item.device_model?.toUpperCase() ?? ''],
+  ['Subscription Plan', (item) => item.renewal_display_name || item.renewal || ''],
+  ['Rental Fee Per Device Unit', (item) => item.rental_charge ?? ''],
+  ['Total Device Quantity', (item) => item.quantity ?? ''],
+  ['Advance Rental Period', (item) => item.advanced_rental_periods ?? ''],
+  [
+    'Advance  Rental Fee Payable at Setup (excluding GST)',
+    (item) => item.total_advance_rental_charge ?? '',
+  ],
+  ['Device Charges (excl GST)', (item) => item.total_setup_charge ?? ''],
+  ['Paper Roll Charges (excl GST)', (item) => item.total_paper_roll_charge ?? ''],
+  ['Total GST on Fee Payable at Setup', (item) => item.total_order_gst_amount?.toFixed(2) ?? ''],
+];
+export const getDeviceDetailsAsPerPaymentOption = (
+  deviceSelectionStepComponents: ModularOnboardingStepComponent[],
+  paymentOptionComponentName: string,
+) => {
+  const tableStructure = TABLE_STRUCTURE_FOR_POS_PRICING_AGREEMENT;
+  const paymentOptionComponent = getComponentByName(
+    deviceSelectionStepComponents,
+    paymentOptionComponentName,
+  );
+  if (!paymentOptionComponent) return { tableStructure, data: [], overallSetupFee: 0 };
+
+  const deviceSummary = paymentOptionComponent.fields.find(
+    (field) => field.name === 'final_device_order_items_summary_field',
+  );
+  const deviceSummaryValues = deviceSummary?.value ?? [];
+
+  const setupFee = paymentOptionComponent.fields.find(
+    (field) => field.name === 'final_device_order_summary_field',
+  );
+  return {
+    tableStructure,
+    data: deviceSummaryValues,
+    overallSetupFee: setupFee?.value?.total_order_charge ?? 0,
+  };
+};
 export const getDeviceChargesData = (workflowConfig) => {
-  const tableStructure: Array<[string, (item: any) => string]> = [
-    ['Device Type', (item) => item.device_model?.toUpperCase() ?? ''],
-    ['Subscription Plan', (item) => item.renewal_display_name || item.renewal || ''],
-    ['Rental Fee Per Device Unit', (item) => item.rental_charge ?? ''],
-    ['Total Device Quantity', (item) => item.quantity ?? ''],
-    ['Advance Rental Period', (item) => item.advanced_rental_periods ?? ''],
-    [
-      'Advance  Rental Fee Payable at Setup (excluding GST)',
-      (item) => item.total_advance_rental_charge ?? '',
-    ],
-    ['Device Charges (excl GST)', (item) => item.total_setup_charge ?? ''],
-    ['Paper Roll Charges (excl GST)', (item) => item.total_paper_roll_charge ?? ''],
-    ['Total GST on Fee Payable at Setup', (item) => item.total_order_gst_amount?.toFixed(2) ?? ''],
-  ];
+  const tableStructure = TABLE_STRUCTURE_FOR_POS_PRICING_AGREEMENT;
 
-  const deviceSelectionStep = getStepDataByStepName(workflowConfig?.data, DEVICE_SELECTION_STEP);
-
+  const deviceSelectionStep = getStepDataByStepName(workflowConfig, DEVICE_SELECTION_STEP);
   if (!deviceSelectionStep) return { tableStructure, data: [], overallSetupFee: 0 };
+
+  const paymentOptionsComponent = getComponentByName(
+    deviceSelectionStep.components,
+    PAYMENT_OPTIONS_COMPONENT,
+  );
+  //TODO: eventually remove the code from 1352-1370 since payment link expt is 100% enabled
+  if (paymentOptionsComponent) {
+    let selectedPaymentOption = '';
+    const fields = paymentOptionsComponent.fields;
+    const paymentOptionsField: any = fields.find(
+      (field: any) => field.name === PAYMENT_OPTIONS_FIELD,
+    );
+    selectedPaymentOption = paymentOptionsField?.value;
+    if (selectedPaymentOption === QR_CODE) {
+      return getDeviceDetailsAsPerPaymentOption(
+        deviceSelectionStep.components,
+        QR_CODE_COMPONENT_V2,
+      );
+    }
+    if (selectedPaymentOption === PAYMENT_LINK) {
+      return getDeviceDetailsAsPerPaymentOption(
+        deviceSelectionStep.components,
+        SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
+      );
+    }
+    return { tableStructure, data: [], overallSetupFee: 0 };
+  }
+
   const deviceCatalogComponent = getComponentByName(
     deviceSelectionStep.components,
     DEVICE_CATALOG_COMPONENT,
