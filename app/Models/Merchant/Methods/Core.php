@@ -917,6 +917,15 @@ class Core extends Base\Core
                     // Merge using array_merge to avoid overwriting
                     $recurringData[self::EMANDATE] = array_merge($recurringData[self::EMANDATE], $banksForAuthType[self::EMANDATE]);
                 }
+
+                if ($merchant->isFeatureEnabled(Constants::ESIGN) === false)
+                {
+                    foreach ($recurringData[self::EMANDATE] as $ifsc => $bank)
+                    {
+                        $bank[self::AUTH_TYPES] = array_values(array_diff($bank[self::AUTH_TYPES], [Payment\AuthType::AADHAAR]));
+                        $recurringData[self::EMANDATE][$ifsc] = $bank;
+                    }
+                }
             }
         } else {
             foreach ($authTypes as $authType) {

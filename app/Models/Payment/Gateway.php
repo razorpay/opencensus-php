@@ -24,6 +24,7 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Trace\TraceCode;
 
 class Gateway
 {
@@ -5604,11 +5605,36 @@ class Gateway
         return (in_array($gateway, self::$createGatewayEntityForDebitPaymentDuringPaymentFlow) === true);
     }
 
-    public static function isSupportedEmandateBank($bank): bool
+    public static function isSupportedEmandateBank($bank, $merchantId): bool
     {
-        $banks = self::getAllEMandateBanks();
-
+        $app = App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.bank_data_via_npci_api_experiment');
+        if(self::getSplitzResponse($merchantId, $experimentId) === 'enable'){
+            $bankData = self::fetchBankDataFromApi();
+            $banks = array_keys($bankData);
+        }else{
+            $banks = self::getAllEMandateBanks();
+        }
+        
         return (in_array($bank, $banks, true) === true);
+    }
+
+    public static function getSplitzResponse(string $id, string $experimentId)
+    {
+        $app = App::getFacadeRoot();
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public static function isSupportedEmandateDirectIntegrationGateway($gateway): bool
