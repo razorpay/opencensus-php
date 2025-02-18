@@ -16,6 +16,6 @@ export const getWidgetContentTransition = ({
     id !== selectedViewId
       ? `${theme.motion.duration.xmoderate}ms`
       : `${theme.motion.duration.quick}ms`;
-  const timing = theme.motion.easing.standard.effective;
+  const timing = theme.motion.easing.standard;
   return `all ${duration} ${timing} ${delay}`;
 };

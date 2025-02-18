@@ -26,7 +26,7 @@ export const SelectedMonthInfo = styled.div<BaseValidationStyledProps>`
     } = reportsTheme(theme);
     const bgColor = validation ? (focused ? FIELD_FOCUS_COLOR_L1 : FIELD_BG_COLOR) : NEGATIVE_BG;
     return `
-  transition: background-color border-color 0.3s ${theme.motion.easing.standard.revealing};
+  transition: background-color border-color 0.3s ${theme.motion.easing.emphasized};
   border-bottom: 1px solid ${
     validation ? (focused ? FIELD_FOCUS_COLOR_L3 : FIELD_BORDER_DEFAULT_COLOR) : NEGATIVE_BORDER
   };

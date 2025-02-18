@@ -23,9 +23,7 @@ const AnimatedBottomMobileBanner = styled.div(
   /**
    * transition property is not supported in Blade Box component
    */
-  transition: transform ${theme.motion.duration.moderate}ms ${
-    theme.motion.easing.standard.revealing
-  };
+  transition: transform ${theme.motion.duration.moderate}ms ${theme.motion.easing.emphasized};
   
   @media (min-width: ${theme.breakpoints.l}px) {
     display: none;

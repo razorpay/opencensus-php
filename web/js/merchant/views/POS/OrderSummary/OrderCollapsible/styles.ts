@@ -33,6 +33,6 @@ export const StyledCollapsible = styled.div(
   display: ${isOpen ? 'block' : 'none'};
   max-height: ${isOpen ? '100%' : '0'};
   overflow: hidden;
-  transition: all  0.1s ${theme.motion.easing.standard.attentive};
+  transition: all  0.1s ${theme.motion.easing.overshoot};
   `,
 );

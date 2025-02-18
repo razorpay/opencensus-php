@@ -12,7 +12,7 @@ export const AnimatedBox = styled('div')(
     flex-direction: row;
     gap: ${theme.spacing[5]}px;
     animation-duration: ${theme.motion.duration.xmoderate}ms;
-    animation-timing-function: ${theme.motion.easing.entrance.revealing};
+    animation-timing-function: ${theme.motion.easing.entrance};
     align-items: center;
     animation-name: ${slideIn};
   `,

@@ -28,15 +28,13 @@ export const SlideUp = styled.div(
     transition: ${
       isVisible
         ? `transform ${makeMotionTime(theme.motion.duration.gentle)} ${
-            theme.motion.easing.entrance.revealing
+            theme.motion.easing.entrance
           }, opacity ${makeMotionTime(theme.motion.duration.gentle)} ${
-            theme.motion.easing.entrance.revealing
+            theme.motion.easing.entrance
           }`
         : `transform ${makeMotionTime(theme.motion.duration.gentle)} ${
-            theme.motion.easing.exit.revealing
-          }, opacity ${makeMotionTime(theme.motion.duration.gentle)} ${
-            theme.motion.easing.exit.revealing
-          }`
+            theme.motion.easing.exit
+          }, opacity ${makeMotionTime(theme.motion.duration.gentle)} ${theme.motion.easing.exit}`
     };
     
 `,

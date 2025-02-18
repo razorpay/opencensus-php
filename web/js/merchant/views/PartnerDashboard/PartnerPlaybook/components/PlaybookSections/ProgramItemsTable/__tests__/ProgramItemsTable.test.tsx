@@ -75,8 +75,8 @@ describe('ProgramItemsTable', () => {
 
   test('item actions copy url cta', async () => {
     renderApp();
-    expect(screen.getAllByLabelText('copy')).toHaveLength(6);
-    await userEvent.click(screen.getAllByLabelText('copy')[0]);
+    expect(screen.getAllByLabelText('Copy')).toHaveLength(6);
+    await userEvent.click(screen.getAllByLabelText('Copy')[0]);
     expect(document.execCommand).toHaveBeenCalledWith('copy');
 
     expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(

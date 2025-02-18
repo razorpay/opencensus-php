@@ -52,7 +52,7 @@ export const BarOuter = styled.div(
     border-top-right-radius: ${theme.border.radius.medium}px;
     background: ${theme.colors.surface.background.gray.intense};
     border-top: ${theme.border.width.thicker}px solid ${getBarBorderColour({ theme, variant })};
-    transition: height ${theme.motion.duration.quick}ms ${theme.motion.easing.standard.effective};
+    transition: height ${theme.motion.duration.quick}ms ${theme.motion.easing.standard};
     position: relative;
   `,
 );

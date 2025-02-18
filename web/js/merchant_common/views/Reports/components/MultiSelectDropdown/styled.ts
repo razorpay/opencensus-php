@@ -56,7 +56,7 @@ export const InputContainer = styled.div<{
       : NEGATIVE_BG;
 
     return `
-      transition: background-color border-color 0.3s ${theme.motion.easing.standard.revealing};
+      transition: background-color border-color 0.3s ${theme.motion.easing.emphasized};
       border-bottom: 1px solid ${
         isDisabled
           ? 'transparent'

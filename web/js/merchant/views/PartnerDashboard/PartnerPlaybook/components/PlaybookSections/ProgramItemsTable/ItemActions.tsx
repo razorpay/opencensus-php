@@ -65,7 +65,7 @@ const ItemActions = ({
         >
           <IconButton
             icon={() => <CopyIcon size="large" color="interactive.icon.primary.normal" />}
-            accessibilityLabel="copy"
+            accessibilityLabel="Copy"
             onClick={onCopyClick}
           />
         </Tooltip>

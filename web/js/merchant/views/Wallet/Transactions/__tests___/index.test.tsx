@@ -16,9 +16,17 @@ describe('Wallet > Transactions > List Table', () => {
     render(<Transactions />);
     await waitForLoadingToFinish('table-spinner');
 
-    expect(screen.getByText('Transaction Id', { selector: 'th > div > p' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Transaction Id', {
+        selector: 'th[data-blade-component=table-header-cell] p',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('itxn_MSQSunez0tjxDX')).toBeInTheDocument();
-    expect(screen.getByText('Reference Id', { selector: 'th > div > p' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Reference Id', {
+        selector: 'th[data-blade-component=table-header-cell] p',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Account Id')).toBeInTheDocument();
     expect(screen.getByText('iacc_MSQShu0g115l39')).toBeInTheDocument();
     expect(screen.getByText('Source')).toBeInTheDocument();
