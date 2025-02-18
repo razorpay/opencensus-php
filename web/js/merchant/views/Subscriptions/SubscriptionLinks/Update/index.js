@@ -588,7 +588,7 @@ export default compose(
       fetchSubscription,
       fetchSettings,
     },
-    withRouter,
-    withI18Service,
   ),
+  withRouter,
+  withI18Service,
 )(UpdateSubscriptionLink);

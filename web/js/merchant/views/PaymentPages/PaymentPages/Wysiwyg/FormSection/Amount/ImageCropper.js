@@ -12,7 +12,7 @@ import CreatorModal from '../CreatorModal';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 
-class ImageCropper extends React.PureComponent {
+class ImageCropperComponent extends React.PureComponent {
   state = { showImgCropper: false };
   fileName;
 
@@ -156,6 +156,8 @@ class ImageCropper extends React.PureComponent {
   }
 }
 
+const ImageCropper = connect((state) => ({}), { showNotification })(ImageCropperComponent);
+
 export const ImageCropperModal = ({ imgUrl, onSave, closeCropperModal }) => {
   return (
     <CreatorModal className="ImageCropper" onClose={closeCropperModal}>
@@ -167,4 +169,4 @@ export const ImageCropperModal = ({ imgUrl, onSave, closeCropperModal }) => {
   );
 };
 
-export default connect((state) => ({}), { showNotification })(ImageCropper);
+export default ImageCropper;

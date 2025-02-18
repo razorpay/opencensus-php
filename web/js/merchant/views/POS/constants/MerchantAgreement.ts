@@ -43,14 +43,14 @@ th {
     background-color: #d9d9d9;
 }
 </style>
-    <h2 className='center-heading mb-24'><u>COMMERCIAL TERMS</u></h2>
+    <h2 class='center-heading mb-24'><u>COMMERCIAL TERMS</u></h2>
        <div>
-       <ul className='noListStyle' style="list-style-type: none;">
-            <li className='scroll'>
+       <ul class='noListStyle' style="list-style-type: none;">
+            <li class='scroll'>
                 ${pricingTableV2}
             </li>
             <li>
-                 <ul className='mb-24'>
+                 <ul class='mb-24'>
             <li>Applicable taxes wherever not mentioned shall be charged separately.</li>
             <li>3 (three) free of charge paper rolls will be provided (one time) at the time of Device deployment.</li>
             <li>In cases where the Merchant requires additional paper rolls, then the same shall be provided @ INR 15 (plus GST) per paper roll, subject to the minimum order quantity of 5 paper rolls per order. </li>
@@ -58,7 +58,7 @@ th {
        </div>
             </li>
        </ul>
-       <h3 className='center-heading mb-24'><u>Additional Device Commercial Terms for Android POS Devices</u></h3>
+       <h3 class='center-heading mb-24'><u>Additional Device Commercial Terms for Android POS Devices</u></h3>
        <ol type="1">
             <li>Following Charges / fee have been waived off by ${org?.business_name}:</li>
              <table>
@@ -113,15 +113,15 @@ th {
         </thead>
         <tbody>
             <tr>
-                <td>Overall Monthly Transaction Volume is less than <span className="textBold">INR 1,000</span> (one Thousand Rupees)</td>
+                <td>Overall Monthly Transaction Volume is less than <span class="textBold">INR 1,000</span> (one Thousand Rupees)</td>
                 <td>INR 299 (plus GST)</td>
             </tr>
             <tr>
-                <td>Overall Monthly Transaction Volume is more than <span className="textBold">INR 1,000</span> (One Thousand Rupees) but upto <span className="textBold">INR 25,000</span> (Twenty-Five Thousand Rupees)</td>
+                <td>Overall Monthly Transaction Volume is more than <span class="textBold">INR 1,000</span> (One Thousand Rupees) but upto <span class="textBold">INR 25,000</span> (Twenty-Five Thousand Rupees)</td>
                 <td>INR 249 (plus GST)</td>
             </tr>
             <tr>
-                <td>Overall Monthly Transaction Volume is more than <span className="textBold">INR 25,000</span> (Twenty-Five Thousand Rupees) but upto <span className="textBold">INR 1,00,000</span> (One Lakh Rupees)</td>
+                <td>Overall Monthly Transaction Volume is more than <span class="textBold">INR 25,000</span> (Twenty-Five Thousand Rupees) but upto <span class="textBold">INR 1,00,000</span> (One Lakh Rupees)</td>
                 <td>INR 199 (plus GST)</td>
             </tr>
             

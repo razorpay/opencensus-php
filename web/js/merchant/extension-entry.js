@@ -25,7 +25,7 @@
     var text = d.createElement('div');
     text.setAttribute('class', 'ExtensionPopup-Text');
     text.innerHTML =
-      'Click the Razorpay Icon <img src="https://razorpay.com/favicon.png" className="ExtensionPopup-Icon" /> in the top right to load the Chrome Extension';
+      'Click the Razorpay Icon <img src="https://razorpay.com/favicon.png" class="ExtensionPopup-Icon" /> in the top right to load the Chrome Extension';
 
     var continueText = d.createElement('div');
     continueText.setAttribute('class', 'ExtensionPopup-Text--small');
