@@ -109,7 +109,11 @@ function NavigationLayout({
                 <FTUXBanner handleClose={() => setShowFtuxBanner(false)} />
               </BladeProvider>
             )}
-            <Box overflow="hidden" position="relative" flexGrow="1">
+            <Box
+              overflow={Boolean(renderFullPageView) ? 'scroll' : 'hidden'}
+              position="relative"
+              flexGrow="1"
+            >
               <SideNavigation {...commonProps} />
               <NavigationContent {...commonProps}>{children}</NavigationContent>
 
