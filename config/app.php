@@ -1319,5 +1319,7 @@ return array(
 
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 
-    'api_migration_v3' => env('API_MIGRATION_V3')
+    'api_migration_v3' => env('API_MIGRATION_V3'),
+
+    'send_payout_service_emails_via_stork_all'  => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK_ALL')
 );

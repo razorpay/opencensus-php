@@ -24021,7 +24021,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayout();
 
@@ -24067,7 +24067,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayoutOnLiveMode();
 
@@ -24185,7 +24185,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayout();
 
@@ -24223,7 +24223,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayoutOnLiveMode();
 
@@ -24261,7 +24261,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(5);
+            })->times(6);
 
         $this->testCreatePayout();
 
@@ -24304,7 +24304,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(5);
+            })->times(6);
 
         $this->testCreatePayoutOnLiveMode();
 

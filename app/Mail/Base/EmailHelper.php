@@ -11,7 +11,7 @@ use RZP\Models\Feature;
 
 class EmailHelper
 {
-    // check stork migration 
+    // check stork migration
     // userID = user ID or merchant ID
     // orgID = org id
     // razorX = experiment name
@@ -57,7 +57,7 @@ class EmailHelper
 
         return false;
     }
-    
+
     //    check wether certain template is migrated to stork using splitz
     //    to get id of experiment will be prefixed with banking_mail_ and suffixed with _exp_id
     //    example : $experiment = test
@@ -133,4 +133,37 @@ class EmailHelper
         return $response['response']['variant']['name'] ?? '';
     }
 
+    public function isSendingPayoutServiceMailsSupported($merchantId,$view) : bool {
+
+        $traceCode = TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_VIA_SPLITZ;
+
+        $experimentId = 'app.send_payout_service_emails_via_stork_all';
+
+        try
+        {
+            $app = \App::getFacadeRoot();
+
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException($e, null, TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_STORK_EXCEPTION);
+        }
+
+        return false;
+    }
 }

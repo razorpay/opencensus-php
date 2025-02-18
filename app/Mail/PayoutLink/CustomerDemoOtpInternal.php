@@ -3,8 +3,11 @@
 namespace RZP\Mail\PayoutLink;
 
 use App;
+use RZP\Mail\Base\EmailHelper;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Transaction\Payout;
+use RZP\Trace\TraceCode;
 
 class CustomerDemoOtpInternal extends Mailable
 {
@@ -90,4 +93,43 @@ class CustomerDemoOtpInternal extends Mailable
 
         return $this;
     }
+
+    public function shouldSendEmailViaStork():bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $merchantInfo = $this->getMerchantInfo();
+
+        $isStorkEmailVIAEnabled = (new EmailHelper())->isSendingPayoutServiceMailsSupported($merchantInfo['id'],$this->view);
+
+        $traceData = [
+            'merchant_id' => $merchantInfo['id'],
+            'should_create_via_stork' => $isStorkEmailVIAEnabled,
+            'template_view' => $this->view,
+        ];
+
+        $app['trace']->info(TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_STORK_ALL, $traceData);
+
+        return ($isStorkEmailVIAEnabled);
+    }
+
+    public function getParamsForStork(): array
+    {
+        $merchantInfo = $this->getMerchantInfo();
+        $data = [
+            'otp'                   => $this->otp,
+            'merchant_display_name' => $merchantInfo['billing_label'],
+            'purpose'               => $this->purpose,
+            'logoUrl'               => $merchantInfo['brand_logo'],
+            'primary_color'         => $merchantInfo['brand_color'],
+        ];
+
+        return [
+            'template_name' => self::EMAIL_TEMPLATE,
+            'template_namespace' => 'razorpayx_payouts_core',
+            'org_id' => $merchantInfo['org_id'],
+            'params' => $data
+        ];
+    }
+
 }
