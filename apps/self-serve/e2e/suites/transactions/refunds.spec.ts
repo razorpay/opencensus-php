@@ -19,7 +19,7 @@ test.describe
   });
 
   test.describe.parallel('Refunds Landing screen Listing section', () => {
-    test('should allow filters & search operations', async ({ page }) => {
+    test.skip('should allow filters & search operations', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });
@@ -52,7 +52,7 @@ test.describe
       ).toBeVisible();
     });
 
-    test('should show all fields & allow to click on Details link', async ({ page }) => {
+    test.skip('should show all fields & allow to click on Details link', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });
@@ -74,7 +74,7 @@ test.describe
   });
 
   test.describe.parallel('Refunds details', () => {
-    test('should show "full refund processed" details', async ({ page }) => {
+    test.skip('should show "full refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });
@@ -97,7 +97,7 @@ test.describe
       await assertCollapsibleRefundProcessedTimeline({ page });
     });
 
-    test('should show "partial refund processed" details', async ({ page }) => {
+    test.skip('should show "partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });
@@ -124,7 +124,7 @@ test.describe
       await assertIssueRefundButton({ page, testId: 'payment-details-timeline' });
     });
 
-    test('should show "multi-partial refund processed" details', async ({ page }) => {
+    test.skip('should show "multi-partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });

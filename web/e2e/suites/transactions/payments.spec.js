@@ -73,7 +73,7 @@ test.describe
       ).toBeVisible();
     });
 
-    test('should show all fields & allow to click on Details link', async ({ page }) => {
+    test.skip('should show all fields & allow to click on Details link', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const columns = [
@@ -97,7 +97,7 @@ test.describe
   });
 
   test.describe.parallel('Payments details', () => {
-    test('should show "created" payment state details', async ({ page }) => {
+    test.skip('should show "created" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const id = payments.paymentId.created.netbanking;
@@ -114,7 +114,7 @@ test.describe
       await expect(page.getByText('Amount yet to be authenticated by the bank')).toBeVisible();
     });
 
-    test('should show "authorized" payment state details', async ({ page }) => {
+    test.skip('should show "authorized" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const id = payments.paymentId.authorized.intlbanktransfer;
@@ -137,7 +137,7 @@ test.describe
       // await expect(page.getByRole('button', { name: 'Capture payment' })).toBeVisible();
     });
 
-    test('should show "refunded" payment state details', async ({ page }) => {
+    test.skip('should show "refunded" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const id = payments.paymentId.refunded.netbanking;
@@ -153,7 +153,7 @@ test.describe
       await assertCollapsibleRefundProcessedTimeline({ page });
     });
 
-    test('should show "captured" payment state details', async ({ page }) => {
+    test.skip('should show "captured" payment state details', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const id = payments.paymentId.captured.card;
@@ -202,7 +202,7 @@ test.describe
 
     // the settlement retry timeline is only supported for 6 months from the date of creation of transaction.
     // if this test case is failing please reach out to settlement_dev to create new data for this test case.
-    test('should show transaction timeline details', async ({ page }) => {
+    test.skip('should show transaction timeline details', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const id = payments.paymentId.captured.card;

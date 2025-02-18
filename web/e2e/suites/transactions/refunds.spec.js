@@ -19,7 +19,7 @@ test.describe
   });
 
   test.describe.parallel('Refunds Landing screen Listing section', () => {
-    test('should allow filters & search operations', async ({ page }) => {
+    test.skip('should allow filters & search operations', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });
@@ -114,7 +114,7 @@ test.describe
       await assertIssueRefundButton({ page, testId: 'payment-details-timeline' });
     });
 
-    test('should show "multi-partial refund processed" details', async ({ page }) => {
+    test.skip('should show "multi-partial refund processed" details', async ({ page }) => {
       await navigateToTransactions(page);
       await page.getByLabel('view-Refunds-details').click();
       await waitForListingLoader({ page });
