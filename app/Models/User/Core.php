@@ -4956,6 +4956,14 @@ class Core extends Base\Core
                     ],
                 ];
 
+                $splitzResponse = $this->getSplitzResponse($user->getUserId(), 'appending_userid_in_sendsms_payload');
+
+                if($splitzResponse === 'enable')
+                {
+                    $payload['stork']['owner_type'] = 'user';
+                    $payload['stork']['owner_id'] = $user->getUserId();
+                }
+
                 $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
 
                 $this->updateSmsTemplate($input, $payload);

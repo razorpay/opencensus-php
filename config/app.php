@@ -1321,5 +1321,7 @@ return array(
 
     'api_migration_v3' => env('API_MIGRATION_V3'),
 
+    'appending_userid_in_sendsms_payload' => env('APPENDING_USERID_IN_SENDSMS_PAYLOAD'),
+
     'send_payout_service_emails_via_stork_all'  => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK_ALL')
 );
