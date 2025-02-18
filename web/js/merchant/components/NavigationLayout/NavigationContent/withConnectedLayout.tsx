@@ -74,7 +74,7 @@ const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
         <Box
           overflowY="scroll"
           height="100%"
-          backgroundColor="surface.background.gray.intense"
+          backgroundColor="surface.background.gray.moderate"
           padding={{ base: 'spacing.3', m: 'spacing.5' }}
           position="relative"
         >
