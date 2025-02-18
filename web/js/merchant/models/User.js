@@ -2090,11 +2090,11 @@ export default class User {
     return this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
   }
 
-  get isUpiRefundsDisabled() {
+  get isUpiRefundDisabled() {
     return this.isFeatureEnabled('disable_upi_refunds');
   }
 
-  get isCardRefundsDisabled() {
+  get isCardRefundDisabled() {
     return this.isFeatureEnabled('disable_card_refunds');
   }
 
