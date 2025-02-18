@@ -554,7 +554,7 @@ class Repository extends Base\Repository
             ->join(Table::MERCHANT, $merchantEntityId, '=', $transferMerchantId)
             ->selectRaw('COUNT(' . 'transfers.id' . ') AS count')
             ->where(Entity::SOURCE_TYPE, Constant::ORDER)
-            ->where($transferStatus, Status::PENDING)
+            ->whereIn($transferStatus, [Status::PENDING, Status::CREATED])
             ->where($paymentStatus, Payment\Status::CAPTURED)
             ->where($updatedAt, '<', Carbon::now()->subMinutes($endOffsetMins)->getTimestamp());
 
