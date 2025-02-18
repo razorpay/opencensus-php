@@ -292,14 +292,14 @@ class WysiwygDescription extends React.PureComponent {
 function customizeIcons() {
   const icons = window.Quill.import('ui/icons');
 
-  icons.bold = '<i className="i i-bold" />';
-  icons.italic = '<i className="i i-italics" />';
-  icons.underline = '<i className="i i-underline" />';
-  icons.link = '<i className="i i-link" />';
-  icons.image = '<i className="i i-image" />';
-  icons.video = '<i className="i i-video" />';
-  icons.list.bullet = '<i className="i i-ul-list" />';
-  icons.list.ordered = '<i className="i i-ol-list" />';
+  icons.bold = '<i class="i i-bold" />';
+  icons.italic = '<i class="i i-italics" />';
+  icons.underline = '<i class="i i-underline" />';
+  icons.link = '<i class="i i-link" />';
+  icons.image = '<i class="i i-image" />';
+  icons.video = '<i class="i i-video" />';
+  icons.list.bullet = '<i class="i i-ul-list" />';
+  icons.list.ordered = '<i class="i i-ol-list" />';
 }
 
 export default connect(null, { showNotification })(WysiwygDescription);
