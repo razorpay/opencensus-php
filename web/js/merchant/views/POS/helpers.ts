@@ -82,7 +82,9 @@ export const isPosExperimentEnabled = ({
   user: User;
   abExperiments: ExperimentInfoType;
 }): boolean => {
-  const isUnregisteredMerchant = user?.business_type === '11' || user.business_type === '2';
+  const businessType = Number(user?.business_type);
+  const isUnregisteredMerchant =
+    !isNaN(businessType) && (businessType === 11 || businessType === 2);
   const allowedFlows = ['whitelist', 'greylist'];
 
   const isWhitelistedForPos =
