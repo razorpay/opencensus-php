@@ -192,7 +192,7 @@ trait ExternalOffersRepo
                 // add prefix when calling OE
                 $responseOffer = $this->fetchExternalEntity('offer_' . $offerId, $merchantId);
 
-                if (empty($responseOffer) === true)
+                if (empty($offer) === true)
                 {
                     return [];
                 }
