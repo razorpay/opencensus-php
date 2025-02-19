@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { routes } = require('testConstants');
+const { pushSRData } = require('playwright/e2e/utils');
 
 // Utility function to set a value in localStorage
 async function setTestConfigInLocalStorageForAnalytics(page, testInfo) {
@@ -57,6 +58,7 @@ const testExtended = test.extend({
     };
 
     await use(page);
+    await pushSRData({ testInfo });
   },
 });
 

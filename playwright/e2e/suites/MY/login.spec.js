@@ -1,8 +1,17 @@
 import { routes } from '../../../constants/constants';
-import { loginByEmail, saveTestEnvironment, saveTestModeCredentials } from '../../utils';
+import {
+  loginByEmail,
+  pushSRData,
+  saveTestEnvironment,
+  saveTestModeCredentials,
+} from '../../utils';
 
 const { test } = require('@playwright/test');
 const { getCredentials } = require('../../../utils/config');
+
+test.afterEach(async ({}, testInfo) => {
+  await pushSRData({ testInfo });
+});
 
 test.describe.parallel('Dashboard login flow @flow=MY-auth @country=MY', () => {
   // testing for multiple credentials using email login

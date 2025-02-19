@@ -1,4 +1,5 @@
 import { routes } from '@dashboard/shared-utils/e2e/constants/paths';
+import { pushSRData } from '@dashboard/shared-utils/e2e/utils/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { test, expect } = require('@playwright/test');
 
@@ -58,6 +59,7 @@ const testExtended = test.extend({
     };
 
     await use(page);
+    await pushSRData({ testInfo });
   },
 });
 

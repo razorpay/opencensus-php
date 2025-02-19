@@ -82,3 +82,96 @@ export const pageConsoleLog = async (page, ...args) => {
     console.log(...args);
   }, args);
 };
+
+// ================================
+//  Utils for Success Rate
+//  Please also modify in playwright/e2e/utils/index.js
+// ================================
+const removeTags = (str) => str.replace(/@.*$/i, '');
+
+export const formatDataForSR = ({ file, titlePath, status }) => {
+  const formattedTitle = titlePath
+    .slice(1)
+    .map(removeTags)
+    .map((str) => str.trim())
+    .join(' | ')
+    .toLowerCase()
+    .trim();
+  const dataPoints = {
+    title: formattedTitle,
+    status: status === 'passed' ? 'passed' : 'failed',
+    module: file.toLowerCase(),
+  };
+  return dataPoints;
+};
+
+export const pushSRData = async ({ testInfo }) => {
+  const isCI = process.env.CI;
+  const LJ_KEY = process.env.LUMBERJACK_KEY_PROD;
+
+  const srData = formatDataForSR(testInfo);
+  const metricName = 'merchant.dashboard.e2e.status';
+  if (isCI) {
+    // push to querybook
+    const body = {
+      mode: 'live',
+      key: LJ_KEY,
+      events: [
+        {
+          event_type: 'pg-dashboard',
+          event: metricName,
+          event_version: 'v1',
+          timestamp: new Date().getTime(),
+          properties: {
+            ...srData,
+          },
+        },
+      ],
+    };
+
+    await fetch('https://lumberjack.razorpay.com/v1/track', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: true,
+    })
+      .then(() => {
+        console.log('Successfully pushed SR data');
+      })
+      .catch((e) => {
+        console.log('Error in pushing SR data', e);
+      });
+
+    // push to grafana
+    const myHeaders = new Headers();
+    myHeaders.append('Accept', '*/*');
+    myHeaders.append('Connection', 'keep-alive');
+    myHeaders.append('Content-Type', 'application/json');
+    const raw = JSON.stringify({
+      key: LJ_KEY,
+      metrics: [
+        {
+          name: metricName,
+          labels: [srData],
+        },
+      ],
+    });
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+    };
+    await fetch(
+      'https://lumberjack-metrics.razorpay.com/v1/frontend-metrics',
+      requestOptions,
+    ).catch(() => {});
+  } else {
+    console.log('SR Metric', srData);
+  }
+};
+
+// ================================
+//  End of Utils for Success Rate
+// ================================

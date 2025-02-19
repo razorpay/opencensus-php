@@ -7,6 +7,7 @@ import {
   showStreakRewardTileInAccountPage,
   saveTestEnvironment,
   saveTestModeCredentials,
+  pushSRData,
 } from '../utils';
 
 import { routes } from '../../constants/constants';
@@ -14,6 +15,10 @@ import { routes } from '../../constants/constants';
 const { test, expect } = require('@playwright/test');
 
 const { getCredentials } = require('../../utils/config');
+
+test.afterEach(async ({}, testInfo) => {
+  await pushSRData({ testInfo });
+});
 
 test.describe.parallel('Dashboard login flow @flow=auth @package=others', () => {
   const { emailCred, activatedNotIe, mobileCred, posCredentials } = getCredentials();
