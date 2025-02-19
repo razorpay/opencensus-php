@@ -81,7 +81,7 @@ export const ReKycStatusBanner = ({ isRtux = false }) => {
   const isDismissed = getItem('rekyc_banner_dismiss') === 'true';
   const canPerformActions = user.isAdminOrOwner;
   const content = getBannerContent(user);
-  const isVisible = !isDismissed && !!content;
+  const isVisible = !!content && (!content.dismissible || !isDismissed);
 
   useEffect(() => {
     if (isVisible) {

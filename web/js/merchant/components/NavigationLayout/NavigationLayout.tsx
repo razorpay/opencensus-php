@@ -20,6 +20,7 @@ import { bladeTheme } from '@razorpay/blade/tokens';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { HOTJAR_TRIGGERS } from './constants';
+import TopLevelModals from './TopNavigation/TopLevelModals';
 
 const DashboardBackground = styled.div(() => {
   return {
@@ -95,6 +96,7 @@ function NavigationLayout({
       >
         <DashboardBackground>
           <TopNavigation {...commonProps} {...headerProps} />
+          <TopLevelModals />
           <Box
             marginX={{ base: 'spacing.0', m: 'spacing.3' }}
             overflow="hidden"
