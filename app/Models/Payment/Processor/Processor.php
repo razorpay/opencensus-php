@@ -13961,10 +13961,11 @@ class Processor
         {
             return;
         }
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
         if (isset($gatewayInput['otp']) === false)
         {
-            if(app()->isEnvironmentProduction() === true  and ($this->mode === Mode::TEST))
+            if($library == Payment\Analytics\Metadata::S2S and app()->isEnvironmentProduction() === true and ($this->mode === Mode::TEST))
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH);
             }
