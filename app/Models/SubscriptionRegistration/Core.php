@@ -1197,13 +1197,32 @@ class Core extends Base\Core
             );
         }
 
+        $products = [];
+        
+        if (!empty($previousOrder->products))
+        {
+            foreach ($previousOrder->products as $product)
+            {
+                if(isset($product['product']))
+                {
+                    $tempProduct = $product['product'] ;
+                    $tempProduct['type'] = $product['product_type'];
+                    $products[] = $tempProduct;
+                }
+                else
+                {
+                    $products[] = $product;
+                }
+            }
+        }
+
         $orderInput = [
             Order\Entity::AMOUNT           => $tokenRegistration->getAmount(),
             Order\Entity::CURRENCY         => $tokenRegistration->getCurrency(),
             Order\Entity::PAYMENT_CAPTURE  => true,
             Order\Entity::METHOD           => $tokenRegistration->getMethod(),
             Order\Entity::NOTES            => $previousOrder->getNotes(),
-            Order\Entity::PRODUCTS         => $previousOrder->products,
+            Order\Entity::PRODUCTS         => $products ?? [],
             Order\Entity::RECEIPT          => 'auto_crg_' . Base\UniqueIdEntity::generateUniqueId(),
         ];
 
