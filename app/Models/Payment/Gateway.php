@@ -6573,6 +6573,7 @@ class Gateway
             self::WALLET_PAYPAL,
             self::OPTIMIZER_RAZORPAY,
             self::WALLET_AIRTELMONEY,
+            self::MOBIKWIK,
             self::TNGD,
         ];
 

@@ -7333,6 +7333,7 @@ class Processor
             Payment\Gateway::WALLET_BAJAJ,
             Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::WALLET_AIRTELMONEY,
+            Payment\Gateway::MOBIKWIK,
         ];
 
         if (((in_array($method, $cpsEnabledMethods, true) === false) or
@@ -7574,6 +7575,15 @@ class Processor
         $variant = $this->getRazorxVariant($payment, $prefix);
 
         $this->setPaymentService($payment, $variant);
+
+        if ($payment->getMethod() === Payment\Method::WALLET)
+        {
+            $walletVariant = $this->getSplitzResponseForWallet($payment->getGateway());
+            if ($walletVariant === "nbplusps")
+            {
+                $this->setPaymentService($payment, $walletVariant);
+            }
+        }
     }
 
     /**
@@ -7657,6 +7667,34 @@ class Processor
 
         return str_ends_with(strtolower($rzpRearchRoutingCriteria),'rearch');
     }
+
+    protected function getSplitzResponseForWallet($gateway)
+    {
+        try {
+            $featureFlag = "wallet_nb_plus_payments_gateway_routing_" . $gateway;
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $featureFlag
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE_WALLET, [
+                'gateway'      => $gateway,
+                'feature_flag' => $featureFlag,
+                'result'       => $response
+            ]);
+        }
+        catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $gateway,
+                'feature_flag'  => $featureFlag
+            ]);
+        }
+        finally {
+            return ($response['response']['variant']['name'] === "variant_on") ? "nbplusps" : "";
+        }
+    }
+
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
     {
