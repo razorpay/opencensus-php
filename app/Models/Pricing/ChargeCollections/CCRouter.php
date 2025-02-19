@@ -85,9 +85,10 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => true,
         'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' => true,
+        'RZP\\Models\\Pricing\\Fee\\getPricingPlanForFeesCalculation' => true,
     );
 
-    // Function to Route map used for fetch plan/rules operations
+    // Function to Route map used for fetch plan/rules operations: Only used for read methods
     private const FUNCTION_TO_CC_ROUTE_MAP = array(
         'RZP\\Models\\Pricing\\Repository\\getPlan' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getPricingPlanByIdAndOrgId' => ChargeCollections::GetPricingPlanURL,
@@ -177,7 +178,7 @@ class CCRouter
                         'response' => $ccResponse,
                     ]);
                 }
-                $this->compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn);
+                $this->compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn, $rampPhase);
             }
             $endTimeMs = round(microtime(true) * 1000);
             $this->trace->histogram(Metric::CC_ROUTER_TOTAL_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
@@ -186,7 +187,14 @@ class CCRouter
 
         } else if ($rampPhase == CCRouter::REVERSE_SHADOW || $rampPhase == CCRouter::ENABLE) {
             // Route to ChargeCollections
-            $response = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
+            $isReadsRequest = isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]);
+            $fallbackToLegacy = false;
+            try {
+                $response = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
+            } catch (\Throwable $e) {
+                if(!$isReadsRequest) throw $e;
+                $fallbackToLegacy = true;
+            }
 
             if ($methodName == 'postAddBulkPricingRules'){
                 list($response, $sourceInput) = $this->modifyBulkRequestBasedOnCCResponse($response, $sourceInput);
@@ -215,8 +223,9 @@ class CCRouter
             }
             $endTimeMs = round(microtime(true) * 1000);
             $this->trace->histogram(Metric::CC_ROUTER_TOTAL_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
+            $this->compareCCAndApiReponse($response, $legacyResponse, $fqcn, $rampPhase);
 
-            return $response;
+            return $fallbackToLegacy ? $legacyResponse : $response;
         }
 
         $this->trace->error(TraceCode::CC_ROUTER_ROUTE_ERROR, [
@@ -258,17 +267,17 @@ class CCRouter
                 'ramp_phase' => $rampPhase,
                 ]);
 
-            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
+            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
                 $response = $this->app->charge_collections->getPricingPlansSummary($input);
                 return $this->transformSummaryResponse($response);
             }
 
-            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansForFeesCalculationURL) {
+            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansForFeesCalculationURL) {
                 $response = $this->app->charge_collections->getPricingPlansForFeesCalculation($input);
                 return $this->transformPricingPlansForFeesCalculation($response, $input);
             }
 
-            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
+            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
                 $response = $this->app->charge_collections->getPricingPlan($input);
                 if(in_array($fqcn,["RZP\Models\Pricing\Repository\getPricingRuleByMultipleParams",
                     "RZP\Models\Pricing\Repository\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId",
@@ -282,7 +291,7 @@ class CCRouter
                 return $this->transformToPlanModel($response);
             }
 
-            if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
+            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
                 $response = $this->app->charge_collections->getPricingRule($input);
                 return $this->transformToPricingModel($response);
             }
@@ -735,7 +744,7 @@ class CCRouter
         return new PlanCollection;
     }
 
-    private function compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn)
+    private function compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn, $rampPhase)
     {
         try {
             // Only Comparing for read requests
@@ -751,10 +760,12 @@ class CCRouter
                     'reason' => 'empty_cc_response',
                     'cc_response' => $ccResponse,
                     'legacy_response' => $legacyResponse,
+                    'ramp_phase' => $rampPhase,
                 ]);
                 $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                     'function' => $fqcn,
                     'reason' => 'empty_cc_response',
+                    'ramp_phase' => $rampPhase,
                 ]);
                 return;
             }
@@ -764,10 +775,12 @@ class CCRouter
                     'reason' => 'type_mismatch',
                     'cc_response_type' => get_class($ccResponse),
                     'legacy_response_type' => get_class($legacyResponse),
+                    'ramp_phase' => $rampPhase,
                 ]);
                 $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                     'function' => $fqcn,
                     'reason' => 'type_mismatch',
+                    'ramp_phase' => $rampPhase,
                 ]);
                 return;
             }
@@ -776,27 +789,29 @@ class CCRouter
             $ccRoute = self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn];
             if ($responseClass == 'RZP\Models\Pricing\Plan') {
                 if ($ccRoute == ChargeCollections::GetPricingPlansSummaryURL) {
-                    $this->compareSummaryResponse($ccResponse, $legacyResponse, $fqcn);
+                    $this->compareSummaryResponse($ccResponse, $legacyResponse, $fqcn, $rampPhase);
                 } else {
-                    $this->comparePlanCollection($ccResponse, $legacyResponse, $fqcn);
+                    $this->comparePlanCollection($ccResponse, $legacyResponse, $fqcn, $rampPhase);
                 }
             } else if ($responseClass == 'RZP\Models\Pricing\Entity') {
-                $this->comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn);
+                $this->comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn, $rampPhase);
             }
         } catch(\Throwable $e) {
             $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                 'function' => $fqcn,
                 'reason' => 'exception',
+                'ramp_phase' => $rampPhase,
             ]);
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_COMPARE_EXCEPTION, [
                 'method' => $fqcn,
                 'code' => $e->getCode(),
                 'message' => $e->getMessage(),
+                'ramp_phase' => $rampPhase,
             ]);
         }
     }
 
-    private function comparePlanCollection($ccResponse, $legacyResponse, $fqcn)
+    private function comparePlanCollection($ccResponse, $legacyResponse, $fqcn, $rampPhase)
     {
         $legacyResponseMap = array();
         $ccResponseMap = array();
@@ -817,20 +832,22 @@ class CCRouter
                     'cc_response_ids' => $ccResponseIds,
                     'legacy_response_ids' => $legacyResponseIds,
                     'id_diff' => $keyDiff,
+                    'ramp_phase' => $rampPhase,
                 ]);
                 $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                     'function' => $fqcn,
                     'reason' => 'id_not_present',
+                    'ramp_phase' => $rampPhase,
                 ]);
                 return;
             } else {
                 $ccResponseItem = $ccResponseMap[$legacyItem->getId()];
-                if($this->comparePricingEntityAndPushMetrics($ccResponseItem, $legacyItem, $fqcn)) return;
+                if($this->comparePricingEntityAndPushMetrics($ccResponseItem, $legacyItem, $fqcn, $rampPhase)) return;
             }
         }
     }
 
-    private function comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn) {
+    private function comparePricingEntityAndPushMetrics($ccResponse, $legacyResponse, $fqcn, $rampPhase) {
         $ccResponseArray = $ccResponse->toArray();
         $legacyResponseArray = $legacyResponse->toArray();
         $keyAbsent = false;
@@ -860,17 +877,20 @@ class CCRouter
                 'cc_response' => $ccResponseArray,
                 'legacy_response' => $legacyResponseArray,
                 'reason' => 'key_value_mismatch',
+                'ramp_phase' => $rampPhase,
             ]);
             if ($keyAbsent) {
                 $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                     'function' => $fqcn,
                     'reason' => 'key_not_present',
+                    'ramp_phase' => $rampPhase,
                 ]);
             }
             if ($valueMismatch) {
                 $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                     'function' => $fqcn,
                     'reason' => 'key_value_mismatch',
+                    'ramp_phase' => $rampPhase,
                 ]);
             }
             return $valueMismatch;
@@ -878,7 +898,7 @@ class CCRouter
         return false;
     }
 
-    private function compareSummaryResponse($ccResponse, $legacyResponse, $fqcn)
+    private function compareSummaryResponse($ccResponse, $legacyResponse, $fqcn, $rampPhase)
     {
         $ccResponseArray = $ccResponse->toArray();
         $legacyResponseArray = $legacyResponse->toArray();
@@ -897,10 +917,12 @@ class CCRouter
                    'reason' => 'plan_id_not_present',
                    'cc_response' => $ccResponseArray,
                    'legacy_response' => $legacyResponseArray,
+                   'ramp_phase' => $rampPhase,
                ]);
                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                    'function' => $fqcn,
                    'reason' => 'plan_id_not_present',
+                   'ramp_phase' => $rampPhase,
                ]);
                return;
            }
@@ -911,10 +933,12 @@ class CCRouter
                    'reason' => 'plan_id_name_mismatch',
                    'cc_response' => $ccSummaryItem,
                    'legacy_response' => $summaryItem,
+                   'ramp_phase' => $rampPhase,
                ]);
                $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
                    'function' => $fqcn,
                    'reason' => 'plan_id_name_mismatch',
+                   'ramp_phase' => $rampPhase,
                ]);
                return;
            }
