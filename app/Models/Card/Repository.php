@@ -241,8 +241,13 @@ class Repository extends Base\Repository
 
         $cardIdColumn = $this->dbColumn(Entity::ID);
 
-        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-            ->select($merchantIdColumn)
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType);
+
+        $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(60000) */ " . $merchantIdColumn));
+
+        return $query
             ->distinct()
             ->join($tokenTable, function ($join) use ($cardIdColumn, $tokenCardIdColumn, $tokenStatusColumn, $status) {
                 $join->on($cardIdColumn, '=', $tokenCardIdColumn)
