@@ -8,10 +8,13 @@ use App\Merchant\Constants;
 use App\User\Constants as UserConstants;
 use Config;
 use Request;
+use Session;
 use App\Trace\TraceCode;
 use GuzzleHttp\Client as Guzzle;
+use Razorpay\Api\Errors\ErrorCode;
 use Illuminate\Foundation\Application;
-use Session;
+use Razorpay\Api\Errors\BadRequestError;
+
 
 class OmniClient
 {

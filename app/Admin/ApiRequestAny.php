@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use Lcobucci\JWT\Token\Parser;
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Promise\Promise;
+use Razorpay\Api\Errors\ErrorCode;
 use Razorpay\Api\Errors as RZPErrors;
 use App\Admin\Service as AdminService;
 use Lcobucci\JWT\Encoding\JoseEncoder;
@@ -342,7 +343,7 @@ class ApiRequestAny
                     {
                         throw new BadRequestError(
                             'Invalid merchant request.',
-                            \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                            ErrorCode::BAD_REQUEST_ERROR,
                             400);
                     }
 
@@ -386,6 +387,14 @@ class ApiRequestAny
                     $mid = app('request.ctx')->getMerchantId();
                 }
 
+                if (empty($currentMerchant) === true && empty($mid) === true)
+                {
+                    throw new BadRequestError(
+                        'Invalid merchant request.',
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        400);
+                }
+
                 $currenMerchantId = $currentMerchant->id ?? $mid;
 
                 $baUser = $this->mode . '_' . $currenMerchantId;
@@ -400,7 +409,7 @@ class ApiRequestAny
                 {
                     throw new BadRequestError(
                         'Invalid admin request.',
-                        \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                        ErrorCode::BAD_REQUEST_ERROR,
                         400);
                 }
 
@@ -626,7 +635,7 @@ class ApiRequestAny
     }
 
     /**
-     * @throws \Razorpay\Api\Errors\BadRequestError
+     * @throws BadRequestError
      */
     public function sendAsyncPromise($path, $method = null): \GuzzleHttp\Promise\PromiseInterface
     {
