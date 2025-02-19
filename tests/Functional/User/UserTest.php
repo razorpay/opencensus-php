@@ -113,9 +113,9 @@ class UserTest extends TestCase
 
         parent::setUp();
 
-
-
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
         $this->createAndFetchMocks();
     }
@@ -10698,8 +10698,36 @@ class UserTest extends TestCase
         $this->mockSplitzDisableCAC($merchant['id']);
 
         $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+        
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(null, $ownerIds);
+                $this->assertEquals(["owner"], $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals('ROLE_POLICY_TYPE_STANDARD', $type);
+                $this->assertEquals(null, $types);
 
-        $authzAdminClientMock->shouldNotReceive('adminAPIListPolicy');
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Owner',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => '100000razorpay',
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks',
+                    ]),
+                ]
+            ]));
 
         $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
 
@@ -10739,6 +10767,36 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(null, $ownerIds);
+                $this->assertEquals(["owner"], $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals('ROLE_POLICY_TYPE_STANDARD', $type);
+                $this->assertEquals(null, $types);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Owner',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => '100000razorpay',
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks',
+                    ]),
+                ]
+            ]));
 
         $authzAdminClientMock->shouldReceive('adminAPIListPolicy')
             ->withArgs(function($paginationToken, $resourceGroupIdList, $resourceIdList, $roleId, $serviceIdList, $permissionIdList, $roleNames, $orgId){
@@ -10859,6 +10917,8 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $this->disableRazorXTreatmentCAC();
+
+        $this->mockSplitzDisableCAC($merchant['id']);
 
         $mappingData = [
             'user_id'     => $user->getId(),

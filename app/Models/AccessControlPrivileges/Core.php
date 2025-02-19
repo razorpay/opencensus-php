@@ -9,10 +9,20 @@ use RZP\Trace\TraceCode;
 use RZP\Models\AccessPolicyAuthzRolesMap;
 use RZP\Exception;
 use RZP\Models\RoleAccessPolicyMap as RoleMap;
+use RZP\Models\AuthzAdmin\Service as AuthzAdminService;
 
 
 class Core extends Base\Core
 {
+    private $authzAdminService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->authzAdminService = new AuthzAdminService();
+    }
+
     public function create(array $input) :array
     {
         $this->trace->info(TraceCode::ACCESS_CONTROL_PRIVILEGE_CREATE_REQUEST,
@@ -212,4 +222,32 @@ class Core extends Base\Core
         return $privilegeEntity;
     }
 
+    public function fetchPrivilegesFromAuthz()
+    {
+        $privileges = $this->authzAdminService->adminAPIListPrivileges(true);
+
+        array_multisort(array_column($privileges['items'], Entity::VIEW_POSITION), $privileges['items']);
+
+        return [Entity::PRIVILEGE_DATA => $this->makeHierarchicalStructure($privileges)];
+    }
+
+    public function addPrivilegeOnAuthz(array $input)
+    {
+        return $this->authzAdminService->adminAPICreatePrivilege($input);
+    }
+
+    public function updatePrivilegeOnAuthz(array $input)
+    {
+        return $this->authzAdminService->adminAPIUpdatePrivilege($input);
+    }
+
+    public function addPrivilegeRoleMappingOnAuthz(array $input)
+    {
+        return $this->authzAdminService->adminAPICreatePrivilegeRoleMapping($input);
+    }
+
+    public function updatePrivilegeRoleMappingOnAuthz(array $input)
+    {
+        return $this->authzAdminService->adminAPIUpdatePrivilegeRoleMapping($input);
+    }
 }

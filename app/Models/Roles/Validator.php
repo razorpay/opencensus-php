@@ -6,6 +6,15 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
+
+    const MIGRATE_AUTHZ = 'migrate_authz';
+
+    const MIGRATE_API = 'migrate_api';
+
+    const CREATE_ON_AUTHZ = 'create_on_authz';
+
+    const UPDATE_ON_AUTHZ = 'update_on_authz';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -22,6 +31,18 @@ class Validator extends Base\Validator
         Entity::ORG_ID               => 'required|string'
     ];
 
+    protected static $createOnAuthzRules = [
+        Entity::NAME                 => 'required|string|max:100',
+        Entity::DESCRIPTION          => 'sometimes|string|max:255',
+        Entity::CHILD_IDS            => 'required|array',
+    ];
+
+    protected static $updateOnAuthzRules = [
+        Entity::NAME                 => 'required|string|max:100',
+        Entity::DESCRIPTION          => 'sometimes|string|max:255',
+        Entity::CHILD_IDS            => 'required|array',
+    ];
+
     protected static $viewRules = [
         Entity::NAME                 => 'sometimes|string|max:100',
         Entity::TYPE                 => 'sometimes|in:standard,custom',
@@ -33,6 +54,23 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'required|string|max:100',
         Entity::DESCRIPTION          => 'sometimes|string|max:255',
         Entity::UPDATED_BY           => 'required|string',
+    ];
+
+    protected static $migrateAuthzRules = [
+        Constants::ROLE_IDS => 'required|array',
+    ];
+
+    protected static $migrateApiRules = [
+        Entity::ID                  => 'required|string',
+        Entity::MERCHANT_ID         => 'required|string',
+        Entity::NAME                => 'required|string',
+        Entity::TYPE                => 'required|string',
+        Entity::DESCRIPTION         => 'sometimes|string',
+        Entity::CREATED_BY          => 'sometimes|string',
+        Entity::UPDATED_BY          => 'sometimes|string',
+        Entity::ORG_ID              => 'required|string',
+        Entity::PRODUCT             => 'required|string',
+        Entity::ACCESS_POLICY_IDS   => 'required|array',
     ];
 
     public static function validateArrayEqual($array1, $array2) :bool

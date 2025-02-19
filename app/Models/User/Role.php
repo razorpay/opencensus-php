@@ -2,7 +2,6 @@
 
 namespace RZP\Models\User;
 
-use RZP\Models\Roles;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -197,7 +196,7 @@ class Role
                     return true;
                 }
 
-                $roleEntity = (new Roles\Repository())->fetchRole($role);
+                $roleEntity = (new \RZP\Models\Roles\Service())->getRoleUsingExperiment($role);
 
                 if(empty($roleEntity))
                 {

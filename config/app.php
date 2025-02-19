@@ -507,6 +507,8 @@ return array(
 
     'rbl_on_bas_exp_id' => env('RBL_ON_BAS_EXP_ID'),
 
+    'cac_migration_splitz_experiment_id' => env('CAC_MIGRATION_SPLITZ_EXPERIMENT_ID'),
+
     'vendor_payment_metro_to_kafka_exp_id' => env('VENDOR_PAYMENT_SPLITZ_EXPERIMENT_METRO_TO_KAFKA'),
 
     'cmma_metro_migrate_out_experiment_id' => env('CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID'),

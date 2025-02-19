@@ -91,6 +91,8 @@ class AxisCaPayoutTest extends TestCase
         $this->merchant = $this->getDbEntityById('merchant', '10000000000000');
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
     }
 
     protected function setupScheduleAndScheduleTaskForMerchant()

@@ -4322,9 +4322,16 @@ class Core extends Base\Core
         {
             try
             {
-                $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
+                if ($merchantEntity->checkCACMigrationExperimentEnabled())
+                {
+                    $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy([$merchant[Entity::BANKING_ROLE]], $merchant[Entity::ID], true);
+                }
+                else
+                {
+                    $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
 
-                $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+                    $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+                }
 
                 /*
                  * Currently there is no way to hide specific permissions/policies using CAC.
@@ -6160,7 +6167,26 @@ class Core extends Base\Core
     {
         $merchantsUnique = [];
 
-        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
+        $roleIdsUnique = [];
+
+        array_walk($merchants, function ($merchant) use (&$roleIdsUnique)
+        {
+            if ($merchant[Entity::PRODUCT] === Product::BANKING)
+            {
+                $roleIdsUnique[] = $merchant[Entity::ROLE];
+            }
+        });
+
+        $roleIdsUnique = array_unique($roleIdsUnique);
+
+        $roleNamesFromAuthz = [];
+
+        if (empty($roleIdsUnique) === false)
+        {
+            $roleNamesFromAuthz = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($roleIdsUnique);
+        }
+
+        array_walk($merchants, function ($merchant) use (& $merchantsUnique, $roleNamesFromAuthz)
         {
             $id = $merchant[Entity::ID];
             $role = $merchant[Entity::ROLE];
@@ -6178,8 +6204,15 @@ class Core extends Base\Core
 
             if($merchant[Entity::PRODUCT] === Product::BANKING)
             {
-                $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] =
-                    $this->repo->roles->fetchRoleName($merchantsUnique[$id][$key]);
+                if (empty($roleNamesFromAuthz[$merchantsUnique[$id][$key]]) === false)
+                {
+                    $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] = $roleNamesFromAuthz[$merchantsUnique[$id][$key]];
+                }
+                else
+                {
+                    $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] = $this->repo->roles->fetchRoleName($merchantsUnique[$id][$key]);
+                }
+
             }
 
         });

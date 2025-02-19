@@ -9,16 +9,22 @@ use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\AuthzAdmin;
 use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\AccessControlHistoryLogs;
 use RZP\Mail\Merchant\RazorpayX\RolePermissionChange;
+use RZP\Models\AuthzAdmin\Service as AuthzAdminService;
 
 class Core extends Base\Core
 {
+    private $authzAdminService;
+
     public function __construct()
     {
         parent::__construct();
+
+        $this->authzAdminService = new AuthzAdminService();
     }
 
     public function create(array $input, array $accessPolicyIds) :Entity
@@ -77,6 +83,34 @@ class Core extends Base\Core
 
         return $entity;
 
+    }
+
+    public function createOnAuthz(array $input)
+    {
+        $this->trace->info(TraceCode::CAC_ROLE_CREATION_AUTHZ_REQUEST,
+        [
+            'input' => $input
+        ]);
+
+        // NOTE: Role name eligibility will be checked directly on authz via unique constraints. No need to check here.
+        $user = $this->app['basicauth']->getUser();
+
+        $userId = $user ? $user->getUserId() : null;
+
+        $input[Entity::CREATED_BY] = $userId;
+
+        $input[Entity::TYPE] = Entity::CUSTOM;
+
+        $input[Entity::MERCHANT_ID] = $this->merchant->getId();
+
+        $response = $this->authzAdminService->adminAPICreateRole($input);
+
+        $this->trace->info(TraceCode::CAC_ROLE_CREATION_AUTHZ_RESPONSE,
+        [
+            'response' => $response
+        ]);
+
+        return $response;
     }
 
     public function edit(string $id, array $input, array $accessPolicyIds) :Entity
@@ -154,6 +188,49 @@ class Core extends Base\Core
         return $role;
     }
 
+    public function updateOnAuthz(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::CAC_ROLE_UPDATE_AUTHZ_REQUEST,
+        [
+            'id'    => $id,
+            'input' => $input
+        ]);
+
+        if (BankingRole::exists($id))
+        {
+            throw new Exception\BadRequestValidationFailureException("Can't Edit Standard Roles" ,
+                $input);
+        }
+
+        // NOTE: Role name eligibility will be checked directly on authz via unique constraints. No need to check here.
+        if (empty($id))
+        {
+            throw new Exception\BadRequestValidationFailureException("Invalid Role Id" ,
+                $input);
+        }
+
+        $user = $this->app['basicauth']->getUser();
+
+        $userId = $user ? $user->getUserId() : null;
+
+        $input[Entity::CREATED_BY] = $userId;
+
+        $input[Entity::TYPE] = Entity::CUSTOM;
+
+        $input[Entity::MERCHANT_ID] = $this->merchant->getId();
+
+        $input[Entity::ID] = $id;
+
+        $response = $this->authzAdminService->adminAPIUpdateRole($input);
+
+        $this->trace->info(TraceCode::CAC_ROLE_CREATION_AUTHZ_RESPONSE,
+        [
+            'response' => $response
+        ]);
+
+        return $response;
+    }
+
     protected function sendEmail(string $roleId)
     {
         $merchantId = $this->merchant->getId();
@@ -166,7 +243,7 @@ class Core extends Base\Core
         $user = $this->app['basicauth']->getUser();
         $merchantUserRole = $this->repo->merchant_user->getMerchantUserRoles($user->getId(),$merchantId);
         $merchantRoleId = array_pluck($merchantUserRole->toArray(), User\Entity::ROLE)[0];
-        $merchantRole = $this->repo->roles->fetchRoleName($merchantRoleId);
+        $merchantRole = (new Service())->getRoleNameUsingExperiment($merchantRoleId);
         /* get userEmail & userName for merchant have roleId that has been edited */
         $merchantUsers = $this->repo->merchant_user
             ->findByRolesAndMerchantId([$roleId], $merchantId);
@@ -191,9 +268,31 @@ class Core extends Base\Core
     {
         $this->setInputParamForListRoles($input);
 
-        $roles = $this->repo->roles->listRoles($input);
+        $roles = [];
 
-        $roles = $roles->whereNotIn(Entity::ID, Entity::$rolesHiddenFromDashboard);
+        if ($this->merchant->checkCACMigrationExperimentEnabled())
+        {
+            $requestParams = $this->getListRoleRequestParams($input);
+            $rolesFromAuthz = $this->authzAdminService->adminAPIListRole($requestParams);
+
+            $filteredRoles = [];
+            foreach ($rolesFromAuthz as $role)
+            {
+                unset($role[Entity::CHILD_IDS]);
+                if ($role[Entity::TYPE] === Entity::STANDARD && in_array($role[Entity::ID], Entity::$rolesHiddenFromDashboard))
+                {
+                    continue;
+                }
+                $filteredRoles[] = $role;
+            }
+
+            $roles = collect($filteredRoles);
+        }
+        else
+        {
+            $roles = $this->repo->roles->listRoles($input);
+            $roles = $roles->whereNotIn(Entity::ID, Entity::$rolesHiddenFromDashboard);
+        }
 
         $this->trace->info(
             TraceCode::RECOVERABLE_EXCEPTION,
@@ -244,6 +343,14 @@ class Core extends Base\Core
 
     public function listRoles($input)
     {
+        if ($this->merchant->checkCACMigrationExperimentEnabled())
+        {
+            $requestParams = $this->getListRoleRequestParams($input);
+            $rolesFromAuthz = $this->authzAdminService->adminAPIListRole($requestParams);
+            return [
+                'items' => $rolesFromAuthz,
+            ];
+        }
         return $this->repo->roles->listRoles($input)->toArrayPublic();
     }
 
@@ -445,5 +552,149 @@ class Core extends Base\Core
         }
 
         return $role->getType() === Entity::STANDARD;
+    }
+
+    public function migrateToAuthz(array $roleIds)
+    {
+        // 1. get roles with authz_roles from DB & prepare request
+        $roles = $this->repo->roles->fetchByIdsWithAuthzRoles($roleIds);
+
+        if(count($roles) === 0)
+        {
+            throw new \LogicException("no roles found for input");
+        }
+
+        $roleRequest = [];
+
+        foreach($roles as $role)
+        {
+            $roleRequest[] = [
+                'id'            => $role['id'],
+                'name'          => $role['name'],
+                'type'          => $role['type'],
+                'owner_type'    => 'merchant',
+                'owner_id'      => $role['merchant_id'],
+                'child_names'   => json_decode($role['authz_roles']),
+                'created_by'    => $role['created_by'],
+                'updated_by'    => $role['updated_by'],
+                'description'   => $role['description']
+            ];
+        }
+
+        // 2. make request to authz
+        return (new AuthzAdmin\Service)->adminAPIMigrateRole([
+            'roles' => $roleRequest
+        ]);
+    }
+
+    public function getListRoleRequestParams($input): array
+    {
+        // ORG_ID_FOR_ROLES is used to get standard roles
+        $merchantIdList = [];
+
+        if (isset($input[Entity::TYPE]))
+        {
+            foreach ($input[Entity::TYPE] as $type)
+            {
+                if ($type === Entity::STANDARD)
+                {
+                    $merchantIdList[] = Entity::ORG_ID_FOR_ROLES;
+                }
+                else if ($type === Entity::CUSTOM)
+                {
+                    $merchantIdList[] = $input[Entity::MERCHANT_ID];
+                }
+            }
+        }
+
+        $requestParams = [
+            Constants::TYPES     => $input[Entity::TYPE],
+            Constants::OWNER_IDS => $merchantIdList,
+        ];
+
+        if (isset($input[Entity::ID]) && BankingRole::exists($input[Entity::ID]))
+        {
+            $requestParams[Entity::NAME] = BankingRole::getStandardRoleNameFromRoleId($input[Entity::ID]);
+        }
+        else
+        {
+            if (isset($input[Entity::NAME]) === true)
+            {
+                $requestParams[Entity::NAME] = $input[Entity::NAME];
+            }
+            if (isset($input[Entity::ID]) === true)
+            {
+                $requestParams[Constants::ROLE_IDS] = array($input[Entity::ID]);
+            }
+        }
+
+        return $requestParams;
+    }
+
+    public function migrateToApi(array $input)
+    {
+        $response = [];
+
+        foreach($input as $roleArray)
+        {
+            $roleId = array_pull($roleArray, Entity::ID);
+
+            $access_policy_ids = array_pull($roleArray, Entity::ACCESS_POLICY_IDS);
+
+            try
+            {
+                $this->createOrUpdateRoleForMigrateApi($roleId, $roleArray);
+
+                $this->createOrUpdateRoleAccessPolicyMapForMigrateApi($roleId, $access_policy_ids);
+
+                $response[$roleId] = Constants::SUCCESS;
+            }
+            catch(\Throwable $e)
+            {
+                $response[$roleId] = $e->getMessage();
+            }
+        }
+
+        return $response;
+    }
+
+    private function createOrUpdateRoleForMigrateApi(string $roleId, array $roleArray)
+    {
+        $role = $this->repo->roles->fetchRole($roleId);
+
+        $role = empty($role) ? (new Entity) : $role;
+
+        $product = array_pull($roleArray, Entity::PRODUCT);
+
+        $role = $role->fill($roleArray);
+        $role->setAttribute(Entity::ID, $roleId);
+        $role->setAttribute(Entity::PRODUCT, $product);
+
+        $this->repo->saveOrFail($role);
+    }
+
+    private function createOrUpdateRoleAccessPolicyMapForMigrateApi(string $roleId, array $accessPolicyIds)
+    {
+        $authzRoles = $this->repo->access_policy_authz_roles_map->getAllAuthzRolesForAccessPolicyIds($accessPolicyIds);
+
+        // 1. if role_map already exists, just update the access_policy_ids & authz_roles
+        $roleMap = $this->repo->role_access_policy_map->findByRoleId($roleId);
+        if (!empty($roleMap))
+        {
+            $roleMap->setAccessPolicyIds($accessPolicyIds);
+
+            $roleMap->setAuthzRoles($authzRoles);
+
+            $this->repo->role_access_policy_map->saveOrFail($roleMap);
+
+            return;
+        }
+
+        // 2. create new role_map
+        (new RoleAccessPolicyMap\Service())->create([
+            Entity::ROLE_ID            => $roleId,
+            Entity::AUTHZ_ROLES        => $authzRoles,
+            Entity::ACCESS_POLICY_IDS  => $accessPolicyIds
+        ]);
     }
 }

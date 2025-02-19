@@ -33,7 +33,7 @@ class ServiceTest extends TestCase
     private mixed
         $baMock, $keyAuthCredsMock, $repoMock, $merchantRepoMock,
         $orgRepoMock, $adminAccessMock, $traceMock, $adminGroupCore,
-        $roleAccessPolicyMapServiceMock, $merchantIpFilterMock;
+        $merchantIpFilterMock, $rolesServiceMock;
 
 
     use HasRequestCases;
@@ -99,8 +99,8 @@ class ServiceTest extends TestCase
         $this->adminAccessMock = $this->mockAdminAccess();
         $this->adminGroupCore = $this->mockAdminGroupCore();
         $this->traceMock = $this->mockTrace();
-        $this->roleAccessPolicyMapServiceMock = $this->mockRoleAccessPolicyMapServiceMock();
         $this->merchantIpFilterMock = $this->mockMerchantIpFilterMock();
+        $this->rolesServiceMock = $this->mockRolesServiceMock();
     }
 
     ////////// appAuth() test cases start //////////
@@ -664,14 +664,15 @@ class ServiceTest extends TestCase
 
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn(['user_id' => $userId]);
         $this->baMock->expects($this->exactly(2))->method('getUserRole')->with()->willReturn(Role::OWNER);
-        $this->roleAccessPolicyMapServiceMock->expects($this->once())->method('getAuthzRolesForRoleId')->with(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn(null);
+        $this->rolesServiceMock->expects($this->once())->method('getAuthzRolesUsingExperiment')->with(Role::OWNER)->willReturn([]);
 
         $this->authorizeUserAccessExceptRBACCommonExpectations(Product::BANKING, false, $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID], true);
 
         $this->merchantIpFilterMock->expects($this->once())->method('authenticateIpForProxyAuth')->with($this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_IP]);
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $this->assertNull($res);
     }
 
@@ -681,14 +682,33 @@ class ServiceTest extends TestCase
 
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn(['user_id' => $userId]);
         $this->baMock->expects($this->exactly(3))->method('getUserRole')->with()->willReturn(Role::OWNER);
-        $this->roleAccessPolicyMapServiceMock->expects($this->once())->method('getAuthzRolesForRoleId')->with(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn(null);
+        $this->rolesServiceMock->expects($this->once())->method('getAuthzRolesUsingExperiment')->with(Role::OWNER)->willReturn([]);
 
         $this->authorizeUserAccessExceptRBACCommonExpectations(Product::BANKING, false, $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID], false);
 
         $this->merchantIpFilterMock->expects($this->once())->method('authenticateIpForProxyAuth')->with($this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_IP]);
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
+        $this->assertNull($res);
+    }
+
+    public function testAuthorizeUserAccessExceptRBACBankingNonEmptyBACustomAccessRoles()
+    {
+        $userId = $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID];
+
+        $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn(['user_id' => $userId]);
+        $this->baMock->expects($this->once())->method('getUserRole')->with()->willReturn(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn([]);
+        $this->rolesServiceMock->expects($this->never())->method('getAuthzRolesUsingExperiment');
+
+        $this->authorizeUserAccessExceptRBACCommonExpectations(Product::BANKING, false, $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID], true);
+
+        $this->merchantIpFilterMock->expects($this->once())->method('authenticateIpForProxyAuth')->with($this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_IP]);
+
+        $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
+        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $this->assertNull($res);
     }
 
@@ -700,14 +720,15 @@ class ServiceTest extends TestCase
 
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn(['user_id' => $userId]);
         $this->baMock->expects($this->exactly(3))->method('getUserRole')->with()->willReturn(Role::OWNER);
-        $this->roleAccessPolicyMapServiceMock->expects($this->once())->method('getAuthzRolesForRoleId')->with(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn(null);
+        $this->rolesServiceMock->expects($this->once())->method('getAuthzRolesUsingExperiment')->with(Role::OWNER)->willReturn([]);
 
         $this->authorizeUserAccessExceptRBACCommonExpectations(Product::BANKING, true, $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID], true);
 
         $this->merchantIpFilterMock->expects($this->once())->method('authenticateIpForProxyAuth')->with($input['dashboard']['headers'][RequestHeader::X_DASHBOARD_IP]);
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($input['dashboard']['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($input['dashboard']['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $this->assertNull($res);
     }
 
@@ -719,13 +740,14 @@ class ServiceTest extends TestCase
 
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn(['user_id' => $userId]);
         $this->baMock->expects($this->exactly(3))->method('getUserRole')->with()->willReturn(Role::OWNER);
-        $this->roleAccessPolicyMapServiceMock->expects($this->once())->method('getAuthzRolesForRoleId')->with(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn(null);
+        $this->rolesServiceMock->expects($this->once())->method('getAuthzRolesUsingExperiment')->with(Role::OWNER)->willReturn([]);
 
         $this->authorizeUserAccessExceptRBACCommonExpectations(Product::PRIMARY, false, $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID], true);
         $this->merchantIpFilterMock->expects($this->once())->method('authenticateIpForProxyAuth')->with($input['dashboard']['headers'][RequestHeader::X_DASHBOARD_IP]);
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($input['dashboard']['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($input['dashboard']['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $this->assertNull($res);
     }
 
@@ -738,14 +760,15 @@ class ServiceTest extends TestCase
 
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn([]);
         $this->baMock->expects($this->exactly(2))->method('getUserRole')->with()->willReturn(Role::OWNER);
-        $this->roleAccessPolicyMapServiceMock->expects($this->once())->method('getAuthzRolesForRoleId')->with(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn(null);
+        $this->rolesServiceMock->expects($this->once())->method('getAuthzRolesUsingExperiment')->with(Role::OWNER)->willReturn([]);
 
         $this->authorizeUserAccessExceptRBACCommonExpectations(Product::BANKING, false, $userId, true);
 
         $this->merchantIpFilterMock->expects($this->once())->method('authenticateIpForProxyAuth')->with($this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_IP]);
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $this->assertNull($res);
     }
 
@@ -760,7 +783,7 @@ class ServiceTest extends TestCase
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn([]);
         $this->baMock->expects($this->never())->method('setUserAndRoles');
         $this->baMock->expects($this->never())->method('getUserRole');
-        $this->roleAccessPolicyMapServiceMock->expects($this->never())->method('getAuthzRolesForRoleId');
+        $this->rolesServiceMock->expects($this->never())->method('getAuthzRolesUsingExperiment');
         $this->baMock->expects($this->atLeastOnce())->method('getMerchant'); // all calls are made by unauthorized()
         $merchantEntity->expects($this->never())->method('isCACEnabled');
         $this->baMock->expects($this->never())->method('getUser');
@@ -772,7 +795,7 @@ class ServiceTest extends TestCase
         $this->merchantIpFilterMock->expects($this->never())->method('authenticateIpForProxyAuth');
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $expectedRes = ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
         $this->assertEquals($expectedRes, $res);
     }
@@ -786,7 +809,8 @@ class ServiceTest extends TestCase
 
         $this->baMock->expects($this->once())->method('getDashboardHeaders')->with()->willReturn(['user_id' => $userId]);
         $this->baMock->expects($this->exactly(2))->method('getUserRole')->with()->willReturn(Role::OWNER);
-        $this->roleAccessPolicyMapServiceMock->expects($this->once())->method('getAuthzRolesForRoleId')->with(Role::OWNER);
+        $this->baMock->expects($this->once())->method('getCustomAccessRoles')->with()->willReturn(null);
+        $this->rolesServiceMock->expects($this->once())->method('getAuthzRolesUsingExperiment')->with(Role::OWNER)->willReturn([]);
 
         $this->authorizeUserAccessExceptRBACCommonExpectations(Product::BANKING, false, $this->dashboardRequest2Info['headers'][RequestHeader::X_DASHBOARD_USER_ID], true);
 
@@ -795,7 +819,7 @@ class ServiceTest extends TestCase
             ->willReturn($expectedError);
 
         $method = $this->getPrivateMethod('RZP\Services\Edge\Service', 'authorizeUserAccessExceptRBAC');
-        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->roleAccessPolicyMapServiceMock]);
+        $res = $method->invokeArgs(new Service($this->dashboardRequest2Info['headers']), [$this->merchantIpFilterMock, $this->rolesServiceMock]);
         $this->assertEquals($expectedError, $res);
     }
 
@@ -820,7 +844,7 @@ class ServiceTest extends TestCase
             ->setConstructorArgs([$this->app])
             ->setMethods(['setType', 'setAppAuth', 'isKeyBlank', 'setCredentials', 'verifyInternalAppSecret',
                 'getInternalApp', 'fetchAndSetAdminUsingToken', 'setDashboardHeaders', 'checkAndSetAccountScope', 'setProxyTrue', 'isAdminAuth', 'setOrgId', 'getAdmin',
-                'getDashboardHeaders', 'setUserAndRoles', 'getUserRole', 'getMerchant', 'getUser', 'getMerchantId'])
+                'getDashboardHeaders', 'setUserAndRoles', 'getUserRole', 'getMerchant', 'getUser', 'getMerchantId', 'getCustomAccessRoles'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -871,11 +895,11 @@ class ServiceTest extends TestCase
             ->getMock();
     }
 
-    protected function mockRoleAccessPolicyMapServiceMock()
+    protected function mockRolesServiceMock()
     {
-        return $this->getMockBuilder(\RZP\Models\RoleAccessPolicyMap\Service::class)
+        return $this->getMockBuilder(\RZP\Models\Roles\Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getAuthzRolesForRoleId'])
+            ->setMethods(['getAuthzRolesUsingExperiment'])
             ->getMock();
     }
 

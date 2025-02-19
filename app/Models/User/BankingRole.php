@@ -24,6 +24,7 @@ class BankingRole
     const CHARTERED_ACCOUNTANT = Role::CHARTERED_ACCOUNTANT;
     const VENDOR               = Role::VENDOR;
     const PETTY_CASH_EMPLOYEE  = Role::PETTY_CASH_EMPLOYEE;
+    const BANKING_READONLY     = Role::BANKING_READONLY;
 
     //
     // Dynamic Roles:
@@ -95,6 +96,36 @@ class BankingRole
         self::ADMIN      => 'Admin',
     ];
 
+    protected static $standardRoleNameToIdMap = [
+        'Finance L1'            => BankingRole::FINANCE_L1,
+        'Finance'               => BankingRole::FINANCE,
+        'Finance L2'            => BankingRole::FINANCE_L2,
+        'View Only'             => BankingRole::VIEW_ONLY,
+        'Finance L3'            => BankingRole::FINANCE_L3,
+        'Vendor'                => BankingRole::VENDOR,
+        'Chartered Accountant'  => BankingRole::CHARTERED_ACCOUNTANT,
+        'Operations'            => BankingRole::OPERATIONS,
+        'Owner'                 => BankingRole::OWNER,
+        'Admin'                 => BankingRole::ADMIN,
+        'Petty Cash Employee'   => BankingRole::PETTY_CASH_EMPLOYEE,
+        'Owner - Read Only'     => BankingRole::BANKING_READONLY,
+    ];
+
+    protected static $standardRoleIdToNameMap = [
+        BankingRole::FINANCE_L1            => 'Finance L1',
+        BankingRole::FINANCE               => 'Finance',
+        BankingRole::FINANCE_L2            => 'Finance L2',
+        BankingRole::VIEW_ONLY             => 'View Only',
+        BankingRole::FINANCE_L3            => 'Finance L3',
+        BankingRole::VENDOR                => 'Vendor',
+        BankingRole::CHARTERED_ACCOUNTANT  => 'Chartered Accountant',
+        BankingRole::OPERATIONS            => 'Operations',
+        BankingRole::OWNER                 => 'Owner',
+        BankingRole::ADMIN                 => 'Admin',
+        BankingRole::PETTY_CASH_EMPLOYEE   => 'Employee - Petty Cash',
+        BankingRole::BANKING_READONLY      => 'Owner - Read Only',
+    ];
+
     protected static $axisRoleToNameMap = [
         self::CC_ADMIN               => 'cc_admin',
         self::VIEWER                 => 'view_only',
@@ -120,6 +151,16 @@ class BankingRole
     public static function getNameForWorkflowRole(string $roleId): string
     {
         return self::$workflowRoleToNameMap[$roleId];
+    }
+
+    public static function getStandardRoleIdFromRoleName(string $roleName): string
+    {
+        return self::$standardRoleNameToIdMap[$roleName];
+    }
+
+    public static function getStandardRoleNameFromRoleId(string $roleId): string
+    {
+        return self::$standardRoleIdToNameMap[$roleId];
     }
 
     public static function getNamesForWorkflowRoles(array $roleIdentifiers): array

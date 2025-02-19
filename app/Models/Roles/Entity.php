@@ -43,12 +43,16 @@ class Entity extends Base\PublicEntity
     const ACCESS_POLICY_IDS                     = 'access_policy_ids';
     const ROLE_ID                               = 'role_id';
     const MEMBERS                               = 'members';
+    const AUTHZ_ROLES                           = 'authz_roles';
 
     const STANDARD_ROLE_MERCHANT_ID             = '100000Razorpay';
     const ORG_ID_FOR_ROLES                      = '100000razorpay';
     const USER_ID_FOR_SYSTEM                    = '10000000system';
 
     const COPY_DISABLE                          = 'copy_disable';
+
+    const CHILD_IDS                             = 'child_ids';
+    const CHILD_NAMES                           = 'child_names';
 
     public static $displayOrder = [
         BankingRole::OWNER,
@@ -154,5 +158,4 @@ class Entity extends Base\PublicEntity
 
         $id = substr($id, $ix + 5);
     }
-
 }

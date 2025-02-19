@@ -6418,7 +6418,7 @@ class Service extends Base\Service
 
         if($product === Product::BANKING)
         {
-            $roleEntity = $this->repo->roles->fetchRole($roleId);
+            $roleEntity = (new \RZP\Models\Roles\Service())->getRoleUsingExperiment($roleId);
 
             if (empty($roleEntity) === true) {
                 throw new Exception\BadRequestValidationFailureException("Invalid Role Id",
@@ -6467,7 +6467,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $roleEntity = $this->repo->roles->fetchRole($roleId);
+        $roleEntity = (new \RZP\Models\Roles\Service())->getRoleUsingExperiment($roleId);
 
         if(empty($roleEntity) === true)
         {

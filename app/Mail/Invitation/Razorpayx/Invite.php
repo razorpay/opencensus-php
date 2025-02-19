@@ -164,9 +164,7 @@ class Invite extends Mailable
 
     private function getRoleName($invitation)
     {
-        $app = App::getFacadeRoot();
-
-        return $app['repo']->roles->fetchRoleName($invitation->getRole()) ?? $invitation->getRole();
+        return (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($invitation->getRole()) ?? $invitation->getRole();
     }
 
     protected function getBusinessName()

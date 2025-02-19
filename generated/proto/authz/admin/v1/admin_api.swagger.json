@@ -336,6 +336,12 @@
               "EFFECT_DENY"
             ],
             "default": "EFFECT_UNKNOWN"
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -430,6 +436,44 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "roleOwnerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "enrichRoles",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "roleIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "roleIdentifier",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orgIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -549,7 +593,9 @@
             "type": "string",
             "enum": [
               "ROLE_POLICY_TYPE_INTERNAL",
-              "ROLE_POLICY_TYPE_EXTERNAL"
+              "ROLE_POLICY_TYPE_EXTERNAL",
+              "ROLE_POLICY_TYPE_CUSTOM",
+              "ROLE_POLICY_TYPE_STANDARD"
             ],
             "default": "ROLE_POLICY_TYPE_INTERNAL"
           },
@@ -564,6 +610,188 @@
             "in": "query",
             "required": false,
             "type": "boolean"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/privilege_role_mappings": {
+      "post": {
+        "summary": "CreatePrivilegeRoleMapping creates the privilege role mapping in AuthZ policy store.",
+        "operationId": "AdminAPI_CreatePrivilegeRoleMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PrivilegeRoleMapping"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PrivilegeRoleMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdatePrivilegeRoleMapping updates the privilege role mapping in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdatePrivilegeRoleMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PrivilegeRoleMapping"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PrivilegeRoleMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/privileges": {
+      "get": {
+        "summary": "ListPrivileges return a list of privileges for the given orgId",
+        "operationId": "AdminAPI_ListPrivileges",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPrivilegesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "expandActions",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "expandRoles",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "visibility",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreatePrivilege creates the privilege entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreatePrivilege",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Privilege"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Privilege"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdatePrivilege updates the privilege entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdatePrivilege",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Privilege"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Privilege"
+            }
           }
         ],
         "tags": [
@@ -592,6 +820,7 @@
         "parameters": [
           {
             "name": "body",
+            "description": "Null defines an empty message which the service uses when it doesn't have any data to return.",
             "in": "body",
             "required": true,
             "schema": {
@@ -1080,6 +1309,50 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "key.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ownerIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "types",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -1111,6 +1384,12 @@
             "schema": {
               "$ref": "#/definitions/v1Role"
             }
+          },
+          {
+            "name": "X-Passport-JWT-V1",
+            "in": "header",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1142,6 +1421,61 @@
             "schema": {
               "$ref": "#/definitions/v1Role"
             }
+          },
+          {
+            "name": "X-Passport-JWT-V1",
+            "in": "header",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/roles/{identifier}": {
+      "get": {
+        "summary": "GetRole returns the role entity from AuthZ policy store.",
+        "operationId": "AdminAPI_GetRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "expandChildren",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -1193,7 +1527,9 @@
             "type": "string",
             "enum": [
               "ROLE_POLICY_TYPE_INTERNAL",
-              "ROLE_POLICY_TYPE_EXTERNAL"
+              "ROLE_POLICY_TYPE_EXTERNAL",
+              "ROLE_POLICY_TYPE_CUSTOM",
+              "ROLE_POLICY_TYPE_STANDARD"
             ],
             "default": "ROLE_POLICY_TYPE_INTERNAL"
           },
@@ -1208,6 +1544,67 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "childIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "createdBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "X-Passport-JWT-V1",
+            "in": "header",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/roles_migrate": {
+      "post": {
+        "summary": "MigrateRole create role entities with pre-defined IDs. This will be decommissioned after CAC migration",
+        "operationId": "AdminAPI_MigrateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1MigrateRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1MigrateRoleRequest"
+            }
           }
         ],
         "tags": [
@@ -1443,6 +1840,37 @@
         "tags": [
           "AdminAPI"
         ]
+      },
+      "put": {
+        "summary": "UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdateSubjectRoleMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SubjectRoleMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
       }
     },
     "/v1/subjects": {
@@ -1562,6 +1990,17 @@
         }
       }
     },
+    "v1ChildRoles": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
     "v1Effect": {
       "type": "string",
       "enum": [
@@ -1586,6 +2025,9 @@
         },
         "effect": {
           "$ref": "#/definitions/v1Effect"
+        },
+        "group": {
+          "type": "string"
         }
       },
       "description": "ExpandedPermission is the struct defining a permission which has all sub entities expanded."
@@ -1686,6 +2128,24 @@
         }
       }
     },
+    "v1ListPrivilegesResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Privilege"
+          }
+        },
+        "paginationToken": {
+          "type": "string"
+        }
+      }
+    },
     "v1ListResourceGroupResponse": {
       "type": "object",
       "properties": {
@@ -1758,6 +2218,69 @@
         }
       }
     },
+    "v1MigrateRole": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1RolePolicyType"
+        },
+        "ownerType": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "childNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "childIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      }
+    },
+    "v1MigrateRoleRequest": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1MigrateRole"
+          }
+        },
+        "orgId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1MigrateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1Null": {
       "type": "object",
       "description": "Null defines an empty message which the service uses when it doesn't have any data to return."
@@ -1776,6 +2299,9 @@
         },
         "effect": {
           "$ref": "#/definitions/v1Effect"
+        },
+        "group": {
+          "type": "string"
         }
       }
     },
@@ -1802,6 +2328,95 @@
         },
         "isActive": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1Privilege": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "viewPosition": {
+          "type": "string",
+          "format": "int64"
+        },
+        "visibility": {
+          "type": "string",
+          "format": "int64"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PrivilegeRoleMapping"
+          }
+        },
+        "extraData": {
+          "$ref": "#/definitions/v1PrivilegeExtraData"
+        }
+      }
+    },
+    "v1PrivilegeExtraData": {
+      "type": "object"
+    },
+    "v1PrivilegeRoleMapping": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "roleIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1PrivilegeRoleMappingMetadata"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ChildRoles"
+          }
+        },
+        "privilegeId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1PrivilegeRoleMappingMetadata": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "tooltip": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
         }
       }
     },
@@ -1858,6 +2473,24 @@
         },
         "ownerId": {
           "type": "string"
+        },
+        "childIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ChildRoles"
+          }
+        },
+        "description": {
+          "type": "string"
         }
       }
     },
@@ -1876,7 +2509,9 @@
       "type": "string",
       "enum": [
         "ROLE_POLICY_TYPE_INTERNAL",
-        "ROLE_POLICY_TYPE_EXTERNAL"
+        "ROLE_POLICY_TYPE_EXTERNAL",
+        "ROLE_POLICY_TYPE_CUSTOM",
+        "ROLE_POLICY_TYPE_STANDARD"
       ],
       "default": "ROLE_POLICY_TYPE_INTERNAL",
       "description": "RolePolicyType defines the allowed types for role \u0026 policy entities."

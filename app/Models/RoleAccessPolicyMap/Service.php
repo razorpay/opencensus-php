@@ -28,6 +28,9 @@ class Service extends Base\Service
         return $entity->toArrayPublic();
     }
 
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
     public function getAuthzRolesForRoleId(string $roleId) :array
     {
         $roleMap = $this->repo->role_access_policy_map->findByRoleId($roleId);

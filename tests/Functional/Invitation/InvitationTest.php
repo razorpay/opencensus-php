@@ -64,6 +64,8 @@ class InvitationTest extends TestCase
         $this->mockStorkService();
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID, $this->merchantUser->getId());
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
     }
 
     public function createXMerchantUser()

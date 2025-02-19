@@ -207,6 +207,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
+
         $this->mockCardVault(null, true);
     }
 

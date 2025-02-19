@@ -107,6 +107,8 @@ class RblPayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
     }
 
     protected function liveSetUp()

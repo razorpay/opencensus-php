@@ -117,6 +117,7 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.banking_account.mock', true);
         $this->app['config']->set('applications.banking_account_service.mock', true);
         $this->app['config']->set('applications.salesforce.mock', true);
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
         $this->bankingAccountServiceMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();

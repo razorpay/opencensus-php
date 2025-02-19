@@ -376,7 +376,12 @@ class UserAccess
             return;
         }
 
-        $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($userRole);
+        $authzRoles = $this->ba->getCustomAccessRoles();
+
+        if (is_null($authzRoles))
+        {
+            $authzRoles = (new \RZP\Models\Roles\Service())->getAuthzRolesUsingExperiment($userRole);
+        }
 
         $isRoleAllowedAccess = AccessAuthorizationService::hasAccessAllowedV2($routePermission, $authzRoles);
 

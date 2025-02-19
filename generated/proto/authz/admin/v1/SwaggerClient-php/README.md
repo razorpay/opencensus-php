@@ -82,6 +82,8 @@ Class | Method | HTTP request | Description
 *AdminAPIApi* | [**adminAPICreateAction**](docs/Api/AdminAPIApi.md#adminapicreateaction) | **POST** /v1/actions | CreateAction creates the action entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPICreatePermission**](docs/Api/AdminAPIApi.md#adminapicreatepermission) | **POST** /v1/permissions | CreatePermission creates the permission entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPICreatePolicy**](docs/Api/AdminAPIApi.md#adminapicreatepolicy) | **POST** /v1/policies | CreatePolicy creates the policy entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPICreatePrivilege**](docs/Api/AdminAPIApi.md#adminapicreateprivilege) | **POST** /v1/privileges | CreatePrivilege creates the privilege entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPICreatePrivilegeRoleMapping**](docs/Api/AdminAPIApi.md#adminapicreateprivilegerolemapping) | **POST** /v1/privilege_role_mappings | CreatePrivilegeRoleMapping creates the privilege role mapping in AuthZ policy store.
 *AdminAPIApi* | [**adminAPICreateResource**](docs/Api/AdminAPIApi.md#adminapicreateresource) | **POST** /v1/resources | CreateResource creates the resource entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPICreateResourceGroup**](docs/Api/AdminAPIApi.md#adminapicreateresourcegroup) | **POST** /v1/resource_groups | CreateResourceGroup creates the resource group entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPICreateResourceGroupMapping**](docs/Api/AdminAPIApi.md#adminapicreateresourcegroupmapping) | **POST** /v1/resource_group_mappings | CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
@@ -100,21 +102,27 @@ Class | Method | HTTP request | Description
 *AdminAPIApi* | [**adminAPIDeleteService**](docs/Api/AdminAPIApi.md#adminapideleteservice) | **DELETE** /v1/services/{id} | DeleteService deletes the service entity from AuthZ policy store.
 *AdminAPIApi* | [**adminAPIDeleteSubject**](docs/Api/AdminAPIApi.md#adminapideletesubject) | **DELETE** /v1/subjects | DeleteSubject detaches all roles for the given subject entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIDeleteSubjectRoleMapping**](docs/Api/AdminAPIApi.md#adminapideletesubjectrolemapping) | **DELETE** /v1/subject_role_mappings | DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPIGetRole**](docs/Api/AdminAPIApi.md#adminapigetrole) | **GET** /v1/roles/{identifier} | GetRole returns the role entity from AuthZ policy store.
 *AdminAPIApi* | [**adminAPIListAction**](docs/Api/AdminAPIApi.md#adminapilistaction) | **GET** /v1/actions | ListAction returns a list of actions based on the supplied filters.
 *AdminAPIApi* | [**adminAPIListPermission**](docs/Api/AdminAPIApi.md#adminapilistpermission) | **GET** /v1/permissions | ListPermission returns a list of permissions satisfying the filter conditions.
 *AdminAPIApi* | [**adminAPIListPolicy**](docs/Api/AdminAPIApi.md#adminapilistpolicy) | **GET** /v1/policies | ListPolicy returns a list of policies satisfying the filter conditions.
+*AdminAPIApi* | [**adminAPIListPrivileges**](docs/Api/AdminAPIApi.md#adminapilistprivileges) | **GET** /v1/privileges | ListPrivileges return a list of privileges for the given orgId
 *AdminAPIApi* | [**adminAPIListResource**](docs/Api/AdminAPIApi.md#adminapilistresource) | **GET** /v1/resources | ListResource returns a list of resources based on the supplied filters.
 *AdminAPIApi* | [**adminAPIListResourceGroup**](docs/Api/AdminAPIApi.md#adminapilistresourcegroup) | **GET** /v1/resource_groups | ListResourceGroup returns a list of resource group entities from AuthZ policy store.
 *AdminAPIApi* | [**adminAPIListRole**](docs/Api/AdminAPIApi.md#adminapilistrole) | **GET** /v1/roles | ListRole returns a list of roles matching the filter condition.
 *AdminAPIApi* | [**adminAPIListService**](docs/Api/AdminAPIApi.md#adminapilistservice) | **GET** /v1/services | ListService returns a list of services based on the supplied filters.
+*AdminAPIApi* | [**adminAPIMigrateRole**](docs/Api/AdminAPIApi.md#adminapimigraterole) | **POST** /v1/roles_migrate | MigrateRole create role entities with pre-defined IDs. This will be decommissioned after CAC migration
 *AdminAPIApi* | [**adminAPIRecon**](docs/Api/AdminAPIApi.md#adminapirecon) | **POST** /v1/recon | Recon is to be used for reconciliation of policies between MySQL &amp; Consul.
 *AdminAPIApi* | [**adminAPIUpdateAction**](docs/Api/AdminAPIApi.md#adminapiupdateaction) | **PUT** /v1/actions | UpdateAction creates the action entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIUpdatePermission**](docs/Api/AdminAPIApi.md#adminapiupdatepermission) | **PUT** /v1/permissions | UpdatePermission creates the permission entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIUpdatePolicy**](docs/Api/AdminAPIApi.md#adminapiupdatepolicy) | **PUT** /v1/policies | UpdatePolicy creates the policy entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPIUpdatePrivilege**](docs/Api/AdminAPIApi.md#adminapiupdateprivilege) | **PUT** /v1/privileges | UpdatePrivilege updates the privilege entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPIUpdatePrivilegeRoleMapping**](docs/Api/AdminAPIApi.md#adminapiupdateprivilegerolemapping) | **PUT** /v1/privilege_role_mappings | UpdatePrivilegeRoleMapping updates the privilege role mapping in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIUpdateResource**](docs/Api/AdminAPIApi.md#adminapiupdateresource) | **PUT** /v1/resources | UpdateResource creates the resource entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIUpdateResourceGroup**](docs/Api/AdminAPIApi.md#adminapiupdateresourcegroup) | **PUT** /v1/resource_groups | UpdateResourceGroup updates the given resource group entity.
 *AdminAPIApi* | [**adminAPIUpdateRole**](docs/Api/AdminAPIApi.md#adminapiupdaterole) | **PUT** /v1/roles | UpdateRole creates the role entity in AuthZ policy store.
 *AdminAPIApi* | [**adminAPIUpdateService**](docs/Api/AdminAPIApi.md#adminapiupdateservice) | **PUT** /v1/services | UpdateService creates the service entity in AuthZ policy store.
+*AdminAPIApi* | [**adminAPIUpdateSubjectRoleMapping**](docs/Api/AdminAPIApi.md#adminapiupdatesubjectrolemapping) | **PUT** /v1/subject_role_mappings | UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.
 
 
 ## Documentation For Models
@@ -123,6 +131,7 @@ Class | Method | HTTP request | Description
  - [ProtobufAny](docs/Model/ProtobufAny.md)
  - [RpcStatus](docs/Model/RpcStatus.md)
  - [V1Action](docs/Model/V1Action.md)
+ - [V1ChildRoles](docs/Model/V1ChildRoles.md)
  - [V1Effect](docs/Model/V1Effect.md)
  - [V1ExpandedPermission](docs/Model/V1ExpandedPermission.md)
  - [V1ExpandedPolicy](docs/Model/V1ExpandedPolicy.md)
@@ -130,13 +139,21 @@ Class | Method | HTTP request | Description
  - [V1ListActionResponse](docs/Model/V1ListActionResponse.md)
  - [V1ListPermissionResponse](docs/Model/V1ListPermissionResponse.md)
  - [V1ListPolicyResponse](docs/Model/V1ListPolicyResponse.md)
+ - [V1ListPrivilegesResponse](docs/Model/V1ListPrivilegesResponse.md)
  - [V1ListResourceGroupResponse](docs/Model/V1ListResourceGroupResponse.md)
  - [V1ListResourceResponse](docs/Model/V1ListResourceResponse.md)
  - [V1ListRoleResponse](docs/Model/V1ListRoleResponse.md)
  - [V1ListServiceResponse](docs/Model/V1ListServiceResponse.md)
+ - [V1MigrateRole](docs/Model/V1MigrateRole.md)
+ - [V1MigrateRoleRequest](docs/Model/V1MigrateRoleRequest.md)
+ - [V1MigrateRoleResponse](docs/Model/V1MigrateRoleResponse.md)
  - [V1Null](docs/Model/V1Null.md)
  - [V1Permission](docs/Model/V1Permission.md)
  - [V1Policy](docs/Model/V1Policy.md)
+ - [V1Privilege](docs/Model/V1Privilege.md)
+ - [V1PrivilegeExtraData](docs/Model/V1PrivilegeExtraData.md)
+ - [V1PrivilegeRoleMapping](docs/Model/V1PrivilegeRoleMapping.md)
+ - [V1PrivilegeRoleMappingMetadata](docs/Model/V1PrivilegeRoleMappingMetadata.md)
  - [V1Resource](docs/Model/V1Resource.md)
  - [V1ResourceGroup](docs/Model/V1ResourceGroup.md)
  - [V1ResourceGroupMapping](docs/Model/V1ResourceGroupMapping.md)

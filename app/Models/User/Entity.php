@@ -821,7 +821,7 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
-        $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
+        $attributes[self::ROLE_NAME] = (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($attributes[self::ROLE]);
 
         return $attributes;
     }
@@ -851,7 +851,7 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
-        $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
+        $attributes[self::ROLE_NAME] = (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($attributes[self::ROLE]);
 
         return $attributes;
     }
