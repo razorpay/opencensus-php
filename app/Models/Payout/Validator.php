@@ -1724,6 +1724,7 @@ class Validator extends Base\Validator
 
                 case Settlement\Channel::AXIS :
                 case Settlement\Channel::ICICI :
+                case Settlement\Channel::IDFC :
                 case Settlement\Channel::YESBANK :
                     if ((new PayoutModeConfig\Service())->checkIfUpiDirectAccountChannelEnabledForMerchant($merchantId, $channel) === false)
                     {

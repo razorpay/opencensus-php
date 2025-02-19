@@ -494,6 +494,7 @@ class Entity extends Base\PublicEntity
         Channel::YESBANK,
         Channel::ICICI,
         Channel::AXIS,
+        Channel::IDFC,
         'shared'
     ];
 
