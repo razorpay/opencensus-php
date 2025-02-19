@@ -3234,7 +3234,7 @@ class Processor
     }
 
     /**
-     * canRouteThroughNbPlusRearchFlow checks if payment is eligible to route via rearch flow
+     * canRouteThroughNbPlusRearchFlow checks if payment is eligible to route via Nb rearch flow
      * First check if merchant is enabled on rearch
      * Second check would be if bank's are enabled on rearch
      * Perform other check
@@ -3309,9 +3309,8 @@ class Processor
         {
             return false;
         }
-        // This Feature Flag will be used for intial rampup to enable merchants
-        // Use the same function to disbale merchant traffic once intial rampup is completed
-            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_enable_merchants';
+        // add merchant in this experiment to disable merchant traffic on rearch
+            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_block_merchants';
 
             $properties = [
                 'id'            => $this->app['request']->getTaskId(),
@@ -3322,17 +3321,26 @@ class Processor
 
             $variant = $response['response']['variant']['name'] ?? 'control';
 
-            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MERCHANT_SPLITZ_VARIANT,
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MERCHANT_BLOCKED_ON_REARCH,
             [
                 'merchant_id'       => $merchant->getId(),
+                'experiment'        => $featureFlag,
                 'bank'              => $input[Payment\Entity::BANK],
                 'route'             => $currentRouteName,
                 'variant'           => $variant,
+                'response'          => $response,
             ]
         );
 
             if ($variant === 'enabled') {
-                return true;
+                $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MERCHANT_BLOCKED_ON_REARCH,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'experiment'        => $featureFlag,
+                'bank'              => $input[Payment\Entity::BANK],
+                'route'             => $currentRouteName,
+            ]);
+                return false;
             }
 
             if ((app()->runningUnitTests() === true) and
@@ -3340,6 +3348,8 @@ class Processor
             {
                return false;
             }
+            //Ramp the traffic on rearch
+            return true;
 
         }
         catch(\Throwable $e)
@@ -3893,34 +3903,41 @@ class Processor
           $dimensions[9]=1;
        }
 
+       if ($merchant->isFeatureEnabled('tpv')===true){
+            if ($this->isNBPlusRearchTpv($merchant) === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[10] = 1;
+            }
+       }
        if ($merchant->isFeatureEnabled('openwallet')===true)
        {
           $routeViaReArch=false;
-          $dimensions[10]=1;
+          $dimensions[11]=1;
        }
 
        if (empty($input[Payment\Entity::META])===false)
        {
           $routeViaReArch=true;
-          $dimensions[11]=1;
+          $dimensions[12]=1;
        }
 
        if (empty($input['signature'])===false)
        {
           $routeViaReArch=true;
-          $dimensions[12]=1;
+          $dimensions[13]=1;
        }
 
       if (empty($input[Payment\Entity::BILLING_ADDRESS])===false)
       {
          $routeViaReArch=true;
-         $dimensions[13]=1;
+         $dimensions[14]=1;
       }
 
       if (empty($input[Payment\Entity::OFFER_ID]) === false)
       {
             $routeViaReArch = false;
-            $dimensions[14] = 1;
+            $dimensions[15] = 1;
       }
 
       if ($merchant->isMarketplace() === true)
@@ -3928,9 +3945,23 @@ class Processor
          if ($this->isNBPlusRearchMarketPlace($merchant) === false)
          {
          $routeViaReArch = false;
-         $dimensions[15] = 1;
+         $dimensions[16] = 1;
          }
     }
+        $library = null;
+        if((isset($input['_']) === true) and
+        (isset($input['_']['library']) === true))
+        {
+            $library = $input['_']['library'];
+        }
+
+        if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS )
+        {
+        // Add experiment based on library to rampup traffic
+          $routeViaReArch = false;
+          $dimensions[17] = 1;
+
+        }
 
       if (empty($input[Payment\Entity::ORDER_ID]) === false)
        {
@@ -3944,14 +3975,14 @@ class Processor
                 if (($order->hasOffers() === true) and ($this->canRouteOfferThroughNbplusRearch($input, $order) === false))
                 {
                     $routeViaReArch = false;
-                    $dimensions[16] = 1;
+                    $dimensions[18] = 1;
                 }
 
                 // Check if discounts are applicable to the order
                 if ($order->isDiscountApplicable() === true)
                 {
                     $routeViaReArch = false;
-                    $dimensions[17] = 1;
+                    $dimensions[19] = 1;
                 }
 
                 // Check if product ID exists in the order
@@ -3959,7 +3990,7 @@ class Processor
                 {
                     if ($this->shouldRouteAppsViaNbplus($order) === false) {
                         $routeViaReArch = false;
-                        $dimensions[18] = 1;
+                        $dimensions[20] = 1;
                     }
                 }
 
@@ -3970,7 +4001,7 @@ class Processor
                     if ($this->isFeeConfigIDRampedForNbPlus() === false)
                     {
                         $routeViaReArch = false;
-                        $dimensions[19] = 1;
+                        $dimensions[21] = 1;
                     }
                 }
 
@@ -3985,15 +4016,15 @@ class Processor
                 if ($this->shouldRouteOrderTransfersViaNBPlus($this->merchant->getId()) === false)
                 {
                     $routeViaReArch = false;
-                    $dimensions[20] = 1;
+                    $dimensions[22] = 1;
                 }
             }
         }
 
 
-        $dimensions[21] = (string) strtolower($input['_']['library'] ?? 'unknown');
+        $dimensions[23] = (string) strtolower($input['_']['library'] ?? 'unknown');
 
-        $dimensions[22] = (string) $currentRouteName;
+        $dimensions[24] = (string) $currentRouteName;
 
         $dimensionsString = implode(', ', $dimensions);
 
@@ -14404,6 +14435,31 @@ public function isNBPlusRearchMarketPlace($merchant): bool
 
      // Log the feature variant for debugging
      $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MARKET_PLACE_SPLITZ_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'feature'     => $featureFlag,
+        'response'=> $response,
+    ]);
+
+    return $variant === 'variant_on';
+}
+public function isNBPlusRearchTpv($merchant): bool
+{
+
+    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_tpv';
+
+    $properties = [
+        'id'            => $this->app['request']->getTaskId(),
+        'experiment_id' => $featureFlag,
+        'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId()]),
+    ];
+    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+    $variant = $response['response']['variant']['name'] ?? 'control';
+
+     // Log the feature variant for debugging
+     $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_TPV_PAYMENT_SPLITZ_VARIANT, [
         'merchant_id' => $this->merchant->getMerchantId(),
         'variant'     => $variant,
         'mode'        => $this->mode,
