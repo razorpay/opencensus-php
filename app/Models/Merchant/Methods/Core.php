@@ -905,27 +905,12 @@ class Core extends Base\Core
             if ($this->isTestMode() === true) {
                 $recurringData[self::EMANDATE] = Payment\Gateway::getFilteredEmandateBanks($authTypes);
             } else {
-               if (!isset($recurringData[self::EMANDATE]) || !is_array($recurringData[self::EMANDATE])) {
-                   $recurringData[self::EMANDATE] = [];
+                if (!isset($recurringData[self::EMANDATE]) || !is_array($recurringData[self::EMANDATE])) {
+                    $recurringData[self::EMANDATE] = [];
                 }
-                // Iterate over each authType
-                foreach ($authTypes as $authType) {
-                    // Get the banks enabled for the current authType
-                    $banksForAuthType = $this->getEmandateBanksEnabledNew($merchant, $authType);
+                $banksForAuthType = $this->getEmandateBanksEnabledNew($authTypes);
 
-                    // Merge the banks for this authType into the recurringData
-                    // Merge using array_merge to avoid overwriting
-                    $recurringData[self::EMANDATE] = array_merge($recurringData[self::EMANDATE], $banksForAuthType[self::EMANDATE]);
-                }
-
-                if ($merchant->isFeatureEnabled(Constants::ESIGN) === false)
-                {
-                    foreach ($recurringData[self::EMANDATE] as $ifsc => $bank)
-                    {
-                        $bank[self::AUTH_TYPES] = array_values(array_diff($bank[self::AUTH_TYPES], [Payment\AuthType::AADHAAR]));
-                        $recurringData[self::EMANDATE][$ifsc] = $bank;
-                    }
-                }
+                $recurringData[self::EMANDATE] = $banksForAuthType[self::EMANDATE];
             }
         } else {
             foreach ($authTypes as $authType) {
@@ -1658,31 +1643,20 @@ class Core extends Base\Core
         }
     }
 
-    protected function getEmandateBanksEnabledNew(Merchant\Entity $merchant, $authType): array
+    protected function getEmandateBanksEnabledNew($authTypes): array
     {
         $recurringData[self::EMANDATE] = [];
         // Fetch all bank data from API
         $data = Payment\Gateway::fetchBankDataFromApi();
 
-        // Get the merchant's applicable emandate terminals for the specified auth type
-        $applicableEmandateTerminals = $this->repo
-                                            ->terminal
-                                            ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
+        foreach ($data as $bankCode => $bank) {
+            // Check if bank supports at least one of the given auth types
+            $matchingAuthTypes = array_intersect($authTypes, $bank['auth_types'] ?? []);
 
-        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
-
-        // Loop through each available gateway for the merchant
-        foreach ($availableGatewaysForMerchant as $gateway) {
-            // Check if the gateway has the specified auth type and retrieve the bank IFSCs for that auth type
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$gateway])) {
-                // Loop through each bank from the API response
-                foreach ($data as $ifsc => $bank) {
-                    // Check if the bank's IFSC is allowed for the given auth type in the gateway
-                    if (in_array($authType, $bank[self::AUTH_TYPES], true)) {
-                        // Add the bank to the recurring data array for this auth type
-                        $recurringData[self::EMANDATE][$ifsc] = $bank;
-                    }
-                }
+            if (!empty($matchingAuthTypes)) {
+                // Add bank to the response but only with the matching auth types
+                $recurringData[self::EMANDATE][$bankCode] = $bank;
+                $recurringData[self::EMANDATE][$bankCode]['auth_types'] = array_values($matchingAuthTypes); // Only include matching auth types
             }
         }
 

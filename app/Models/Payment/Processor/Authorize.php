@@ -3506,13 +3506,34 @@ trait Authorize
         $bank = $payment->getBank();
 
         // TODO: Handle first recurring / second recurring based on token and route
-
+        $app = App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.bank_data_via_npci_api_experiment');
         $supportedBanks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
 
-        if ($authType === "netbanking")
-        {
-            if (in_array($bank, Gateway::removeNetbankingEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
-            {
+        $merchantId = $payment->merchant->getId();
+
+        if (self::getSplitzResponseNPCI($merchantId, $experimentId) === 'enable') {
+            if (in_array($bank, $supportedBanks, true) === false) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                    Payment\Entity::BANK,
+                    [
+                        'payment' => $payment->toArray(),
+                    ]);
+            }
+        } else {
+            if ($authType === "netbanking") {
+                if (in_array($bank, Gateway::removeNetbankingEmandateRegistrationDisabledBanks($supportedBanks), true) === false) {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                        Payment\Entity::BANK,
+                        [
+                            'payment' => $payment->toArray(),
+                        ]);
+                }
+            }
+
+            if (in_array($bank, Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks), true) === false) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
                     Payment\Entity::BANK,
@@ -3521,17 +3542,6 @@ trait Authorize
                     ]);
             }
         }
-
-        if (in_array($bank, Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
-                Payment\Entity::BANK,
-                [
-                    'payment' => $payment->toArray(),
-                ]);
-        }
-
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
             throw new Exception\BadRequestException(
@@ -3542,6 +3552,24 @@ trait Authorize
                     'token'   => $input[Payment\Entity::TOKEN],
                 ]);
         }
+    }
+
+    public static function getSplitzResponseNPCI(string $id, string $experimentId)
+    {
+        $app = App::getFacadeRoot();
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     protected function validateInitialRecurringForNach(Payment\Entity $payment, array $input)

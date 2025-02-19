@@ -5615,7 +5615,7 @@ class Gateway
         }else{
             $banks = self::getAllEMandateBanks();
         }
-        
+
         return (in_array($bank, $banks, true) === true);
     }
 
@@ -5686,7 +5686,7 @@ class Gateway
             $data = $data['bank_data'] ?? [];
 
             // Store the data in the cache
-            $app['cache']->put($cacheKey, $data, 86400); // Cache for 24 hour
+            $app['cache']->put($cacheKey, $data, 14400); // Cache for 4 hour
         } else {
             $data = $cachedData ?? [];
         }
@@ -5698,10 +5698,10 @@ class Gateway
     {
         $data = self::fetchBankDataFromApi();
 
-        foreach ($data as $ifsc => $bank) {
+        foreach ($data as $bankCode => $bank) {
             // Check if the bank supports any of the specified auth types
             if (array_intersect($authTypes, $bank[self::AUTH_TYPES])) {
-                $recurringData[self::EMANDATE][$ifsc] = $bank;
+                $recurringData[self::EMANDATE][$bankCode] = $bank;
             }
         }
         return $recurringData[self::EMANDATE];
@@ -5712,16 +5712,38 @@ class Gateway
     {
         $banks = [];
 
-        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+        $app = App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.bank_data_via_npci_api_experiment');
+        if (self::getSplitzResponse("enable_npci_banks", $experimentId) === 'enable') {
+            $bankData = self::fetchBankDataFromApi();
 
-        if (isset($emandateBanks[$authType]) === true)
-        {
-            $banks = $emandateBanks[$authType];
-        }
+            if ($authType === Payment\AuthType::AADHAAR) {
+                foreach ($bankData as $bankCode => $bank) {
+                    if (!in_array(Payment\AuthType::AADHAAR, $bank["auth_types"])) {
+                        unset($bankData[$bankCode]);
+                    }
+                }
+            }
 
-        if ($authType === Payment\AuthType::AADHAAR)
-        {
-            $banks = Payment\Gateway::removeAadhaarEmandateRegistrationDisabledBanks($banks);
+            if ($authType === "netbanking") {
+                foreach ($bankData as $bankCode => $bank) {
+                    if (!in_array("netbanking", $bank["auth_types"])) {
+                        unset($bankData[$bankCode]);
+                    }
+                }
+            }
+
+            $banks = array_keys($bankData);
+        }else {
+            $emandateBanks = self::getEmandateAuthTypeToBankMap();
+
+            if (isset($emandateBanks[$authType]) === true) {
+                $banks = $emandateBanks[$authType];
+            }
+
+            if ($authType === Payment\AuthType::AADHAAR) {
+                $banks = Payment\Gateway::removeAadhaarEmandateRegistrationDisabledBanks($banks);
+            }
         }
 
         return $banks;

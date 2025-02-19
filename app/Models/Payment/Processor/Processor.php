@@ -7142,6 +7142,13 @@ class Processor
             ($input[Payment\Entity::RECURRING] === '1') and
             ($input[Payment\Entity::METHOD] === Method::EMANDATE))
         {
+
+            //Extract the bank code only first four letter
+
+            
+            if (isset($input['bank']) and strlen($input['bank']) > 4) {
+                $input['bank'] = substr($input['bank'], 0, 4);
+            } 
             // Temp experiment for the ramp-up of feature
             $properties = [
                 'id'            => $this->merchant->getMerchantId(),
