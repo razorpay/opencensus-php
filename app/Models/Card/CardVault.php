@@ -555,10 +555,12 @@ class CardVault extends Base\Core
         {
             return false;
         }
-        $variant = '';
-        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-            $variant = 'on';
-        }
+            $variant = 'off';
+
+            if($this->mode===Mode::LIVE && app()->isProduction()){
+                $variant = 'on';
+            }
+
             $this->trace->info(TraceCode::PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT, [
                 'authentication_reference_number'     => $cardInput['authentication_reference_number'],
                 'razorx_variant' => $variant,

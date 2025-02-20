@@ -1014,7 +1014,7 @@ final class RazorxTreatment
 
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
 
-    public const ALLOW_BIN_SERVICE_DUAL_WRITE = 'allow_bin_service_dual_write';
+    public const ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE = 'allow_bin_service_token_dual_write';
 
     public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
 
@@ -1092,4 +1092,39 @@ final class RazorxTreatment
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
+
+    const Allowed_alt_id_experiments = [
+        "non_rearch_alt__RUPAY_isg_kotak",
+        "non_rearch_alt__RUPAY_cybersource_axis",
+        "non_rearch_alt__RUPAY_hdfc_hdfc",
+        "non_rearch_alt__RUPAY_hitachi_ratn",
+        "non_rearch_alt__RUPAY_paysecure_ratn",
+        "non_rearch_alt__VISA_axis_tokenhq_axis",
+        "non_rearch_alt__VISA_card_fss_barb",
+        "non_rearch_alt__VISA_axis_migs_axis",
+        "non_rearch_alt__VISA_isg_kotak",
+        "non_rearch_alt__VISA_hdfc_hdfc",
+        "non_rearch_alt__VISA_mpgs_axis",
+        "non_rearch_alt__VISA_first_data_icic",
+        "non_rearch_alt__VISA_fulcrum_ratn",
+        "non_rearch_alt__VISA_cybersource_axis",
+        "non_rearch_alt__VISA_cybersource_hdfc",
+        "non_rearch_alt__VISA_hitachi_ratn",
+        "non_rearch_alt__MC_axis_tokenhq_axis",
+        "non_rearch_alt__MC_card_fss_barb",
+        "non-rearch_alt__MC_card_fss_barb",
+        "non_rearch_alt__MC_hdfc_hdfc",
+        "non_rearch_alt__MC_fulcrum_ratn",
+        "non_rearch_alt__MC_isg_kotak",
+        "non_rearch_alt__MC_mpgs_axis",
+        "non_rearch_alt__MC_axis_migs_axis",
+        "non_rearch_alt__MC_hitachi_ratn",
+        "non_rearch_alt__MC_cybersource_hdfc",
+        "non_rearch_alt__MC_cybersource_axis",
+        "non_rearch_alt__MC_first_data_icic",
+        "non_rearch_alt__AMEX_mpgs_amex",
+        "non_rearch_recurring_alt_id_VISA_hitachi_ratn",
+        "non_rearch_recurring_alt_id_MC_hitachi_ratn",
+        "non_rearch_recurring_alt_id_RUPAY_paysecure_ratn",
+    ];
 }

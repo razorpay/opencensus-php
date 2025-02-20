@@ -1213,13 +1213,20 @@ trait Authorize
            {
                $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_RECURRING_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
 
-               $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+               $variant = 'off';
 
-               $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
-                   'payment_id' => $payment->getId(),
-                   'feature'    => $razorxFeature,
-                   'variant'    => $variant
-               ]);
+               if (in_array($razorxFeature, Merchant\RazorxTreatment::Allowed_alt_id_experiments, true)) {
+                   $variant = 'on';
+               } else {
+                   // To be removed in future after checking if we are still using razorx for any network, gateway and gateway acquirer combination
+                   $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+                   $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
+                       'payment_id' => $payment->getId(),
+                       'feature'    => $razorxFeature,
+                       'variant'    => $variant
+                   ]);
+               }
 
                return (strtolower($variant) === "on");
            }
@@ -1260,13 +1267,21 @@ trait Authorize
            if(!$skip || $payment->isInternational() === true){
                $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
 
-               $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+               $variant = 'off';
 
-               $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
-                  'payment_id' => $payment->getId(),
-                  'feature'    => $razorxFeature,
-                  'variant'    => $variant
-               ]);
+               if (in_array($razorxFeature, Merchant\RazorxTreatment::Allowed_alt_id_experiments, true)) {
+                   $variant = 'on';
+
+               } else {
+                   // To be removed in future after checking if we are still using razorx for any network, gateway and gateway acquirer combination
+                   $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+                   $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
+                       'payment_id' => $payment->getId(),
+                       'feature'    => $razorxFeature,
+                       'variant'    => $variant
+                   ]);
+               }
 
                   return (strtolower($variant) === "on");
                } else {
