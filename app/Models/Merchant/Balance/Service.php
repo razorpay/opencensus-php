@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
 use RZP\Services\PayoutService;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityConstants;
@@ -256,7 +257,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) &&
+        if (((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId)) &&
             ($balance->isAccountTypeShared() === true))
         {
             return $this->payoutServiceFreePayoutClient->updateFreePayoutAttributesViaMicroservice($balanceId, $input);
@@ -363,7 +364,7 @@ class Service extends Base\Service
 
         $accountType = $balance->getAccountType();
 
-        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId(), $accountType);
+        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId(), $accountType, $balance->getId());
 
         $response = $this->repo->counter->transaction(
             function() use ($counter, $balance, $merchant, $action)
@@ -388,7 +389,7 @@ class Service extends Base\Service
     {
         $accountType = $balance->getAccountType();
 
-        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId(), $accountType);
+        (new Payout\Core)->freePayoutMigrationFeatureChecks($action, $merchant->getId(), $accountType, $balance->getId());
 
         $input = [
             Entity::MERCHANT_ID     => $merchant->getId(),
@@ -449,7 +450,8 @@ class Service extends Base\Service
         if (($response[EntityConstants::COUNTER_MIGRATED] === true) and
             ($response[EntityConstants::SETTINGS_MIGRATED] === true))
         {
-            $this->addPayoutServiceEnabledFeature($merchant);
+            $this->addPayoutServiceEnabledFeature($merchant, $balance->getId());
+
         }
         else
         {
@@ -472,7 +474,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function addPayoutServiceEnabledFeature($merchant)
+    protected function addPayoutServiceEnabledFeature($merchant, string $balanceId)
     {
         try
         {
@@ -481,7 +483,7 @@ class Service extends Base\Service
                     Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
                     Feature\Entity::ENTITY_ID   => $merchant->getId(),
                     Feature\Entity::NAME        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
-                ]);
+                ], $balanceId);
 
             $this->trace->info(
                 TraceCode::PAYOUT_SERVICE_ENABLED_FEATURE_ASSIGNED,

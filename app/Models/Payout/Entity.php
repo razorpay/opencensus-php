@@ -269,6 +269,11 @@ class Entity extends Base\PublicEntity
     const WORKFLOW_HISTORY   = 'workflow_history';
     const BANKING_ACCOUNT_ID = 'banking_account_id';
 
+    // Bulk Payouts Constant to determine Merchant's balance Id is on API Monolith OR Payout Service
+
+    const BALANCE_ID_ON_PAYOUT_SERVICE = 'balance_id_on_payout_service';
+    const Balance_ID_ON_API_MONOLITH = 'balance_id_on_api_monolith';
+
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
 

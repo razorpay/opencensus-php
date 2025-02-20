@@ -460,6 +460,8 @@ final class RazorxTreatment
 
     const ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE = 'enable_ca_flow_via_payouts_service';
 
+    const PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID = 'ps_api_merchant_migration_on_balance_id';
+
     const ENABLE_CA_RZP_FEES_PAYOUT_VIA_PAYOUTS_SERVICE = 'enable_ca_rzp_fees_payout_via_payouts_service';
 
     const ARCHIVED_REPLICA_QUERY_MOVEMENT = "archived_replica_query_movement";

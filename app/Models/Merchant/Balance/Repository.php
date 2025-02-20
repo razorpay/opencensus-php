@@ -624,6 +624,15 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function getBalanceEntityForBalanceId(string $balanceId)
+    {
+        $idColumn        = $this->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+            ->where($idColumn, $balanceId)
+            ->firstOrFailPublic();
+    }
+
     public function getBalancesForMerchantIds(array $merchantIds, $balanceType, string $connection = null)
     {
         $query = ($connection !== null) ? $this->newQueryWithConnection($this->getConnectionFromType($connection)) : $this->newQuery();

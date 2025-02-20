@@ -16,6 +16,7 @@ use RZP\Models\Payout\Service;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Mode as ConstantMode;
@@ -255,30 +256,7 @@ class Base extends FundAccountPayout\Base
             throw new BadRequestValidationFailureException(self::NON_ZERO_PRICING_ERROR_MESSAGE);
         }
 
-        if ($payout->getPurpose() === Purpose::RZP_FEES &&
-            $payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED))
-        {
-            $fees = 0;
-            $tax = 0;
-
-            $this->trace->info(
-                TraceCode::SETTING_FEES_TAXES_TO_ZERO_FOR_PS_CA_RZP_FEES_PAYOUT,
-                [
-                    'payout_id'     => $payout->getId(),
-                    'fees'          => $fees,
-                    'tax'           => $tax,
-                    'pricing_rule'  => $pricingRuleId,
-                ]);
-        }
-
-        //This is for processing Payout Service RZP Fees Payout Via API Monolith
-        $check = [
-            Payout\Entity::PURPOSE => $payout->getPurpose(),
-            Payout\Entity::MERCHANT_ID => $payout->getMerchantId(),
-        ];
-
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false
-        || !(new ProcessorBase)->isPayoutServiceApplicableForRzpFeesPayout($check))
+        if (!((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($payout->merchant->getMerchantId(), $payout->balance->getId())))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
         }

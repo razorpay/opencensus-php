@@ -56,6 +56,7 @@ use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\User\Core as UserCore;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
@@ -2563,7 +2564,7 @@ class Service extends Base\Service
                 'input' => $input
             ]);
 
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === false)
+        if (!(new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($this->merchant->getId()))
         {
             return $this->createBulkPayoutForAPI($input);
         }
@@ -2571,68 +2572,13 @@ class Service extends Base\Service
         {
             $merchantID = $this->merchant->getId();
 
-            // Bulk Payout Creation for Current Account Merchant onboarded on Payout Service
-            $requestPayload = [
-                "id" =>   $merchantID,
-                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                'request_data'  => json_encode(['id' =>  $merchantID])
-            ];
+            /**
+             * Bulk Payout Creation Via Payout Service whose Balance Id migrated to Payout Service and
+             * and Non migrated balance Id will be processed via API.
+             */
 
-            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+            return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
 
-            if ($isExperimentEnabled === true)
-            {
-                return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
-            }
-
-            $requestPayload = [
-                "id" =>  $merchantID,
-                "experiment_name" => RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE,
-                'request_data'  => json_encode(['id' =>  $merchantID])
-            ];
-
-            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
-
-            $variant = $isExperimentEnabled === true ? RazorxTreatment::VARIANT_ENABLE : RazorxTreatment::VARIANT_DISABLE;
-
-            $this->trace->info(
-                TraceCode::BULK_PAYOUT_CA_EXPERIMENT_VALUE,
-                [
-                    'variant'     => $variant,
-                    'mode'        => $this->mode,
-                    'merchant_id' => $merchantID,
-                ]);
-
-            if (strtolower($variant) === 'enable')
-            {
-                // Merchant onboarded on both CA and VA
-                return $this->handleBulkCreationForPSEnabledMerchant($input, $merchantID);
-            }
-            else
-            {
-                $merchantEnabledOnCA = $this->checkIfMerchantIsEnabledOnDirectAccount($merchantID);
-
-                if ($merchantEnabledOnCA === true)
-                {
-                    $this->trace->error(TraceCode::CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW,
-                                        [
-                                            'input'   => $input,
-                                            'variant' => $variant,
-                                        ]);
-
-                    throw new ServerErrorException(
-                        'CA merchant should not come into Bulk Payout VA flow',
-                        ErrorCode::SERVER_ERROR_CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW,
-                        [
-                            'input'   => $input,
-                            'variant' => $variant,
-                        ]
-                    );
-                }
-
-                // Merchant onboarded only on VA
-                return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
-            }
         }
     }
 
@@ -3611,7 +3557,7 @@ class Service extends Base\Service
 
     public function getScheduleSlotsForPayouts()
     {
-        if ($this->merchant->isFeatureEnabled(FeatureConstant::PAYOUT_SERVICE_ENABLED))
+        if ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($this->merchant->getId()))
         {
             return $this->core->getScheduleTimeSlotsViaPayoutService();
         }
@@ -5297,7 +5243,7 @@ class Service extends Base\Service
 
         $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) and ($isExperimentEnabled === true))
+        if ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($this->merchant->getId()) and ($isExperimentEnabled === true))
         {
             return $this->payoutStatusReasonMapApiServiceClient->GetPayoutStatusReasonMapViaMicroService();
         }
@@ -6690,6 +6636,21 @@ class Service extends Base\Service
 
         $finalResponse = new Base\PublicCollection;
 
+        /**
+         * TODO Proceed with Direct Account Payout creation if Payout Service creation fails
+         * JIRA Link: https://razorpay.atlassian.net/browse/XPE-644
+         *
+         * We don't want to proceed with direct account payout creation incase if PS
+         * doesn't send 2xx. Hence we return exception received from PS to batch service
+         * so that whole input will be retried.
+         */
+
+        /**
+         * Above Comment is from previous implementation. Previously Only
+         * Earlier, only merchants migrated to the Payout Service with a shared account had their payouts processed through the Payout Service.
+         * Now, payouts are processed through the Payout Service based on the Balance ID and Merchant ID migrated to the Payout Service.
+         */
+
         try
         {
             if (empty($psInput) === false)
@@ -6791,7 +6752,16 @@ class Service extends Base\Service
         {
             $accountNumber = $balance->getAccountNumber();
 
-            $accountNumbersAccountTypeMap[$accountNumber] = $balance->getAccountType();
+           if ( (new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantID, $balance->getId()) )
+           {
+               $accountNumbersAccountTypeMap[$accountNumber] = ENTITY::BALANCE_ID_ON_PAYOUT_SERVICE;
+           }
+           else
+           {
+               $accountNumbersAccountTypeMap[$accountNumber] = ENTITY::Balance_ID_ON_API_MONOLITH;
+           }
+
+
         }
 
         /**
@@ -6806,11 +6776,11 @@ class Service extends Base\Service
         {
             $accountNumber = trim($item[PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER]) ?? null;
 
-            if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::DIRECT)
+            if ($accountNumbersAccountTypeMap[$accountNumber] == ENTITY::BALANCE_ID_ON_PAYOUT_SERVICE)
             {
                 $psInput[] = $item;
             }
-            else if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::SHARED)
+            else if ($accountNumbersAccountTypeMap[$accountNumber] == ENTITY::Balance_ID_ON_API_MONOLITH)
             {
                 $apiInput[] = $item;
             }

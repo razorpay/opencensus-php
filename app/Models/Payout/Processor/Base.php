@@ -84,6 +84,7 @@ use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
 use RZP\Services\PayoutService\Base as PayoutServiceBase;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
+use RZP\Models\Payout\BankingAccount as PayoutsBankingAccount;
 use RZP\Services\PayoutService\Shield as PayoutServiceShieldEvaluate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
@@ -4630,16 +4631,11 @@ class Base extends BaseCore
         {
             if ( $payout->isBalanceAccountTypeDirect() === true)
             {
-                $requestPayload = [
-                    "id" =>  $payout->getMerchantId(),
-                    "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                    'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
-                ];
-
-                if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) === true)
+                if ((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($payout->getMerchantId(), $payout->getBalanceId()))
                 {
                     (new DualWrite\Processor)->feeRecoveryForPSCAPayout($payout);
                 }
+
                 $this->trace->info(TraceCode::PS_CA_FEE_RECOVERY_CREATION_AFTER_FTA_CREATION,
                     [
                         'merchant_id'         => $payout->getMerchantId(),
@@ -4975,97 +4971,10 @@ class Base extends BaseCore
     {
         if ($this->mode == Mode::LIVE)
         {
-            $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
-
+            $this->isPayoutServiceEnabled = (new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($this->merchant->getId(), $this->balance->getId());
 
             if ($this->isPayoutServiceEnabled === true)
             {
-                $check = [
-                    Payout\Entity::PURPOSE => $input[Payout\Entity::PURPOSE],
-                    Payout\Entity::MERCHANT_ID => $this->merchant->getId(),
-                ] ;
-
-                $payoutViaMicroservice = $this->isPayoutServiceApplicableForRzpFeesPayout($check);
-
-                if ($payoutViaMicroservice === false)
-                {
-
-                    $this->trace->info(TraceCode::PAYOUT_SERVICE_RZP_FEES_PAYOUT_VIA_API_MONOLITH,
-                        [
-                            'merchant_id' => $this->merchant->getMerchantId(),
-                            'purpose' => $input[Payout\Entity::PURPOSE]
-                        ]);
-                    return false;
-                }
-
-                if ($this->balance->getAccountType() === AccountType::DIRECT) {
-
-                    $requestPayload = [
-                        "id" =>  $this->merchant->getMerchantId(),
-                        "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                        'request_data'  => json_encode(['id' =>  $this->merchant->getMerchantId()])
-                    ];
-
-                    if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) === false)
-                    {
-                        return false;
-                    }
-                }
-
-                if ($this->balance->getAccountType() === AccountType::SHARED)
-                {
-                    if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
-                        (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
-                        (empty($this->batchId) === false))
-                    {
-                        $requestPayload = [
-                            "id" =>  $this->merchant->getMerchantId(),
-                            "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                            'request_data'  => json_encode(['id' =>  $this->merchant->getMerchantId()])
-                        ];
-
-                        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
-
-                        $variant = $isExperimentEnabled === true ? 'enable' : 'disable';
-
-                        $this->trace->info(TraceCode::PAYOUT_SERVICE_MIGRATED_MERCHANTS_VA_BULK_PAYOUT_VIA_API_MONOLITH,
-                            [
-                                'merchant_id' => $this->merchant->getMerchantId(),
-                                'variant' => $variant,
-                            ]);
-                        if( $isExperimentEnabled === true)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
-                    (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
-                    (empty($this->batchId) === false))
-                {
-                    $this->trace->error(
-                        TraceCode::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
-                        [
-                            'merchant_id'         => $this->merchant->getMerchantId(),
-                            'payout_create_input' => $input,
-                            'batch_id'            => $this->batchId ?? "",
-                        ]);
-
-                    /** @var Route $route */
-                    $route = $this->app['api.route'];
-
-                    $routeName = $route->getCurrentRouteName();
-
-                    $this->trace->count(Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE, [
-                        RzpConstants\Metric::LABEL_ROUTE_NAME  => $routeName,
-                    ]);
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR,
-                        null,
-                        null,
-                        'batch_id, idempotency_key is/are not required and should not be sent');
-                }
 
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
@@ -5534,18 +5443,12 @@ class Base extends BaseCore
     {
         try
         {
-            $requestPayload = [
-                "id" =>  $this->merchant->getId(),
-                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                'request_data'  => json_encode(['id' =>  $this->merchant->getId()])
-            ];
 
-            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
-
-            if ($isExperimentEnabled === false)
+            if ( !((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($this->merchant->getId(), $this->balance->getId()) ))
             {
                 return [false, null, null, null,null];
             }
+
 
             $bankingAccount = (new BankingAccount\Service())->fetchBankingAccountForAccountNumber($input[Entity::ACCOUNT_NUMBER],
                 $this->merchant->getId());

@@ -7,6 +7,7 @@ use Mail;
 use Event;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Gateway\Ebs\Channel;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -3423,7 +3424,26 @@ Regards,
 
         $this->ba->appAuth();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $testData = $this->testData[__FUNCTION__];
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => '10000000000000',
+            'balance_id'   => 'random',
+            'channel' => 'yesbank',
+            'status'    => 'active',
+            'account_number' => '2224440041626905',
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->startTest($testData);
 

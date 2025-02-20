@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payout\BankingAccount;
 
 class CounterHelper extends Base\Core
 {
@@ -44,25 +45,16 @@ class CounterHelper extends Base\Core
     public function updateFreePayoutConsumedIfApplicable(Balance\Entity $balance)
     {
         if (($balance->getType() !== Balance\Type::BANKING) or
-            (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and
+            (((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($balance->getMerchantId(), $balance->getId())) and
             ($balance->getAccountType() === Balance\AccountType::SHARED)))
         {
             return null;
         }
-        if (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and
+        if (((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($balance->getMerchantId(), $balance->getId())) and
             ($balance->getAccountType() === AccountType::DIRECT))
         {
 
-            $requestPayload = [
-                "id" => $balance->getMerchantId(),
-                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                'request_data'  => json_encode(['id' =>  $balance->getMerchantId()])
-            ];
-
-
-            if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) === true) {
-                return null;
-            }
+            return null;
         }
 
         // This is to ensure that this method is called from within a transaction only as we are updating entities here

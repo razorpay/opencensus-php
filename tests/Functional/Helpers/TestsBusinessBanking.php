@@ -671,4 +671,19 @@ trait TestsBusinessBanking
             });
     }
 
+    protected function setMockSplitzTreatmentEvaluate($SplitzTreatment,string $defaultBehaviour = 'disable'): void
+    {
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($array) use ($defaultBehaviour, $SplitzTreatment)
+            {
+                if (array_key_exists($array['experiment_name'], $SplitzTreatment) === true)
+                {
+                    return ["response"=>["variant" => ["name" => $SplitzTreatment[$array['experiment_name']]]]];
+                }
+
+                return ["response"=>["variant" => ["name" => $defaultBehaviour]]];
+            });
+    }
+
 }

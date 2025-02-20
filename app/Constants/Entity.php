@@ -99,6 +99,9 @@ class Entity
     const CARD_MANDATE_NOTIFICATION  = 'card_mandate_notification';
     const PAYOUT_LINK                = 'payout_link';
     const BULK_IDEMPOTENCY_KEYS      = 'bulk_idempotency_keys';
+
+    const BANKING_ACCOUNTS            = 'banking_accounts';
+
     const PAYOUT_SOURCE              = 'payout_source';
     const SETTINGS                   = 'settings';
     const FEE_RECOVERY               = 'fee_recovery';
@@ -1257,6 +1260,8 @@ class Entity
         self::PAYOUTS_BATCH => \RZP\Models\Payout\Batch::class,
 
         self::BULK_IDEMPOTENCY_KEYS => \RZP\Models\Payout\BulkIdempotencyKey::class,
+
+        self::BANKING_ACCOUNTS => \RZP\Models\Payout\BankingAccount::class,
 
         self::PAYOUTS_STATUS_DETAILS => \RZP\Models\PayoutsStatusDetails::class,
 

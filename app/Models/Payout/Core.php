@@ -114,6 +114,7 @@ use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Jobs\FundManagementPayouts\FundManagementPayoutCheck;
 use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
+use RZP\Models\Payout\BankingAccount as PayoutsBankingAccount;
 use RZP\Jobs\FundManagementPayouts\FundManagementPayoutInitiate;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
@@ -5513,20 +5514,6 @@ class Core extends Base\Core
             return;
         }
 
-        if (($payout->getIsPayoutService() === true) and
-            ($payout->balance->isAccountTypeDirect() === true))
-        {
-            $requestPayload = [
-                "id" => $payout->getMerchantId(),
-                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
-            ];
-
-            if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) !== true) {
-                return;
-            }
-        }
-
         $bas = null;
 
         if (empty($payout->getUtr()) === false)
@@ -6619,7 +6606,7 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) &&
+        if (((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId)) &&
             ($balance->isAccountTypeShared() === true))
         {
             return $this->payoutGetApiServiceClient->getFreePayoutAttributesViaMicroservice($balanceId);
@@ -6715,7 +6702,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId, string $accountType)
+    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId, string $accountType, string $balanceId)
     {
         /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->find($merchantId);
@@ -6746,8 +6733,11 @@ class Core extends Base\Core
                         ]);
                 }
 
-                // If merchant is already migrated to payout service then we don't process it again.
-                if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === true)
+                /**
+                 * Here we check If Merchant is migrated to Payout Service by Feature Flag and
+                 * also Merhant's balance Id is migrated on Payout Service or not by checking in Payout Service Banking Account
+                 */
+                if ((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceIdAdminAction($merchantId, $balanceId))
                 {
                     $this->trace->error(TraceCode::PAYOUT_SERVICE_ENABLED_FEATURE_EXISTS, [
                         Entity::MERCHANT_ID     => $merchant->getId(),
@@ -6781,7 +6771,7 @@ class Core extends Base\Core
                         ]);
                 }
 
-                if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === false)
+                if (!(new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceIdAdminAction($merchantId, $balanceId))
                 {
                     $this->trace->error(TraceCode::PAYOUT_SERVICE_NOT_ENABLED_FOR_THE_MERCHANT, [
                         Entity::MERCHANT_ID     => $merchant->getId(),
@@ -6864,7 +6854,7 @@ class Core extends Base\Core
         $balance = $this->repo->balance->findOrFailById($balanceId);
         $accountType = $balance->getAccountType();
 
-        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId(), $accountType);
+        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId(), $accountType, $balanceId);
 
         $balance = (new Balance\Service)->getBankingTypeBalanceEntity($balanceId);
 
@@ -6882,7 +6872,7 @@ class Core extends Base\Core
 
                 $this->rollbackFreePayoutsCountAndSupportedModes($balance, $request);
 
-                $this->deletePayoutServiceEnabledFeature($merchant->getId());
+                $this->deletePayoutServiceEnabledFeature($merchant->getId(), $balance->getId());
 
                 return [
                     Entity::BALANCE_ID                => $balance->getId(),
@@ -6958,7 +6948,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function deletePayoutServiceEnabledFeature($merchantId)
+    protected function deletePayoutServiceEnabledFeature($merchantId, string $balanceId)
     {
         $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
             EntityConstant::MERCHANT,
@@ -6979,7 +6969,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        (new Feature\Core)->disablePayoutService($feature);
+        (new Feature\Core)->disablePayoutService($feature , $balanceId);
     }
 
     public function rejectWorkflowViaWorkflowService(Entity $payout, array $input)
@@ -8402,8 +8392,9 @@ class Core extends Base\Core
 
         Note: In case of point 2, we should ensure merchant is not on ledger shadow mode via API<>Ledger integration
         */
+        /** @var Entity $payout */
         $featureChecks = (($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
-                          ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
 
         if ($featureChecks and
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
@@ -9308,19 +9299,6 @@ class Core extends Base\Core
             return;
         }
 
-        if (($payout->getIsPayoutService() === true) and
-            ($payout->balance->isAccountTypeDirect() === true))
-        {
-            $requestPayload = [
-                "id" => $payout->getMerchantId(),
-                "experiment_name" => RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
-            ];
-
-            if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) !== true) {
-                return;
-            }
-        }
 
         $this->trace->info(
             TraceCode::MODIFY_STATUS_FOR_CURRENT_ACCOUNT_CHECK_START,

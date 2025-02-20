@@ -18191,7 +18191,26 @@ class PayoutTest extends OAuthTestCase
 
         $balanceId = $this->bankingBalance->getId();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $this->bankingBalance->getId(),
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => $this->bankingBalance->getAccountType(),
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->ba->privateAuth();
         $this->startTest();
@@ -18580,7 +18599,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->setupDirectAccount();
 
-        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE=> 'enable']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE=> 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
 
         $balance = $this->getDbEntities('balance',
             [
@@ -18590,6 +18611,23 @@ class PayoutTest extends OAuthTestCase
             ])->first();
 
         $balanceId = $balance->getId();
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balanceId,
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
+
 
         $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
 
