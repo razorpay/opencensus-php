@@ -6,6 +6,7 @@ use DB;
 use App;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Country;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -41,6 +42,11 @@ class Repository extends Base\Repository
         Entity::VAULT           => 'required_with:token|in:tokenex',
         Entity::GLOBAL_CARD_ID  => 'sometimes|alpha_num',
     ];
+
+    const CARD_META_DATA_CACHE_KEY_PREFIX = "card_metadata";
+
+    // ttl should be in mins
+    const CARD_META_DATA_CACHE_TTL = 360;
 
     /**
      * Returns a query on certain card entity attributes which
@@ -433,7 +439,27 @@ class Repository extends Base\Repository
 
         if ($setNullConfig === true)
         {
+            $this->cacheCardMetaData($card, $arr);
             $card->fill($arr);
+        }
+    }
+
+    private function cacheCardMetaData($card, $data)
+    {
+        $cacheKey = self::CARD_META_DATA_CACHE_KEY_PREFIX . $card->getId();
+        $ttl = self::CARD_META_DATA_CACHE_TTL*60;
+        try {
+            $this->app['cache']->put($cacheKey, $data, $ttl);
+
+            $this->trace->info(TraceCode::FTS_CARD_METADATA_CACHE_SUCCESS, [
+                'card_id' => $card->getId(),
+                'cache_key' => $cacheKey
+            ]);
+        } catch (\Throwable $exception){
+            $this->app['trace']->error(ErrorCode::SERVER_ERROR_CARD_METADATA_CACHE_FAILED, [
+                'card_id' => $card->getId(),
+                'exception' => $exception
+            ]);
         }
     }
 

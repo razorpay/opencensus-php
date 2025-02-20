@@ -8100,5 +8100,91 @@ return [
         'response' => [
             'content' => [],
         ],
-    ]
+    ],
+
+    'testCreateCardPayoutEntry' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create',
+            'content' => [
+                "id"                   => "Gg7sgBZgvYjlSB",
+                "mode"                 => "IMPS",
+                "currency"             => "INR",
+                "purpose"              => "refund",
+                "fund_account_id"      => "fa_100000000002fa",
+                "balance_id"           => "GhidjxhfiCL7WT",
+                "merchant_id"          => "10000000000000",
+                "origin"               => "api",
+                "channel"              => "",
+                "amount"               => 100,
+                "status"               => "create_request_submitted",
+                "type"                 => "",
+                "reference_id"         => null,
+                "narration"            => "test Merchant Fund Transfer",
+                "fee_type"             => "",
+                "queue_if_low_balance" => false,
+                "notes"                => [],
+                "workflow_details"     => [
+                    'id'                       => '',
+                    'config_id'                => '',
+                    'workflow_service_enabled' => false
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'create_request_submitted',
+                'error'  => null
+            ],
+        ],
+    ],
+
+    'testCreateCACardPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_fta/Gg7sgBZgvYjlSB',
+            'content' => [
+                "id" => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+                'error'  => null
+            ],
+        ],
+    ],
+
+    'testCreateCACardPayoutWithoutCardName' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_fta/Gg7sgBZgvYjlSB',
+            'content' => [
+                "id" => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+                'error'  => null
+            ],
+        ],
+    ],
+
+    'testCreateCACardPayoutWithoutCardName_redisKeySet' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_fta/Gg7sgBZgvYjlSB',
+            'content' => [
+                "id" => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+                'error'  => null
+            ],
+        ],
+    ],
+
 ];

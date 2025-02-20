@@ -2546,9 +2546,9 @@ class PayoutServiceTest extends TestCase
     }
 
     // Check payout Create fta func on processor base
-    public function testCreatePayoutServiceFtaCreation($mode = 'IMPS')
+    public function testCreatePayoutServiceFtaCreation($mode = 'IMPS', $migratePayoutToPS = false)
     {
-        $payout = $this->testCreatePayoutEntry($mode, false);
+        $payout = $this->testCreatePayoutEntry($mode, $migratePayoutToPS);
 
         $this->fixtures->edit('payout', $payout['id'], [
             'transaction_id' => 'randomtxnnnnnn',
@@ -13426,4 +13426,368 @@ class PayoutServiceTest extends TestCase
         $this->assertArrayHasKey('event_create_timestamp', $response);
         $this->assertArrayHasKey('event_id', $response);
     }
+
+    public function testCreateCACardPayout($mode = 'IMPS')
+    {
+        $payout = $this->testCreateCardPayoutEntry($mode, false);
+
+        $this->fixtures->on('live')->edit('payout', substr($payout['id'], 5), [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+                $expectedInput = [
+                    "account" => [
+                        "card" => [
+                            "issuer_bank" => "HDFC",
+                            "vault_token" => "NDExMTExMTExMTExMTExMQ==",
+                            "name" => "****", // test
+                            "network_code" => "VISA",
+                            "tokenised" => false,
+                            "bu_namespace" => "razorpayx_non_saved_cards"
+                        ]
+                    ],
+                ];
+
+                self::assertEquals($expectedInput['account'], $input['account']);
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
+
+        return $payout;
+    }
+
+    public function testCreateCACardPayoutWithoutCardName($mode = 'IMPS')
+    {
+        $payout = $this->testCreateCardPayoutEntry($mode, false);
+
+        $this->fixtures->on('live')->edit('payout', substr($payout['id'], 5), [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+                $expectedInput = [
+                    "account" => [
+                        "card" => [
+                            "issuer_bank" => "HDFC",
+                            "vault_token" => "NDExMTExMTExMTExMTExMQ==",
+                            "name" => "**********", // dummy_card
+                            "network_code" => "VISA",
+                            "tokenised" => false,
+                            "bu_namespace" => "razorpayx_non_saved_cards"
+                        ]
+                    ],
+                ];
+
+                self::assertEquals($expectedInput['account'], $input['account']);
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            });
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
+
+        return $payout;
+    }
+
+    public function testCreateCACardPayoutWithoutCardName_redisKeySet($mode = 'IMPS')
+    {
+        $payout = $this->testCreateCardPayoutEntry($mode, false);
+
+        $this->fixtures->on('live')->edit('payout', substr($payout['id'], 5), [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $redisMock = Mockery::mock('Illuminate\Redis\RedisManager', [$this->app, 'driver', []]);
+
+        $redisConnmock = Mockery::mock('Illuminate\Redis\Connections\PredisConnection', [null]);
+
+        $this->app->instance('redis', $redisMock);
+
+        $redisMock->shouldReceive('connection')
+            ->andReturn($redisConnmock);
+
+        $redisConnmock->shouldReceive('get')
+            ->with("card_metadata100000000lcard")
+            ->andReturn(['name' => 'Shivam Shah']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+                $expectedInput = [
+                    "account" => [
+                        "card" => [
+                            "issuer_bank" => "HDFC",
+                            "vault_token" => "NDExMTExMTExMTExMTExMQ==",
+                            "name" => "***********", // Shivam Shah
+                            "network_code" => "VISA",
+                            "tokenised" => false,
+                            "bu_namespace" => "razorpayx_non_saved_cards"
+                        ]
+                    ],
+                ];
+
+                self::assertEquals($expectedInput['account'], $input['account']);
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(2);
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
+
+        return $payout;
+    }
+
+    // Check payout Create Entry func on processor base
+    public function testCreateCardPayoutEntry($mode = 'IMPS',
+                                          $migratePayoutToPS = true,
+                                          $payoutID = 'pout_Gg7sgBZgvYjlSB',
+                                          $balanceID = '')
+    {
+        $this->ba->appAuthLive();
+
+        if (empty($balanceID) === true)
+        {
+            $this->fixtures->on('live')->create(
+                'balance',
+                [
+                    'account_type'   => 'direct',
+                    'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                    'type'           => 'banking',
+                    'channel'        => Channel::ICICI,
+                    'account_number' => 2224440041626907,
+                ]
+            );
+
+            $balanceId = $this->getDbLastEntity('balance', 'live')->getId();
+
+            $this->fixtures->create('banking_account', [
+                'account_type'          => 'direct',
+                'channel'               => Channel::ICICI,
+                'status'                => 'activated',
+                'balance_id'            => $balanceId,
+            ]);
+
+            $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balanceId;
+        }
+        else
+        {
+            $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balanceID;
+        }
+
+        $this->fixtures->on('live')->create('card',[
+            'id'                =>  '100000000lcard',
+            'merchant_id'       =>  '10000000000000',
+            'name'              =>  'test',
+            'expiry_month'      =>  '12',
+            'expiry_year'       =>  '2100',
+            'iin'               =>  '411111',
+            'last4'             =>  '1111',
+            'issuer'            =>  'HDFC',
+        ]);
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'    => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $strippedPayoutID = $payoutID;
+        $strippedPayoutID = Entity::verifyIdAndStripSign($strippedPayoutID);
+
+        $this->testData[__FUNCTION__]['request']['content']['id'] = $strippedPayoutID;
+        $this->testData[__FUNCTION__]['request']['content']['mode'] = $mode;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true,'live');
+
+        $this->assertEquals($payout['id'], $payoutID);
+
+        if ($migratePayoutToPS === true)
+        {
+            (new PayoutServiceDataMigration('live', [
+                DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+                DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+                Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+            ]))->handle();
+
+            $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$strippedPayoutID'")[0];
+
+            $this->assertEquals($payout[Entity::ID], 'pout_' .$migratedPayout->id);
+
+            $this->fixtures->edit('payout', $strippedPayoutID, ['id' => 'Gg7sgBZgvYjlSC']);
+        }
+
+        return $payout;
+    }
+
 }
