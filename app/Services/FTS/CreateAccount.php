@@ -37,6 +37,7 @@ use RZP\Models\BankingAccount\Gateway\Rbl\Action;
 use RZP\Models\FundTransfer\Attempt\Type as Product;
 use RZP\Models\BankingAccount\Service as BASService;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RBLProcessor;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields as RblGatewayFields;
 use RZP\Models\BankingAccount\Detail\Core as BankingAccountDetailCore;
@@ -869,7 +870,7 @@ class CreateAccount extends Base
         $accountNumber = $bankingAccount['account_number'];
 
         $BASCore = new BAS\Core;
-        $basDetails = $BASCore->getBasDetails($accountNumber,Channel::RBL);
+        $basDetails = $BASCore->getBasDetails($accountNumber,Channel::RBL, [BASDetails\Status::ACTIVE, BASDetails\Status::UNDER_MAINTENANCE]);
 
         $version = null;
         $credentials = (new BankingAccountGateway\Gateway(Channel::RBL,$accountNumber,$basDetails,$version))->getCredentialsForMozartSessionToken($input);
