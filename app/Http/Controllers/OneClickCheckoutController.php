@@ -6,7 +6,7 @@ use Request;
 use ApiResponse;
 
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\OneClickCheckout\Config\Service;
+use RZP\Models\Merchant\OneClickCheckout\Config\Service as ConfigsService;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Exception\BaseException;
@@ -510,6 +510,14 @@ class OneClickCheckoutController extends Controller
         return response()->streamDownload(function () use ($data) {
             echo $data->getBody();
         }, 'allowlist_zipcode.csv');
+    }
+
+    // get1ccConfigsMigration is used for exposing all internal configs for migrating them to MCS.
+    public function get1ccConfigsMigration()
+    {
+        $input = Request::all();
+        $result = (new ConfigsService())->get1ccConfigsMigration($input);
+        return ApiResponse::json($result, 200);
     }
 
 }

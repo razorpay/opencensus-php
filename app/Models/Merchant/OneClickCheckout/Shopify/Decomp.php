@@ -109,20 +109,11 @@ class Decomp extends Base\Service
     // API and SQS must control traffic migration only for the supported merchants.
     protected function useMCSForShopifyCompleteCheckoutForFeatureFlags(string $merchantId): bool
     {
-        // These are the feature flags which are yet not supported in MCS.
+        // These are the feature flags which are currently being migrated to MCS.
         if (
             $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE) ||
             $merchantId === 'LsgXO1I1dfZNeI' || // wingreens for fullfilment centres
             $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_ENABLE_GUPSHUP)
-        )
-        {
-            return false;
-        }
-        // These are the feature flags currently being migrated.
-        if (
-            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER) ||
-            $this->merchant->isFeatureEnabled('one_cc_opt_shipping_tax') ||
-            $this->merchant->isFeatureEnabled('one_cc_tax_inclusion')
         )
         {
             return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckoutForFeatureFlags($merchantId);

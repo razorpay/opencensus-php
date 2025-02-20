@@ -1918,4 +1918,80 @@ class Service extends Base\Service
         }
         return ['retargeting_settings' => $resp];
     }
+
+    // fetchAllConfigs exposes all configurations from the merchant_1cc_configs and merchant_1cc_auth_configs
+    // table to internal microservices.
+    public function get1ccConfigsMigration(array $input): array
+    {
+      $result = [];
+      $this->trace->info(
+        TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED,
+        ['input' => $input, 'step' => 'entry']);
+  
+      if (!isset($input['merchant_id'])) {
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'request must contain merchant_id');
+      }
+      $merchantId = $input['merchant_id'];
+      $this->getModeAndSetDBConnectionForConfigs($input);
+      $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+      
+      $platform = $this->merchant->getMerchantPlatformConfig();
+      if ($platform !== null && isset($platform['value']))
+      {
+          $result['platform'] = $platform['value'];
+      }
+
+      if ($platform === 'shopify')
+      {
+        $this->trace->info(
+            TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED,
+            ['input' => $input, 'step' => 'shopify_access_tokens']);
+        // Shopify access tokens.
+        $appName = (new Shopify\Service())->getShopifyAppName($input);
+        $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());  
+        if (empty($merchantAuthConfigs) === false)
+        {
+            $shopifyCreds = [];
+            foreach (Constants::SHOPIFY_AUTH as $key)
+            {
+                $appNameKey = $key;
+                if ($appName != '')
+                {
+                    $appNameKey = $appName.'_'.$key;
+                }
+                $value = $merchantAuthConfigs[$appNameKey];
+                $shopifyCreds[$key] = $value;
+            } 
+            $result['shopify_credentials'] = $shopifyCreds;
+        }
+      }
+      else if ($platform === 'woocommerce')
+      {
+        // Wooocommere access tokens.
+        $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->
+        ge1ccAuthConfigsByMerchantIdAndPlatform($merchantId, Constants::WOOCOMMERCE);
+        if (empty($merchantAuthConfigs) == false)
+        {
+            $wooCreds = [];
+            foreach ($merchantAuthConfigs as $key => $value)
+            {
+                $wooCreds[$key] = $value;
+            }
+            $result['woocommerce_credentials'] = $wooCreds;
+        }
+      }
+
+      $domainUrlConfig = $this->merchant->get1ccConfig(Constants::DOMAIN_URL);
+      $result[Constants::DOMAIN_URL] = $domainUrlConfig != null ? $domainUrlConfig->getValue() : "";
+      $terraWalletConfig = $this->merchant->get1ccConfig(Constants::TERRA_WALLET);
+      $result[Constants::TERRA_WALLET] = $terraWalletConfig !== null && $terraWalletConfig->getValue() === "1";
+      $merchantConfigs = $this->get1ccConfig(true);
+      foreach ($merchantConfigs as $config => $value)
+      {
+        $result[$config] = $value;
+      }
+      $result[Type::ONE_CC_PARTIAL_PAYMENTS_COD] = $this->get1ccPartialCodConfig();
+      return $result;
+    }
+  
 }

@@ -4854,6 +4854,7 @@ class Route
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
+        '1cc_configs_migration'                     => ['get',         '1cc/merchant/configs/migration',                                'OneClickCheckoutController@get1ccConfigsMigration'],
         'internal_1cc_configs_update'               => ['post',       'internal/1cc/merchants/{id}/configs',                  'MerchantController@updateInternal1ccConfig'],
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_prepay_cod_configs_get'                => ['get',        '1cc/prepay/configs',                           'MerchantController@get1ccPrepayCodConfig'],
@@ -6950,6 +6951,7 @@ class Route
         // Edge
         'third_party_authenticate',
         'internal_1cc_configs_update',
+        '1cc_configs_migration',
         'fetch_1cc_customer_consent_internal',
 
         // Billme
@@ -18678,6 +18680,7 @@ class Route
             'internal_1cc_prepay_cod_configs_get',
             'internal_1cc_partial_cod_configs_get',
             'fetch_trusted_badge_status',
+            '1cc_configs_migration',
             'internal_1cc_configs_get',
             'internal_1cc_configs_update',
             'update_shopify_1cc_credentials',
