@@ -94,9 +94,7 @@ const isSubsciptionsToggleAllowed = (splitz, methodName) => {
   // Assumption here is that whitelisted merchants will have card method enabled all the time which means the Alert will not be visible in cards.
   // @jhavive made sure about this.
   if (methodName === PAYMENT_METHODS.CARD) return isSihubWhitelisted(splitz);
-  const { abExperiments } = splitz || { abExperiments: { subscriptions_toggle: undefined } };
-  if (!abExperiments?.subscriptions_toggle) return false;
-  return isExperimentEnabled(abExperiments.subscriptions_toggle);
+  return true;
 };
 
 const cardDescription = {
@@ -137,9 +135,7 @@ class SubscriptionsSettings extends React.Component {
   state = {};
 
   componentDidMount() {
-    if (isSubsciptionsToggleAllowed(this.props.splitz)) {
-      this.props.fetchSettings();
-    }
+    this.props.fetchSettings();
   }
 
   onToggleChange = (methodName) => (isChecked, cb) => {
@@ -523,15 +519,8 @@ const ToggleCard = ({
 
 export default compose(
   connect(
-    (state, ownProps) => ({
-      // if experiment is not enabled, then show the default settings
-      settings: isSubsciptionsToggleAllowed(ownProps.splitz)
-        ? state.subscriptions.settings
-        : {
-            loading: false,
-            items: [],
-            error: null,
-          },
+    (state) => ({
+      settings: state.subscriptions.settings,
       user: state.session.user,
       org: state.session.org,
     }),
