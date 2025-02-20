@@ -72,6 +72,17 @@ class BatchMicroService extends BaseBatchMicroService
         }
 
         if (isset($input['type']) and
+            ($input['type'] === 'ecollect_axis_banking'))
+        {
+            return [
+                'entity'           => 'batch',
+                'type'             => 'ecollect_axis_banking',
+                'status'           => 'created',
+                'total_count'      => 1
+            ];
+        }
+
+        if (isset($input['type']) and
             ($input["type"] === Type::MERCHANT_UPLOAD_MIQ))
         {
             return [
@@ -392,6 +403,7 @@ class BatchMicroService extends BaseBatchMicroService
     public function isCompletelyMigratedBatchType(string $type): bool
     {
         switch ($type) {
+            case Type::ECOLLECT_AXIS_BANKING:
             case Type::MERCHANT_UPLOAD_MIQ:
                 return true;
             default:

@@ -122,6 +122,7 @@ class Lambda extends Base
         // post that only adding the gateway to the SFTP_BUCKET_GATEWAYS array will suffice
         // the requirement
         $bucketConfigKey = self::RECON_INPUT_BUCKET;
+
         $bucketRegion    = self::DEFAULT_REGION;
 
         if (empty($input['bucket']) === false)

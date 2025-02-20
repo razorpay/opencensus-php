@@ -188,21 +188,10 @@ class BankTransfer extends Base
             Entity::REQ_UTR => $input[Entity::REQ_UTR],
             Entity::PAYEE_ACCOUNT => $input[Entity::PAYEE_ACCOUNT]));
 
-        if ($this->doesRequestBelongToX($input))
-        {
-            $duplicateBankTransfer = $this->repo->bank_transfer->findByCaseInsensitiveUtrAndPayeeAccountAndAmount(
-                $input[Entity::REQ_UTR],
-                $input[Entity::PAYEE_ACCOUNT],
-                $input[Entity::AMOUNT] * 100);
-
-        }
-        else
-        {
-            $duplicateBankTransfer = $this->repo->bank_transfer->findByUtrAndPayeeAccountAndAmount($input[Entity::REQ_UTR],
-                $input[Entity::PAYEE_ACCOUNT],
-                $input[Entity::AMOUNT] * 100);
-        }
-
+        $duplicateBankTransfer = $this->repo->bank_transfer->findByCaseInsensitiveUtrAndPayeeAccountAndAmount(
+            $input[Entity::REQ_UTR],
+            $input[Entity::PAYEE_ACCOUNT],
+            $input[Entity::AMOUNT] * 100);
 
         if ($duplicateBankTransfer !== null)
         {
@@ -214,8 +203,9 @@ class BankTransfer extends Base
 
     protected function doesRequestBelongToX($input = []): bool
     {
-        $payerIfsc = $input['payee_ifsc'] ?? '';
-        if ($payerIfsc === Provider::getIFSC(true)[Provider::AXIS]) {
+        $payeeIfsc = $input['payee_ifsc'] ?? '';
+
+        if ($payeeIfsc === Provider::getIFSC(true)[Provider::AXIS]) {
             return true;
         }
 
@@ -224,14 +214,6 @@ class BankTransfer extends Base
 
     public function createBankTransferRequestEntity($input, $provider, $requestPayload, $routeName = "bank_transfer_process")
     {
-        $mode = $input[Entity::MODE];
-
-        // if current call is validation call for axis or notification callback with Transfer as mod, we won't create any entity
-        if ($this->isAxisValidationOrTransferModeNotificationCallback($input, $provider) === true)
-        {
-            return;
-        }
-
         // need to unset here because input will be used to build BTR and BT entities.
         if (isset($input[BankTransferConstants::CREDIT_ACCOUNT_NUMBER]))
         {

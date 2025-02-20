@@ -207,6 +207,8 @@ class Type
 
     const ECOLLECT_AXIS         = 'ecollect_axis';
 
+    const ECOLLECT_AXIS_BANKING = 'ecollect_axis_banking';
+
     const ECOLLECT_YESBANK      = 'ecollect_yesbank';
 
     const REPORT                = 'report';
@@ -371,6 +373,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::ECOLLECT_AXIS,
+        self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
@@ -613,6 +616,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::ECOLLECT_AXIS,
+        self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
         self::REPORT,
         self::ADMIN_BATCH,
@@ -704,6 +708,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::ECOLLECT_AXIS,
+        self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
         self::REPORT,
         self::ADMIN_BATCH,
@@ -830,6 +835,7 @@ class Type
         self::ECOLLECT_ICICI                     => Name::ECOLLECT_ICICI_BATCH_UPLOAD,
         self::ECOLLECT_RBL                       => Name::ECOLLECT_RBL_BATCH_UPLOAD,
         self::ECOLLECT_AXIS                      => Name::ECOLLECT_AXIS_BATCH_UPLOAD,
+        self::ECOLLECT_AXIS_BANKING              => Name::ECOLLECT_AXIS_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,

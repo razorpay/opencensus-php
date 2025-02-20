@@ -436,6 +436,11 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('S', $response['Stts_flg']);
         $this->assertEquals('000', $response['Err_cd']);
         $this->assertEquals('Success', $response['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertFalse($bankTransferRequest['is_created']);
     }
 
     public function testAxisValidationCallbackForCollectx()
@@ -466,6 +471,11 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('S', $response['Stts_flg']);
         $this->assertEquals('000', $response['Err_cd']);
         $this->assertEquals('Success', $response['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertFalse($bankTransferRequest['is_created']);
     }
 
     public function testAxisValidationCallbackForCollectxViaWorkerFlow()
@@ -498,6 +508,11 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('S', $response['Stts_flg']);
         $this->assertEquals('000', $response['Err_cd']);
         $this->assertEquals('Success', $response['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertFalse($bankTransferRequest['is_created']);
     }
 
     public function testAxisValidationCallbackForCollectxViaWorkerFlowForTransferMode()
@@ -532,6 +547,11 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('S', $response['Stts_flg']);
         $this->assertEquals('000', $response['Err_cd']);
         $this->assertEquals('Success', $response['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertFalse($bankTransferRequest['is_created']);
     }
 
     public function testAxisNotificationCallbackForCollectxViaWorkerFlow()
@@ -713,7 +733,9 @@ class AxisBankTransferTest extends TestCase
 
         $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
 
-        self::assertNull($bankTransferRequest);
+        self::assertNotNull($bankTransferRequest);
+
+        $this->assertFalse($bankTransferRequest['is_created']);
     }
 
     public function testAxisNotificationCallbackForCollectx_ClosedVaBankTransferTransfer_ViaWorkerFlow()
@@ -970,7 +992,11 @@ class AxisBankTransferTest extends TestCase
 
         $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
 
-        $this->assertNull($bankTransferRequest);
+        $this->assertNotNull($bankTransferRequest);
+
+        $this->assertFalse($bankTransferRequest['is_created']);
+
+        $this->assertEquals(ErrorCode::BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK ,$bankTransferRequest['error_message']);
 
 //        $this->assertTrue($isSuccess);
     }
@@ -1469,6 +1495,17 @@ class AxisBankTransferTest extends TestCase
     public function testEcollectAxisBatchCreate()
     {
         $data = $this->testData['ecollectAxisBatchData'];
+
+        $this->createExcelFile($data, 'filename', 'files/filestore', extension: 'xls');
+
+        $this->ba->h2hAuth();
+
+        $this->startTest();
+    }
+
+    public function testEcollectAxisCollectxBatchCreate()
+    {
+        $data = $this->testData['ecollectAxisCollectxBatchData'];
 
         $this->createExcelFile($data, 'filename', 'files/filestore', extension: 'xls');
 

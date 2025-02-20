@@ -654,6 +654,8 @@ class Service extends Base\Service
     {
         $input['payee_ifsc'] = Provider::getIFSC(true)[Provider::AXIS];
 
+        $input[Entity::TRANSACTION_ID] = strtoupper($input[Entity::TRANSACTION_ID]);
+
         return $input;
     }
 
@@ -667,6 +669,8 @@ class Service extends Base\Service
         if ($input[Entity::MODE] === BankTransferModes::UPI) {
             $input[Entity::MODE] = BankTransferModes::IMPS;
         }
+
+        $input[Entity::TRANSACTION_ID] = strtoupper($input[Entity::TRANSACTION_ID]);
 
         return $input;
     }
@@ -689,7 +693,7 @@ class Service extends Base\Service
             "payer_ifsc"        => $input["rmtr_account_ifsc"],
             "payer_name"        => $input["rmtr_full_name"],
             "time"              => Carbon::createFromFormat('Y-m-d H:i:s', $input["transfer_timestamp"], Timezone::IST)->timestamp,
-            "transaction_id"    => $input["transfer_unique_no"],
+            "transaction_id"    => strtoupper($input["transfer_unique_no"]),
             "request_type"      => self::VALIDATION_CALLBACK
         ];
     }
@@ -893,7 +897,7 @@ class Service extends Base\Service
     public function processFile(array $input, $batchType): array
     {
         $this->trace->info(
-            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
+            TraceCode::BANK_TRANSFER_FILE_PROCESS_REQUEST,
             [
                 'input' => $input,
                 'batch_type' => $batchType,
@@ -905,7 +909,7 @@ class Service extends Base\Service
         $source = $this->getRequestSource();
 
         $this->trace->info(
-            TraceCode::BANK_TRANSFER_PROCESS_REQUEST_SOURCE,
+            TraceCode::BANK_TRANSFER_FILE_PROCESS_REQUEST_SOURCE,
             [
                 'source' => $source,
                 'batch_type' => $batchType,
@@ -917,7 +921,7 @@ class Service extends Base\Service
         $fileDetails = $requestProcessor->processForVa($input);
 
         $this->trace->info(
-            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
+            TraceCode::BANK_TRANSFER_FILE_DETAILS,
             [
                 'file details' => $fileDetails,
             ]
@@ -925,7 +929,8 @@ class Service extends Base\Service
 
         $batchCore = new Batch\Core;
 
-        if (isset($fileDetails['file_details']) === true) {
+        if (isset($fileDetails['file_details']) === true)
+        {
             $file = new File($fileDetails['file_details'][0]['file_path']);
 
             $params = [
@@ -938,6 +943,12 @@ class Service extends Base\Service
                 ->findOrFailPublic(Account::SHARED_ACCOUNT);
 
             $batch = $batchCore->create($params, $sharedMerchant);
+
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_FILE_BATCH_CREATED, [
+                    'batch' => $batch,
+                ]
+            );
 
             return $batch->toArrayPublic();
         }
@@ -1374,8 +1385,8 @@ class Service extends Base\Service
 
     protected function doesRequestBelongToX($input = []): bool
     {
-        $payerIfsc = $input['payee_ifsc'] ?? '';
-        if ($payerIfsc === Provider::getIFSC(true)[Provider::AXIS]) {
+        $payeeIfsc = $input['payee_ifsc'] ?? '';
+        if ($payeeIfsc === Provider::getIFSC(true)[Provider::AXIS]) {
             return true;
         }
 

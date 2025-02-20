@@ -1002,6 +1002,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $ecollectAxisBankingCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_axis_banking',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $ecollectIciciCreateRules = [
         Entity::TYPE                 => 'required|in:ecollect_icici',
         Entity::NAME                 => 'filled|string|max:255',

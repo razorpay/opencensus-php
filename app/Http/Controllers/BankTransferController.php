@@ -90,7 +90,14 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_AXIS);
+        $batchType = Batch\Type::ECOLLECT_AXIS;
+
+        if (isset($input['file_type'])  && ($input['file_type'] == 'collectx'))
+        {
+            $batchType = Batch\Type::ECOLLECT_AXIS_BANKING;
+        }
+
+        $response = $this->service()->processFile($input, $batchType);
 
         return ApiResponse::json($response);
     }
@@ -924,8 +931,11 @@ class BankTransferController extends Controller
         {
             $payeeIfsc = Provider::getIFSC(true)[Provider::AXIS];
 
+            $utr = strtoupper($utr);
+
             // Check if the request is > 2 days old, reject the request if true
             $diff = Carbon::now(Timezone::IST)->diff(Carbon::createFromTimestamp($time, Timezone::IST));
+
             if($diff->days >= 2)
             {
                 throw new BadRequestValidationFailureException('transaction older than 2 days', null, $input);
@@ -1009,10 +1019,10 @@ class BankTransferController extends Controller
     {
         $xCorpCode = $this->config['applications.axis_va.x_corp_code'];
         $corpCode = $input['Corp_code'] ?? '';
-        $payerIfsc = $input['payee_ifsc'] ?? '';
+        $payeeIfsc = $input['Payee_ifsc'] ?? '';
 
         if (($corpCode === $xCorpCode) or
-            ($payerIfsc === Provider::getIFSC(true)[Provider::AXIS]))
+            ($payeeIfsc === Provider::getIFSC(true)[Provider::AXIS]))
         {
             return true;
         }

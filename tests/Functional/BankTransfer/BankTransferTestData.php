@@ -3280,6 +3280,25 @@ return [
         ]
     ],
 
+    'testEcollectAxisCollectxBatchCreate' => [
+        'request' => [
+            'url' => '/ecollect/validate/file/axis',
+            'method' => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key' => 'axis_collectx_mis_files/filename.xls',
+                'file_type' => 'collectx',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_axis_banking',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEcollectAxisBatchCreate' => [
         'request' => [
             'url' => '/ecollect/validate/file/axis',
@@ -3321,6 +3340,34 @@ return [
             'Batch Time'                        => '0001',
         ]
     ],
+
+    'ecollectAxisCollectxBatchData' => [
+        [
+            'Message Type'                      => 'IMPS',
+            'UTR Number'                        => '504500111734',
+            'Sender IFSC'                       => 'HDFC0000240',
+            'Sender Acc Type'                   => 'Saving Account',
+            'Sender Account Number'             => '50200067545111',
+            'Sender Name'                       => 'Test Name',
+            'Sender Address 1'                  => null,
+            'Beneficiary IFSC'                  => 'UTIB0CCH274',
+            'Beneficiary Account Number'        => '984576421280111',
+            'Beneficiary Account Name'          => null,
+            'Sender Information'                => 'IMPS',
+            'Amount'                            => '60000.00',
+            'Value Date - NEFT/RTGS'            => '14-02-2025',
+            'Transaction Date'                  => '14-02-2025',
+            'Beneficiary Account Type'          => 'Saving Account',
+            'Related Reference'                 => null,
+            'Beneficiary Address 1'             => null,
+            'Corporate Code'                    => 'IT CARD NEFT',
+            'Client Code - Master'              => '9845',
+            'Credit Acc Number - NEFT/RTGS'     => '921020010649111',
+            'Settled Trans Time - NEFT/RTGS'    => '015931',
+            'Name - Master'                     => null,
+        ]
+    ],
+
 
     'testBankTransferAxisCallbackValidationFailure' => [
         'request' => [
