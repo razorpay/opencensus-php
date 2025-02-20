@@ -3266,6 +3266,8 @@ class ErrorCode
 
     const GATEWAY_VA_DEACTIVATION_FAILURE = 'GATEWAY_VA_DEACTIVATION_FAILURE';
 
+    const BAD_REQUEST_CORP_CODE_NOT_FOUND = 'BAD_REQUEST_CORP_CODE_NOT_FOUND';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

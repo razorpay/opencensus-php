@@ -1678,9 +1678,20 @@ class Core extends Base\Core
 
             $currentAccountNumber = $virtualAccount->balance->getAccountNumber();
 
+            $merchantCreds = (new \RZP\Models\BankingAccount\Service())->fetchCredentialsFromApiAndBas($this->merchant->getId(), Provider::RBL, $currentAccountNumber);
+
+            if(!isSet($merchantCreds['credentials']['corp_id']) or $merchantCreds['credentials']['corp_id'] === '')
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CORP_CODE_NOT_FOUND,
+                    null
+                );
+            }
+
             $request = ['bankAccount' => $bankAccount->toArray(),
                 'gateway' => Gateway::BT_RBL,
-                'current_account_number' => $currentAccountNumber
+                'current_account_number' => $currentAccountNumber,
+                'corp_id' => $merchantCreds['credentials']['corp_id'],
             ];
 
             try

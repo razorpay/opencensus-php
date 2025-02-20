@@ -61,7 +61,8 @@ trait TestsBusinessBanking
         int $balance = 0,
         string $balanceType = AccountType::SHARED,
         $channel = null,
-        $ifscCode = 'RAZRB000000',)
+        $ifscCode = 'RAZRB000000',
+        $setCorpId = false)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
@@ -80,6 +81,10 @@ trait TestsBusinessBanking
             'account_type'          =>  'current',
             'channel'               =>  $bankingBalance['channel'],
         ];
+        if($setCorpId === true)
+        {
+            $bankingAccountAttributes['reference1'] = '123456';
+        }
 
         $this->createBankingAccount($bankingAccountAttributes);
 
@@ -529,6 +534,7 @@ trait TestsBusinessBanking
             'bank_reference_number' => $attributes["bank_reference_number"] ?? '',
             'balance_id'            => $attributes["balance_id"] ?? '',
             'status'                => 'activated',
+            'reference1'             => $attributes["reference1"] ?? '',
         ]);
 
         return $bankingAccount;

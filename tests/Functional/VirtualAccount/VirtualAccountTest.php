@@ -5783,11 +5783,11 @@ class VirtualAccountTest extends TestCase
         }
     }
 
-    public function testVirtuaAccountClose_RBL_Sync_Mozart_CollectxVA()
+    public function testVirtualAccountClose_RBL_Sync_Mozart_CollectxVA()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
 
-        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, ifscCode: 'RATN0VAAPIS');
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, channel: 'rbl', ifscCode: 'RATN0VAAPIS', setCorpId: true);
 
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
@@ -5812,12 +5812,12 @@ class VirtualAccountTest extends TestCase
 
     }
 
-    public function testVirtuaAccountClose_RBL_Sync_Mozart_CollectxVA_Error_From_Bank()
+    public function testVirtualAccountClose_RBL_Sync_Mozart_CollectxVA_Error_From_Bank()
     {
         try {
             $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
 
-            $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, ifscCode: 'RATN0VAAPIS');
+            $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, channel: 'rbl', ifscCode: 'RATN0VAAPIS', setCorpId: true);
 
             $this->app['config']->set('gateway.mock_bt_rbl', true);
 
@@ -5839,6 +5839,38 @@ class VirtualAccountTest extends TestCase
             self::assertEquals('active', $va->getStatus());
 
             $this->assertEquals('Gateway Failure in closing virtual account', $exp->getMessage());
+            return;
+        }
+
+    }
+
+    public function testVirtualAccountClose_RBL_Sync_Mozart_CollectxVA_Error_CorpID_NotFound()
+    {
+        try {
+            $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+            $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true, channel: 'rbl', ifscCode: 'RATN0VAAPIS');
+
+            $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+            $this->app['config']->set('rbl_close_virtual_account.error_code', ErrorCode::ER002);
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/virtual_accounts/'.$this->virtualAccount->getPublicId().'/close'
+            ];
+
+            $this->ba->privateAuth();
+
+            $response = $this->makeRequestAndGetContent($request);
+        }
+        catch (BadRequestException $exp)
+        {
+            $va = $this->getDbLastEntity('virtual_account');
+
+            self::assertEquals('active', $va->getStatus());
+
+            $this->assertEquals('BAD_REQUEST_CORP_CODE_NOT_FOUND', $exp->getCode());
             return;
         }
 
