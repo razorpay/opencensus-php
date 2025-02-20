@@ -1511,7 +1511,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_TOKEN_FOR_PAUSE                                       = 'Token invalid, cannot be paused';
     const BAD_REQUEST_INVALID_TOKEN_FOR_RESUME                                      = 'Token invalid, cannot be resumed';
     const BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL                                = 'One or more tokens do not belong to this customer';
-    const BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH                         = 'You’ve entered an incorrect OTP. Please enter an OTP of length between 4-10 digits.';
+    const BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH                         = "You've entered an incorrect OTP. Please enter an OTP of length between 4-10 digits.";
 
     const BAD_REQUEST_ANOTHER_PROMOTION_EVENT_ALREADY_EXISTS                        = 'Bad request, another event exists with same name';
     const BAD_REQUEST_UPI_MANDATE_INVALID_EXECUTION_TIME                            = 'Execution only allowed between start time and end time';
