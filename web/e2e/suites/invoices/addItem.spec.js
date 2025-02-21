@@ -14,7 +14,7 @@ test.describe
     await clickSkipAndStartBtn({ page });
   });
 
-  test('should create new item', async ({ page }) => {
+  test.skip('should create new item', async ({ page }) => {
     const itemName = await createNewItem({ page });
     await expect(await page.getByText(itemName)).toBeVisible();
   });

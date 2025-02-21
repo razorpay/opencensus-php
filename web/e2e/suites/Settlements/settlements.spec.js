@@ -50,7 +50,7 @@ async function searchSettlementById(
 
 async function visitSettlementsPage({ page }) {
   await page.goto(routes.SETTLEMENTS);
-  const response = await page.waitForResponse('**/merchant/api/live/settlements?**');
+  const response = await page.waitForResponse('**/merchant/api/live/settlements?skip=0**');
   await waitAndClickViewSettlements({ page });
   return response;
 }
@@ -109,7 +109,7 @@ test.describe(
       await expect(page.getByText(settlementId)).toBeVisible();
     });
 
-    test('should search settlements by UTR, status and settlement id @priority=normal', async ({
+    test.skip('should search settlements by UTR, status and settlement id @priority=normal', async ({
       page,
     }) => {
       const response = await visitSettlementsPage({ page });

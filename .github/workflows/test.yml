@@ -44,7 +44,7 @@ jobs:
       - name: Test Codebase
         # Automatically installs npm ci in web too
         run: |
-          pnpm nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }}
+          node --max-old-space-size=8192 --expose-gc $(which pnpm) nx affected -t test:jest --silent --base=origin/master --head=${{ steps.extract_branch.outputs.branch }} --logHeapUsage --maxWorkers=50%
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
