@@ -1,0 +1,2 @@
+export const NEW_CUSTOM_BLOCK_NAME = 'NEW_BLOCK';
+export const NEW_CUSTOM_BLOCK_INSTRUMENTS = [];

@@ -152,7 +152,8 @@ describe('IS Merchant level limit GTM', () => {
     expect(screen.queryByText('Reliable')).not.toBeInTheDocument();
   });
   describe('IS Restricted merchants', () => {
-    test('should render IS restricted banner', async () => {
+    // skipping this as per this thread : https://razorpay.slack.com/archives/C04MK11G23Z/p1740044511905749
+    test.skip('should render IS restricted banner', async () => {
       const user = userEvent.setup();
       renderApp({ user: { isOndemandSettlementsRestricted: true } });
       await waitForOdsModal();

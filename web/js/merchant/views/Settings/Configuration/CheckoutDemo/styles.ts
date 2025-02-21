@@ -40,7 +40,6 @@ export const CheckoutFrame = styled.iframe<{
 }>`
   width: ${(props) => (props.isDesktopPreview ? '1000px' : '370px')};
   height: ${(props) => (props.isDesktopPreview ? '800px' : '760px')};
-  pointer-events: none;
   border: 0;
   transform: ${(props) =>
     props.isDesktopPreview
@@ -116,7 +115,7 @@ export const MobileToolbar = styled.div(
     visibility: ${zoomMethodsScreen ? 'hidden' : 'visible'};
     margin-top: 20px;
     position: absolute;
-    height: 23px;
+    height: 28px;
     width: 251px;
     border-top-left-radius: 10%;
     border-top-right-radius: 10%;
@@ -139,6 +138,7 @@ export const PreviewBadge = styled.div(
     color: ${theme.colors.surface.text.staticWhite.normal};
     font-size: ${theme.typography.fonts.size[75]}px;
     font-weight: ${theme.typography.fonts.weight.regular};
+    margin-bottom: ${theme.spacing[3]}px;
   `,
 );
 
@@ -152,9 +152,21 @@ export const ScrollablePreview = styled.div(
 );
 
 export const ZoomButton = styled.button(
-  ({ theme, type }: { theme: Theme; type: 'zoom-in' | 'zoom-out' }) => `
+  ({
+    theme,
+    type,
+    isDisabled,
+  }: {
+    theme: Theme;
+    type: 'zoom-in' | 'zoom-out';
+    isDisabled: boolean;
+  }) => `
   display: flex;
-  background-color: ${theme.colors.interactive.background.staticWhite.default};
+  background-color: ${
+    isDisabled
+      ? theme.colors.interactive.background.staticWhite.faded
+      : theme.colors.interactive.background.staticWhite.default
+  };
   border-top-left-radius: ${
     type === 'zoom-in' ? theme.border.radius.max : theme.border.radius.none
   }px;
@@ -169,7 +181,7 @@ export const ZoomButton = styled.button(
   }px;
   justify-content: center;
   align-items: center;
-  border-width: 0px;
+  border-width: 1px;
   padding: ${[
     theme.spacing[4],
     type === 'zoom-in' ? theme.spacing[4] : theme.spacing[5],
@@ -177,5 +189,7 @@ export const ZoomButton = styled.button(
     type === 'zoom-in' ? theme.spacing[5] : theme.spacing[4],
   ].join('px ')}px;
   height: 56px;
+  border-color: ${theme.colors.interactive.border.gray.faded};
+  cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
   `,
 );

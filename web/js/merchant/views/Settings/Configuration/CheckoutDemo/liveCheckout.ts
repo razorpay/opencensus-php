@@ -1,5 +1,6 @@
-import { isExperimentEnabled } from 'common/splitz/utils';
+import { MerchantCheckoutPaymentConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/index';
 
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { AVAILABLE_TITLE_STYLE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 
 function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
@@ -8,6 +9,7 @@ function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
     amount: number;
     name?: string;
     'prefill.contact': string;
+    'prefill.email': string;
     'config.display.display.language'?: string;
     image?: string;
     'theme.color'?: string;
@@ -36,11 +38,24 @@ function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
     locale?: string;
     hide_rtb?: boolean;
     wordmark?: string;
+    'prefill.method'?: string;
+    'prefill.block'?: {
+      name?: string;
+    };
+    config?: MerchantCheckoutPaymentConfig;
+    __internal?: {
+      reinit: boolean;
+    };
   } = {
     key: 'rzp_live_ILgsfZCZoFIKMb',
     amount: 5000_00,
     'prefill.contact': '8888888888',
+    'prefill.email': 'abc@example.com',
   };
+
+  if (state.apiKey) {
+    options.key = state.apiKey;
+  }
 
   if (state.locale) {
     options.locale = state.locale.languageCode;
@@ -104,6 +119,31 @@ function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
     };
   }
   options.hide_rtb = state.rtb_enabled === undefined ? true : !state.rtb_enabled;
+
+  if (state.selectedPaymentOption) {
+    const paymentOption = state.selectedPaymentOption;
+    if (paymentOption.isCustomBlock) {
+      options['prefill.block'] = {
+        name: paymentOption.name,
+      };
+      options['prefill.method'] = 'home';
+    } else {
+      options['prefill.method'] = paymentOption.name;
+      options['prefill.block'] = {
+        name: 'home',
+      };
+    }
+    options.__internal = {
+      reinit: true,
+    };
+  }
+
+  if (state.selectedPaymentConfig) {
+    options.config = state.selectedPaymentConfig.checkout_config;
+    options.__internal = {
+      reinit: true,
+    };
+  }
   return {
     options,
   };

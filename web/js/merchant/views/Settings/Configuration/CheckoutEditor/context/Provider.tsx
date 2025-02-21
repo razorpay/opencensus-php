@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useToast } from '@razorpay/blade/components';
 import cloneDeep from 'lodash/cloneDeep';
 import isEmpty from 'lodash/isEmpty';
 import {
@@ -6,7 +7,9 @@ import {
   AccountLocale,
   ConfigFeatures,
   MerchantCheckoutConfig,
+  MerchantCheckoutPaymentConfig,
   MerchantCheckoutPaymentConfigs,
+  MerchantCheckoutPaymentMethodDetails,
   MerchantCheckoutStyledConfig,
   TrustedBadgeType,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
@@ -24,7 +27,15 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutFeatures/utils/mandateSummaryPage';
 import track from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TrustedBadge/track';
 import { isRazorpayTrustedBadgeActive } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TrustedBadge/utils';
-import { getHandleSelectedConfigChange } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/updater';
+import {
+  getHandleConfigNameChange,
+  getHandleCurrentExpandedCustomBlockChange,
+  getHandleOriginalPaymentConfigChange,
+  getHandlePaymentConfigScreenChange,
+  getHandleSelectedConfigChange,
+  getHandleSelectedPaymentOptionChange,
+  getHandleSetConfigAsDefault,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/updater';
 import {
   ACTIONS,
   INITIAL_STATE,
@@ -33,6 +44,9 @@ import {
   EMPTY_LOGO,
   EMPTY_WORDMARK,
   CHECKOUT_EDITOR_INITIAL_VALUES,
+  DEFAULT_PAYMENT_CONFIG,
+  PAYMENT_CONFIG_SCREEN,
+  PREVIEW_SCREEN,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import { checkoutEditorContext } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/createContext';
 import {
@@ -44,11 +58,11 @@ import {
   createTitleModalPayloadToSaveConfig,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers/brandConfigHelper';
 import { checkoutFeatureReducer } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/reducer';
-import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
 import {
   flashCheckoutProps,
   skipCardMandateSummaryProps,
 } from 'merchant/views/Settings/Configuration/settings-config-constants';
+import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
 
 export type CheckoutEditorProviderProps = {
   children: React.ReactNode;
@@ -58,6 +72,7 @@ export type CheckoutEditorProviderProps = {
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
   merchantCheckoutConfig?: MerchantCheckoutConfig;
   merchantCheckoutPaymentConfigs?: MerchantCheckoutPaymentConfigs;
+  selectedPaymentConfig?: MerchantCheckoutPaymentConfig;
   uploadLogo: (file: File, fileName: string) => Promise<unknown>;
   uploadWordmark: (file: File, fileName: string) => Promise<unknown>;
   removeLogo: (payload: Record<string, string | null>) => Promise<unknown>;
@@ -71,6 +86,9 @@ export type CheckoutEditorProviderProps = {
   createMerchantCheckoutStylingConfig: (payload: unknown) => Promise<unknown>;
   createMerchantCheckoutBrandConfig: (payload: unknown) => Promise<unknown>;
   updateEmailConfig: (payload: unknown) => Promise<unknown>;
+  createMerchantCheckoutPaymentConfig: (payload: unknown) => Promise<unknown>;
+  apiKey?: string;
+  merchantCheckoutPaymentMethodDetails?: MerchantCheckoutPaymentMethodDetails;
 };
 
 const CheckoutEditorProvider = ({
@@ -90,23 +108,57 @@ const CheckoutEditorProvider = ({
   createFeedback,
   merchantCheckoutStyledConfig,
   merchantCheckoutPaymentConfigs,
+  selectedPaymentConfig,
   createMerchantCheckoutStylingConfig,
+  createMerchantCheckoutPaymentConfig,
   createMerchantCheckoutBrandConfig,
   showNotification,
   updateEmailConfig,
+  apiKey,
+  merchantCheckoutPaymentMethodDetails,
 }: CheckoutEditorProviderProps): JSX.Element => {
   const [state, dispatch] = useReducer(checkoutFeatureReducer, INITIAL_STATE);
+  const toast = useToast();
 
-  const isValueModified = useMemo(
+  const hasValuesChangedInContext = useMemo(
     () => hasValuesChanged(state.values, state.config),
     [state.values, state.config],
   );
 
+  let isValueModified = false;
+  let isPaymentConfigChanged = false;
+
+  if (typeof hasValuesChangedInContext !== 'boolean') {
+    isPaymentConfigChanged = hasValuesChangedInContext?.changed === 'paymentConfig';
+    isValueModified = isPaymentConfigChanged;
+  } else {
+    isValueModified = hasValuesChangedInContext;
+  }
+
   const setValue = (
     key: string,
-    value: string | Record<string, string | boolean> | File | null | boolean,
+    value:
+      | string
+      | Record<string, string | boolean>
+      | File
+      | null
+      | boolean
+      | MerchantCheckoutConfig,
   ) => {
     dispatch({ type: ACTIONS.SET_VALUES, payload: { [key]: value } });
+  };
+
+  const setConfig = (
+    key: string,
+    value:
+      | string
+      | Record<string, string | boolean>
+      | File
+      | null
+      | boolean
+      | MerchantCheckoutConfig,
+  ) => {
+    dispatch({ type: ACTIONS.SET_CONFIG, payload: { [key]: value } });
   };
 
   const setIsSaving = (isSaving: boolean) => {
@@ -320,26 +372,65 @@ const CheckoutEditorProvider = ({
     }
   }, [merchantCheckoutStyledConfig, trustedBadge]);
 
+  const setAPIKeyToState = useCallback(() => {
+    if (apiKey) {
+      dispatch({
+        type: ACTIONS.SET_VALUES,
+        payload: {
+          [CHECKOUT_EDITOR_FIELDS.API_KEY]: apiKey,
+        },
+      });
+    }
+  }, [apiKey]);
+
   const setMerchantCheckoutPaymentConfigToState = useCallback(() => {
     if (merchantCheckoutPaymentConfigs) {
       if (merchantCheckoutPaymentConfigs.loading) {
         setIsLoading(true);
-      } else if (merchantCheckoutPaymentConfigs.error) {
-        showNotification({
-          type: 'error',
-          message: 'Error Fetching Payment Configs. Please try after sometime',
-        });
       } else {
+        const razorpayConfig = !selectedPaymentConfig
+          ? {
+              ...DEFAULT_PAYMENT_CONFIG,
+              is_default: true,
+            }
+          : DEFAULT_PAYMENT_CONFIG;
         dispatch({
           type: ACTIONS.SET_VALUES,
           payload: {
             [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]:
               merchantCheckoutPaymentConfigs?.data ?? [],
+            [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]:
+              selectedPaymentConfig ?? razorpayConfig,
+            [CHECKOUT_EDITOR_FIELDS.PREVIEW_SCREEN]: PREVIEW_SCREEN.HOME,
+            [CHECKOUT_EDITOR_FIELDS.IS_CONFIG_SET_AS_DEFAULT_INITIALLY]:
+              selectedPaymentConfig?.is_default ?? false,
+            [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_OPTION]: {
+              name: 'home',
+              isCustomBlock: false,
+            },
+          },
+        });
+
+        dispatch({
+          type: ACTIONS.SET_CONFIG,
+          payload: {
+            merchantCheckoutSelectedPaymentConfig: selectedPaymentConfig ?? razorpayConfig,
           },
         });
       }
     }
-  }, [merchantCheckoutPaymentConfigs, showNotification]);
+  }, [merchantCheckoutPaymentConfigs, selectedPaymentConfig]);
+
+  const setMerchantCheckoutPaymentMethodDetailsToState = useCallback(() => {
+    if (merchantCheckoutPaymentMethodDetails) {
+      dispatch({
+        type: ACTIONS.SET_VALUES,
+        payload: {
+          [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_METHOD_DETAILS]: merchantCheckoutPaymentMethodDetails,
+        },
+      });
+    }
+  }, [merchantCheckoutPaymentMethodDetails]);
 
   const setAccountLocaleToState = useCallback(() => {
     if (accountLocale) {
@@ -416,6 +507,7 @@ const CheckoutEditorProvider = ({
     setAccountLocaleToState();
     setMerchantCheckoutStyledConfigToState();
     setMerchantConfigToState(state.values);
+    discardPaymentConfigChanges();
   };
 
   const handleFeedbackSubmit = async (data) => {
@@ -443,6 +535,130 @@ const CheckoutEditorProvider = ({
       showNotification({ type: 'error', message: errors?.[0] ?? message });
     }
   };
+
+  const handleCurrentExpandedCustomBlockChange =
+    getHandleCurrentExpandedCustomBlockChange(setValue);
+
+  const handleSaveTitleModal = async (setShowEditModal) => {
+    setIsSavingTitleModal(true);
+    const payload = createTitleModalPayloadToSaveConfig(state.values, state.config);
+    try {
+      if (payload.uploadLogo) {
+        try {
+          await uploadLogo(payload.uploadLogo.file, payload.uploadLogo.fileName);
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Logo Uploaded',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { errors } = error as { errors: string[] };
+          throw new Error(errors?.[0]);
+        }
+      }
+
+      if (payload.removeLogo) {
+        try {
+          await removeLogo(payload.removeLogo);
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Logo Removed',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { errors } = error as { errors: string[] };
+          throw new Error(errors?.[0]);
+        }
+      }
+
+      if (payload.uploadWordmark) {
+        try {
+          await uploadWordmark(payload.uploadWordmark.file, payload.uploadWordmark.fileName);
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Wordmark Uploaded',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { errors } = error as { errors: string[] };
+          throw new Error(errors?.[0]);
+        }
+      }
+
+      if (payload.merchantCheckoutStyledConfig) {
+        await createMerchantCheckoutStylingConfig(payload.merchantCheckoutStyledConfig);
+        selfServeTrackSuccess({
+          selfServeAction: 'Merchant Checkout Style Changes',
+          page: 'Config',
+          screen: 'Settings',
+        });
+      }
+
+      if (payload.merchantCheckoutBrandConfig) {
+        try {
+          if (
+            payload.merchantCheckoutBrandConfig?.checkout_configuration?.checkout_style_config
+              ?.brand_name
+          ) {
+            await createMerchantCheckoutBrandConfig(payload.merchantCheckoutBrandConfig);
+          } else {
+            await createMerchantCheckoutStylingConfig(payload.merchantCheckoutBrandConfig);
+          }
+          selfServeTrackSuccess({
+            selfServeAction: 'Merchant Checkout Style Changes',
+            page: 'Config',
+            screen: 'Settings',
+          });
+        } catch (error) {
+          const { message } = error as { errors: string[]; message: string };
+          throw new Error(message);
+        }
+      }
+      toast.show({ content: 'Changes saved successfully', color: 'positive', autoDismiss: true });
+      setShowEditModal(false);
+    } catch (error) {
+      const { errors, message } = error as { errors: string[]; message: string };
+      toast.show({ content: errors?.[0] ?? message, color: 'negative', autoDismiss: true });
+    } finally {
+      setIsSavingTitleModal(false);
+    }
+  };
+
+  const handlePreviewChange = (value: boolean) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.IS_DESKTOP_PREVIEW, value);
+  };
+
+  const handleEmailToggle = (isEnabled: boolean) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.EMAIL, {
+      ...state.values[CHECKOUT_EDITOR_FIELDS.EMAIL],
+      isEnabled,
+    });
+  };
+
+  const handleEmailValueChange = (value: string) => {
+    setValue(CHECKOUT_EDITOR_FIELDS.EMAIL, {
+      ...state.values[CHECKOUT_EDITOR_FIELDS.EMAIL],
+      value,
+    });
+  };
+
+  const handleSelectedConfigChange = getHandleSelectedConfigChange(setValue);
+  const handleOriginalPaymentConfigChange = getHandleOriginalPaymentConfigChange(setConfig);
+  const handleConfigNameChange = getHandleConfigNameChange(setValue);
+  const handleSetConfigAsDefault = getHandleSetConfigAsDefault(setValue);
+  const handlePaymentConfigScreenChange = getHandlePaymentConfigScreenChange(setValue);
+  const handleSelectedPaymentOptionChange = getHandleSelectedPaymentOptionChange(setValue);
+
+  function discardPaymentConfigChanges() {
+    const originalConfig = state.config?.merchantCheckoutSelectedPaymentConfig ?? {};
+    if (originalConfig.config_id === DEFAULT_PAYMENT_CONFIG.config_id) {
+      handlePaymentConfigScreenChange(PAYMENT_CONFIG_SCREEN.CONFIG_LIST);
+    }
+    handleSelectedConfigChange(originalConfig);
+    handleSelectedPaymentOptionChange({ name: 'home', isCustomBlock: false });
+    handlePreviewScreenChange(PREVIEW_SCREEN.HOME);
+    handleCurrentExpandedCustomBlockChange('');
+  }
 
   const handleSave = async () => {
     const payload = createPayloadToSaveConfig(state.values, state.config);
@@ -529,119 +745,27 @@ const CheckoutEditorProvider = ({
           throw new Error(message);
         }
       }
-      showNotification({ type: 'success', message: 'Settings saved successfully' });
+
+      if (payload.merchantCheckoutPaymentConfig) {
+        try {
+          await createMerchantCheckoutPaymentConfig(payload.merchantCheckoutPaymentConfig);
+        } catch (error) {
+          discardPaymentConfigChanges();
+          throw error;
+        } finally {
+          handleCurrentExpandedCustomBlockChange('');
+          handleSelectedPaymentOptionChange({ name: 'home', isCustomBlock: false });
+        }
+      }
+
+      toast.show({ content: 'Changes saved successfully', color: 'positive', autoDismiss: true });
     } catch (error) {
       const { errors, message } = error as { errors: string[]; message: string };
-      showNotification({ type: 'error', message: errors?.[0] ?? message });
+      toast.show({ content: errors?.[0] ?? message, color: 'negative', autoDismiss: true });
     } finally {
       setIsSaving(false);
     }
   };
-
-  const handleSaveTitleModal = async (setShowEditModal) => {
-    setIsSavingTitleModal(true);
-    const payload = createTitleModalPayloadToSaveConfig(state.values, state.config);
-    try {
-      if (payload.uploadLogo) {
-        try {
-          await uploadLogo(payload.uploadLogo.file, payload.uploadLogo.fileName);
-          selfServeTrackSuccess({
-            selfServeAction: 'Brand Logo Uploaded',
-            page: 'Config',
-            screen: 'Settings',
-          });
-        } catch (error) {
-          const { errors } = error as { errors: string[] };
-          throw new Error(errors?.[0]);
-        }
-      }
-
-      if (payload.removeLogo) {
-        try {
-          await removeLogo(payload.removeLogo);
-          selfServeTrackSuccess({
-            selfServeAction: 'Brand Logo Removed',
-            page: 'Config',
-            screen: 'Settings',
-          });
-        } catch (error) {
-          const { errors } = error as { errors: string[] };
-          throw new Error(errors?.[0]);
-        }
-      }
-
-      if (payload.uploadWordmark) {
-        try {
-          await uploadWordmark(payload.uploadWordmark.file, payload.uploadWordmark.fileName);
-          selfServeTrackSuccess({
-            selfServeAction: 'Brand Wordmark Uploaded',
-            page: 'Config',
-            screen: 'Settings',
-          });
-        } catch (error) {
-          const { errors } = error as { errors: string[] };
-          throw new Error(errors?.[0]);
-        }
-      }
-
-      if (payload.merchantCheckoutStyledConfig) {
-        await createMerchantCheckoutStylingConfig(payload.merchantCheckoutStyledConfig);
-        selfServeTrackSuccess({
-          selfServeAction: 'Merchant Checkout Style Changes',
-          page: 'Config',
-          screen: 'Settings',
-        });
-      }
-
-      if (payload.merchantCheckoutBrandConfig) {
-        try {
-          if (
-            payload.merchantCheckoutBrandConfig?.checkout_configuration?.checkout_style_config
-              ?.brand_name
-          ) {
-            await createMerchantCheckoutBrandConfig(payload.merchantCheckoutBrandConfig);
-          } else {
-            await createMerchantCheckoutStylingConfig(payload.merchantCheckoutBrandConfig);
-          }
-          selfServeTrackSuccess({
-            selfServeAction: 'Merchant Checkout Style Changes',
-            page: 'Config',
-            screen: 'Settings',
-          });
-        } catch (error) {
-          const { message } = error as { errors: string[]; message: string };
-          throw new Error(message);
-        }
-      }
-      showNotification({ type: 'success', message: 'Settings saved successfully' });
-      setShowEditModal(false);
-    } catch (error) {
-      const { errors, message } = error as { errors: string[]; message: string };
-      showNotification({ type: 'error', message: errors?.[0] ?? message });
-    } finally {
-      setIsSavingTitleModal(false);
-    }
-  };
-
-  const handlePreviewChange = (value: boolean) => {
-    setValue(CHECKOUT_EDITOR_FIELDS.IS_DESKTOP_PREVIEW, value);
-  };
-
-  const handleEmailToggle = (isEnabled: boolean) => {
-    setValue(CHECKOUT_EDITOR_FIELDS.EMAIL, {
-      ...state.values[CHECKOUT_EDITOR_FIELDS.EMAIL],
-      isEnabled,
-    });
-  };
-
-  const handleEmailValueChange = (value: string) => {
-    setValue(CHECKOUT_EDITOR_FIELDS.EMAIL, {
-      ...state.values[CHECKOUT_EDITOR_FIELDS.EMAIL],
-      value,
-    });
-  };
-
-  const handleSelectedConfigChange = getHandleSelectedConfigChange(setValue);
 
   useEffect(() => {
     setAccountConfigToState();
@@ -661,14 +785,23 @@ const CheckoutEditorProvider = ({
   }, [merchantCheckoutStyledConfig, setMerchantCheckoutStyledConfigToState]);
 
   useEffect(() => {
+    setAPIKeyToState();
+  }, [apiKey, setAPIKeyToState]);
+
+  useEffect(() => {
     setMerchantCheckoutPaymentConfigToState();
   }, [merchantCheckoutPaymentConfigs, setMerchantCheckoutPaymentConfigToState]);
+
+  useEffect(() => {
+    setMerchantCheckoutPaymentMethodDetailsToState();
+  }, [merchantCheckoutPaymentMethodDetails, setMerchantCheckoutPaymentMethodDetailsToState]);
 
   return (
     <checkoutEditorContext.Provider
       value={{
         values: state.values,
         isValueModified,
+        isPaymentConfigChanged,
         isSaving: state.isSaving,
         isLoading: state.isLoading,
         isSavingTitleModalChange: state.isSavingTitleModalChange,
@@ -701,7 +834,13 @@ const CheckoutEditorProvider = ({
         handleRtbEnable,
         handleFestivalThemeToggle,
         handleSelectedConfigChange,
+        handleConfigNameChange,
+        handleSetConfigAsDefault,
+        handleOriginalPaymentConfigChange,
         handlePreviewScreenChange,
+        handlePaymentConfigScreenChange,
+        handleSelectedPaymentOptionChange,
+        handleCurrentExpandedCustomBlockChange,
       }}
     >
       {children}

@@ -2,9 +2,12 @@ import {
   AccountLocale,
   AccountConfig,
   MerchantCheckoutPaymentConfig,
+  MerchantCheckoutPaymentMethodDetails,
+  SelectedPaymentOption,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 
 import { EmailLessCheckoutConfigOptions } from 'merchant/reducers/config';
+import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import {
   AVAILABLE_BORDER_STYLE,
   AVAILABLE_GRAPHICS,
@@ -25,6 +28,8 @@ export const ACTIONS = {
 export const CHECKOUT_EDITOR_FIELDS = {
   LOCALE: 'locale',
   EMAIL: 'email',
+  IS_PAYMENT_CONFIGURATION_CHANGED: 'isPaymentConfigurationChanged',
+  IS_CONFIG_SET_AS_DEFAULT_INITIALLY: 'isConfigSetAsDefaultInitially',
   EMAIL_OPTIONAL_CHECKOUT: 'emailOptionalCheckout',
   SHOW_EMAIL_ON_CHECKOUT: 'showEmailOnCheckout',
   CUSTOM_MESSAGE: 'customMessage',
@@ -49,6 +54,11 @@ export const CHECKOUT_EDITOR_FIELDS = {
   SELECTED_PAYMENT_CONFIG: 'selectedPaymentConfig',
   ALL_PAYMENT_CONFIGS: 'allPaymentConfigs',
   PREVIEW_SCREEN: 'previewScreen',
+  API_KEY: 'apiKey',
+  PAYMENT_CONFIG_SCREEN: 'paymentConfigScreen',
+  SELECTED_PAYMENT_OPTION: 'selectedPaymentOption',
+  ALL_PAYMENT_METHOD_DETAILS: 'allPaymentMethodDetails',
+  CURRENT_EXPANDED_CUSTOM_BLOCK: 'currentExpandedCustomBlock',
 } as const;
 
 export const CUSTOM_MESSAGE_BANNER_SCREENS = {
@@ -92,10 +102,70 @@ export const PAYMENT_CONFIG_INITIAL_VALUES = {
   is_deleted: false,
 };
 
+export const DEFAULT_PAYMENT_CONFIG: MerchantCheckoutPaymentConfig = {
+  name: 'Standard payment options',
+  config_id: 'default',
+  is_default: false,
+  checkout_config: {
+    display: {
+      hide: [],
+      sequence: [],
+      preferences: {
+        show_default_blocks: true,
+      },
+    },
+  },
+  type: 'checkout',
+};
+
+export enum STANDARD_PAYMENT_BLOCK_NAMES {
+  CARDS = 'card',
+  UPI = 'upi',
+  NETBANKING = 'netbanking',
+  EMI = 'emi',
+  WALLET = 'wallet',
+  PAYLATER = 'paylater',
+  COD = 'cod',
+}
+
 export enum PREVIEW_SCREEN {
   METHODS = 'METHODS',
   HOME = 'HOME',
 }
+
+export enum PAYMENT_CONFIG_SCREEN {
+  CONFIG_LIST = 'CONFIG_LIST',
+  CONFIG_DETAILS = 'CONFIG_DETAILS',
+}
+
+export const DEFAULT_STANDARD_BLOCKS_SEQUENCE = [
+  STANDARD_PAYMENT_BLOCK_NAMES.UPI,
+  STANDARD_PAYMENT_BLOCK_NAMES.CARDS,
+  STANDARD_PAYMENT_BLOCK_NAMES.EMI,
+  STANDARD_PAYMENT_BLOCK_NAMES.NETBANKING,
+  STANDARD_PAYMENT_BLOCK_NAMES.WALLET,
+  STANDARD_PAYMENT_BLOCK_NAMES.PAYLATER,
+  STANDARD_PAYMENT_BLOCK_NAMES.COD,
+];
+
+export const MAP_SLUG_TO_BLOCKNAMES = {
+  [PaymentMethodsFields.CARDS]: STANDARD_PAYMENT_BLOCK_NAMES.CARDS,
+  [PaymentMethodsFields.NETBANKING]: STANDARD_PAYMENT_BLOCK_NAMES.NETBANKING,
+  [PaymentMethodsFields.UPI]: STANDARD_PAYMENT_BLOCK_NAMES.UPI,
+  [PaymentMethodsFields.WALLET]: STANDARD_PAYMENT_BLOCK_NAMES.WALLET,
+  [PaymentMethodsFields.EMI]: STANDARD_PAYMENT_BLOCK_NAMES.EMI,
+  [PaymentMethodsFields.PAYLATER]: STANDARD_PAYMENT_BLOCK_NAMES.PAYLATER,
+};
+
+export const CARD_NETWORKS_TO_SLUG = {
+  mastercard: 'MasterCard',
+  visa: 'Visa',
+  amex: 'American Express',
+  rupay: 'RuPay',
+  diners: 'Diners Club',
+  maestro: 'Maestro',
+  bajaj: 'Bajaj Finserv',
+};
 
 export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
@@ -144,6 +214,11 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]: MerchantCheckoutPaymentConfig;
   [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]: Array<MerchantCheckoutPaymentConfig>;
   [CHECKOUT_EDITOR_FIELDS.PREVIEW_SCREEN]: string;
+  [CHECKOUT_EDITOR_FIELDS.API_KEY]: string;
+  [CHECKOUT_EDITOR_FIELDS.PAYMENT_CONFIG_SCREEN]: PAYMENT_CONFIG_SCREEN;
+  [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_OPTION]: SelectedPaymentOption;
+  [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_METHOD_DETAILS]: MerchantCheckoutPaymentMethodDetails;
+  [CHECKOUT_EDITOR_FIELDS.CURRENT_EXPANDED_CUSTOM_BLOCK]: string;
 } = {
   [CHECKOUT_EDITOR_FIELDS.LOCALE]: {
     id: '',
@@ -183,11 +258,24 @@ export const CHECKOUT_EDITOR_INITIAL_VALUES: {
   [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]: [],
   [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]: PAYMENT_CONFIG_INITIAL_VALUES,
   [CHECKOUT_EDITOR_FIELDS.PREVIEW_SCREEN]: PREVIEW_SCREEN.HOME,
+  [CHECKOUT_EDITOR_FIELDS.API_KEY]: '',
+  [CHECKOUT_EDITOR_FIELDS.PAYMENT_CONFIG_SCREEN]: PAYMENT_CONFIG_SCREEN.CONFIG_LIST,
+  [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_OPTION]: {
+    name: '',
+    isCustomBlock: false,
+  },
+  [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_METHOD_DETAILS]: {},
+  [CHECKOUT_EDITOR_FIELDS.CURRENT_EXPANDED_CUSTOM_BLOCK]: '',
 };
 
-const CONFIG_INITIAL_STATE: { accountConfig: AccountConfig; locale: AccountLocale } = {
+const CONFIG_INITIAL_STATE: {
+  accountConfig: AccountConfig;
+  locale: AccountLocale;
+  selectedPaymentConfig: MerchantCheckoutPaymentConfig;
+} = {
   accountConfig: {},
   locale: {},
+  selectedPaymentConfig: {},
 };
 
 export const INITIAL_STATE = {
@@ -197,11 +285,13 @@ export const INITIAL_STATE = {
   isSaving: false,
   isLoading: false,
   isSavingTitleModalChange: false,
+  isPaymentConfigChanged: false,
 };
 
 export const CONTEXT_INITIAL_STATE = {
   values: INITIAL_STATE.values,
   isValueModified: INITIAL_STATE.isValueModified,
+  isPaymentConfigChanged: INITIAL_STATE.isPaymentConfigChanged,
   isSaving: INITIAL_STATE.isSaving,
   isLoading: INITIAL_STATE.isLoading,
   isSavingTitleModalChange: INITIAL_STATE.isSavingTitleModalChange,

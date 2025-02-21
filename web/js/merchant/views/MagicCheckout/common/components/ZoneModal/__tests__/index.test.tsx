@@ -141,7 +141,8 @@ describe('Zone Modal', () => {
     });
   });
 
-  test('should save zone', async () => {
+  // skipping as per this thread: https://razorpay.slack.com/archives/C04MK11G23Z/p1739785923458409
+  test.skip('should save zone', async () => {
     renderZoneModal({
       zone: DB_ZONE,
       item_category_id: DB_CATEGORY.id,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToastContainer } from '@razorpay/blade/components';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
@@ -9,6 +10,7 @@ const CheckoutEditor = React.lazy(
 const CheckoutConfigExperiment = (props) => {
   return (
     <SuspenseWithLoader>
+      <ToastContainer />
       <CheckoutEditor
         showFeatures={props.showFeatures}
         showStyling={props.showStyling}

@@ -38,7 +38,13 @@ export const checkoutEditorContext = createContext<
   handleRtbEnable: noop,
   handleFestivalThemeToggle: noop,
   handleSelectedConfigChange: noop,
+  handleConfigNameChange: noop,
+  handleSetConfigAsDefault: noop,
+  handleOriginalPaymentConfigChange: noop,
   handlePreviewScreenChange: noop,
+  handlePaymentConfigScreenChange: noop,
+  handleSelectedPaymentOptionChange: noop,
+  handleCurrentExpandedCustomBlockChange: noop,
 });
 
 export const useCheckoutEditor = () => {

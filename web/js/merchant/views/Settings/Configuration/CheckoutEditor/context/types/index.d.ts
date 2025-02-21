@@ -1,6 +1,9 @@
+import { PAYMENT_CONFIG_SCREEN } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
+
 export type CheckoutEditorContext<Values> = {
   values: Values;
   isValueModified: boolean;
+  isPaymentConfigChanged: boolean;
   isSaving: boolean;
   isSavingTitleModalChange: boolean;
   isLoading: boolean;
@@ -34,7 +37,13 @@ export type CheckoutEditorContext<Values> = {
   handleSaveTitleModal: (setShowEditModal: React.Dispatch<React.SetStateAction<boolean>>) => void;
   handleFestivalThemeToggle: (value: boolean) => void;
   handleSelectedConfigChange: (config: MerchantCheckoutPaymentConfig) => void;
+  handleOriginalPaymentConfigChange: (config: MerchantCheckoutPaymentConfig) => void;
+  handleConfigNameChange: (config: MerchantCheckoutPaymentConfig, name: string) => void;
+  handleSetConfigAsDefault: (config: MerchantCheckoutPaymentConfig) => void;
   handlePreviewScreenChange: (screen: string) => void;
+  handlePaymentConfigScreenChange: (screen: PAYMENT_CONFIG_SCREEN) => void;
+  handleSelectedPaymentOptionChange: (paymentOption: SelectedPaymentOption) => void;
+  handleCurrentExpandedCustomBlockChange: (blockKey: string) => void;
 };
 
 export type AccountLocale = {
@@ -113,6 +122,7 @@ export type CheckoutEditorState = {
   accountLocale?: AccountLocale;
   merchantCheckoutConfig?: MerchantCheckoutConfig;
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
+  merchantCheckoutSelectedPaymentConfig?: MerchantCheckoutPaymentConfig;
 };
 
 export type CheckoutEditorPayload = {
@@ -238,6 +248,13 @@ export type CheckoutEditorPayload = {
       };
     };
   };
+  merchantCheckoutPaymentConfig?: {
+    type: 'patch' | 'post';
+    checkout_configuration: {
+      is_payment_config_flag_enabled?: boolean;
+      checkout_config_request?: MerchantCheckoutPaymentConfig;
+    };
+  };
 };
 
 export type MerchantCheckoutStyledConfig = {
@@ -264,16 +281,17 @@ export type MerchantCheckoutStyledConfig = {
   festivities_enabled?: boolean;
 };
 
+export type PaymentConfigDisplayPreferences = {
+  show_default_blocks?: boolean;
+};
+
 export type MerchantCheckoutPaymentConfig = {
   checkout_config?: {
     display?: {
-      blocks?: {
-        [key: string]: PaymentConfigBlock;
-      };
+      blocks?: PaymentConfigCustomBlocks;
+      hide?: Array<PaymentConfigInstrument>;
       sequence?: string[];
-      preferences?: {
-        show_default_blocks?: boolean;
-      };
+      preferences?: PaymentConfigDisplayPreferences;
     };
   };
   is_default?: boolean;
@@ -285,21 +303,35 @@ export type MerchantCheckoutPaymentConfig = {
   is_deleted?: boolean;
 };
 
-export type PaymentConfigBlock = {
-  [key: string]: {
-    name: string;
-    instruments: any;
-  };
+export type PaymentConfigCustomBlocks = {
+  [key: string]: PaymentConfigCustomBlock;
+};
+
+export type PaymentConfigCustomBlock = {
+  name: string;
+  instruments: PaymentConfigInstrument[];
+};
+
+export type PaymentConfigInstrument = {
+  method: string;
+  banks?: string[];
+  providers?: string[];
+  issuers?: string[];
+  networks?: string[];
+  types?: string[];
+  flows?: string[];
+  apps?: string[];
+  wallets?: string[];
 };
 
 export type MerchantCheckoutPaymentConfigs = {
-  data: {
-    checkout_configuration: {
-      checkout_configs: Array<MerchantCheckoutPaymentConfig>;
-    };
-  };
+  data: Array<MerchantCheckoutPaymentConfig>;
   loading: boolean;
   error: null;
+};
+
+export type MerchantCheckoutPaymentMethodDetails = {
+  [key: string]: any;
 };
 
 export type MerchantCheckoutBrandConfig = {
@@ -333,4 +365,9 @@ export type TrustedBadgeType = {
   updatePending?: boolean;
   updateError?: boolean;
   updateAction?: string;
+};
+
+export type SelectedPaymentOption = {
+  name: string;
+  isCustomBlock: boolean;
 };

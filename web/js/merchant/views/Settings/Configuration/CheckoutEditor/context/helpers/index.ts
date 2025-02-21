@@ -1,10 +1,14 @@
 import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
 import {
   ConfigFeatures,
   AccountConfig,
   CheckoutEditorState,
   CheckoutEditorPayload,
   MerchantCheckoutStyledConfig,
+  PaymentConfigInstrument,
+  PaymentConfigDisplayPreferences,
+  MerchantCheckoutPaymentConfig,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
 
 import {
@@ -145,7 +149,12 @@ export const hasValuesChanged = (
     return false;
   }
 
-  const { accountLocale, accountConfig, merchantCheckoutStyledConfig } = originalValues;
+  const {
+    accountLocale,
+    accountConfig,
+    merchantCheckoutStyledConfig,
+    merchantCheckoutSelectedPaymentConfig,
+  } = originalValues;
 
   // Check if the locale has changed
   if (accountLocale?.config?.language_code !== values.locale.languageCode) {
@@ -219,8 +228,124 @@ export const hasValuesChanged = (
     return true;
   }
 
+  if (
+    hasPaymentConfigChanged(
+      values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG],
+      merchantCheckoutSelectedPaymentConfig ?? {},
+    )
+  ) {
+    return {
+      changed: 'paymentConfig',
+    };
+  }
   return false;
 };
+
+function hasPaymentConfigChanged(
+  newConfig: MerchantCheckoutPaymentConfig,
+  oldConfig: MerchantCheckoutPaymentConfig,
+) {
+  if (isEqual(newConfig, oldConfig)) {
+    return false;
+  }
+  if (
+    hasSequenceChanged(
+      oldConfig.checkout_config?.display?.sequence ?? [],
+      newConfig.checkout_config?.display?.sequence ?? [],
+    )
+  ) {
+    return true;
+  }
+  if (
+    hasHiddenBlocksChanged(
+      oldConfig.checkout_config?.display?.hide ?? [],
+      newConfig.checkout_config?.display?.hide ?? [],
+    )
+  ) {
+    return true;
+  }
+  if (
+    hasPreferencesChanged(
+      oldConfig.checkout_config?.display?.preferences ?? {},
+      newConfig.checkout_config?.display?.preferences ?? {},
+    )
+  ) {
+    return true;
+  }
+  if (hasDefaultPaymentConfigChanged(oldConfig, newConfig)) {
+    return true;
+  }
+  if (hasPaymentConfigNameChanged(oldConfig.name ?? '', newConfig.name ?? '')) {
+    return true;
+  }
+  if (hasCustomBlocksChanged(oldConfig, newConfig)) {
+    return true;
+  }
+  return false;
+}
+
+function hasSequenceChanged(oldSequence: string[], newSequence: string[]) {
+  if (oldSequence.length !== newSequence.length) {
+    return true;
+  }
+
+  for (let i = 0; i < oldSequence.length; i++) {
+    if (oldSequence[i] !== newSequence[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasHiddenBlocksChanged(
+  oldHiddenBlocks: PaymentConfigInstrument[],
+  newHiddenBlocks: PaymentConfigInstrument[],
+) {
+  if (oldHiddenBlocks.length !== newHiddenBlocks.length) {
+    return true;
+  }
+
+  const newHiddenBlocksCopy = [...newHiddenBlocks];
+
+  for (const block of oldHiddenBlocks) {
+    const matchIndex = newHiddenBlocksCopy.findIndex((newBlock) => isEqual(newBlock, block));
+    if (matchIndex === -1) {
+      return true;
+    }
+
+    // remove the matched block to prevent double-matching
+    newHiddenBlocksCopy.splice(matchIndex, 1);
+  }
+  return false;
+}
+
+function hasPreferencesChanged(
+  oldPreferences: PaymentConfigDisplayPreferences,
+  newPreferences: PaymentConfigDisplayPreferences,
+) {
+  return !isEqual(oldPreferences, newPreferences);
+}
+
+function hasPaymentConfigNameChanged(oldName: string, newName: string) {
+  return oldName !== newName;
+}
+
+function hasDefaultPaymentConfigChanged(
+  oldConfig: MerchantCheckoutPaymentConfig,
+  newConfig: MerchantCheckoutPaymentConfig,
+) {
+  return oldConfig.is_default !== newConfig.is_default;
+}
+
+function hasCustomBlocksChanged(
+  oldConfig: MerchantCheckoutPaymentConfig,
+  newConfig: MerchantCheckoutPaymentConfig,
+) {
+  return !isEqual(
+    oldConfig?.checkout_config?.display?.blocks,
+    newConfig?.checkout_config?.display?.blocks,
+  );
+}
 
 const createEmailConfigPayload = (
   emailConfig: typeof CHECKOUT_EDITOR_INITIAL_VALUES.email,
@@ -359,7 +484,8 @@ export const createPayloadToSaveConfig = (
   values: typeof CHECKOUT_EDITOR_INITIAL_VALUES,
   originalValues: CheckoutEditorState,
 ) => {
-  const { accountConfig, accountLocale } = originalValues ?? {};
+  const { accountConfig, accountLocale, merchantCheckoutSelectedPaymentConfig } =
+    originalValues ?? {};
 
   const payload: CheckoutEditorPayload = {};
 
@@ -445,6 +571,30 @@ export const createPayloadToSaveConfig = (
   ) {
     payload.mandatorySummaryPage = {
       isMandatorySummaryPageEnabled: values[CHECKOUT_EDITOR_FIELDS.MANDATORY_SUMMARY_PAGE],
+    };
+  }
+
+  if (
+    !isEqual(
+      values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG],
+      merchantCheckoutSelectedPaymentConfig,
+    )
+  ) {
+    const paymentConfig = values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG];
+    if (
+      paymentConfig.checkout_config?.display?.blocks &&
+      (Array.isArray(paymentConfig.checkout_config?.display?.blocks) ||
+        isEmpty(paymentConfig.checkout_config?.display?.blocks))
+    ) {
+      // convert empty array to empty object due to api restrictions
+      delete paymentConfig.checkout_config?.display?.blocks;
+    }
+    payload.merchantCheckoutPaymentConfig = {
+      type: paymentConfig.config_id ? 'patch' : 'post',
+      checkout_configuration: {
+        is_payment_config_flag_enabled: false,
+        checkout_config_request: paymentConfig,
+      },
     };
   }
   return payload;

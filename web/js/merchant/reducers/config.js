@@ -38,6 +38,9 @@ const CREATE_MERCHANT_CHECKOUT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG = 'CREATE_MERCHANT_CHECKOUT_STYLING_CONFIG';
 const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG';
 const FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS = 'FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS';
+const FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS =
+  'FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS';
+const CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_SUCCESS =
@@ -716,6 +719,24 @@ export const fetchMerchantCheckoutPaymentConfigurations = () => {
   };
 };
 
+export const fetchMerchantCheckoutMethodDetails = () => {
+  return {
+    type: FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS,
+    payload: merchantFetch('merchant_methods'),
+  };
+};
+
+export const createMerchantCheckoutPaymentConfig = ({ type, ...data }) => {
+  return {
+    type: CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG,
+    payload: merchantFetch({
+      url: 'checkout_config',
+      method: type,
+      data,
+    }),
+  };
+};
+
 const initialState = {
   loading: true,
   error: null,
@@ -1257,10 +1278,17 @@ const configReducer = (state = initialState, action) => {
     }
 
     case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS}::SUCCESS`: {
-      return set(state, 'checkoutPaymentConfigs', {
-        loading: false,
-        data: action.payload.data.checkout_configuration.checkout_configs,
-        error: null,
+      const configs = action.payload.data.checkout_configuration.checkout_configs;
+      const selectedPaymentConfig = (configs ?? []).find((config) => config?.is_default);
+
+      return merge(state, {
+        checkoutPaymentConfigs: {
+          loading: false,
+          data: configs,
+          error: null,
+        },
+        selectedPaymentConfig,
+        isConfigSetAsDefaultInitially: selectedPaymentConfig?.is_default ?? false,
       });
     }
 
@@ -1268,6 +1296,72 @@ const configReducer = (state = initialState, action) => {
       return set(state, 'checkoutPaymentConfigs', {
         loading: false,
         data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS}::PENDING`: {
+      return merge(state, {
+        checkoutPaymentMethodDetails: {
+          ...state.checkoutPaymentMethods,
+          loading: true,
+        },
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS}::SUCCESS`: {
+      const methodDetails = action.payload.data?.Methods?.details;
+
+      return set(state, 'checkoutPaymentMethodDetails', {
+        loading: false,
+        data: methodDetails,
+        error: null,
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS}::ERROR`: {
+      return set(state, 'checkoutPaymentMethodDetails', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors,
+      });
+    }
+
+    case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::PENDING`: {
+      return merge(state, {
+        checkoutPaymentConfigs: {
+          ...state.checkoutPaymentConfigs,
+          loading: true,
+        },
+      });
+    }
+
+    case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::SUCCESS`: {
+      const configs = [...state.checkoutPaymentConfigs.data];
+      const payloadConfig = action.payload.data.checkout_configuration.checkout_config_registry;
+      const updatedConfigIndex = configs.findIndex(
+        (config) => config.config_id === payloadConfig.config_id,
+      );
+      if (updatedConfigIndex !== -1) {
+        configs[updatedConfigIndex] = payloadConfig;
+      } else {
+        configs.push(payloadConfig);
+      }
+      return merge(state, {
+        checkoutPaymentConfigs: {
+          loading: false,
+          data: configs,
+          error: null,
+        },
+        selectedPaymentConfig: payloadConfig,
+        isConfigSetAsDefaultInitially: payloadConfig.is_default,
+      });
+    }
+
+    case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::ERROR`: {
+      return set(state, 'checkoutPaymentConfigs', {
+        loading: false,
+        data: state.checkoutPaymentConfigs.data,
         error: action.payload.errors,
       });
     }

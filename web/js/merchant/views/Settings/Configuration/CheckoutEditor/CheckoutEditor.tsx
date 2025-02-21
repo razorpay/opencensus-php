@@ -5,7 +5,9 @@ import {
   AccountLocale,
   Blocks,
   MerchantCheckoutConfig,
+  MerchantCheckoutPaymentConfig,
   MerchantCheckoutPaymentConfigs,
+  MerchantCheckoutPaymentMethodDetails,
   MerchantCheckoutStyledConfig,
   TrustedBadgeType,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
@@ -13,7 +15,7 @@ import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
 import { useSplitzService } from 'common/splitz';
-import { User } from 'common/typings';
+import { Environments, User } from 'common/typings';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { isExperimentActive } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -36,7 +38,11 @@ import {
   updateConfig,
   updateEmailConfig,
   fetchMerchantCheckoutPaymentConfigurations,
+  createMerchantCheckoutPaymentConfig,
+  fetchMerchantCheckoutMethodDetails,
+  fetchConfig,
 } from 'merchant/reducers/config';
+import { fetchKeys } from 'merchant/reducers/keys';
 import {
   isFlashCheckoutAllowed,
   isSkipMandatorySummaryPageAllowed,
@@ -66,7 +72,7 @@ import blockAnalytics from 'merchant/views/Settings/Configuration/CheckoutEditor
 import ComingSoonLineItems from 'merchant/views/Settings/Configuration/components/Configuration/ComingSoonLineItem';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-type CheckoutConfigProps = {
+type CheckoutEditorProps = {
   accountConfig?: AccountConfig;
   accountLocale?: AccountLocale | null;
   merchantCheckoutConfig?: MerchantCheckoutConfig;
@@ -81,13 +87,21 @@ type CheckoutConfigProps = {
   createFeedback: typeof createFeedback;
   extraConfig: ExtraConfig;
   merchantCheckoutStyledConfig?: MerchantCheckoutStyledConfig;
-  merchantCheckoutPaymentConfigs: MerchantCheckoutPaymentConfigs;
+  merchantCheckoutPaymentConfigs?: MerchantCheckoutPaymentConfigs;
+  selectedPaymentConfig?: MerchantCheckoutPaymentConfig;
   showFeatures: boolean;
   showStyling: boolean;
   showPaymentConfiguration: boolean;
   trustedBadge: TrustedBadgeType;
   updateEmailConfig: typeof updateEmailConfig;
   fetchMerchantCheckoutPaymentConfigurations: typeof fetchMerchantCheckoutPaymentConfigurations;
+  fetchKeys: typeof fetchKeys;
+  mode: Environments;
+  apiKey: string;
+  createMerchantCheckoutPaymentConfig: typeof createMerchantCheckoutPaymentConfig;
+  merchantCheckoutPaymentMethodDetails: MerchantCheckoutPaymentMethodDetails;
+  fetchMerchantCheckoutMethodDetails: typeof fetchMerchantCheckoutMethodDetails;
+  fetchConfig: typeof fetchConfig;
 } & Omit<CheckoutEditorProviderProps, 'children'>;
 
 const CheckoutEditor = ({
@@ -106,7 +120,6 @@ const CheckoutEditor = ({
   showNotification,
   fetchMerchantCheckoutConfig,
   fetchMerchantCheckoutStylingConfig,
-
   createMerchantCheckoutConfig,
   createSuggestion,
   createFeedback,
@@ -123,7 +136,15 @@ const CheckoutEditor = ({
   updateEmailConfig,
   fetchMerchantCheckoutPaymentConfigurations,
   merchantCheckoutPaymentConfigs,
-}: CheckoutConfigProps) => {
+  selectedPaymentConfig,
+  fetchKeys,
+  mode,
+  apiKey,
+  createMerchantCheckoutPaymentConfig,
+  merchantCheckoutPaymentMethodDetails,
+  fetchMerchantCheckoutMethodDetails,
+  fetchConfig,
+}: CheckoutEditorProps) => {
   const isCustomMessageFeatureEnabled = useMemo(
     () => !user?.isFeatureEnabled(CUSTOM_MESSAGE_FEATURE_FLAG),
     [user],
@@ -164,14 +185,29 @@ const CheckoutEditor = ({
   useEffect(() => {
     if (isPaymentConfigEnabled) {
       fetchMerchantCheckoutPaymentConfigurations();
+      fetchMerchantCheckoutMethodDetails();
     }
-  }, [fetchMerchantCheckoutPaymentConfigurations, isPaymentConfigEnabled]);
+  }, [
+    fetchMerchantCheckoutPaymentConfigurations,
+    fetchMerchantCheckoutMethodDetails,
+    isPaymentConfigEnabled,
+  ]);
 
   useEffect(() => {
     if (blocks) {
       blockAnalytics(blocks);
     }
   }, [blocks]);
+
+  useEffect(() => {
+    if (!apiKey) {
+      fetchKeys({ mode }, user?.has_key_access);
+    }
+  }, [mode, fetchKeys, apiKey, user]);
+
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   const handleUpdateFeatures = (payload: unknown) => updateFeatures(payload, user.current);
 
@@ -254,6 +290,10 @@ const CheckoutEditor = ({
       merchantCheckoutPaymentConfigs={merchantCheckoutPaymentConfigs}
       updateEmailConfig={updateEmailConfig}
       trustedBadge={trustedBadge}
+      apiKey={apiKey}
+      createMerchantCheckoutPaymentConfig={createMerchantCheckoutPaymentConfig}
+      selectedPaymentConfig={selectedPaymentConfig}
+      merchantCheckoutPaymentMethodDetails={merchantCheckoutPaymentMethodDetails}
     >
       <Box
         display="flex"
@@ -265,17 +305,20 @@ const CheckoutEditor = ({
         justifyContent="space-between"
         gap="spacing.11"
         height={{
-          l: '70vh',
+          l: '66vh',
         }}
       >
         <Box
-          flex="2"
           display="flex"
           flexDirection="column"
           gap="spacing.4"
           backgroundColor="surface.background.gray.intense"
           maxWidth="600px"
           height="100%"
+          width={{
+            l: '50%',
+            base: '100%',
+          }}
         >
           <Box
             display="flex"
@@ -283,7 +326,6 @@ const CheckoutEditor = ({
             gap="spacing.4"
             padding="spacing.3"
             overflowY="auto"
-            flex="1"
           >
             {showFeatures && (
               <Features
@@ -298,7 +340,18 @@ const CheckoutEditor = ({
           </Box>
           <ConfigControls />
         </Box>
-        <CheckoutDemo />
+
+        <Box
+          display="flex"
+          width={{
+            l: '50%',
+            base: '100%',
+          }}
+          height="100%"
+          flexShrink="0"
+        >
+          <CheckoutDemo />
+        </Box>
       </Box>
     </CheckoutEditorProvider>
   );
@@ -308,6 +361,7 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
   return bindActionCreators(
     {
       fetchLocale,
+      fetchConfig,
       uploadLogo,
       uploadWordmark,
       removeLogo,
@@ -323,8 +377,11 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
       createMerchantCheckoutStylingConfig,
       fetchMerchantCheckoutPaymentConfigurations,
       createMerchantCheckoutBrandConfig,
+      createMerchantCheckoutPaymentConfig,
       updateConfig,
       updateEmailConfig,
+      fetchKeys,
+      fetchMerchantCheckoutMethodDetails,
     },
     dispatch,
   );
@@ -346,6 +403,10 @@ export default connect((state) => {
     accountLocale: state.config?.locale,
     merchantCheckoutConfig: state.config?.checkoutConfig?.data?.checkout_configuration,
     merchantCheckoutPaymentConfigs: state.config?.checkoutPaymentConfigs,
+    selectedPaymentConfig: state.config?.selectedPaymentConfig,
     trustedBadge: state.trustedBadge,
+    apiKey: state.keys?.keys?.[0]?.id ?? null,
+    mode: state.session.mode,
+    merchantCheckoutPaymentMethodDetails: state.config?.checkoutPaymentMethodDetails?.data,
   };
 }, mapActionsToProps)(CheckoutEditor);

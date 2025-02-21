@@ -1,15 +1,13 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import debounce from 'lodash/debounce';
-import { connect } from 'react-redux';
-import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 
 import { useSplitzService } from 'common/splitz';
-
-import { Environments } from 'common/typings';
-import { fetchKeys } from 'merchant/reducers/keys';
 import { toBase64 } from 'merchant/views/PartnerDashboard/SubMerchant/components/utils';
 import { CheckoutFrame } from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
-import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import {
+  CHECKOUT_EDITOR_FIELDS,
+  useCheckoutEditor,
+} from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
 import { CHECKOUT_IFRAME_URL } from './constants';
 import { useCheckoutPreview } from './context/createContext';
@@ -17,29 +15,24 @@ import { initCheckout } from './liveCheckout';
 
 type CheckoutV2Props = {
   zoomTitleStyle?: boolean;
-  fetchKeys: typeof fetchKeys;
-  apiKey: string;
-  mode: Environments;
   forceLoadDesktopView?: boolean;
 };
 
-const CheckoutV2 = ({
-  zoomTitleStyle,
-  fetchKeys,
-  apiKey,
-  mode,
-  forceLoadDesktopView = false,
-}: CheckoutV2Props) => {
+const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2Props) => {
   const { isDesktopPreview } = useCheckoutPreview();
   const { values } = useCheckoutEditor();
+
+  const merchantAPIKey = values[CHECKOUT_EDITOR_FIELDS.API_KEY];
+
   const updateCheckout = useRef<Promise<{
     update: (value: Record<string, unknown>) => void;
   }> | null>(null);
 
   const splitz = useSplitzService();
 
+  // only change initialisation
   const init = (node: HTMLIFrameElement) => {
-    if (node && values && !updateCheckout.current) {
+    if (node && values && !updateCheckout.current && merchantAPIKey) {
       updateCheckout.current = initCheckout(node, values, splitz?.abExperiments);
     }
   };
@@ -77,36 +70,15 @@ const CheckoutV2 = ({
     }
   }, [updateValues, values]);
 
-  useEffect(() => {
-    if (apiKey === undefined) {
-      fetchKeys({ mode });
-    }
-  }, [mode, fetchKeys, apiKey]);
-
-  return (
+  return merchantAPIKey ? (
     <CheckoutFrame
       tabIndex="-1"
-      src={`${CHECKOUT_IFRAME_URL}&key=${apiKey}`}
+      src={CHECKOUT_IFRAME_URL}
       ref={init}
       isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
       zoomTitleStyle={zoomTitleStyle}
     />
-  );
+  ) : null;
 };
 
-const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
-  return bindActionCreators(
-    {
-      fetchKeys,
-    },
-    dispatch,
-  );
-};
-
-export default connect((state) => {
-  return {
-    user: state.session.user,
-    apiKey: state.keys?.keys?.[0]?.id ?? null,
-    mode: state.session.mode,
-  };
-}, mapActionsToProps)(CheckoutV2);
+export default CheckoutV2;

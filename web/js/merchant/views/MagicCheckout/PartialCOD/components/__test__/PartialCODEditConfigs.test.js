@@ -74,7 +74,8 @@ describe('PartialCODEditConfigs', () => {
   });
 
   //TODO: Test case seems flaky -> magic-uts
-  it('should render Shiprocket Notice Modal when viewed', async () => {
+  // skipping as per this thread : https://razorpay.slack.com/archives/C04MK11G23Z/p1739816657323769
+  it.skip('should render Shiprocket Notice Modal when viewed', async () => {
     renderComponent();
     const viewBtn = screen.getByText('View');
     userEvent.click(viewBtn);

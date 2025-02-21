@@ -10,10 +10,11 @@ export const SortableItem = styled.div(
 );
 
 export const StyledButton = styled.button(
-  () => `
+  ({ cursor }: { cursor: string }) => `
     border: none;
     background-color: transparent;
     padding: 0px;
+    cursor: ${cursor ?? 'pointer'};
 `,
 );
 

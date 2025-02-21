@@ -1,7 +1,13 @@
 import React from 'react';
 import { ArrowUpRightIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 
-export function ConfigurationHeading() {
+export type ConfigurationHeadingProps = {
+  org: { business_name: string };
+};
+
+function ConfigurationHeading({ org }: ConfigurationHeadingProps) {
   return (
     <Box display="flex" flexDirection="column" gap="spacing.1" marginBottom="spacing.8">
       <Heading weight="semibold" size="xlarge">
@@ -20,7 +26,7 @@ export function ConfigurationHeading() {
           iconPosition="right"
           icon={ArrowUpRightIcon}
           target="_blank"
-          href="https://razorpay.com/docs/payments/dashboard/account-settings/payment-methods"
+          href={`https://${org.business_name.toLowerCase()}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods`}
         >
           Setup Guide
         </Link>
@@ -28,3 +34,5 @@ export function ConfigurationHeading() {
     </Box>
   );
 }
+
+export default compose(connect((state) => ({ org: state.session.org })))(ConfigurationHeading);

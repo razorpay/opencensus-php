@@ -70,7 +70,6 @@ const CheckoutDemo = (): JSX.Element => {
             <CheckoutV2 />
           </FrameContainer>
         </ScrollablePreview>
-
         <Box display="flex" gap="spacing.6" alignSelf="flex-start" padding="spacing.4">
           <CheckoutPreviewButtons />
           <ZoomSettings />
