@@ -1290,7 +1290,7 @@ const TABLE_STRUCTURE_FOR_POS_PRICING_AGREEMENT: Array<[string, (item: any) => s
   ],
   ['Device Charges (excl GST)', (item) => item.total_setup_charge ?? ''],
   ['Paper Roll Charges (excl GST)', (item) => item.total_paper_roll_charge ?? ''],
-  ['Total GST on Fee Payable at Setup', (item) => item.total_order_gst_amount?.toFixed(2) ?? ''],
+  ['Total GST on Fee Payable at Setup', (item) => item.total_gst_order_amount?.toFixed(2) ?? ''],
 ];
 export const getDeviceDetailsAsPerPaymentOption = (
   deviceSelectionStepComponents: ModularOnboardingStepComponent[],
