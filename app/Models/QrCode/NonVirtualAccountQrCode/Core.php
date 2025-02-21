@@ -696,4 +696,36 @@ class Core extends QrCode\Core
 
         return $gateway;
     }
+
+    public function getOrderFromInput(array $input)
+    {
+        if(empty($input[Entity::ORDER_ID]) === true)
+        {
+            return null;
+        }
+
+        try
+        {
+            $order = $this->repo->order->findByPublicIdAndMerchant($input[Entity::ORDER_ID], $this->merchant);
+
+            (new Validator())->validateOrder($order,$input[Entity::REQ_AMOUNT]);
+        }
+        catch(\Throwable $e)
+        {
+            if($e->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, ['message' => "The order id provided does not exist"]);
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_INVALID_ORDER_ID,null, [], "The order id provided does not exist");
+            }
+
+            throw $e;
+
+
+        }
+
+        return $order;
+
+
+    }
 }

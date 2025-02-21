@@ -15,8 +15,12 @@ class Repository extends QrCode\Repository
     public function isEsSyncNeeded(string $action, array $dirty = null, PublicEntity $qrCode = null): bool
     {
         // Sync in ES only for QRv2 created via API, DASHBOARD
-        if (($qrCode->source !== null) or
-            ($qrCode->getRequestSource() === RequestSource::CHECKOUT))
+        if($qrCode instanceof Entity and $qrCode->getRequestSource() === RequestSource::EZETAP )
+        {
+            return parent::isEsSyncNeeded($action, $dirty, $qrCode);
+        }
+        else if ($qrCode->source !== null or
+                $qrCode->getRequestSource() === RequestSource::CHECKOUT )
         {
             return false;
         }

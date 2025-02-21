@@ -151,7 +151,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal, 'test');
     }
 
-
     public function testQrCodePricingForCreditCard(): void
     {
         $upiPricingPlan = [
@@ -2661,5 +2660,109 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->assertEquals(0, $qrPayment['expected']);
         $this->assertEquals('in_person', $payment['reference13']);
+    }
+
+    public function testCreateDynamicQrWithOrderId()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $this->createPricingForOffline();
+
+        $order = $this->createOrderForQrCode(
+            ['amount' => 4000],
+            'live',
+            'LiveAccountMer');
+
+        $this->createQrCode(['usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000,
+            'order_id' => $order['id'],
+            'request_source' => 'ezetap',
+        ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getDbLastEntity('qr_code', 'live');
+        $order = $this->getDbEntityById('order',$order['id'],'live');
+        $this->assertEquals($order['status'],'created');
+        $this->assertEquals($qrCodeEntity['entity_id'], $order['id']);
+        $this->assertEquals($qrCodeEntity['entity_type'], 'order');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeEntity['reference'].'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code',  'live');
+
+        $qrPayment = $this->getDbLastEntity('qr_payment',  'live');
+        $payment = $this->getDbLastEntity('payment',  'live');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals('closed',$qrCodeEntity['status']);
+
+        $order->reload();
+        $this->assertEquals($order['status'],'paid');
+    }
+
+    public function testDelayedCallbackOnSingleUseQrCodeWithOrderIdForPosQr()
+    {
+        $this->fixtures->merchant->addFeatures(['omni_enabled']);
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $this->createPricingForOffline();
+
+        $order = $this->createOrderForQrCode(
+            ['amount' => 4000],
+            'live',
+            'LiveAccountMer');
+        $qrCode = $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 4000,
+                'name'  => 'Mitasha',
+                'order_id' => $order['id'],
+            ],
+            'live',
+            'LiveAccountMer',
+            [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        $order = $this->getDbEntityById('order',$order['id']);
+        $qrCodeId = $qrCode['id'];
+        $qrCode   = $this->closeQrCode($qrCodeId,'live','LiveAccountMer');
+        $this->assertEquals('closed', $qrCode['status']);
+
+        $this->fixtures->stripSign($qrCodeId);
+        $request                              = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true, 'live');
+        $payment   = $this->getLastEntity('payment', true, 'live');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+        $this->assertEquals('single_use', $qrCode['usage']);
+
+        $this->assertEquals(false, $qrPayment['expected']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $order->reload();
+        $this->assertEquals($order['status'],'attempted');
     }
 }

@@ -277,8 +277,20 @@ class Processor extends Base\Core
 
         if ($entity->isExpected() === true)
         {
-            if ((! $this->qrCode->isCheckoutQrCode()) && (!$this->qrCode->isPaymentLinksQrCode()) &&
-                ($entity->payment->hasBeenCaptured() === false))
+            if ((! $this->qrCode->isCheckoutQrCode()) && (!$this->qrCode->isPaymentLinksQrCode()))
+            {
+                    $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
+
+                            $mutex = App::getFacadeRoot()['api.mutex'];
+
+                            $mutex->acquireAndRelease($orderMutex,
+                                function() use ($paymentProcessor, $payment)
+                                {
+                        $paymentProcessor->autoCapturePayment($payment);
+                    });
+            }
+
+            else if ($entity->payment->hasBeenCaptured() === false)
             {
 
                 // Adding the order id mutex for solving multiple captured payment on same order
@@ -290,7 +302,7 @@ class Processor extends Base\Core
                 $mutex->acquireAndRelease($orderMutex,
                     function() use ($paymentProcessor, $payment)
                     {
-                        $paymentProcessor->autoCapturePayment($payment);
+                        $paymentProcessor->autoCapturePaymentUsingOrderIfApplicable($payment);
                     });
             }
         }

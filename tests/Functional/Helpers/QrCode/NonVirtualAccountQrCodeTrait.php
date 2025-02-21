@@ -1490,4 +1490,41 @@ trait NonVirtualAccountQrCodeTrait
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected  function createOrderForQrCode(array $input = [], $mode,$merchantId = '10000000000000', array $headers = [])
+    {
+        $this->ba->privateAuth();
+
+        if($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_' . $merchantId);
+        }
+
+        $defaultValues = $this->getDefaultOrderRequestArray();
+
+        $attributes = array_merge($defaultValues, $input);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/v1/orders',
+            'content' => $attributes,
+            'headers' => $headers,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+
+    }
+
+    private function getDefaultOrderRequestArray()
+    {
+        return [
+            'amount'         => 4000,
+            'currency'  => 'INR',
+            'receipt' => 'Receipt no. 1',
+            'notes' => [
+                "notes_key_1" => "Tea, Earl Grey, Hot",
+                "notes_key_2" => "Tea, Earl Grey… decaf."
+            ],
+        ];
+    }
 }

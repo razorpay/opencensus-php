@@ -76,7 +76,10 @@ class Service extends QrCode\Service
             (new Validator)->validateQrOnDedicatedTerminal($input);
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
-                return (new Core)->buildQrCode($input);
+
+                $order = (new Core())->getOrderFromInput($input);
+
+                return (new Core)->buildQrCode($input,$order);
             });
 
             $this->publishQrCodeEvent($qrCode, Event::CREATED);
@@ -1166,8 +1169,9 @@ class Service extends QrCode\Service
             return (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        if ($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) !== true
-            and $qrCode->source !== null )
+        if (($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) ===  false) and
+            ($qrCode->source !== null) and
+            ($qrCode->getRequestSource !== RequestSource::EZETAP))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_EXISTING_QR_CODE_ID, Entity::ID, [$id]);
         }

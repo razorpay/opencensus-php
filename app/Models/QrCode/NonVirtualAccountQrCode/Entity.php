@@ -40,6 +40,7 @@ class Entity extends QrCode\Entity
     const VPA                          = 'vpa';
     const GATEWAY                      = 'gateway';
     const DEVICE_ID                    = 'device_id';
+    const ORDER_ID                     = 'order_id';
 
     const SHARED_ID = 'FallbackQrCode';
 
