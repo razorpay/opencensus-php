@@ -6,7 +6,7 @@ use Request;
 use ApiResponse;
 
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\OneClickCheckout\Config\Service as ConfigsService;
+use RZP\Models\Merchant\OneClickCheckout\Config\Service;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Exception\BaseException;
@@ -516,7 +516,7 @@ class OneClickCheckoutController extends Controller
     public function get1ccConfigsMigration()
     {
         $input = Request::all();
-        $result = (new ConfigsService())->get1ccConfigsMigration($input);
+        $result = (new Service())->get1ccConfigsMigration($input);
         return ApiResponse::json($result, 200);
     }
 
