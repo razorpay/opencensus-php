@@ -60,6 +60,9 @@ class Service extends Base\Service
     const PAGE_SIZE = 1000;
 
     const RAZORPAY_ORG_ID       = '100000razorpay';
+    const HDFC_ORG_ID           = '6dLbNSpv5XbCOG';
+    const AXIS_ORG_ID           = 'CLTnQqDj9Si8bx';
+    const YES_ORG_ID            = 'IoHRQpwZ67N8jw';
 
     const CACHE_KEY_ORG_DATA = 'org_data_';
 

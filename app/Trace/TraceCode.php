@@ -354,6 +354,7 @@ class TraceCode
     const BANKING_ORIGIN_REQUEST_V1 = 'BANKING_ORIGIN_REQUEST_V1';
     const RETURN_FALSE_IS_REDIRECT_APPLICABLE = 'RETURN_FALSE_IS_REDIRECT_APPLICABLE';
     const BANKING_ORIGIN_REQUEST_V2_INSIDE_LOOP = 'BANKING_ORIGIN_REQUEST_V2_INSIDE_LOOP';
+    const ORG_FETCH_ERROR = 'ORG_FETCH_ERROR';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

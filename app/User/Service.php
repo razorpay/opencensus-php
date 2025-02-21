@@ -838,12 +838,18 @@ class Service extends Base\Service
     {
         $adminService = new AdminService;
         // Org ids will be added as they adopt USL
-        $allowedOrgIds = [$adminService::RAZORPAY_ORG_ID];
+        $allowedOrgIds = [
+            $adminService::RAZORPAY_ORG_ID,
+            $adminService::HDFC_ORG_ID,
+            $adminService::AXIS_ORG_ID,
+            $adminService::YES_ORG_ID,
+        ];
 
         $domain = \Request::server('SERVER_NAME');
         list($error, $org) = $adminService->getOrg($domain);
 
         if (empty($error) === false) {
+            $this->trace->error(TraceCode::ORG_FETCH_ERROR, ['domain' => $domain, 'error' => $error]);
             return false;
         }
 
