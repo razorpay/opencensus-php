@@ -28,13 +28,18 @@ class FriendBuySendPurchaseEventsDataCollector extends DbDataCollector
         $filteredMerchantIdList = [];
 
         foreach ($merchantIdChunks as $merchantIdChunk) {
-            // filter merchants who have crossed settlements above threshold
-            $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) group by merchant_id having amount>=%s limit %s";
+            $query = "select sum(base_amount) amount,merchant_id from {{table}} where merchant_id in (%s) group by merchant_id having amount>=%s limit %s";
 
             $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", env(M2MConstants::M2M_REFERRAL_MIN_TRANSACTION_AMOUNT), count($merchantIdChunk) + 1);
 
             // fetch all merchants who've atleast breached lowest payments threshold
-            $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+            $content = [
+                'query'   => $query,
+                'table'   => 'payments',
+                'backend' => 'startree',
+            ];
+
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
             if (empty($queryResponse) === true)
             {

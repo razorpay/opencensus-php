@@ -442,13 +442,14 @@ class Core extends Base\Core
 
         // Filter out all merchants that have transacted since last time cron ran
         // we have to first get count as pinot has limitation that limit has to be passed in the get query
-        $query = "select count(distinct merchant_id) as transacted_merchants_count from payments_v1 where created_at between %s and %s and base_amount>0";
+        $query = "select count(distinct merchant_id) as transacted_merchants_count from {{table}} where created_at between %s and %s and base_amount>0";
 
         $query = sprintf($query, $from, $to);
 
         $content = [
             'query'   => $query,
-            'backend' => 'pinot'
+            'table'   => 'payments',
+            'backend' => 'startree',
         ];
 
         // fetch all merchants count merchants that have transacted since last time cron ran
@@ -473,13 +474,14 @@ class Core extends Base\Core
 
         $resultCount = $queryResponse[0]["transacted_merchants_count"];
 
-        $query = "select distinct merchant_id from payments_v1 where created_at between %s and %s and base_amount>0 limit %s";
+        $query = "select distinct merchant_id from {{table}} where created_at between %s and %s and base_amount>0 limit %s";
 
         $query = sprintf($query, $from, $to, $resultCount + 1);
 
         $content = [
             'query'   => $query,
-            'backend' => 'pinot'
+            'table'   => 'payments',
+            'backend' => 'startree',
         ];
 
         // fetch all merchants who've have done the transaction since last time cron ran
@@ -520,13 +522,14 @@ class Core extends Base\Core
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
-            $query = "select min(created_at) as first_transaction_timestamp,merchant_id from payments_v1 where merchant_id in (%s) and base_amount>0 group by merchant_id limit %s";
+            $query = "select min(created_at) as first_transaction_timestamp,merchant_id from {{table}} where merchant_id in (%s) and base_amount>0 group by merchant_id limit %s";
 
             $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", count($merchantIdChunk) + 1);
 
             $content = [
                 'query'   => $query,
-                'backend' => 'pinot'
+                'table'   => 'payments',
+                'backend' => 'startree',
             ];
 
             // fetch all merchants first transaction timestamp
@@ -681,13 +684,14 @@ class Core extends Base\Core
                 $currentCronTime = $this->getLastCronTime();
 
                 // we have to first get count as pinot has limitation that limit has to be passed in the get query
-                $query = "select count(distinct merchant_id) as transacted_merchants_count from payments_v1 where created_at between %s and %s";
+                $query = "select count(distinct merchant_id) as transacted_merchants_count from {{table}} where created_at between %s and %s";
 
                 $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
 
                 $content = [
                     'query'   => $query,
-                    'backend' => 'pinot'
+                    'table'   => 'payments',
+                    'backend' => 'startree',
                 ];
 
                 // fetch all merchants count who've atleast breached lowest payments threshold
@@ -698,7 +702,7 @@ class Core extends Base\Core
                     $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
                         'type'            => 'payments_escalation_timebound',
                         'reason'          => 'no merchants found',
-                        'step'            => 'transacted_merchants_count'
+                        'step'            => 'transacted_merchants_count',
                     ]);
 
                     return;
@@ -707,18 +711,19 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
                     'query_response_count' => count($queryResponse),
                     'type'            => 'payments_escalation_timebound',
-                    'step'            => 'transacted_merchants_count'
+                    'step'            => 'transacted_merchants_count',
                 ]);
 
                 $resultCount = $queryResponse[0]["transacted_merchants_count"];
 
-                $query = "select distinct merchant_id from payments_v1 where created_at between %s and %s limit %s";
+                $query = "select distinct merchant_id from {{table}} where created_at between %s and %s limit %s";
 
                 $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
 
                 $content = [
                     'query'   => $query,
-                    'backend' => 'pinot'
+                    'table'   => 'payments',
+                    'backend' => 'startree',
                 ];
 
                 // fetch all merchants who've atleast breached lowest payments threshold
@@ -729,7 +734,7 @@ class Core extends Base\Core
                     $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
                         'type'            => 'payments_escalation_timebound',
                         'reason'          => 'no merchants found',
-                        'step'            => 'transacted_merchants'
+                        'step'            => 'transacted_merchants',
                     ]);
 
                     return;
@@ -738,7 +743,7 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
                     'query_response_count' => count($queryResponse),
                     'type'            => 'payments_escalation_timebound',
-                    'step'            => 'transacted_merchants'
+                    'step'            => 'transacted_merchants',
                 ]);
 
                 $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
@@ -871,13 +876,14 @@ class Core extends Base\Core
             $currentCronTime = $this->getLastCronTime(Constants::escalationsParamsMap[$escalationType][Constants::KEY]);
 
             // we have to first get count as pinot has limitation that limit has to be passed in the get query
-            $query = "select count(distinct merchant_id) as transacted_merchants_count from payments_v1 where created_at between %s and %s";
+            $query = "select count(distinct merchant_id) as transacted_merchants_count from {{table}} where created_at between %s and %s";
 
             $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
 
             $content = [
                 'query'   => $query,
-                'backend' => 'pinot'
+                'table'   => 'payments',
+                'backend' => 'startree',
             ];
 
             // fetch all merchants count who've atleast breached lowest payments threshold
@@ -902,13 +908,14 @@ class Core extends Base\Core
 
             $resultCount = $queryResponse[0]["transacted_merchants_count"];
 
-            $query = "select distinct merchant_id from payments_v1 where created_at between %s and %s limit %s";
+            $query = "select distinct merchant_id from {{table}} where created_at between %s and %s limit %s";
 
             $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
 
             $content = [
                 'query'   => $query,
-                'backend' => 'pinot'
+                'table'    => 'payments',
+                'backend' => 'startree',
             ];
 
             // fetch all merchants who've atleast breached lowest payments threshold
@@ -1043,7 +1050,7 @@ class Core extends Base\Core
     private function fetchQueryResponseForMerchantsGMVListFromPinot($merchantIdList)
     {
         $query = "select sum(base_amount) amount, merchant_id
-                  from payments_v1
+                  from {{table}}
                   where merchant_id in (%s)
                   group by merchant_id
                   having amount > %s
@@ -1059,7 +1066,8 @@ class Core extends Base\Core
 
         $content = [
             'query'   => $query,
-            'backend' => 'pinot'
+            'table'   => 'payments',
+            'backend' => 'startree',
         ];
 
         $queryResponse = $this->app['eventManager']->getDataFromPinot($content) ?? [];
@@ -1095,7 +1103,7 @@ class Core extends Base\Core
 
         // Query pinot
         $pinotQuery = "select sum(base_amount) amount, merchant_id
-                       from payments_v1
+                       from {{table}}
                        where merchant_id in (%s)
                        and created_at >= %s
                        group by merchant_id
@@ -1106,7 +1114,8 @@ class Core extends Base\Core
 
         $content = [
             'query'   => $pinotQuery,
-            'backend' => 'pinot'
+            'table'   => 'payments',
+            'backend' => 'startree',
         ];
 
         $pinotQueryResponse = $this->app['eventManager']->getDataFromPinot($content) ?? [];

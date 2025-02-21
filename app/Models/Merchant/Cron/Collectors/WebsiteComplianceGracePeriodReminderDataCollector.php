@@ -52,14 +52,20 @@ class WebsiteComplianceGracePeriodReminderDataCollector extends TimeBoundDbDataC
         $merchantIdList = $this->repo->merchant_website->filterMerchantIdsWithCommunicationsEnabled($merchantIdList);
 
         //fetch merchants whose payment volume is above 3 lakhs
-        $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) and created_at< %s  group by merchant_id having amount>=%s limit %s";
+        $query = "select sum(base_amount) amount,merchant_id from {{table}} where merchant_id in (%s) and created_at< %s  group by merchant_id having amount>=%s limit %s";
 
         $query = sprintf($query, "'" . implode("','", $merchantIdList) . "'",
                          $endTime,
                          30000000,
                          count($merchantIdList) + 1);
 
-        $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+        $content = [
+            'query'   => $query,
+            'table'   => 'payments',
+            'backend' => 'startree',
+        ];
+
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
         if (empty($queryResponse) === true)
         {
@@ -81,14 +87,21 @@ class WebsiteComplianceGracePeriodReminderDataCollector extends TimeBoundDbDataC
         $merchantIdList = array_column($queryResponse, WebsiteEntity::MERCHANT_ID);
 
         //fetch merchants whose payment volume is above 3 lakh in the current job run and not in previous job run
-        $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) and created_at< %s group by merchant_id having amount<%s limit %s";
+        $query = "select sum(base_amount) amount,merchant_id
+from {{table}} where merchant_id in (%s) and created_at< %s group by merchant_id having amount<%s limit %s";
 
         $query = sprintf($query, "'" . implode("','", $merchantIdList) . "'",
                          $startTime,
                          30000000,
                          count($merchantIdList) + 1);
 
-        $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+        $content = [
+            'query'   => $query,
+            'table'   => 'payments',
+            'backend' => 'startree',
+        ];
+
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
         if (empty($queryResponse) === true)
         {

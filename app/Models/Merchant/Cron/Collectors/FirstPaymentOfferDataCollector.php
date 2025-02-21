@@ -72,12 +72,18 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
-            $query = 'select min(created_at) as first_transaction_timestamp, merchant_id from payments_v1 where merchant_id in (%s) and base_amount > 0 group by merchant_id limit %s';
+            $query = 'select min(created_at) as first_transaction_timestamp, merchant_id from {{table}} where merchant_id in (%s) and base_amount > 0 group by merchant_id limit %s';
 
             $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", count($merchantList));
 
             // fetch all merchants first transaction timestamp
-            $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+            $content = [
+                'query'   => $query,
+                'table'   => 'payments',
+                'backend' => 'startree',
+            ];
+
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
             if (empty($queryResponse) === true)
             {
