@@ -5,6 +5,8 @@ import { trackStatusFilter } from 'merchant/views/Transactions/v2/common/trackin
 import { withRouter } from 'common/deprecated/withRouter';
 import { humanize } from 'common/utils/rzp-utils';
 import { ALL_LABEL } from 'merchant/views/Transactions/v2/common/constants';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const track = handleChangeTrack('order');
 
@@ -12,6 +14,10 @@ const OrdersListFilter = (props) => {
   const {
     location: { pathname },
   } = props;
+
+  const { abExperiments } = useSplitzService();
+  const isNotesFilterHidden = isExperimentEnabled(abExperiments?.hide_notes_in_order_id);
+
   return (
     <ListFilter {...props}>
       <div className="form-group list-filter-item">
@@ -24,17 +30,19 @@ const OrdersListFilter = (props) => {
         <Field name="receipt" component="input" className="form-control input-sm" />
       </div>
 
-      <div className="form-group list-filter-item">
-        <label>Notes</label>
-        <Field
-          name="notes"
-          component="input"
-          className="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
-      </div>
+      {isNotesFilterHidden ? null : (
+        <div className="form-group list-filter-item">
+          <label>Notes</label>
+          <Field
+            name="notes"
+            component="input"
+            className="form-control input-sm"
+            onChange={(...args) => {
+              track({ type: 'search', args });
+            }}
+          />
+        </div>
+      )}
 
       <div className="form-group list-filter-item">
         <label>Status</label>

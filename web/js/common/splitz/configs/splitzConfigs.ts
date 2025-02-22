@@ -452,9 +452,8 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
-      // controls ramp for VAS, Curlec, and RAAS merchants
       {
-        uniqueHashKey: 'enable_trxn_v2_for_excluded_merchants',
+        uniqueHashKey: 'hide_notes_in_order_id',
         experimentId: {
           beta: 'PK4QeYa1whRInB',
           production: 'PK4SspoIDFxsrT',
