@@ -128,6 +128,6 @@ export const disputesStatusVariantMap = {
   },
   closed: {
     variant: 'information',
-    content: 'Under review',
+    content: 'Closed',
   },
 } as const;

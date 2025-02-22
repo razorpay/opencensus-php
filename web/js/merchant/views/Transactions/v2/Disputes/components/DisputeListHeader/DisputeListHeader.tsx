@@ -17,12 +17,14 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 interface IDisputeListHeader {
   mid: string;
   isFetchingTableData: boolean;
+  isDownloadDisabled: boolean;
   showNotification: (args: { type: string; message: string }) => void;
 }
 
 const DisputeListHeader: React.FC<IDisputeListHeader> = ({
   mid,
   isFetchingTableData,
+  isDownloadDisabled,
   showNotification,
 }) => {
   const { mutate: getDownloadReports, isLoading } = useMutation({
@@ -56,7 +58,7 @@ const DisputeListHeader: React.FC<IDisputeListHeader> = ({
         variant="tertiary"
         onClick={handleDownloadReportClick}
         icon={DownloadIcon}
-        isDisabled={isLoading || isFetchingTableData}
+        isDisabled={isLoading || isFetchingTableData || isDownloadDisabled}
         accessibilityLabel="download-dispute-report-file"
         isLoading={isLoading}
         testID="download-testID"

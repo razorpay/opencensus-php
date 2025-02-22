@@ -1,6 +1,7 @@
 import isEmpty from 'lodash/isEmpty';
 import moment from 'moment';
 
+import { getMajorAmountFromMinorUnit } from 'common/utils/rzp-utils';
 import { REPORT_HEADER_MAP } from 'merchant/views/Transactions/v2/Disputes/components/DisputeListHeader/constants';
 import {
   disputePhaseMap,
@@ -22,6 +23,11 @@ export const getExcelReportData = ({ mid, downloadData }) => {
                 rowData[REPORT_HEADER_MAP[key]] = disputesStatusVariantMap[value].content;
               } else if (key === 'phase') {
                 rowData[REPORT_HEADER_MAP[key]] = getKeyByValue(disputePhaseMap, value);
+              } else if (key === 'dispute_amount' || key === 'payment_amount') {
+                rowData[REPORT_HEADER_MAP[key]] = getMajorAmountFromMinorUnit(
+                  value,
+                  item.currency ?? 'INR',
+                );
               } else rowData[REPORT_HEADER_MAP[key]] = value;
             }
           }
