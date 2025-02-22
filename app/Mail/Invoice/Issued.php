@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubRegEntity;
 use RZP\Models\SubscriptionRegistration\Method as SubRegMethod;
+use RZP\Trace\TraceCode;
 
 class Issued extends Base
 {
@@ -147,6 +148,15 @@ class Issued extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $app = \App::getFacadeRoot();
+
+        $traceData = [
+            'merchant_id' => $this->data['merchant']['id'],
+            'template_view' => $this->view,
+        ];
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_ISSUED , $traceData);
+
         $data = $this->data;
 
         if ($data['invoice']['type'] === 'link')
