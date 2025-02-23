@@ -1327,7 +1327,7 @@ class Processor
         try
         {
             $properties = [
-                'id'            => $merchantId,
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.lrs_travel_citi_card_payment_rearch_experiment_id'),
                 'request_data'  => json_encode(
                     [
@@ -1358,7 +1358,7 @@ class Processor
         try
         {
             $properties = [
-                'id'            => $merchantId,
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.lrs_travel_citi_upi_payment_rearch_experiment_id'),
                 'request_data'  => json_encode(
                     [
@@ -1389,7 +1389,7 @@ class Processor
         try
         {
             $properties = [
-                'id'            => $merchantId,
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.cross_border_import_card_payment_rearch_experiment_id'),
                 'request_data'  => json_encode(
                     [
@@ -1420,7 +1420,7 @@ class Processor
         try
         {
             $properties = [
-                'id'            => $merchantId,
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.cross_border_import_upi_payment_rearch_experiment_id'),
                 'request_data'  => json_encode(
                     [

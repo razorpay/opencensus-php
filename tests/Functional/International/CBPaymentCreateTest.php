@@ -1401,7 +1401,7 @@ class CBPaymentCreateTest extends TestCase
 
     public function testCitiTravelLrsPaymentRearchForCardPositive()
     {
-        $this->mockSplitzEvaluationCrossBorderImportPaymentRearch('LRS_CARD');
+        $this->mockAllSplitzTreatment();
 
         $merchantId = "10000000000000";
 
@@ -1453,7 +1453,7 @@ class CBPaymentCreateTest extends TestCase
 
     public function testCrossBorderImportPaymentRearchForCardPositive()
     {
-        $this->mockSplitzEvaluationCrossBorderImportPaymentRearch('IMPORT_CARD');
+        $this->mockAllSplitzTreatment();
 
         $merchantId = "10000000000000";
 
@@ -1502,61 +1502,17 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($response['pg_router'], 'true');
 
     }
-
-    private function mockSplitzEvaluationCrossBorderImportPaymentRearch($case)
-    {
-        $input = [];
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'variant_on',
             ]
-        ];
-        switch ($case) {
-            case 'LRS_CARD':
-                $input = [
-                    "experiment_id" => "PrAXWY4uKztftu",
-                    "id"            => "10000000000000",
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => "10000000000000",
-                        ]),
-                ];
-                break;
-            case 'LRS_UPI':
-                $input = [
-                    "experiment_id" => "Prfal07CfuAG8u",
-                    "id"            => "10000000000000",
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => "10000000000000",
-                        ]),
-                ];
-                break;
-            case 'IMPORT_CARD':
-                $input = [
-                    "experiment_id" => "PjfLeevhXS72mQ",
-                    "id"            => "10000000000000",
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => "10000000000000",
-                        ]),
-                ];
-                break;
-            case 'IMPORT_UPI':
-                $input = [
-                    "experiment_id" => "PrffEGhTlosPNP",
-                    "id"            => "10000000000000",
-                    'request_data'  => json_encode(
-                        [
-                            'merchant_id' => "10000000000000",
-                        ]),
-                ];
-                break;
-        }
-
-        $this->mockSplitzTreatment($input, $output);
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function setMockForPCBClient()
