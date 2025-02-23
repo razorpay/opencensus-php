@@ -18,7 +18,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
  */
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, Base\Traits\ExternalOwner;
 
     const MANDATE_ID                 = 'mandate_id';
     const MANDATE_CARD_ID            = 'mandate_card_id';
@@ -55,6 +55,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
     ];
+
+    protected $guarded = [];
 
     protected $public = [
         self::ID,

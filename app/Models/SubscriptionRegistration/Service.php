@@ -1046,7 +1046,7 @@ class Service extends Base\Service
         return $this->getSubscriptionRegistrationForInvoice($invoice->getPublicId());
     }
 
-    protected function getSubscriptionRegistrationForInvoice(string $invoiceId)
+    public function getSubscriptionRegistrationForInvoice(string $invoiceId)
     {
         $invoice = $this->repo
                         ->invoice

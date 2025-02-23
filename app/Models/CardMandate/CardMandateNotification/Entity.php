@@ -270,6 +270,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_AFTER);
     }
 
+    public function getCardMandateId()
+    {
+        return $this->getAttribute(self::CARD_MANDATE_ID);
+    }
+
     // Relations
     public function merchant()
     {
@@ -279,6 +284,25 @@ class Entity extends Base\PublicEntity
     public function cardMandate()
     {
         return $this->belongsTo(CardMandate\Entity::class);
+    }
+
+    public function getCardMandateAttribute()
+    {
+        $cardMandate = $this->getRelationValue('cardMandate');
+        if ($cardMandate !== null) {
+            return $cardMandate;
+        }
+
+        if (!empty($this->getCardMandateId()))
+        {
+            $class = \RZP\Constants\Entity::getExternalRepoSingleton(\RZP\Constants\Entity::CARD_MANDATE);
+            $entity = $class->fetch('card_mandates', $this->getCardMandateId(), []);
+            $cardMandate = new \RZP\Models\CardMandate\Entity($entity);
+            $cardMandate->setExternal(true);
+            return $cardMandate;
+        }
+
+        return null;
     }
 
     public function payment()
@@ -295,5 +319,13 @@ class Entity extends Base\PublicEntity
             'status'        => Status::$pdnDecouplingStatusMap[$this->getStatus()],
             'delivered_at'  => $this->getNotifiedAt(),
         ];
+    }
+
+    public function saveOrFail(array $options = [])
+    {
+        if ($this->cardMandate->isExternal()) {
+            $this->setRelation('cardMandate', null);
+        }
+        return parent::saveOrFail($options);
     }
 }

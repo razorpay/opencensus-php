@@ -280,6 +280,13 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::DICL]);
     }
 
+    public function isRupay()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
+    }
+
     public function setType($type)
     {
         Card\Type::checkType($type);

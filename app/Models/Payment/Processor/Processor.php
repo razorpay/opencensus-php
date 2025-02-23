@@ -685,6 +685,14 @@ class Processor
         'payment_create_recurring',
     ];
 
+    protected static $cardRecurringInitialRoutes = [
+        'payment_create_ajax',
+    ];
+
+    protected static $cardRecurringAutoRoutes = [
+        'payment_create_recurring',
+    ];
+
     protected static $emandateGatewayMapping = [
         "netbanking_icici"              => "netbanking_icici",
         "netbanking_hdfc"               => "netbanking_hdfc",
@@ -1447,13 +1455,20 @@ class Processor
     }
 
 
-    private function evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant)
+    private function evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant, $routeName)
     {
         try
         {
+            $experimentId = "";
+            if(self::isCardRecurringAutoRearchRoute($routeName)){
+                $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow');
+            } else if(self::isCardRecurringInitialRearchRoute($routeName)){
+                $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_initial_flow');
+            }
+
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.enable_rearch_card_recurring_flow'),
+                'experiment_id' => $experimentId,
                 'request_data'  => json_encode(
                     [
                         'merchant_id' => $merchant->getId(),
@@ -1483,6 +1498,9 @@ class Processor
 
     private function evaluateSplitzExperimentForCardRecurringRearchHub($merchant, $cardMandate)
     {
+        if ($cardMandate === null) {
+            return true;
+        }
         try
         {
             $properties = [
@@ -2009,6 +2027,7 @@ class Processor
                         and $order->getProductType() !== ProductType::PAYMENT_LINK_V2
                         and $order->getProductType() !== ProductType::INVOICE
                         and $order->getProductType() !== ProductType::PAYMENT_STORE
+                        and ($order->getProductType() !== ProductType::AUTH_LINK or ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD))
                         and !in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
                 {
 
@@ -2052,10 +2071,8 @@ class Processor
                }
             }
 
-            if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD and (empty($input[Payment\Entity::RECURRING]) === false))
-            {
-                if ($currentRouteName != 'payment_create_recurring')
-                {
+            if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD and (empty($input[Payment\Entity::RECURRING]) === false)) {
+                if (!self::isCardRecurringAutoRearchRoute($currentRouteName) && !self::isCardRecurringInitialRearchRoute($currentRouteName)) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "route_not_ramped",
                         'route_name' => $currentRouteName,
@@ -2065,120 +2082,200 @@ class Processor
                     return false;
                 }
 
-                if($this->inputCurrencyNotINR($input)){
+                if ($this->inputCurrencyNotINR($input)) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "international_currency",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
                     return false;
                 }
 
-                $result = $this->evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant);
+                $result = $this->evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant, $currentRouteName);
                 if ($result === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "merchant_splitz_experiment",
                         'merchant_id' => $merchant->getId(),
+                        'route_name' => $currentRouteName,
                         'flow' => 'card_recurring',
                     ]);
                     return false;
                 }
 
-                $tokenId = $input[Payment\Entity::TOKEN];
-                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
-                $card = $this->repo->card->fetchForToken($token);
-                //check if card is not null
-                if(empty($card) === true)
-                {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "token_card_empty",
-                        'merchant_id' => $merchant->getId(),
-                        'flow' => 'card_recurring',
-                    ]);
+                if (empty($input[Payment\Entity::TOKEN]) === false) {
+                    $tokenId = $input[Payment\Entity::TOKEN];
+                    $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                    $card = $this->repo->card->fetchForToken($token);
+                    //check if card is not null
+                    if (empty($card) === true) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "token_card_empty",
+                            'merchant_id' => $merchant->getId(),
+                            'flow' => 'card_recurring',
+                        ]);
 
-                    return false;
-                }
-                if ($card->isInternational() === true)
-                {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "international_card",
-                        'merchant_id' => $merchant->getId(),
-                        'flow' => 'card_recurring',
-                    ]);
-                    return false;
-                }
-
-                // Check card mandate created date and mandate hub for ramp up
-                $cardMandate = $token->cardMandate;
-                if($cardMandate === null or $cardMandate->getCreatedAt() > 1733920200)
-                {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "card_mandate_not_migrated",
-                        'merchant_id' => $merchant->getId(),
-                        'card_mandate_id' => $cardMandate->getId(),
-                        'flow' => 'card_recurring',
-                    ]);
-                    return false;
-                }
-                $result = $this->evaluateSplitzExperimentForCardRecurringRearchHub($merchant, $cardMandate);
-                if ($result === false) {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "hub_splitz_experiment",
-                        'merchant_id' => $merchant->getId(),
-                        'flow' => 'card_recurring',
-                    ]);
-                    return false;
-                }
-
-                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                    'recurring_card_log' => $card->getId(),
-                    'merchant_id' => $merchant->getId(),
-                ]);
-
-                $cardInput = [
-                    Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
-                    Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
-                    Card\Entity::COUNTRY                => $card->getCountry(),
-                    Card\Entity::ISSUER                 => $card->getIssuer(),
-                    Card\Entity::TYPE                   => $card->getType(),
-                    Card\Entity::NETWORK                => $card->getNetwork(),
-                    Card\Entity::SUBTYPE                => $card->getSubType(),
-                    Card\Entity::CATEGORY               => $card->getCategory(),
-                    Card\Entity::INTERNATIONAL          => $card->isInternational(),
-                    Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
-                    Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
-                    Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
-                    Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
-                    Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
-                    Card\Entity::LAST4                  => $card->getLast4(),
-                    Card\Entity::TOKENISED              => true,
-                    Card\Entity::REWARD                 => $input['card']['reward']
-                ];
-                $input[Payment\Entity::CARD] = $cardInput;
-                $input[Payment\Entity::API_VAULT] = $card->getVault();
-                $recurringToken = [
-                    Token\Entity::CARD_MANDATE_ID => $token->getCardMandateId(),
-                    Token\Entity::ENTITY_ID => $token->getEntityId(),
-                    Token\Entity::ENTITY_TYPE => $token->getEntityType(),
-                    Token\Entity::TERMINAL_ID => $token->getTerminalId(),
-                    Token\Entity::CARD_ID => $token->getCardId(),
-                    Token\Entity::RECURRING_STATUS => $token->getRecurringStatus(),
-                    Token\Entity::RECURRING_FAILURE_REASON => $token->getRecurringFailureReason(),
-                    Token\Entity::CONFIRMED_AT => $token->getConfirmedAt(),
-                    Token\Entity::MAX_AMOUNT => $token->getMaxAmount(),
-                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
-                    Token\Entity::TOKEN => $token->getToken(),
-                ];
-                $input["recurring_token"] = $recurringToken;
-
-                if (empty($cardMandate->getNetworkTransactionId())) {
-                    $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($token->getId(), $merchant->getId());
-                    if (empty($initialPayment)){
-                        throw new \Exception("Initial Payment for token not found");
+                        return false;
                     }
-                    $initialPaymentId = $initialPayment->getId();
-                }
-                $cardMandateDetails = [
-                    "network_transaction_id" => $cardMandate->getNetworkTransactionId(),
-                    "initial_payment_id" => $initialPaymentId,
-                ];
-                $input["card_mandate_details"] = $cardMandateDetails;
+                    if ($card->isInternational() === true) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "international_card",
+                            'merchant_id' => $merchant->getId(),
+                            'flow' => 'card_recurring',
+                        ]);
+                        return false;
+                    }
 
+                    $cardInput = [
+                        Card\Entity::NAME => Card\Entity::DUMMY_NAME,
+                        Card\Entity::NUMBER => Card\Entity::DUMMY_CARD_NUMBER,
+                        Card\Entity::COUNTRY => $card->getCountry(),
+                        Card\Entity::ISSUER => $card->getIssuer(),
+                        Card\Entity::TYPE => $card->getType(),
+                        Card\Entity::NETWORK => $card->getNetwork(),
+                        Card\Entity::SUBTYPE => $card->getSubType(),
+                        Card\Entity::CATEGORY => $card->getCategory(),
+                        Card\Entity::INTERNATIONAL => $card->isInternational(),
+                        Card\Entity::EXPIRY_MONTH => $card->getTokenExpiryMonth(),
+                        Card\Entity::EXPIRY_YEAR => $card->getTokenExpiryYear(),
+                        Card\Entity::CVV => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                        Card\Entity::VAULT_TOKEN => $card->getVaultToken(),
+                        Card\Entity::TOKEN_IIN => $card->getTokenIin(),
+                        Card\Entity::LAST4 => $card->getLast4(),
+                        Card\Entity::TOKENISED => true,
+                        Card\Entity::REWARD => $input['card']['reward']
+                    ];
+                }
+
+                if (self::isCardRecurringAutoRearchRoute($currentRouteName)) {
+                    // Check card mandate created date and mandate hub for ramp up
+                    $cardMandate = (new CardMandate\Repository())->findByCardMandateId($token->getCardMandateId());
+                    if ($cardMandate !== null and $cardMandate->getCreatedAt() > 1733920200) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "card_mandate_not_migrated",
+                            'merchant_id' => $merchant->getId(),
+                            'card_mandate_id' => $cardMandate?->getId(),
+                            'flow' => 'card_recurring',
+                        ]);
+                        return false;
+                    }
+                    $result = $this->evaluateSplitzExperimentForCardRecurringRearchHub($merchant, $cardMandate);
+                    if ($result === false) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "hub_splitz_experiment",
+                            'merchant_id' => $merchant->getId(),
+                            'flow' => 'card_recurring',
+                        ]);
+                        return false;
+                    }
+
+                    if (empty($input[Payment\Entity::ORDER_ID]) === false)
+                    {
+                        $orderId = Order\Entity::verifyIdAndSilentlyStripSign($input[Payment\Entity::ORDER_ID]);
+                        $cardMandateNotification = $this->repo->card_mandate_notification->findByOrderId($orderId);
+                        if ($cardMandateNotification !== null) {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "decoupled_pdn_flow",
+                                'merchant_id' => $merchant->getId(),
+                                'order_id' => $orderId,
+                                'flow' => 'card_recurring',
+                            ]);
+                            return false;
+                        }
+                    }
+
+                    $recurringToken = [
+                        Token\Entity::CARD_MANDATE_ID => $token->getCardMandateId(),
+                        Token\Entity::ENTITY_ID => $token->getEntityId(),
+                        Token\Entity::ENTITY_TYPE => $token->getEntityType(),
+                        Token\Entity::TERMINAL_ID => $token->getTerminalId(),
+                        Token\Entity::CARD_ID => $token->getCardId(),
+                        Token\Entity::RECURRING_STATUS => $token->getRecurringStatus(),
+                        Token\Entity::RECURRING_FAILURE_REASON => $token->getRecurringFailureReason(),
+                        Token\Entity::CONFIRMED_AT => $token->getConfirmedAt(),
+                        Token\Entity::MAX_AMOUNT => $token->getMaxAmount(),
+                        Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
+                        Token\Entity::TOKEN => $token->getToken(),
+                    ];
+
+                    if ($cardMandate === null or empty($cardMandate->getNetworkTransactionId())) {
+                        $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($token->getId(), $merchant->getId());
+                        $initialPaymentId = $initialPayment?->getId();
+                    }
+                    $cardMandateDetails = [
+                        "network_transaction_id" => $cardMandate?->getNetworkTransactionId(),
+                        "initial_payment_id" => $initialPaymentId,
+                    ];
+                }
+
+                if (self::isCardRecurringInitialRearchRoute($currentRouteName) && empty($input[Payment\Entity::ORDER_ID]) === false) {
+                    //Check hub, mhq and rupay not to be routed to rearch for now
+                    if (empty($input[Payment\Entity::TOKEN]))
+                    {
+                        $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+                        $iinId = substr($card_number, 0, 6);
+                        $iin = $this->repo->iin->find($iinId);
+
+                        $app = App::getFacadeRoot();
+                        if ($iin->isRupay() || $app->mandateHQ->isBinSupported($iin->getIin()))
+                        {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "initial_hub_mhq_rupay",
+                                'merchant_id' => $merchant->getId(),
+                                'is_rupay' => $iin->isRupay(),
+                                'flow' => 'card_recurring',
+                            ]);
+                            return false;
+                        }
+                    } else {
+                        $token = (new Token\Core)->getByTokenIdAndMerchant($input[Payment\Entity::TOKEN], $merchant);
+                        $card = $this->repo->card->fetchForToken($token);
+                        $iin = $card->getIin();
+                        $app = App::getFacadeRoot();
+                        if ($card->isRupay() || $app->mandateHQ->isBinSupported($iin))
+                        {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "initial_hub_mhq_rupay",
+                                'merchant_id' => $merchant->getId(),
+                                'is_rupay' => $card->isRupay(),
+                                'flow' => 'card_recurring',
+                            ]);
+                            return false;
+                        }
+                    }
+
+                    $order = $this->repo->order->findByPublicIdAndMerchant($input[Payment\Entity::ORDER_ID], $this->merchant);
+                    $invoice = $order->invoice;
+                    if ($invoice != null) {
+                        $subscriptionRegistration = (new \RZP\Models\SubscriptionRegistration\Service())->getSubscriptionRegistrationForInvoice($invoice->getPublicId());
+                        if ($subscriptionRegistration != null) {
+                            $subscriptionRegistrationDetails = [
+                                "max_amount" => $subscriptionRegistration->getMaxAmount(),
+                                "expire_at" => $subscriptionRegistration->getExpireAt(),
+                                "frequency" => $subscriptionRegistration->getFrequency(),
+                            ];
+                        }
+                    }
+                    $input["cryptogram_source"] = "cps";
+                }
+
+                if (!empty($card)) {
+                    $input[Payment\Entity::API_VAULT] = $card->getVault();
+                }
+                if (!empty($input[Payment\Entity::TOKEN])) {
+                    $input[Payment\Entity::TOKEN] = $token->getId();
+                }
+                if (!empty($cardInput)) {
+                    $input[Payment\Entity::CARD] = $cardInput;
+                }
+                if (!empty($recurringToken)) {
+                    $input["recurring_token"] = $recurringToken;
+                }
+                if (!empty($cardMandateDetails)) {
+                    $input["card_mandate_details"] = $cardMandateDetails;
+                }
+                if (!empty($subscriptionRegistrationDetails)) {
+                    $input["subscription_registrations"] = $subscriptionRegistrationDetails;
+                }
                 return true;
             }
 
@@ -14163,6 +14260,28 @@ class Processor
     public static function isEmandateRearchRoute(string $route): bool
     {
         return (in_array($route, self::$emandateRearchRoutes, true) === true);
+    }
+
+    /**
+     * returns if route is valid card recurring rearch route
+     *
+     * @param string $route
+     * @return boolean
+     */
+    public static function isCardRecurringInitialRearchRoute(string $route): bool
+    {
+        return (in_array($route, self::$cardRecurringInitialRoutes, true) === true);
+    }
+
+    /**
+     * returns if route is valid card recurring rearch route
+     *
+     * @param string $route
+     * @return boolean
+     */
+    public static function isCardRecurringAutoRearchRoute(string $route): bool
+    {
+        return (in_array($route, self::$cardRecurringAutoRoutes, true) === true);
     }
 
     private function checkIfTransferSyncProcessingViaApiIsWithinLimit()

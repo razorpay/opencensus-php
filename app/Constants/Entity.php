@@ -1693,6 +1693,7 @@ class Entity
         self::TOKEN      => 'tokens',
         self::TRANSFER   => 'route',
         self::PAYMENT_METHOD_TRANSFER   => 'route',
+        self::CARD_MANDATE => 'card.payments',
     ];
 
     protected static $externalRepoConfigKey = [

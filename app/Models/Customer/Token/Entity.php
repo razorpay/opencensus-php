@@ -554,6 +554,24 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\CardMandate\Entity');
     }
 
+    public function getCardMandateAttribute()
+    {
+        $cardMandate = $this->getRelationValue('cardMandate');
+        if ($cardMandate !== null) {
+            return $cardMandate;
+        }
+
+        if (!empty($this->getCardMandateId()))
+        {
+            $class = \RZP\Constants\Entity::getExternalRepoSingleton(\RZP\Constants\Entity::CARD_MANDATE);
+            $entity = $class->fetch('card_mandates', $this->getCardMandateId(), []);
+            $cardMandate = new \RZP\Models\CardMandate\Entity($entity);
+            $cardMandate->setExternal(true);
+            return $cardMandate;
+        }
+        return null;
+    }
+
     public function vpa()
     {
         return $this->belongsTo('RZP\Models\PaymentsUpi\Vpa\Entity');
@@ -963,6 +981,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
+    public function setFrequency($frequency)
+    {
+        $this->setAttribute(self::FREQUENCY, $frequency);
+    }
+
     public function setStartTime($startTime)
     {
         $this->setAttribute(self::START_TIME, $startTime);
@@ -1094,6 +1117,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setCardMandateId($cardMandateId)
+    {
+        $this->setAttribute(self::CARD_MANDATE_ID, $cardMandateId);
+    }
+
     /**
      * Cannot use generators here because we can receive
      * null in max_amount which will get overridden
@@ -1103,7 +1131,7 @@ class Entity extends Base\PublicEntity
      *
      * @param $maxAmount
      */
-    protected function setMaxAmountAttribute($maxAmount)
+    public function setMaxAmountAttribute($maxAmount)
     {
         $authType = $this->getAuthType();
 
@@ -1309,6 +1337,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TOKEN, $token);
     }
 
+    public function setToken($token)
+    {
+        $this->setAttribute(self::TOKEN, $token);
+    }
+
+    public function setTerminalId($terminalId)
+    {
+        $this->setAttribute(self::TERMINAL_ID, $terminalId);
+    }
+
     protected function modifyIfsc(& $input)
     {
         if (isset($input[self::IFSC]) === true)
@@ -1371,7 +1409,7 @@ class Entity extends Base\PublicEntity
             if(isset($publicArray[self::SOURCE]))
                 $publicArray[self::SOURCE] = $this->getSourcePublic($publicArray[self::SOURCE]);
 
-            if($this->hasCardMandate() === true) {
+            if($this->hasCardMandate() === true && $this->cardMandate !== null) {
                 $publicArray[self::MAX_AMOUNT] = ($this->cardMandate->getMaxAmount()!==null) ? $this->cardMandate->getMaxAmount():$this->getMaxAmount();
             } else {
                 $publicArray[self::MAX_AMOUNT] = $this->getMaxAmount();
@@ -1829,6 +1867,25 @@ class Entity extends Base\PublicEntity
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
+    }
+
+    public function setRecurringDetails($input)
+    {
+        $this->setRecurring(true);
+
+        $this->setCardMandateId($input['card_mandate_id']);
+
+        $this->setMaxAmountAttribute($input['max_amount']);
+
+        $this->setFrequency($input['frequency']);
+
+        if ($input['expire_at'] < $this->getExpiredAt()) {
+            $this->setExpiredAt($input['expire_at']);
+        }
+
+        $this->setToken($input['token']);
+
+        $this->setTerminalId($input['terminal_id']);
     }
 
     public function updateOptimizerNotes($mandateID)

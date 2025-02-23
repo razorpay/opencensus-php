@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use RZP\Error;
 use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Constants\Entity as E;
@@ -2545,6 +2546,26 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findOrFail($input['payment_id']);
 
+        //If recurring initial payment was via saved card, clone the network token and store recurring details
+        if(!empty($input['additional_data'])
+            && !empty($input['additional_data']['card_mandate_id']) && !empty($input['additional_data']['token_id'])) {
+            $core = (new Token\Core());
+
+            $tokenId = $input['additional_data']['token_id'];
+
+            $token = $this->repo->token->findOrFail($tokenId);
+
+            $clonedToken = $core->cloneToken($token, $payment);
+
+            $clonedToken->setRecurringDetails($input['additional_data']);
+
+            $this->repo->saveOrFail($clonedToken);
+
+            $payment->localToken()->associate($clonedToken);
+
+            return $clonedToken->toArrayPublic();
+        }
+
         $card = $payment->card;
         $callbackData = null;
 
@@ -2683,6 +2704,41 @@ class Service extends Base\Service
             $createTokenResponse = $token->toArrayPublic();
 
             $createTokenResponse['vault_token']      = $token->card->getVaultToken();
+
+            return $createTokenResponse;
+
+        }
+
+        //For recurring, migrate the token in sync and store recurring details
+        if(!empty($input['additional_data']) && !empty($input['additional_data']['card_mandate_id'])){
+
+            $payment->localToken()->associate($token);
+
+            (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
+
+            $card = $this->repo->card->fetchForToken($token);
+
+            if ($card->isRzpSavedCard() === true)
+            {
+                $token->setRecurringStatus(RecurringStatus::REJECTED);
+                $token->setRecurringFailureReason(Error\PublicErrorDescription::BAD_REQUEST_TOKENISATION_FAILED_FOR_RECURRING_CARD);
+            }
+            $token->setRecurringDetails($input['additional_data']);
+            $this->repo->saveOrFail($token);
+
+            $createTokenResponse = $token->toArrayPublic();
+
+            $createTokenResponse['vault_token']           = $token->card->getVaultToken();
+
+            $createTokenResponse['token_pan_vault_token'] = $callbackData['token_pan_vault_token'];
+
+            $createTokenResponse['token_number']          = $callbackData['token_number'];
+
+            $createTokenResponse['cryptogram_value']      = $callbackData['cryptogram_value'];
+
+            $createTokenResponse['token_expiry_month']    = $token->card->getTokenExpiryMonth();
+
+            $createTokenResponse['token_expiry_year']     = $token->card->getTokenExpiryYear();
 
             return $createTokenResponse;
 
