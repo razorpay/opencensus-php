@@ -13,11 +13,14 @@ import {
   createTransferBatch,
   validateTransferBatch,
   createLinkedAccountBatch,
+  createLinkedAccountBatchWithAccountCode,
   validateLinkedAccountBatch,
+  validateLinkedAccountBatchWithAccountCode,
   createReversalsBatch,
   validateReversalsBatch,
 } from 'merchant/reducers/batches';
 import { closeModal } from 'merchant_common/reducers/modals';
+import { isAccountCodeEnabled } from 'merchant/views/Settlements/components/utils';
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
@@ -37,20 +40,33 @@ class CreateHostedMandateBatch extends Component {
     />
   );
 
-  renderLinkedAccountsModal = () => (
-    <BatchUpload
-      acceptFileInfo={['csv', 'xlsx']}
-      createBatch={this.props.createLinkedAccountBatch}
-      validateBatch={this.props.validateLinkedAccountBatch}
-      gaEvents={gaEvents}
-      maxRows="50,000"
-      maxFileSize={11534336} // 11 MB
-      batchType="linked_account_create"
-      docUrl="https://razorpay.com/docs/route/dashboard/batch-upload/"
-      sampleUrl="/files/sample_batch_linked_account.xlsx"
-      processingOptions={true}
-    />
-  );
+  renderLinkedAccountsModal = (isACEnabled) => {
+    const batchProps = isACEnabled
+      ? {
+          createBatch: this.props.createLinkedAccountBatchWithAccountCode,
+          validateBatch: this.props.validateLinkedAccountBatchWithAccountCode,
+          batchType: 'linked_account_create_with_account_code',
+          sampleUrl: '/files/sample_batch_linked_account_v2.xlsx',
+        }
+      : {
+          createBatch: this.props.createLinkedAccountBatch,
+          validateBatch: this.props.validateLinkedAccountBatch,
+          batchType: 'linked_account_create',
+          sampleUrl: '/files/sample_batch_linked_account.xlsx',
+        };
+
+    return (
+      <BatchUpload
+        {...batchProps}
+        acceptFileInfo={['csv', 'xlsx']}
+        gaEvents={gaEvents}
+        maxRows="50,000"
+        maxFileSize={11 * 1024 * 1024} // 11 MB
+        docUrl="https://razorpay.com/docs/route/dashboard/batch-upload/"
+        processingOptions
+      />
+    );
+  };
 
   renderReversalsModal = () => (
     <BatchUpload
@@ -67,22 +83,24 @@ class CreateHostedMandateBatch extends Component {
     />
   );
 
-  openLinkedAccountsModal = ({ criticalFlow, isExpEnabled }) => {
+  openLinkedAccountsModal = ({ criticalFlow, isExpEnabled, isACEnabled }) => {
     if (isExpEnabled) {
       criticalFlow({
         enforceVerifyOtp: true,
         modes: ['live', 'test'],
-        onUserTwoFaVerified: this.props.openUploadModal(this.renderLinkedAccountsModal),
+        onUserTwoFaVerified: this.props.openUploadModal(() =>
+          this.renderLinkedAccountsModal(isACEnabled),
+        ),
       });
     } else {
-      this.props.openUploadModal(this.renderLinkedAccountsModal)();
+      this.props.openUploadModal(() => this.renderLinkedAccountsModal(isACEnabled))();
     }
   };
 
   render() {
-    const { openUploadModal, user } = this.props;
+    const { openUploadModal, user, splitz } = this.props;
+    const isACEnabled = isAccountCodeEnabled(splitz) && user.isRouteCodeSupportEnabled;
 
-    const { splitz } = this.props;
     const {
       abExperiments: { enable_2fa_batch_upload = {} },
     } = splitz;
@@ -125,7 +143,11 @@ class CreateHostedMandateBatch extends Component {
               <div
                 className="panel panel-default"
                 onClick={() =>
-                  this.openLinkedAccountsModal({ criticalFlow, isExpEnabled: is2FAExpEnabled })
+                  this.openLinkedAccountsModal({
+                    criticalFlow,
+                    isExpEnabled: is2FAExpEnabled,
+                    isACEnabled,
+                  })
                 }
               >
                 <div className="panel-body">
@@ -153,6 +175,8 @@ export default compose(
     validateTransferBatch,
     createLinkedAccountBatch,
     validateLinkedAccountBatch,
+    validateLinkedAccountBatchWithAccountCode,
+    createLinkedAccountBatchWithAccountCode,
     createReversalsBatch,
     validateReversalsBatch,
     closeModal,

@@ -112,6 +112,12 @@ export const isSettlementSOHBlockEnabled = (splitz) => {
   return isExperimentEnabled(abExperiments.settlements_soh_block);
 };
 
+export const isAccountCodeEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { account_code: undefined } };
+  if (!abExperiments?.account_code) return false;
+  return isExperimentEnabled(abExperiments.account_code);
+};
+
 export const TIMELINE_EVENTS = {
   PAYMENT_CAPTURED: 'PAYMENT_CAPTURED',
   REFUND_PROCESSED: 'REFUND_PROCESSED',

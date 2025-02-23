@@ -87,6 +87,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'account_code',
+        experimentId: {
+          beta: 'PxYImdV3vonPzh',
+          production: 'Pxs7ls9USLV3Us',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'settlements_soh_block',
         experimentId: {
           beta: 'PPV75LUJhQsV3F',
@@ -102,6 +118,7 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+
       {
         uniqueHashKey: 'is_merchant_pos_for_ftx',
         experimentId: {

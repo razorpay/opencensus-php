@@ -493,6 +493,12 @@ export const createTransferBatch = createBatch('payment_transfer');
 export const validateTransferBatch = validateBatch('payment_transfer');
 export const createLinkedAccountBatch = createBatch('linked_account_create');
 export const validateLinkedAccountBatch = validateBatch('linked_account_create');
+export const createLinkedAccountBatchWithAccountCode = createBatch(
+  'linked_account_create_with_account_code',
+);
+export const validateLinkedAccountBatchWithAccountCode = validateBatch(
+  'linked_account_create_with_account_code',
+);
 export const createReversalsBatch = createBatch('transfer_reversal');
 export const validateReversalsBatch = validateBatch('transfer_reversal');
 export const fetchRouteBatchDetails = fetchBatchDetails();

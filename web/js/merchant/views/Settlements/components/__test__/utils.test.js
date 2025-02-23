@@ -2,6 +2,7 @@ import store from 'merchant/store';
 import {
   getSettlementTimeFormat,
   isSettlementSOHBlockEnabled,
+  isAccountCodeEnabled,
 } from 'merchant/views/Settlements/components/utils';
 describe('Settlement Helper', () => {
   const stateSpy = jest.spyOn(store, 'getState');
@@ -20,6 +21,25 @@ describe('Settlement Helper', () => {
       };
 
       const result = isSettlementSOHBlockEnabled(splitz);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isAccountCodeEnabled', () => {
+    test('should return false if variant is not "on"', () => {
+      const splitz = {
+        abExperiments: { account_code: { variables: { result: 'off' } } },
+      };
+
+      const result = isAccountCodeEnabled(splitz);
+      expect(result).toBe(false);
+    });
+    test('should return true if variant is "on"', () => {
+      const splitz = {
+        abExperiments: { account_code: { variables: { result: 'on' } } },
+      };
+
+      const result = isAccountCodeEnabled(splitz);
       expect(result).toBe(true);
     });
   });
