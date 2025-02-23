@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\IdempotencyKey\Metric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
+use RZP\Models\Merchant\Detail\Validator;
 use RZP\Models\User\Role;
 use RZP\Services\TerminalsService;
 use Throwable;
@@ -261,6 +262,8 @@ class Activate extends Base\Core
         $merchantDetail = $merchant->merchantDetail;
 
         $merchantCore = new Core();
+
+        (new Validator())->validateRiskTagsForPos($merchant);
 
         $merchant->releaseFunds();
 

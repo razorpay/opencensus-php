@@ -5115,12 +5115,18 @@ class Core extends Base\Core
                         break;
                 }
 
+                if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+                {
+                    (new Validator())->validateRiskTagsForPos($merchant);
+                }
+
                 $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
                 if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
                 {
                     (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
                 }
+
                 //send mail
                 try
                 {
@@ -5329,12 +5335,17 @@ class Core extends Base\Core
 
             (new ClarificationDetailService())->updateClarificationDetails($merchant->getId(), $input[DEConstants::POS_ACTIVATION_STATUS]);
 
+            if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+            {
+                (new Validator())->validateRiskTagsForPos($merchant);
+            }
             $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
             if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
             {
                 (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
             }
+
             //send mail
             try
             {
