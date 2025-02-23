@@ -18715,6 +18715,7 @@ class Route
         'razorassist' => [
             'workflow_action_update',
             'workflow_observer_data_update',
+            'merchant_tag_add',
             'internal_create_risk_action',
             'workflow_action_get_multiple',
             'merchant_fetch_internal_users',
