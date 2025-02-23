@@ -122,7 +122,10 @@ export const setLoading = () => {
 export const getDiscrepanciesCategories = () => {
   return {
     type: GET_DISCREPANCY_CATEGORIES,
-    payload: merchantFetch('terminals/proxy/discrepancy_list_merchant'),
+    payload: merchantFetch({
+      url: `terminals/proxy/merchant/discrepancy_fetch`,
+      method: 'post',
+    }),
   };
 };
 
@@ -1232,7 +1235,7 @@ export default function instrumentRequestsReducer(state = initialState, action) 
     case SET_LOADING:
       return set(state, 'loading', true);
     case `${GET_DISCREPANCY_CATEGORIES}::SUCCESS`:
-      return set(state, 'discrepancyCategories', action.payload.data);
+      return set(state, 'discrepancyCategories', action.payload?.data?.data);
     case `${GET_IIR_DISCREPANCIES}::PENDING`:
       return set(state, 'loading', true);
     case `${GET_IIR_DISCREPANCIES}::SUCCESS`: {
