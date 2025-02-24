@@ -14173,16 +14173,6 @@ class Service extends Base\Service
             );
         }
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_CREDIT_SELF_SERVE) === true) {
-            throw new Exception\LogicException(
-                "Merchant has the Self Credit Service feature disabled. Operation not allowed.",
-                ErrorCode::BAD_REQUEST_MERCHANT_HAS_CREDIT_SELF_SERVICE_ENABLED,
-                [
-                    'merchant_id' => $mid
-                ]
-            );
-        }
-
         $type = $input["type"];
 
         switch ($type) {
