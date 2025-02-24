@@ -18,6 +18,11 @@ export const BANK_GATEWAYS = [
   'netbanking_icici',
   'netbanking_hdfc',
   'netbanking_sbi',
+  'netbanking_kotak',
+  'upi_kotak',
+  'isg',
+  'netbanking_yesb',
+  'upi_yesbank',
 ];
 
 export const GATEWAY_CATEGORIES = {
@@ -155,6 +160,7 @@ export const HAS_NETBANKING_FEATURES = [
   'atom',
   'phonepe',
   'netbanking_sbi',
+  'netbanking_kotak',
 ];
 
 export const ACCOUNT_TYPE_OPTIONS = [

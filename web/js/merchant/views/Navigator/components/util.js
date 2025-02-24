@@ -1617,6 +1617,11 @@ export const gatewayLogos = {
   nimbbl: getLogoPath('nimbbl'),
   sbiepay: getLogoPath('sbi'),
   netbanking_sbi: getLogoPath('sbi'),
+  netbanking_kotak: getLogoPath('kotak'),
+  upi_kotak: getLogoPath('kotak'),
+  isg: getLogoPath('kotak'),
+  netbanking_yesb: getLogoPath('yesb'),
+  upi_yesbank: getLogoPath('yesb'),
 };
 
 export const mapRulesObjectToArray = (e) => {
