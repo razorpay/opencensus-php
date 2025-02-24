@@ -294,6 +294,7 @@ return array(
     'curlec_accounts_url' => env('CURLEC_ACCOUNTS_URL'),
     'razorpay_accounts_url' => env('RAZORPAY_ACCOUNTS_URL'),
     'hosted_service_url'          => env('HOSTED_SERVICE_URL'),
+    'razorpay_accounts_login_url' => env('RAZORPAY_ACCOUNTS_LOGIN_URL'),
 
     'razorassist' => [
         'url'       => env('RAZORASSIST_HOST_URL'),
@@ -309,7 +310,7 @@ return array(
         'url' => env('INSIGHTX_HOST_URL'),
         'timeout' => 5,
     ],
-  
+
     'cache_ttl' => [
         'user'  => env('USER_CACHE_TTL', 60),
         'merchant_tags' => env('MERCHANT_TAGS_CACHE_TTL', 60),
@@ -321,7 +322,7 @@ return array(
         'merchant_active_campaigns' => env('MERCHANT_ACTIVE_CAMPAIGNS_CACHE_TTL', 60),
         'redirection_url_based_on_persona'  => env('REDIRECTION_URL_BASED_ON_PERSONA_CACHE_TTL', 60),
     ],
-  
+
     'omni' => [
         'url' => env('OMNI_HOST_URL'),
         'secret' => env('OMNI_SECRET'),

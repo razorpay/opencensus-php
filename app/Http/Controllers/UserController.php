@@ -339,9 +339,11 @@ class UserController extends Controller
 
         if ($this->userService->isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org) === true) {
 
-            $redirectPath = \Config::get('app.unified_signup_redirect_path');
+            $requestUrl = request()->fullUrl();
 
-            $redirectPath = $this->appendAllQueryParams($queryParams, $redirectPath);
+            $redirectPath = \Config::get('app.razorpay_accounts_login_url');
+
+            $redirectPath = $redirectPath . '&redirecturl=' . urlencode($requestUrl);
 
             $this->trace->info(TraceCode::USL_REDIRECTION, [
                 'redirection_url' => $redirectPath,

@@ -4084,14 +4084,15 @@ class Service extends Base\Service
 
     public function getRedirectionUrl($details, $org, $data)
     {
-        $queryParams = Request::query();
         $currentRouteName = \Route::currentRouteName();
 
         if ($this->isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org) === true) {
 
-            $redirectPath = \Config::get('app.unified_signup_redirect_path');
+            $requestUrl = request()->fullUrl();
 
-            $redirectPath = $this->appendAllQueryParams($queryParams, $redirectPath);
+            $redirectPath = \Config::get('app.razorpay_accounts_login_url');
+
+            $redirectPath = $redirectPath . '&redirecturl=' . urlencode($requestUrl);
 
             $this->trace->info(TraceCode::USL_REDIRECTION, [
                 'redirection_url' => $redirectPath,
@@ -4624,6 +4625,11 @@ class Service extends Base\Service
     public function isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org): bool {
 
         $uuid = $this->getUUID();
+
+        // This is added only in E2Es
+        if (Cookie::has('skip_usl_redirection')) {
+            return false;
+        }
 
         //This experiment is for redirection of dashbaord homepage to USL
         $dashboardRedirectionExpId = \Config::get('splitz.experiments')[Constants::DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED];
