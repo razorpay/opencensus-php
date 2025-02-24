@@ -18,6 +18,29 @@ const trackInviteNewMemberModalClickedSpy = jest.spyOn(
   'trackInviteNewMemberModalClicked',
 );
 
+jest.mock('@razorpay/i18nify-js', () => {
+  const actualI18nify = jest.requireActual('@razorpay/i18nify-js');
+  return {
+    ...actualI18nify,
+    getStates: jest.fn(() => ({
+      MP: {
+        cities: {
+          Bhopal: { name: 'Bhopal' },
+          Indore: { name: 'Indore' },
+        },
+        name: 'Madhya Pradesh',
+      },
+      DL: {
+        cities: {
+          'East Delhi': { name: 'East Delhi' },
+          'South Delhi': { name: 'South Delhi' },
+        },
+        name: 'Delhi',
+      },
+    })),
+  };
+});
+
 jest.mock('common/splitz', () => ({
   withSplitzService: (Component) => (props) =>
     (
@@ -109,14 +132,10 @@ describe('PartnerManageTeam', () => {
     renderApp();
     await waitForLoadingToFinish('table-spinner');
     await userEvent.click(screen.getByRole('button', { name: 'Invite New Member' }));
-    expect(
-      screen.getByText('Can only view POS section under Affiliated Accounts'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Can only access POS Sales Dashboard')).toBeInTheDocument();
 
     await userEvent.selectOptions(
-      // Find the select element
-      screen.getByRole('combobox'),
-      // Find and select the Ireland option
+      screen.getAllByRole('combobox')[0],
       screen.getByRole('option', { name: 'Manager' }),
     );
     expect(
@@ -124,20 +143,37 @@ describe('PartnerManageTeam', () => {
     ).toBeInTheDocument();
   });
 
+  test('Should show error when all mandatory fields are not filled in pos agent form', async () => {
+    server.use(sendMerchantInvitationSuccess());
+    renderApp();
+    await waitForLoadingToFinish('table-spinner');
+    await userEvent.click(screen.getByRole('button', { name: 'Invite New Member' }));
+
+    expect(screen.getByRole('option', { name: 'POS Partner Agent' })).toBeInTheDocument();
+    await userEvent.type(screen.getByPlaceholderText('johndoe@razorpay.com'), 'test@email.com');
+    expect(trackInviteNewMemberModalLoadedSpy).toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Send Invitation' }));
+    const errorElements = screen.getAllByText('Required');
+    expect(errorElements).toHaveLength(5);
+    errorElements.forEach((element) => {
+      expect(element).toBeInTheDocument();
+    });
+  });
+
   test('Should be able to invite POS Agent Role in Invite Modal with analytics', async () => {
     server.use(sendMerchantInvitationSuccess());
     renderApp();
     await waitForLoadingToFinish('table-spinner');
     await userEvent.click(screen.getByRole('button', { name: 'Invite New Member' }));
-    await waitFor(() => {
-      expect(screen.getByText('Member Details')).toBeInTheDocument();
-    });
 
     expect(screen.getByRole('option', { name: 'POS Partner Agent' })).toBeInTheDocument();
-    await userEvent.type(screen.getByPlaceholderText('Email'), 'test@email.com');
-
+    await userEvent.type(screen.getByPlaceholderText(/johndoe@razorpay.com/i), 'test@email.com');
+    await userEvent.type(screen.getByPlaceholderText(/rahul singh/i), 'rahul sharma');
+    await userEvent.type(screen.getByPlaceholderText(/9876543210/i), '7027037400');
+    await userEvent.type(screen.getByPlaceholderText(/john doe/i), 'john hm');
+    await userEvent.type(screen.getByPlaceholderText(/john will/i), 'john bu');
+    await userEvent.type(screen.getByPlaceholderText(/koramangala/i), 'shantinagar');
     expect(trackInviteNewMemberModalLoadedSpy).toHaveBeenCalled();
-
     await userEvent.click(screen.getByRole('button', { name: 'Send Invitation' }));
     expect(trackInviteNewMemberModalClickedSpy).toHaveBeenCalled();
     await waitFor(() => {
@@ -150,10 +186,13 @@ describe('PartnerManageTeam', () => {
     server.use(sendMerchantInvitationError());
     renderApp();
     await userEvent.click(screen.getByRole('button', { name: 'Invite New Member' }));
-    await waitFor(() => {
-      expect(screen.getByText('Member Details')).toBeInTheDocument();
-    });
-    await userEvent.type(screen.getByPlaceholderText('Email'), 'test@email.com');
+
+    await userEvent.type(screen.getByPlaceholderText(/johndoe@razorpay.com/i), 'test@email.com');
+    await userEvent.type(screen.getByPlaceholderText(/rahul singh/i), 'rahul sharma');
+    await userEvent.type(screen.getByPlaceholderText(/9876543210/i), '7027037400');
+    await userEvent.type(screen.getByPlaceholderText(/john doe/i), 'john hm');
+    await userEvent.type(screen.getByPlaceholderText(/john will/i), 'john bu');
+    await userEvent.type(screen.getByPlaceholderText(/koramangala/i), 'shantinagar');
     await userEvent.click(screen.getByRole('button', { name: 'Send Invitation' }));
 
     await waitFor(() => {

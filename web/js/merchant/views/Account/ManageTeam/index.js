@@ -89,6 +89,7 @@ class ManageTeamContainer extends React.Component {
       email: true,
       role: true,
     };
+
     const { openModal, closeModal, isRenderedFromPartnerRoute, sendInvitation } = this.props;
 
     const defaults = {
@@ -96,13 +97,14 @@ class ManageTeamContainer extends React.Component {
       role: isRenderedFromPartnerRoute ? rolesList.PARTNER_AGENT : rolesList.MANAGER,
     };
     openModal({
-      size: 'small',
+      size: 'large',
       component: (
         <>
           <ModalHeader title="Invite New Member" onCloseClick={closeModal} />
           <div className="modal-body">
             <NewInvitation
               isRenderedFromPartnerRoute={isRenderedFromPartnerRoute}
+              isHandlingPosPartnerAgent={defaults.role === rolesList.PARTNER_AGENT}
               visibleFields={visibleFields}
               defaults={defaults}
               onSuccess={closeModal}

@@ -58,8 +58,10 @@ class MembersActions extends Component {
     };
 
     const toBePickedFields = getToBePickedUpFields(visibleFields, ['id']);
-
-    const defaults = pickProps(member, toBePickedFields);
+    let defaults = pickProps(member, toBePickedFields);
+    if (member.role === rolesList.PARTNER_AGENT) {
+      defaults = pickProps(member, ['id', 'role', 'email', 'metadata']);
+    }
     const onFormSubmit = (...e) => {
       const { role } = e[0];
       if (role === rolesList.OWNER) {
@@ -128,12 +130,14 @@ class MembersActions extends Component {
         });
     };
     return this.props.openModal({
-      size: 'small',
+      size: member.role === rolesList.PARTNER_AGENT ? 'large' : 'small',
       component: (
         <>
           <ModalHeader title="Update Member" onCloseClick={this.props.closeModal} />
           <div className="modal-body">
             <NewInvitation
+              isHandlingPosPartnerAgent={defaults.role === rolesList.PARTNER_AGENT}
+              isUpdatingTeamMember
               visibleFields={visibleFields}
               defaults={{ ...defaults }}
               ctaText="Update Member Details"

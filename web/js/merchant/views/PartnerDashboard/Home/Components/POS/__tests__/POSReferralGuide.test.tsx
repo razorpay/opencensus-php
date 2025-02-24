@@ -9,7 +9,19 @@ const referClient = jest.fn();
 describe('POSReferralGuide', () => {
   const analyticsTrackWithUserSpy = jest.spyOn(trackEvents, 'analyticsTrackWithUserInfo');
   const renderApp = () => {
-    return render(<POSReferralGuide handleReferClient={referClient} />, { showModal: true });
+    return render(<POSReferralGuide handleReferClient={referClient} />, {
+      showModal: true,
+      initialState: {
+        session: {
+          user: {
+            user: {
+              email: 'omnitest@gmail.com',
+              contact_mobile: '987763437438',
+            },
+          },
+        },
+      },
+    });
   };
 
   test('should render with all the components', () => {
@@ -72,7 +84,6 @@ describe('POSReferralGuide', () => {
         screen: 'partner_dashboard_homepage',
       },
     });
-
     await waitFor(() => {
       expect(screen.getByText('Invite New Member')).toBeInTheDocument();
     });

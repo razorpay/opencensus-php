@@ -22,6 +22,7 @@ import {
   Box,
   Button,
 } from '@razorpay/blade/components';
+import RolesList from 'merchant/helpers/permissions/roles-list';
 
 class InvitationsActions extends Component {
   constructor(props) {
@@ -54,15 +55,20 @@ class InvitationsActions extends Component {
       role: true,
     };
 
-    const defaults = pickProps(invitation, ['id', 'role']);
+    let defaults = pickProps(invitation, ['id', 'role']);
+    if (invitation.role === RolesList.PARTNER_AGENT) {
+      defaults = pickProps(invitation, ['id', 'role', 'email', 'metadata']);
+    }
 
     props.openModal({
-      size: 'small',
+      size: 'large',
       component: (
         <>
           <ModalHeader title="Update Invitation" onCloseClick={closeModal} />
           <div className="modal-body">
             <NewInvitation
+              isHandlingPosPartnerAgent={defaults.role === RolesList.PARTNER_AGENT}
+              isUpdatingInvitation
               visibleFields={visibleFields}
               defaults={{ ...defaults }}
               ctaText="Update Invitation"

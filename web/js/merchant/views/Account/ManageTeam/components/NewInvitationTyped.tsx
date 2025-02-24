@@ -10,6 +10,7 @@ type argsType = {
 };
 
 interface NewInvitationProps {
+  isHandlingPosPartnerAgent: boolean;
   visibleFields: {
     email: boolean;
     role: boolean;

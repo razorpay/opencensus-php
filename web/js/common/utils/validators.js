@@ -97,6 +97,12 @@ export const isPhone = (phone) => {
   return phoneRegExp.test(phone);
 };
 
+export const isPhoneNumberIndia = (phone) => {
+  phone = phone || '';
+  const phoneRegExp = new RegExp(/^\+?[0-9]{10}$/);
+  return phoneRegExp.test(phone);
+};
+
 const PHONE_NUMBER_REGEX_MAP = {
   /**
    * Regex to verify Indian mobile numbers
@@ -276,6 +282,7 @@ const makeValidator =
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');
 export const phone = makeValidator(isPhone, 'Invalid Contact');
+export const phoneIndia = makeValidator(isPhoneNumberIndia, 'Please enter 10 digit number');
 export const mobile = makeValidator(isMobile, 'Invalid Contact');
 export const lenientUrl = makeValidator(isUrlLenient, 'Invalid Url');
 export const deepLink = makeValidator(isDeepLink, 'Invalid Link');

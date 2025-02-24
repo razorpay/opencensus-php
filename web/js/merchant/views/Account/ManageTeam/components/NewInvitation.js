@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { Alert } from '@razorpay/blade/components';
+import { getStates } from '@razorpay/i18nify-js';
 import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -33,11 +34,23 @@ import {
   triggerOtpOnSMS,
   triggerOtpOnBoth,
 } from 'merchant_common/reducers/twoFactor';
+import PosAgentForm from './PosAgentForm';
 
 const selector = formValueSelector('newInvitation');
-
+const defaultPosAgentForm = {
+  state: 'Delhi',
+  city: 'East Delhi',
+  team: 'Retail',
+  hiring_manager: '',
+  bu_head: '',
+  zone: '',
+  name: '',
+  mobile: '',
+};
 class NewInvitation extends Component {
-  state = {};
+  state = {
+    stateList: [],
+  };
   static defaultProps = {
     ctaText: 'Submit',
   };
@@ -45,15 +58,37 @@ class NewInvitation extends Component {
   // need to rename this component to something more appropriate
   constructor(props) {
     super(props);
-
-    this.props.initialize({
-      ...this.props.defaults,
-    });
+    this.teamNames = ['Retail', 'Mid Market', 'Enterprise'];
+    //initialize with new form only for role partner_agent
+    if (this.props.isHandlingPosPartnerAgent) {
+      const initialFormState = {
+        metadata: this.props.defaults?.metadata || defaultPosAgentForm,
+      };
+      if (this.props.visibleFields.email) {
+        initialFormState.posEmail = this.props.defaults?.email;
+      }
+      this.props.initialize({
+        ...this.props.defaults,
+        ...initialFormState,
+      });
+    } else {
+      this.props.initialize({
+        ...this.props.defaults,
+      });
+    }
   }
 
   save = (body) => {
-    const { ctaText, screen, experiments, successMsg, onFormSubmit, isRenderedFromPartnerRoute } =
-      this.props;
+    const {
+      ctaText,
+      screen,
+      experiments,
+      successMsg,
+      onFormSubmit,
+      isRenderedFromPartnerRoute,
+      isUpdatingInvitation,
+      selectedRole,
+    } = this.props;
     const is_edit = this.props.ctaText === 'Update Invitation';
     analyticsTrack({
       objectName: is_edit ? 'invitation update popup' : 'invite new member popup',
@@ -74,8 +109,34 @@ class NewInvitation extends Component {
         isRenderedFromPartnerRoute,
       });
     }
-
-    return onFormSubmit(body)
+    let payload = body;
+    if (selectedRole === rolesList.PARTNER_AGENT) {
+      payload = {
+        metadata: body.metadata,
+        email: body.posEmail,
+        role: body.role,
+        sender_name: body.sender_name,
+        id: body.id,
+      };
+    } else {
+      payload = {
+        role: body.role,
+        ...(!isUpdatingInvitation && { email: body.email }),
+        sender_name: body.sender_name,
+        id: body.id,
+      };
+    }
+    // we basically check if statelist is not present (in case state fetch api fails), then user wont be able to select State and City which are also mandatory fields for pos agent role.
+    if (
+      payload.role === rolesList.PARTNER_AGENT &&
+      (!this.state.stateList || this.state.stateList.length === 0)
+    ) {
+      return this.props.showNotification({
+        type: 'error',
+        message: 'Error fetching states and cities. Please try again later.',
+      });
+    }
+    return onFormSubmit(payload)
       .then(() => {
         if (!is_edit) {
           selfServeTrackSuccess({
@@ -97,7 +158,7 @@ class NewInvitation extends Component {
         });
         this.props.showNotification({
           type: 'success',
-          message: typeof successMsg === 'function' ? successMsg(body) : successMsg,
+          message: typeof successMsg === 'function' ? successMsg(payload) : successMsg,
         });
         this.props.closeModal();
       })
@@ -214,8 +275,13 @@ class NewInvitation extends Component {
       ),
     });
   };
+
   componentDidMount() {
-    const { screen, experiments, isRenderedFromPartnerRoute } = this.props;
+    const { screen, experiments, isRenderedFromPartnerRoute, isHandlingPosPartnerAgent } =
+      this.props;
+    if (isHandlingPosPartnerAgent) {
+      this.getStateList();
+    }
     if (experiments?.isPartnershipsForPosEnabled) {
       trackInviteNewMemberModalLoaded({
         screen: screen || window.location.pathname,
@@ -247,6 +313,27 @@ class NewInvitation extends Component {
     return without(roles, rolesToRemove);
   };
 
+  getStateList = async () => {
+    try {
+      const stateList = await getStates('IN'); //returns states and its cities
+      this.setState({ stateList });
+    } catch (error) {
+      console.log(error);
+      this.props.showNotification({
+        type: 'error',
+        message: 'Error fetching states and cities. Please try again later.',
+      });
+    }
+  };
+
+  getCities = (stateName) => {
+    if (!stateName) return [];
+    const stateCode = Object.keys(this.state.stateList).find(
+      (code) => this.state.stateList[code].name === stateName,
+    );
+    return this.state.stateList[stateCode]?.cities || [];
+  };
+
   render() {
     const {
       handleSubmit,
@@ -256,6 +343,7 @@ class NewInvitation extends Component {
       experiments,
       isInviteTeamMember2faEnabled,
       isRenderedFromPartnerRoute,
+      isHandlingPosPartnerAgent,
       ...props
     } = this.props;
 
@@ -273,12 +361,35 @@ class NewInvitation extends Component {
       ROLES = { ...ROLES, ...RegistrationLinkRoles };
     }
 
-    if (experiments?.isPartnershipsForPosEnabled || isRenderedFromPartnerRoute) {
+    if (
+      experiments?.isPartnershipsForPosEnabled ||
+      isRenderedFromPartnerRoute ||
+      isHandlingPosPartnerAgent
+    ) {
       ROLES = { ...ROLES, ...posPartnerRoles };
     }
     const shouldShowNonPOSAlert =
       isRenderedFromPartnerRoute && !!selectedRole && selectedRole !== rolesList.PARTNER_AGENT;
 
+    if (selectedRole === rolesList.PARTNER_AGENT) {
+      return (
+        <PosAgentForm
+          stateList={this.state.stateList}
+          cities={this.getCities(this.props.selectedState)}
+          handleSubmit={() => handleSubmit(this.save)}
+          currentUserDetails={{
+            email: this.props.user.user.email,
+            conact_mobile: this.props.user.user.contact_mobile,
+          }}
+          selectedRole={selectedRole}
+          visibleFields={visibleFields}
+          ctaText={props.ctaText}
+          shouldShowNonPOSAlert={shouldShowNonPOSAlert}
+          teamNames={this.teamNames}
+          roles={ROLES}
+        />
+      );
+    }
     return (
       <form>
         <div>
@@ -379,10 +490,10 @@ const mapStateToProps = (state) => {
     selectedRole: selector(state, 'role'),
     invitedEmail: selector(state, 'email'),
     senderName: selector(state, 'sender_name'),
+    selectedState: selector(state, 'metadata.state'),
     ...state.session,
   };
 };
-
 export default withSplitzService(
   compose(
     withPartnerDashboardExperiments,

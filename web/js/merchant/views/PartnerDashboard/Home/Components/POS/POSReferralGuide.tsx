@@ -66,6 +66,7 @@ const POSReferralGuide = ({
           <ModalHeader title="Invite New Member" onCloseClick={closeModal} />
           <div className="modal-body">
             <NewInvitation
+              isHandlingPosPartnerAgent
               isRenderedFromPartnerRoute
               visibleFields={visibleFields}
               defaults={defaults}
