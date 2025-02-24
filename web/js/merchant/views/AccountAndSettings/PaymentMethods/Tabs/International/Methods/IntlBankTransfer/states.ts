@@ -122,9 +122,9 @@ export const useIntlBankTransfer = ({
       refetchPurposeCode();
     }
 
-    const currentStep = step ?? (purposeCode && iecCode) ? 3 : 1;
+    const currentStep = purposeCode && iecCode ? 3 : 1;
 
-    setActivationModalCurrentStep(currentStep);
+    setActivationModalCurrentStep(step ?? currentStep);
     setActivationModalOpen((prev) => !prev);
   };
 

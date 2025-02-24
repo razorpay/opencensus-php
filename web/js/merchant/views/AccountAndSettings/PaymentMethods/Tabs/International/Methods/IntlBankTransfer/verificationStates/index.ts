@@ -25,6 +25,7 @@ export const useVerificationStatus = ({ user }: { user: IntlBankTransferProps['u
     queryKey: ['international_edd_details'],
     queryFn: getEddDetails,
     enabled: canUseApi,
+    staleTime: 120000, // 2 min
   });
 
   const {
@@ -35,6 +36,7 @@ export const useVerificationStatus = ({ user }: { user: IntlBankTransferProps['u
     queryKey: ['user_purpose_code'],
     queryFn: getUserPurposeCode,
     enabled: canUseApi,
+    staleTime: 120000, // 2 min
   });
 
   const { isEddVerified, videoKycStatus, videoKycRejectedReason } = data ?? {};
