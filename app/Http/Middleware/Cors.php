@@ -132,6 +132,7 @@ class Cors
                 'Content-Type',
                 'X-Report-Type',
                 'X-Product-Type',
+                'X-Product',
                 'x-recaptcha-mode',
                 // Added this to allow email verification via OTP in X
                 'x-send-email-otp',

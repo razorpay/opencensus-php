@@ -204,6 +204,8 @@ class GraphRequestAny
 
         $productType = Request::header('X-Product-Type');
 
+        $product = Request::header('X-Product');
+
         $devServeHeader = Request::header('rzpctx-dev-serve-user');
 
         $mobileDebugId = Request::header('x-mobile-debug-id');  // adding a unique key with value = ({userId}:{uniqueDeviceId}) to help in debugging issues for multiple platforms. This header will not be available for web applications.
@@ -242,6 +244,7 @@ class GraphRequestAny
                 'X-Org-Hostname'                  => $domain,
                 'X-Request-Origin'                => $originDomain,
                 'X-Product-Type'                  => $productType,
+                'X-Product'                       => $product,
                 'X-Dashboard-Ip'                  => $clientIp,
                 'X-IP-Address'                    => $ipAddress,
                 'X-User-Agent'                    => $userAgent,
