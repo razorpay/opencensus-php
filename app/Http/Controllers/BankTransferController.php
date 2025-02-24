@@ -111,6 +111,15 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processBankTransferFileIdfc()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_IDFC);
+
+        return ApiResponse::json($response);
+    }
+
     public function processYesbankBankTransfer()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
@@ -247,6 +256,23 @@ class BankTransferController extends Controller
         $request = Request::getContent();
 
         return $this->service()->processIdfcBankTransfer($request);
+    }
+
+    public function processIdfcBankTransferInternal()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
+        $request = Request::all();
+
+        $ivForEncryption = random_bytes(16);
+
+        $encryptedRequest = $this->service()->encryptIdfcBankCallbackData($request, $ivForEncryption);
+
+        $response = $this->service()->processIdfcBankTransfer($encryptedRequest);
+
+        return $this->service()->decryptIdfcBankCallbackData($response);
     }
 
     public function validateIdfcBankTransferTest()

@@ -3521,7 +3521,7 @@ class Service extends Base\Service
 
         $provider  = Provider::IDFC;
 
-        $payerAccount = $input['remitterAc'];
+        $payerAccount = $this->sanitizePayerAccountNumber($input['remitterAc']);
 
         $payeeIfsc = Provider::IDFC_COMMON_IFSC;  // Payee IFSC code is hardcoded at our end
 
@@ -3592,7 +3592,8 @@ class Service extends Base\Service
 
         $provider  = Provider::IDFC;
 
-        $payerAccount = $input['remitterAccountNumber'];
+        $payerAccount = $this->sanitizePayerAccountNumber($input['remitterAccountNumber']);
+
         $payeeAccount = $input['vaNumber'];
         $payeeIfsc = Provider::IDFC_COMMON_IFSC;  // Payee IFSC code is hardcoded at our end
 
@@ -3667,6 +3668,19 @@ class Service extends Base\Service
             'gateway_provider' => [
                 'provider'       => $provider,
             ]);
+    }
+
+    protected function sanitizePayerAccountNumber($payerAccount) {
+        // correction of HSBC account number
+        // original account number = "IN HSBC 054-123456-001"
+        // correct account number = "054123456001"
+        $hsbc_acc_no_pattern = '/IN\s+HSBC\s+(\d{3}-\d{6}-\d{3})/';
+        if (preg_match($hsbc_acc_no_pattern, $payerAccount, $matches))
+        {
+            $payerAccount = preg_replace('/IN\s+HSBC\s+|-/', '', $payerAccount);
+        }
+
+        return preg_replace('/[^a-zA-Z0-9]+/', '', $payerAccount);
     }
 
 

@@ -2298,6 +2298,42 @@ return [
         ]
     ],
 
+    'testEcollectIdfcBatchCreate' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/file/idfc',
+            'method'  => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key'    => 'idfc/filename.csv',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_idfc',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'ecollectidfcBatchData' => [
+        [
+            'BANKCODE'              => '751',
+            'VAN'                   => '3141412932249569',
+            'productCode'           => 'IIMPS',
+            'remitterAccountNumber' => '923020021413403',
+            'remitterIfscCode'      => '',
+            'remitterName'          => 'TUNECLINICALAESTHE',
+            'Contact No'            => '',
+            'Email'                 => '',
+            'STATUS'                => 'Success',
+            'txnAmount'             => '1001',
+            'txnDate'               => '05-FEB-2025',
+            'txnRefNumber'          => '503618787655',
+            'Trn TimeStamp'         => '05-FEB-2025 18:21:01'
+        ]
+    ],
+
     'testProcessBankTransferInvalidPayerIfsc' => [
         'url'     => '/ecollect/validate/test',
         'method'  => 'post',

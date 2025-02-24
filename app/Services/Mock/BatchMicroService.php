@@ -197,6 +197,17 @@ class BatchMicroService extends BaseBatchMicroService
             ];
         }
 
+        if (isset($input['type']) and
+            ($input['type'] === 'ecollect_idfc'))
+        {
+            return [
+                'entity'           => 'batch',
+                'type'             => 'ecollect_idfc',
+                'status'           => 'created',
+                'total_count'      => 1
+            ];
+        }
+
         return [
             'id'               => 'C3fzDCb4hA4F6b',
             'created_at'       => 1551782255,

@@ -2025,6 +2025,16 @@ class Header
 
     const JK_MODIFIED_QR_STRING = "Modified QR string";
 
+    // headers for IDFC fund loading
+    const IDFC_ECOLLECT_UTR_NUMBER = 'txnRefNumber';
+    const IDFC_ECOLLECT_SENDER_IFSC = 'remitterIfscCode';
+    const IDFC_ECOLLECT_SENDER_ACCOUNT_NUMBER = 'remitterAccountNumber';
+    const IDFC_ECOLLECT_SENDER_NAME = 'remitterName';
+    const IDFC_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER = 'VAN';
+    const IDFC_ECOLLECT_AMOUNT = 'txnAmount';
+    const IDFC_ECOLLECT_TRANSACTION_DATE = 'Trn TimeStamp';
+    const IDFC_ECOLLECT_MODE = 'product Code';
+
     const HDFC_MECODE = "MECODE";
     const HDFC_TID = "TID";
     const HDFC_LEGAL_NAME = "LEGAL NAME";
@@ -5718,6 +5728,31 @@ class Header
                 self::AXIS_ECOLLECT_BENEFICIARY_ADDRESS,
                 self::AXIS_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
                 self::AXIS_ECOLLECT_BATCH_TIME,
+                self::STATUS,
+            ],
+        ],
+
+        Type::ECOLLECT_IDFC => [
+            self::INPUT => [
+                self::IDFC_ECOLLECT_UTR_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_IFSC,
+                self::IDFC_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_NAME,
+                self::IDFC_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_AMOUNT,
+                self::IDFC_ECOLLECT_TRANSACTION_DATE,
+                self::IDFC_ECOLLECT_MODE,
+                self::STATUS,
+            ],
+            self::OUTPUT => [
+                self::IDFC_ECOLLECT_UTR_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_IFSC,
+                self::IDFC_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_NAME,
+                self::IDFC_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_AMOUNT,
+                self::IDFC_ECOLLECT_TRANSACTION_DATE,
+                self::IDFC_ECOLLECT_MODE,
                 self::STATUS,
             ],
         ],

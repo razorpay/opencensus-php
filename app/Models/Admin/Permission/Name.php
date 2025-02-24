@@ -1069,6 +1069,7 @@ class Name
     const ECOLLECT_AXIS_BATCH_UPLOAD                 = 'ecollect_axis_batch_upload';
     const ECOLLECT_AXIS_BANKING_BATCH_UPLOAD         = 'ecollect_axis_banking_batch_upload';
     const ECOLLECT_YESBANK_BATCH_UPLOAD              = 'ecollect_yesbank_batch_upload';
+    const ECOLLECT_IDFC_BATCH_UPLOAD                 = 'ecollect_idfc_batch_upload';
     const VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD          = 'virtual_bank_account_batch_upload';
 
     // Admin action permission for X Ops Team

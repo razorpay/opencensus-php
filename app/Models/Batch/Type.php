@@ -211,6 +211,8 @@ class Type
 
     const ECOLLECT_YESBANK      = 'ecollect_yesbank';
 
+    const ECOLLECT_IDFC         = 'ecollect_idfc';
+
     const REPORT                = 'report';
 
     const BANK_TRANSFER_EDIT    = 'bank_transfer_edit';
@@ -375,6 +377,7 @@ class Type
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
@@ -618,6 +621,7 @@ class Type
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::REPORT,
         self::ADMIN_BATCH,
         self::RECONCILIATION,
@@ -668,7 +672,8 @@ class Type
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
         self::UPDATE_GIFT_CARDS_EXPIRY,
-        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::ECOLLECT_IDFC,
     ];
 
     /**
@@ -710,6 +715,7 @@ class Type
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
@@ -783,6 +789,7 @@ class Type
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
+        self::ECOLLECT_IDFC,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -837,6 +844,7 @@ class Type
         self::ECOLLECT_AXIS                      => Name::ECOLLECT_AXIS_BATCH_UPLOAD,
         self::ECOLLECT_AXIS_BANKING              => Name::ECOLLECT_AXIS_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,
+        self::ECOLLECT_IDFC                      => Name::ECOLLECT_IDFC_BATCH_UPLOAD,
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
         self::BANK_TRANSFER                      => Name::BANK_TRANSFER_INSERT,
