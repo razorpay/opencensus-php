@@ -24,7 +24,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
 use RZP\Error\PublicErrorDescription;
-use Razorpay\Trace\Logger as Trace;
+use Monolog\Logger;
 use RZP\Error\Error;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
@@ -1449,8 +1449,8 @@ class Core extends Base\Core
         return $providerReferenceId;
     }
 
-    public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine,
-                                           Payment\Entity $payment, Order\Entity $order, Entity $offer, bool $isDummyPayment)
+    public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine, Payment\Entity $payment,
+                                           Order\Entity $order, Entity $offer, bool $isDummyPayment, $input = [])
     {
         if ($shouldValidateOnOffersEngine === false)
         {
@@ -1464,7 +1464,9 @@ class Core extends Base\Core
         // perform checks if we can call offers engine
         if ($payment->isMethodCardOrEmi() === true)
         {
-            $iin = $this->fetchCardIIN($payment);
+
+            $iin = $this->fetchIinForPayment($offer, $payment, $input , $isDummyPayment);
+
 
             if ($isDummyPayment === true)
             {
@@ -1538,5 +1540,77 @@ class Core extends Base\Core
                 'OE_RESPONSE' => $oeResp
             ]);
         }
+    }
+
+    public function extractCardIinForSavedCard($payment, $input)
+    {
+        $iin = "";
+
+        if (empty($input['token']) === false)
+        {
+            // search for card data if already saved card
+            $token        = $payment->getGlobalOrLocalTokenEntity();
+            $network_card = $token->card;
+
+            if ((empty($network_card) === false) and
+                ($network_card->isNetworkTokenisedCard() === true))
+            {
+                $iin = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin()) ?? substr($network_card->getTokenIin(), 0, 6);
+            }
+            else
+            {
+                $iin = $network_card->getIin();
+            }
+        }
+
+        return $iin;
+    }
+
+    public function fetchIinForPayment($offer, $payment, $input, $isDummyPayment)
+    {
+        $iin = $this->fetchCardIIN($payment);
+
+        if ($isDummyPayment === true)
+        {
+            return $iin;
+        }
+
+        try
+        {
+            $shouldFetchIinFromBinService = $this->shouldRouteToOffersEngineForCreation(
+                $payment->getMerchantId(), Constants::OE_FETCH_IIN_FROM_BIN);
+
+            if ($shouldFetchIinFromBinService === true)
+            {
+                if ($offer->isCardSaved() === false)
+                {
+                    $iinEntity = $this->repo->iin->find($input['card']['number']);
+
+                    $iin = $iinEntity->getIin();
+
+                    $this->trace->info(TraceCode::OE_IIN_FETCHED_FROM_BIN_SERVICE_UNSAVED_CARD, [
+                        'iin' => $iin,
+                    ]);
+                }
+                else
+                {
+                    $iin = $this->extractCardIinForSavedCard($payment, $input);
+
+                    $this->trace->info(TraceCode::OE_IIN_FETCHED_FROM_BIN_SERVICE_SAVED_CARD, [
+                        'iin' => $iin,
+                    ]);
+                }
+
+                return $iin;
+            }
+        }
+        catch (throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::OE_BIN_SERVICE_IIN_FETCH_FAILED, [
+                'iin' => $iin
+            ]);
+        }
+
+        return $iin;
     }
 }

@@ -177,6 +177,8 @@ final class Constants
 
     const OFFERS_ENGINE_VALIDATE_OFFER_EXP = 'app.offers_engine_validate_offer_exp_id';
 
+    const OE_FETCH_IIN_FROM_BIN = 'app.oe_fetch_iin_from_bin_exp_id';
+
     const OFFERS_ENGINE_REVERSE_SHADOW_EXP = 'app.offers_engine_reverse_shadow_exp_id';
 
     const OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP = 'app.oe_enable_cache_internal_merchant_get_exp';

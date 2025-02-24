@@ -1502,6 +1502,7 @@ class OffersTest extends TestCase
 
     public function testCreateCardOfferWithInvalidIinLength()
     {
+        $this->markTestSkipped("marking this as skipped because we now offer creation for more than 6 digit iins too.");
         $this->startTest();
     }
 

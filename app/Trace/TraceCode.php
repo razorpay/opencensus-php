@@ -4113,6 +4113,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFERS_ENGINE_FETCH_OFFERS_FAIL                       = 'OFFERS_ENGINE_FETCH_OFFERS_FAIL';
     const OFFERS_ENGINE_GET_OFFERS_CACHING_GET                  = 'OFFERS_ENGINE_GET_OFFERS_CACHING_GET';
     const OFFERS_ENGINE_GET_OFFERS_CACHING_SET                  = 'OFFERS_ENGINE_GET_OFFERS_CACHING_SET';
+    const OE_IIN_FETCHED_FROM_CARD                              = 'OE_IIN_FETCHED_FROM_CARD';
+    const OE_IIN_FETCHED_FROM_BIN_SERVICE_UNSAVED_CARD          = 'OE_IIN_FETCHED_FROM_BIN_SERVICE_UNSAVED_CARD';
+    const OE_IIN_FETCHED_FROM_BIN_SERVICE_SAVED_CARD            = 'OE_IIN_FETCHED_FROM_BIN_SERVICE_SAVED_CARD';
+    const OE_BIN_SERVICE_IIN_FETCH_FAILED                       = 'OE_BIN_SERVICE_IIN_FETCH_FAILED';
     const OFFERS_ENGINE_CACHING_ERROR                           = 'OFFERS_ENGINE_CACHING_ERROR';
     const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL               = 'OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL';
     const OFFERS_ENGINE_FETCH_FALLBACK                          = 'OFFERS_ENGINE_FETCH_FALLBACK';
@@ -4166,6 +4170,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace codes for Gateway Priorities
     const CARD_GATEWAY_PRIORITY                                 = 'CARD_GATEWAY_PRIORITY';
+
+    const CARD_NUMBER_PASSED_TO_BIN                             = 'CARD_NUMBER_PASSED_TO_BIN';
+
+    const IIN_RECEIVED_FROM_BIN                                 = 'IIN_RECEIVED_FROM_BIN';
+
     const NETBANKING_GATEWAY_PRIORITY                           = 'NETBANKING_GATEWAY_PRIORITY';
 
     // Trace codes for Merchant Reports

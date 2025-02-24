@@ -248,7 +248,7 @@ class Service extends Base\Service
             $cardNumber = $input["card"]["number"];
         }
 
-        $iin = substr($cardNumber, 0, 6);
+        $iin = substr($cardNumber, 0, 10);
 
         $iinEntity = $this->repo->iin->find($iin);
 

@@ -7242,10 +7242,10 @@ class Processor
 
             //Extract the bank code only first four letter
 
-            
+
             if (isset($input['bank']) and strlen($input['bank']) > 4) {
                 $input['bank'] = substr($input['bank'], 0, 4);
-            } 
+            }
             // Temp experiment for the ramp-up of feature
             $properties = [
                 'id'            => $this->merchant->getMerchantId(),
@@ -8008,7 +8008,7 @@ class Processor
 
         $this->offer = $offer;
 
-        if (!$this->validateOffersViaOffersEngine($payment, $offer))
+        if (!$this->validateOffersViaOffersEngine($payment, $offer, $input))
         {
             // validateOffersViaOffersEngine should always throw an exception in the account these
             // parameters checked below are true. If the code flow comes here, it's a P0 issue.
@@ -8051,7 +8051,7 @@ class Processor
         return $valid;
     }
 
-    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer): bool
+    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, $input = []): bool
     {
         $core = New Offer\Core();
 
@@ -8066,7 +8066,7 @@ class Processor
         $isReverseShadowEnabled = !((app()->isEnvironmentQA() === true) or
                                     (app()->runningUnitTests() === true));
 
-        $resp = $core->validateOnOffersEngine($isReverseShadowEnabled, $payment, $order, $this->offer, false);
+        $resp = $core->validateOnOffersEngine($isReverseShadowEnabled, $payment, $order, $this->offer, false, $input);
 
         if ($resp[Offer\Constants::VALIDATE_OFFER_CALLED] === false)
         {
