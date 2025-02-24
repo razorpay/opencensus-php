@@ -483,7 +483,7 @@ abstract class Base extends BaseModel\Core
 
             throw new Exception\LogicException(
                 'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
-                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
                 [
                     'payment_id' => $payment->getId(),
                     'method'     => $payment->getMethod(),
