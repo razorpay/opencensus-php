@@ -4,6 +4,8 @@ namespace Tests\Unit\Models\User;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Services\RazorXClient;
 use Tests\Unit\TestCase;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Core;
@@ -24,6 +26,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use Illuminate\Support\Facades\Request;
 
 class UserTest extends TestCase
 {
@@ -219,7 +222,7 @@ class UserTest extends TestCase
 
         $this->assertEquals($content['userData']['email'], $response['email']);
     }
-    
+
     public function testCreate()
     {
         $content = [
@@ -3608,6 +3611,113 @@ class UserTest extends TestCase
 
         $this->assertEquals($response, false);
     }
+
+    public function testGetStorkPayloadOwnerId()
+    {
+        $inputString = '8ed38ecc-0a13-4a0e-a8e5-1856cc4dc26f';
+
+        $inputString = str_replace('-', '', $inputString);
+
+        $expectedResponse = '4LVak1IsoBlLJf';
+
+        $response = $this->coreMock->getStorkPayloadOwnerId($inputString);
+
+        $this->assertEquals($response, $expectedResponse);
+
+    }
+
+    public function testGetStorkLoginSignupPayloadAbUserIdExperimentDisable()
+    {
+        $input = [
+            'contact_mobile' => '9999999999',
+            'action' => 'signup_otp_v2'
+        ];
+
+        $otp = [
+            'otp' => '000007',
+            'expires_at' => Carbon::now()->addMinutes(30)->getTimestamp()
+        ];
+
+        $headers = [
+            'x-ab-user-id' => [
+                '8ed38ecc-0a13-4a0e-a8e5-1856cc4dc26f'
+            ]
+        ];
+
+        $experimentName = 'ab_user_id_experiment';
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('off');
+
+        $this->basicAuthMock->shouldReceive('getOrgId')->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        Request::shouldReceive('header')
+            ->andReturn($headers);
+
+        $this->coreMock->shouldReceive('getSplitzResponse')
+            ->with($headers['x-ab-user-id'][0], $experimentName)
+            ->andReturn('');
+
+        $payload = $this->coreMock->getStorkLoginSignupPayload($input, $otp);
+
+        $this->assertEquals($payload['ownerId'], '1000000000');
+
+    }
+
+    public function testGetStorkLoginSignupPayloadAbUserIdExperimentEnable()
+    {
+        $input = [
+            'contact_mobile' => '9999999999',
+            'action' => 'signup_otp_v2'
+        ];
+
+        $otp = [
+            'otp' => '000007',
+            'expires_at' => Carbon::now()->addMinutes(30)->getTimestamp()
+        ];
+
+        $headers = [
+            'x-ab-user-id' => [
+                '8ed38ecc-0a13-4a0e-a8e5-1856cc4dc26f'
+            ]
+        ];
+
+        $experimentName = 'ab_user_id_experiment';
+
+        $this->basicAuthMock->shouldReceive('getOrgId')->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('off');
+
+        Request::shouldReceive('header')
+            ->andReturn($headers);
+
+        $this->coreMock->shouldReceive('getSplitzResponse')
+            ->with($headers['x-ab-user-id'][0], $experimentName)
+            ->andReturn('enable');
+
+        $this->coreMock->shouldReceive('getStorkPayloadOwnerId')
+            ->with($headers['x-ab-user-id'][0])
+            ->andReturn('4LVak1IsoBlLJf');
+
+        $payload = $this->coreMock->getStorkLoginSignupPayload($input, $otp);
+
+        $this->assertEquals($payload['ownerId'], '4LVak1IsoBlLJf');
+
+    }
+
 }
-
-

@@ -7,6 +7,7 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
+use Request;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Services\Dcs\Features\Type;
@@ -82,6 +83,7 @@ use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Constants\Metric as ConstantMetric;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 class Core extends Base\Core
 {
@@ -670,7 +672,19 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
-        $ownerId = "1000000000";
+        $headers = Request::header();
+
+        $ownerId = '1000000000';
+
+        if(isset($headers[RequestHeader::X_AB_USER_ID][0]) === true)
+        {
+            $splitResponse = $this->getSplitzResponse($headers[RequestHeader::X_AB_USER_ID][0], 'ab_user_id_experiment');
+
+            if($splitResponse === 'enable')
+            {
+                $ownerId = $this->getStorkPayloadOwnerId($headers[RequestHeader::X_AB_USER_ID][0]);
+            }
+        }
 
         $payload = [
             'ownerId'               => $ownerId,
@@ -1696,6 +1710,15 @@ class Core extends Base\Core
         return $otp + array_only($payload, 'context') + compact('token');
     }
 
+    public function getStorkPayloadOwnerId($inputString): string
+    {
+        $inputString = str_replace('-', '', $inputString);
+
+        $encodedString = UniqueIdEntity::base62Manual(UniqueIdEntity::hexToDecimal($inputString));
+
+        return substr($encodedString, 0, 14);
+    }
+
     public function getStorkLoginSignupPayload(array $input, array $otp, Entity $user = null)
     {
         $receiver = $input[Entity::CONTACT_MOBILE];
@@ -1704,11 +1727,25 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
-        $ownerId = "1000000000";
+        $headers = Request::header();
+
+        $ownerId = '1000000000';
 
         if (is_null($user) === false)
         {
             $ownerId =$user->getId();
+        }
+        else
+        {
+            if(isset($headers[RequestHeader::X_AB_USER_ID][0]) === true)
+            {
+                $splitResponse = $this->getSplitzResponse($headers[RequestHeader::X_AB_USER_ID][0], 'ab_user_id_experiment');
+
+                if($splitResponse === 'enable')
+                {
+                    $ownerId = $this->getStorkPayloadOwnerId($headers[RequestHeader::X_AB_USER_ID][0]);
+                }
+            }
         }
 
         $payload = [

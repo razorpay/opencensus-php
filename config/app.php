@@ -1330,5 +1330,7 @@ return array(
 
     'appending_userid_in_sendsms_payload' => env('APPENDING_USERID_IN_SENDSMS_PAYLOAD'),
 
-    'send_payout_service_emails_via_stork_all'  => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK_ALL')
+    'send_payout_service_emails_via_stork_all'  => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK_ALL'),
+
+    'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT')
 );
