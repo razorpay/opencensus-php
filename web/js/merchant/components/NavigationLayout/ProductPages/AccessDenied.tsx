@@ -20,7 +20,6 @@ const AccessDeniedPage: React.FC<AccessDeniedPageProps> = ({ title, description 
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
-      backgroundColor={'surface.background.gray.intense'}
       padding="spacing.4"
       minHeight={{ m: '100%', l: '100%' }}
     >

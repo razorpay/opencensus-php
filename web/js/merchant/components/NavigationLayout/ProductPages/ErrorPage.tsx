@@ -17,7 +17,6 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
       justifyContent="center"
       alignItems="center"
       height={'100vh'}
-      backgroundColor={'surface.background.gray.intense'}
       padding="spacing.4"
     >
       <Box marginTop={{ base: 'spacing.4', m: 'spacing.10' }} textAlign="center">

@@ -60,7 +60,6 @@ const GrowthPage: React.FC<GrowthPageProps> = ({ title, description, actions, im
       justifyContent={{ base: 'center', m: 'center', l: 'space-between' }}
       paddingX={{ base: 'spacing.4' }}
       paddingY={{ base: 'spacing.4', m: '154px', l: '154px' }}
-      backgroundColor={'surface.background.gray.intense'}
       maxWidth={{ base: '100%', m: '100%', l: '1200px' }}
       margin={{ base: 'spacing.0', m: 'spacing.0', l: ['spacing.0', 'auto'] }}
     >
