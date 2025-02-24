@@ -124,12 +124,14 @@ export const isConnectedNavigationEnabled = ({
   abExperiments,
 }: ConnectedNavigationEnabled): boolean => {
   const isActivated = user?.isAccepted;
+  const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({ user, abExperiments });
 
   return (
     isActivated &&
     user.isCountryIndia &&
     user.isOrgRZP &&
-    !checkIfPosSalesAgent({ user, abExperiments })?.isPosSalesAgent &&
+    !isPosSalesAgent &&
+    !isPosEkycAgent &&
     isExperimentEnabled(abExperiments.connected_navigation)
   );
 };
