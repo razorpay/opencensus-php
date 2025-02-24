@@ -475,7 +475,7 @@ class Core extends Base\Core
 
                     $response = $this->createResponse($merchantDetails);
 
-                    $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_RESPONSE, [
+-                    $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_RESPONSE, [
                         'merchant_id'                 => $merchant->getId(),
                         'start_time'                  => $startTime * 1000,
                         'overall_duration'            => (microtime(true) - $startTime) * 1000,
@@ -6047,7 +6047,7 @@ class Core extends Base\Core
         $bankCore = (new BankAccount\Core);
 
         // Build the input array for the merchant's bank account creation
-        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant->merchantDetail);
+        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant);
 
         $bankCore->createOrChangeBankAccount($bankData, $merchant);
     }
@@ -6202,7 +6202,7 @@ class Core extends Base\Core
             $bankCore = (new BankAccount\Core);
 
             // Build the input array for the merchant's bank account creation
-            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails, true);
+            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant, true);
 
             $bankCore->createOrChangeBankAccount($bankData, $merchant, false, false);
 

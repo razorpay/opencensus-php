@@ -7000,4 +7000,95 @@ class ActivationTest extends OAuthTestCase
             (new Merchant\Activate)->activate($merchant);
         });
     }
+
+
+    public function testIndiaBankAccountCreation()
+    {
+        $orgId      = self::DEFAULT_MERCHANT_ID;
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYE';
+        $this->mockRazorxTreatment();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'       => 4,
+            'business_website'    => 'https://razorpay.com',
+            'submitted'           => 1,
+            'bank_account_number' => "122234555677",
+            "bank_branch_ifsc"    =>   "HDFC0000001",
+            "bank_branch_code"     =>   "HDFC0000001",
+            "bank_branch_code_type" => "IFSC",
+            "bank_account_name" => "test",
+            "contact_mobile" => "12345678"
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->fixtures->edit('merchant', $merchant->getId(), [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId,
+            "country_code" => "IN"
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $this->app['repo']->transaction(function() use ($merchant) {
+            (new Merchant\Activate)->activate($merchant);
+        });
+
+        $bankAccount = $this->getDbEntity('bank_account', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals("IFSC", $bankAccount->getIdentifierType());
+        $this->assertEquals("122234555677", $bankAccount->getAccountNumber());
+
+    }
+
+    public function testSingaporeBankAccountCreation()
+    {
+        $orgId      = self::CURLEC_ORG_ID;
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYE';
+        $this->mockRazorxTreatment();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'       => 4,
+            'business_website'    => 'https://razorpay.com',
+            'submitted'           => 1,
+            'bank_account_number' => "122234555677",
+            "bank_branch_ifsc"    =>   "HDFC0000001",
+            "bank_branch_code"     =>   "MBBEMYKL",
+            "bank_branch_code_type" => "BIC",
+            "bank_account_name" => "test",
+            "contact_mobile" => "12345678",
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->fixtures->edit('merchant', $merchant->getId(), [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId,
+            "country_code" => "SG"
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $this->app['repo']->transaction(function() use ($merchant) {
+            (new Merchant\Activate)->activate($merchant);
+        });
+
+        $bankAccount = $this->getDbEntity('bank_account', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals("BIC", $bankAccount->getIdentifierType());
+        $this->assertEquals("122234555677", $bankAccount->getbankaccountnumber());
+
+    }
 }

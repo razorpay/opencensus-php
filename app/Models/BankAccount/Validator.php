@@ -78,11 +78,12 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_CITY                => 'sometimes|max:30|alpha_space',
         Entity::BENEFICIARY_STATE               => 'sometimes|max:2',
         Entity::BENEFICIARY_PIN                 => 'sometimes|integer|digits:6',
-        Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN',
+        Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN,MY,SG',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|max:15|contact_syntax',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::TYPE                            => 'sometimes|string',
+        Entity::IDENTIFIER_TYPE                 => 'sometimes|string|max:20',
     ];
 
     /*

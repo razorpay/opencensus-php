@@ -9371,7 +9371,7 @@ class Core extends Base\Core
 
         $bankAccountCore = new BankAccount\Core();
 
-        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount->merchantDetail, true);
+        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount, true);
 
         $data = array_merge($data, $input);
 
