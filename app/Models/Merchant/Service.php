@@ -10928,6 +10928,7 @@ class Service extends Base\Service
             Entity::EMAIL                   => $input[BatchHeader::ACCOUNT_EMAIL],
             Entity::DASHBOARD_ACCESS        => (bool) $input[BatchHeader::DASHBOARD_ACCESS],
             Entity::ALLOW_REVERSALS         => (bool) $input[BatchHeader::CUSTOMER_REFUNDS],
+            Entity::ACCOUNT_CODE            => $input[BatchHeader::ACCOUNT_CODE] ?? '',
         ];
     }
 

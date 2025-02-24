@@ -8468,6 +8468,10 @@ class Core extends Base\Core
         {
             $this->validateCode($input[Entity::CODE], $parentMerchant, $isLinkedAccount);
         }
+
+        if (isset($input[Entity::ACCOUNT_CODE]) === true) {
+            $this->validateCode($input[Entity::ACCOUNT_CODE], $parentMerchant, $isLinkedAccount);
+        }
     }
 
     protected function validateCode(string $code, Entity $parentMerchant, bool $isLinkedAccount)

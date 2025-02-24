@@ -88,6 +88,7 @@ class Limit
         Type::SUBMERCHANT_TYPE_UPDATE               => 50000,
         Type::NACH_MIGRATION                        => 500100,
         Type::LINKED_ACCOUNT_CREATE                 => 50000,
+        Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE => 50000,
         Type::PAYMENT_TRANSFER                      => 50000,
         Type::TRANSFER_REVERSAL                     => 50000,
         Type::PAYMENT_TRANSFER_RETRY                => 10000,

@@ -729,6 +729,7 @@ class AdminFetch
                         'hitachi_cbk_visa',
                         'hitachi_cbk_rupay',
                         'linked_account_create',
+                        'linked_account_create_with_account_code',
                         'payment_transfer',
                         'transfer_reversal',
                         'payment_transfer_retry',

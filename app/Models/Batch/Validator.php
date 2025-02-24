@@ -1153,6 +1153,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $linkedAccountCreateWithAccountCodeCreateRules = [
+        Entity::TYPE                 => 'required|in:linked_account_create_with_account_code',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $paymentTransferCreateRules = [
         Entity::TYPE                 => 'required|in:payment_transfer',
         Entity::NAME                 => 'filled|string|max:255',
@@ -3112,7 +3120,7 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountBatchActionAllowed(& $input, Merchant\Entity $merchant, bool $validateOtp = false)
     {
-        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
+        if((($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) || ($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE)) and
             (in_array($merchant->getCategory(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY]) === true) and
             (in_array($merchant->getCategory2(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY2]) === true) and
             (app('basicauth')->isAdminAuth() === false))
@@ -3122,9 +3130,9 @@ class Validator extends Base\Validator
             );
         }
 
-        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
-           (app('basicauth')->isProxyAuth() === true) and
-           ($validateOtp === true))
+        if((($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) || ($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE)) and
+            (app('basicauth')->isProxyAuth() === true) and
+            ($validateOtp === true))
         {
             $properties = [
                 'id'                   => $merchant->getId(),

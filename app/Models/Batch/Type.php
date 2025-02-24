@@ -46,6 +46,9 @@ class Type
 
     const LINKED_ACCOUNT_CREATE     = 'linked_account_create';
 
+    const LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE     = 'linked_account_create_with_account_code';
+
+
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT      = 'virtual_bank_account';
 
@@ -642,6 +645,7 @@ class Type
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
+        self::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
@@ -744,6 +748,7 @@ class Type
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
+        self::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,

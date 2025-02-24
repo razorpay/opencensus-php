@@ -146,6 +146,7 @@ class Validator extends Base\Validator
         Entity::ID                          => 'sometimes|alpha_num|size:14',
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'sometimes|email',
+        Entity::ACCOUNT_CODE                => 'sometimes|string',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',

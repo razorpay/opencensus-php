@@ -768,6 +768,7 @@ class Header
     const PARTNER_MERCHANT_ID       = 'partner_merchant_id';
     const ACCOUNT_NAME              = 'account_name';
     const IMPLICIT_PLAN_ID          = 'implicit_plan_id';
+    const ACCOUNT_CODE              = 'account_code';
     const SUBMERCHANT_TYPE          = 'submerchant_type';
     const ANNUAL_TURNOVER_MIN       = 'annual_turnover_min';
     const ANNUAL_TURNOVER_MAX       = 'annual_turnover_max';
@@ -3197,6 +3198,37 @@ class Header
                 self::IFSC_CODE,
                 self::ACCOUNT_NUMBER,
                 self::BENEFICIARY_NAME,
+                self::ACCOUNT_STATUS,
+                self::ACTIVATED_AT,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+        Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE => [
+            self::INPUT => [
+                self::ACCOUNT_NAME,
+                self::ACCOUNT_EMAIL,
+                self::DASHBOARD_ACCESS,
+                self::CUSTOMER_REFUNDS,
+                self::BUSINESS_NAME,
+                self::BUSINESS_TYPE,
+                self::IFSC_CODE,
+                self::ACCOUNT_NUMBER,
+                self::BENEFICIARY_NAME,
+                self::ACCOUNT_CODE
+            ],
+            self::OUTPUT => [
+                self::ACCOUNT_NAME,
+                self::ACCOUNT_EMAIL,
+                self::ACCOUNT_ID,
+                self::DASHBOARD_ACCESS,
+                self::CUSTOMER_REFUNDS,
+                self::BUSINESS_NAME,
+                self::BUSINESS_TYPE,
+                self::IFSC_CODE,
+                self::ACCOUNT_NUMBER,
+                self::BENEFICIARY_NAME,
+                self::ACCOUNT_CODE,
                 self::ACCOUNT_STATUS,
                 self::ACTIVATED_AT,
                 self::ERROR_CODE,
