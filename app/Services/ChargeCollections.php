@@ -46,7 +46,7 @@ class ChargeCollections
     /**
      * @var string
      */
-    protected $requestTimeout;
+    protected $requestTimeout, $pricingReadsTimeout;
 
     // Headers
     const ACCEPT            = 'Accept';
@@ -112,6 +112,7 @@ class ChargeCollections
         $this->secret = $this->config['charge_collections_password'][$this->mode];
 
         $this->requestTimeout = $this->config['request_timeout'];
+        $this->pricingReadsTimeout = $this->config['pricing_reads_timeout'];
 
         $this->auth = app('basicauth');
     }
@@ -133,7 +134,7 @@ class ChargeCollections
         array $headers = [],
         string $action = "")
     {
-        $request = $this->generateRequest($endpoint, $method, $data, $headers);
+        $request = $this->generateRequest($endpoint, $method, $data, $headers, $action);
 
         return $this->sendChargeCollectionsRequest($request, $endpoint, $action);
     }
@@ -421,7 +422,7 @@ class ChargeCollections
      *
      * @return array
      */
-    protected function generateRequest(string $endpoint, string $method, array $data, array $headers): array
+    protected function generateRequest(string $endpoint, string $method, array $data, array $headers, string $action = ""): array
     {
         $baseUrl = $this->baseUrl;
         $key = $this->key;
@@ -438,9 +439,14 @@ class ChargeCollections
         {
             $data = (empty($data) === false) ? json_encode($data) : null;
         }
+        $timeout = $this->requestTimeout;
+        if(in_array($action, ['getPricingPlan', 'getPricingRule', 'getPricingPlansForFeesCalculation'], true))
+        {
+            $timeout = $this->pricingReadsTimeout;
+        }
 
         $options = [
-            'timeout' => $this->requestTimeout,
+            'timeout' => $timeout,
             'auth'    => [
                 $key,
                 $secret

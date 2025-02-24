@@ -2122,6 +2122,7 @@ return [
             'live'  => env('CHARGE_COLLECTIONS_LIVE_URL'),
         ],
         'request_timeout' => env('CHARGE_COLLECTIONS_REQUEST_TIMEOUT', 0.1),
+        'pricing_reads_timeout' => env('CHARGE_COLLECTIONS_PRICING_READS_TIMEOUT', 1),
     ],
 
     'razorassist' => [

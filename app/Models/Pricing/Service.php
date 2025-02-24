@@ -115,6 +115,11 @@ class Service extends Base\Service
     public function createPlanLegacy($input, $type = null, $planAndRuleIds = null, $orgID = '', $internalCall = false)
     {
         // if rules are sent in json encoded form, decode it
+        if ($type === Type::BUY_PRICING)
+        {
+            $this->repo->pricing->onlyBuyPricing();
+        }
+
         if (isset($input['rules']) === true and is_string($input['rules']) === true)
         {
             $input['rules'] = json_decode($input['rules'], true);
@@ -151,8 +156,6 @@ class Service extends Base\Service
         }else{
             $ruleOrgId = $this->getRuleOrgId();
         }
-
-        $this->repo->pricing->withBuyPricing();
 
         if ($type === Type::BUY_PRICING)
         {

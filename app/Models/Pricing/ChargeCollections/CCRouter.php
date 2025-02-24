@@ -86,6 +86,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => true,
         'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' => true,
         'RZP\\Models\\Pricing\\Fee\\getPricingPlanForFeesCalculation' => true,
+        'RZP\\Models\\Pricing\\PayoutFee\\getPricingPlanForFeesCalculation' => true,
     );
 
     // Function to Route map used for fetch plan/rules operations: Only used for read methods
@@ -113,6 +114,7 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
         'RZP\\Models\\Pricing\\Fee\\getPricingPlanForFeesCalculation' => ChargeCollections::GetPricingPlansForFeesCalculationURL,
+        'RZP\\Models\\Pricing\\PayoutFee\\getPricingPlanForFeesCalculation' => ChargeCollections::GetPricingPlansForFeesCalculationURL,
     );
 
     public function __construct(bool $writes = false, bool $reads = false)

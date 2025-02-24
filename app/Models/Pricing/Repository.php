@@ -33,7 +33,6 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'deleted';
 
-    const WITH_BUY_PRICING      = 'with_buy_pricing';
     const WITHOUT_BUY_PRICING   = 'without_buy_pricing';
     const ONLY_BUY_PRICING      = 'only_buy_pricing';
 
@@ -70,11 +69,6 @@ class Repository extends Base\Repository
     protected function newQueryWithConnection($connection)
     {
         return $this->addQueryParamBuyPricing(parent::newQueryWithConnection($connection));
-    }
-
-    public function withBuyPricing()
-    {
-        return $this->setBuyPricingEnum(self::WITH_BUY_PRICING);
     }
 
     public function withoutBuyPricing()
@@ -1334,8 +1328,6 @@ class Repository extends Base\Repository
     {
         switch ($this->buyPricingEnum)
         {
-            case self::WITH_BUY_PRICING :
-                return $query;
             case self::ONLY_BUY_PRICING :
                 return $query->where(Entity::TYPE, '=', Type::BUY_PRICING);
             default :
