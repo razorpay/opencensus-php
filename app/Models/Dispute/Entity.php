@@ -118,6 +118,8 @@ class Entity extends Base\PublicEntity
 
     const DEDUCTION_SOURCE_ID_LENGTH   = 14;
 
+    const DEBIT_FEE_ADJUSTMENT_ID = 'debit_fee_adjustment_id';
+    const CREDIT_FEE_ADJUSTMENT_ID = 'credit_fee_adjustment_id';
 
     //Lifecycle related constants
     const ADMIN_ID      = 'admin_id';
@@ -389,7 +391,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
     }
 
-    public function toDualWriteArray() : array
+    public function toDualWriteArray($feeNegativeAdjustmentId = '', $feePositiveAdjustmentId = '') : array
     {
         $array = $this->toArray();
 
@@ -397,6 +399,13 @@ class Entity extends Base\PublicEntity
         unset($array[self::EVIDENCE]);
         unset($array[self::REASON_DESCRIPTION]);
         unset($array[self::REASON_CODE]);
+
+        if ($feeNegativeAdjustmentId !== '') {
+            $array = array_merge($array, [self::DEBIT_FEE_ADJUSTMENT_ID => $feeNegativeAdjustmentId]);
+        }
+        if ($feePositiveAdjustmentId !== '') {
+            $array = array_merge($array, [self::CREDIT_FEE_ADJUSTMENT_ID => $feePositiveAdjustmentId]);
+        }
 
         if (is_null($this->getRecoveryStatus()) === false)
         {

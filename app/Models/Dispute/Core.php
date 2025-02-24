@@ -70,6 +70,15 @@ class Core extends Base\Core
 
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount V2';
 
+    const FEE_DEBIT_PRE_ARB_ADJUSTMENT_DESCRIPTION   = "Fee Debit for Pre-Arbitration";
+
+    const FEE_DEBIT_ARB_ADJUSTMENT_DESCRIPTION      = "Fee Debit for Arbitration";
+
+    const FEE_CREDIT_PRE_ARB_ADJUSTMENT_DESCRIPTION = "Fee Credit for Pre-Arbitration";
+
+    const FEE_CREDIT_ARB_ADJUSTMENT_DESCRIPTION      = "Fee Credit for Arbitration";
+
+
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
     const DISPUTE_BULK_EMAIL_MUTEX     = 'DISPUTE_BULK_EMAIL_MUTEX';
@@ -194,6 +203,28 @@ class Core extends Base\Core
                     if ($dispute->getDeductAtOnset() === true && $reverseShadowResp === null)
                     {
                         $this->createNegativeAdjustmentAndUpdateDispute($dispute, 0, false);
+
+                        $disputePhase = $dispute->getPhase();
+
+                        if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
+                        {
+                            $network = $this->getNetwork($payment);
+
+                            $feeResult = $this->getFeeDetails($disputePhase, $network);
+
+                            $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+
+                            $currency = $feeResult[DisputeConstants::CURRENCY];
+
+                            if ($fee !== 0)
+                            {
+                                [$feeAmount, $merchantCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+
+                                $feeNegativeAdjustmentId = $this->createNegativeAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $merchantCurrency, true);
+
+                                $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID] = $feeNegativeAdjustmentId;
+                            }
+                        }
                     }
 
                     if ($reverseShadowResp === null)
@@ -216,7 +247,10 @@ class Core extends Base\Core
                     // neither shadow nor reverse shadow mode should be enabled if we want to call the dual-write API
                     if ($isShadowModeDualWrite === false && $reverseShadowResp === null)
                     {
-                        $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::CREATE);
+                        $feeNegativeAdjustmentId = isset($input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID])
+                            ? $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID]: '';
+
+                        $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray($feeNegativeAdjustmentId, ''), Table::DISPUTE, DisputeConstants::CREATE);
                     }
 
                     return $dispute;
@@ -386,7 +420,10 @@ class Core extends Base\Core
 
                     if ($isShadowModeDualWrite === false)
                     {
-                        $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
+                        $feePositiveAdjustmentId = isset($input[DisputeConstants::FEE_POSITIVE_ADJUSTMENT_ID])
+                            ? $input[DisputeConstants::FEE_POSITIVE_ADJUSTMENT_ID]: '';
+
+                        $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray('', $feePositiveAdjustmentId), Table::DISPUTE, DisputeConstants::UPDATE);
                     }
 
                     $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
@@ -649,6 +686,51 @@ class Core extends Base\Core
         if ($this->shouldReverse($dispute) === true)
         {
             $this->createPositiveAdjustmentAndUpdateDispute($dispute);
+
+            $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+            $disputePhase = $dispute->getPhase();
+
+            if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
+            {
+                $network = $this->getNetwork($payment);
+
+                $feeResult = $this->getFeeDetails($disputePhase, $network);
+
+                $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+                if ($fee !== 0)
+                {
+
+                    $adjustment = $dispute->adjustments->filter(function($adjustment) {
+                        // check if the description contains any of the two possible strings
+                        foreach ([self::FEE_DEBIT_PRE_ARB_ADJUSTMENT_DESCRIPTION, self::FEE_DEBIT_ARB_ADJUSTMENT_DESCRIPTION] as $description) {
+                            if (strpos($adjustment->getDescription(), $description) !== false) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })->first();
+
+                    $this->trace->info(
+                        TraceCode::FETCH_DISPUTE_POSITIVE_FEE_ADJUSTMENT,
+                        [
+                            "adjustment" => $adjustment,
+
+                        ]
+                        );
+                    
+                    $feeAmount = abs($adjustment->getAmount());
+                    $feeCurrency = $adjustment->getCurrency();
+                    // this is the fallback code need discuss with team if keep this or remove
+                    // if (empty($feeAmount) && empty($feeCurrency)) {
+                    //     [$feeAmount, $feeCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+                    // }
+                    
+                    $feePositiveAdjustmentId = $this->createPositiveAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $feeCurrency, true);
+
+                    $input[DisputeConstants::FEE_POSITIVE_ADJUSTMENT_ID] = $feePositiveAdjustmentId;
+                }
+            }
         }
     }
 
@@ -717,6 +799,30 @@ class Core extends Base\Core
         if ($dispute->getAmountDeducted() === 0)
         {
             $this->createNegativeAdjustmentAndUpdateDispute($dispute, $acceptedDisputeAmount);
+
+            $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+            $disputePhase = $dispute->getPhase();
+
+            if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
+            {
+                $network = $this->getNetwork($payment);
+
+                $feeResult = $this->getFeeDetails($disputePhase, $network);
+
+                $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+
+                $currency = $feeResult[DisputeConstants::CURRENCY];
+
+                if ($fee !== 0)
+                {
+                    [$feeAmount, $merchantCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+
+                    $feeNegativeAdjustmentId = $this->createNegativeAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $merchantCurrency, true);
+
+                    $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID] = $feeNegativeAdjustmentId;
+                }
+            }
         }
         else
         {
@@ -806,17 +912,73 @@ class Core extends Base\Core
         Refund\Entity::verifyIdAndStripSign($refundId));
     }
 
-    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $updatePaymentAttributes = true)
+
+    protected function getAmountInMerchantCurrency($amount, $currency, $dispute) {
+        $merchantCurrency = $dispute->merchant->getCurrency();
+        $merchantAmount = (new Currency\Core)->convertAmount(
+            abs($amount),
+            $currency,
+            $merchantCurrency);
+        
+        $this->trace->info(TraceCode::AMOUNT_IN_MERCHANT_CURRENCY, [
+            'amount' => $amount,
+            'merchantCurrency' => $merchantCurrency,
+        ]);
+    
+        return [$merchantAmount, $merchantCurrency];
+    }
+
+    protected function getFeeDescription($dispute, $adjustmentType = null) {
+     
+        $disputePhase = $dispute->getPhase();
+        $adjustmentDescription = '';
+        if ($disputePhase === Phase::PRE_ARBITRATION) {
+            if ($adjustmentType === LedgerConstants::POSITIVE_ADJUSTMENT) {
+                $adjustmentDescription = self::FEE_CREDIT_PRE_ARB_ADJUSTMENT_DESCRIPTION;
+            } 
+            elseif ($adjustmentType === LedgerConstants::NEGATIVE_ADJUSTMENT) {
+                $adjustmentDescription = self::FEE_DEBIT_PRE_ARB_ADJUSTMENT_DESCRIPTION;
+            }
+        } 
+        elseif ($disputePhase === Phase::ARBITRATION) {
+            if ($adjustmentType === LedgerConstants::POSITIVE_ADJUSTMENT) {
+                $adjustmentDescription = self::FEE_CREDIT_ARB_ADJUSTMENT_DESCRIPTION;
+            } 
+            elseif ($adjustmentType === LedgerConstants::NEGATIVE_ADJUSTMENT) {
+                $adjustmentDescription = self::FEE_DEBIT_ARB_ADJUSTMENT_DESCRIPTION;
+            }
+        }
+        
+        return $adjustmentDescription;
+        
+    }
+    // For negativeAdjustments created for pre-arb and arb fees no dispute entity update is required.
+    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $updatePaymentAttributes = true, $currency = '', $isFee = false)
     {
-        if ($amount === 0)
-        {
+
+        if ($amount === 0) {
             $amount = $dispute->getBaseAmount() ?: $dispute->getAmount();
         }
 
+        if (empty($currency)) {
+            $currency = $dispute->getBaseCurrency() ?: $dispute->getCurrency();
+        }
+
+        $adjustmentDescription = self::DEBIT_ADJUSTMENT_DESCRIPTION;
+
+        if ($isFee){
+            $adjustmentDescription = 
+                $this->getFeeDescription($dispute, LedgerConstants::NEGATIVE_ADJUSTMENT);
+        }
+        if ($adjustmentDescription === '')
+        {
+            $message = 'Negative Adjustment description not found';
+            throw new Exception\BadRequestValidationFailureException($message);
+        }
         $input = [
-            Adjustment\Entity::CURRENCY    => $dispute->getBaseCurrency() ?: $dispute->getCurrency(),
+            Adjustment\Entity::CURRENCY    => $currency,
             Adjustment\Entity::AMOUNT      => 0 - $amount,
-            Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
+            Adjustment\Entity::DESCRIPTION => $adjustmentDescription,
         ];
 
         $newBalance = 0;
@@ -843,7 +1005,11 @@ class Core extends Base\Core
                 }
             }
 
-            $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
+            if ($isFee === false)
+            {
+                $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
+            }
+
 
             $disputePublicId = $dispute->getPublicId();
 
@@ -911,24 +1077,44 @@ class Core extends Base\Core
             }
         }
 
-        $dispute->setAmountDeducted($amount);
+        if ($isFee === false)
+        {
+            $dispute->setAmountDeducted($amount);
 
-        $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
+            $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
+        }
+
+        return $adjustment->getId();
     }
 
-    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true, string $adjustmentCurrency=null)
+    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $shouldResetDeductionSourceAttributes = true, string $currency = '', bool $isFee = false)
     {
         if ($amount === 0)
         {
             $amount = $dispute->getAmountDeducted();
         }
-        if ($adjustmentCurrency === null) {
-            $adjustmentCurrency = $dispute->getBaseCurrency() ?: $dispute->getCurrency();
+
+        if (empty($currency)) {
+            $currency = $dispute->getBaseCurrency() ?: $dispute->getCurrency();
+        }
+
+        $adjustmentDescription = self::CREDIT_ADJUSTMENT_DESCRIPTION;
+
+        if ($isFee === true) {
+            if ($isFee){
+                $adjustmentDescription = 
+                    $this->getFeeDescription($dispute, LedgerConstants::POSITIVE_ADJUSTMENT);
+            }
+        }
+        if ($adjustmentDescription === '')
+        {
+            $message = 'Positive Adjustment description not found';
+            throw new Exception\BadRequestValidationFailureException($message);
         }
         $input = [
-            Adjustment\Entity::CURRENCY    => $adjustmentCurrency,
+            Adjustment\Entity::CURRENCY    => $currency,
             Adjustment\Entity::AMOUNT      => $amount,
-            Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
+            Adjustment\Entity::DESCRIPTION => $adjustmentDescription,
         ];
 
         if ($dispute->isBackfill() === false)
@@ -953,14 +1139,19 @@ class Core extends Base\Core
             }
         }
 
-        $dispute->setAmountReversed($amount);
+        if ($isFee === false)
+        {
+            $dispute->setAmountReversed($amount);
+        }
 
         $this->reversePaymentRefundAttributesDueToPositiveAdjustment($dispute);
 
-        if ($shouldResetDeductionSourceAttributes === true)
+        if ($shouldResetDeductionSourceAttributes === true && $isFee === false)
         {
             $dispute->resetDeductionSourceAttributes();
         }
+
+        return $adjustment->getId();
     }
 
     private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment, $disputePublicId)
@@ -2839,5 +3030,43 @@ class Core extends Base\Core
                 'unrecoveredAmount'             => $dispute->getUnRecoveredAmount(),
                 'recoveryStatus'                => $dispute->getRecoveryStatus(),
             ]);
+    }
+
+    public function getNetwork($payment) {
+        $network = "";
+
+        if ($payment->hasCard() === true)
+        {
+            $card = $payment->card;
+
+            $network = $card->getNetwork();
+
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $network = DisputeConstants::NPCI;
+
+        }
+
+        return $network;
+    }
+
+    public function getFeeDetails($phase, $network)
+    {
+        $fees = DisputeConstants::DISPUTE_FEES;
+
+        foreach ($fees as $fee) {
+            if ($fee[DisputeConstants::PHASE] === $phase && $fee[DisputeConstants::NETWORK] === $network) {
+                return [
+                    DisputeConstants::FEE_AMOUNT => $fee[DisputeConstants::FEE_AMOUNT],
+                    DisputeConstants::CURRENCY => $fee[DisputeConstants::CURRENCY],
+                ];
+            }
+        }
+
+        return [
+            DisputeConstants::FEE_AMOUNT => 0,
+            DisputeConstants::CURRENCY => DisputeConstants::CURRENCY_INR,
+        ];
     }
 }

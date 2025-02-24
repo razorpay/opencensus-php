@@ -1883,6 +1883,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_CREATE_REQUEST_FOR_SUB_BALANCES            = 'ADJUSTMENT_CREATE_REQUEST_FOR_SUB_BALANCES';
     const FEE_ADJUSTMENT_CREATE_REQUEST                         = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const DISPUTE_ADJUSTMENT_CREATE_REQUEST                     = 'DISPUTE_ADJUSTMENT_CREATE_REQUEST';
+    const FETCH_DISPUTE_POSITIVE_FEE_ADJUSTMENT                 = 'FETCH_DISPUTE_POSITIVE_FEE_ADJUSTMENT';
     const PAYOUT_ADJUSTMENT_CREATE_REQUEST                      = 'PAYOUT_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                             = 'ADJUSTMENT_CREATE_SUCCESS';
     const ADJUSTMENT_SPLIT_REQUEST                              = 'ADJUSTMENT_SPLIT_REQUEST';
@@ -1897,6 +1898,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_MAIL_REQUEST                               = 'ADJUSTMENT_MAIL_REQUEST';
     const ADJUSTMENT_MAIL_REQUEST_FAILURE                       = 'ADJUSTMENT_MAIL_REQUEST_FAILURE';
     const ADJUSTMENT_MAIL_PROCESS_FAILURE                       = 'ADJUSTMENT_MAIL_PROCESS_FAILURE';
+    const AMOUNT_IN_MERCHANT_CURRENCY                          = 'AMOUNT_IN_MERCHANT_CURRENCY';
 
     const VERIFY_LOCKED_PAYMENTS                                = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_ACTION                                         = 'VERIFY_ACTION';

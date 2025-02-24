@@ -99,4 +99,62 @@ Razorpay';
     const DISPUTE_CONTEST_BY_MUTEX_TIMEOUT             = 60; // seconds
 
     const DISPUTE_CONTEST_BY_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
+
+    // Network
+    public const MASTERCARD = 'MasterCard';
+    public const VISA = 'Visa';
+    public const RUPAY = 'RuPay';
+    public const NPCI = 'NPCI';
+
+    // Attribute keys
+    public const PHASE = 'phase';
+    public const NETWORK = 'network';
+    public const FEE_AMOUNT = 'fee_amount';
+    public const CURRENCY = 'currency';
+
+    public const FEE_NEGATIVE_ADJUSTMENT_ID = 'fee_negative_adjustment_id';
+    public const FEE_POSITIVE_ADJUSTMENT_ID = 'fee_positive_adjustment_id';
+
+    // Currency
+    public const CURRENCY_USD = 'USD';
+    public const CURRENCY_INR = 'INR';
+
+    public const DISPUTE_FEES = [
+        [
+            self::PHASE => phase::PRE_ARBITRATION,
+            self::NETWORK => self::MASTERCARD,
+            self::FEE_AMOUNT => 1500,
+            self::CURRENCY => self::CURRENCY_USD,
+        ],
+        [
+            self::PHASE => phase::PRE_ARBITRATION,
+            self::NETWORK => self::VISA,
+            self::FEE_AMOUNT => 75,
+            self::CURRENCY => self::CURRENCY_USD,
+        ],
+        [
+            self::PHASE => phase::ARBITRATION,
+            self::NETWORK => self::MASTERCARD,
+            self::FEE_AMOUNT => 67500,
+            self::CURRENCY => self::CURRENCY_USD,
+        ],
+        [
+            self::PHASE => phase::ARBITRATION,
+            self::NETWORK => self::VISA,
+            self::FEE_AMOUNT => 60000,
+            self::CURRENCY => self::CURRENCY_USD,
+        ],
+        [
+            self::PHASE => phase::ARBITRATION,
+            self::NETWORK => self::RUPAY,
+            self::FEE_AMOUNT => 354000,
+            self::CURRENCY => self::CURRENCY_INR,
+        ],
+        [
+            self::PHASE => phase::ARBITRATION,
+            self::NETWORK => self::NPCI,
+            self::FEE_AMOUNT => 50000,
+            self::CURRENCY => self::CURRENCY_INR,
+        ],
+    ];
 }
