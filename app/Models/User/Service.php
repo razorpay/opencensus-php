@@ -129,7 +129,12 @@ class Service extends Base\Service
     public function isUserOrgAllowedSegregatedLoginSignup(): bool
     {
         // Org ids will be added as they adopt USL
-        $allowedOrgIds = [Org\Entity::RAZORPAY_ORG_ID];
+        $allowedOrgIds = [
+            Org\Entity::RAZORPAY_ORG_ID,
+            Org\Entity::HDFC_ORG_ID,
+            Org\Entity::AXIS_ORG_ID,
+            Org\Entity::YES_ORG_ID,
+        ];
 
         $orgId = $this->app['basicauth']->getOrgId();
 
