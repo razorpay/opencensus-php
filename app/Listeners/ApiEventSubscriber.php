@@ -506,44 +506,12 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            $properties = [
-                'id'            => $payment->getMerchantId(),
-                'experiment_id' => $this->app['config']->get('app.subscriptions_intl_auto_payments_handler_exp'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $payment->getMerchantId(),
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $varName = $response['response']['variant']['name'] ?? '';
-
-            if ($varName === 'variant_on')
+            if (($payment->hasSubscription() === true) and
+                ($payment->isApiBasedEmandateAsyncPayment() === false))
             {
-                $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
-                $country = $merchant->getCountry();
-                $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
-                    and ($payment->isRecurringTypeAuto() === true));
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-                if (($payment->hasSubscription() === true) and
-                    ($payment->isApiBasedEmandateAsyncPayment() === false) and
-                    (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
-                {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-                }
-            }
-            else
-            {
-                if (($payment->hasSubscription() === true) and
-                    ($payment->isApiBasedEmandateAsyncPayment() === false))
-                {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-                }
+                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
             }
         }
         catch (\Throwable $ex)
