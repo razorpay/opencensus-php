@@ -39,4 +39,6 @@ class Headers
     const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
 
     const APOLLOGRAPHQL_CLIENT_NAME     = 'apollographql-client-name';
+
+    const X_AB_USER_ID                  = 'x-ab-user-id';
 }

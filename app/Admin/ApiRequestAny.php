@@ -251,6 +251,11 @@ class ApiRequestAny
             $headers[Headers::X_CASE_TYPE] = Request::header('x-case-type');
         };
 
+        if(empty($_COOKIE['ab_user_id']) === false)
+        {
+            $headers[Headers::X_AB_USER_ID] = $_COOKIE['ab_user_id'];
+        }
+
         // === Request options
 
         $this->options = [
