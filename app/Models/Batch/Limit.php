@@ -70,6 +70,7 @@ class Limit
         Type::ECOLLECT_RBL                          => 100000,
         Type::ECOLLECT_YESBANK                      => 100000,
         Type::ECOLLECT_AXIS                         => 100000,
+        Type::ECOLLECT_AXIS_BANKING                 => 100000,
         Type::ECOLLECT_IDFC                         => 100000,
         Type::BANK_TRANSFER_EDIT                    => 10000,
         Type::MERCHANT_STATUS_ACTION                => 50000,

@@ -5731,6 +5731,8 @@ class VirtualAccountTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
         $response = $this->makeRequestAndGetContent($request);
 
         $va = $this->getDbLastEntity('virtual_account');
