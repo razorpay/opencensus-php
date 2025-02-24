@@ -56,7 +56,6 @@ export const BLACKLISTED_MCC_CODES_SET = new Set([
   '5966',
   '5933',
   '8651',
-  '5094',
   '5193',
   '5993',
 ]);

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { track } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/ActivationModal/analytics';
 import { useVerificationStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/Methods/IntlBankTransfer/verificationStates';
 import {
   ACCOUNTS_STATUS,
@@ -48,12 +49,18 @@ export const useIntlBankTransfer = ({
     mutationFn: (currency?: string) =>
       postInternationalVirtualAccountActivate(currency || currencyForActivation),
     onError: () => {
+      track('response', {
+        objectName: 'Failed to activate virtual account',
+      });
       showNotification({
         type: 'error',
         message: 'Failed to activate virtual account(s). Please try again',
       });
     },
     onSuccess: () => {
+      track('response', {
+        objectName: 'Virtual account activated',
+      });
       setCurrencyForActivation('');
       refetchVirtualAccounts();
       showNotification({
@@ -93,10 +100,19 @@ export const useIntlBankTransfer = ({
    * Method to toggle virtual account status
    */
   const handleAccountStatusToggle = () => {
+    track('clicked', {
+      objectName: 'Toggle virtual account status',
+      isActivated,
+    });
     toggleActivation(isActivated ? 'deactivate' : 'activate');
   };
 
   const handleActivationModalOpen = (triggerActivation = false, step?: 1 | 2 | 3 | 4) => {
+    track('clicked', {
+      objectName: 'Activation modal open',
+      step: step as number,
+    });
+
     if (triggerActivation) {
       activateAllAccounts('');
     } else if (isActivationModalOpen) {
@@ -116,11 +132,14 @@ export const useIntlBankTransfer = ({
    * Call this method when merchant wants to activate all the accounts
    */
   const handleActivate = (currency?: string) => {
+    track('clicked', {
+      objectName: 'Activate MoneySaver',
+      currency: currency as string,
+    });
     if (!isEddVerified || !purposeCode || !iecCode) {
       handleActivationModalOpen();
       return;
     }
-
     activateAllAccounts(currency);
   };
 
@@ -129,11 +148,19 @@ export const useIntlBankTransfer = ({
    * @param {string} currency - Currency for which account activation is requested
    */
   const handleSingleAccountActivation = (currency: string) => {
+    track('clicked', {
+      objectName: 'Activate a single account',
+      currency,
+    });
     setCurrencyForActivation(currency);
     handleActivate(currency);
   };
 
   const handleFailureRetry = (reason: VerificationStatus[keyof VerificationStatus]) => {
+    track('clicked', {
+      objectName: 'Retry activation',
+      reason,
+    });
     handleActivationModalOpen(false, VERIFICATION_STATUS_ACTIVATION_MODAL_STEP[reason]);
   };
 

@@ -136,3 +136,4 @@ app/Http/routes.php                                                      @joel-j
 resources/views/merchant/*                                               @joel-jaimon @dhruvdutt
 resources/views/partials/*                                               @joel-jaimon @dhruvdutt
 web/e2e/suites/partnerDashboard/pos/partnerAgent/clientAccounts.spec.js @razorpay/deploy-leads-dashboard
+web/js/merchant/views/AccountAndSettings/PaymentMethods/Tabs/International @parth-p-ui @ravid7000
