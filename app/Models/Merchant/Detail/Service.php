@@ -5460,6 +5460,8 @@ class Service extends Base\Service
                 return $this->core->deleteMerchantStoreInternal($merchantId, $input);
             case DetailConstants::SALES_ASSISTED_FORM_SUBMISSION:
                 return $this->core->submitSalesAssistedActivationForm($merchantId);
+            case DetailConstants::CREATE_UDD_FOR_NON_PGOS_MERCHANTS:
+                return (new \RZP\Models\DeviceDetail\Core)->createDeviceDetailForNonPgosMerchants($merchantId);
             case Constants::CONFIRM_USER_ACTION:
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
                 if (empty($this->app['basicauth']->getMerchant()) === true)

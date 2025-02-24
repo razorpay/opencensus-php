@@ -131,4 +131,65 @@ class Core extends Base\Core
 
         return $deviceDetail;
     }
+
+    public function createDeviceDetailForNonPgosMerchants(string $merchantId)
+    {
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+
+        $response = [];
+
+        // Case 1: Check if user_device_detail already exists
+        if(!empty($userDeviceDetail)){
+
+            $response["success"] = true;
+            $response["message"] = "Device details already exist for this merchant.";
+
+            return $response;
+        } else{
+
+            // Case 2: If no device details, check if there is a primary user associated with the merchant
+            $merchantUsers = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($merchantId, 'owner');
+
+            if (!empty($merchantUsers)) {
+
+                $userId = array_first($merchantUsers);
+
+                // Prepare input data for creating device details
+                $input = [
+                    Entity::MERCHANT_ID => $merchantId,
+                    Entity::USER_ID => $userId,
+                ];
+
+                try
+                {
+                    $deviceDetail = $this->createDeviceDetail($input);
+
+                    $response["success"] = true;
+                    $response["message"] = "Device details created successfully for this merchant.";
+                    $response["device_details"] = $deviceDetail;
+
+                    return $response;
+                } catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+
+                    $this->trace->info(
+                        TraceCode::USER_DEVICE_DETAIL_SAVE_FAILED,
+                        ['input' => $input]
+                    );
+
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR
+                    );
+                }
+            }
+            else {
+                // If no user info is found for the merchant, return an error message
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_USER_WITH_OWNER_ROLE_NOT_FOUND
+                );
+            }
+        }
+    }
+
 }
