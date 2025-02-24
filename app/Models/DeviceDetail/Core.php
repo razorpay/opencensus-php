@@ -184,10 +184,10 @@ class Core extends Base\Core
                 }
             }
             else {
-                // If no user info is found for the merchant, return an error message
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_USER_WITH_OWNER_ROLE_NOT_FOUND
-                );
+
+                $response["success"] = false;
+                $response["message"] = "Merchant user not found for ID: $merchantId";
+                return $response;
             }
         }
     }
