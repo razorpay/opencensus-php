@@ -22,11 +22,11 @@ const NCModal = ({
   const activationUrl = isActivationFormFullView ? '/kyc' : '/activation';
 
   const sessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
-  const expiryDate = getNcExpiryDate(kycClarificationsReasons);
-
+  
   const getContent = () => {
     switch (activationState) {
       case 'needs_clarification_payments_settlement_enabled': {
+        const expiryDate = getNcExpiryDate(kycClarificationsReasons);
         return {
           title: 'We need a few more details to complete KYC verification',
           body: (

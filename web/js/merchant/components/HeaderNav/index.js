@@ -38,6 +38,7 @@ import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -47,6 +48,9 @@ const ReKycStatusModal = lazyLoader(() =>
   import(/* webpackChunkName: 'reKycStatusModal' */ 'merchant/components/ReKycStatusAlerts').then(
     (module) => ({ default: module.ReKycStatusModal }),
   ),
+);
+const NCModal = lazyLoader(() =>
+  import(/* webpackChunkName: 'NCModal' */ 'merchant/components/Activation/NCModal'),
 );
 
 // number of times to show MTU offer
@@ -126,6 +130,11 @@ class HeaderNav extends Component {
   handleOnRefreshClick = () => {
     this.setState({ isRefreshLoading: true });
     window.location.reload();
+  };
+
+  goToNCOnEasy = () => {
+    const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
+    window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
   };
 
   render() {
@@ -399,6 +408,16 @@ class HeaderNav extends Component {
         {shouldShowReKycModal ? (
           <Suspense fallback={null}>
             <ReKycStatusModal />
+          </Suspense>
+        ) : null}
+
+        {user.isMccNcRequired ? (
+          <Suspense fallback={null}>
+            <NCModal
+              activationState="needs_clarification_with_payment_disabled"
+              goToNCOnEasy={this.goToNCOnEasy}
+              user={user}
+            />
           </Suspense>
         ) : null}
       </div>

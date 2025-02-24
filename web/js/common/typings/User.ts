@@ -176,6 +176,7 @@ type UserProperties = {
   orgCustomCode: string;
   isJnKOmniEnabled: boolean;
   rekyc_status: string;
+  mcc_verification_status: string;
   manual_rekyc: {
     status: {
       created_at: string;

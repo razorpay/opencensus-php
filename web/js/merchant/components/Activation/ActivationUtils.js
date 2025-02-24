@@ -522,6 +522,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
     isL2AllowedForPoiInitiated,
     activation_flow,
     pos_activation_status,
+    mcc_verification_status,
   } = activationData;
 
   const isSignupWithEasyOnboarding = checkIfSignUpViaEasyOnboarding(activationData);
@@ -574,13 +575,13 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
           activationState = activated ? 'under_review_with_tnc_passed' : 'under_review_with_tnc';
         }
       }
-    } else if (activation_status === 'needs_clarification') {
+    } else if (activation_status === 'needs_clarification' || mcc_verification_status === 'needs_clarification') {
       if (isNcEligibile) {
         if (activationData.activated && !merchant.hold_funds) {
           activationState = 'needs_clarification_payments_settlement_enabled';
         } else if (activationData.activated && merchant.hold_funds) {
           activationState = 'needs_clarification_with_payments_enabled';
-        } else if (!activationData.activated) {
+        } else if (!activationData.activated || mcc_verification_status === 'needs_clarification') {
           activationState = 'needs_clarification_with_payment_disabled';
         }
       } else if (activationStatusChangeLogs.includes('activated_mcc_pending')) {

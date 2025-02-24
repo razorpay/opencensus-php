@@ -403,6 +403,9 @@ export default class User {
   get needsClarification() {
     return this.activation_status === 'needs_clarification';
   }
+  get isMccNcRequired() {
+    return this.mcc_verification_status === 'needs_clarification';
+  }
 
   get isActivatedMCCPending() {
     return this.activation_status === 'activated_mcc_pending';
