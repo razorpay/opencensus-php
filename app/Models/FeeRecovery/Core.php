@@ -587,13 +587,13 @@ class Core extends Base\Core
                                                                   int $endTimestamp)
     {
         $merchant = $balance->merchant;
-
+        $merchantId = $merchant->getId();
         $balanceId = $balance->getId();
 
         $this->trace->info(
             TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_INITIATED,
             [
-                'merchant_id'   => $merchant->getId(),
+                'merchant_id'   => $merchantId,
                 'balance_id'    => $balanceId,
                 'start_time'    => $startTimestamp,
                 'end_time'      => $endTimestamp
@@ -601,31 +601,61 @@ class Core extends Base\Core
 
         // TODO : Add a limit to make sure that these fetch statements don't choke the network
 
-        $payouts = $this->repo->payout->fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
-            $merchant->getId(),
-            $balanceId,
-            $startTimestamp,
-            $endTimestamp
-        );
+        $properties = ['id' => $balanceId, 'experiment_id' => 'fee_recovery_datalake_migration'];
 
-        $failedPayouts = $this->repo->payout->fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
-            $merchant->getId(),
-            $balanceId,
-            $startTimestamp,
-            $endTimestamp
-        );
+        $expResult = $this->isSplitzExperimentEnable($properties, 'enabled');
 
-        $reversals = $this->repo->reversal->fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod(
-            $merchant->getId(),
-            $balanceId,
-            $startTimestamp,
-            $endTimestamp
-        );
+        if ($expResult === true)
+        {
+            $formatStringPayouts = "select p.id, p.fees from realtime_hudi_api.payouts p where p.merchant_id='%s' and p.balance_id='%s' and p.initiated_at is not null and p.initiated_at between %d and %d and coalesce(p.fee_type, '') != 'reward_fee'";
+            $queryPayouts = sprintf($formatStringPayouts, $merchantId, $balanceId, $startTimestamp, $endTimestamp);
+            $payoutsArray = $this->app['datalake.presto']->getDataFromDatalake($queryPayouts);
+            $payouts = $this->getPublicCollectionFromArrayWithType($payoutsArray, 'payout');
+
+            $formatStringFailedPayouts = "select id, fees from realtime_hudi_api.payouts p where p.merchant_id='%s' and p.balance_id='%s' and p.initiated_at is not null and p.failed_at between %d and %d and coalesce(p.fee_type, '') != 'reward_fee'";
+            $queryFailedPayouts = sprintf($formatStringFailedPayouts, $merchantId, $balanceId, $startTimestamp, $endTimestamp);
+            $failedPayoutsArray = $this->app['datalake.presto']->getDataFromDatalake($queryFailedPayouts);
+            $failedPayouts = $this->getPublicCollectionFromArrayWithType($failedPayoutsArray, 'payout');
+
+            $formatStringReversals = "select r.id, p.fees from realtime_hudi_api.reversals r join realtime_hudi_api.payouts p on r.entity_id=p.id where r.merchant_id='%s' and r.entity_type='payout' and r.balance_id='%s' and r.created_at between %d and %d and p.failed_at is null and coalesce(p.fee_type, '') != 'reward_fee'";
+            $query = sprintf($formatStringReversals, $merchantId, $balanceId, $startTimestamp, $endTimestamp);
+            $reversalsArray = $this->app['datalake.presto']->getDataFromDatalake($query);
+            $reversals = $this->getPublicCollectionFromArrayWithType($reversalsArray, 'reversal');
+
+            $this->trace->info(TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_TRINO_FETCH_COMPLETED, [
+                'merchant_id' => $merchantId,
+                'balance_id' => $balanceId,
+            ]);
+        }
+
+        else
+        {
+            $payouts = $this->repo->payout->fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $startTimestamp,
+                $endTimestamp
+            );
+
+            $failedPayouts = $this->repo->payout->fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $startTimestamp,
+                $endTimestamp
+            );
+
+            $reversals = $this->repo->reversal->fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $startTimestamp,
+                $endTimestamp
+            );
+        }
 
         $this->trace->info(
             TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_COMPLETED,
             [
-                'merchant_id'           => $merchant->getId(),
+                'merchant_id'           => $merchantId,
                 'balance_id'            => $balanceId,
                 'payout_count'          => $payouts->count(),
                 'failed_payout_count'   => $failedPayouts->count(),
@@ -1756,5 +1786,47 @@ class Core extends Base\Core
             ]);
 
         return $feeRecoveryPayout->toArrayPublic();
+    }
+
+    protected function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
+    }
+
+    protected function getPublicCollectionFromArrayWithType($array, $type)
+    {
+        $response = array();
+        if ($type === 'payout')
+        {
+            foreach($array as $payout)
+            {
+                $payoutEntity = new Payout\Entity();
+                $response[] = $payoutEntity->forceFill($payout);
+            }
+        }
+        else if ($type === 'reversal')
+        {
+            foreach($array as $reversal)
+            {
+                $reversalEntity = new Reversal\Entity();
+                $response[] = $reversalEntity->forceFill($reversal);
+            }
+        }
+        return new Base\PublicCollection($response);
     }
 }
