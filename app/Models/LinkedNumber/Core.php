@@ -4,6 +4,7 @@ namespace RZP\Models\LinkedNumber;
 
 use App;
 use RZP\Constants\Entity as E;
+use RZP\Error\Error;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Vpa;
@@ -35,14 +36,14 @@ class Core extends Base\Core
     {
         $mappedVpa = $this->mappedVpaFetchClient->fetchMappedVpaViaMicroservice($linkedNumber);
 
-        if (empty($mappedVpa) || !isset($mappedVpa[FundAccount\Entity::VPA])) {
+        if (empty($mappedVpa) || !isset($mappedVpa[FundAccount\Entity::VPA]) || empty($mappedVpa[FundAccount\Entity::VPA])) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VPA_NOT_FOUND,
+                ErrorCode::BAD_REQUEST_ERROR,
+                FundAccount\Entity::MOBILE,
                 null,
-                null,
-                PublicErrorDescription::BAD_REQUEST_VPA_NOT_FOUND
+                PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND
             );
         }
 
@@ -76,8 +77,8 @@ class Core extends Base\Core
         if ($matchScore < $threshold) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD_FAILURE_COUNT);
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA,
-                null,
+                ErrorCode::BAD_REQUEST_ERROR,
+                FundAccount\Entity::ACCOUNT_HOLDER_NAME,
                 [],
                 PublicErrorDescription::BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA
             );

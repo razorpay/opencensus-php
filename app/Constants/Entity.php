@@ -24,6 +24,7 @@ class Entity
     const P2P                        = 'p2p';
     const VPA                        = 'vpa';
     const LINKED_NUMBER              = 'linked_number';
+    const MOBILE                     = 'mobile';
     const MPAN                       = 'mpan';
     const CARD                       = 'card';
     const PLAN                       = 'plan';

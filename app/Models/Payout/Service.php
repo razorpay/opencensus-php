@@ -559,17 +559,17 @@ class Service extends Base\Service
 
         (new Validator)->validateAndUpdateCardMode($input);
 
-        $isLinkedNumberPayout = $this->isLinkedNumberPayout($input);
-        $linkedNumber = null;
+        $isMobileNumberPayout = $this->isMobileNumberPayout($input);
+        $mobileNumber = null;
 
-        if ($isLinkedNumberPayout) {
+        if ($isMobileNumberPayout) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT);
 
-            $linkedNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER][FundAccount\Entity::NUMBER] ?? null;
+            $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
 
             $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO,
                 [
-                    FundAccount\Entity::LINKED_NUMBER => $linkedNumber,
+                    FundAccount\Entity::LINKED_NUMBER => $mobileNumber,
                 ]);
 
             $properties = [
@@ -584,7 +584,7 @@ class Service extends Base\Service
                     ErrorCode::BAD_REQUEST_LINKED_NUMBER_PAYOUT_NOT_ALLOWED,
                     null);
             }
-            (new Validator)->validateLinkedNumber($input);
+            (new Validator)->validateMobileNumberPayout($input);
         }
 
         $isCompositePayout = false;
@@ -736,8 +736,9 @@ class Service extends Base\Service
             $payoutArray = $payout->toArrayPublic();
         }
 
-        if ($isLinkedNumberPayout) {
-            $this->sanitizeResponseForLinkedNumberPayout($payoutArray, $linkedNumber);
+        if ($isMobileNumberPayout) {
+            $fundAccount = $payout->fundAccount;
+            $this->sanitizeResponseForMobileNumberPayout($payoutArray, $fundAccount);
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT);
         }
 
@@ -7009,18 +7010,28 @@ class Service extends Base\Service
         }
     }
 
-    private function isLinkedNumberPayout(array $input): bool {
-        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::LINKED_NUMBER;
+    private function isMobileNumberPayout(array $input): bool {
+        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
     }
 
-    private function sanitizeResponseForLinkedNumberPayout(array &$payoutArray, string $linkedNumber)
+    private function sanitizeResponseForMobileNumberPayout(array &$payoutArray, FundAccount\Entity $fundAccount): void
     {
-        $payoutArray[Entity::FUND_ACCOUNT][Entity::ACCOUNT_TYPE] = FundAccount\Entity::LINKED_NUMBER;
-        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER] = [
-            FundAccount\Entity::NUMBER => $linkedNumber
+        $payoutArray[Entity::FUND_ACCOUNT][Entity::ACCOUNT_TYPE] = FundAccount\Entity::MOBILE;
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE] = [
+            FundAccount\Entity::NUMBER => $fundAccount->getLinkedNumber(),
+            FundAccount\Entity::ACCOUNT_HOLDER_NAME => $fundAccount->getCustomerName(),
         ];
-        unset($payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA]);
+
+        // Ensure existing VPA keys are not removed, only nullify ADDRESS and USERNAME
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] = array_merge(
+            $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] ?? [],
+            [
+                Vpa\Entity::ADDRESS => null,
+                Vpa\Entity::USERNAME => null,
+            ]
+        );
     }
+
 
     public function payoutsDualWriteFailureProcessingCron($input)
     {

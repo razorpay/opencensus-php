@@ -182,7 +182,9 @@ class Service extends Base\Service
 
         // We need to hide VPA for Linked Number Payouts
         if (!empty($linkedNumber)) {
-            $this->sanitizeResponseForLinkedNumberPayout($fundAccountArray, $linkedNumber);
+            $accountHolderName = $entity->getAccountHolderName();
+
+            $this->sanitizeResponseForLinkedNumberPayout($fundAccountArray, $linkedNumber, $accountHolderName);
         }
 
         return $fundAccountArray;
@@ -544,11 +546,12 @@ class Service extends Base\Service
 
     }
 
-    private function sanitizeResponseForLinkedNumberPayout(array &$fundAccountArray, string $linkedNumber)
+    private function sanitizeResponseForLinkedNumberPayout(array &$fundAccountArray, string $linkedNumber, string $accountHolderName)
     {
-        $fundAccountArray[Entity::ACCOUNT_TYPE] = Entity::LINKED_NUMBER;
-        $fundAccountArray[Entity::LINKED_NUMBER] = [
-            Entity::NUMBER => $linkedNumber
+        $fundAccountArray[Entity::ACCOUNT_TYPE] = Entity::MOBILE;
+        $fundAccountArray[Entity::MOBILE] = [
+            Entity::NUMBER => $linkedNumber,
+            Entity::ACCOUNT_HOLDER_NAME => $accountHolderName
         ];
         unset($fundAccountArray[Entity::VPA]);
     }

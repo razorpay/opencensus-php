@@ -533,7 +533,7 @@ class PublicErrorDescription
     const SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED                             = 'Qr payment processing failed';
 
     const SERVER_ERROR_FAILED_TO_FETCH_VPA                                      = 'Failed to Fetch VPA';
-    const BAD_REQUEST_VPA_NOT_FOUND                                             = 'VPA Not Found for the UPI Number';
+    const BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND                                             = 'No linked account details found';
 
     const BAD_REQUEST_CARD_INVALID_DATA                                         = 'Payment failed as card details (CVV or expiry date) are incorrect. Please check and try again';
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';
@@ -1180,7 +1180,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED                  = 'Cancelling a Fee Recovery Payout is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED                = 'Updating an internal Razorpay Fund Account is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED              = 'Creating a fund account for an Internal Razopay contact is not permitted';
-    const BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA                     = 'Account holder name does not match the customer name associated with the mapped VPA.';
+    const BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA                     = 'Account holder name not matching with bank provided name';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH                       = 'Amount recovered does not match with the total fees calculated for given payouts';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID         = 'Fee Recovery cannot be provided for a certain payout';
     const BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED             = 'Creating a payout to an internal Razorpay Fund Account is not permitted';

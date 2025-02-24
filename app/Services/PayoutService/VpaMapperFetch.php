@@ -18,16 +18,16 @@ class VpaMapperFetch extends Base
     const MAPPED_VPA_FETCH = 'mapped_vpa_fetch';
 
     /**
-     * @param string $linkedNumber
+     * @param string $mobileNumber
      * @return array
      */
 
-    public function fetchMappedVpaViaMicroservice(string $linkedNumber): array {
+    public function fetchMappedVpaViaMicroservice(string $mobileNumber): array {
         $startTime = millitime();
 
         $response = $this->makeRequestAndGetContent(
             [],
-            sprintf(self::MAPPED_VPA_PS_URI, $linkedNumber),
+            sprintf(self::MAPPED_VPA_PS_URI, $mobileNumber),
             Requests::GET
         );
 
@@ -38,7 +38,7 @@ class VpaMapperFetch extends Base
         $this->trace->info(TraceCode::MAPPED_VPA_RESPONSE_FROM_PS,
             [
                 'response' => $response,
-                'linked_number' => $linkedNumber
+                'mobile_number' => $mobileNumber
             ]);
 
         return $response;

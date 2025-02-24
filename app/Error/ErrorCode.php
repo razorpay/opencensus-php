@@ -2115,7 +2115,7 @@ class ErrorCode
     const SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE                               = 'SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE';
     const SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_TIMEOUT                               = 'SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_TIMEOUT';
     // Fetch VPA From PS
-    const BAD_REQUEST_VPA_NOT_FOUND                                                 = 'BAD_REQUEST_VPA_NOT_FOUND';
+    const BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND                                      = 'BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND';
 
     // UPI Payment Service Errors
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR                            = 'SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR';

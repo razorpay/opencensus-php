@@ -14,7 +14,6 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\UpiNumber;
 use RZP\Constants\Country;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
@@ -1790,19 +1789,19 @@ class Validator extends Base\Validator
 
     }
 
-    public function validateLinkedNumber(array &$input)
+    public function validateMobileNumberPayout(array &$input)
     {
         $allowedModes = [Entity::UPI];
 
         $mode = strtolower($input[Entity::MODE] ?? '');
 
-        $linkedNumberData = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER] ?? [];
-        $linkedNumber = $linkedNumberData[FundAccount\Entity::NUMBER] ?? null;
-        $accountHolderName = $linkedNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
+        $mobileNumberData = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE] ?? [];
+        $mobileNumber = $mobileNumberData[FundAccount\Entity::NUMBER] ?? null;
+        $accountHolderName = $mobileNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
 
-        $this->validateRequiredField($linkedNumber, ErrorCode::BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT);
+        $this->validateRequiredField($mobileNumber, ErrorCode::BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT);
         $this->validateRequiredField($accountHolderName, ErrorCode::BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT);
-        $this->validateLinkedNumberFormat($linkedNumber);
+        $this->validateLinkedNumberFormat($mobileNumber);
         $this->validateAllowedMode($mode, $allowedModes);
     }
 
