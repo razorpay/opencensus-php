@@ -1849,14 +1849,18 @@ class Service extends Base\Service
             return false;
         }
 
-        $undoPayoutExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
-            Constants\Mode::LIVE);
+        //only active for test mode
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         $isUndoPayoutPreferenceEnabled = $this->fetchUserPreferenceForUndoPayouts();
 
-        return ((strtolower($undoPayoutExperimentVariant) === 'on') && ($isUndoPayoutPreferenceEnabled));
+        return ((($this->mode === Constants\Mode::TEST) && ($isExperimentEnabled === true)) && ($isUndoPayoutPreferenceEnabled));
     }
 
     private function fetchUserPreferenceForUndoPayouts() {

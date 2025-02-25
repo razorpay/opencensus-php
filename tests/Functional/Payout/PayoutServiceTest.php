@@ -8778,14 +8778,9 @@ class PayoutServiceTest extends TestCase
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
-        $this->setMockRazorxTreatment(
-            [
-                'imps_mode_payout_filter' => 'control'
-            ]
-        );
-
         $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
-            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8873,14 +8868,9 @@ class PayoutServiceTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
 
-        $this->setMockRazorxTreatment(
-            [
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
-
         $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
-            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
@@ -9150,14 +9140,9 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_MultiplePayout_SpacesInAccountNumber()
     {
 
-        $this->setMockRazorxTreatment(
-            [
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
-
         $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
-            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -9259,13 +9244,9 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_CurrentAccountPayoutViaPayoutService_InvalidAccountNumber()
     {
-        $this->setMockRazorxTreatment(
-            [
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
 
-        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -9694,14 +9675,9 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_ExceptionFromCurrentAccount()
     {
 
-        $this->setMockRazorxTreatment(
-            [
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
-
         $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
-            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9865,14 +9841,10 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_ExceptionFromSharedAccount()
     {
-        $this->setMockRazorxTreatment(
-            [
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
 
         $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
-            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->fixtures->on('live')->create(
             'balance',

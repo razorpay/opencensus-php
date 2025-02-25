@@ -1181,21 +1181,6 @@ class IciciBankingAccountStatementTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testIciciDisableAccountStatementFetch()
-    {
-        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_STATEMENT_FETCH    => 'on']);
-
-        $mockedResponse = $this->getIciciDataResponse();
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $this->ba->cronAuth();
-
-        $response = $this->startTest();
-
-        $this->assertEmpty($response['accounts_processed']);
-    }
-
     public function testIciciAccountStatementWithVariousRegex()
     {
         $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);

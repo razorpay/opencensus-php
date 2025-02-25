@@ -2245,7 +2245,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2320,7 +2320,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2388,7 +2388,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2409,7 +2409,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2430,7 +2430,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2451,7 +2451,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->prepareBankingAccountData();
 
@@ -9072,7 +9072,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $testData                                = $this->testData['testCreatePayoutWithOtp'];
         $testData['request']['url']              = '/payouts_with_otp';
@@ -9160,7 +9160,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpWithInvalidParameters()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $testData = &$this->testData[__FUNCTION__];
 
@@ -9286,7 +9286,7 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable']);
         $this->fixtures->create('merchant_attribute',
                                 [
                                     'merchant_id' => '10000000000000',
@@ -9310,7 +9310,9 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable',RazorxTreatment::IMPS_MODE_PAYOUT_FILTER=>'disable']);
+
         $this->fixtures->create('merchant_attribute',
             [
                 'merchant_id' => '10000000000000',
@@ -9335,7 +9337,9 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable',RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
+
         $this->fixtures->create('merchant_attribute',
                                 [
                                     'merchant_id' => '10000000000000',
@@ -9397,7 +9401,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testUndoPayoutWithInvalidId()
     {
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable',RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $testData                   = $this->testData['testUndoPayoutWithInvalidId'];
         $testData['request']['url'] = '/payouts/' . 123 . '/undo';
@@ -14049,7 +14053,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -14077,7 +14081,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -14105,7 +14109,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -26488,7 +26492,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26516,7 +26520,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26542,7 +26546,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndSomePayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26570,7 +26574,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 payout_link]
         $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
@@ -26594,7 +26598,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndNoPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 payout_link]
         $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
@@ -26620,7 +26624,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 xpayroll]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26644,7 +26648,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndAllPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 xpayroll]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26694,7 +26698,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
 
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->testCreateXpayrollPayoutWithSourceDetails();
 
@@ -26714,7 +26718,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetXpayrollPayoutWithExperimentOff()
     {
-        $this->setMockRazorxTreatment(['imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->testCreateXpayrollPayoutWithSourceDetails();
 
@@ -31678,7 +31682,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
 
@@ -31752,7 +31756,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
 
@@ -32393,7 +32397,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32436,7 +32440,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32475,7 +32479,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32506,7 +32510,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32539,7 +32543,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 
@@ -32572,7 +32576,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32615,7 +32619,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32656,7 +32660,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32696,7 +32700,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32735,7 +32739,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32772,7 +32776,7 @@ class PayoutTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 
@@ -32801,7 +32805,7 @@ class PayoutTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 

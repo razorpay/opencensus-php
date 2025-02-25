@@ -2102,12 +2102,15 @@ class Validator extends Base\Validator
 
         $app = App::getFacadeRoot();
 
-        $variant  = $app['razorx']->getTreatment($merchant->getId(),
-                                                 Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
-                                                 Mode::LIVE,
-                                                 3);
+        $requestPayload = [
+            "id" => $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
+            'request_data'  => json_encode(['id' =>$merchant->getId()])
+        ];
 
-        if (strtolower($variant) === 'control')
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === false)
         {
             $expectedAmountType = BatchHelper::PAISE;
         }
