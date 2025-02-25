@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box } from '@razorpay/blade/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
+
 import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
 import { NavItem } from 'merchant/components/NavigationLayout/SideNavigation/SideNavigation';
 import SidebarModeSwitcher from 'merchant/components/NavigationLayout/SideNavigation/components/SidebarModeSwitcher';

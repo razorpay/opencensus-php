@@ -1,4 +1,4 @@
-import { merchantFetch } from '@dashboard/shared-utils/ajax';
+import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
 import GenericEntity from './GenericEntity';
 
 export default class Payment extends GenericEntity {

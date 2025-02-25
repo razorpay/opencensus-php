@@ -1,5 +1,9 @@
-import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
-import { test } from 'utils/base';
+import {
+  routes,
+  test,
+  getStorageStatePath,
+  navigateToInCurlecDashboard,
+} from '@libs/shared-qsuite/playwright';
 
 import {
   fillCustomerDetails,
@@ -7,15 +11,14 @@ import {
   fillTokenDetails,
   verifyRegistrationLinkCreated,
 } from './utils';
-import { navigateToInCurlecDashboard } from '../../utils/common';
 
 test.describe.parallel('Create Registration Link @flow=CAW @country=MY', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).CURLEC_TEST_CAW_LOGIN_STATE,
+    storageState: getStorageStatePath().CURLEC_TEST_CAW_LOGIN_STATE,
   });
 
   test.skip('should create a registration link with TNG as payment method', async ({ page }) => {
-    await navigateToInCurlecDashboard(page, routes.NEW_REGISTRATION_LINKS);
+    await navigateToInCurlecDashboard({ page }, routes.NEW_REGISTRATION_LINKS);
 
     const currentDate = Date.now();
     const customerData = {

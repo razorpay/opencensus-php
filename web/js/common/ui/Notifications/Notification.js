@@ -1,4 +1,4 @@
-import { Component, isValidElement } from 'react';
+import React, { Component, isValidElement } from 'react';
 
 export const NOTIFICATION_TYPES = {
   success: 'Notification--success',

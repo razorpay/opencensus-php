@@ -24,13 +24,9 @@ describe('DetailsContainer', () => {
       onbr: () => ({ clicked: () => {}, interaction: () => {} }),
       component: jest.fn(),
     };
-
-    jest.useFakeTimers('modern');
     jest.setSystemTime(new Date(2023, 2, 31));
   });
-  afterEach(() => {
-    jest.useRealTimers();
-  });
+
   test('should render with default props', async () => {
     render(<DetailsContainer {...defaultProps} />, { initialState });
     await waitFor(() => {

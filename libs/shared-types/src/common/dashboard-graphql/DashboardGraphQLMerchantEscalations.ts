@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantActivationEscalationsBreached, DashboardGraphQLMerchantActivationEscalationsNotBreached } from './index';
+export type DashboardGraphQLMerchantEscalations =
+  | DashboardGraphQLMerchantActivationEscalationsBreached
+  | DashboardGraphQLMerchantActivationEscalationsNotBreached;

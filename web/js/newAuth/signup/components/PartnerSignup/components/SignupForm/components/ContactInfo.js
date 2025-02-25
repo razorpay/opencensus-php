@@ -1,9 +1,9 @@
+import React, { useEffect, useState } from 'react';
 import { TextInput } from '@razorpay/blade/components';
 import { Formik } from 'formik';
 import isEmpty from 'lodash/isEmpty';
 import { contactInfoSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
 import { trackWithSegment } from 'newAuth/trackEvents';
-import React, { useEffect, useState } from 'react';
 import StepFooter from './StepFooter';
 import {
   StyledForm,

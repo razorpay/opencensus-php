@@ -1,4 +1,4 @@
-import { Component, Children, cloneElement } from 'react';
+import React, { Component, Children, cloneElement } from 'react';
 
 import scrollTo from 'common/utils/scrollTo';
 

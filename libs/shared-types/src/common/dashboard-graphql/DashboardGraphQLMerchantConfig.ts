@@ -1,0 +1,2 @@
+import { DashboardGraphQLMerchantConfigFailure, DashboardGraphQLMerchantOnboardingConfig } from './index';
+export type DashboardGraphQLMerchantConfig = DashboardGraphQLMerchantConfigFailure | DashboardGraphQLMerchantOnboardingConfig;

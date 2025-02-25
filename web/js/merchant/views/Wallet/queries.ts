@@ -1,6 +1,6 @@
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { stringifyQueryParams, decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 import { WALLET_BASE_PATH } from 'merchant/views/Wallet/constants';

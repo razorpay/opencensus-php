@@ -13,7 +13,7 @@ import Button from '@razorpay/blade-old/src/atoms/Button';
 import { Select, Option } from 'common/components/Select';
 import Link from 'common/components/Link';
 import { FormSection, Field } from 'merchant/views/onboarding/mobile/Form';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { StyledFooter } from './Styled';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';

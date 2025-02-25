@@ -1,3 +1,5 @@
+import React from 'react';
+
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { classList } from 'common/utils/rzp-utils';
 

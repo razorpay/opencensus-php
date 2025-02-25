@@ -1,10 +1,10 @@
 import qs from 'query-string';
 
-import { analyticsTrack } from '@dashboard/shared-utils/analytics';
 import {
+  analyticsTrack,
   getCommonAnalyticsProperties,
   decodeSensitiveFields,
-} from '@dashboard/shared-utils/rzp-utils';
+} from '@libs/shared-utils';
 
 import { LAST_7_DAYS, TransactionsEntityRoute, TransactionsPagesMap } from './constants';
 import { Track, TrackSearchButton } from './types';
@@ -25,7 +25,7 @@ export const track = ({
       version: 'v2',
       page: 'Transactions',
       ...properties,
-      ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+      ...getCommonAnalyticsProperties(window?.rzp_user, { addUserProperties: true }),
     },
   });
 };

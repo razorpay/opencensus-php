@@ -17,5 +17,9 @@ web/js/merchant/containers/Home/OnboardingCard/Instant/LiveMode.js
 web/js/common/deprecated
 web/js/common/typings/graph-types.ts
 plugins/i18n-rules
+**/*.json
+
+**/dist
+**/build
 plugins/no-dist-assets
 **/*.json

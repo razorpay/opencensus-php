@@ -1,8 +1,7 @@
 // This utility is used to open and close modal dialogs
 // This is directly updating zustand store for modal actions
 
-import { useStore } from 'shell/commonStore';
-import { getOpenModalState, getCloseModalState } from 'merchant/commonStore/stateActions/modals';
+import { useStore, getOpenModalState, getCloseModalState } from '@federated/apps/shell/commonStore';
 
 const MODAL_OPEN = 'MODAL_OPEN';
 const MODAL_CLOSE = 'MODAL_CLOSE';

@@ -8,7 +8,6 @@ import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/Z
 import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
 import { Tabs } from 'merchant_common/views/Reports/components/Tabs';
 import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs/refDashboard.config';
 import { Downloads } from 'merchant_common/views/Reports/features/Downloads';

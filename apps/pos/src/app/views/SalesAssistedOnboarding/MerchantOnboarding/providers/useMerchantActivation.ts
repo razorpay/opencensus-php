@@ -1,4 +1,4 @@
-import { graphqlRequest } from '@dashboard/shared-utils/graphql/graphql';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { useToast } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { MerchantDetails } from 'apps/pos/src/app/types/SalesAssistedOnboarding';

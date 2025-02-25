@@ -11,7 +11,7 @@ import {
 } from '@razorpay/blade/components';
 
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { graphqlRequest } from '@dashboard/shared-utils/graphql/graphql';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,6 +32,13 @@ import {
   PARTNER_ASSISTED_ONBOARDING,
 } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
+
+const DateRangePickerField = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'DateRangePicker' */ '@libs/web-nexus/common/ui/Forms/DateRangePickerField'
+    ),
+);
 
 interface Filters {
   status: STATUS_FILTERS;
@@ -59,15 +66,9 @@ const DEFAULT_FILTERS: Filters = {
 const PAGE_SIZE = 10;
 const QUERY_KEY = 'salesTable';
 
-const DateRangePicker = lazy(
-  () =>
-    import(
-      /* webpackChunkName: 'DateRangePicker' */ '@dashboard/shared-ui/components/Forms/DateRangePickerField'
-    ),
-);
-
 const SalesDashboard = (): JSX.Element => {
   const { isMobile } = useScreen();
+  console.log('JOEL', isMobile);
   const [range, setRange] = useState<Range>(DEFAULT_RANGE);
   const [filters, setFilter] = useState<Filters>({ ...DEFAULT_FILTERS });
   const [page, setPage] = useState(0);
@@ -268,12 +269,14 @@ const SalesDashboard = (): JSX.Element => {
               marginRight="spacing.3"
               marginBottom="spacing.4"
             >
-              <DateRangePicker
-                onDatesChange={(dates: DatePickerRange) => handleOnDateChange(dates)}
-                startDate={moment.unix(range.startDate)}
-                endDate={moment.unix(range.endDate)}
-                numberOfMonths={isMobile ? 1 : 2}
-              />
+              <Suspense fallback={<></>}>
+                <DateRangePickerField
+                  onDatesChange={(dates: DatePickerRange) => handleOnDateChange(dates)}
+                  startDate={moment.unix(range.startDate)}
+                  endDate={moment.unix(range.endDate)}
+                  numberOfMonths={isMobile ? 1 : 2}
+                />
+              </Suspense>
             </Box>
             <Box display="flex">
               <Button marginRight="spacing.4" isLoading={isLoading} onClick={handleOnApplyFilter}>

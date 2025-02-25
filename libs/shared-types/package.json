@@ -1,0 +1,55 @@
+{
+  "name": "@libs/shared-types",
+  "version": "0.0.1",
+  "private": "true",
+  "keywords": [],
+  "files": [
+    "dist"
+  ],
+  "module": "dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "dist/index.js",
+      "types": "dist/index.d.ts"
+    },
+    "./la": {
+      "import": "dist/la.js",
+      "types": "dist/la.d.ts"
+    },
+    "./payments": {
+      "import": "dist/payments.js",
+      "types": "dist/payments.d.ts"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@libs/shared-core": "workspace:*",
+    "@razorpay/blade": "12.8.2",
+    "@razorpay/i18nify-js": "1.12.3",
+    "@types/graphql": "^14.5.0",
+    "@types/react": "17.0.39",
+    "graphql": "16.8.1",
+    "tslib": "^2.3.0"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "cache": true,
+        "parallelism": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "executor": "nx:run-commands",
+        "outputs": [
+          "{workspaceRoot}/libs/shared-types/dist"
+        ],
+        "options": {
+          "cwd": "libs/shared-types",
+          "command": "pnpm node build.config.js"
+        }
+      }
+    }
+  }
+}

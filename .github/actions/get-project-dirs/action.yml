@@ -1,0 +1,45 @@
+name: Get Project Dirs From Root
+
+inputs:
+  targetProjects:
+    required: true
+    description: Comma-separated list of Nx target projects.
+
+outputs:
+  project_roots:
+    description: Comma-separated list of root directories of the specified Nx projects.
+    value: ${{ steps.get-project-roots.outputs.project_roots }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get Project Roots
+      shell: bash
+      id: get-project-roots
+      run: |
+        # Read the input projects as a comma-separated string
+        target_projects="${{ inputs.targetProjects }}"
+        
+        # Initialize an empty array to store project roots
+        project_roots=()
+
+        # Iterate over each target project
+        IFS=',' read -ra projects <<< "$target_projects"
+        for project in "${projects[@]}"; do
+          # Get the project root for the current project
+          project_root=$(pnpm nx show project "$project" --json | grep -Eo '{.*}' | jq -r '.root')
+
+          # Append the project root to the project_roots array
+          project_roots+=("$project_root")
+        done
+
+        # Join the project roots array into a comma-separated string
+        joined_roots=$(IFS=','; echo "${project_roots[*]}")
+
+        # Output the comma-separated project roots
+        echo "project_roots=$joined_roots" >> $GITHUB_OUTPUT
+
+    - name: Echo Root Dirs
+      shell: bash
+      run: |
+        echo "Project Root Directories: ${{ steps.get-project-roots.outputs.project_roots }}"

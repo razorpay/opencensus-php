@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
-import { graphqlRequestMutation, graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequestMutation, graphqlRequest } from '@federated/apps/shell/graphql';
 import {
   SmsNotificationStatusResponse,
   MutationSmsNotificationToggleArgs,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from 'test-utils';
+import { render, screen, waitFor } from 'test-utils';
 import SettlementInfoBar from '../MerchantOverviewData/Settlement/SettlementInfoBar';
 import { useBreakpoint } from '@razorpay/blade/utils';
 
@@ -40,54 +40,70 @@ const zeroData = {
 };
 
 describe('SettlementInfoBar Component', () => {
-  test('should render current balance and last deposit details on large screen', () => {
+  test('should render current balance and last deposit details on large screen', async () => {
     (useBreakpoint as jest.Mock).mockReturnValue({ matchedBreakpoint: 'lg' });
     render(<SettlementInfoBar data={mockData} />);
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText('7890.12')).toBeInTheDocument();
-    expect(screen.getByText('1234.56')).toBeInTheDocument();
-    expect(screen.getByText('Last deposited on June 10')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /view all settlements/i })).toHaveAttribute(
-      'href',
-      '/settlements',
-    );
+    await waitFor(() => {
+      expect(screen.getByText('Current balance')).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText('7,890')).toBeInTheDocument();
+      expect(screen.getByText('1,234')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /view all settlements/i })).toHaveAttribute(
+        'href',
+        '/settlements',
+      );
+    });
   });
 
-  test('should render current balance and last deposit details on small screen', () => {
+  test('should render current balance and last deposit details on small screen', async () => {
     (useBreakpoint as jest.Mock).mockReturnValue({ matchedBreakpoint: 's' });
     render(<SettlementInfoBar data={mockData} />);
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText('7890.12')).toBeInTheDocument();
-    expect(screen.getByText('1234.56')).toBeInTheDocument();
-    expect(screen.getByText('Last Deposit:')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /view all settlements/i })).toHaveAttribute(
-      'href',
-      '/settlements',
-    );
+    await waitFor(() => {
+      expect(screen.getByText('Current balance')).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText('7,890')).toBeInTheDocument();
+      expect(screen.getByText('1,234')).toBeInTheDocument();
+      expect(screen.getByText('Last Deposit:')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /view all settlements/i })).toHaveAttribute(
+        'href',
+        '/settlements',
+      );
+    });
   });
 
-  test('should render current balance and last deposit details on medium screen', () => {
+  test('should render current balance and last deposit details on medium screen', async () => {
     (useBreakpoint as jest.Mock).mockReturnValue({ matchedBreakpoint: 'm' });
     render(<SettlementInfoBar data={mockData} />);
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText('7890.12')).toBeInTheDocument();
-    expect(screen.getByText('1234.56')).toBeInTheDocument();
-    expect(screen.getByText('Last deposited on June 10')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /view all settlements/i })).toHaveAttribute(
-      'href',
-      '/settlements',
-    );
+    await waitFor(() => {
+      expect(screen.getByText('Current balance')).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText('7,890')).toBeInTheDocument();
+      expect(screen.getByText('1,234')).toBeInTheDocument();
+      expect(screen.getByText('Last deposited on June 10')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /view all settlements/i })).toHaveAttribute(
+        'href',
+        '/settlements',
+      );
+    });
   });
 
-  test('should handle zero balance and settlement amounts gracefully', () => {
+  test('should handle zero balance and settlement amounts gracefully', async () => {
     (useBreakpoint as jest.Mock).mockReturnValue({ matchedBreakpoint: 'lg' });
     render(<SettlementInfoBar data={zeroData} />);
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText('0.00')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('₹')).toBeInTheDocument();
+      expect(screen.getByText('0')).toBeInTheDocument();
+      expect(screen.getByText('.00')).toBeInTheDocument();
+    });
   });
 
-  test('should render without errors when no data is passed', () => {
+  test('should render without errors when no data is passed', async () => {
     (useBreakpoint as jest.Mock).mockReturnValue({ matchedBreakpoint: 'lg' });
-    expect(() => render(<SettlementInfoBar data={null} />)).not.toThrow();
+    await waitFor(() => {
+      expect(() => render(<SettlementInfoBar data={null} />)).not.toThrow();
+    });
   });
 });

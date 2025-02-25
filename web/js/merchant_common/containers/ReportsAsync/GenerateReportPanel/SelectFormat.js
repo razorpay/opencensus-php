@@ -1,5 +1,6 @@
 import Input from 'common/new-ui/Input';
 import { analyticsTrack } from 'common/utils/analytics';
+import React from 'react';
 
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { extractExtensionFromTemplate } from '../utils';

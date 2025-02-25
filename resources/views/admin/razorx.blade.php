@@ -18,4 +18,4 @@
 </head>
 <body>
 <div id="react-root" class="react-root"></div>
-<script src="{{$cdn}}/dist/razorx-entry.js"></script>
+<script src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/razorx-dashboard/razorx-dashboard.entry.js"></script>

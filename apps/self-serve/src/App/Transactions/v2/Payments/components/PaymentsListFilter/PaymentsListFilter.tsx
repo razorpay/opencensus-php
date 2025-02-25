@@ -11,15 +11,14 @@ import {
   TextInput,
 } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import moment from 'moment';
-import { withRouter } from 'shell/deprecated/withRouter';
-import { CountryCodeInput } from '@dashboard/shared-ui/components/CountryCodeInput';
-import Dropdown from '@dashboard/shared-ui/components/Dropdown';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
-import lazy from '@dashboard/shared-utils/routes/LazyLoader';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import { CountryCodeInput } from '@libs/web-nexus/common/components/CountryCodeInput';
+import { type Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import Dropdown from '@libs/web-nexus/common/components/Dropdown';
+import { useMobile, lazyImport as lazy } from '@libs/shared-utils';
+import SuspenseWithLoader from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
 import {
   TransactionsEntityRoute,
   CUSTOM,
@@ -60,12 +59,7 @@ import {
 
 const { FAILED_PAYMENTS } = TransactionsEntityRoute;
 
-const DateRangePicker = lazy(
-  () =>
-    import(
-      /* webpackChunkName: 'DateRangePicker' */ '@dashboard/shared-ui/components/Forms/DateRangePickerField'
-    ),
-);
+import DateRangePicker from '@libs/web-nexus/common/ui/Forms/DateRangePickerField';
 
 const ExtraFiltersModal = lazy(
   () =>
@@ -234,7 +228,6 @@ const PaymentsListFilter = ({
     handleSearch({ method: '' });
   };
 
-  console.log('PaymentsListFilter');
   return (
     <Box marginBottom="spacing.5" display="flex" flexDirection="column">
       <StyledListFilter data-testid="payments-filter">

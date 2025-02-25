@@ -1,6 +1,6 @@
 import React from 'react';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 import moment from 'moment';
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
 import DeviceDeliveryAddress from '../DeviceDeliveryAddress';
 import { render, screen, userEvent } from 'apps/pos/src/services/test/test-utils';
 import {
@@ -14,7 +14,7 @@ const defaultProps = {
   countryCode: 'IN',
   addedDevices: [TestAddedDeviceWithDeviceConfig],
   orderSummary: TestDeviceOrderSummary,
-  merchantDetails: MOCK_MERCHANT_DETAILS as unknown as Merchant,
+  merchantDetails: MOCK_MERCHANT_DETAILS as unknown as DashboardGraphQLMerchant,
   handleModularUpdate: jest.fn(),
   handleGoToNextStep: jest.fn(),
   isUpdateModularLoading: false,

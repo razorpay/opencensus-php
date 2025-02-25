@@ -1,6 +1,13 @@
-import { test, expect } from 'utils/base';
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { clickSkipAndStartBtn } from 'utils';
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  expectSuccessNotification,
+  generateRandomText,
+  clickSkipAndStartBtn,
+  waitForLoader,
+} from '@libs/shared-qsuite/playwright';
 
 import {
   paymentButtonType,
@@ -12,12 +19,11 @@ import {
   cloneTest,
   openBtnDetailsView,
 } from './utils';
-import { expectSuccessNotification, generateRandomText, waitForLoader } from '../../utils';
 
 test.describe
   .parallel('Test Payments Buttons @flow=payment-buttons @project=no-code-stable', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

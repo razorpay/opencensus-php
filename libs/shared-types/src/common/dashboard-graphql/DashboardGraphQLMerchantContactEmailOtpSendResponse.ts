@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantContactEmailOtpSendFailureResponse, DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse } from './index';
+export type DashboardGraphQLMerchantContactEmailOtpSendResponse =
+  | DashboardGraphQLMerchantContactEmailOtpSendFailureResponse
+  | DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse;

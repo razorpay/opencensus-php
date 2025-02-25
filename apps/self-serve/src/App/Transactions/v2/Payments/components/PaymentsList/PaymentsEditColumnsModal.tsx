@@ -8,7 +8,7 @@ import {
   ModalFooter,
   Checkbox,
 } from '@razorpay/blade/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { ERROR_MESSAGES } from './constants';
 import { saveMerchantColumnPreferences } from './model';
 

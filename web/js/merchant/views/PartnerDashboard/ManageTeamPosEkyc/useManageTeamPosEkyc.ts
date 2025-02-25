@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, FormikValues } from 'formik';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 // eslint-disable-next-line no-restricted-imports
 import rolesList from 'merchant/helpers/permissions/roles-list';

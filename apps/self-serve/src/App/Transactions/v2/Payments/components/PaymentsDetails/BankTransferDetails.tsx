@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { Box, ChevronDownIcon, ChevronUpIcon, Text, Spinner } from '@razorpay/blade/components';
 
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { fetchBankTransfer } from 'apps/self-serve/src/App/Transactions/model';
 

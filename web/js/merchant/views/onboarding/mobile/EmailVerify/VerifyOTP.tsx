@@ -8,7 +8,7 @@ import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { Field, FormSection } from 'merchant/views/onboarding/mobile/Form';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';

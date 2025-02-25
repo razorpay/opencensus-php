@@ -1,18 +1,10 @@
-import { User } from '@dashboard/shared-utils/typings';
-import { analyticsTrack } from '@dashboard/shared-utils/analytics';
-import { getCommonSegmentProperties } from '@dashboard/shared-utils/rzp-utils';
+import { analyticsTrack, getCommonSegmentProperties } from '@libs/shared-utils';
 import { ANALYTICS_EVENTS, EventProperties, ANALYTICS_ACTIONS } from './types';
 
 interface TrackEventsProps {
   eventName: ANALYTICS_EVENTS;
   action: ANALYTICS_ACTIONS;
   properties: EventProperties;
-}
-
-declare global {
-  interface Window {
-    rzp_user: User;
-  }
 }
 
 const trackEvent = ({ eventName, action, properties }: TrackEventsProps): void => {
@@ -23,7 +15,7 @@ const trackEvent = ({ eventName, action, properties }: TrackEventsProps): void =
       ...getCommonSegmentProperties(window.rzp_user, { addUserProperties: true }),
       ...properties,
     },
-    screen: window.location.pathname.split('/').pop(),
+    screen: window.location.pathname.split('/').pop() || "",
     toLumberjack: true,
   });
 };

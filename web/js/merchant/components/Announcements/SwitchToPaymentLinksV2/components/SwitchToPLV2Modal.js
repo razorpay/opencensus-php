@@ -1,7 +1,7 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import Button from 'common/new-ui/Button';
 import { DocLink } from 'merchant/components/DocsLink';
-
+import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';

@@ -1,0 +1,4 @@
+import { DashboardGraphQLTwoFactorAddMobileOtpErrorResponse, DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse } from './index';
+export type DashboardGraphQLTwoFactorAddMobileOtpResponse =
+  | DashboardGraphQLTwoFactorAddMobileOtpErrorResponse
+  | DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse;

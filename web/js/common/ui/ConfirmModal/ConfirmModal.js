@@ -2,14 +2,15 @@ import PropTypes from 'prop-types';
 import AsyncButton from 'react-async-button';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
+import React from 'react';
 
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import { delay } from 'common/utils/timeout';
 
 const MODAL_CLOSE_TIMEOUT_MS = 300;
 const ConfirmModal = (props) => {
   const confirmModelStyle = {
-    overlay: { ...Modal.defaultStyles.overlay, zIndex: zIndicesMap.dropdownOverlay },
+    overlay: { ...Modal.defaultStyles.overlay, zIndex: DASHBOARD_ZINDEX_MAP.dropdownOverlay },
     content: { ...Modal.defaultStyles.content, width: '325px' },
   };
   const { header, message, className } = props.options;

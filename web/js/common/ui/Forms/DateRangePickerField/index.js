@@ -1,5 +1,5 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
-import { Component } from 'react';
+import 'react-dates/initialize';
+import React, { Component } from 'react';
 import moment from 'moment';
 import { DateRangePicker } from 'react-dates';
 

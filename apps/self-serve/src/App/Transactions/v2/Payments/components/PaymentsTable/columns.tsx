@@ -1,15 +1,15 @@
 import { Box, CopyIcon, Text, VisuallyHidden } from '@razorpay/blade/components';
 import React from 'react';
 
-import { Amount } from '@dashboard/shared-ui/components';
-import maskContact from '@dashboard/shared-utils/maskContact';
-import { User } from '@dashboard/shared-utils/typings';
+import Amount from '@libs/web-nexus/common//ui/Amount';
+import { maskContact } from '@libs/shared-utils';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import { Item } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import CreatedOn from 'apps/self-serve/src/App/Transactions/v2/common/components/CreatedOn';
 import Details from 'apps/self-serve/src/App/Transactions/v2/common/components/Details';
+import CustomClipboard from '@libs/web-nexus/common/ui/Clipboard/Custom';
 import PaymentOptimizerProvider from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentOptimizerProvider';
 // eslint-disable-next-line
-import CustomClipboard from '@dashboard/shared-ui/Clipboard/Custom';
 
 import Status from 'apps/self-serve/src/App/Transactions/v2/common/components/Status';
 import {
@@ -86,8 +86,8 @@ export const customerDetail = {
       Customer detail
     </Text>
   ),
-  value: ({ contact }: Item, _: any, extraData: { user: User }): JSX.Element => {
-    const { user } = extraData;
+  value: ({ contact }: Item, _: any, extraData: { user: PaymentsDashboardUser }): JSX.Element => {
+    const { user } = extraData || {};
     return <Text>{contact ? maskContact(contact, user?.isHidePIDetails) : '--'}</Text>;
   },
 };

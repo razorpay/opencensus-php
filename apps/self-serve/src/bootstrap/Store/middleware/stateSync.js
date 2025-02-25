@@ -1,4 +1,4 @@
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 const REDUCERS_TO_SYNC = ['session', 'app'];
 

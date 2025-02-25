@@ -3,8 +3,8 @@ import { TextInput, Text, Box, Divider, Link } from '@razorpay/blade/components'
 import { Formik } from 'formik';
 import isEmpty from 'lodash/isEmpty';
 
-import { UseFormikReturnType } from 'common/typings';
-import { setItem } from 'common/utils/localStorage';
+import { type UseFormikReturnType } from '@libs/web-nexus/common/typings';
+import { setItemInLocalStorage } from '@libs/shared-utils';
 import { mobileNumberSchema, SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
 import { trackWithSegment } from 'newAuth/trackEvents';
 
@@ -40,7 +40,7 @@ const WelcomeBack = ({ setMobileNumber, setStep, mobileNumber }: WelcomeBackProp
     // to see if we want to redirect the user directly to partner dashboard
     // or open up the explore partner program dashboard
     // this will be removed after the consumption
-    setItem('partner_intent', true);
+    setItemInLocalStorage('partner_intent', true);
 
     // redirect them to dashboard login
     const url = `/?mobileNumber=${mobileNumber}`;

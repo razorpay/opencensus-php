@@ -1,0 +1,5 @@
+export enum DashboardGraphQLMerchantWebsiteSectionStatusEnum {
+  LIVE_WEBSITE = 'LIVE_WEBSITE',
+  LIVE_WEBSITE_WITH_PARTIAL_DETAILS = 'LIVE_WEBSITE_WITH_PARTIAL_DETAILS',
+  NO_WEBSITE = 'NO_WEBSITE',
+}

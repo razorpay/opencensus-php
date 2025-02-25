@@ -1,0 +1,102 @@
+name: Initialize CI
+
+on:
+  workflow_call:
+    outputs:
+      affected_all:
+        value: ${{ jobs.initialize.outputs.affected_all }}
+      affected_libs:
+        value: ${{ jobs.initialize.outputs.affected_libs }}
+      affected_apps:
+        value: ${{ jobs.initialize.outputs.affected_apps }}
+      affected_apps_p0:
+        value: ${{ jobs.initialize.outputs.affected_apps_p0 }}
+      affected_apps_p1:
+        value: ${{ jobs.initialize.outputs.affected_apps_p1 }}
+      affected_apps_p2:
+        value: ${{ jobs.initialize.outputs.affected_apps_p2 }}
+      onboarded_microapps:
+        value: ${{ jobs.initialize.outputs.onboarded_microapps }}
+      memory_intensive_ut_configured_apps:
+        value: ${{ jobs.initialize.outputs.memory_intensive_ut_configured_apps }}
+      memory_intensive_ut_configured_apps_shards_array:
+        value: ${{ jobs.initialize.outputs.memory_intensive_ut_configured_apps_shards_array }}
+      memory_intensive_ut_configured_apps_shards_total:
+        value: ${{ jobs.initialize.outputs.memory_intensive_ut_configured_apps_shards_total }}
+      default_ut_configured_apps_matrix:
+        value: ${{ jobs.initialize.outputs.default_ut_configured_apps_matrix }}
+      playwright_configured_affected_apps_comma_sep:
+        value: ${{ jobs.initialize.outputs.playwright_configured_affected_apps_comma_sep }}
+      playwright_configured_affected_apps_array:
+        value: ${{ jobs.initialize.outputs.playwright_configured_affected_apps_array }}
+
+env:
+  HOME: /actions-runner/_work
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+jobs:
+  initialize:
+    name: Cache Deps & Generate NX Affected
+    runs-on: [non-api-premium, cache-2]
+    outputs:
+      affected_all: ${{ steps.parse_affected.outputs.affected_all }}
+      affected_libs: ${{ steps.parse_affected.outputs.affected_libs }}
+      affected_apps: ${{ steps.parse_affected.outputs.affected_apps }}
+      affected_apps_p0: ${{ steps.parse_affected.outputs.affected_apps_p0 }}
+      affected_apps_p1: ${{ steps.parse_affected.outputs.affected_apps_p1 }}
+      affected_apps_p2: ${{ steps.parse_affected.outputs.affected_apps_p2 }}
+      onboarded_microapps: ${{ steps.parse_affected.outputs.onboarded_microapps }}
+      memory_intensive_ut_configured_apps: ${{ steps.parse_affected.outputs.memory_intensive_ut_configured_apps }}
+      memory_intensive_ut_configured_apps_shards_array: ${{ steps.parse_affected.outputs.memory_intensive_ut_configured_apps_shards_array }}
+      memory_intensive_ut_configured_apps_shards_total: ${{ steps.parse_affected.outputs.memory_intensive_ut_configured_apps_shards_total }}
+      default_ut_configured_apps_matrix: ${{ steps.parse_affected.outputs.default_ut_configured_apps_matrix }}
+      playwright_configured_affected_apps_comma_sep: ${{ steps.parse_affected.outputs.playwright_configured_affected_apps_comma_sep }}
+      playwright_configured_affected_apps_array: ${{ steps.parse_affected.outputs.playwright_configured_affected_apps_array }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Identify Affected Projects with NX
+        id: affected_projects
+        uses: ./.github/actions/affected-projects
+
+      - name: Get Jest Configured Apps
+        id: get-ut-configured-apps
+        run: |
+          configured_apps_with_ut_comma_sep=$(pnpm nx show projects --with-target test:jest:ci --json | grep -Eo '\[.*\]'| jq -r 'join(",")')
+          echo "ut_configured_apps=$configured_apps_with_ut_comma_sep" >> $GITHUB_OUTPUT
+
+      - name: Get Playwright Configured Apps
+        id: get-playwright-configured-apps
+        run: |
+          configured_apps_with_playwright_comma_sep=$(pnpm nx show projects --with-target test:e2e --json | grep -Eo '\[.*\]'| jq -r 'join(",")')
+          echo "playwright_configured_apps=$configured_apps_with_playwright_comma_sep" >> $GITHUB_OUTPUT
+
+      - name: Parse Affected Projects
+        id: parse_affected
+        run: node .github/scripts/parse-affected.js "${{ steps.affected_projects.outputs.affected }}" "${{ steps.get-ut-configured-apps.outputs.ut_configured_apps}}" "${{ steps.get-playwright-configured-apps.outputs.playwright_configured_apps }}" >> $GITHUB_OUTPUT
+
+      - name: Echo Affected Projects (Post Parsing)
+        run: |
+          echo "Affected All: ${{ steps.parse_affected.outputs.affected_all }}"
+          echo "Affected Libs: ${{ steps.parse_affected.outputs.affected_libs }}"
+          echo "Affected Apps: ${{ steps.parse_affected.outputs.affected_apps }}"
+          echo "Affected Apps P0: ${{ steps.parse_affected.outputs.affected_apps_p0 }}"
+          echo "Affected Apps P1: ${{ steps.parse_affected.outputs.affected_apps_p1 }}"
+          echo "Affected Apps P2: ${{ steps.parse_affected.outputs.affected_apps_p2 }}"
+          echo "Onboarded Microapps: ${{ steps.parse_affected.outputs.onboarded_microapps }}"
+
+          echo "Memory Intensive UT Configured Apps: ${{ steps.parse_affected.outputs.memory_intensive_ut_configured_apps }}"
+          echo "Memory Intensive UT Configured Apps Shards Array: ${{ steps.parse_affected.outputs.memory_intensive_ut_configured_apps_shards_array }}"
+          echo "Memory Intensive UT Configured Apps Shards Total: ${{ steps.parse_affected.outputs.memory_intensive_ut_configured_apps_shards_total }}"
+          echo "Default UT Configured Apps Matrix: ${{ steps.parse_affected.outputs.default_ut_configured_apps_matrix }}"
+
+          echo "Playwright Configured Apps: ${{ steps.get-playwright-configured-apps.outputs.playwright_configured_apps }}"
+          echo "Playwright Configured Affected Apps: ${{ steps.parse_affected.outputs.playwright_configured_affected_apps_array }}"

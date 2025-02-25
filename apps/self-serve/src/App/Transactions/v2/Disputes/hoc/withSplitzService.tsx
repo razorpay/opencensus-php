@@ -1,6 +1,5 @@
 import React, { ComponentType, useContext } from 'react';
-import { SpiltzContextState } from '@dashboard/shared-utils/splitz/types';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import { SpiltzContextState, SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
 
 export default function withSplitzService<
   T extends {

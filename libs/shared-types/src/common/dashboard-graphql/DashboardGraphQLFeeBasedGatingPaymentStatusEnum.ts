@@ -1,0 +1,8 @@
+export enum DashboardGraphQLFeeBasedGatingPaymentStatusEnum {
+  AUTHORIZED = 'AUTHORIZED',
+  CAPTURED = 'CAPTURED',
+  CREATED = 'CREATED',
+  FAILED = 'FAILED',
+  PENDING = 'PENDING',
+  UNINITIALIZED = 'UNINITIALIZED',
+}

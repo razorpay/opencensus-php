@@ -1,0 +1,36 @@
+name: Dashboard - DangerJS Workflow
+
+on:
+  pull_request:
+    types: [edited, opened, synchronize, reopened, assigned, labeled, review_requested]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+jobs:
+  validate:
+    runs-on: [non-api, linux-amd64]
+    continue-on-error: false
+    name: DangerJS - Format Checker
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: DangerJS
+        uses: danger/danger-js@11.2.2
+        with:
+          args: "--id formatchecker_dangerjs"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          DANGER_DISABLE_TRANSPILATION: "true"

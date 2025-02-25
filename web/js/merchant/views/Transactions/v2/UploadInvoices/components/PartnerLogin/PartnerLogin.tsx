@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 
-import { getUser } from 'shell/commonStore';
+import { getUser } from '@federated/apps/shell/commonStore';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { PartnerLoginProps } from './types';

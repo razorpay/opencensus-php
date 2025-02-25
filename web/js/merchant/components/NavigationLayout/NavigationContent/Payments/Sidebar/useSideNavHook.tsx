@@ -14,7 +14,7 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { useLocation } from 'react-router-dom';
 import { useSplitzService } from 'common/splitz';
 import { useI18Service } from 'common/i18';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { initializeRoutes, ROUTE_REG } from 'merchant/components/SidebarV2/utils/href';
 import SidebarFooter from './components/SidebarFooter';
 import ActivationProgress from './components/ActivationProgress';

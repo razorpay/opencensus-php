@@ -1,6 +1,6 @@
 // TODO: Fix the imports, currently out of scope
 // @ts-nocheck
-import { deepClone } from '@dashboard/shared-utils/rzp-utils';
+import { deepClone } from '@libs/shared-utils';
 import { Box, Button, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import {
@@ -13,13 +13,13 @@ import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import RefundMiniTimeline from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundMiniTimeline';
 import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import { Amount } from '@dashboard/shared-ui/components';
+import Amount from '@libs/web-nexus/common//ui/Amount';
 import * as PaymentActions from 'apps/self-serve/src/bootstrap/Store/reducers/paymentsReducer';
 import React from 'react';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
-import { useStore } from 'shell/commonStore';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import styled from 'styled-components';
 import Tooltip from './Tooltip';
 import { REFUND_ELIBILITY_TEXT } from './constants';

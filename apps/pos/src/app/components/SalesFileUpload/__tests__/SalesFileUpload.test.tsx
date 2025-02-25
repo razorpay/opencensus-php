@@ -11,8 +11,8 @@ import {
   waitFor,
 } from 'apps/pos/src/services/test/test-utils';
 
-jest.mock('shell/commonStore', () => ({
-  ...jest.requireActual('shell/commonStore'),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  ...jest.requireActual('@federated/apps/shell/commonStore'),
   getUser: () => ({
     user: {
       id: 'test_user_id',

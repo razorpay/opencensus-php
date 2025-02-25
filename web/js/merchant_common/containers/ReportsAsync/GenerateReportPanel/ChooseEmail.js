@@ -1,5 +1,6 @@
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
+import React from 'react';
 
 export default function ChooseEmail({
   closeModal,

@@ -1,0 +1,4 @@
+import { DashboardGraphQLSendEmailVerificationOtpErrorResponse, DashboardGraphQLSendEmailVerificationOtpSuccessResponse } from './index';
+export type DashboardGraphQLSendEmailVerificationOtpResponse =
+  | DashboardGraphQLSendEmailVerificationOtpErrorResponse
+  | DashboardGraphQLSendEmailVerificationOtpSuccessResponse;

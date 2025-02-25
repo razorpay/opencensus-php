@@ -7,18 +7,17 @@ import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesB
 import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
 import debounce from 'common/utils/debounce';
-import LocalStorageService from 'common/utils/localStorage';
-import { initSentry } from 'common/utils/observability';
-import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import Footer from 'merchant/components/Footer';
+import LocalStorageService from 'common/utils/localStorage';
+import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Content from 'merchantLA/components/Content';
 import HeaderNav from 'merchantLA/components/HeaderNav';
-import MerchantTour from 'merchantLA/containers/MerchantTour';
 import Sidebar from 'merchantLA/containers/Sidebar';
+import MerchantTour from 'merchantLA/containers/MerchantTour';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
 import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
@@ -29,7 +28,6 @@ import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFa
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 
-initSentry('MerchantLA');
 
 class App extends Component {
   pendingRequests = [];
@@ -239,7 +237,7 @@ class App extends Component {
     }
   }
 
-  switchMode = (mode, callback = () => {}) => {
+  switchMode = (mode, callback = () => { }) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Header',
       eventAction: 'Switch - Mode',

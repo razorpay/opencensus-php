@@ -10,7 +10,7 @@ import {
   getTimeUnix,
   getStartAndEndUnixTimeStampsForDaysFrom,
 } from 'merchant_common/containers/ReportsAsync/utils';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 const DEFAULT_SELECTED_DATE = moment().subtract(1, 'day').startOf('day');

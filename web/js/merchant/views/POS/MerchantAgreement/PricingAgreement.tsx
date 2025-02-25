@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
-import { getOrg, getUser, useStore } from 'shell/commonStore';
+import { getOrg, getUser, useStore } from '@federated/apps/shell/commonStore';
 
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 import sanitizer from 'common/utils/xss-sanitizer';

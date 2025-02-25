@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default ({ title, value, children, className }) => (
   <div className={`stats-card ${className || ''}`}>
     <div className="title">{title}</div>

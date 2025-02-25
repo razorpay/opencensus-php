@@ -1,0 +1,1 @@
+export * from "@apps/shell/src/shared/store/queryClient";

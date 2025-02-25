@@ -1,4 +1,5 @@
 import { Route, Routes, NavLink } from 'react-router-dom';
+import React from "react";
 
 import Applications from 'merchant/views/Settings/Applications';
 import WriteApplicationEntity from 'merchant/views/Settings/Applications/new';

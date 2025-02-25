@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { getTooltipContent } from './constants';
 import { TooltipWrapper } from './styled';
 import { TooltipKeys } from './types';
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 
 interface IProps {
   type?: TooltipKeys;
@@ -28,7 +28,7 @@ function Tooltip(props: IProps): React.ReactElement {
   }
   return (
     <TooltipWrapper>
-      <BladeTooltip content={content} zIndex={zIndicesMap.tooltip}>
+      <BladeTooltip content={content} zIndex={DASHBOARD_ZINDEX_MAP.tooltip}>
         <TooltipInteractiveWrapper>
           <InfoIcon size="medium" color="interactive.icon.gray.subtle" {...restProps} />
         </TooltipInteractiveWrapper>

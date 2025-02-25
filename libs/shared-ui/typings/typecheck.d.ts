@@ -1,1 +1,1 @@
-declare module '@dashboard/shared-utils/hooks';
+declare module '@libs/shared-utils/hooks';

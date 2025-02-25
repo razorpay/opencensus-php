@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
+import { paiseToRupees } from '@libs/shared-utils';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 import { usePaymentsData } from 'apps/self-serve/src/App/Transactions/v2/Analytics/hooks';
 

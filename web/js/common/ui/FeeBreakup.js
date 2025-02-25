@@ -1,4 +1,5 @@
 import { classList } from 'common/utils/rzp-utils';
+import React from 'react';
 
 export default function({ type = 'primary', ...props }) {
   const children = props.children;

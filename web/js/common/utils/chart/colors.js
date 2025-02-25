@@ -1,4 +1,4 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
+
 const namedColors = {
   red: '#f98383',
   blue: '#136edc',

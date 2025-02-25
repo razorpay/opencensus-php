@@ -1,0 +1,153 @@
+
+name: Build - PHP
+
+on:
+  workflow_call:
+    inputs:
+      base_ref:
+        required: true
+        type: string
+
+env:
+  HOME: /actions-runner/_work
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  VERSION: ${{ github.sha }}
+
+jobs:
+  build-php:
+    name: Build PHP
+    runs-on: [non-api-premium]
+    # if: contains(inputs.affected_projects, 'dashboard')
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
+      - name: Use Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Generate Github Token
+        uses: razorpay/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "dashboard,razorpay,trace,slack-laravel,spine,oauth-5-laravel,metrics-php,edge-passport-php"
+
+      - name: Build PHP Server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: c.rzp.io/razorpay/dashboard:${{ github.sha }}
+          push: true
+          file: ./Dockerfile.ci
+          secrets: |
+            git_token=${{ steps.app-token.outputs.token }}
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_USERNAME=rzp
+
+  # Tests, Validations and everything should only run for PRs finally intended to be merged in master
+  validate_php_syntax:
+    name: Validate PHP Syntax
+    runs-on: [ self-hosted ]
+    needs: [build-php]
+    # if: ${{ inputs.base_ref == 'master' }}
+    container:
+      image: c.rzp.io/razorpay/onggi_testing:php81-fpm-nginxphp-8.1-nginx
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      volumes:
+        - /etc/hosts:/etc/hosts
+    continue-on-error: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint Action
+        run: |
+          find -path /dashboard -prune -o -type f -iname '*.php' | xargs -n 1 php -l
+
+  cancel:
+    runs-on: [self-hosted]
+    name: PHP (Circuit Breaker Tests) - Cancel Previous Runs
+    needs: [build-php, validate_php_syntax]
+    timeout-minutes: 1
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          all_but_latest: true
+          access_token: ${{ github.token }}
+
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+
+  test:
+    runs-on: [ self-hosted ]
+    needs: [build-php, validate_php_syntax, cancel]
+    name: PHP (Circuit Breaker Tests) - Unit Test Check
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    steps:
+      - name: PHP - Checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+
+      - name: PHP - Prepare Test Permissions
+        run: chmod +x ci-assets/prepare_and_run_test.sh
+
+      - name: PHP - Generate Github Token
+        uses: razorpay/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "dashboard,razorpay,trace,slack-laravel,spine,oauth-5-laravel,metrics-php,edge-passport-php"
+
+      - name: PHP - Preparing And Running Tests
+        id: running_test
+        run: ci-assets/prepare_and_run_test.sh
+        env:
+          GIT_TOKEN: ${{ steps.app-token.outputs.token }}
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5

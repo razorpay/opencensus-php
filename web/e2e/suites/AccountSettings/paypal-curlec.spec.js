@@ -1,10 +1,8 @@
-import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe('Test paypal instrument for Curlec org @flow=account-settings @country=MY', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).CURLEC_TEST_CAW_LOGIN_STATE,
+    storageState: getStorageStatePath().CURLEC_TEST_CAW_LOGIN_STATE,
   });
 
   test('should show paypal and not international Cards', async ({ page }) => {

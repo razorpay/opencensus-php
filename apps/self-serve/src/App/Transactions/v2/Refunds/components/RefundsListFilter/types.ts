@@ -1,8 +1,8 @@
 // TODO: Fix imports, currently its out of scope from phase 1;
 // @ts-nocheck
-import { Option, Options } from '@dashboard/shared-ui/components/Dropdown/types';
+import type {  Option, Options } from '@libs/web-nexus/common/components/Dropdown/types';
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import { User } from '@dashboard/shared-utils/typings';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import { refundsDurationOptionsMap } from './constants';
 
 export type DurationOption = { title: string; value: keyof typeof refundsDurationOptionsMap };
@@ -19,7 +19,7 @@ interface SearchParams extends Duration {
 export interface RefundsListFilterProps extends RouteComponentProps {
   onSubmit: (args: SearchParams) => void;
   loading: boolean;
-  user: User;
+  user: PaymentsDashboardUser;
 }
 
 export interface DefaultDateAndOption {

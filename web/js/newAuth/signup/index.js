@@ -5,10 +5,10 @@ import { GoogleReCaptchaProvider as ReCaptchaV3Provider } from 'react-google-rec
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-import { LayerProvider } from 'common/components/Layer/LayerContext';
-import ModalDialog from 'common/ui/ModalDialog';
-import Notifications from 'common/ui/Notifications';
-import store from 'merchant/store';
+import { LayerProvider } from '@libs/web-nexus/common/components/Layer/LayerContext';
+import ModalDialog from '@libs/web-nexus/common/ui/ModalDialog';
+import Notifications from '@libs/web-nexus/common/ui/Notifications';
+import store from '@dashboards/payments/store';
 
 import Signup from './signup';
 

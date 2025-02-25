@@ -1,0 +1,56 @@
+name: Push Browser Artifacts - S3
+inputs:
+  targetEnvironment:
+    required: true
+  targetProject:
+    required: true
+  prodCacheBucket:
+    required: true
+  nonProdBucket:
+    required: true
+  buildDir:
+    required: true
+  awsRegion:
+    required: true
+  prodAwsAccessKeyId:
+    required: true
+  prodAwsSecretAccessKey:
+    required: true
+  nonProdAwsAccessKeyId:
+    required: true
+  nonProdAwsSecretAccessKey:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS Credentials For Dashboard Assets - (${{ inputs.targetEnvironment }})
+      uses: aws-actions/configure-aws-credentials@v4
+      if: ${{ inputs.targetEnvironment != 'production' }}
+      with:
+        aws-access-key-id: ${{ inputs.nonProdAwsAccessKeyId }}
+        aws-secret-access-key: ${{ inputs.nonProdAwsSecretAccessKey }}
+        aws-region: ${{ inputs.awsRegion }}
+
+    - name: Configure AWS Credentials For Actions Cache - (production)
+      uses: aws-actions/configure-aws-credentials@v4
+      if: ${{ inputs.targetEnvironment == 'production' }}
+      with:
+        aws-access-key-id: ${{ inputs.prodAwsAccessKeyId }}
+        aws-secret-access-key: ${{ inputs.prodAwsSecretAccessKey }}
+        aws-region: ${{ inputs.awsRegion }}
+
+    - name: Push Browser Artifacts to S3 for ${{ inputs.targetProject }} - (${{ inputs.targetEnvironment }})
+      if: ${{ inputs.targetEnvironment != 'production' }}
+      shell: bash
+      run: |
+        node .github/scripts/s3-sync.js ${{ inputs.buildDir }} ${{ inputs.targetProject }} ${{ inputs.nonProdBucket }}
+      env:
+        ENVIRONMENT: ${{ inputs.targetEnvironment }}
+
+    - name: Push Browser Artifacts to Action Cache (S3) for ${{ inputs.targetProject }} - (production)
+      if: ${{ inputs.targetEnvironment == 'production' }}
+      shell: bash
+      run: |
+        node .github/scripts/s3-sync.js ${{ inputs.buildDir }} ${{ inputs.targetProject }} ${{ inputs.prodCacheBucket }}
+      env:
+        ENVIRONMENT: production

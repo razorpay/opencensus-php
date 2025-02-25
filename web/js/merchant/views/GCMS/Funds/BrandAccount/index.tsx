@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import Shimmer from 'common/components/Shimmer';
 import Spinner from 'common/ui/Spinner';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import store from 'merchant/store';

@@ -1,6 +1,5 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 // core
-import { Component } from 'react';
+import React, { Component } from 'react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 

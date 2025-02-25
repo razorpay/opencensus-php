@@ -1,0 +1,12 @@
+import { DashboardGraphQLPaymentMethodApp, DashboardGraphQLPaymentMethodBankTransfer, DashboardGraphQLPaymentMethodCard, DashboardGraphQLPaymentMethodCardlessEmi, DashboardGraphQLPaymentMethodEmandate, DashboardGraphQLPaymentMethodEmi, DashboardGraphQLPaymentMethodNetBanking, DashboardGraphQLPaymentMethodPayLater, DashboardGraphQLPaymentMethodUpiTransfer, DashboardGraphQLPaymentMethodWallet } from './index';
+export type DashboardGraphQLPaymentMethod =
+  | DashboardGraphQLPaymentMethodApp
+  | DashboardGraphQLPaymentMethodBankTransfer
+  | DashboardGraphQLPaymentMethodCard
+  | DashboardGraphQLPaymentMethodCardlessEmi
+  | DashboardGraphQLPaymentMethodEmandate
+  | DashboardGraphQLPaymentMethodEmi
+  | DashboardGraphQLPaymentMethodNetBanking
+  | DashboardGraphQLPaymentMethodPayLater
+  | DashboardGraphQLPaymentMethodUpiTransfer
+  | DashboardGraphQLPaymentMethodWallet;

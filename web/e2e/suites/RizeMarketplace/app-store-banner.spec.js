@@ -1,10 +1,9 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe
   .parallel('Rize Marketplace App Store banner @flow=rize-marketplace @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

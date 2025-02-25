@@ -7,7 +7,7 @@ import {
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { useSplitzService } from 'common/splitz';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import SidebarFooter from './components/SidebarFooter';
 
 import {

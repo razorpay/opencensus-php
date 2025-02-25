@@ -1,18 +1,21 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { test } from 'utils/base';
-
 import { batchPaymentPageData } from './constants';
 import {
   validateBatchPaymentPageDetails,
   validateDownloadSampleFile,
   createBatchPaymentPageWithLateFee,
 } from './utils';
-import { clickSkipAndStartBtn } from 'utils';
+
+import {
+  routes,
+  test,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+} from '@libs/shared-qsuite/playwright';
 
 test.describe
   .parallel('Test Batch Payments Pages @flow=batch-payment-pages @project=no-code-stable', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

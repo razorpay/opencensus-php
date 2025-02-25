@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { titleCase } from 'common/utils/rzp-utils';
 import { connect } from 'react-redux';

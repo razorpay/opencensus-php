@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@razorpay/blade/components';
-import { graphqlRequest } from '@dashboard/shared-utils/graphql/graphql';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import {
   MerchantModularOnboardingDetailsFailureResponse,
   MerchantModularOnboardingDetailsSuccessResponse,

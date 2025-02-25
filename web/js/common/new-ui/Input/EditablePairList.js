@@ -1,3 +1,4 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Label, inputClass } from './index';
 import { classList } from 'common/utils/rzp-utils';

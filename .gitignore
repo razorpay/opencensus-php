@@ -24,7 +24,7 @@ environment/.env.testing_docker
 !environment/.env.beta
 !environment/.env.alpha
 !environment/*.j2
-
+dashboard-cli.cache.json
 /storage
 notes.txt
 public/docs
@@ -33,13 +33,14 @@ tmp/
 /public/js/generated
 
 # php & node modules
-/node_modules
 /vendor
-/web/node_modules
 /web/js/dump.rdb
 /web/build
-libs/shared-ui/node_modules/
-
+libs/shared-ui/node_modules
+libs/shared-types/node_modules
+libs/shared-core/node_modules
+libs/shared-utils/node_modules
+.nx/workspace-data
 # E2E
 /web/screenshots
 /web/playwright-report
@@ -97,3 +98,11 @@ eslint_report.json
 
 #nx graph
 scripts/nx-releases/output.json
+
+**/.jest-analysis
+**/.dashboard-core
+**/test-results
+**/.playwright-analysis
+**/node_modules
+**/build/browser
+**/build/server

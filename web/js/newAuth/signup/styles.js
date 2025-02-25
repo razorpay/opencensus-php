@@ -1,7 +1,7 @@
 /* eslint-disable */
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Link from 'common/components/Link';
+import Link from '@libs/web-nexus/common/components/Link';
 import { media } from '../breakpoints';
 
 export const AbsoluteView = Styled(View)`

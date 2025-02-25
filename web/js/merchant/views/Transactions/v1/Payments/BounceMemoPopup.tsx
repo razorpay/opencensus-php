@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import { Box, ModalFooter, Alert } from '@razorpay/blade/components';
 import { Button, MultiSelectDropdown } from 'merchant_common/views/Reports/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { fetchBouncememo, fetchBounceMemoBulk } from './BounceMemo.types';
 import pdfCreation from 'merchant/views/Transactions/v1/Payments/components/PdfCreation';
 import { PaymentStatus } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/types';

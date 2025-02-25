@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { fetch } from '@dashboard/shared-utils/rest-fetch';
-import { Environments } from '@dashboard/shared-utils/typings';
+
+import { fetch } from '@federated/apps/shell/rest-fetch';
+import { DASHBOARD_MODE } from '@libs/shared-types';
 import {
   DisputeTypeState,
   DisputeDataHookResponse,
@@ -10,7 +11,7 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import { Duration } from 'apps/self-serve/src/App/Transactions/v2/common/types';
 
-export default function useDisputesData({ mode }: { mode: Environments }): DisputeDataHookResponse {
+export default function useDisputesData({ mode }: { mode: DASHBOARD_MODE }): DisputeDataHookResponse {
   const [openDisputes, setOpenDisputes] = useState<DisputeTypeState>({
     count: 0,
     amount: 0,

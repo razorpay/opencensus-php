@@ -1,6 +1,6 @@
 import { Box, Text, Amount, Skeleton, Link, RefreshIcon } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { BILL_ME_COMPANY_BALANCE_QUERY } from './queries';
 
 export const CompanyBalance = () => {

@@ -1,8 +1,19 @@
 prefer-workspace-packages: true
 packages:
-  - web
+  - web/js/merchant_common
+  - web/js/merchant
+  - web/js/razorx
+  - web/js/pokedex
+  - web/js/merchantLA
+  - web/js/merchantTnc
+  - web/js/newAuth
+  - web/js/common
+  - libs/shared-ui
+  - libs/shared-qsuite
+  - libs/shared-utils
+  - libs/shared-types
+  - libs/shared-core
+  - apps/shell
   - apps/self-serve
   - apps/digital-bills
   - apps/pos
-  - libs/shared-ui
-  - libs/shared-utils

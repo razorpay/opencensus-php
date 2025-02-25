@@ -21,11 +21,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { getInitialState } from './utils';
 import { Notification } from 'common/typings/Store/notifications';
 
-declare global {
-  interface Window {
-    colorLib?: TODO_PD;
-  }
-}
+
 interface WhiteLabelThemePropsT {
   user?: TODO_PD;
   showNotification?: ActionCreator<Notification>;

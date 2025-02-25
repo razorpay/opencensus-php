@@ -1,0 +1,30 @@
+{
+  "extends": ["../../.eslintrc.js"],
+  "ignorePatterns": ["!**/*"],
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "rules": {
+        // Add TypeScript-specific rules for strict checks
+        "@typescript-eslint/explicit-function-return-type": "error",
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+        "@typescript-eslint/strict-boolean-expressions": "error",
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+      }
+    },
+    {
+      "files": ["*.tsx", "*.js", "*.jsx"],
+      "rules": {
+        // Disallow these file types by throwing an error
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "Program",
+            "message": "JS, JSX, and TSX files are not allowed. Only TS files are permitted."
+          }
+        ]
+      }
+    }
+  ]
+}

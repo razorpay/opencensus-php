@@ -9,7 +9,7 @@ import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Link from 'common/components/Link';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';

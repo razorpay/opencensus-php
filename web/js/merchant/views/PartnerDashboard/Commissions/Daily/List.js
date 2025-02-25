@@ -2,6 +2,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { compose } from 'redux';
+import React from "react";
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';

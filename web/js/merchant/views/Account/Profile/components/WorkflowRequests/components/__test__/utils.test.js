@@ -41,7 +41,7 @@ describe('WorkflowRequests utils', () => {
   describe('isVisible function', () => {
     test('should return true when workflow status should be visible', () => {
       expect(isVisible(false, '123')).toBeTruthy();
-      localStorage.setItem(
+      window?.localStorage.setItem(
         'workflow_status',
         JSON.stringify({
           'bank_detail_update--123': {
@@ -51,7 +51,7 @@ describe('WorkflowRequests utils', () => {
         }),
       );
       expect(isVisible(true, '123')).toBeTruthy();
-      localStorage.removeItem('workflow_status');
+      window?.localStorage.removeItem('workflow_status');
     });
 
     test('should return false when workflow status should not be visible', () => {
@@ -61,7 +61,7 @@ describe('WorkflowRequests utils', () => {
 
   describe('hideWorkflowStatus function', () => {
     test('should hide workflow status when it is present in the localStorage', () => {
-      localStorage.setItem(
+      window?.localStorage.setItem(
         'workflow_status',
         JSON.stringify({
           'bank_detail_update--123': {
@@ -71,11 +71,11 @@ describe('WorkflowRequests utils', () => {
         }),
       );
       hideWorkflowStatus('123');
-      const { isVisible } = JSON.parse(localStorage.getItem('workflow_status'))[
+      const { isVisible } = JSON.parse(window?.localStorage.getItem('workflow_status'))[
         'bank_detail_update--123'
       ];
       expect(isVisible).toBeFalsy();
-      localStorage.removeItem('workflow_status');
+      window?.localStorage.removeItem('workflow_status');
     });
 
     test('should not hide workflow status when it is not present in the localStorage', () => {
@@ -86,12 +86,12 @@ describe('WorkflowRequests utils', () => {
   describe('showWorkflowStatus function', () => {
     test('should set workflow status expireAt & isVisible values in the localStorage', () => {
       showWorkflowStatus('123');
-      const { isVisible, expireAt } = JSON.parse(localStorage.getItem('workflow_status'))[
+      const { isVisible, expireAt } = JSON.parse(window?.localStorage.getItem('workflow_status'))[
         'bank_detail_update--123'
       ];
       expect(expireAt).toBeTruthy();
       expect(isVisible).toBeTruthy();
-      localStorage.removeItem('workflow_status');
+      window?.localStorage.removeItem('workflow_status');
     });
   });
 });

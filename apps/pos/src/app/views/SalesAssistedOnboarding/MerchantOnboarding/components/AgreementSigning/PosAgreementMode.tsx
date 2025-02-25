@@ -17,7 +17,7 @@ import {
   Spinner,
 } from '@razorpay/blade/components';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 import {
   StyledCard,
   StyledCardContainer,
@@ -67,9 +67,10 @@ import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
 interface PosAgreementModeProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
   isUpdateModularLoading: boolean;
+  // @ts-ignore
   updateModularConfig: (args) => void;
   isModularLoading: boolean;
-  merchantDetails: Merchant | undefined;
+  merchantDetails: DashboardGraphQLMerchant | undefined;
 }
 
 export const PosAgreementMode = ({

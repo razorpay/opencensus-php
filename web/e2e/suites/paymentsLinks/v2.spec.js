@@ -1,6 +1,13 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { test, expect } from 'utils/base';
-import { COMMON_SELECTORS } from 'utils/selectors';
+
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+  waitForLoader,
+  COMMON_SELECTORS,
+} from '@libs/shared-qsuite/playwright';
 
 import { paymentLinksUIData } from './constants';
 import {
@@ -20,12 +27,11 @@ import {
   verifyPLCreated,
   verifyPaymentHistory,
 } from './utils';
-import { clickSkipAndStartBtn, waitForLoader } from 'utils';
 
 test.describe
   .parallel('Test Payments Links V2 @flow=payment-links-v2 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   let createdPaymentLinkId = '';

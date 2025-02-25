@@ -15,6 +15,7 @@ import {
   userEvent,
   waitFor,
   waitForLoadingToFinishByLabel,
+  fireEvent,
 } from 'test-utils';
 
 import {
@@ -152,11 +153,11 @@ describe('CapitalClients', () => {
     await waitFor(() => {
       expect(screen.getByText('Actions')).toBeInTheDocument();
     });
-    const BureauButtons = screen.getAllByRole('button', { name: 'Create Bureau Link' });
+    const BureauButtons = screen.getAllByText("Create Bureau Link");
     expect(BureauButtons).toHaveLength(3);
     const enabledButton = BureauButtons[1];
     expect(enabledButton).not.toHaveAttribute('disabled');
-    await userEvent.click(enabledButton);
+    fireEvent.click(enabledButton);
     await waitFor(() => {
       expect(screen.getByText('There was an error')).toBeInTheDocument();
     });

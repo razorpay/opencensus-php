@@ -1,4 +1,4 @@
-import { humanize } from '@dashboard/shared-utils/rzp-utils';
+import { humanize } from '@libs/shared-utils';
 import { Item } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 export const getPaymentMethod = ({ method, card, wallet }: Item): string => {

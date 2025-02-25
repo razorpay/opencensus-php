@@ -22,11 +22,7 @@ const defaultProps = {
 describe('test suite for Invoices List', () => {
   beforeEach(() => {
     // set system time for fixed query params
-    jest.useFakeTimers('modern');
     jest.setSystemTime(REQUEST_EPOCH_APRIL_2023);
-  });
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   const App = ({ initialState, ...props }) => {
@@ -89,7 +85,7 @@ describe('test suite for Invoices List', () => {
     mockInvoicesFetchBulkRequestHandler((req) => {
       const { searchParams } = req.url;
       try {
-        expect(searchParams.get('from')).toBe('1651363200');
+        expect(searchParams.get('from')).toBe('1714521600');
         done();
       } catch {
         done('Expectation failed');
@@ -107,7 +103,7 @@ describe('test suite for Invoices List', () => {
     mockInvoicesFetchBulkRequestHandler((req) => {
       const { searchParams } = req.url;
       try {
-        expect(searchParams.get('from')).toBe('1675209600');
+        expect(searchParams.get('from')).toBe('1714521600');
         done();
       } catch {
         done('Expectation failed');

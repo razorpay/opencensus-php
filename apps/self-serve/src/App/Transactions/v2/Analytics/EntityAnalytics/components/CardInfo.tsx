@@ -8,7 +8,7 @@ import {
   Heading,
 } from '@razorpay/blade/components';
 import React from 'react';
-import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
+import { paiseToRupees } from '@libs/shared-utils';
 import { CardInfoShimmer } from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/Shimmer';
 import { CardInfoProps } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import { TooltipWrapper } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/styled';

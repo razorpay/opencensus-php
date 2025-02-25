@@ -1,0 +1,8 @@
+export enum DashboardGraphQLMerchantBalanceProductTypeEnum {
+  BANKING = 'BANKING',
+  CHARGE = 'CHARGE',
+  INTEREST = 'INTEREST',
+  PRIMARY = 'PRIMARY',
+  PRINCIPAL = 'PRINCIPAL',
+  RESERVE_PRIMARY = 'RESERVE_PRIMARY',
+}

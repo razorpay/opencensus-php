@@ -1,7 +1,7 @@
 import { Routes, NavLink, Navigate, Route } from 'react-router-dom';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { withRouter } from 'common/deprecated/withRouter';
-
+import React from "react";
 import Transactional from './Transactional/List';
 import Daily from './Daily/List';
 

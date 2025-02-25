@@ -1,0 +1,2 @@
+import { DashboardGraphQLPartnerConfigFailure, DashboardGraphQLPartnerConfigSuccess } from './index';
+export type DashboardGraphQLPartnerConfigResponse = DashboardGraphQLPartnerConfigFailure | DashboardGraphQLPartnerConfigSuccess;

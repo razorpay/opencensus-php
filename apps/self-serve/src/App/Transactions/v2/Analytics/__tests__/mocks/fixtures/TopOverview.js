@@ -4,11 +4,11 @@ import TopOverviewContainer from 'apps/self-serve/src/App/Transactions/v2/Analyt
 
 export const mockOpenModal = jest.fn();
 
-jest.mock('shell/commonStore', () => {
+jest.mock('@federated/apps/shell/commonStore', () => {
   const useStoreMocks = () => mockOpenModal;
   useStoreMocks.setState = jest.fn();
   return {
-    ...jest.requireActual('shell/commonStore'),
+    ...jest.requireActual('@federated/apps/shell/commonStore'),
     useStore: useStoreMocks,
   };
 });

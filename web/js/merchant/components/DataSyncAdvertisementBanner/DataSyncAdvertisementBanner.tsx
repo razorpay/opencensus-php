@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, Heading, Text, IconButton, CloseIcon } from '@razorpay/blade/components';
 import { useTheme, useBreakpoint } from '@razorpay/blade/utils';
 import datasyncicon from 'assets/DataSync.png';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -19,7 +19,7 @@ export const DataSyncAdvertisementBanner = () => {
 
   const [isVisible, setIsVisible] = useState(getItem('hideDataSyncBanner') !== 'true');
 
-  const user = session.user;
+  const user = session?.user;
 
   const handleClick = (e, actionName: string) => {
     e.stopPropagation();
@@ -33,7 +33,7 @@ export const DataSyncAdvertisementBanner = () => {
       },
     });
     window.open(
-      `https://razorpay.typeform.com/to/Y62qsGje#mid=${user.current}&name=${user.user?.name}&email=${user.user?.email}`,
+      `https://razorpay.typeform.com/to/Y62qsGje#mid=${user?.current}&name=${user?.user?.name}&email=${user?.user?.email}`,
       '_blank',
     );
   };

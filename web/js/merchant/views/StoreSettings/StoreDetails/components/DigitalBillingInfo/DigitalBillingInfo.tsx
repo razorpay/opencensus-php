@@ -18,7 +18,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { REACT_QUERY_CACHE_KEYS } from 'common/constant';
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { Store } from 'merchant/views/StoreSettings/types';
 import { TERMINAL_BY_STORE_ID } from 'merchant/views/StoreSettings/StoreDetails/queries';
 import SectionContainer from 'merchant/views/StoreSettings/StoreDetails/components/SectionContainer';

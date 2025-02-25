@@ -6,6 +6,7 @@ import {
 } from 'common/components/Dropdown/utils';
 import { Dropdown as BladeDropdown } from '@razorpay/blade/components';
 import { utils } from './mocks/fixtures';
+import React from "react";
 
 describe('Dropdown Utils', () => {
   describe('getAllOptions', () => {

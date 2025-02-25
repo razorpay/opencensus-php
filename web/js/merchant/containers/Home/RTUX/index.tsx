@@ -1,6 +1,6 @@
 import React, { Fragment, Suspense, useEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { FullPageLoader, FullPageLoaderCenterToMainContent } from 'common/components/Loader';
 import { useSplitzService } from 'common/splitz';

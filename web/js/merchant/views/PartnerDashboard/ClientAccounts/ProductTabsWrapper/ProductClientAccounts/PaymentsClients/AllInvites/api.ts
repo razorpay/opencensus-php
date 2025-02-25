@@ -2,9 +2,9 @@ import { fetchInvites } from 'merchant/views/PartnerDashboard/SubMerchant/compon
 
 // Re-exports from legacy code
 export {
-  FetchInvitesParams,
-  SubmerchantInviteItem,
-  FetchInviteResponse,
+  type FetchInvitesParams,
+  type SubmerchantInviteItem,
+  type FetchInviteResponse,
   fetchInvites,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/api';
 

@@ -1,4 +1,4 @@
-import { analyticsTrack } from '@dashboard/shared-utils/analytics';
+import { analyticsTrack } from '@libs/shared-utils';
 import { renderApp, useMobileMock } from './fixtures/mocks/Details';
 import { screen, userEvent } from 'apps/self-serve/src/services/test/test-utils';
 

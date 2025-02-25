@@ -1,0 +1,9 @@
+export enum DashboardGraphQLPayoutModeEnum {
+  AMAZON_PAY = 'AMAZON_PAY',
+  CARD_TRANSFER = 'CARD_TRANSFER',
+  IMPS = 'IMPS',
+  INTERNAL_FUND_TRANSFER = 'INTERNAL_FUND_TRANSFER',
+  NEFT = 'NEFT',
+  RTGS = 'RTGS',
+  UPI = 'UPI',
+}

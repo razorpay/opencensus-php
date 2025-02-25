@@ -4,7 +4,7 @@ import { render } from 'apps/self-serve/src/services/test/test-utils';
 
 import 'jest-location-mock';
 
-jest.mock('@dashboard/shared-ui/hooks', () => ({
+jest.mock('@libs/shared-utils', () => ({
   useMobile: jest.fn(),
 }));
 
@@ -12,7 +12,7 @@ jest.mock('common/utils/selfServeAnalytics', () => ({
   selfServeTrackInitiate: jest.fn(),
 }));
 
-export const useMobileMock = jest.requireMock('@dashboard/shared-ui/hooks');
+export const useMobileMock = jest.requireMock('@libs/shared-utils');
 
 export const renderApp = () =>
   render(

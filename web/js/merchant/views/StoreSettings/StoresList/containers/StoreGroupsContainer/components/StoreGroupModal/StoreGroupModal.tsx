@@ -13,7 +13,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import isEmpty from 'lodash/isEmpty';
 
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import StoreFilter from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreFilter';
 import { storeGroupInitialState } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal/constants';
 import useStoreGroupCreateMutation from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal/hooks/useStoreGroupCreateMutation';

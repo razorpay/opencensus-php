@@ -1,0 +1,1 @@
+export { shellErrorCaptureMiddleware } from './shellErrorCaptureMiddleware';

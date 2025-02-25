@@ -3,8 +3,7 @@ import { DesktopOnlyView, MobileOnlyView } from '../../commonStyles';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import styled from 'styled-components';
-import ajax from 'common/utils/ajax';
-import { getFormattedAmount, getURLQueryParams } from '../../utils';
+import { commonAjax, getFormattedAmount, getURLQueryParams } from '@libs/shared-utils';
 
 const RefereeBannerContainerView = styled(View)`
   height: 50px;
@@ -46,7 +45,7 @@ const RefereeBanner = () => {
   }
 
   useEffect(() => {
-    ajax({
+    commonAjax({
       url: '/user/api/live/m2m_referral',
     })
       .then((data) => {

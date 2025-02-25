@@ -3,7 +3,7 @@ import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attemp
 import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
 import { Formik, useFormikContext } from 'formik';
 import isEmpty from 'lodash/isEmpty';
-import { setMerchantID } from 'merchant/reducers/newAuth/actions';
+import { setMerchantID } from '@dashboards/payments/reducers/newAuth/actions';
 import {
   registerMobileOTP,
   userWhatsappOptIn,

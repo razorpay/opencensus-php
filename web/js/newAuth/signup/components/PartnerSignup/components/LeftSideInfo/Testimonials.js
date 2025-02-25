@@ -1,4 +1,5 @@
-import { Carousel } from 'merchant/views/PartnerDashboard/Settings/configuration/Carousel';
+import React from "react";
+import { Carousel } from '@dashboards/payments/views/PartnerDashboard/Settings/configuration/Carousel';
 
 import { StyledTestimonials } from './styled';
 

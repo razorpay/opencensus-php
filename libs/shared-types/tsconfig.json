@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": false,
+    "types": ["react"],
+    "paths": {} // No local paths allowed, except symlinked shared-core
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/node_modules", "dist"]
+}

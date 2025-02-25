@@ -475,9 +475,9 @@ export const getNcRequestDate = (kycClarificationData: any): any => {
 
 export const setLocalStorage = (key: string, value: string | any): void => {
   if (typeof value === 'string') {
-    localStorage.setItem(key, value);
+    window?.localStorage.setItem(key, value);
   }
-  localStorage.setItem(key, JSON.stringify(value));
+  window?.localStorage.setItem(key, JSON.stringify(value));
 };
 
 export const getFormatedCurrency = (amount = 0, currency = 'INR') => {

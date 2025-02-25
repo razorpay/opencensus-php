@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Button, IconComponent, ShoppingCartIcon } from '@razorpay/blade/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import {
   ACTIONS,

@@ -1,0 +1,43 @@
+# name: I18n Linter Master Branch Report
+# on:
+#   push:
+#     branches:
+#       - master
+
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
+
+# env:
+#   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+#   NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+#   APP_NAME: dashboard
+#   HOME: /actions-runner/_work
+
+# jobs:
+#   linter:
+#     runs-on: [self-hosted]
+#     name: I18n Linter
+#     steps:
+#       - name: Checkout Codebase
+#         uses: actions/checkout@v4
+
+#       - name: Install And Cache Dependencies
+#         uses: ./.github/actions/install-dependencies
+#         with:
+#           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+#       - name: I18n Rules Check
+#         run: |
+#           npx eslint \
+#           --output-file errors_report.json \
+#           --no-error-on-unmatched-pattern \
+#           --format json \
+#           web/js apps libs
+#         continue-on-error: true
+
+#       - name: Filter smart linter errors
+#         uses: ./.github/actions/smart-linter
+#         with:
+#           dangerjs_args: master
+#           github_access_token: ${{ secrets.CI_BOT_TOKEN }}

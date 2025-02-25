@@ -4,14 +4,14 @@ import { bladeTheme } from '@razorpay/blade/tokens';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import { analyticsTrack } from 'common/utils/analytics';
-import { getItem, setItem } from 'common/utils/localStorage';
+import * as LocalStorageUtils from 'common/utils/localStorage';
 
 import { DataSyncAdvertisementBanner } from '../index';
 
-jest.mock('common/utils/localStorage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-}));
+const localStorageSetItemSpy = jest.spyOn(LocalStorageUtils, 'setItem');
+const localStorageGetItemSpy = jest.spyOn(LocalStorageUtils, 'getItem');
+
+
 jest.mock('common/utils/analytics', () => ({
   analyticsTrack: jest.fn(),
 }));
@@ -26,30 +26,30 @@ describe('DataSyncAdvertisementBanner', () => {
   };
 
   test('renders banner if local storage value is falsy', () => {
-    getItem.mockReturnValueOnce(undefined);
+    localStorageGetItemSpy.mockReturnValueOnce(undefined);
     renderApp();
     expect(screen.getByText(/Unlock Real-Time Data Access with/i)).toBeInTheDocument();
   });
 
   test('does not render banner if value set in local storage', () => {
-    getItem.mockReturnValue('true');
+    localStorageGetItemSpy.mockReturnValue('true');
     renderApp();
     expect(screen.queryByText(/Unlock Real-Time Data Access with/i)).not.toBeInTheDocument();
   });
 
   test('hide banner and set local storage on close', () => {
-    getItem.mockReturnValue('false');
+    localStorageGetItemSpy.mockReturnValue('false');
     renderApp();
 
     const closeButton = screen.getByRole('button', { name: /close/i });
     fireEvent.click(closeButton);
 
     expect(screen.queryByText(/Unlock Real-Time Data Access with/i)).not.toBeInTheDocument();
-    expect(setItem).toHaveBeenCalledWith('hideDataSyncBanner', 'true');
+    expect(localStorageSetItemSpy).toHaveBeenCalledWith('hideDataSyncBanner', 'true');
   });
 
   test('track analytics when banner and button is clicked', () => {
-    getItem.mockReturnValue('false');
+    localStorageGetItemSpy.mockReturnValue('false');
     renderApp();
 
     const banner = screen.getByText(/Unlock Real-Time Data Access with/i);

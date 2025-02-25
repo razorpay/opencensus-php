@@ -1,4 +1,4 @@
-import { set } from 'common/utils/immutable';
+import { set } from '@libs/shared-utils';
 import { NewAuthAction, SET_MERCHANT_ID } from './actions';
 
 interface State {

@@ -1,11 +1,10 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 // Skip reason : https://razorpay.slack.com/archives/C061HJGS1CY/p1725005186223989
 test.describe
   .parallel('Rize Marketplace landing page @flow=rize-marketplace @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

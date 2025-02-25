@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 
 const getUnitlessValue = value => value.replace(/[^-\d\.]/g, '');
 

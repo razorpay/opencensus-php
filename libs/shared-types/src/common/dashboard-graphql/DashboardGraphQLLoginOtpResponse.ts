@@ -1,0 +1,2 @@
+import { DashboardGraphQLLoginOtpError, DashboardGraphQLLoginOtpSuccess } from './index';
+export type DashboardGraphQLLoginOtpResponse = DashboardGraphQLLoginOtpError | DashboardGraphQLLoginOtpSuccess;

@@ -1,6 +1,10 @@
-import { CountryCodeType } from '@razorpay/i18nify-js';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import { LADashboardUser } from '@libs/shared-types/la';
+import { StrictMerge } from '@libs/shared-types';
 
-// Todo: delete this file, it's available in @dashboard/shared-utils
+/**
+ * @deprecated Please use `RazorpayUserBusinessSubCategory` from `@libs/shared-types` instead. Will be removed soon.
+ */
 export enum BUSINESS_SUBCATEGORIES {
   Aviation = 'aviation',
   Charity = 'charity',
@@ -34,158 +38,10 @@ export enum BUSINESS_SUBCATEGORIES {
   Gaming_Marketplace = 'gaming_marketplace',
 }
 
-type Getters = {
-  findTag: (tag: string) => boolean;
-  isAllowedView: (args: string) => boolean;
-  isFeatureEnabled: (args: string) => boolean;
-  isOrgAllowedFunctionality: (featureName: string) => boolean;
-  isPartner: (...args: string[]) => boolean;
-  isOptimizerView: () => boolean;
-  isApmOnboardingEnabled: boolean;
-  isAccountAndSettingsRevampEnabled: boolean;
-  isIERevampEnabled: boolean;
-  isAccepted: boolean;
-  isUnregisteredBusiness: boolean;
-  isRevampedReportsEnabled: {
-    merchant: boolean;
-    partner: boolean;
-    la: boolean;
-    schedules: boolean;
-    overviewRecents: boolean;
-  };
-  isMarketplaceEnabled: boolean;
-  isSupportRole: boolean;
-  isSettlementV3RevampEnabled: boolean;
-  isSingleReconEnabled: boolean;
-  isOptimizerEnabled: boolean;
-  isOptimizerRZPVASEnabled: boolean;
-  isWebsiteComplianceFlowEnabled: boolean;
-  isBundlePricingEnabled: boolean;
-  isCustomReportExtensionsEnabled: boolean;
-  isPaymentPageFileUploadEnabled: boolean;
-  isSodexoInstrumentEnabled: boolean;
-  isSearchv2Phase1Enabled: boolean;
-  isRefundPendingStatusEnabled: boolean;
-  isOrgCurlec: boolean;
-  isOrgRZP: boolean;
-  isPartnershipForCapitalEnabled: boolean;
-  isInternationalMethodsHidden: boolean;
-  isDirectTransferEnabled: boolean;
-  isHidePIDetails: boolean;
-  isSubMerchantKycEnabled: boolean;
-  isPartnerAgentRole: boolean;
-  isPartnerRole: boolean;
-  isRiskAndFraudEnabled: boolean;
-  isOmniChannelMerchant: boolean;
-  isOmniEnabledMerchant: boolean;
-  isRazorxAnnouncementEnabled: boolean;
-  isActivated: boolean;
-  isHideMonthlyInvoiceEnabled: boolean;
-  isCountryIndia: boolean;
-  isCountryMalaysia: boolean;
-  isCountrySingapore: boolean;
-  isParityFeaturesEnabledForHDCF: boolean;
-  isMultiCouponsEnabled: boolean;
-  isAdminOrOwner: boolean;
-  isOwner: boolean;
-  isRRNSearchEnabled: boolean;
-  isMagicCouponEngineEnabled: boolean;
-  isMoreInternationalMethodsEnabledForVAS: boolean;
-  isCreditSelfServeDisabled: boolean;
-  isPayerNameEnabled: boolean;
-  isPgLegderReverseShadowEnabled: boolean;
-  isUpiRefundDisabled: boolean;
-  isCardRefundDisabled: boolean;
-  isNetbankingRefundDisabled: boolean;
-};
+/**
+ * @warning Please add necessary checks, anything available here should not be assumed available always.
+ * @deprecated Please `PaymentsDashboardUser` from `@libs/shared-types/payments` or `LADashboardUser` from `@libs/shared-types/la` instead. For `window.rzp_user` type usage, use `RazorpayUser` from `@libs/shared-types` instead.
+ */
+type DeprecatedUserType = StrictMerge<PaymentsDashboardUser, LADashboardUser>;
 
-type Merchant = {
-  id: string;
-  hold_funds: boolean;
-  max_payment_amount: number;
-  currency: string;
-  pricing_plan_id?: string;
-  name: string;
-  country_code: CountryCodeType;
-  display_name: string;
-  email: string;
-};
-
-type UserProperties = {
-  id: string;
-  international: boolean;
-  business_website: string;
-  activation_status: string;
-  additional_websites: [];
-  appstore_url: string;
-  international_activation_flow: string;
-  current: string;
-  email: string;
-  contact_email: string;
-  contact_mobile: number;
-  transaction_report_email: string;
-  name: string;
-  role: string;
-  user: {
-    id: string;
-    name: string;
-    email?: string;
-    contact_mobile?: string;
-    signup_campaign?: string;
-  };
-  merchant: Merchant;
-  merchants: {
-    [key: string]: Merchant;
-  };
-  business_type: string;
-  business_subcategory: BUSINESS_SUBCATEGORIES | string;
-  isTransacted: boolean;
-  pos_activation_status?: string;
-  pos_kyc_deadline_date?: number;
-  documents: {
-    shop_front?: [];
-    shop_interior?: [];
-  };
-  created_at: number;
-  submitted: boolean;
-  pos_activation_flow: 'blacklist' | 'whitelist' | 'greylist';
-  kyc_terms_and_conditions_checked?: boolean;
-  business_registered_address?: string;
-  business_registered_address_l2?: string;
-  business_operation_city?: string;
-  business_operation_district?: string;
-  business_registered_state?: string;
-  business_registered_country?: string;
-  business_registered_pin?: string;
-  business_registered_district?: string;
-  business_registered_city?: string;
-  merchant_business_detail: {
-    website_details: {
-      physical_store: boolean;
-    };
-  };
-  tags: string[];
-  live: boolean;
-  is_pgos_merchant: boolean;
-  configTags: any;
-  logo_url?: string;
-  playstore_url: string;
-  has_key_access: boolean;
-  permissions?: Array<string>;
-  isLRSEducationFlow: boolean;
-  orgCustomCode: string;
-  isJnKOmniEnabled: boolean;
-  rekyc_status: string;
-  mcc_verification_status: string;
-  manual_rekyc: {
-    status: {
-      created_at: string;
-      rekyc_status: string;
-    }[];
-  };
-};
-
-// as user properties are not available initially
-type User = Getters & Partial<UserProperties>;
-
-export default User;
+export default DeprecatedUserType;

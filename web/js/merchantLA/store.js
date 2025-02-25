@@ -1,8 +1,20 @@
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
 import apiAsyncMiddleware from 'merchant_common/middlewares/apiAsyncMiddleware';
 import reducers from 'merchantLA/reducers';
+import { useStore as shellZustandStore } from '@federated/apps/shell/commonStore';
+import {
+  syncShellZustandWithReduxMiddleware,
+  attachZustandToReduxSyncAction,
+} from 'common/utils/store-sync';
 
-const store = createStore(reducers, applyMiddleware(apiAsyncMiddleware));
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+const store = createStore(
+  attachZustandToReduxSyncAction(reducers),
+  composeEnhancers(
+    applyMiddleware(apiAsyncMiddleware, syncShellZustandWithReduxMiddleware(shellZustandStore)),
+  ),
+);
 
 export default store;
 

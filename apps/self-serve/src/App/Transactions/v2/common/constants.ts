@@ -1,6 +1,5 @@
 import { Theme } from '@razorpay/blade/components';
-
-import { getCurrentYear } from '@dashboard/shared-utils/date-utils';
+import { getCurrentYear } from '@libs/shared-utils';
 
 export const headerActionTarget =
   '.tabbed-container > #transactions-header, tabbed-container > #transactions-header';

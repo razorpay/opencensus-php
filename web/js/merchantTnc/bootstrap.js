@@ -3,13 +3,26 @@ import 'core-js/es/map';
 import 'core-js/es/set';
 import React from 'react';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import axios from 'axios';
 import { render } from 'react-dom';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
+import { DASHBOARD_PRIORITY_RANKS, DASHBOARD_TEAMS } from '@libs/shared-types';
+import { ErrorBoundary } from '@libs/shared-ui';
+import TncPages from '@dashboards/payments/views/TermsAndCondition/Pages';
+import { states } from '@dashboards/payments/views/onboarding/mobile/Constants/OnboardingConstants';
 
-import TncPages from 'merchant/views/TermsAndCondition/Pages';
-import { states } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 0,
+      refetchOnWindowFocus: false,
+      staleTime: 0 * 1000,
+      cacheTime: 0 * 1000,
+      retryOnMount: false,
+    },
+  },
+});
 
 const GloblatStyle = createGlobalStyle`
 @font-face {
@@ -206,4 +219,11 @@ function removeSplashLoader() {
   }
 }
 
-render(<App />, document.getElementById('react-root'));
+render(
+  <ErrorBoundary rank={DASHBOARD_PRIORITY_RANKS.P1} team={DASHBOARD_TEAMS.PLATFORM}>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </ErrorBoundary>,
+  document.getElementById('react-root'),
+);

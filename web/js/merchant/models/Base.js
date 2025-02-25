@@ -1,4 +1,3 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
 import { objectDiff, isBlank } from 'common/utils/rzp-utils';
 
 /*

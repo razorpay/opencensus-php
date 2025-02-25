@@ -3,7 +3,6 @@ import MerchantNumberVerify from './MerchantNumberVerify';
 import { Box } from '@razorpay/blade/components';
 import useMerchantRegistration from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useMerchantRegistration';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import errorService from '@razorpay/universe-cli/errorService';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
@@ -23,7 +22,6 @@ const MerchantNumberVerifySalesAssisted = (): JSX.Element => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.MERCHANT_REGISTRATION }}
       fallbackComponent={

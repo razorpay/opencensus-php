@@ -1,7 +1,6 @@
 import React, { createContext, ReactNode, useState } from 'react';
-import { axiosInstance } from 'common/services/graphql/graphql-fetch';
-import { restInstance } from 'common/services/rest/rest-fetch';
-import { setMode as setGlobalMode, ModeT } from 'common/services/mode';
+import { setMode as setGlobalMode } from 'common/services/mode';
+import type { DASHBOARD_MODE } from '@libs/shared-types';
 
 interface orgT {
   id: string;
@@ -14,8 +13,8 @@ export interface AppContextTypes {
   user?: any;
   experiments?: any;
   org: orgT;
-  mode: ModeT;
-  setMode?: (mode: ModeT) => void;
+  mode: DASHBOARD_MODE;
+  setMode?: (mode: DASHBOARD_MODE) => void;
   submerchantId?: string;
 }
 
@@ -35,11 +34,7 @@ interface Props {
 }
 
 const AppProvider: React.FC<Props> = ({ context, children }) => {
-  const [mode, setMode] = useState<ModeT>(context?.mode);
-  axiosInstance.defaults.headers.common['x-org-id'] = context?.org?.id;
-  axiosInstance.defaults.headers.common['x-app-mode'] = mode;
-  // restInstance.defaults.headers.common['X-Razorpay-Account'] = context.user.id;
-  restInstance.defaults.baseURL = `${process.env.hostName ? process.env.hostName : ''}`;
+  const [mode, setMode] = useState<DASHBOARD_MODE>(context?.mode);
   setGlobalMode(mode);
 
   return (

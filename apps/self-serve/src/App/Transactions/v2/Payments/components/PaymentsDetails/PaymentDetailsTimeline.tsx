@@ -1,6 +1,6 @@
 // TODO: Fix the imports, currently out of scope
 // @ts-nocheck
-import { deepClone } from '@dashboard/shared-utils/rzp-utils';
+import { deepClone } from '@libs/shared-utils';
 import {
   Box,
   Button,
@@ -27,11 +27,11 @@ import { TimelineJourneyPoint } from 'apps/self-serve/src/App/Transactions/v2/Pa
 import { PaymentsTimeline } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import RefundIcon from 'apps/self-serve/src/assets/refund.svg';
-import * as PaymentActions from 'merchant/reducers/payments/details';
+import * as PaymentActions from '@dashboards/payments/reducers/payments/details';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { IBankTransfer, IPaymentDetails, IPaymentIdRefundDetail } from './types';
 import {
   getDisputesTimelineData,

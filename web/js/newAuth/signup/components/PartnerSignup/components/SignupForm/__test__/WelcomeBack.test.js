@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { render, screen, userEvent, waitFor } from 'common/services/test/test-utils';
+import { render, screen, userEvent, waitFor } from '@libs/web-nexus/common/services/test/test-utils';
 import { STEPS } from 'newAuth/signup/Constants';
 import WelcomeBack from 'newAuth/signup/components/PartnerSignup/components/SignupForm/components/WelcomeBack';
 

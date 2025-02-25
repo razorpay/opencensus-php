@@ -1,0 +1,4 @@
+import { DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse, DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse } from './index';
+export type DashboardGraphQLTwoFactorEmailOtpVerifyResponse =
+  | DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse
+  | DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse;

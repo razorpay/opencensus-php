@@ -1,0 +1,21 @@
+import { DashboardGraphQLInputMaybe, DashboardGraphQLScalars, DashboardGraphQLPayoutModeEnum, DashboardGraphQLPayoutPendingOnInput, DashboardGraphQLPayoutStatusEnum } from './index';
+export type DashboardGraphQLQueryPayoutsArgs = {
+  contactEmail?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  contactId?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  contactName?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  contactPhone?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  contactType?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  fromDate?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['DateTime']>;
+  fundAccountId?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  id?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['ID']>;
+  limit: DashboardGraphQLScalars['PositiveInt'];
+  mode?: DashboardGraphQLInputMaybe<DashboardGraphQLPayoutModeEnum>;
+  offset: DashboardGraphQLScalars['NonNegativeInt'];
+  pendingOn?: DashboardGraphQLInputMaybe<DashboardGraphQLPayoutPendingOnInput>;
+  pendingOnRoles?: DashboardGraphQLInputMaybe<Array<DashboardGraphQLScalars['String']>>;
+  sourceId?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['ID']>;
+  status?: DashboardGraphQLInputMaybe<DashboardGraphQLPayoutStatusEnum>;
+  toDate?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['DateTime']>;
+  transactionId?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+  utr?: DashboardGraphQLInputMaybe<DashboardGraphQLScalars['String']>;
+};

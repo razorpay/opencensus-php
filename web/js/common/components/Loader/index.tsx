@@ -1,4 +1,3 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 import React from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';

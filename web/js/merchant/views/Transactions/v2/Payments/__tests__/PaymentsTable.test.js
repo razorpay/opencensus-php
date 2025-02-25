@@ -5,10 +5,10 @@ import {
 } from 'merchant/views/Transactions/v2/Payments/__tests__/mocks/fixtures/PaymentsTable';
 import { screen, waitFor } from 'test-utils';
 
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
-jest.mock('shell/commonStore', () => ({
-  ...jest.requireActual('shell/commonStore'),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  ...jest.requireActual('@federated/apps/shell/commonStore'),
   useStore: jest.fn(),
 }));
 

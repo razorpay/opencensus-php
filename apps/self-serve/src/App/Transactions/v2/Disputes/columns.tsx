@@ -1,10 +1,10 @@
-import { Amount } from '@dashboard/shared-ui/components';
+import Amount from '@libs/web-nexus/common//ui/Amount';
 import { Box, CopyIcon, GlobeIcon, Text, VisuallyHidden } from '@razorpay/blade/components';
 import { getFlagOfCountry } from '@razorpay/i18nify-js';
 import React from 'react';
 
-import CustomClipboard from '@dashboard/shared-ui/Clipboard/Custom';
-import { daysFromToday, titleCase } from '@dashboard/shared-utils/rzp-utils';
+import CustomClipboard from '@libs/web-nexus/common/ui/Clipboard/Custom';
+import { daysFromToday, toTitleCase } from '@libs/shared-utils';
 import { disputesStatusVariantMap } from 'apps/self-serve/src/App/Transactions/v2/Disputes/constants';
 import { amount } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable/columns';
 import Details from 'apps/self-serve/src/App/Transactions/v2/common/components/Details/Details';
@@ -54,7 +54,7 @@ export const stage = {
       Stage
     </Text>
   ),
-  value: (item) => <Text>{titleCase(item.phase ?? '')}</Text>,
+  value: (item) => <Text>{toTitleCase(item.phase ?? '')}</Text>,
 };
 
 export const respondBy = {

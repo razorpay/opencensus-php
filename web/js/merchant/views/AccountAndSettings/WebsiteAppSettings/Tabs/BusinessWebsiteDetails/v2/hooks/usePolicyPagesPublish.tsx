@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 
 import {
   PolicyPagesConsentPayload,

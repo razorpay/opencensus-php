@@ -1,23 +1,25 @@
-import { createStore, applyMiddleware, compose } from 'redux';
-
-import stateSyncMiddleware, {
-  initialStateSyncMiddleware,
-  syncInitialReduxState,
-} from 'merchant/commonStore/stateSyncMiddleware';
-// import { stateSyncMiddleware } from 'merchant/commonStore';
+/* eslint-disable import/no-import-module-exports */
+import { useStore as shellZustandStore } from '@federated/apps/shell/commonStore';
+import {
+  syncShellZustandWithReduxMiddleware,
+  attachZustandToReduxSyncAction,
+} from 'common/utils/store-sync';
 import apiAsyncMiddleware from 'merchant_common/middlewares/apiAsyncMiddleware';
+import { createStore, applyMiddleware, compose } from 'redux';
 
 import reducers from './reducers';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
+const rootReducer = attachZustandToReduxSyncAction(reducers);
+
 function configureStore() {
   const store = createStore(
-    reducers,
-    composeEnhancers(applyMiddleware(apiAsyncMiddleware, stateSyncMiddleware)),
+    rootReducer,
+    composeEnhancers(
+      applyMiddleware(apiAsyncMiddleware, syncShellZustandWithReduxMiddleware(shellZustandStore)),
+    ),
   );
-
-  syncInitialReduxState(store);
 
   if (module.hot) {
     // Enable Webpack hot module replacement for reducers
@@ -33,15 +35,18 @@ function configureStore() {
 const store = configureStore();
 
 export const storeWithInitialState = (initialState) => {
-  initialStateSyncMiddleware(initialState);
-  return createStore(
-    reducers,
+  const storeWithInitialData = createStore(
+    rootReducer,
     initialState,
-    composeEnhancers(applyMiddleware(apiAsyncMiddleware, stateSyncMiddleware)),
+    composeEnhancers(
+      applyMiddleware(
+        apiAsyncMiddleware,
+        syncShellZustandWithReduxMiddleware(shellZustandStore, initialState),
+      ),
+    ),
   );
+  return storeWithInitialData;
 };
-
-export default store;
 
 export function getMode() {
   if (store.getState().session.isUsingPartnerMode) {
@@ -61,3 +66,5 @@ export function getUser() {
 export function getPartnerMode() {
   return store.getState().session.partnerMode;
 }
+
+export default store;

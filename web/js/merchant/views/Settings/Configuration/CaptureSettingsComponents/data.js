@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
-
+import moment from 'moment';
 export const maxTimeoutValue = 4320;
 export const defaultTimeoutValue = 12;
 

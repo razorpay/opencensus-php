@@ -1,0 +1,4 @@
+export enum DashboardGraphQLTwoFactorActionTypeEnum {
+  USER_AUTHENTICATION = 'USER_AUTHENTICATION',
+  VERIFY_CONTACT = 'VERIFY_CONTACT',
+}

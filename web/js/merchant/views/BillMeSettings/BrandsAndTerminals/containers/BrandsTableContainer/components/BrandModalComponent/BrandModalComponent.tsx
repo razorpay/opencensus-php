@@ -14,7 +14,7 @@ import {
 } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import BrandForm from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/components/BrandModalComponent/BrandForm';
 import BrandInfo from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/components/BrandModalComponent/BrandInfo';
 import useBrandCreateMutation from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/components/BrandModalComponent/hooks/useBrandCreateMutation';

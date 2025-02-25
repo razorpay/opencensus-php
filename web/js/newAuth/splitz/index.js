@@ -1,7 +1,7 @@
 import experimentDataMap from './experimentDataMap';
 import { init, getVariants } from './splitzSetup';
-import { isProductionEnv } from 'common/utils/rzp-utils';
-import { getClientID } from 'common/services/tracking/segment';
+import { isProductionEnv } from '@libs/shared-utils';
+import { getClientID } from '@libs/web-nexus/common/services/tracking/segment';
 
 const isProdEnv = isProductionEnv();
 

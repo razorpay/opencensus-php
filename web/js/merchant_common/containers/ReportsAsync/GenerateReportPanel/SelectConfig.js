@@ -1,4 +1,5 @@
 import { PowerSelect } from 'react-power-select';
+import React from 'react';
 
 import { Label } from 'common/new-ui/Input';
 import { pickProps } from 'common/utils/rzp-utils';

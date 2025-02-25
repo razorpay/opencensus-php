@@ -12,7 +12,7 @@ import {
 } from '@razorpay/blade/components';
 import wwwImg from 'assets/www.svg';
 
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import { useMobile } from 'common/hooks/useMobile';
 import ModalHeader from 'common/ui/ModalHeader';
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
@@ -142,8 +142,8 @@ function InitiateWebsiteChange(props) {
           props.closeModal();
           setIsBladeModalOpen(false);
         }}
+        zIndex={DASHBOARD_ZINDEX_MAP.modalOverlay}
         size="large"
-        zIndex={zIndicesMap.modalOverlay}
       >
         <BladeModalHeader title={title} />
         <BladeModalBody padding={isMobile ? 'spacing.5' : 'spacing.0'}>

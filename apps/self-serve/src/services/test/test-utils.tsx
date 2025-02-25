@@ -10,10 +10,10 @@ import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 
 import { Store } from 'redux';
 
-import ModalDialog from 'common/ui/ModalDialog';
-import Notifications from 'common/ui/Notifications';
+import ModalDialog from '@libs/web-nexus/common/ui/ModalDialog';
+import Notifications from '@libs/web-nexus/common/ui/Notifications';
 
-import { RouteGuard } from 'shell/components/ShowWhen';
+import { RouteGuard } from '@libs/web-nexus/merchant/components/RouteGuard';
 import {
   QueryClient,
   QueryClientProvider as ReactQueryClientProvider,

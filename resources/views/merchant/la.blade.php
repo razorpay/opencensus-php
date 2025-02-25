@@ -28,7 +28,7 @@
 
 @include('partials/rzpq-interface')
 
-<script src="{{$cdnDashboardUrl}}/dist/merchantLA-entry.js"></script>
+<script src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/la-dashboard/la-dashboard.entry.js"></script>
 
 @include('partials/blade-coverage-script')
 @include('partials/footer')

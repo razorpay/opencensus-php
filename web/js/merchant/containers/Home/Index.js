@@ -22,7 +22,10 @@ import {
   groupByPlatform,
   OTHERS,
 } from 'common/utils/pokedex';
+import lazyLoader from 'merchant/routes/LazyLoader';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
+import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
@@ -33,8 +36,6 @@ import KYCStatusModalOld from 'merchant/components/Home/KYCStatusModal-old';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import TnCModal from 'merchant/components/Home/TnCModal';
-import WelcomeModal from 'merchant/components/Home/WelcomeModal';
-import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
@@ -53,7 +54,6 @@ import {
   getBannerAndModalVisibility,
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
-import lazyLoader from 'merchant/routes/LazyLoader';
 import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
 import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
 import {

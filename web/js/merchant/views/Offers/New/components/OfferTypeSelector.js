@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, ChevronLeftIcon } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { withRouter } from 'common/deprecated/withRouter';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 const OfferTypeSelectorWrapper = (props) => {

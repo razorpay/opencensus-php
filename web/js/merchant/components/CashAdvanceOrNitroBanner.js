@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter } from 'common/deprecated/withRouter';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 

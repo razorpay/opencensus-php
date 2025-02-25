@@ -7,8 +7,8 @@ import { LinkButton } from '../styles';
 import { LoginCardArray } from '../data';
 import LoginCard from './LoginCard';
 import { fetchLoginCards, transformFetchLoginCardData } from '../../apis';
-import Loader from '../../../../js/common/components/Loader';
-import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+import Loader from 'newAuth/@deprecated/common/components/Loader'; // eslint-disable-line
+import GrowthAssetEB from '@libs/web-nexus/common/ui/GrowthAssetEB';
 
 const DefaultView = () => {
   const [loginCardArray, setLoginCardArray] = useState([]);

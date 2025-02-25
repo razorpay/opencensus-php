@@ -5,7 +5,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { useState } from 'react';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 interface WithdrawButtonProps {
   title: string;

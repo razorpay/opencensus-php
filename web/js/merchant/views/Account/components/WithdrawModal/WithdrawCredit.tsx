@@ -26,8 +26,8 @@ import {
   i18nifyConvertToMinorUnit,
 } from 'merchant/views/Transactions/v2/common/utils';
 import currencies from 'merchant/constants/currency';
-import { zIndicesMap } from 'common/constant';
-import { useStore } from 'shell/commonStore';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { useMutation } from '@tanstack/react-query';
 import { CurrencyCodeType } from '@razorpay/i18nify-js/currency';
 
@@ -160,7 +160,12 @@ function WithdrawCredits({
   return (
     <>
       {!success ? (
-        <Modal zIndex={zIndicesMap.modal} onDismiss={handleDismiss} isOpen={open} size="small">
+        <Modal
+          zIndex={DASHBOARD_ZINDEX_MAP.modal}
+          onDismiss={handleDismiss}
+          isOpen={open}
+          size="small"
+        >
           <ModalHeader
             title="Withdraw Funds"
             subtitle="This money will transferred to you in 24 hours"
@@ -233,7 +238,12 @@ function WithdrawCredits({
           </ModalFooter>
         </Modal>
       ) : (
-        <Modal zIndex={zIndicesMap.modal} isOpen={open} onDismiss={handleDismiss} size="small">
+        <Modal
+          zIndex={DASHBOARD_ZINDEX_MAP.modal}
+          isOpen={open}
+          onDismiss={handleDismiss}
+          size="small"
+        >
           <ModalHeader
             title="Withdrawal in Progress"
             subtitle={`${currencies[currency]?.symbol}${fieldValue} will be transferred from your ${title} to your account within 24 hours.`}

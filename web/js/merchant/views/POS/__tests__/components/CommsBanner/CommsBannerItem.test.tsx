@@ -1,9 +1,10 @@
 import React from 'react';
-import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
 import { screen, render, userEvent, waitFor } from 'test-utils';
+import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import CommsBannerItem from 'merchant/views/POS/CommsBanner/CommsBannerItem';
 import 'jest-location-mock';
+
+jest.spyOn(analytics, 'track_EXPERIMENTAL');
 
 describe('Communications Banner item component', () => {
   it('should call track_EXPERIMENTAL with the correct parameters on cta click', async () => {

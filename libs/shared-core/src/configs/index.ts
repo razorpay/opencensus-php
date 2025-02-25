@@ -1,0 +1,1 @@
+export * from "./DASHBOARD_FEDERATED_MODULE_CONFIGS";

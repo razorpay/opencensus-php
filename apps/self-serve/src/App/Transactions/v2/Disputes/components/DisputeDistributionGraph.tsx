@@ -1,11 +1,11 @@
 import React from 'react';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { Box, Tooltip } from '@razorpay/blade/components';
 import { DisputeDataResponse } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import { GraphSection } from 'apps/self-serve/src/App/Transactions/v2/Disputes/styled';
 import { getGraphValues } from 'apps/self-serve/src/App/Transactions/v2/Disputes/utils';
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import { zIndicesMap } from '@dashboard/shared-utils/constants';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 
 type DisputeDistributionGraphProps = {
   data: DisputeDataResponse;
@@ -43,7 +43,7 @@ const DisputeDistributionGraph = ({ data }: DisputeDistributionGraphProps): JSX.
       >
         {graphValues.map((graphValue) => {
           return graphValue.count ? (
-            <Tooltip content={graphValue.content} placement="bottom" zIndex={zIndicesMap.tooltip}>
+            <Tooltip content={graphValue.content} placement="bottom" zIndex={DASHBOARD_ZINDEX_MAP.tooltip}>
               <GraphSection
                 status={graphValue.status}
                 distributionPercentage={graphValue.percent}

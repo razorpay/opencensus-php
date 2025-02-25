@@ -5,6 +5,7 @@ import HolidaysTable from 'merchant/views/Settlements/Settlements/components/Hol
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { bindActionCreators } from 'redux';
+import React from "react";
 
 class HolidayModal extends Component {
   render() {

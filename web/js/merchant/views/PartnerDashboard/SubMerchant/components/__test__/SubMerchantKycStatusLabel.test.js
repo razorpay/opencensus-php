@@ -1,5 +1,5 @@
 import moment from 'moment';
-
+import React from "react";
 import SubMerchantKycStatusLabel from 'merchant/views/PartnerDashboard/SubMerchant/components/SubMerchantKycStatusLabel';
 import { delay, fireEvent, render, screen } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';

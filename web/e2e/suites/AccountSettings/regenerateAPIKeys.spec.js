@@ -1,8 +1,10 @@
-import { BASE_PATH, getStorageStatePath } from 'testConstants';
-
-const { expectSuccessNotification } = require('utils');
-const { test, expect } = require('utils/base');
-const { waitAndProceedVerificationPopup } = require('utils/verification');
+import {
+  test,
+  expect,
+  getStorageStatePath,
+  waitAndProceedVerificationPopup,
+  expectSuccessNotification,
+} from '@libs/shared-qsuite/playwright';
 
 const ELEMENT_CONSTANTS = {
   API_KEYS_SETTINGS_URL: '/app/website-app-settings/api-keys',
@@ -18,7 +20,7 @@ const ELEMENT_CONSTANTS = {
 
 test.describe('Test Regenerate API Keys @flow=account-settings @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
   test.skip('should regenerate API Keys @priority=critical', async ({ page }) => {
     // go to the api keys and settings tab

@@ -1,5 +1,4 @@
 import React, { useEffect, createContext, FC } from 'react';
-
 import { withRouter } from 'common/deprecated/withRouter';
 import { splitzConfig } from 'common/splitz/configs';
 import { API_BASE_URL, REF_MID } from 'common/splitz/constants';
@@ -12,6 +11,8 @@ import {
   VariantConfigArgs,
 } from 'common/splitz/types';
 import { getSplitzRequestData } from 'common/splitz/utils';
+import { BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 
 export const SpiltzContext = createContext({} as SpiltzContextState);
 
@@ -30,7 +31,7 @@ const SpiltzServiceProviderComponent = ({
     try {
       const evaluatedExperiment = await getVariant({
         ...experimentToEvaluate,
-        requestData: getSplitzRequestData(experimentToEvaluate),
+        requestData: getSplitzRequestData?.(experimentToEvaluate),
       });
       setABExperiments({
         [experimentToEvaluate.uniqueHashKey]: evaluatedExperiment,
@@ -45,7 +46,7 @@ const SpiltzServiceProviderComponent = ({
       const evaluatedExp = await getVariants(
         experimentsToEvaluate.map((experiment) => ({
           ...experiment,
-          requestData: getSplitzRequestData(experiment),
+          requestData: getSplitzRequestData?.(experiment),
         })),
       );
       setABExperiments(evaluatedExp);
@@ -106,18 +107,20 @@ const SpiltzServiceProviderComponent = ({
   }, []);
 
   return (
-    <SpiltzContext.Provider
-      value={{
-        isInitialized,
-        abExperiments,
-        evaluateExperiment,
-        bulkEvaluateExperiments,
-        isExperimentEvaluated,
-        activeDashboard: getActiveDashboard(),
-      }}
-    >
-      {isInitialized ? children : customLoader ? customLoader() : <div id="splash" />}
-    </SpiltzContext.Provider>
+    <BladeProvider themeTokens={bladeTheme}>
+      <SpiltzContext.Provider
+        value={{
+          isInitialized,
+          abExperiments,
+          evaluateExperiment,
+          bulkEvaluateExperiments,
+          isExperimentEvaluated,
+          activeDashboard: getActiveDashboard(),
+        }}
+      >
+        {isInitialized ? children : customLoader ? customLoader() : <div id="splash" />}
+      </SpiltzContext.Provider>
+    </BladeProvider>
   );
 };
 

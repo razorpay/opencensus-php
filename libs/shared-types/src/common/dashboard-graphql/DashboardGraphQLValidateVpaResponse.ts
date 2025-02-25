@@ -1,0 +1,2 @@
+import { DashboardGraphQLValidateVpaFailureResponse, DashboardGraphQLValidateVpaSuccessResponse } from './index';
+export type DashboardGraphQLValidateVpaResponse = DashboardGraphQLValidateVpaFailureResponse | DashboardGraphQLValidateVpaSuccessResponse;

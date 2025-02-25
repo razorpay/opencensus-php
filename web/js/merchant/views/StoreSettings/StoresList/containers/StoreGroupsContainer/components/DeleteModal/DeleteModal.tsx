@@ -11,7 +11,7 @@ import {
 } from '@razorpay/blade/components';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { graphqlRequestMutation } from 'common/services/graphql/graphql-client';
+import { graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import { StoreGroupModalStatus } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/constants';
 import { DELETE_STORE_GROUP_MUTATION } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/mutations';
 import { useStoreGroupsStore } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/stores/storeGroupsStore';

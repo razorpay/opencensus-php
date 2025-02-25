@@ -1,0 +1,1 @@
+export { default } from 'apps/self-serve/src/bootstrap/Route/SelfServeRouter';

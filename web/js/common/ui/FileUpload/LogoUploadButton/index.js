@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import FileUploadButton from 'common/ui/FileUpload/Button';
 
 export default class LogoUploadButton extends Component {

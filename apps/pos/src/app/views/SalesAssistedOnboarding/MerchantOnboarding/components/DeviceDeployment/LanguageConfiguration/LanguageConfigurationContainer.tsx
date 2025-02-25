@@ -5,7 +5,6 @@ import { Box } from '@razorpay/blade/components';
 import { getLanguageDetailsFromModularConfig } from 'apps/pos/src/app/utils/deviceDeployment';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import LanguageConfiguration from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceDeployment/LanguageConfiguration/LanguageConfiguration';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 
@@ -22,7 +21,6 @@ const LanguageConfigurationContainer = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.DEVICE_DEPLOYMENT }}
       fallbackComponent={

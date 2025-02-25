@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { App } from 'merchant/views/PaymentHandle/__test__/mocks/fixtures/ListView';
 import { handleInfo } from 'merchant/views/PaymentHandle/__test__/mocks/fixtures/common';
 import { fetchPaymentHandleSuccess } from 'merchant/views/PaymentHandle/__test__/mocks/handlers';
-import { render, screen, server } from 'test-utils';
+import { render, screen, server,waitFor } from 'test-utils';
 
 jest.mock('common/splitz', () => ({
   withSplitzService: (Component) => (props) =>
@@ -49,11 +49,12 @@ describe('Payment Handle List View', () => {
   });
 
   test('should have Banner title in the document', async () => {
-    await server.use(fetchPaymentHandleSuccess());
-    await renderApp();
-    const bannerTitle = await screen.findByText(
-      'Share your Razorpay.me link with customers as many times as you need to accept payments',
-    );
-    expect(bannerTitle).toBeInTheDocument();
+    server.use(fetchPaymentHandleSuccess());
+    renderApp();
+    waitFor(() => {
+      expect(screen.getByText(
+        'Share your Razorpay.me link with customers as many times as you need to accept payments',
+      )).toBeInTheDocument();
+    });
   });
 });

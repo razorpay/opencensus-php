@@ -1,4 +1,4 @@
-import { User } from '@dashboard/shared-utils/typings';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 export enum PaymentStatus {
@@ -274,7 +274,7 @@ export interface ITransferList {
 }
 
 export interface IPaymentTransferNew {
-  user: User;
+  user: PaymentsDashboardUser;
   fetchTransfers: (arg: { fetchTransfers: () => void }) => void;
   id: string;
 }

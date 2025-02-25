@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "composite": true,
+    "module": "esnext",
+    "declaration": true,
+    "target": "ESNext",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types"],
+    "paths": {}
+  },
+  "include": ["src/**/*", "@types/**/*", "../shared-types/global.d.ts"],
+  "exclude": ["**/node_modules", "dist"]
+}

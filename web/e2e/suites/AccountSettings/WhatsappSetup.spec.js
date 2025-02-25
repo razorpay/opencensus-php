@@ -1,6 +1,4 @@
-import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 const BusinessProvier = {
   AiSensy: {
@@ -44,7 +42,7 @@ const mockApiResponseForConnectedApplication = async ({ page }) => {
 
 test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
   test('should show Whatsapp account setup page @priority=normal', async ({ page }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);

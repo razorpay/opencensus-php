@@ -1,25 +1,17 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "declaration": true,
-    "preserveSymlinks": true,
-    "typeRoots": ["./typings", "node_modules/@types"]
-  },
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./tsconfig.lib.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    },
-    {
-      "path": "../shared-utils/tsconfig.lib.json"
+    "baseUrl": ".",
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "composite": true,
+    "typeRoots": ["./typings", "node_modules/@types"],
+    "paths": {
+      "@libs/shared-types": ["../shared-types/src/common/index.ts"],
+      "@libs/shared-utils": ["../shared-utils/src/common/index.ts"]
     }
-  ],
-  "extends": "../../tsconfig.base.json"
+  },
+  "include": ["../shared-types/global.d.ts", "src/**/*"],
+  "exclude": ["**/node_modules"],
+  "references": [{ "path": "../shared-types" }, { "path": "../shared-utils" }]
 }

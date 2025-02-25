@@ -9,7 +9,7 @@ import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import CheckBox from '@razorpay/blade-old/src/atoms/Checkbox';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import { useMutation } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import { Divider, StyledView } from './Styled';

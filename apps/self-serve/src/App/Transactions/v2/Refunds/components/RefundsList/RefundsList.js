@@ -1,9 +1,9 @@
 // TODO: Fix this comoonent, Currently its out of scope.
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'shell/deprecated/withRouter';
-// import ListContainer from 'merchant/containers/ListContainer';
-// import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+// import ListContainer from 'apps/self-serve/src/legacy/containers/ListContainer';
+// import { fetchRefunds as fetchAll } from '@dashboards/payments/reducers/collection';
 // TODO: import/copy from web
 import { useNavigate } from 'react-router-dom';
 import RefundsListFilter from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundsListFilter';

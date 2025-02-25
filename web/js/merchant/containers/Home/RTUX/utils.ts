@@ -1,4 +1,5 @@
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
+
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled, isInternalTestingEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';

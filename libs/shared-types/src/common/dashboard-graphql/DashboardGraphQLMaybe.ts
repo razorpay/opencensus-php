@@ -1,0 +1,1 @@
+export type DashboardGraphQLMaybe<T> = T | null;

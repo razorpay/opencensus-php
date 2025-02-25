@@ -1,5 +1,4 @@
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 import { refunds } from './constants';
 import {
@@ -15,7 +14,7 @@ import {
 test.describe
   .parallel('Refunds transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.describe.parallel('Refunds Landing screen Listing section', () => {

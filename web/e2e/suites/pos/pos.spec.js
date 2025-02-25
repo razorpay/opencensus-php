@@ -1,17 +1,22 @@
-const { routes, getStorageStatePath, BASE_PATH } = require('testConstants');
-const { test, expect } = require('utils/base');
-const { navigateTo } = require('utils/common');
+
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  navigateTo,
+} from '@libs/shared-qsuite/playwright';
 
 const { MAIN_BANNER_TEXT_CONTENT, PDP_CONTENT, DEVICE_CODES } = require('./constants');
 const { waitForPosCatalogToLoad } = require('./utils');
 
 test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).POS_LOGIN_STATE,
+    storageState: getStorageStatePath().POS_LOGIN_STATE,
   });
   test.describe('POS Catalog Page', () => {
     test.skip('should open pos catalog page when clicked on pos sidebar item', async ({ page }) => {
-      await navigateTo(page, routes.DASHBOARD);
+      await navigateTo({ page }, routes.DASHBOARD);
       await page.getByRole('link', { name: 'POS' }).click();
       await waitForPosCatalogToLoad({ page });
       await expect(page).toHaveURL(`${routes.POS}/catalog`);
@@ -20,7 +25,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should show products on screen and on click should add to cart @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
       const mainBanner = page.getByTestId('main-banner-wrapper');
       MAIN_BANNER_TEXT_CONTENT.forEach(async (content) => {
@@ -47,7 +52,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should add device from catalog to cart and cart should be visible with actions @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
@@ -82,7 +87,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should render PDP on screen with content @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const mainBanner = page.getByTestId('main-banner-wrapper');
@@ -116,7 +121,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should be able to add products in cart and should reflect in the cart @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const mainBanner = page.getByTestId('main-banner-wrapper');
@@ -143,7 +148,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should redirect to order summary if clicked on proceed to cart and should be able to modify order in order summary @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
@@ -164,7 +169,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should render order pricing details on scren @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
@@ -208,7 +213,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should be able to fill new address and proceed with checkout @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
@@ -232,7 +237,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should persist cart and devlivery address upon refresh  @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
@@ -260,7 +265,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should open confirm checkout prompt if amount is 0  @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await waitForPosCatalogToLoad({ page });
 
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
@@ -289,7 +294,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
     test.skip('should show empty order screen if no orders @flow=pos-device-ordering @project=pos-onboarding', async ({
       page,
     }) => {
-      await navigateTo(page, routes.POS);
+      await navigateTo({ page }, routes.POS);
       await page.waitForSelector('text=Orders');
       await page.getByText('Orders').click();
       await expect(page.getByText('No Order History')).toBeVisible();
@@ -306,13 +311,13 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 test.describe
   .parallel('POS Device Store Order Details with order @flow=pos-device-ordering @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).POS_ORDER_DETAILS_LOGIN_STATE,
+    storageState: getStorageStatePath().POS_ORDER_DETAILS_LOGIN_STATE,
   });
 
   test.skip('should render order listing screen for ordered items @flow=pos-device-ordering @project=pos-onboarding', async ({
     page,
   }) => {
-    await navigateTo(page, routes.POS);
+    await navigateTo({ page }, routes.POS);
     await waitForPosCatalogToLoad({ page });
     await page.getByText('Orders').click();
     await page.waitForSelector('text=Your Orders');
@@ -336,11 +341,11 @@ test.describe
   test.skip('should show order confirmation screen with confirmation content @flow=pos-device-ordering @project=pos-onboarding', async ({
     page,
   }) => {
-    await navigateTo(page, routes.POS);
+    await navigateTo({ page }, routes.POS);
     await waitForPosCatalogToLoad({ page });
     await page.getByText('Orders').click();
     await page.waitForSelector('text=Your Orders');
-    await navigateTo(page, `/app/pos/order-status/NBrJW3mPg4xfGY`);
+    await navigateTo({ page }, `/app/pos/order-status/NBrJW3mPg4xfGY`);
     await page.waitForSelector('text=Your order is successfully placed!');
     await expect(page.getByText('NBrJW3mPg4xfGY')).toBeVisible();
     await expect(page.getByText('has successfully been placed with us')).toBeVisible();

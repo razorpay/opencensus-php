@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import { useApp } from 'common/context/App';
 import {

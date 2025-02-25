@@ -1,9 +1,8 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 import moment from 'moment';
 
-import Banner from 'common/ui/Banner';
-import DataTable from 'common/ui/Table/DataTable';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
+import Banner from '@libs/web-nexus/common/ui/Banner';
+import DataTable from '@libs/web-nexus/common/ui/Table/DataTable';
+import { getURLQueryParams } from '@libs/shared-utils';
 
 const dateFormat = 'DD MMM YYYY';
 

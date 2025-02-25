@@ -1,4 +1,4 @@
-import { Component, useEffect } from 'react';
+import React, { Component, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import { emptySliderStack } from 'merchant_common/reducers/multiSlider';

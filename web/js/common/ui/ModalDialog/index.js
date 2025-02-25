@@ -1,17 +1,17 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { isEmpty, isPlainObject } from 'lodash';
 import qs from 'query-string';
 import Modal from 'react-modal';
 import { compose } from 'redux';
-import { withZustand } from 'shell/commonStore';
+import { withZustand } from '@federated/apps/shell/commonStore';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
-  zIndex: zIndicesMap.modalOverlay,
+  zIndex: DASHBOARD_ZINDEX_MAP.modalOverlay,
   overflowY: 'auto',
   display: 'flex',
   justifyContent: 'center',

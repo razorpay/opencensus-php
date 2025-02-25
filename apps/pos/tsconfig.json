@@ -1,28 +1,28 @@
 {
-  "compilerOptions": {
-    "outDir": "dist",
-    "jsx": "react",
-    "lib": ["es6", "dom"],
-    "noImplicitAny": false,
-    "noImplicitThis": true,
-    "composite": true,
-    "declaration": true,
-    "typeRoots": ["node_modules/@types"],
-    "preserveSymlinks": true
-  },
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "typeRoots": ["node_modules/@types"],
+    "outDir": "./dist"
+  },
   "include": [
+    "../../libs/shared-types/global.d.ts",
+    "*.json",
+    "**/*.json",
     "src",
-    "src/**/*.json",
-    "custom.d.ts",
     "e2e",
-    "../../libs/shared-ui/src/components/Forms/DateRangePickerField/index.js"
+    "custom.d.ts"
   ],
   "exclude": ["node_modules", "**/*.stories.ts", "**/*.stories.tsx", "**/*.stories.jsx", "out"],
+  "types": ["resize-observer-browser", "jest", "jest-dom"],
   "references": [
-    { "path": "../../web" },
-    { "path": "../../libs/shared-ui/tsconfig.lib.json" },
-    { "path": "../../libs/shared-utils/tsconfig.lib.json" }
-  ],
-  "types": ["resize-observer-browser", "jest", "jest-dom"]
+    { "path": "../../apps/shell" },
+    { "path": "../../libs/shared-utils" },
+    { "path": "../../libs/shared-ui" },
+    { "path": "../../libs/shared-types" },
+    { "path": "../../libs/shared-qsuite" },
+    { "path": "../../web/js/merchant" },
+    { "path": "../../web/js/common" },
+    { "path": "../../web/js/merchant_common" }
+  ]
 }

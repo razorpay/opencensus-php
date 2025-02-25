@@ -10,10 +10,11 @@ import {
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
+import React from "react";
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { titleCase } from 'common/utils/rzp-utils';
 import ConditionalTooltip from 'merchant/containers/ConditionalTooltip';
+
 // Note: in case of POS submerchant
 const NA_ACTIVATION_STATUS = 'n/a';
 const statusMap = {

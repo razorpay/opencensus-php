@@ -1,7 +1,6 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
-import { Component, isValidElement } from 'react';
+import React, { Component, isValidElement } from 'react';
 import PropTypes from 'prop-types';
-import { makeArray, classList } from 'common/utils/rzp-utils';
+import { makeArray, classList } from '@libs/shared-utils';
 
 class Alert extends Component {
   constructor() {

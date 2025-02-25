@@ -1,0 +1,25 @@
+name: Get Project Dir From Root
+
+inputs:
+  targetProject:
+    required: true
+
+outputs:
+  project_root:
+    description: The root directory of the specified Nx project.
+    value: ${{ steps.get-project-root.outputs.project_root }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get Project Root
+      shell: bash
+      id: get-project-root
+      run: |
+        project_root=$(pnpm nx show project ${{ inputs.targetProject }} --json | grep -Eo '{.*}' | jq '.root')
+        echo "project_root=$project_root" >> $GITHUB_OUTPUT
+
+    - name: Echo Root Dir
+      shell: bash
+      run: |
+        echo "Project Root Directory: ${{ steps.get-project-root.outputs.project_root }}"

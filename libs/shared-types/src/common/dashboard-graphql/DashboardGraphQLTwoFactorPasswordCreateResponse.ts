@@ -1,0 +1,4 @@
+import { DashboardGraphQLTwoFactorPasswordCreateErrorResponse, DashboardGraphQLTwoFactorPasswordCreateSuccessResponse } from './index';
+export type DashboardGraphQLTwoFactorPasswordCreateResponse =
+  | DashboardGraphQLTwoFactorPasswordCreateErrorResponse
+  | DashboardGraphQLTwoFactorPasswordCreateSuccessResponse;

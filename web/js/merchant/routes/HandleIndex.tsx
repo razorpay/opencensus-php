@@ -14,6 +14,7 @@ type HandleIndexProps = {
   user: User;
   isConnectedNavigation: boolean;
 };
+// TODO Fix this, Partner route is showing up as default view
 
 const SALES_ASSISTED_ONBOARDING = 'sales_assisted_onboarding';
 

@@ -8,7 +8,7 @@ import { fetchAllWalletBatches as fetchAll, batchDownload } from 'merchant/reduc
 import { titleCase } from 'common/utils/rzp-utils';
 import DataTable from 'common/ui/Table/DataTable';
 import { Button, DownloadIcon } from '@razorpay/blade/components';
-import { AxiosResponse } from 'axios';
+import { type AxiosResponse } from 'axios';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 

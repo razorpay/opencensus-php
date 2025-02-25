@@ -28,7 +28,7 @@ const RecommendationWidget = ({
   const [isApiKeyGenerated, setIsApiKeyGenerated] = useState(false);
   const [showGenerateKeyLoader, setShowGenerateKeyLoader] = useState(false);
   const landingProduct =
-    localStorage.getItem('merchant_landing_page') || localStorage.getItem('default_product_page');
+    window?.localStorage.getItem('merchant_landing_page') || window?.localStorage.getItem('default_product_page');
 
   const { social_media, physical_store } = user.merchant_business_detail?.website_details ?? {};
   const isActivationFormFullView = user.isActivationFormFullView;

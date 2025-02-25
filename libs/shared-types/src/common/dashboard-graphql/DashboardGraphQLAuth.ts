@@ -1,0 +1,2 @@
+import { DashboardGraphQLAuthUnauthenticated, DashboardGraphQLAuthUnregistered, DashboardGraphQLAuthUser } from './index';
+export type DashboardGraphQLAuth = DashboardGraphQLAuthUnauthenticated | DashboardGraphQLAuthUnregistered | DashboardGraphQLAuthUser;

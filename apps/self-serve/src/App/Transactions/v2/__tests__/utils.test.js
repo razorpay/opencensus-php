@@ -12,10 +12,6 @@ jest.mock('query-string', () => ({
   parse: jest.fn(),
 }));
 
-jest.mock('@dashboard/shared-utils/rzp-utils', () => ({
-  decodeSensitiveFields: jest.fn((search) => search),
-}));
-
 describe('getDefaultSearchByValueAndOption', () => {
   const searchByOptionsMap = {
     notes: 'Notes',

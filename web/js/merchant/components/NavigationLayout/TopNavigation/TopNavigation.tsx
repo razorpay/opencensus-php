@@ -29,7 +29,7 @@ import {
 
 import { useLocation, matchPath, useNavigate } from 'react-router-dom';
 import { useBreakpoint } from '@razorpay/blade/utils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { withI18Service } from 'common/i18';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';

@@ -1,0 +1,4 @@
+import { DashboardGraphQLAadhaarDigilockerRedirectionUrlFailureResponse, DashboardGraphQLAadhaarDigilockerRedirectionUrlSuccessResponse } from './index';
+export type DashboardGraphQLAadhaarDigilockerRedirectionUrlResponse =
+  | DashboardGraphQLAadhaarDigilockerRedirectionUrlFailureResponse
+  | DashboardGraphQLAadhaarDigilockerRedirectionUrlSuccessResponse;

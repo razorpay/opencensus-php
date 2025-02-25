@@ -1,0 +1,44 @@
+# name: Skip CI checks if approved
+
+# on:
+#   pull_request:
+#     types:
+#       - labeled
+
+# jobs:
+#   check-label:
+#     runs-on: [self-hosted]
+#     if: ${{ github.event.label.name == 'skip-checks-approval' }}
+#     steps:
+#       - name: Check if label added by an authorized person
+#         id: validate_approver
+#         uses: actions/github-script@v6
+#         with:
+#           script: |
+#             const labeler = context.payload.sender.login;
+#             console.log("Labeler: ", labeler);
+
+#             // Check if the user who added the label is in the approversList
+#             const approversList = ["rahul-rzp","abhieshekumar","vinilvasani","AniketOnWeb","joel-jaimon","dhruvdutt"];
+#             if (!approversList.includes(labeler)) {
+#               console.log(`User ${labeler} is not in the approvers list.`);
+#               process.exit(1);
+#             }
+#             console.log(`Approved by ${labeler}`)
+
+#       - name: Fire API Calls
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           echo "Triggering API calls"
+#           curl -X POST \
+#             -H "Authorization: Bearer $GITHUB_TOKEN" \
+#             -H "Content-Type: application/json" \
+#             -d '{"state": "success", "context": "rundeck/fe-e2e", "description": "FE E2E tests Succeeded"}' \
+#             https://api.github.com/repos/razorpay/dashboard/statuses/${{ github.event.pull_request.head.sha }}
+
+#           curl -X POST \
+#             -H "Authorization: Bearer $GITHUB_TOKEN" \
+#             -H "Content-Type: application/json" \
+#             -d '{"state": "success", "context": "rundeck/e2e-test", "description": "E2E tests Succeeded"}' \
+#             https://api.github.com/repos/razorpay/dashboard/statuses/${{ github.event.pull_request.head.sha }}

@@ -1,3 +1,4 @@
+import React from 'react';
 import { PowerSelect } from 'react-power-select';
 import { Error, Label } from './index';
 import { classList } from 'common/utils/rzp-utils';

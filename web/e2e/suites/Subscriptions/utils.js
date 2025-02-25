@@ -1,12 +1,12 @@
-import { routes } from 'testConstants';
-import { expect } from 'utils/base';
-
-import { navigateToInCurlecDashboard } from '../../utils/common';
-
-const { switchToTestMode } = require('../../utils');
+import {
+  routes,
+  expect,
+  navigateToInCurlecDashboard,
+  switchToTestMode,
+} from '@libs/shared-qsuite/playwright';
 
 export const navigateToSubscriptionsSettings = async (page, mode) => {
-  await navigateToInCurlecDashboard(page, routes.DASHBOARD);
+  await navigateToInCurlecDashboard({ page }, routes.DASHBOARD);
   if (mode !== 'live') {
     await switchToTestMode({ page });
   }
@@ -18,7 +18,7 @@ export const navigateToSubscriptionsSettings = async (page, mode) => {
   if (isSettingsVisible)
     await expect(page.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
 
-  await navigateToInCurlecDashboard(page, routes.SUBSCRIPTIONS_SETTINGS);
+  await navigateToInCurlecDashboard({ page }, routes.SUBSCRIPTIONS_SETTINGS);
   if (mode !== 'live') {
     await switchToTestMode({ page });
   }

@@ -1,0 +1,2 @@
+import { DashboardGraphQLQrCodeCreateFailureResponse, DashboardGraphQLQrCodeCreateSuccessResponse } from './index';
+export type DashboardGraphQLQrCodeCreateResponse = DashboardGraphQLQrCodeCreateFailureResponse | DashboardGraphQLQrCodeCreateSuccessResponse;

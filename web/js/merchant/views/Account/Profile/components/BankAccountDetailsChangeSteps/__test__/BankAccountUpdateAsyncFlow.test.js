@@ -142,7 +142,7 @@ describe('BankAccountUpdateAsyncFlow', () => {
       await waitFor(() => {
         expect(NotificationsActions.showNotification).toHaveBeenCalledWith({
           type: 'error',
-          message: [''],
+          message: ['Network Error'],
         });
       });
     });

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, ProgressBar, Text } from '@razorpay/blade/components';
-import { getUser } from 'shell/commonStore';
+import { getUser } from '@federated/apps/shell/commonStore';
 import { useMutation } from '@tanstack/react-query';
 import UploadedfileItem from './UploadedfileItem';
 import { formatBytes } from './helper';

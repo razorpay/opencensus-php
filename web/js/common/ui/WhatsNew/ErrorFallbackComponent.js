@@ -1,6 +1,7 @@
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { pushSlider as pushSliderx } from 'merchant_common/reducers/multiSlider';
+import React from 'react';
 
 const ErrorFallbackComponent = ({ eventId, pushSlider }) => {
   const handleClick = () => {

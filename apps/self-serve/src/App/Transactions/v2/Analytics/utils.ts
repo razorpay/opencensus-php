@@ -1,8 +1,9 @@
 import moment from 'moment';
 
-import { Option, Options } from '@dashboard/shared-ui/components/Dropdown/types';
-import { Environments, User } from '@dashboard/shared-utils/typings';
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import type { Options, Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import { DASHBOARD_MODE } from '@libs/shared-types';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import { toTitleCase } from '@libs/shared-utils';
 import {
   AnalyticsBoilerPlateData,
   BottomOverviewCardData,
@@ -75,7 +76,7 @@ export const cardLink = {
 
 export const doughnutChartColors = ['#9381FF', '#C59B76', '#70C1B3', '#BBC7CF'];
 
-export const isSrEnabledForUser = ({ mode, user }: { mode: Environments; user: User }): boolean => {
+export const isSrEnabledForUser = ({ mode, user }: { mode: DASHBOARD_MODE; user: PaymentsDashboardUser }): boolean => {
   return !!(
     mode === 'live' &&
     user.findTag('success_rate') &&
@@ -209,7 +210,7 @@ export const getBottomSectionData = ({
 };
 
 export const getPaymentMethodLabel = (method: string): string => {
-  return paymentMethodOptionsMap[method] ?? titleCase(method);
+  return paymentMethodOptionsMap[method] ?? toTitleCase(method);
 };
 
 export const getPaymentMethodData = (

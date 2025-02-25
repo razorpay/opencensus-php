@@ -1,6 +1,6 @@
 import React, { Component, Suspense } from 'react';
-import errorService from '@razorpay/universe-utils/errorService';
-import { createPopup, createSidetab } from '@typeform/embed';
+import errorService from '@razorpay/universe-cli/errorService';
+import { createSidetab, createPopup } from '@typeform/embed';
 import cloneDeep from 'lodash/cloneDeep';
 import moment from 'moment';
 import qs from 'query-string';
@@ -8,18 +8,13 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { bindActionCreators, compose } from 'redux';
-
-import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service, withI18nifyState } from 'common/i18';
-import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import graphqlClient from 'common/services/graphql/graphql-client';
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { graphqlClient } from '@federated/apps/shell/graphql';
 import { withSplitzService } from 'common/splitz';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import Loader from 'common/ui/Loader';
-import ModalDialog from 'common/ui/ModalDialog';
-import Notifications from 'common/ui/Notifications';
 import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCookie, setCookie } from 'common/utils/cookies';
@@ -27,7 +22,6 @@ import debounce from 'common/utils/debounce';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
 import { getItem, removeItem, setItem } from 'common/utils/localStorage';
 import getMobileDetect from 'common/utils/mobileDetect';
-import { initSentry } from 'common/utils/observability';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import {
   classList,
@@ -42,11 +36,9 @@ import {
   isPgMerchant,
   setRecommendedProduct,
 } from 'merchant/components/Activation/ActivationUtils';
-import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import LogoutDialog from 'merchant/components/LogoutDialog';
-import NavigationLayout from 'merchant/components/NavigationLayout/NavigationLayout';
+import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import currencies from 'merchant/constants/currency';
 import { DEFAULT_TIMEOUT_IN_SECONDS, LOGOUT_ERROR } from 'merchant/constants/dates';
 import { withRtuxComponentData } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
@@ -66,28 +58,73 @@ import { fetchConfigTags } from 'merchant/reducers/session';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import { matchFullPageView } from 'merchant/routes';
-import Content from 'merchant/routes/Content';
 import lazy from 'merchant/routes/LazyLoader';
 import { getLocaleFromCountryCode } from 'merchant/routes/constants';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
-import AddGST from 'merchant/views/Account/Profile/components/AddGST';
-import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
-import OnboardingRoutesWrapper from 'merchant/views/onboarding/OnboardingRoutesWrapper';
-import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
-import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
+import { DashboardLoader } from '@libs/shared-ui';
+import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
-import { isRTUXHomepageEnabled } from './Home/RTUX/utils';
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
-// const WebViewHeader = lazy(() =>
-//   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
-// );
+const PartnerActivationRequiredModal = lazy(() =>
+  import(
+    /* webpackChunkName: 'PartnerActivationRequiredModal' */ 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal'
+  ),
+);
+
+const AddGST = lazy(() =>
+  import(/* webpackChunkName: 'AddGST' */ 'merchant/views/Account/Profile/components/AddGST'),
+);
+
+const Notifications = lazy(() =>
+  import(/* webpackChunkName: 'Notifications' */ 'common/ui/Notifications'),
+);
+
+const LogoutDialog = lazy(() =>
+  import(/* webpackChunkName: 'LogoutDialog' */ 'merchant/components/LogoutDialog'),
+);
+
+const RequestEmailModal = lazy(() =>
+  import(
+    /* webpackChunkName: 'RequestEmailModal' */ 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal'
+  ),
+);
+
+const ActivationRequiredModal = lazy(() =>
+  import(
+    /* webpackChunkName: 'AppWrapperComponent' */ 'merchant/components/ActivationRequiredModal'
+  ),
+);
+
+const Wrapper = lazy(() =>
+  import(/* webpackChunkName: 'AppWrapperComponent' */ 'common/components/Bootstrap/Wrapper'),
+);
+
+const NavigationLayout = lazy(() =>
+  import(
+    /* webpackChunkName: 'NavigationLayout' */ 'merchant/components/NavigationLayout/NavigationLayout'
+  ),
+);
+
+const OnboardingRoutesWrapper = lazy(() =>
+  import(
+    /* webpackChunkName: 'OnboardingRoutesWrapper' */ 'merchant/views/onboarding/OnboardingRoutesWrapper'
+  ),
+);
+
+const ModalDialog = lazy(() =>
+  import(/* webpackChunkName: 'ModalDialogComponent' */ 'common/ui/ModalDialog'),
+);
+
+const Content = lazy(() =>
+  import(/* webpackChunkName: 'MainPaymentsContentComponent' */ 'merchant/routes/Content'),
+);
 
 const IdleTimer = lazy(() =>
   import(/* webpackChunkName: "IdleTimer" */ 'merchant/containers/Home/IdleTimer'),
@@ -104,8 +141,6 @@ const scheduleIdleTask =
     // Fallback implementation: execute callback as soon as possible with 0ms delay
     setTimeout(callback, 0);
   };
-
-initSentry('Merchant');
 
 class App extends Component {
   pendingRequests = [];
@@ -268,14 +303,19 @@ class App extends Component {
   };
 
   initializeListeners = (user) => {
-    window.addEventListener('NOT_AUTHENTICATED', () => {
+    window.addEventListener('NOT_AUTHENTICATED', function notAuthenticatedHandler() {
+      // eslint-disable-next-line babel/no-invalid-this
       if (this.logoutPopupShown) {
         return;
       }
-      this.props.closeModal();
-      this.props.openModal({
+      this?.props?.closeModal?.();
+      this?.props?.openModal?.({
         size: 'large',
-        component: <LogoutDialog user={user} />,
+        component: (
+          <Suspense fallback={<Loader />}>
+            <LogoutDialog user={user} />
+          </Suspense>
+        ),
       });
       this.logoutPopupShown = true;
     });
@@ -605,7 +645,11 @@ class App extends Component {
           setCookie(EMAIL_REQUESTED, true, Infinity);
           openModal({
             size: 'medium',
-            component: <RequestEmailModal />,
+            component: (
+              <Suspense fallback={<Loader />}>
+                <RequestEmailModal />
+              </Suspense>
+            ),
           });
         }
       });
@@ -1097,7 +1141,9 @@ class App extends Component {
       this.props.openModal({
         size: 'small',
         component: (
-          <ActivationRequiredModal user={this.props.user} onCloseClick={this.props.closeModal} />
+          <Suspense fallback={<Loader />}>
+            <ActivationRequiredModal user={this.props.user} onCloseClick={this.props.closeModal} />
+          </Suspense>
         ),
       });
     } else {
@@ -1149,10 +1195,12 @@ class App extends Component {
         this.props.openModal({
           size: 'small',
           component: (
-            <PartnerActivationRequiredModal
-              partnerActivationStatus={this.state.partnerActivationStatus}
-              onCloseClick={this.props.closeModal}
-            />
+            <Suspense fallback={<Loader />}>
+              <PartnerActivationRequiredModal
+                partnerActivationStatus={this.state.partnerActivationStatus}
+                onCloseClick={this.props.closeModal}
+              />
+            </Suspense>
           ),
         });
       }
@@ -1201,7 +1249,11 @@ class App extends Component {
   showGSTModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <AddGST />,
+      component: (
+        <Suspense fallback={<></>}>
+          <AddGST />
+        </Suspense>
+      ),
     });
   };
 
@@ -1347,7 +1399,7 @@ class App extends Component {
     const timeoutInMilliseconds =
       (org?.merchant_session_timeout_in_seconds ?? DEFAULT_TIMEOUT_IN_SECONDS) * 1000;
     if (this.state.isLoading || !user.isAuthenticated) {
-      return null;
+      return <DashboardLoader />;
     }
     const sidebarProps = {
       user,
@@ -1373,73 +1425,86 @@ class App extends Component {
     const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
 
     return (
-      <Wrapper
-        context={{
-          user,
-          experiments: this.getOnboardingExperiment(),
-          org,
-          mode,
-          submerchantId,
-          isShowFestiveAnimation: this.state.isShowFestiveAnimation,
-          handleFestiveAnimeAction: this.handleFestiveAnimeAction,
-        }}
-      >
-        {isTimeoutEnabled && (
-          <SuspenseWithLoader>
-            <IdleTimer timeoutInMillisecond={timeoutInMilliseconds} onIdle={this.onIdle} />
-          </SuspenseWithLoader>
-        )}
-        {this.props?.user?.isOrgCurlec && (
-          <HelmetProvider>
-            <Helmet>
-              <title>Curlec By Razorpay</title>
-            </Helmet>
-          </HelmetProvider>
-        )}
-        <div
-          className={classList(
-            'layout',
-            this.orgCode,
-            this.renderFullPageView && 'layout--fp',
-            isRTUXHomepage && 'layout--rtux--background',
-            isConnectedNavigation && 'layout--connected-navigation',
-          )}
+      <Suspense fallback={<DashboardLoader />}>
+        <Wrapper
+          context={{
+            user,
+            experiments: this.getOnboardingExperiment(),
+            org,
+            mode,
+            submerchantId,
+            isShowFestiveAnimation: this.state.isShowFestiveAnimation,
+            handleFestiveAnimeAction: this.handleFestiveAnimeAction,
+          }}
         >
-          <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
-            <NavigationLayout
-              renderFullPageView={this.renderFullPageView}
-              isWebView={this.state.isWebView}
-              headerProps={headerProps}
-              showSidebarV2={this.showSidebarV2()}
-              windowWidth={this.props.windowWidth}
-              sidebarProps={sidebarProps}
-              user={user}
-              isRTUXHomepage={isRTUXHomepage}
-              isConnectedNavigation={isConnectedNavigation}
-            >
-              {this.getSurveyForm()}
-              <SplitzRoutesBasedService>
-                <Content
-                  user={user}
-                  modeFormatted={currentModeFormatted} // not being used by the Content
-                  fullPageView={this.renderFullPageView}
+          {isTimeoutEnabled && (
+            <Suspense fallback={<DashboardLoader />}>
+              <IdleTimer timeoutInMillisecond={timeoutInMilliseconds} onIdle={this.onIdle} />
+            </Suspense>
+          )}
+          {this.props?.user?.isOrgCurlec && (
+            <HelmetProvider>
+              <Helmet>
+                <title>Curlec By Razorpay</title>
+              </Helmet>
+            </HelmetProvider>
+          )}
+          <div
+            className={classList(
+              'layout',
+              this.orgCode,
+              this.renderFullPageView && 'layout--fp',
+              isRTUXHomepage && 'layout--rtux--background',
+              isConnectedNavigation && 'layout--connected-navigation',
+            )}
+          >
+            <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
+              <Suspense fallback={<DashboardLoader />}>
+                <NavigationLayout
+                  renderFullPageView={this.renderFullPageView}
                   isWebView={this.state.isWebView}
+                  headerProps={headerProps}
+                  showSidebarV2={this.showSidebarV2()}
+                  windowWidth={this.props.windowWidth}
+                  sidebarProps={sidebarProps}
+                  user={user}
                   isRTUXHomepage={isRTUXHomepage}
-                />
-              </SplitzRoutesBasedService>
-            </NavigationLayout>
-
-            {/* Creates Portal for the comp */}
-            <ModalDialog />
-            <Notifications />
-          </TwoFactorVerificationProvider>
-        </div>
-        {currentMode === 'test' && !isMobileDevice() && !isConnectedNavigation && (
-          <div style={{ position: 'relative' }}>
-            <HighlightTestMode onSwitchMode={this.switchMode} />
+                  isConnectedNavigation={isConnectedNavigation}
+                >
+                  {this.getSurveyForm()}
+                  <SplitzRoutesBasedService
+                    customLoader={() => <DashboardLoader loaderType="wrt-product" />}
+                  >
+                    <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
+                      <Content
+                        user={user}
+                        modeFormatted={currentModeFormatted} // not being used by the Content
+                        fullPageView={this.renderFullPageView}
+                        isWebView={this.state.isWebView}
+                        isRTUXHomepage={isRTUXHomepage}
+                      />
+                    </Suspense>
+                  </SplitzRoutesBasedService>
+                </NavigationLayout>
+              </Suspense>
+              {/* Creates Portal for the comp */}
+              <Suspense fallback={<></>}>
+                <ModalDialog />
+              </Suspense>
+              {!Boolean(window?.ONE_DASHBOARD) ? (
+                <Suspense fallback={<></>}>
+                  <Notifications />
+                </Suspense>
+              ) : null}
+            </TwoFactorVerificationProvider>
           </div>
-        )}
-      </Wrapper>
+          {currentMode === 'test' && !isMobileDevice() && !isConnectedNavigation && (
+            <div style={{ position: 'relative' }}>
+              <HighlightTestMode onSwitchMode={this.switchMode} />
+            </div>
+          )}
+        </Wrapper>
+      </Suspense>
     );
   }
 }

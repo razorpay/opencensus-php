@@ -17,6 +17,9 @@ jest.mock('merchant/views/Settlements/InstantSettlements/PayoutDetails/BreakupLi
 ));
 
 export const state = {
+  user:{
+    mode: "test",
+  },
   instantSettlement: {
     instantSettlement: {
       id: 'setlod_InXEtIiuvilPhM',

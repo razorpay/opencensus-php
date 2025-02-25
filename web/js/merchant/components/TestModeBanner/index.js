@@ -16,6 +16,7 @@ import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 
 import { trackLinkClick } from './ga';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
+import { switchMode } from "@libs/shared-utils";
 
 class TestModeBanner extends Component {
   componentDidMount() {
@@ -29,7 +30,8 @@ class TestModeBanner extends Component {
 
     trackLinkClick('Swith - Mode');
 
-    setItem(`rzp_mode--${user.current}`, 'live');
+    switchMode(user.current, 'live');
+    
     window.location.reload();
   };
 

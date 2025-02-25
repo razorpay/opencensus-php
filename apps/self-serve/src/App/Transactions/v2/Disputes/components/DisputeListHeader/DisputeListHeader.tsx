@@ -2,7 +2,6 @@ import { Box, Button, DownloadIcon, Heading } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 
-import { exportFileAsExcel } from '@dashboard/shared-utils/rzp-utils';
 import { fetchDownloadReportData } from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeListHeader/queries';
 import {
   getDownloadReportQueryParams,
@@ -10,8 +9,9 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeListHeader/utils';
 import { TransactionsPagesMap } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { track } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { exportFileAsExcel } from '@libs/shared-utils';
 import isEmpty from 'lodash/isEmpty';
-import { useStore } from 'shell/commonStore';
 
 interface IDisputeListHeader {
   isFetchingTableData: boolean;

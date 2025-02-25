@@ -1,5 +1,6 @@
-import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
 import {
+  CTA_SELECTORS,
+  CONTENT_SELECTORS,
   navigateToClientAccounts,
   openInviteMerchantModalFromSideHeader,
   openShareReferralLinkModalFromSideHeader,
@@ -7,90 +8,87 @@ import {
   testPublicInviteFormValidation,
   testSingleInviteFormValidation,
   testShareReferralLinkModal,
-} from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-
-const { test } = require('utils/base');
+} from '../common';
+import { test, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 // Reseller Partner Tests
-test.describe.parallel(
-  'Test Invite Flows for Reseller Partner @flow=partner-invites @project=partner-dashboard',
-  () => {
-    test.use({
-      storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_TEST_LOGIN_STATE,
-    });
-    test.beforeEach(async ({ page }) => {
-      await navigateToClientAccounts(
-        page,
-        'RESELLER_PARTNER',
-        CONTENT_SELECTORS.HOME_PAGE.RESELLER_PARTNER_WELCOME_TEXT,
-        CONTENT_SELECTORS.CLIENTS_LIST.INVITE_ACCEPTED_ON,
-      );
-      if (
-        await page
-          .getByText('Payments in test mode are', { timeout: 10000 })
-          .isVisible()
-          .catch(() => false)
-      ) {
-        await page.locator('strong').filter({ hasText: 'GOT IT' }).click();
-      }
-      if (
-        await page
-          .getByText('All Affiliate Accounts that', { timeout: 10000 })
-          .isVisible()
-          .catch(() => false)
-      ) {
-        await page.getByRole('button', { name: 'GOT IT' }).click();
-      }
-      if (
-        await page
-          .getByText('List of all invites you have', { timeout: 10000 })
-          .isVisible()
-          .catch(() => false)
-      ) {
-        await page.getByRole('button', { name: 'GOT IT' }).click();
-      }
-    });
-    test('should load the Single Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+test.describe
+  .parallel('Test Invite Flows for Reseller Partner @flow=partner-invites @project=partner-dashboard', () => {
+  test.use({
+    storageState: getStorageStatePath().RESELLER_PARTNER_TEST_LOGIN_STATE,
+  });
+  test.beforeEach(async ({ page }) => {
+    await navigateToClientAccounts(
       page,
-    }) => {
-      await openInviteMerchantModalFromSideHeader(
-        page,
-        CONTENT_SELECTORS.INVITE_MERCHANT_MODAL.MODAL_HEADERS.PG,
-      );
-      await testSingleInviteFormValidation(page);
-      await page.locator(CTA_SELECTORS.INVITE_MERCHANT_MODAL.CLOSE_BUTTON).click();
-    });
+      'RESELLER_PARTNER',
+      CONTENT_SELECTORS.HOME_PAGE.RESELLER_PARTNER_WELCOME_TEXT,
+      CONTENT_SELECTORS.CLIENTS_LIST.INVITE_ACCEPTED_ON,
+    );
+    if (
+      await page
+        .getByText('Payments in test mode are', { timeout: 10000 })
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await page.locator('strong').filter({ hasText: 'GOT IT' }).click();
+    }
+    if (
+      await page
+        .getByText('All Affiliate Accounts that', { timeout: 10000 })
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await page.getByRole('button', { name: 'GOT IT' }).click();
+    }
+    if (
+      await page
+        .getByText('List of all invites you have', { timeout: 10000 })
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await page.getByRole('button', { name: 'GOT IT' }).click();
+    }
+  });
 
-    test('should load the Bulk Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+  test('should load the Single Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+    page,
+  }) => {
+    await openInviteMerchantModalFromSideHeader(
       page,
-    }) => {
-      await openInviteMerchantModalFromSideHeader(
-        page,
-        CONTENT_SELECTORS.INVITE_MERCHANT_MODAL.MODAL_HEADERS.PG,
-      );
-      await testBulkInviteFormValidation(page);
-      await page.locator(CTA_SELECTORS.INVITE_MERCHANT_MODAL.CLOSE_BUTTON).click();
-    });
+      CONTENT_SELECTORS.INVITE_MERCHANT_MODAL.MODAL_HEADERS.PG,
+    );
+    await testSingleInviteFormValidation(page);
+    await page.locator(CTA_SELECTORS.INVITE_MERCHANT_MODAL.CLOSE_BUTTON).click();
+  });
 
-    test('should load the Public Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+  test('should load the Bulk Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+    page,
+  }) => {
+    await openInviteMerchantModalFromSideHeader(
       page,
-    }) => {
-      await openInviteMerchantModalFromSideHeader(
-        page,
-        CONTENT_SELECTORS.INVITE_MERCHANT_MODAL.MODAL_HEADERS.PG,
-      );
-      await testPublicInviteFormValidation(page);
+      CONTENT_SELECTORS.INVITE_MERCHANT_MODAL.MODAL_HEADERS.PG,
+    );
+    await testBulkInviteFormValidation(page);
+    await page.locator(CTA_SELECTORS.INVITE_MERCHANT_MODAL.CLOSE_BUTTON).click();
+  });
 
-      await page.locator(CTA_SELECTORS.SHARE_REFERRAL_LINK_MODAL.CLOSE_BUTTON).click();
-    });
-
-    test('should load the Share Referral Link flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+  test('should load the Public Invite flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+    page,
+  }) => {
+    await openInviteMerchantModalFromSideHeader(
       page,
-    }) => {
-      await openShareReferralLinkModalFromSideHeader(page);
-      await testShareReferralLinkModal(page, 'Razorpay Payments', true);
-      await page.locator(CTA_SELECTORS.SHARE_REFERRAL_LINK_MODAL.CLOSE_BUTTON).click();
-    });
-  },
-);
+      CONTENT_SELECTORS.INVITE_MERCHANT_MODAL.MODAL_HEADERS.PG,
+    );
+    await testPublicInviteFormValidation(page);
+
+    await page.locator(CTA_SELECTORS.SHARE_REFERRAL_LINK_MODAL.CLOSE_BUTTON).click();
+  });
+
+  test('should load the Share Referral Link flow for Reseller Partner with correct messages and CTAs @priority=critical', async ({
+    page,
+  }) => {
+    await openShareReferralLinkModalFromSideHeader(page);
+    await testShareReferralLinkModal(page, 'Razorpay Payments', true);
+    await page.locator(CTA_SELECTORS.SHARE_REFERRAL_LINK_MODAL.CLOSE_BUTTON).click();
+  });
+});

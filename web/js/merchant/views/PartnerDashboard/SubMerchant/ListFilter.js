@@ -1,6 +1,7 @@
 import ListFilter from 'merchant/components/ListFilter';
 import ActivationStatusFilter from './components/ActivationStatusFilter';
 import { Field } from 'redux-form';
+import React from "react";
 
 export default ({
   showAppIdFilter,

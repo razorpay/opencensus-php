@@ -1,10 +1,9 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 import React, { ReactNode, Suspense } from 'react';
 import Loader, {
   FullPageLoader,
   CenterLoader,
   FullPageLoaderCenterToMainContent,
-} from 'common/components/Loader';
+} from '@libs/web-nexus/common/components/Loader';
 
 const LOADER_TYPE = {
   default: Loader,
@@ -18,10 +17,7 @@ interface SuspensePropsInterface {
   children: ReactNode;
 }
 
-const SuspenseWithLoader: React.FC<SuspensePropsInterface> = ({
-  type,
-  children,
-}: SuspensePropsInterface) => {
+const SuspenseWithLoader = ({ type, children }: SuspensePropsInterface): JSX.Element => {
   const FallbackComponent = type ? LOADER_TYPE[type] : LOADER_TYPE.default;
   return <Suspense fallback={<FallbackComponent />}>{children}</Suspense>;
 };

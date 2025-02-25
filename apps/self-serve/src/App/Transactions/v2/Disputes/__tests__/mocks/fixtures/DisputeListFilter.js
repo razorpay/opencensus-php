@@ -1,12 +1,12 @@
 import React from 'react';
 import mockMoment from 'moment';
-import * as useMobile from '@dashboard/shared-ui/hooks/useMobile';
+import * as sharedUtils from '@libs/shared-utils';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 
 import DisputeListFilter from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeListFilter';
 
 jest.mock(
-  'common/ui/Forms/DateRangePickerField',
+  '@libs/web-nexus/common/ui/Forms/DateRangePickerField',
   () =>
     function DateRangePickerField({ onDatesChange }) {
       const onChangeDate = () =>
@@ -23,7 +23,7 @@ jest.mock(
     },
 );
 
-export const useMobileSpy = jest.spyOn(useMobile, 'useMobile');
+export const useMobileSpy = jest.spyOn(sharedUtils, 'useMobile');
 
 jest.setTimeout(35000);
 

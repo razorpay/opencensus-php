@@ -1,0 +1,4 @@
+import { DashboardGraphQLModularOnboardingStepWithModularComponents, DashboardGraphQLModularOnboardingStepWithSteps } from './index';
+export type DashboardGraphQLModularOnboardingStep =
+  | DashboardGraphQLModularOnboardingStepWithModularComponents
+  | DashboardGraphQLModularOnboardingStepWithSteps;

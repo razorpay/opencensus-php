@@ -1,0 +1,16 @@
+export enum DashboardGraphQLMerchantBusinessTypeEnum {
+  EDUCATIONAL_INSTITUTES = 'EDUCATIONAL_INSTITUTES',
+  HUF = 'HUF',
+  LLP = 'LLP',
+  NGO = 'NGO',
+  OTHERS = 'OTHERS',
+  PARTNERSHIP = 'PARTNERSHIP',
+  PRIVATE = 'PRIVATE',
+  PROPRIETORSHIP = 'PROPRIETORSHIP',
+  PUBLIC = 'PUBLIC',
+  SOCIETY = 'SOCIETY',
+  TRUST = 'TRUST',
+  UNREGISTERED = 'UNREGISTERED',
+  /** UNREGISTERED_OLD is used for old unregistred merchants with value 2 */
+  UNREGISTERED_OLD = 'UNREGISTERED_OLD',
+}

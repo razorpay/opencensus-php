@@ -1,10 +1,7 @@
-/* eslint-disable no-await-in-loop */
-import { routes } from 'testConstants';
-import { expect } from 'utils/base';
-import { navigateTo } from 'utils/common';
+import { routes, expect, navigateTo } from '@libs/shared-qsuite/playwright';
 
 export const navigateToTransactions = async (page) => {
-  await navigateTo(page, routes.PAYMENTS);
+  await navigateTo({ page }, routes.PAYMENTS);
 };
 
 export const searchTransactionById = async ({ page, id }) => {

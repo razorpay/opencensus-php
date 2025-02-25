@@ -1,8 +1,7 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { dispatchWebViewEvent } from '@libs/shared-utils';
 import { compose } from 'redux';
-import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 
 class Clipboard extends Component {
   constructor(props) {
@@ -26,7 +25,7 @@ class Clipboard extends Component {
 
   copyToClipboard(e) {
     e.stopPropagation();
-    if (this.props.isWebView) {
+    if (this.props?.isWebView) {
       dispatchWebViewEvent({
         eventType: 'COPY',
         data: this.props.value,

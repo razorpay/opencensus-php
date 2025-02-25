@@ -1,5 +1,5 @@
 const HEAD_REF = 'HEAD';
-const EXCLUDE_CONFIG_PATH = 'tsconfig.pathsToExclude.json';
+const EXCLUDE_CONFIG_PATH = 'excluded.tsconfig.json';
 const BASE_CONFIG_PATH = 'tsconfig.base.json';
 
 const DEPENDENCY_GRAPH_PATH = 'scripts/nx-releases/output.json';

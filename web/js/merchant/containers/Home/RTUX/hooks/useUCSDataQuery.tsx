@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { AxiosRequestConfig } from 'axios';
-import { fetchUCS } from 'common/services/rest/rest-fetch';
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { type AxiosRequestConfig } from 'axios';
+import { fetchUCS } from '@federated/apps/shell/rest-fetch';
 import { isRTUXHomepageEnabled } from '../utils';
 import { User } from 'common/typings';
+
 
 // Todo : Add type for response
 export const fetchUCSData = async (requestData: AxiosRequestConfig['data']): Promise<any> => {

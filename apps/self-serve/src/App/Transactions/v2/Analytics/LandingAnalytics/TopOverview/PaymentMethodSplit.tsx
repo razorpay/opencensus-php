@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
-import { isMobileDevice } from '@dashboard/shared-utils/home-utils';
-import { getPercentage } from '@dashboard/shared-utils/rzp-utils';
+import { getPercentage, isMobileDevice } from '@libs/shared-utils';
 import { Doughnut } from 'react-chartjs-2';
 import {
   doughnutChartColors,

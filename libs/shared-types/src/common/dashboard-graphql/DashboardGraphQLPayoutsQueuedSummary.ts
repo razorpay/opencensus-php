@@ -1,0 +1,8 @@
+import { DashboardGraphQLPayoutsQueuedSummaryBeneficiaryBankDown, DashboardGraphQLPayoutsQueuedSummaryLowBalance, DashboardGraphQLPayoutsQueuedSummaryNeftLimitExhausted, DashboardGraphQLPayoutsQueuedSummaryNeftWindowClosed, DashboardGraphQLPayoutsQueuedSummaryNpciSystemDown, DashboardGraphQLPayoutsQueuedSummaryWithoutReason } from './index';
+export type DashboardGraphQLPayoutsQueuedSummary =
+  | DashboardGraphQLPayoutsQueuedSummaryBeneficiaryBankDown
+  | DashboardGraphQLPayoutsQueuedSummaryLowBalance
+  | DashboardGraphQLPayoutsQueuedSummaryNeftLimitExhausted
+  | DashboardGraphQLPayoutsQueuedSummaryNeftWindowClosed
+  | DashboardGraphQLPayoutsQueuedSummaryNpciSystemDown
+  | DashboardGraphQLPayoutsQueuedSummaryWithoutReason;

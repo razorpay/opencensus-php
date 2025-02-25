@@ -753,8 +753,6 @@ class UserController extends Controller
 
         $merchantId= $this->getMidIfExists($firstChunkData);
         $isMerchantLogin = $this->userService->getMerchantLogin($merchantId);
-
-
         $currentMerchant = $firstChunkData['currentMerchant'] ?? null;
 
         $this->userService->setSplitzVariantBulkData($currentMerchant);

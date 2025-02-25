@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { merchantFetch } from 'merchant/utils/ajax';
+import { newAuthFetch } from '@dashboards/newAuth/utils/newAuthFetch';
 
 export const registerMobileOTP = (contact_mobile) => {
   return axios({
@@ -26,7 +26,7 @@ export const verifyMobileOTP = (data, captchaMode) => {
   });
 };
 export const sendEmailOTP = (payload) => {
-  return merchantFetch({
+  return newAuthFetch({
     url: 'merchant/activation/otp/send',
     method: 'POST',
     data: payload,
@@ -34,7 +34,7 @@ export const sendEmailOTP = (payload) => {
   });
 };
 export const verifyEmailOTP = (payload) => {
-  return merchantFetch({ url: 'users/verify_email', method: 'POST', data: payload });
+  return newAuthFetch({ url: 'users/verify_email', method: 'POST', data: payload });
 };
 
 export const userPreSignup = (data) => {
@@ -49,7 +49,7 @@ export const userPreSignup = (data) => {
 };
 
 export const updatePartnerTypeAndConsent = (partnerType) => {
-  return merchantFetch({
+  return newAuthFetch({
     url: 'merchant/partner_type',
     method: 'PATCH',
     data: {

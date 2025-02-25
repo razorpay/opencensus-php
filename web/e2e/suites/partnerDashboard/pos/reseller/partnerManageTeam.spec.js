@@ -2,18 +2,20 @@ import {
   CTA_SELECTORS,
   CONTENT_SELECTORS,
   INPUT_SELECTORS,
-} from 'partnerDashboard/common/constants';
-import { loadPartnerDashboardHomePage } from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { pageConsoleLog, waitForSelectorToBeVisible } from 'utils/common';
-
-const { test, expect } = require('utils/base');
+  loadPartnerDashboardHomePage,
+} from '../../common';
+import {
+  test,
+  waitForSelectorToBeVisible,
+  getStorageStatePath,
+  pageConsoleLog,
+} from '@libs/shared-qsuite/playwright';
 
 // Reseller Partner POS Tests
 test.describe
   .parallel('Test Partner Manage Team Flows for POS Reseller @flow=partner-homepage @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_POS_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_POS_TEST_LOGIN_STATE,
   });
   test.beforeEach(async ({ page }) => {
     await loadPartnerDashboardHomePage(

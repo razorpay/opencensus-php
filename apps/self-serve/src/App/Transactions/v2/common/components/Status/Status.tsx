@@ -7,7 +7,7 @@ import {
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
 
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import { toTitleCase } from '@libs/shared-utils';
 
 import { TooltipWrapper } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { StatusProps } from './types';
@@ -36,7 +36,7 @@ const Status = ({ variant, content, status }: StatusProps): JSX.Element => {
         )}
         size="large"
       >
-        {titleCase(status)}
+        {toTitleCase(status)}
       </Badge>
     </Box>
   );

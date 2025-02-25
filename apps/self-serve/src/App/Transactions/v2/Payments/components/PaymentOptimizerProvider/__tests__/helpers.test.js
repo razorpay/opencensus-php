@@ -1,12 +1,8 @@
 import { findProviderDetails } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentOptimizerProvider/helper';
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
-
-jest.mock('@dashboard/shared-utils/rzp-utils', () => ({
-  titleCase: jest.fn(),
-}));
+import { toTitleCase } from '@libs/shared-utils';
 
 describe('findProviderDetails', () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -40,23 +36,23 @@ describe('findProviderDetails', () => {
   });
 
   it('should return provider details using settled_by when terminal_id is not found', () => {
-    titleCase.mockReturnValue('Settled By Name');
+    toTitleCase.mockReturnValue('Settled By Name');
     const result = findProviderDetails([], null, 'settled_by_value');
     expect(result).toEqual({
       Provider_name: 'Settled By Name',
       Gateway: 'settled_by_value',
     });
-    expect(titleCase).toHaveBeenCalledWith('settled_by_value');
+    expect(toTitleCase).toHaveBeenCalledWith('settled_by_value');
   });
 
   it('should return provider with Gateway as "razorpay" when settled_by is Razorpay', () => {
-    titleCase.mockReturnValue('Razorpay');
+    toTitleCase.mockReturnValue('Razorpay');
     const result = findProviderDetails([], null, 'Razorpay');
     expect(result).toEqual({
       Provider_name: 'Razorpay',
       Gateway: 'razorpay',
     });
-    expect(titleCase).toHaveBeenCalledWith('Razorpay');
+    expect(toTitleCase).toHaveBeenCalledWith('Razorpay');
   });
 
   it('should return null when terminal_id and settled_by are both null', () => {

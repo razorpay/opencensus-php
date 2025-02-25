@@ -63,7 +63,7 @@ const SplitzRoutesServiceComponent = ({
     customLoader ? (
       customLoader()
     ) : (
-      <Suspense fallback={<div id="splash" />}>
+      <Suspense fallback={<></>}>
         <SplitzEvalLoader />
       </Suspense>
     )

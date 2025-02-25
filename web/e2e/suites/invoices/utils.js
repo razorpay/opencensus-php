@@ -1,5 +1,9 @@
-import { expect } from 'utils/base';
-import { generateRandomText, getRandomCustomerData, getRandomItemData } from 'utils';
+import {
+  expect,
+  generateRandomText,
+  getRandomCustomerData,
+  getRandomItemData,
+} from '@libs/shared-qsuite/playwright';
 
 export const createNewCustomer = async ({ page }) => {
   const { email, name, phone } = getRandomCustomerData();

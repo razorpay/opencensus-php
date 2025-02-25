@@ -8,7 +8,7 @@ import { createPopup } from '@typeform/embed';
 
 // helpers
 import { useSplitzService } from 'common/splitz';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 // api
 import { getJwtTokenForMagicKonnect } from './api';

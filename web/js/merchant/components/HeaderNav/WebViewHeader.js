@@ -1,6 +1,6 @@
 import React from 'react';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 
 const getTitle = (pathname) => {
   let title = 'Dashboard';

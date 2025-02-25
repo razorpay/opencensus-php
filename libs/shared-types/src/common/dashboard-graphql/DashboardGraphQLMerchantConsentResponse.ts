@@ -1,0 +1,2 @@
+import { DashboardGraphQLMerchantConsentFailure, DashboardGraphQLMerchantConsentSuccess } from './index';
+export type DashboardGraphQLMerchantConsentResponse = DashboardGraphQLMerchantConsentFailure | DashboardGraphQLMerchantConsentSuccess;

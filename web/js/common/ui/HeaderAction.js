@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import React from 'react';
 
 const FallbackComponent = ({ eventId }) => {
   return (

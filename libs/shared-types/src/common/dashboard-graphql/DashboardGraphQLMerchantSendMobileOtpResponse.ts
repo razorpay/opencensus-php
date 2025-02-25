@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantSendMobileOtpResponseFailure, DashboardGraphQLMerchantSendMobileOtpResponseSuccess } from './index';
+export type DashboardGraphQLMerchantSendMobileOtpResponse =
+  | DashboardGraphQLMerchantSendMobileOtpResponseFailure
+  | DashboardGraphQLMerchantSendMobileOtpResponseSuccess;

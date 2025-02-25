@@ -14,7 +14,9 @@ jest.mock('common/utils/rzp-utils', () => ({
 
 describe('BankAccountUpdateForm', () => {
   window.BANK_DETAILS_URL = 'https://ifsc.razorpay.com';
-
+  afterAll(() => {
+    rzpUtils.isWebkit = false;
+  });
   const defaultProps = {
     ifsc_code: jest.fn(),
     setStep: jest.fn(),

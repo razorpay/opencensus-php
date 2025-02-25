@@ -1,0 +1,2 @@
+import { DashboardGraphQLPayoutWorkflowHistory, DashboardGraphQLWorkflow } from './index';
+export type DashboardGraphQLPayoutWorkflow = DashboardGraphQLPayoutWorkflowHistory | DashboardGraphQLWorkflow;

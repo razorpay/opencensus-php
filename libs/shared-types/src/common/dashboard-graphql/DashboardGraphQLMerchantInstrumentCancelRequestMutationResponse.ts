@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse, DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse } from './index';
+export type DashboardGraphQLMerchantInstrumentCancelRequestMutationResponse =
+  | DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse
+  | DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse;

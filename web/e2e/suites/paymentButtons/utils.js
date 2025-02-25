@@ -1,11 +1,10 @@
-import { expect } from 'utils/base';
-import { routes } from 'testConstants';
-
 import {
+  routes,
+  expect,
   expectSuccessNotification,
   generateRandomText,
   generateRandomWebsiteUrl,
-} from '../../utils';
+} from '@libs/shared-qsuite/playwright';
 
 export const paymentButtonType = {
   quickPay: 'quickPay',

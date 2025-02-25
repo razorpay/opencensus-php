@@ -1,6 +1,8 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Environments, User } from '@dashboard/shared-utils/typings';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
+
+import { DASHBOARD_MODE } from '@libs/shared-types';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import { type Option } from '@libs/web-nexus/common/components/Dropdown/types';
 import {
   RouteComponentProps,
   Currency,
@@ -118,8 +120,8 @@ export type SplitPaymentMethod = {
 };
 
 export interface LandingAnalyticsProps {
-  mode: Environments;
-  user: User;
+  mode: DASHBOARD_MODE;
+  user: PaymentsDashboardUser;
   fetchHolidayList: () => Promise<Record<string, string>>;
   fetchSchedule: () => Promise<Record<string, string>>;
   fetchSettlementConfig: () => Promise<Record<string, string>>;
@@ -194,14 +196,14 @@ interface BottomOverviewData {
   };
 }
 export interface BottomOverviewProps {
-  mode: Environments;
+  mode: DASHBOARD_MODE;
   currency: Currency;
   data: BottomOverviewData;
   durationOption: Option;
 }
 
 export interface BottomOverviewCardsData {
-  mode: Environments;
+  mode: DASHBOARD_MODE;
   data: BottomOverviewData;
 }
 
@@ -344,13 +346,13 @@ export interface AnalyticsBoilerPlateData {
 export interface AnalyticsBoilerPlateProps {
   isLoading: boolean;
   isMobile: boolean;
-  user: User;
+  user: PaymentsDashboardUser;
   data: AnalyticsBoilerPlateData;
 }
 
 export interface RefundsOverviewProps {
-  mode: Environments;
-  user: User;
+  mode: DASHBOARD_MODE;
+  user: PaymentsDashboardUser;
 }
 
 export interface LoadFailedProps {

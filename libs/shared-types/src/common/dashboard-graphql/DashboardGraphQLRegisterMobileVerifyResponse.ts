@@ -1,0 +1,4 @@
+import { DashboardGraphQLRegisterMobileVerifyResponseFailure, DashboardGraphQLRegisterMobileVerifyResponseSuccess } from './index';
+export type DashboardGraphQLRegisterMobileVerifyResponse =
+  | DashboardGraphQLRegisterMobileVerifyResponseFailure
+  | DashboardGraphQLRegisterMobileVerifyResponseSuccess;

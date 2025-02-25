@@ -1,0 +1,2 @@
+import { DashboardGraphQLOptInForWhatsappError, DashboardGraphQLOptInForWhatsappSuccess } from './index';
+export type DashboardGraphQLOptInForWhatsappResponse = DashboardGraphQLOptInForWhatsappError | DashboardGraphQLOptInForWhatsappSuccess;

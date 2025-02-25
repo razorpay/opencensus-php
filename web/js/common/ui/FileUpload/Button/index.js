@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators } from 'redux';

@@ -1,6 +1,4 @@
-const { test, expect } = require('utils/base');
-
-const { routes, getStorageStatePath, BASE_PATH } = require('../../constants');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 const navigateToAssistedFinancingPage = async (page) => {
   await page.goto(routes.ASSISTED_FINANCING);
@@ -9,7 +7,7 @@ const navigateToAssistedFinancingPage = async (page) => {
 
 test.describe('Test Assisted financing @flow=assistedFinancing @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

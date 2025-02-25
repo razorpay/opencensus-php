@@ -5,7 +5,7 @@ import {
   getEsBannerKey,
   setEnableEsPartialAutomaticDate,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import { setItem } from 'common/utils/localStorage';
+import * as LocalStorage from 'common/utils/localStorage';
 import { NUDGE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import { NEW_BANNERS } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/constants';
 
@@ -19,9 +19,8 @@ jest.mock('merchant/store', () => ({
   }),
 }));
 
-jest.mock('common/utils/localStorage', () => ({
-  setItem: jest.fn(),
-}));
+jest.spyOn(LocalStorage, 'setItem');
+
 
 test('test getAutomaticSettlementTime', () => {
   expect(
@@ -46,5 +45,5 @@ test('test getEsBannerKey', () => {
 });
 test('test setEnableEsPartialAutomaticDate', () => {
   setEnableEsPartialAutomaticDate();
-  expect(setItem).toHaveBeenCalled();
+  expect(LocalStorage.setItem).toHaveBeenCalled();
 });

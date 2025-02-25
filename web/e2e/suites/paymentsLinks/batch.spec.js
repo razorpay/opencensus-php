@@ -1,26 +1,30 @@
-import { test, expect } from 'utils/base';
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { clickSkipAndStartBtn } from 'utils';
-import { COMMON_SELECTORS } from 'utils/selectors';
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+  waitForLoader,
+  COMMON_SELECTORS,
+} from '@libs/shared-qsuite/playwright';
 
 import { searchAndVerifyByPLId } from './utils';
-import { waitForLoader } from '../../utils';
 
 [
   {
-    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    loginState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
     testDescription: 'Test V2 PL Batch Uploads @flow=payment-links-v2',
     plType: 'V2',
     isTestMode: false,
   },
   {
-    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    loginState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
     testDescription: 'Test UPI PL Batch Uploads @flow=payment-links-upi',
     plType: 'UPI',
     isTestMode: false,
   },
   {
-    loginState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
+    loginState: getStorageStatePath().ACTIVATED_NOT_IE_STATE,
     testDescription: 'Test classic PL Batch Uploads @flow=payment-links-v1',
     plType: 'v1',
     isTestMode: false,

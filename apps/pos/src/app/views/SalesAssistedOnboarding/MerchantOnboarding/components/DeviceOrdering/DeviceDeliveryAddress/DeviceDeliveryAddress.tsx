@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 import {
   Alert,
   Box,
@@ -27,7 +27,7 @@ interface DeviceDeliveryAddressProps {
   countryCode: string;
   addedDevices: OrderSummaryItemWithDeviceConfig[];
   orderSummary: DeviceCharges;
-  merchantDetails: Merchant;
+  merchantDetails: DashboardGraphQLMerchant;
   handleModularUpdate: (payload: ModularPayload) => void;
   handleGoToNextStep: () => void;
   isUpdateModularLoading: boolean;

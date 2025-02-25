@@ -1,3 +1,4 @@
+import React from "react";
 import { RupeeIcon } from '@razorpay/blade/components';
 import { STEPS } from 'newAuth/signup/Constants';
 import Testimonials from './Testimonials';

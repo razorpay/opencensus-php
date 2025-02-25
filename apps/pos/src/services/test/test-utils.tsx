@@ -5,10 +5,10 @@ import { BrowserRouter, Router as DefaultRouter, Route, Routes } from 'react-rou
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 
-import ModalDialog from 'common/ui/ModalDialog';
-import Notifications from 'common/ui/Notifications';
+import ModalDialog from '@libs/web-nexus/common/ui/ModalDialog';
+import Notifications from '@libs/web-nexus/common/ui/Notifications';
 
-import { RouteGuard } from 'shell/components/ShowWhen';
+import { RouteGuard } from '@libs/web-nexus/merchant/components/RouteGuard';
 import {
   QueryClient,
   QueryClientProvider as ReactQueryClientProvider,

@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantWorkflowClarificationSubmitFailureResponse, DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse } from './index';
+export type DashboardGraphQLMerchantWorkflowClarificationSubmitResponse =
+  | DashboardGraphQLMerchantWorkflowClarificationSubmitFailureResponse
+  | DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse;

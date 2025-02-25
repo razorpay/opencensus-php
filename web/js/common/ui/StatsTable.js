@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default ({ stats }) => (
   <div className="stats-info">
     <table className="table">

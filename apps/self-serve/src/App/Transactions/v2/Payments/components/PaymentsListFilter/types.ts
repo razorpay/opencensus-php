@@ -1,4 +1,4 @@
-import { Option, Options } from '@dashboard/shared-ui/components/Dropdown/types';
+import type {  Option, Options } from '@libs/web-nexus/common/components/Dropdown/types';
 import { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import { SearchQueryParam } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { Duration, DurationOption } from 'apps/self-serve/src/App/Transactions/v2/common/types';

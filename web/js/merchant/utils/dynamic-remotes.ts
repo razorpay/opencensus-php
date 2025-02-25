@@ -21,12 +21,18 @@ type WebpackShareScopes = Record<
   default?: string;
 };
 
-type RemoteUrl = string | (() => Promise<string>);
+type ModuleScope = 'shell' | 'selfserve' | 'webApp' | 'pos';
 
-type ModuleScope = 'shell' | 'selfserve';
+const ModuleScopeRemoteUrlMap: Record<ModuleScope, string> = {
+  selfserve: window.localSelfServeRemoteUrl || '',
+  'shell:': window.localShellClientRemoteUrl || '',
+  pos: window.localPosRemoteUrl || '',
+  digitalbills: window.localDigitalBillsRemoteUrl || '',
+  webApp: '',
+  raychat: window.cdnDashboardAssetsUrl || '',
+};
 
 interface ImportRemoteOptions {
-  url: RemoteUrl;
   scope: ModuleScope;
   module: string;
   remoteEntryFileName?: string;
@@ -82,7 +88,6 @@ const initContainer = async (containerScope: unknown): Promise<void> => {
     https://webpack.js.org/concepts/module-federation/
   */
 export const importRemote = async <T>({
-  url,
   scope,
   module,
   remoteEntryFileName = 'remoteEntry.js',
@@ -93,28 +98,13 @@ export const importRemote = async <T>({
 
   const remoteScope = scope as unknown as number;
   if (!window[remoteScope]) {
-    let remoteUrl = '';
+    const federatedUrl = Boolean(ModuleScopeRemoteUrlMap[scope])
+      ? ''
+      : `/dashboard/federated-bundles/${scope}`;
+    const entryURL = `${
+      ModuleScopeRemoteUrlMap[scope] || window.cdnDashboardAssetsUrl
+    }${federatedUrl}/build/browser/${scope}.${remoteEntryFileName}`;
 
-    if (typeof url === 'string') {
-      remoteUrl = url;
-    } else {
-      remoteUrl = await url();
-    }
-
-    console.log('process.env.REDIRECTOR :', process.env.REDIRECTOR);
-
-    const federatedUrl =
-      process.env.REDIRECTOR || process.env.REDIRECTOR === 'true'
-        ? ''
-        : `/dashboard/federated-bundles/${scope}`;
-
-    // const script = document.createElement('script');
-    // let client = 'legacy';
-    // if ('noModule' in script) {
-    //   client = 'modern';
-    // }
-
-    const entryURL = `${remoteUrl}${federatedUrl}/build/browser/${scope}.${remoteEntryFileName}`;
     // Load the remote and initialize the share scope if it's empty
     await Promise.all([loadRemote(entryURL, scope), initSharing()]);
     if (!window[remoteScope]) {

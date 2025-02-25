@@ -13,7 +13,7 @@ function _segmentTrack() {
       properties: {
         ...properties,
         ...template,
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonAnalyticsProperties(window?.rzp_user),
       },
     });
   }

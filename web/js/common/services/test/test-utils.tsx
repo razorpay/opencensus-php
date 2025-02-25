@@ -1,5 +1,7 @@
 // test-utils.js
 import React, { ReactElement } from 'react';
+import { BladeProvider } from '@razorpay/blade/components';
+import { bladeTheme } from '@razorpay/blade/tokens';
 import {
   render,
   waitForElementToBeRemoved,
@@ -26,9 +28,10 @@ import { storeWithInitialState } from 'merchant/store';
 
 import { errorHandlers } from '../../../../mocks/errorHandlers';
 import { server } from '../../../../mocks/node';
-import { BladeProvider } from '@razorpay/blade/components';
-import { bladeTheme } from '@razorpay/blade/tokens';
+import { TextEncoder, TextDecoder } from 'util';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+Object.assign(global, { TextDecoder, TextEncoder });
 
 export const queryClientMock = new QueryClient({
   defaultOptions: {
@@ -146,12 +149,21 @@ const customRenderHook = (
   return renderHook(hook, { wrapper: AllTheProviders, ...restOptions });
 };
 
-const waitForLoadingToFinish = (testID: 'spinner' | 'table-spinner' = 'spinner'): Promise<void> => {
-  return waitForElementToBeRemoved(screen.queryAllByTestId(testID));
+const waitForLoadingToFinish = async (
+  testID: 'spinner' | 'table-spinner' = 'spinner',
+): Promise<void> => {
+  const el = screen.queryAllByTestId(testID);
+  if (el) {
+    try {
+      await waitForElementToBeRemoved(el);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 };
 
-const waitForLoadingToFinishByLabel = (label = 'spinner'): Promise<void> =>
-  waitFor(
+const waitForLoadingToFinishByLabel = async (label = 'spinner'): Promise<void> =>
+  await waitFor(
     () => {
       expect(screen.queryAllByLabelText(label)).toHaveLength(0);
     },

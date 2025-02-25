@@ -7,6 +7,8 @@ import { getPincodeInfoHandler } from 'merchant/views/POS/__tests__/mocks/handle
 import * as posServices from 'merchant/views/POS/services';
 import { render, screen, server, userEvent, waitFor } from 'test-utils';
 
+jest.spyOn(analytics, 'track_EXPERIMENTAL');
+
 jest.mock('common/splitz', () => ({
   ...(jest.requireActual('common/splitz') as Record<string, string>),
   useSplitzService: () => ({

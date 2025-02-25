@@ -1,3 +1,4 @@
+import React from 'react';
 import { Label, Error, inputClass } from './index';
 import { classList } from 'common/utils/rzp-utils';
 import { setNativeValue } from 'common/utils/rzp-utils';

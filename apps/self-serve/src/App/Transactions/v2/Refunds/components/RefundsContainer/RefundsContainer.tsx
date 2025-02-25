@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import { merchantFetch } from '@dashboard/shared-utils/ajax';
-import { useStore } from 'shell/commonStore';
+import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import Content from './Content';
 import { View } from 'apps/self-serve/src/App/Transactions/v2/common/types';

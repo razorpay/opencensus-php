@@ -14,10 +14,10 @@ import {
   miscAppProps,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentMethod';
 import { render, screen, waitFor } from 'test-utils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
-jest.mock('shell/commonStore', () => ({
-  ...jest.requireActual('shell/commonStore'),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  ...jest.requireActual('@federated/apps/shell/commonStore'),
   useStore: jest.fn(),
 }));
 

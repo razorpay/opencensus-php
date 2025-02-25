@@ -1,0 +1,12 @@
+export enum DashboardGraphQLPaymentMethodEnum {
+  AEPS = 'AEPS',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  CARD = 'CARD',
+  CARDLESS_EMI = 'CARDLESS_EMI',
+  EMANDATE = 'EMANDATE',
+  EMI = 'EMI',
+  NETBANKING = 'NETBANKING',
+  PAY_LATER = 'PAY_LATER',
+  UPI = 'UPI',
+  WALLET = 'WALLET',
+}

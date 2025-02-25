@@ -24,7 +24,6 @@ describe('InstantSettlementDetails', () => {
     });
 
   beforeEach(() => {
-    jest.useFakeTimers();
     trackGaSpy.mockClear();
     trackHoverEventsSpy.mockClear();
     trackIdDetailsEventsSpy.mockClear();

@@ -1,4 +1,3 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 /*
  * TODO( pending things ):
  * Multiple trigger events, click, hover ... etc
@@ -6,8 +5,8 @@
 
 import React, { Component } from 'react';
 
-import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
-import Tooltip from 'common/ui/Tooltip';
+import { isChildSameType, checkChildrenType } from '@libs/web-nexus/common/utils/react-utils';
+import Tooltip from '@libs/web-nexus/common/ui/Tooltip';
 
 class PopoverTitle extends Component {
   render() {

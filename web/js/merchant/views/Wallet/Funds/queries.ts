@@ -1,4 +1,4 @@
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 
 import { WALLET_BASE_PATH } from 'merchant/views/Wallet/constants';
 
@@ -6,7 +6,7 @@ import { FundsSummary, Transaction } from 'merchant/views/Wallet/Funds/types';
 
 import type { ModeT } from 'common/services/mode';
 import * as types from 'merchant/views/Wallet/types';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 export const fetchFundTransactions = async ({

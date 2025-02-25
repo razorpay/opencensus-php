@@ -1,0 +1,236 @@
+
+name: E2Es
+
+on:
+  workflow_call:
+    inputs:
+      affected_apps:
+        type: string
+        required: true
+      run_e2e:
+        type: boolean
+        required: true
+      playwright_configured_affected_apps_array:
+        type: string
+        required: true
+      playwright_configured_affected_apps_comma_sep:
+        type: string
+        required: true
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  HOME: /actions-runner/_work
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  ARGO_TOKEN: ${{ secrets.ARGO_TOKEN }}
+
+jobs:
+  run-e2es:
+    name: Run E2Es
+    runs-on: [non-api-premium, cache-2]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Set Playwright Browsers Path
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=./playwright-browsers" >> $GITHUB_ENV
+
+      - name: Install Playwright with Chromium, Binaries
+        run: npx playwright install --with-deps chromium
+
+      - name: Set Target Projects
+        # TODO: Find a better name for output
+        id: target-projects-with-newauth
+        run: |
+          if [[ -n "${{ inputs.playwright_configured_affected_apps_comma_sep }}" ]]; then
+            PROJECTS_WITH_NEWAUTH="newauth-dashboard,${{ inputs.playwright_configured_affected_apps_comma_sep }}"
+          else
+            PROJECTS_WITH_NEWAUTH="newauth-dashboard"
+          fi
+      
+          echo "playwright_configured_affected_apps_with_newauth_comma_sep=$PROJECTS_WITH_NEWAUTH" >> $GITHUB_OUTPUT
+      
+      - name: Get Project Dirs Map
+        id: get-project-dirs
+        uses: ./.github/actions/get-project-dirs
+        with:
+          targetProjects: ${{ steps.target-projects-with-newauth.outputs.playwright_configured_affected_apps_with_newauth_comma_sep }}
+
+      - name: Playwright Rerun Analysis
+        env:
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          node .github/scripts/playwright-rerun-analyser.js ${{ inputs.playwright_configured_affected_apps_comma_sep }} ${{ steps.get-project-dirs.outputs.project_roots }}
+
+      - name: Echo Playwright Rerun Analysis Results
+        id: validate-playwright-rerun-analysis
+        run: |
+          echo "Validating environment variables set by the previous script..."
+
+          # Log environment variables for debugging
+          echo "FILTERED_PROJECTS_FOR_FULL_RERUN: ${FILTERED_PROJECTS_FOR_FULL_RERUN}"
+          echo "FILTERED_PROJECTS_FOR_FAILED_RERUN: ${FILTERED_PROJECTS_FOR_FAILED_RERUN}"
+
+      - name: Update Downstream Dependencies
+        timeout-minutes: 2
+        run: pnpm nx test:e2e:add-prod-commits
+
+      - name: Generate Devstack Labels
+        id: generate-devstack-labels
+        run: |
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_LABEL="e2e${COMMIT_SHA:0:8}"
+          TIMESTAMP=$(date +%s)
+          ASSIGNED_ARGO_WORKFLOW_NAME="dashboard-cis-${COMMIT_LABEL}-t${TIMESTAMP}"
+
+          echo "assigned_devstack_label=$COMMIT_LABEL" >> $GITHUB_OUTPUT
+          echo "assigned_argo_workflow_name=$ASSIGNED_ARGO_WORKFLOW_NAME" >> $GITHUB_OUTPUT
+
+      - name: Prepare Infra For E2Es
+        run: pnpm nx test:e2e:infra
+        timeout-minutes: 20
+        env:
+          COMMIT_ID: ${{ github.sha }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          AFFECTED_PROJECTS: ${{ inputs.affected_apps }}
+          ARGO_TOKEN: ${{ secrets.ARGO_TOKEN }}
+          ASSIGNED_ARGO_WORKFLOW_NAME: ${{steps.generate-devstack-labels.outputs.assigned_argo_workflow_name}}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          WAIT_FOR_INFRA_DEPLOYMENT_POLL_INTERVAL_MIN: 2
+          SERVICES_TTL: "1h"
+
+      - name: Login & Redirection E2Es (Mandatory Run)
+        id: login-e2e-tests
+        continue-on-error: true
+        env:
+          CI: true
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          COMMIT_ID: ${{ github.sha }}
+          REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
+          REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: pnpm nx test:e2e:auth
+
+      - name: Run Failed E2E tests
+        continue-on-error: true
+        id: run-e2e-failed-tests
+        env:
+          CI: true
+          COMMIT_ID: ${{ github.sha }}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
+          REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          FILTERED_PROJECTS_FOR_FAILED_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN }}
+        if: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN != '' }}
+        run: |
+          pnpm nx run-many \
+            -t test:e2e \
+            --parallel=1 \
+            --projects=${{env.FILTERED_PROJECTS_FOR_FAILED_RERUN}} \
+            --last-failed
+
+      - name: Run E2E Tests
+        continue-on-error: true
+        id: run-e2e-tests
+        env:
+          CI: true
+          COMMIT_ID: ${{ github.sha }}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
+          REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          FILTERED_PROJECTS_FOR_FULL_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN }}
+        if: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN != '' }}
+        run: |
+          pnpm nx run-many \
+            -t test:e2e \
+            --parallel=1 \
+            --projects=${{env.FILTERED_PROJECTS_FOR_FULL_RERUN}}
+
+      - name: Configure AWS Credentials For Dashboard Assets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+
+      - name: Push Playwright Analysis Artifacts to S3
+        shell: bash
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          node .github/scripts/playwright-cis-s3-sync.js ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }} ${{ steps.target-projects-with-newauth.outputs.playwright_configured_affected_apps_with_newauth_comma_sep }} ${{ steps.get-project-dirs.outputs.project_roots }}
+
+      - name: Generate Playwright Analysis Report Summary
+        env:
+          PLAYWRIGHT_CONFIGURED_AFFECTED_APPS: ${{ inputs.playwright_configured_affected_apps_array }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          node .github/scripts/summary-generators/playwright-report-summary.js
+
+      - name: Cleanup Temporary Files
+        if: always()
+        run: |
+          echo "Cleaning up installed binaries..."
+          rm -rf ./playwright-browsers
+        
+      - name: Determine Final Status
+        id: determine-test-status
+        shell: bash
+        env:
+          FILTERED_PROJECTS_FOR_FULL_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN }}
+          FILTERED_PROJECTS_FOR_FAILED_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN }}
+        run: |
+          # Initialize log variables
+          LOGS=""
+          EXIT_CODE=0
+
+          if [ "${{ steps.login-e2e-tests.outcome }}" != "success" ]; then
+            LOGS+="❌ The mandatory 'Login & Redirection E2Es' step failed.\n"
+            EXIT_CODE=1
+          else
+            LOGS+="✅ The mandatory 'Login & Redirection E2Es' step passed.\n"
+          fi
+
+          if [ "${FILTERED_PROJECTS_FOR_FAILED_RERUN}" != "" ]; then
+            if [ "${{ steps.run-e2e-failed-tests.outcome }}" != "success" ]; then
+              LOGS+="❌ The 'Run Failed E2E tests' step was triggered but did not succeed.\n"
+              EXIT_CODE=1
+            else
+              LOGS+="✅ The 'Run Failed E2E tests' step passed successfully.\n"
+            fi
+          else
+            LOGS+="ℹ️ The 'Run Failed E2E tests' step was skipped (no failed projects).\n"
+          fi
+
+          if [ "${FILTERED_PROJECTS_FOR_FULL_RERUN}" != "" ]; then
+            if [ "${{ steps.run-e2e-tests.outcome }}" != "success" ]; then
+              LOGS+="❌ The 'Run E2E Tests' step was triggered but did not succeed.\n"
+              EXIT_CODE=1
+            else
+              LOGS+="✅ The 'Run E2E Tests' step passed successfully.\n"
+            fi
+          else
+            LOGS+="ℹ️ The 'Run E2E Tests' step was skipped (no full rerun projects).\n"
+          fi
+
+          echo -e "$LOGS"
+
+          if [ "$EXIT_CODE" -ne 0 ]; then
+            exit $EXIT_CODE
+          fi
+
+          echo "✅ All relevant E2E checks passed successfully."

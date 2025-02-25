@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { routes, getStorageStatePath } from '@dashboard/shared-utils/e2e/constants/paths';
+import { routes, getStorageStatePath } from '@libs/shared-utils/tests/e2e/constants/paths';
 import { expect, test } from '../../utils/base';
 import { BASE_PATH } from '../../constants';
 

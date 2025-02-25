@@ -1,6 +1,4 @@
-import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 const ELEMENT_CONFIG = {
   SLIDE_1_TITLE: 'text="Razorpay Shield"',
@@ -17,7 +15,7 @@ const TEST_DESCRIPTION =
   'Risk Visibility Dashboard @flow=risk-visibility @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast';
 
 test.describe.parallel(TEST_DESCRIPTION, () => {
-  test.use({ storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT });
+  test.use({ storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT });
 
   // feature flag - "show_intl_risk_dashboard"
   test('show "Risk Visibility" page when feature flag is enabled @priority=normal', async ({

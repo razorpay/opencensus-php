@@ -1,6 +1,7 @@
 import HighlightedOption from './HighlightedOption';
 import QuickAddComponent from './QuickAdd';
 import { findBy } from 'common/utils/rzp-utils';
+import React from 'react';
 
 const ReduxPowerSelectHOC = PowerSelectComponent => props => {
   let {

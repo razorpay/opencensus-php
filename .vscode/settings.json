@@ -14,5 +14,9 @@
         "stylus"
     ],
     "stylelint.stylelintPath": "./node_modules/stylelint",
-    "stylelint.configFile": "./.stylelintrc-stylus.js"
+    "stylelint.configFile": "./.stylelintrc-stylus.js",
+    "cSpell.words": [
+        "devstack"
+    ],
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }

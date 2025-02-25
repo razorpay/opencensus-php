@@ -1,0 +1,9 @@
+export enum DashboardGraphQLInvoiceStatusEnum {
+  CANCELLED = 'CANCELLED',
+  DELETED = 'DELETED',
+  DRAFT = 'DRAFT',
+  EXPIRED = 'EXPIRED',
+  ISSUED = 'ISSUED',
+  PAID = 'PAID',
+  PARTIALLY_PAID = 'PARTIALLY_PAID',
+}

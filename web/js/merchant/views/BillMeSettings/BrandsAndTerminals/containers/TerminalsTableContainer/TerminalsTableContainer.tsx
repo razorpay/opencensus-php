@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, useToast } from '@razorpay/blade/components';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
-import { graphqlRequest, graphqlRequestMutation } from 'common/services/graphql/graphql-client';
+import { graphqlRequest, graphqlRequestMutation } from '@federated/apps/shell/graphql';
 
 import TerminalsSearchComponent from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/components/TerminalsSearchComponent';
 import TerminalsTableComponent from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/components/TerminalsTableComponent';

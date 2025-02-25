@@ -1,15 +1,16 @@
-import { CONTENT_SELECTORS, CTA_SELECTORS } from 'partnerDashboard/common/constants';
-import { loadPartnerDashboardHomePage } from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { waitForSelectorToBeVisible } from 'utils/common';
-
-const { test, expect } = require('utils/base');
+import { CONTENT_SELECTORS, CTA_SELECTORS, loadPartnerDashboardHomePage } from '../common';
+import {
+  test,
+  expect,
+  getStorageStatePath,
+  waitForSelectorToBeVisible,
+} from '@libs/shared-qsuite/playwright';
 
 // Platform Partner Tests
 test.describe
   .parallel('Test Platform Partner Dashboard landing page @flow=partner-homepage @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).PLATFORM_PARTNER_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().PLATFORM_PARTNER_TEST_LOGIN_STATE,
   });
   test.beforeEach(async ({ page }) => {
     await loadPartnerDashboardHomePage(

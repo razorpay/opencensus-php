@@ -1,7 +1,11 @@
-const { resolve } = require('path');
-const { BASE_PATH, getStorageStatePath } = require('testConstants');
-const { generateRandomText } = require('utils');
-const { test, expect } = require('utils/base');
+import { resolve } from 'path';
+
+import {
+  test,
+  expect,
+  getStorageStatePath,
+  generateRandomText,
+} from '@libs/shared-qsuite/playwright';
 
 const CONSTANTS = {
   IE_TAB_URL: '/app/payment-methods/international-payments',
@@ -15,7 +19,7 @@ const CONSTANTS = {
 
 test.describe.parallel('Test International enablement @flow=ie @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
   // TODO: enable these tests after multiple auth setup is done
   test.skip('should be able to request for IE @priority=normal', async ({ page }) => {

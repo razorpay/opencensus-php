@@ -105,6 +105,7 @@ export const BASE_ROUTES = {
   insight_x: '/insight-x',
 };
 
+
 export const initializeRoutes = (location, user) => {
   const pathname = location.pathname;
   const routes = { ...BASE_ROUTES };

@@ -20,7 +20,7 @@ import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common
 import { fetchReserveBalance } from 'merchant/reducers/profile';
 import { bindActionCreators } from 'redux';
 import WithdrawButton from 'merchant/views/Account/components/WithdrawModal/WithdrawButton';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 const getReserveBalanceAmount = (items, reserveBalanceError) => {
   if (!items) return 0;

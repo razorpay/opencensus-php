@@ -1,4 +1,4 @@
-const { getDefaultDateRangeForPayments } = require('utils');
+import { getDefaultDateRangeForPayments } from '@libs/shared-qsuite/playwright';
 
 export const SEARCH_TERMS_WITH_EXPECTED_RESULTS = [
   {

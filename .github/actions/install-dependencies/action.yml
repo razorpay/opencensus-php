@@ -1,0 +1,42 @@
+name: Install And Cache Dependencies
+inputs:
+  GITHUB_ACCESS_TOKEN:
+    required: true
+runs:
+  using: composite
+  steps:        
+    - name: Setup PNPM v9.0.0
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9.0.0
+        run_install: false
+
+    - name: Setup Node v18.12.1
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.12.1
+        # cache: 'pnpm'
+
+      # required because universe needs yarn internally  
+    - name: Install Yarn
+      shell: bash
+      run: |
+        npm install -g yarn
+
+    - name: Cache Workspace Node Modules
+      uses: actions/cache@v4
+      id: cache-nodemodules
+      with:
+        path: |         
+          node_modules                     
+          apps/*/node_modules               
+          libs/*/node_modules               
+          web/node_modules                  
+        key: ${{ runner.os }}-workspace-nodemodules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        HUSKY=0 pnpm config set unsafe-perm true && pnpm i --ignore-scripts --frozen-lockfile
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ inputs.GITHUB_ACCESS_TOKEN }}

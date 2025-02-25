@@ -13,7 +13,7 @@ import HeaderNav from '../HeaderNav';
 import Sidebar from '../Sidebar';
 import SidebarV2 from '../SidebarV2';
 import useConnectedProducts from './hooks/useConnectedProducts';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import UniversalSearch from '../HeaderNav/UniversalSearch';
 import FTUXBanner from './components/FTUXBanner';
 import { bladeTheme } from '@razorpay/blade/tokens';
@@ -64,6 +64,10 @@ function NavigationLayout({
   });
   const isMobile = matchedDeviceType === 'mobile';
 
+  if (Boolean(window?.ONE_DASHBOARD)) {
+    return <>{children}</>;
+  }
+  
   useEffect(() => {
     if (isConnectedNavigation) {
       const userSeenConnectedNavigation = (viewType: string) => {

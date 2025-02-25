@@ -5,7 +5,6 @@ import { Box } from '@razorpay/blade/components';
 import DeviceConfiguration from './DeviceConfiguration';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import { getDeviceConfigurationDetailsFromModularConfig } from 'apps/pos/src/app/utils/deviceDeployment';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 
@@ -32,7 +31,6 @@ const DeviceConfigurationContainer = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.DEVICE_DEPLOYMENT }}
       fallbackComponent={

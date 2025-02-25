@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default ({ value }) => {
   var className = value ? 'i i-check text-success' : 'i i-close text-danger';
 

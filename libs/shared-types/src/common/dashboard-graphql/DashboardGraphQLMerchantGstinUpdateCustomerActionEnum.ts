@@ -1,0 +1,4 @@
+export enum DashboardGraphQLMerchantGstinUpdateCustomerActionEnum {
+  AWAITING_CUSTOMER_RESPONSE = 'AWAITING_CUSTOMER_RESPONSE',
+  CUSTOMER_RESPONDED = 'CUSTOMER_RESPONDED',
+}

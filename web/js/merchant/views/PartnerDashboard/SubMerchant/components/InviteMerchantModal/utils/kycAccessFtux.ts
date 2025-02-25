@@ -6,7 +6,7 @@ const getProductKey = (productType: string): string => {
 
 export const getHasSelectedKycAccess = (productType: string): boolean | null => {
   const key = getProductKey(productType);
-  const hasSelectedKycAccess = localStorage.getItem(key);
+  const hasSelectedKycAccess = window?.localStorage.getItem(key);
   if (!hasSelectedKycAccess) {
     return null;
   }
@@ -17,7 +17,7 @@ export const getHasSelectedKycAccess = (productType: string): boolean | null => 
 
 export const setHasSelectedKycAccess = (request_kyc_access: boolean, productType: string): void => {
   const key = getProductKey(productType);
-  localStorage.setItem(
+  window?.localStorage.setItem(
     key,
     JSON.stringify({
       request_kyc_access,

@@ -1,5 +1,6 @@
 import { classList } from 'common/utils/rzp-utils';
 import { TimedProgressBar } from 'common/ui/ProgressBar';
+import React from 'react';
 
 /*
   Instagram style story component

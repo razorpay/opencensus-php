@@ -1,0 +1,177 @@
+import { DashboardGraphQLAadhaarCaptchaVerifyResponse, DashboardGraphQLAadhaarDigilockerOtpResponse, DashboardGraphQLAadhaarDigilockerRedirectionUrlResponse, DashboardGraphQLAadhaarDigilockerRedirectionUrlVerifyResponse, DashboardGraphQLAadhaarOtpVerifyResponse, DashboardGraphQLAadhaarDigilockerOtpVerifyResponse, DashboardGraphQLAccountVerificationOtpResponse, DashboardGraphQLAccountVerificationOtpResendResponse, DashboardGraphQLAuth, DashboardGraphQLApproveIciciPayoutResponse, DashboardGraphQLApprovePayoutResponse, DashboardGraphQLApprovePayoutBatchResponse, DashboardGraphQLCouponApplyResponse, DashboardGraphQLCouponValidateResponse, DashboardGraphQLCreateWithdrawalResponse, DashboardGraphQLDeregisterFcmTokenResponse, DashboardGraphQLLoginOtpResponse, DashboardGraphQLLoginOtpResendResponse, DashboardGraphQLMerchantActivationResponse, DashboardGraphQLMerchantApiKeyCreateResponse, DashboardGraphQLMerchantApiKeyRegenerateResponse, DashboardGraphQLMerchantApiKeysCreateResponse, DashboardGraphQLMerchantBankAccountDocumentUploadResponse, DashboardGraphQLMerchantBankAccountUpdateResponse, DashboardGraphQLMerchantBusinessAppDetailsResponse, DashboardGraphQLMerchantBusinessWebsiteDetailsResponse, DashboardGraphQLMerchantClarificationDetailsSubmitResponse, DashboardGraphQLMerchantClarificationDetailsUpdateResponse, DashboardGraphQLMerchantConfigUpdateResponse, DashboardGraphQLMerchantConfigurationUpdateResponse, DashboardGraphQLMerchantContactCreateResponse, DashboardGraphQLMerchantContactEmailOtpSendResponse, DashboardGraphQLMerchantContactFundAccountCreateResponse, DashboardGraphQLMerchantContactTypeCreateResponse, DashboardGraphQLMerchantContactUpdateResponse, DashboardGraphQLMerchantCreateVkycLinkResponse, DashboardGraphQLMerchantDocumentUploadResponse, DashboardGraphQLMerchantEmailUpdateResponse, DashboardGraphQLMerchantGstinUpdateResponse, DashboardGraphQLMerchantGstinUpdateV2Response, DashboardGraphQLMerchantInstrumentCancelRequestMutationResponse, DashboardGraphQLMerchantInstrumentCreateResponse, DashboardGraphQLMerchantInstrumentReInitiateResponse, DashboardGraphQLMerchantKycPartnerAccessStatusUpdateResponse, DashboardGraphQLMaybe, DashboardGraphQLMerchantModularOnboardingDetailsUpdateResponse, DashboardGraphQLMerchantOnboardingQuestionDetailsUpdateResponse, DashboardGraphQLMerchantPaymentHandleCreateResponse, DashboardGraphQLMerchantPaymentHandleEncryptedAmountResponse, DashboardGraphQLMerchantPaymentHandleUpdateResponse, DashboardGraphQLMerchantPolicyPublishResponse, DashboardGraphQLMerchantSendMobileOtpResponse, DashboardGraphQLMerchantStoreActivateResponse, DashboardGraphQLMerchantConsentsResponse, DashboardGraphQLMerchantStoreDeactivateResponse, DashboardGraphQLMerchantStoreUpdateResponse, DashboardGraphQLMerchantSwitchResponse, DashboardGraphQLMerchantVerifyMobileOtpResponse, DashboardGraphQLMerchantWebsite, DashboardGraphQLMerchantWebsiteDocumentDeleteResponse, DashboardGraphQLMerchantWebsiteDocumentUploadResponse, DashboardGraphQLMerchantWebsitePublishResponse, DashboardGraphQLMerchantWebsiteVerificationResponse, DashboardGraphQLMerchantWorkflowClarificationSubmitResponse, DashboardGraphQLNotificationEmailUpdateResponse, DashboardGraphQLNotificationWhatsAppOptIn, DashboardGraphQLOauthTokenAppleWatchResponse, DashboardGraphQLOauthTokenAppleWatchOtp, DashboardGraphQLOnboardingPaymentOrderCreateResponse, DashboardGraphQLOnboardingPaymentOrderVerifyResponse, DashboardGraphQLOptInForWhatsappResponse, DashboardGraphQLOrderCreateResponse, DashboardGraphQLPaymentCaptureResponse, DashboardGraphQLPaymentLinkCancelResponse, DashboardGraphQLPaymentLinkCreateResponse, DashboardGraphQLPaymentLinkNotifyResponse, DashboardGraphQLPaymentRefundResponse, DashboardGraphQLPaymentsNewLaunchProductViewUpdate, DashboardGraphQLPaymentsProductFtuxUpdateResponse, DashboardGraphQLPayoutApproveBulkResponse, DashboardGraphQLPayoutCompositeCreateResponse, DashboardGraphQLPayoutCreateResponse, DashboardGraphQLPayoutCreateIciciResponse, DashboardGraphQLPayoutLinkCreateResponse, DashboardGraphQLPayoutPurposeCreateResponse, DashboardGraphQLPayoutRejectBulkResponse, DashboardGraphQLPettyCashCreateResponse, DashboardGraphQLPointOfSalePaymentCreateResponse, DashboardGraphQLPointOfSalePaymentUpdateResponse, DashboardGraphQLQrCodeCreateResponse, DashboardGraphQLRefreshAccessToken, DashboardGraphQLRegisterBusinessResponse, DashboardGraphQLRegisterEmail, DashboardGraphQLRegisterEmailVerifyResponse, DashboardGraphQLRegisterFcmTokenResponse, DashboardGraphQLRegisterMerchantResponse, DashboardGraphQLRegisterMobileVerifyResponse, DashboardGraphQLRegisterOAuth, DashboardGraphQLRejectPayoutResponse, DashboardGraphQLRejectPayoutBatchResponse, DashboardGraphQLResendEmailOtp, DashboardGraphQLResendTwoFactorLoginOtpResponse, DashboardGraphQLResetPasswordEmail, DashboardGraphQLSendApprovePayoutBatchOtp, DashboardGraphQLSendApprovePayoutOtp, DashboardGraphQLSendCreatePayoutLinkOtp, DashboardGraphQLSendCreatePayoutOtp, DashboardGraphQLSendEmailVerificationOtpResponse, DashboardGraphQLSendIciciPayoutOtpResponse, DashboardGraphQLSendPayoutApproveBulkOtp, DashboardGraphQLSendPayoutCompositeOtp, DashboardGraphQLSetEmailPasswordResponse, DashboardGraphQLSetNewPasswordResponse, DashboardGraphQLSmsNotificationToggle, DashboardGraphQLTwoFactorAddMobileOtpResponse, DashboardGraphQLTwoFactorAddMobileOtpVerifyResponse, DashboardGraphQLTwoFactorAuthUpdateResponse, DashboardGraphQLTwoFactorEmailOtpVerifyResponse, DashboardGraphQLTwoFactorOtpResponse, DashboardGraphQLTwoFactorPasswordCreateResponse, DashboardGraphQLTwoFactorUnverifiedMobileVerifyResponse, DashboardGraphQLUpdateMerchantConsentResponse, DashboardGraphQLUserDeviceAnalyticsResponse, DashboardGraphQLUserExistsByEmailOrPhoneResponse, DashboardGraphQLUserLogout, DashboardGraphQLUserOtpResponse, DashboardGraphQLUserOtpVerifyResponse, DashboardGraphQLVendorPaymentCancelResponse, DashboardGraphQLVendorPaymentPayoutCreateResponse, DashboardGraphQLVerifyEmailOtpResponse, DashboardGraphQLWhatsappNotificationToggle } from './index';
+export type DashboardGraphQLMutation = {
+  __typename?: 'DashboardGraphQLMutation';
+  aadhaarCaptchaVerify: DashboardGraphQLAadhaarCaptchaVerifyResponse;
+  aadhaarDigilockerOtp: DashboardGraphQLAadhaarDigilockerOtpResponse;
+  aadhaarDigilockerRedirectionUrl: DashboardGraphQLAadhaarDigilockerRedirectionUrlResponse;
+  aadhaarDigilockerRedirectionUrlVerify: DashboardGraphQLAadhaarDigilockerRedirectionUrlVerifyResponse;
+  aadhaarOtpVerify: DashboardGraphQLAadhaarOtpVerifyResponse;
+  aadharDigilockerOtpVerify: DashboardGraphQLAadhaarDigilockerOtpVerifyResponse;
+  /** To send verification otp for an unverified email or  mobile */
+  accountVerificationOtp: DashboardGraphQLAccountVerificationOtpResponse;
+  /** To resend verification otp for an unverified email or  mobile */
+  accountVerificationOtpResend: DashboardGraphQLAccountVerificationOtpResendResponse;
+  /** DashboardGraphQLMutation to verify otp for unverified user */
+  accountVerify: DashboardGraphQLAuth;
+  approveIciciPayout: DashboardGraphQLApproveIciciPayoutResponse;
+  approvePayout: DashboardGraphQLApprovePayoutResponse;
+  approvePayoutBatch: DashboardGraphQLApprovePayoutBatchResponse;
+  couponApply: DashboardGraphQLCouponApplyResponse;
+  couponValidate: DashboardGraphQLCouponValidateResponse;
+  createWithdrawal: DashboardGraphQLCreateWithdrawalResponse;
+  deregisterFCMToken: DashboardGraphQLDeregisterFcmTokenResponse;
+  loginEmail: DashboardGraphQLAuth;
+  /** DashboardGraphQLMutation to verify otp for unverified user email */
+  loginEmailVerify: DashboardGraphQLAuth;
+  loginOAuth: DashboardGraphQLAuth;
+  /** To send OTP on mobile, will also tell whether the number is unverified */
+  loginOtp: DashboardGraphQLLoginOtpResponse;
+  /** To resend otp on mobile */
+  loginOtpResend: DashboardGraphQLLoginOtpResendResponse;
+  /** To verify the mobile number otp, can return multiple error codes for failure cases */
+  loginOtpVerify: DashboardGraphQLAuth;
+  loginTwoFactor: DashboardGraphQLAuth;
+  /** For 2FA flow when user logs in via phone number and otp */
+  loginTwoFactorPassword: DashboardGraphQLAuth;
+  merchantActivationDetailsUpdate: DashboardGraphQLMerchantActivationResponse;
+  merchantActivationDocumentDelete: DashboardGraphQLMerchantActivationResponse;
+  merchantActivationDocumentUpload: DashboardGraphQLMerchantActivationResponse;
+  /** @deprecated Use merchantApiKeysCreate instead */
+  merchantApiKeyCreate: DashboardGraphQLMerchantApiKeyCreateResponse;
+  merchantApiKeyRegenerate: DashboardGraphQLMerchantApiKeyRegenerateResponse;
+  merchantApiKeysCreate: DashboardGraphQLMerchantApiKeysCreateResponse;
+  merchantBankAccountDocumentUpload: DashboardGraphQLMerchantBankAccountDocumentUploadResponse;
+  /** DashboardGraphQLMerchant bank account details update mutation */
+  merchantBankAccountUpdate: DashboardGraphQLMerchantBankAccountUpdateResponse;
+  merchantBusinessAppDetailsUpdate: DashboardGraphQLMerchantBusinessAppDetailsResponse;
+  merchantBusinessWebsiteDetailsUpdate: DashboardGraphQLMerchantBusinessWebsiteDetailsResponse;
+  merchantClarificationDetailsSubmit: DashboardGraphQLMerchantClarificationDetailsSubmitResponse;
+  merchantClarificationDetailsUpdate: DashboardGraphQLMerchantClarificationDetailsUpdateResponse;
+  merchantConfigUpdate: DashboardGraphQLMerchantConfigUpdateResponse;
+  merchantConfigurationUpdate: DashboardGraphQLMerchantConfigurationUpdateResponse;
+  merchantContactCreate: DashboardGraphQLMerchantContactCreateResponse;
+  merchantContactEmailOtpSend: DashboardGraphQLMerchantContactEmailOtpSendResponse;
+  merchantContactFundAccountCreate: DashboardGraphQLMerchantContactFundAccountCreateResponse;
+  merchantContactTypeCreate: DashboardGraphQLMerchantContactTypeCreateResponse;
+  merchantContactUpdate: DashboardGraphQLMerchantContactUpdateResponse;
+  merchantCreateVkycLink: DashboardGraphQLMerchantCreateVkycLinkResponse;
+  merchantDocumentUpload: DashboardGraphQLMerchantDocumentUploadResponse;
+  merchantEmailUpdate: DashboardGraphQLMerchantEmailUpdateResponse;
+  /** Self serve gstin update mutation */
+  merchantGstinUpdate: DashboardGraphQLMerchantGstinUpdateResponse;
+  /** Gstin update mutation v2 */
+  merchantGstinUpdateV2: DashboardGraphQLMerchantGstinUpdateV2Response;
+  merchantInstrumentCancelRequest: DashboardGraphQLMerchantInstrumentCancelRequestMutationResponse;
+  merchantInstrumentCreateRequest: DashboardGraphQLMerchantInstrumentCreateResponse;
+  merchantInstrumentReInitiateRequest: DashboardGraphQLMerchantInstrumentReInitiateResponse;
+  merchantKYCPartnerAccessUpdate: DashboardGraphQLMerchantKycPartnerAccessStatusUpdateResponse;
+  merchantModularOnboardingDetailsUpdate?: DashboardGraphQLMaybe<DashboardGraphQLMerchantModularOnboardingDetailsUpdateResponse>;
+  merchantOnboardingQuestionDetailsUpdate: DashboardGraphQLMerchantOnboardingQuestionDetailsUpdateResponse;
+  merchantPaymentHandleCreate: DashboardGraphQLMerchantPaymentHandleCreateResponse;
+  /** To fetch encrypted amount corresponding to the optional amount passed for ph */
+  merchantPaymentHandleEncryptedAmount: DashboardGraphQLMerchantPaymentHandleEncryptedAmountResponse;
+  merchantPaymentHandleUpdate: DashboardGraphQLMerchantPaymentHandleUpdateResponse;
+  merchantPolicyPublish: DashboardGraphQLMerchantPolicyPublishResponse;
+  merchantSendMobileOTP: DashboardGraphQLMerchantSendMobileOtpResponse;
+  merchantStoreActivate: DashboardGraphQLMerchantStoreActivateResponse;
+  merchantStoreConsents: DashboardGraphQLMerchantConsentsResponse;
+  merchantStoreDeactivate: DashboardGraphQLMerchantStoreDeactivateResponse;
+  merchantStoreUpdate: DashboardGraphQLMerchantStoreUpdateResponse;
+  merchantSwitch: DashboardGraphQLMerchantSwitchResponse;
+  merchantSwitchOAuth: DashboardGraphQLMerchantSwitchResponse;
+  merchantVerifyMobileOTP: DashboardGraphQLMerchantVerifyMobileOtpResponse;
+  merchantWebsiteDetailsUpdate: DashboardGraphQLMerchantWebsite;
+  merchantWebsiteDocumentDelete: DashboardGraphQLMerchantWebsiteDocumentDeleteResponse;
+  merchantWebsiteDocumentUpload: DashboardGraphQLMerchantWebsiteDocumentUploadResponse;
+  merchantWebsitePublish: DashboardGraphQLMerchantWebsitePublishResponse;
+  merchantWebsitesVerification: DashboardGraphQLMerchantWebsiteVerificationResponse;
+  merchantWorkflowClarificationSubmit: DashboardGraphQLMerchantWorkflowClarificationSubmitResponse;
+  notificationEmailUpdate: DashboardGraphQLNotificationEmailUpdateResponse;
+  /** @deprecated Use whatsappNotificationToggle instead */
+  notificationWhatsAppOptIn: DashboardGraphQLNotificationWhatsAppOptIn;
+  /** To generate Oauth Tokens providing otp, can return multiple error codes for failure cases */
+  oAuthTokenAppleWatch: DashboardGraphQLOauthTokenAppleWatchResponse;
+  oAuthTokenAppleWatchOtp: DashboardGraphQLOauthTokenAppleWatchOtp;
+  onboardingPaymentOrderCreate: DashboardGraphQLOnboardingPaymentOrderCreateResponse;
+  onboardingPaymentOrderVerify: DashboardGraphQLOnboardingPaymentOrderVerifyResponse;
+  /** DashboardGraphQLMutation to opt in for whatsapp */
+  optInForWhatsapp: DashboardGraphQLOptInForWhatsappResponse;
+  orderCreate: DashboardGraphQLOrderCreateResponse;
+  paymentCapture: DashboardGraphQLPaymentCaptureResponse;
+  paymentLinkCancel: DashboardGraphQLPaymentLinkCancelResponse;
+  paymentLinkCreate: DashboardGraphQLPaymentLinkCreateResponse;
+  paymentLinkNotify: DashboardGraphQLPaymentLinkNotifyResponse;
+  paymentRefund: DashboardGraphQLPaymentRefundResponse;
+  paymentsNewLaunchProductViewUpdate: DashboardGraphQLPaymentsNewLaunchProductViewUpdate;
+  paymentsProductFtuxUpdate: DashboardGraphQLPaymentsProductFtuxUpdateResponse;
+  payoutApproveBulk: DashboardGraphQLPayoutApproveBulkResponse;
+  payoutCompositeCreate: DashboardGraphQLPayoutCompositeCreateResponse;
+  payoutCreate: DashboardGraphQLPayoutCreateResponse;
+  payoutCreateIcici: DashboardGraphQLPayoutCreateIciciResponse;
+  payoutLinkCreate: DashboardGraphQLPayoutLinkCreateResponse;
+  payoutPurposeCreate: DashboardGraphQLPayoutPurposeCreateResponse;
+  payoutRejectBulk: DashboardGraphQLPayoutRejectBulkResponse;
+  pettyCashCreate: DashboardGraphQLPettyCashCreateResponse;
+  pointOfSalePaymentCreate: DashboardGraphQLPointOfSalePaymentCreateResponse;
+  pointOfSalePaymentUpdate: DashboardGraphQLPointOfSalePaymentUpdateResponse;
+  qrCodeCreate: DashboardGraphQLQrCodeCreateResponse;
+  refreshAccessToken: DashboardGraphQLRefreshAccessToken;
+  registerBusiness: DashboardGraphQLRegisterBusinessResponse;
+  registerEmail: DashboardGraphQLRegisterEmail;
+  registerEmailVerify: DashboardGraphQLRegisterEmailVerifyResponse;
+  registerFCMToken: DashboardGraphQLRegisterFcmTokenResponse;
+  /** Send or resend otp to phone number provided during sign up */
+  registerMerchant: DashboardGraphQLRegisterMerchantResponse;
+  /** Verify OTP sent to phone number during sign up */
+  registerMobileVerify: DashboardGraphQLRegisterMobileVerifyResponse;
+  registerOAuth: DashboardGraphQLRegisterOAuth;
+  rejectPayout: DashboardGraphQLRejectPayoutResponse;
+  rejectPayoutBatch: DashboardGraphQLRejectPayoutBatchResponse;
+  resendEmailOtp: DashboardGraphQLResendEmailOtp;
+  resendTwoFactorLoginOtp: DashboardGraphQLResendTwoFactorLoginOtpResponse;
+  resetPasswordEmail: DashboardGraphQLResetPasswordEmail;
+  sendApprovePayoutBatchOtp: DashboardGraphQLSendApprovePayoutBatchOtp;
+  sendApprovePayoutOtp: DashboardGraphQLSendApprovePayoutOtp;
+  sendCreatePayoutLinkOtp: DashboardGraphQLSendCreatePayoutLinkOtp;
+  sendCreatePayoutOtp: DashboardGraphQLSendCreatePayoutOtp;
+  /** DashboardGraphQLMutation to send otp for unverified user email */
+  sendEmailVerificationOtp: DashboardGraphQLSendEmailVerificationOtpResponse;
+  sendIciciPayoutOtp: DashboardGraphQLSendIciciPayoutOtpResponse;
+  sendPayoutApproveBulkOtp: DashboardGraphQLSendPayoutApproveBulkOtp;
+  sendPayoutCompositeOtp: DashboardGraphQLSendPayoutCompositeOtp;
+  /** DashboardGraphQLMutation to send otp for unverified user email */
+  setEmailPassword: DashboardGraphQLSetEmailPasswordResponse;
+  /** DashboardGraphQLMutation to set new password */
+  setNewPassword: DashboardGraphQLSetNewPasswordResponse;
+  /** handle sms notification toggle */
+  smsNotificationToggle: DashboardGraphQLSmsNotificationToggle;
+  /** DashboardGraphQLMutation to add contact and send otp to the given unverified contact for verification */
+  twoFactorAddMobileOtp: DashboardGraphQLTwoFactorAddMobileOtpResponse;
+  /** DashboardGraphQLMutation to verify mobile otp and add the mobile in user account */
+  twoFactorAddMobileOtpVerify: DashboardGraphQLTwoFactorAddMobileOtpVerifyResponse;
+  /** DashboardGraphQLMutation for updating user's twoFactorAuth flag to enabled or disabled */
+  twoFactorAuthUpdate: DashboardGraphQLTwoFactorAuthUpdateResponse;
+  /** DashboardGraphQLMutation to verify Email otp for Two Factor DashboardGraphQLAuth */
+  twoFactorEmailOtpVerify: DashboardGraphQLTwoFactorEmailOtpVerifyResponse;
+  /** DashboardGraphQLMutation to send Email otp for Two Factor DashboardGraphQLAuth */
+  twoFactorOtp: DashboardGraphQLTwoFactorOtpResponse;
+  /** DashboardGraphQLMutation to add/create a password for 2FA */
+  twoFactorPasswordCreate: DashboardGraphQLTwoFactorPasswordCreateResponse;
+  /** DashboardGraphQLMutation to verify unverified mobile otp for Two Factor DashboardGraphQLAuth */
+  twoFactorUnverifiedMobileVerify: DashboardGraphQLTwoFactorUnverifiedMobileVerifyResponse;
+  updateMerchantConsent?: DashboardGraphQLMaybe<DashboardGraphQLUpdateMerchantConsentResponse>;
+  userContactDetailsUpdate: DashboardGraphQLRegisterBusinessResponse;
+  userDeviceAnalyticsUpdate?: DashboardGraphQLMaybe<DashboardGraphQLUserDeviceAnalyticsResponse>;
+  /** DashboardGraphQLMutation to check if user exists */
+  userExistsByEmailOrPhone: DashboardGraphQLUserExistsByEmailOrPhoneResponse;
+  userLogout: DashboardGraphQLUserLogout;
+  userLogoutOAuth: DashboardGraphQLUserLogout;
+  userOtp: DashboardGraphQLUserOtpResponse;
+  userOtpVerify: DashboardGraphQLUserOtpVerifyResponse;
+  vendorPaymentCancel: DashboardGraphQLVendorPaymentCancelResponse;
+  vendorPaymentPayoutCreate: DashboardGraphQLVendorPaymentPayoutCreateResponse;
+  /** DashboardGraphQLMutation to verify otp for unverified user email */
+  verifyEmailOtp: DashboardGraphQLVerifyEmailOtpResponse;
+  /** To handle whatsapp notification toggle */
+  whatsappNotificationToggle: DashboardGraphQLWhatsappNotificationToggle;
+};

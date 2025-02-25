@@ -1,0 +1,20 @@
+import { DashboardGraphQLInvoiceAmount, DashboardGraphQLMaybe, DashboardGraphQLScalars, DashboardGraphQLCustomer, DashboardGraphQLInvoiceDate, DashboardGraphQLInvoiceItem, DashboardGraphQLPayment, DashboardGraphQLInvoiceSmsStatusEnum, DashboardGraphQLInvoiceStatusEnum, DashboardGraphQLInvoiceTypeEnum } from './index';
+export type DashboardGraphQLInvoice = {
+  __typename?: 'DashboardGraphQLInvoice';
+  amount: DashboardGraphQLInvoiceAmount;
+  comments?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  customer?: DashboardGraphQLMaybe<DashboardGraphQLCustomer>;
+  dates?: DashboardGraphQLMaybe<DashboardGraphQLInvoiceDate>;
+  description?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  id: DashboardGraphQLScalars['ID'];
+  isPartiallyPayable?: DashboardGraphQLMaybe<DashboardGraphQLScalars['Boolean']>;
+  items: Array<DashboardGraphQLInvoiceItem>;
+  notes?: DashboardGraphQLMaybe<DashboardGraphQLScalars['JSONObject']>;
+  number?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  payment?: DashboardGraphQLMaybe<DashboardGraphQLPayment>;
+  receiptNumber?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  smsStatus?: DashboardGraphQLMaybe<DashboardGraphQLInvoiceSmsStatusEnum>;
+  status?: DashboardGraphQLMaybe<DashboardGraphQLInvoiceStatusEnum>;
+  type?: DashboardGraphQLMaybe<DashboardGraphQLInvoiceTypeEnum>;
+  url?: DashboardGraphQLMaybe<DashboardGraphQLScalars['URL']>;
+};

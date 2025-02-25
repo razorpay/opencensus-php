@@ -1,4 +1,3 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
 import Base from './Base';
 import ajax from 'merchant/utils/ajax';
 

@@ -1,12 +1,10 @@
-/* eslint-disable no-await-in-loop */
-import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 import { assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from './utils';
 
 test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
+    storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
   });
 
   test.skip('should show merchant overview @priority=normal', async ({ page }) => {
@@ -98,7 +96,7 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
 
 test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
+    storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
   });
 
   test('should show key updates @priority=normal', async ({ page }) => {
@@ -125,12 +123,12 @@ test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux @project=payme
 
 test.describe.parallel('RTUX - Header Nav @flow=rtux @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
+    storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
   });
 
   test.describe.parallel('RTUX - Non Transacted Merchant @flow=rtux', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).SETTLEMENTS_LOGIN_STATE,
+      storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
     });
 
     test('should show announcement nav item @priority=normal', async ({ page }) => {

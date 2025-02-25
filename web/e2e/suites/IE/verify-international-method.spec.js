@@ -1,5 +1,4 @@
-const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 const ELEMENT_CONFIG = {
   LANDING_PATH_REGEXP:
@@ -12,7 +11,7 @@ const ELEMENT_CONFIG = {
 test.describe
   .parallel('Test International Method banner on homepage @flow=ie @project=payments @project=payments-roast', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
+    storageState: getStorageStatePath().ACTIVATED_NOT_IE_STATE,
   });
 
   // roast test verifyViewInternationalMethodsTest

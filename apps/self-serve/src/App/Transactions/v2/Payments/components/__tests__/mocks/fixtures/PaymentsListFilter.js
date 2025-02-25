@@ -1,6 +1,6 @@
 import React from 'react';
 import mockMoment from 'moment';
-import * as useMobile from '@dashboard/shared-ui/hooks/useMobile';
+import * as sharedUtils from '@libs/shared-utils';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 
 import PaymentsListFilter from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter';
@@ -12,9 +12,8 @@ const defaultInitialState = {
     },
   },
 };
-
 jest.mock(
-  '@dashboard/shared-ui/components/Forms/DateRangePickerField',
+  '@libs/web-nexus/common/ui/Forms/DateRangePickerField',
   () =>
     function DateRangePickerField({ onDatesChange }) {
       const onChangeDate = () =>
@@ -32,7 +31,7 @@ jest.mock(
 );
 jest.setTimeout(35000);
 
-export const useMobileSpy = jest.spyOn(useMobile, 'useMobile');
+export const useMobileSpy = jest.spyOn(sharedUtils, 'useMobile');
 
 export const defaultProps = {
   onSubmit: jest.fn(),

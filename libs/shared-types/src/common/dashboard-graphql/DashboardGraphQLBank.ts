@@ -1,0 +1,20 @@
+import { DashboardGraphQLScalars, DashboardGraphQLPhone } from './index';
+export type DashboardGraphQLBank = {
+  __typename?: 'DashboardGraphQLBank';
+  address: DashboardGraphQLScalars['String'];
+  branchName: DashboardGraphQLScalars['String'];
+  centre: DashboardGraphQLScalars['String'];
+  city: DashboardGraphQLScalars['String'];
+  code: DashboardGraphQLScalars['String'];
+  contactNumber: DashboardGraphQLPhone;
+  district: DashboardGraphQLScalars['String'];
+  ifsc: DashboardGraphQLScalars['String'];
+  isImpsEnabled: DashboardGraphQLScalars['Boolean'];
+  isNeftEnabled: DashboardGraphQLScalars['Boolean'];
+  isRtgsEnabled: DashboardGraphQLScalars['Boolean'];
+  isUpiEnabled: DashboardGraphQLScalars['Boolean'];
+  micrCode: DashboardGraphQLScalars['String'];
+  name: DashboardGraphQLScalars['String'];
+  state: DashboardGraphQLScalars['String'];
+  swiftCode: DashboardGraphQLScalars['String'];
+};

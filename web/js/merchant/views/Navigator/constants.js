@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, ArrowUpRightIcon } from '@razorpay/blade/components';
 
 import { CommonPoints } from 'merchant/views/Navigator/components/Provider/SeamlessComponents/CommonPoints';

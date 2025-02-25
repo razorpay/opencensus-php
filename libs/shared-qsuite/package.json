@@ -1,0 +1,29 @@
+{
+  "name": "@libs/shared-qsuite",
+  "version": "0.0.1",
+  "author": {
+    "name": "Joel Jaimon (joel-jaimon)",
+    "url": "https://github.com/joel-jaimon"
+  },
+  "description": "A comprehensive suite for quality assurance and code validation, including testing, linting, type-checking, and more.",
+  "module": "./dist/index.esm.js",
+  "main": "./dist/index.cjs.js",
+  "types": "./dist/index.esm.d.ts",
+  "scripts": {
+    "postbuild": "cp -n dist/* ."
+  },
+  "peerDependencies": {
+    "@libs/shared-core": "workspace:*"
+  },
+  "dependencies": {
+    "playwright-msw": "^3.0.1",
+    "@playwright/test": "1.45.3",
+    "@reportportal/agent-js-playwright": "5.1.9",
+    "@razorpay/i18nify-js": "1.12.3",
+    "moment": "2.29.4"
+  },
+  "devDependencies": {
+    "@types/node": "18.16.9"
+  },
+  "nx": {}
+}

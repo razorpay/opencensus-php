@@ -209,14 +209,6 @@ describe('International Cards Utils', () => {
     const paypalQueryParam = 'instrument=paypal';
     const queryParamTwo = 'key2=value2';
 
-    beforeAll(() => {
-      jest.useFakeTimers('modern');
-    });
-
-    afterAll(() => {
-      jest.useRealTimers();
-    });
-
     test(`should only call push when url doesn't have  ${paypalQueryParam}`, () => {
       window.location.assign(pathname);
       scrollToPaypalSection(history);

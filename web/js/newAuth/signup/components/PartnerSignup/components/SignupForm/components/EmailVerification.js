@@ -3,7 +3,7 @@ import { Formik } from 'formik';
 import React, { useState } from 'react';
 
 import isEmpty from 'lodash/isEmpty';
-import { merchantFetch } from 'merchant/utils/ajax';
+import { newAuthFetch } from '@dashboards/newAuth/utils/newAuthFetch';
 import { verifyEmailOTP } from 'newAuth/signup/components/PartnerSignup/components/api';
 import {
   emailVerificationSchema,
@@ -92,7 +92,7 @@ const EmailVerification = ({ emailToken, contactEmail, setEmailToken, setStep, s
     resetTimer();
     setOtpTriesLeft(otpTriesLeft - 1);
     setIsLoading(true);
-    return merchantFetch({
+    return newAuthFetch({
       url: 'merchant/activation/otp/send',
       method: 'POST',
       data: payload,

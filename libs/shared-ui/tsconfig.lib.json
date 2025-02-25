@@ -1,8 +1,16 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "./dist",
+    "typeRoots": ["node_modules/@types"],
+    "preserveSymlinks": true,
+    "lib": ["DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "emitDeclarationOnly": false,
     "composite": true,
-    "outDir": "../../dist/out-tsc",
     "noEmit": false,
     "allowJs": false,
     "noImplicitAny": false,
@@ -20,12 +28,7 @@
     "src/**/*.test.jsx",
     "node_modules"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
-  "references": [
-    {
-      "path": "../shared-utils/tsconfig.lib.json"
-    }
-  ],
+  "include": ["src/**/*", "../shared-types/global.d.ts"],
   "files": [
     "../../node_modules/@nx/react/typings/cssmodule.d.ts",
     "../../node_modules/@nx/react/typings/image.d.ts"

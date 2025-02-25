@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-
-import { fetch } from '@dashboard/shared-utils/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { accumalateCountAmount, getRefundsRequestPayload } from './utils';
 import {
   EnvironmentsModes,

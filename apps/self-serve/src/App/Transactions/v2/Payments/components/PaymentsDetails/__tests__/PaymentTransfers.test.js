@@ -1,4 +1,4 @@
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-ui';
 import {
   renderApp,
   defaultPaymentDetails,

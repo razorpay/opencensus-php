@@ -1,4 +1,4 @@
-import { fetch } from '@dashboard/shared-utils/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 const DOWNLOAD_REPORT_ENDPOINT = 'merchant/report/dispute/download';
 
 export const fetchDownloadReportData = async (params: string) => {

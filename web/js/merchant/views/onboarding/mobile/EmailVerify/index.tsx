@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useMutation } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';

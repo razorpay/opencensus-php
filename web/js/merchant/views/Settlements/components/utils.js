@@ -1,3 +1,4 @@
+import React from 'react';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';

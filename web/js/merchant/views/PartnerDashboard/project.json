@@ -1,0 +1,7 @@
+{
+    "name": "partner-dashboard",
+    "$schema": "node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "web/js/merchant/views/PartnerDashboard",
+    "targets": {}
+  }
+  

@@ -7,8 +7,8 @@ import { StyledSignupWrapper } from './styled';
 import {
   closeModal as closeModalFn,
   openModal as openModalFn,
-} from 'merchant_common/reducers/modals';
-import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
+} from '@libs/web-nexus/merchant/reducers/modals';
+import { showNotification as showNotificationFn } from '@libs/web-nexus/merchant/reducers/notifications';
 import CongratsForm from './components/CongratsForm';
 import imageFullLogo from 'assets/logo_full.png';
 import imagePartnerLogo from 'assets/partner-dashboard/partner-logo.svg';

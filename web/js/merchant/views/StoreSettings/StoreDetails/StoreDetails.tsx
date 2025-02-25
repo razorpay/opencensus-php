@@ -21,7 +21,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { REACT_QUERY_CACHE_KEYS } from 'common/constant';
-import { graphqlRequest, graphqlRequestMutation } from 'common/services/graphql/graphql-client';
+import { graphqlRequest, graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import Breadcrumbs from 'merchant/views/BillMeSettings/common/components/Breadcrumbs';
 import DeleteStoreModal from 'merchant/views/StoreSettings/StoreDetails/components/DeleteStoreModal';
 import DigitalBillingInfo from 'merchant/views/StoreSettings/StoreDetails/components/DigitalBillingInfo';

@@ -4,7 +4,7 @@ const KEY = 'partnerships-invite-flow-tooltip';
 const MAX_VISIBILITY = 3;
 
 export const isVisible = (): boolean => {
-  const visibilityStatus = localStorage.getItem(KEY);
+  const visibilityStatus = window?.localStorage.getItem(KEY);
   if (!visibilityStatus) {
     return true;
   }
@@ -19,7 +19,7 @@ export const isVisible = (): boolean => {
 };
 
 const setCount = ({ count }) => {
-  localStorage.setItem(
+  window?.localStorage.setItem(
     KEY,
     JSON.stringify({
       count,
@@ -29,7 +29,7 @@ const setCount = ({ count }) => {
 };
 
 export const hideFtux = (): void => {
-  const visibilityStatus = localStorage.getItem(KEY);
+  const visibilityStatus = window?.localStorage.getItem(KEY);
   if (visibilityStatus) {
     const { count, expireAt } = JSON.parse(visibilityStatus);
     if (count > MAX_VISIBILITY) return;

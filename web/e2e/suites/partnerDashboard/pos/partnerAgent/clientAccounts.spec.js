@@ -1,26 +1,27 @@
 import {
-  CONTENT_SELECTORS,
   CTA_SELECTORS,
-  INPUT_SELECTORS,
-} from 'partnerDashboard/common/constants';
-import {
+  CONTENT_SELECTORS,
   clickAndLoadAcceptedInvites,
   clickAndLoadAllInvites,
   clickSubmerchantDetailsAndValidate,
   fillInputAndLoadSearchResults,
   loadClientAccountsDirectly,
   loadPOSViewOrderDetailsTab,
-} from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
-import { waitForSelectorToBeVisible } from 'utils/common';
-
-const { test, expect } = require('utils/base');
+  INPUT_SELECTORS,
+} from '../../common';
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  waitForSelectorToBeVisible,
+} from '@libs/shared-qsuite/playwright';
 
 // Reseller Partner POS Agent Tests
 test.describe
   .parallel('Test Reseller Partner POS Agent pos @flow=partnerships-pos @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE,
   });
 
   test.beforeEach(async ({ page }) => {

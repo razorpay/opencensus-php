@@ -1,5 +1,5 @@
 import React from 'react';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 
 interface Props {
   eventId: string | null;

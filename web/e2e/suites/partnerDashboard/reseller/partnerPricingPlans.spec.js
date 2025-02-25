@@ -1,6 +1,4 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 const SELECTORS = {
   METHOD_PAYOUT_FUND_TRANSFER: 'text=Method: Payout: Fund Transfer',
@@ -9,7 +7,7 @@ const SELECTORS = {
 
 test.describe.parallel('Test Partner Pricing Plans page @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_TEST_LOGIN_STATE,
   });
 
   test('should load the pricing page accurately @priority=critical', async ({ page }) => {

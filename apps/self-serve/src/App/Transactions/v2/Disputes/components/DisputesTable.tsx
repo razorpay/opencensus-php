@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
 import {
@@ -7,7 +7,7 @@ import {
   mobileColumns,
 } from 'apps/self-serve/src/App/Transactions/v2/Disputes/columns';
 import EmptyComponent from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/EmptyComponent';
-import { EntityTable } from '@dashboard/shared-ui/components';
+import EntityTable from '@dashboards/payments/components/EntityTable';
 
 const DisputesTable = (props) => {
   const isMobile = useMobile(mobileBreakoints);

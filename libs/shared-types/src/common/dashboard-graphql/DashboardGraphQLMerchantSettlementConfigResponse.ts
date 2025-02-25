@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantSettlementConfigFailureResponse, DashboardGraphQLMerchantSettlementConfigSuccessResponse } from './index';
+export type DashboardGraphQLMerchantSettlementConfigResponse =
+  | DashboardGraphQLMerchantSettlementConfigFailureResponse
+  | DashboardGraphQLMerchantSettlementConfigSuccessResponse;

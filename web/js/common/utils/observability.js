@@ -1,9 +1,34 @@
-import errorService from '@razorpay/universe-utils/errorService';
+// TODO: Migrate this usage to shell
+import {
+  Metrics,
+  captureErrorOnAnalytics,
+  capturePrometheusMetric,
+  getPathForMetrics,
+} from '@libs/shared-utils';
+import errorService from '@razorpay/universe-cli/errorService';
+import { useEffect } from 'react';
+import {
+  useLocation,
+  useNavigationType,
+  createRoutesFromChildren,
+  matchRoutes,
+} from 'react-router-dom';
 
-import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
-import { captureErrorOnAnalytics, capturePrometheusMetric, Metrics } from 'common/utils/analytics';
+const infoEventsToBeIgnored = [
+  'ReportingObserver [deprecation]',
+  'ReportingObserver [intervention]',
+];
 
-import { getSplitzExperimentVariant } from './rzp-utils';
+function shouldSkipNonExceptions({ event }) {
+  if (event.level === 'info') {
+    for (const infoEventMessage of infoEventsToBeIgnored) {
+      if (event.message?.includes?.(infoEventMessage)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 function extractPersona() {
   const {
@@ -31,17 +56,6 @@ function extractPersona() {
     merchant: { country_code } = {},
   } = window.rzp_user || {};
 
-  const rtuxExperimentEnabled =
-    getSplitzExperimentVariant('rtux_enabled_splitz_experiment_id')?.variables?.result === 'on';
-
-  const isRtux =
-    rtuxExperimentEnabled &&
-    activationStatus === 'activated' &&
-    country_code === 'IN' &&
-    window.rzp_org.custom_code === 'rzp' &&
-    !partnerType &&
-    !(window.rzp_user.merchants[window.rzp_user.current].role === 'partner_agent');
-
   return {
     role: role ?? null,
 
@@ -54,7 +68,6 @@ function extractPersona() {
     disabledReason: disabledReason ?? null,
     preSignupComplete: preSignupComplete ?? null,
     merchantId: merchantId ?? null,
-    isRtux: isRtux ?? null,
 
     // User related
     emailVerified: emailVerified ?? null,
@@ -74,57 +87,115 @@ function extractPersona() {
 }
 
 export function initSentry(appName) {
-  let environment = window.APP_ENV;
-
-  if (window.INSTANCE_TYPE === 'canary') {
-    // in canary case, environment is set to canary instead of production
-    environment = 'canary';
-  } else if (process.env.REDIRECTOR) {
-    // in canary case, environment is set to canary instead of production
-    environment = 'redirector';
-  }
-
-  if (window.APP_ENV === 'production') {
+  if (['production', 'canary'].includes(__STAGE__) && __WEB_NEXUS_SENTRY_VERSION__) {
     try {
+      const EXTRA_KEY = 'ROUTE_TO';
+
+      const transport = errorService.generateMultiplexedTransport((args) => {
+        const event = args.getEvent(['event', 'transaction', 'replay_event']);
+        if (
+          event &&
+          event.extra &&
+          EXTRA_KEY in event.extra &&
+          Array.isArray(event.extra[EXTRA_KEY])
+        ) {
+          return event.extra[EXTRA_KEY];
+        }
+        return [];
+      });
+
       errorService.init({
-        version: window.__VERSION__ || 'UNKNOWN',
-        environment: window.__VERSION__ ? environment : 'local',
-        dsn: window.SENTRY_DSN,
+        version: __WEB_NEXUS_SENTRY_VERSION__,
+        environment: __STAGE__,
+        dsn: __WEB_NEXUS_SENTRY_DSN__,
+        dist: __APP_VERSION__,
+        profilesSampleRate: 1,
+        ignoreErrors: ['ResizeObserver loop limit exceeded'],
+        tracePropagationTargets: [/^https:\/\/(?:.+\.)?(razorpay|curlec)\.(com)(\/|\/app.*)?$/],
+        transport,
+        replaysSessionSampleRate: 0.01,
+        replaysOnErrorSampleRate: 0.2,
+        routerIntegrations: [
+          errorService.reactRouterV6BrowserTracingIntegration({
+            useEffect,
+            useLocation,
+            useNavigationType,
+            createRoutesFromChildren,
+            matchRoutes,
+          }),
+        ],
         beforeSend: (event, hint) => {
-          if (hint?.originalException?.code === 'UNKNOWN_ERROR_CODE') {
+          if (shouldSkipNonExceptions({ event })) {
             return null;
           }
-          // Do not capture errors in local and redirector environment
-          if (['local', 'redirector'].includes(environment)) {
+
+          if (hint?.originalException?.code === 'UNKNOWN_ERROR_CODE') {
             return null;
           }
 
           captureErrorOnAnalytics(event, hint);
 
-          if (event?.level === 'error') {
+          let module_metadata;
+
+          if (Array.isArray(event?.exception?.values?.[0]?.stacktrace?.frames)) {
+            const frames = event.exception.values[0].stacktrace.frames;
+            // Find the last frame with module metadata containing a DSN
+            const routeTo = frames
+              .filter((frame) => frame.module_metadata && frame.module_metadata.dsn)
+              .map((v) => v.module_metadata)
+              .slice(-1); // using top frame only - you may want to customize this according to your needs
+
+            if (routeTo.length) {
+              module_metadata = routeTo[0];
+
+              event.extra = {
+                ...event.extra,
+                [EXTRA_KEY]: routeTo,
+              };
+            }
+          }
+
+          if (['error', 'fatal'].includes(event?.level)) {
             capturePrometheusMetric({
               name: Metrics.ERROR_COUNT,
               labels: {
                 rank: event?.rank ?? event?.tags?.rank,
+                level: event?.level,
                 pathname: getPathForMetrics(window?.location?.pathname),
+                module_metadata,
               },
             });
           }
 
           return event;
         },
-        browserTracing: {
-          tracingOrigins: ['dashboard.razorpay.com', /^\//],
-        },
-        tracesSampler: (samplingContext) => {
-          // Possible values for operation is 'navigation' and 'pageload'
-          // 80% of the current transactions are navigation transactions which we are note interested in
-          // Web vitals can be collected only for pageload transactions, so we are sampling only those
-
-          if (samplingContext?.transactionContext?.op === 'pageload') {
-            return 0.2;
-          } else {
-            return 0;
+        tracesSampler: (options) => {
+          const sentryOp = options?.attributes?.['sentry.op'];
+          switch (sentryOp) {
+            case 'pageload':
+            case 'browser.paint':
+              return 0.3;
+            case 'measure':
+            case 'ui.react.mount':
+              return 0.1;
+            case 'ui.render':
+            case 'ui.task':
+            case 'ui.react.render':
+              return 0.01;
+            case 'http.client':
+            case 'http.graphql.query':
+            case 'http.graphql.mutation':
+            case 'http.graphql.subscription':
+            case 'ui.react.update':
+            case 'ui.update':
+            case 'ui.action':
+              return 0.001;
+            case 'resource.script':
+            case 'resource.link':
+            case 'navigation':
+              return 0.0001;
+            default:
+              return 0;
           }
         },
       });
@@ -137,7 +208,7 @@ export function initSentry(appName) {
     const tags = {
       app: appName,
       protocol: performance?.getEntriesByType?.('navigation')?.[0]?.nextHopProtocol,
-      deployment_type: window.INSTANCE_TYPE,
+      deployment_type: __STAGE__,
       ...extractPersona(),
     };
 

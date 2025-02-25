@@ -1,0 +1,4 @@
+export enum DashboardGraphQLMerchantBalanceAccountTypeEnum {
+  CURRENT_ACCOUNT_DIRECT = 'CURRENT_ACCOUNT_DIRECT',
+  CURRENT_ACCOUNT_ON_NODAL = 'CURRENT_ACCOUNT_ON_NODAL',
+}

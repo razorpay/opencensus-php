@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default ({ item, rows }) => {
   return (
     <div className="details-row-container">

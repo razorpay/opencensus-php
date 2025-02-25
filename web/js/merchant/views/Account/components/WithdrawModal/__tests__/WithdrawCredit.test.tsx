@@ -5,7 +5,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as Ajax from 'merchant/utils/ajax';
 import * as profile from 'merchant/reducers/profile';
 import store from 'merchant/store';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 let merchantFetchSpy = jest.spyOn(Ajax, 'merchantFetch');
 let fetchBankAccountSpy;
@@ -17,8 +17,8 @@ let filter;
 let props;
 
 const stateSpy = jest.spyOn(store, 'getState');
-jest.mock('shell/commonStore', () => ({
-  ...(jest.requireActual('shell/commonStore') as any),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  ...(jest.requireActual('@federated/apps/shell/commonStore') as any),
   useStore: jest.fn(),
 }));
 

@@ -91,7 +91,7 @@ describe('EnableInstantRefundsModal', () => {
           properties: {
             location: 'configuration',
             status: 'Failure',
-            failureReason: '',
+            failureReason: 'Network Error',
           },
           screen: 'settings',
         });
@@ -165,7 +165,7 @@ describe('EnableInstantRefundsModal', () => {
           properties: {
             location: 'configuration',
             status: 'Failure',
-            failureReason: '',
+            failureReason: 'Network Error',
           },
           screen: 'settings',
         });

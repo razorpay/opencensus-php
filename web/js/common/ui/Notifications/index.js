@@ -1,5 +1,5 @@
-import { Component } from 'react';
-import { withZustand } from 'shell/commonStore';
+import React, { Component } from 'react';
+import { withZustand } from '@federated/apps/shell/commonStore';
 
 import { classList } from 'common/utils/rzp-utils';
 

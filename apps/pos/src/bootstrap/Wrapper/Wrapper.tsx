@@ -1,26 +1,21 @@
-import { graphqlClient } from '@dashboard/shared-utils/graphql/graphql';
+import React, { useEffect } from 'react';
 import { BladeProvider, Box, ToastContainer } from '@razorpay/blade/components';
-import { bladeTheme } from '@razorpay/blade/tokens';
-import errorService from '@razorpay/universe-cli/errorService';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { bladeTheme } from '@razorpay/blade/tokens';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import errorService from '@razorpay/universe-cli/errorService';
+import { graphqlClient } from '@federated/apps/shell/graphql';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
+import { PARTNER_ASSISTED_ONBOARDING } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import App from 'apps/pos/src/app';
 import PageError from 'apps/pos/src/app/components/PageError';
-import { PARTNER_ASSISTED_ONBOARDING } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import { MODULES } from 'apps/pos/src/app/types/common';
 import useEnv from 'apps/pos/src/app/utils/hooks/useEnv';
-import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
-import initSentry from 'apps/pos/src/services/obervability';
-import React, { useEffect } from 'react';
-import { OnboardingWorkflowProduct } from '../../app/types/SalesAssistedOnboarding';
+import type { OnboardingWorkflowProduct } from '../../app/types/SalesAssistedOnboarding';
 
 export const queryClient = new QueryClient();
-export const sentryHub = initSentry();
 
-graphqlClient.setHeader(
-  'apollographql-client-name',
-  process.env.UNIVERSE_PUBLIC_APP_NAME as string,
-);
+graphqlClient.setHeader('apollographql-client-name', 'pos-assisted-onboarding');
 
 interface WrapperProps {
   workflowProduct?: OnboardingWorkflowProduct;
@@ -51,14 +46,15 @@ const Wrapper: React.FC<WrapperProps> = ({ workflowProduct }) => {
     }
   }, [workflowProduct, setWorkflowProduct]);
 
-  const { isProduction, cdnBaseUrl } = useEnv();
+  const { isProduction, cdnBaseUrl, cdnDashboardAssetsUrl } = useEnv();
 
+  // TODO: Needs to be fixed wrt to new architecture
   React.useEffect(() => {
     const link = document.createElement('link');
     link.rel = 'manifest';
     link.href = isProduction
       ? `${cdnBaseUrl}/static/assets/pos/sales-assisted/manifests/app-prod-manifest.json`
-      : `${process.env.UNIVERSE_PUBLIC_ASSETS_URL}/build/browser/manifest.json`;
+      : `${process.env['UNIVERSE_PUBLIC_ASSETS_URL']}/build/browser/manifest.json`;
     document.head.appendChild(link);
     return () => {
       document.head.removeChild(link);
@@ -69,7 +65,6 @@ const Wrapper: React.FC<WrapperProps> = ({ workflowProduct }) => {
     <BladeProvider themeTokens={bladeTheme}>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary
-          sentryHub={sentryHub?.sentryHub}
           rank={errorService.ErrorRank.P0}
           tags={{ module: MODULES.SALES_DASHBOARD }}
           fallbackComponent={

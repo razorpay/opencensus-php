@@ -73,10 +73,12 @@ describe('ProductTabsWrapper', () => {
       isPartner.mockImplementation((partner_type = 'reseller') => partner_type === 'reseller');
     });
     afterEach(() => {
-      jest.clearAllMocks();
       mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
       mockLocation = defaultLocation;
     });
+    afterAll(() => {
+      jest.clearAllMocks();
+    }),
 
     test('should render Refer merchant modal after clicking Refer button', async () => {
       const productType = PRODUCT_TYPE.PG;
@@ -94,7 +96,11 @@ describe('ProductTabsWrapper', () => {
       const productType = PRODUCT_TYPE.X;
       renderApp({}, { productType });
 
-      await userEvent.click(screen.getByRole('button', { name: 'Add New Clients' }));
+      await waitFor(() => {
+        expect(screen.getByText('Add New Clients')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByText('Add New Clients'));
 
       await waitFor(() => {
         expect(screen.getByText('Add New Merchants - RazorpayX')).toBeInTheDocument();

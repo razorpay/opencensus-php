@@ -1,0 +1,5 @@
+import { DashboardGraphQLMerchantPolicyEmptyV2PreviewResponse, DashboardGraphQLMerchantPolicyPreviewV2FailureResponse, DashboardGraphQLMerchantPolicyPreviewV2SuccessResponse } from './index';
+export type DashboardGraphQLMerchantPolicyPreviewV2Response =
+  | DashboardGraphQLMerchantPolicyEmptyV2PreviewResponse
+  | DashboardGraphQLMerchantPolicyPreviewV2FailureResponse
+  | DashboardGraphQLMerchantPolicyPreviewV2SuccessResponse;

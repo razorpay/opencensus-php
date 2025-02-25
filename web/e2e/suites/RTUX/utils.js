@@ -1,4 +1,4 @@
-import { expect } from 'utils/base';
+import { expect } from '@libs/shared-qsuite/playwright';
 
 const UCS_DATA_API_URL = '**/ucs/**/GetComponentData';
 

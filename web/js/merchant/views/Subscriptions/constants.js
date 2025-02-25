@@ -1,3 +1,4 @@
+import React from "react";
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const PAPER_NACH_CARD_BANNER_URL =

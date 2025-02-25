@@ -1,10 +1,9 @@
-import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe.parallel('GST update @flow=account-settings @project=payments', () => {
   test.describe.parallel('Unregistered merchant', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_NOT_IE_STATE,
+      storageState: getStorageStatePath().ACTIVATED_NOT_IE_STATE,
     });
 
     test('should be able to see GST Details page', async ({ page }) => {
@@ -23,7 +22,7 @@ test.describe.parallel('GST update @flow=account-settings @project=payments', ()
 
   test.describe.parallel('Registered merchant', () => {
     test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+      storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
     });
 
     test('should be able to see GST Details page', async ({ page }) => {

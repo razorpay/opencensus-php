@@ -16,7 +16,7 @@ import {
   TransactionsPagesMap,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
-import { Amount } from '@dashboard/shared-ui/components';
+import Amount from '@libs/web-nexus/common//ui/Amount';
 import { refundsStatusVariantMap } from './constants';
 import { getSourceChannelType } from './utils';
 

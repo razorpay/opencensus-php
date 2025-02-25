@@ -1,5 +1,5 @@
-import { getStorageStatePath, routes } from '@dashboard/shared-utils/e2e/constants/paths';
-import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
+import { getStorageStatePath, routes } from '@libs/shared-utils/tests/e2e/constants/paths';
+import { navigateTo } from '@libs/shared-utils/tests/e2e/utils/common';
 import { BASE_PATH, payments } from '../../constants';
 import { expect, test } from '../../utils/base';
 import { gotoTransactionDetailsPageById } from '../..//utils';

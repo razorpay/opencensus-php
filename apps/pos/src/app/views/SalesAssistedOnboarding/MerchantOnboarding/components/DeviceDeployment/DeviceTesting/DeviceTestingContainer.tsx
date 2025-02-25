@@ -7,7 +7,6 @@ import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 import { getTestingAmountDetailsFromModularConfig } from 'apps/pos/src/app/utils/deviceDeployment';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 
 const DeviceTestingContainer = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
@@ -25,7 +24,6 @@ const DeviceTestingContainer = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.DEVICE_DEPLOYMENT }}
       fallbackComponent={

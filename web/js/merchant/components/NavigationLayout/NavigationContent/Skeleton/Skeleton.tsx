@@ -43,7 +43,7 @@ import {
   UserIcon,
 } from '@razorpay/blade/components';
 import { makeSize } from '@razorpay/blade/utils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import type { TabNavItemProps, SideNavProps } from '@razorpay/blade/components';
 import ExploreItem from 'merchant/components/NavigationLayout/TopNavigation/components/ExploreItem';
 import RazorpayLogo from '../../TopNavigation/RazorpayLogo';

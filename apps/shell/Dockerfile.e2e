@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/playwright:v1.31.1-focal
+
+WORKDIR /app
+
+# Copy dependencies files so we can have better caching as these don't change often
+COPY --chown=node:node .npmrc package.json yarn.lock ./
+
+# Install strictly from lockfile don't generate new lockfile
+RUN --mount=type=secret,id=GITHUB_ACCESS_TOKEN \
+    GITHUB_ACCESS_TOKEN=$(cat /run/secrets/GITHUB_ACCESS_TOKEN) && \
+    export GITHUB_ACCESS_TOKEN && \
+    yarn install --frozen-lockfile && yarn cache clean
+
+# Yolo the npmrc out now because it will try to replace git token (for each npm command) which won't be present in env anymore
+RUN rm -f .npmrc && yarn playwright install --with-deps
+
+COPY . .
+
+CMD yarn test:e2e

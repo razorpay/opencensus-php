@@ -1,5 +1,5 @@
-import { COUNTRY_CODES } from '@dashboard/shared-utils/constants';
-import { getUser } from 'shell/commonStore';
+import { getUser } from '@federated/apps/shell/commonStore';
+import { COUNTRY_CODES } from '@libs/shared-utils';
 import {
   ALL_LABEL,
   ALL_VALUE,

@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantContactTypeCreateResponseDuplicate, DashboardGraphQLMerchantContactTypeCreateResponseSuccess } from './index';
+export type DashboardGraphQLMerchantContactTypeCreateResponse =
+  | DashboardGraphQLMerchantContactTypeCreateResponseDuplicate
+  | DashboardGraphQLMerchantContactTypeCreateResponseSuccess;

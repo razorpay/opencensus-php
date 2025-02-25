@@ -16,7 +16,6 @@ import { DEVICE_DEPLOYMENT_FIELDS } from 'apps/pos/src/app/types/DeviceDeploymen
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { AvailableComponents, MODULES } from 'apps/pos/src/app/types/common';
 import { DeviceModel } from 'apps/pos/src/app/utils/deviceSelection';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 
@@ -138,7 +137,6 @@ const DeviceDeploymentList = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.DEVICE_DEPLOYMENT }}
       fallbackComponent={

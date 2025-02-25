@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "typeRoots": ["node_modules/@types"],
+    "outDir": "./.ts/dashboard"
+  },
+}

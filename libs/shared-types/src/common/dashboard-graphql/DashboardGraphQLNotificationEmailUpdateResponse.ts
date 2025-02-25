@@ -1,0 +1,4 @@
+import { DashboardGraphQLNotificationEmailUpdateFailureResponse, DashboardGraphQLNotificationEmailUpdateSuccessResponse } from './index';
+export type DashboardGraphQLNotificationEmailUpdateResponse =
+  | DashboardGraphQLNotificationEmailUpdateFailureResponse
+  | DashboardGraphQLNotificationEmailUpdateSuccessResponse;

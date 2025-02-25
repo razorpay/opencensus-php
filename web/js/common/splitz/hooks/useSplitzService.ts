@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import {SpiltzContext} from "@federated/dashboards/payments/services/splitzService";
 
 import { SpiltzContextState } from 'common/splitz/types';
 

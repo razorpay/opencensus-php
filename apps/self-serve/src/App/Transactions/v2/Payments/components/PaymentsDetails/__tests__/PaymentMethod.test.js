@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import { toTitleCase as titleCase } from '@libs/shared-utils';
 import { render, screen } from 'apps/self-serve/src/services/test/test-utils';
 import PaymentMethod from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentMethod';
 import {

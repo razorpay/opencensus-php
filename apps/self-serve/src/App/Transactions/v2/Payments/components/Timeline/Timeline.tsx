@@ -12,13 +12,13 @@ import {
   useTheme,
   ChevronRightIcon,
 } from '@razorpay/blade/components';
-import { withRouter } from 'shell/deprecated/withRouter';
-import { useStore } from 'shell/commonStore';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { useBreakpoint } from '@razorpay/blade/utils';
-import Amount from 'common/ui/Amount';
-import { merchantFetch } from '@dashboard/shared-utils/ajax';
+import Amount from '@libs/web-nexus/common//ui/Amount';
+import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
 import {
   StyledJourneyMetadata,
   StyledTimelineContainer,

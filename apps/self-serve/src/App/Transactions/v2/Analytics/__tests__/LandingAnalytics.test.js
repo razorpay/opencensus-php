@@ -6,7 +6,7 @@ import {
   assertRefetchData,
   assertNoRefetchData,
 } from './mocks/fixtures/LandingAnalytics';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 
 describe('LandingAnalytics', () => {
   beforeEach(() => {

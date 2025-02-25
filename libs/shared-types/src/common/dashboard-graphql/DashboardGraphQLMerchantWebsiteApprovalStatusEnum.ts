@@ -1,0 +1,7 @@
+export enum DashboardGraphQLMerchantWebsiteApprovalStatusEnum {
+  APPROVED = 'APPROVED',
+  NEEDS_CLARIFICATION = 'NEEDS_CLARIFICATION',
+  REJECTED = 'REJECTED',
+  SUBMITTED = 'SUBMITTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}

@@ -1,6 +1,7 @@
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
 import StatusLabel from 'merchant/components/StatusLabel';
+import React from 'react';
 
 // prettier-ignore
 export const getAmount =

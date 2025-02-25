@@ -1,5 +1,6 @@
 import ShowWhen from 'merchant/components/ShowWhen';
 import { connect } from 'react-redux';
+import React from "react";
 
 const EmptyDailyList = (props) => {
   const { items, isAddMerchantView, user } = props;

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
 /*

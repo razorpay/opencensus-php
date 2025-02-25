@@ -11,8 +11,8 @@ module.exports = {
     // Since jest doesn't know how to resolve these static assets, we mock them
     '\\.(css)$': `${nodeModulesRootDir}/../jest-styleMock.js`,
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|docx)$': `${nodeModulesRootDir}/../jest-fileMock.js`,
-    '^@dashboard/shared-utils(/.*)?$': `${nodeModulesRootDir}/../libs/shared-utils/src$1`,
-    '^@dashboard/shared-ui(/.*)?$': `${nodeModulesRootDir}/../libs/shared-ui/src$1`,
+    '^@libs/shared-utils(/.*)?$': `${nodeModulesRootDir}/../libs/shared-utils/src$1`,
+    '^@libs/shared-ui(/.*)?$': `${nodeModulesRootDir}/../libs/shared-ui/src$1`,
     '^merchant(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant$1`,
     '^merchant_common(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant_common$1`,
     '^common(/.*)?$': `${nodeModulesRootDir}/../web/js/common$1`,

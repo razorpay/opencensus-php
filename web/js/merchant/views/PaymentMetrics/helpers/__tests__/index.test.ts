@@ -275,8 +275,8 @@ describe('Tests for #methodLevelSplit', () => {
 describe('Tests for #getOverallCRData', () => {
   test('should call getPaymentMetricsData function', async () => {
     const mockedError = {
-      code: undefined,
-      errors: [''],
+      code: 500,
+      errors: ['Network Error'],
     };
 
     (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
@@ -288,8 +288,8 @@ describe('Tests for #getOverallCRData', () => {
 describe('Tests for #getMethodLevelCRData', () => {
   test('should call getPaymentMetricsData function', async () => {
     const mockedError = {
-      code: undefined,
-      errors: [''],
+      code: 500,
+      errors: ['Network Error'],
     };
 
     (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
@@ -303,8 +303,8 @@ describe('Tests for #getMethodLevelCRData', () => {
 describe('Tests for #getIndustryOverallCRData', () => {
   test('should call getPaymentMetricsData function', async () => {
     const mockedError = {
-      code: undefined,
-      errors: [''],
+      code: 500,
+      errors: ['Network Error'],
     };
 
     (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
@@ -318,8 +318,8 @@ describe('Tests for #getIndustryOverallCRData', () => {
 describe('Tests for #getMethodLevelTransactionData', () => {
   test('should call getPaymentMetricsData function', async () => {
     const mockedError = {
-      code: undefined,
-      errors: [''],
+      code: 500,
+      errors: ['Network Error'],
     };
 
     (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
@@ -333,8 +333,8 @@ describe('Tests for #getMethodLevelTransactionData', () => {
 describe('Tests for #getTotalGmv', () => {
   test('should call getTotalGmv function', async () => {
     const mockedError = {
-      code: undefined,
-      errors: [''],
+      code: 500,
+      errors: ['Network Error'],
     };
 
     (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
@@ -348,8 +348,8 @@ describe('Tests for #getTotalGmv', () => {
 describe('Tests for #getTotalMethodLevelGmv', () => {
   test('should call getTotalMethodLevelGmv function', async () => {
     const mockedError = {
-      code: undefined,
-      errors: [''],
+      code: 500,
+      errors: ['Network Error'],
     };
 
     (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);

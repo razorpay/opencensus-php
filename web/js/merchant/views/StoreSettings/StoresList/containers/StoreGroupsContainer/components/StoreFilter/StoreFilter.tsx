@@ -18,7 +18,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 
 import { zIndicesMap, REACT_QUERY_CACHE_KEYS } from 'common/constant';
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { useIntersectionObserver } from 'merchant/hooks/useIntersectionObserver';
 import {
   STORES_LIST_DATA_QUERY,

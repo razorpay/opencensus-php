@@ -1,7 +1,7 @@
 import { useToast } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
 
-import { graphqlRequestMutation } from 'common/services/graphql/graphql-client';
+import { graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import { GET_PRE_SIGNED_URL_MUTATION } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/mutations';
 
 const useBrandPreSignedUrlMutation = () => {

@@ -1,7 +1,7 @@
 import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
 import React from 'react';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 export type PermissionsList = Array<string>;
 

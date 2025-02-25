@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import { EntityTable } from '@dashboard/shared-ui/components';
-import { useStore } from 'shell/commonStore';
+import { useMobile } from '@libs/shared-utils';
+import EntityTable from '@dashboards/payments/components/EntityTable';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
 import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';

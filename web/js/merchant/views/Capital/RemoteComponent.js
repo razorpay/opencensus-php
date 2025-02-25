@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as Redux from 'redux';
 import * as ReactRedux from 'react-redux';
-import * as ReactRouter from 'react-router';
 import * as ReactRouterDOM from 'react-router-dom';
 import * as ReactDOM from 'react-dom';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -29,7 +28,6 @@ const externals = {
   React,
   Redux,
   ReactRedux,
-  ReactRouter,
   ReactRouterDOM,
   ReactDOM,
   host: {

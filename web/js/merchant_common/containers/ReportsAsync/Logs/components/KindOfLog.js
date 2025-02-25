@@ -1,5 +1,6 @@
 import { getFormattedDate } from 'merchant_common/containers/ReportsAsync/utils';
 import moment from 'moment';
+import React from 'react';
 
 export default function KindOfReport({ createdAt, scheduleId }) {
   return (

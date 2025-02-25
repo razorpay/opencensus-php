@@ -9,6 +9,7 @@ import * as trackEvents from 'merchant/reducers/trackEvents';
 
 const state = {
   session: {
+    mode: "test",
     user: {},
     org: {},
   },

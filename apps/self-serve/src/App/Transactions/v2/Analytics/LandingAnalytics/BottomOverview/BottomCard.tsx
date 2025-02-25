@@ -16,7 +16,7 @@ import noop from 'lodash/noop';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
+import { paiseToRupees } from '@libs/shared-utils';
 import { CardShimmer } from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/Shimmer';
 import {
   BottomCardWrapper,

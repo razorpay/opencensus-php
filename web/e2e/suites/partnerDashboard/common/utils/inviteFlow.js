@@ -1,12 +1,7 @@
-import {
-  CTA_SELECTORS,
-  CONTENT_SELECTORS,
-  INPUT_SELECTORS,
-} from 'partnerDashboard/common/constants';
-import { expect } from 'utils/base';
-import { waitForSelectorToBeVisible } from 'utils/common';
+import { CTA_SELECTORS, CONTENT_SELECTORS, INPUT_SELECTORS } from '../../common';
+import { waitForSelectorToBeVisible, expect } from '@libs/shared-qsuite/playwright';
 
-const { resolve } = require('path');
+import { resolve } from 'path';
 
 export const testShareReferralLinkModal = async (page, productTitle, isKycAssistEnabled) => {
   // Click on given product

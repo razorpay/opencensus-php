@@ -1,0 +1,8 @@
+export enum DashboardGraphQLPaymentStatusEnum {
+  AUTHORIZED = 'AUTHORIZED',
+  CAPTURED = 'CAPTURED',
+  CREATED = 'CREATED',
+  FAILED = 'FAILED',
+  PENDING = 'PENDING',
+  REFUNDED = 'REFUNDED',
+}

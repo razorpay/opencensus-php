@@ -1,4 +1,4 @@
-import { FileUploadApiResponse, FileUploadSignedUrlApiResponse } from '../types/fileUpload';
+import { FileUploadApiResponse, FileUploadSignedUrlApiResponse } from 'apps/pos/src/app/types/fileUpload';
 import { salesFetch } from '.';
 
 interface UploadFileToUFHProps {

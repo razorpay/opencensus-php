@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Box, Heading, Button, EditIcon, TrashIcon } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { StoreGroupModalStatus } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/constants';
 import DeleteModal from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/DeleteModal';
 import StoreGroupModal from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal';

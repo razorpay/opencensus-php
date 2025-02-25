@@ -3,19 +3,15 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import 'regenerator-runtime/runtime';
 import 'whatwg-fetch';
-import { clearStore } from 'shell/commonStore';
+import { clearStore } from '@federated/apps/shell/commonStore';
 import { server } from '../mocks/setup';
+import { TextEncoder, TextDecoder } from 'util';
+
+Object.assign(global, { TextDecoder, TextEncoder, __STAGE__: 'production' });
 
 process.env.hostName = 'http://localhost:6006';
 
 const RetryTimes = 3;
-
-declare global {
-  interface Window {
-    rzpAnalytics: jest.Mock;
-    RZP: any;
-  }
-}
 
 // Global mocks
 
@@ -64,22 +60,6 @@ jest.mock('merchant/reducers/session', () => {
       user_segment_data: null,
       isTagsLoaded: false,
       isHelpWidgetVisible: true,
-    },
-  };
-});
-
-jest.mock('@dashboard/shared-utils/analytics', () => ({
-  ...jest.requireActual('@dashboard/shared-utils/analytics'),
-  analyticsTrack: jest.fn(),
-  analyticsTrackWithUserInfo: jest.fn(),
-}));
-jest.mock('@razorpay/universe-utils/analytics', () => {
-  const originalModule = jest.requireActual('@razorpay/universe-utils/analytics');
-  return {
-    __esModule: true,
-    ...originalModule,
-    default: {
-      track_EXPERIMENTAL: jest.fn(),
     },
   };
 });

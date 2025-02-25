@@ -1,0 +1,38 @@
+{
+  "name": "@libs/shared-core",
+  "description": "A lib that handles core build time configuration for dashboard.",
+  "version": "0.0.1",
+  "private": "true",
+  "author": {
+    "name": "Joel Jaimon (joel-jaimon)",
+    "url": "https://github.com/joel-jaimon"
+  },
+  "dependencies": {
+    "webpack": "5.76.0",
+    "tslib": "2.3.0",
+    "inquirer": "12.0.0",
+    "jest": "29.4.1",
+    "chalk": "4.1.0",
+    "@module-federation/node": "2.2.2",
+    "@module-federation/enhanced": "0.8.9",
+    "prettier": "3.5.2",
+    "ts-morph": "25.0.1",
+    "yaml": "2.7.0"
+  },
+  "devDependencies": {
+    "@types/webpack": "5.28.5",
+    "@types/jest": "^29.4.1"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "nx": {
+    "targets": {
+      "postbuild": {
+        "executor": "@nx/workspace:run-commands",
+        "options": {
+          "command": "cp -n dist/* ."
+        }
+      }
+    }
+  }
+}

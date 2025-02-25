@@ -1,4 +1,5 @@
-import { routes } from 'testConstants';
+import { routes, expect } from '@libs/shared-qsuite/playwright';
+
 export async function getPaymentId({ page }) {
   await page.goto(routes.TRANSACTIONS_PAYMENTS);
   const paymentRecordRow = await page.locator('.data-table').locator('tr').nth(0);

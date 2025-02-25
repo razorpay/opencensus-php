@@ -1,0 +1,471 @@
+import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
+import styled, { ThemeContext } from 'styled-components';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import automation from '@razorpay/blade-old/src/_helpers/automation-attributes';
+import { getColor, makePxValue, getVariantColorKeys } from '@razorpay/blade-old/src/_helpers/theme';
+
+const BORDER_WIDTH = makePxValue(0.125);
+
+const relativePadding = (variant, padding, border = BORDER_WIDTH) => {
+  if (variant === 'tertiary') {
+    return makePxValue(padding);
+  }
+  return makePxValue(`${parseFloat(padding) - parseFloat(border)}px`);
+};
+
+const styles = {
+  fontColor({ variant, variantColor, disabled }) {
+    switch (variant) {
+      case 'primary':
+        if (disabled) {
+          return 'light.950';
+        }
+        return 'light.900';
+      case 'secondary':
+        if (disabled) {
+          return 'shade.940';
+        }
+        return `${variantColor}.800`;
+      case 'tertiary':
+        if (disabled) {
+          return 'shade.940';
+        }
+        return `${variantColor}.800`;
+      default:
+        if (disabled) {
+          return 'light.950';
+        }
+        return 'light.900';
+    }
+  },
+  backgroundColor({ variant, variantColor, disabled, theme }) {
+    switch (variant) {
+      case 'primary':
+        if (disabled) {
+          return getColor(theme, `${variantColor}.500`);
+        }
+        return getColor(theme, `${variantColor}.800`);
+      case 'secondary':
+        if (disabled) {
+          return getColor(theme, 'shade.910');
+        }
+        return getColor(theme, `${variantColor}.920`);
+      case 'tertiary':
+        return 'transparent';
+      default:
+        if (disabled) {
+          return getColor(theme, `${variantColor}.500`);
+        }
+        return getColor(theme, `${variantColor}.800`);
+    }
+  },
+  focusBorder({ theme, variant, disabled, variantColor }) {
+    if (disabled) {
+      return '';
+    }
+    switch (variant) {
+      case 'primary':
+        return `${BORDER_WIDTH} solid ${getColor(theme, 'shade.960')}`;
+      case 'secondary':
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.900`)}`;
+      case 'tertiary':
+        return '0px';
+      default:
+        return `${BORDER_WIDTH} solid ${getColor(theme, 'shade.960')}`;
+    }
+  },
+  focusBackgroundColor({ theme, variant, variantColor, disabled }) {
+    if (disabled) {
+      return '';
+    }
+    switch (variant) {
+      case 'primary':
+        return getColor(theme, `${variantColor}.800`);
+      case 'secondary':
+        return getColor(theme, `${variantColor}.930`);
+      case 'tertiary':
+        return getColor(theme, `${variantColor}.930`);
+      default:
+        return getColor(theme, `${variantColor}.800`);
+    }
+  },
+  activeBorder({ theme, variant, disabled, variantColor }) {
+    if (disabled) {
+      return '';
+    }
+    switch (variant) {
+      case 'primary':
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.600`)}`;
+      case 'secondary':
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.970`)}`;
+      case 'tertiary':
+        return '0px';
+      default:
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.600`)}`;
+    }
+  },
+  activeBackgroundColor({ theme, variant, variantColor, disabled }) {
+    if (disabled) {
+      return '';
+    }
+    switch (variant) {
+      case 'primary':
+        return getColor(theme, `${variantColor}.600`);
+      case 'secondary':
+        return getColor(theme, `${variantColor}.950`);
+      case 'tertiary':
+        return getColor(theme, `${variantColor}.950`);
+      default:
+        return getColor(theme, `${variantColor}.600`);
+    }
+  },
+  hoverBorder({ theme, variant, disabled, variantColor }) {
+    if (disabled) {
+      return '';
+    }
+    switch (variant) {
+      case 'primary':
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.700`)}`;
+      case 'secondary':
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.970`)}`;
+      case 'tertiary':
+        return '0px';
+      default:
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.700`)}`;
+    }
+  },
+  hoverBackgroundColor({ theme, variant, variantColor, disabled }) {
+    if (disabled) {
+      return '';
+    }
+    switch (variant) {
+      case 'primary':
+        return getColor(theme, `${variantColor}.700`);
+      case 'secondary':
+        return getColor(theme, `${variantColor}.930`);
+      case 'tertiary':
+        return getColor(theme, `${variantColor}.920`);
+      default:
+        return getColor(theme, `${variantColor}.700`);
+    }
+  },
+  border({ variant, variantColor, disabled, theme }) {
+    switch (variant) {
+      case 'primary':
+        if (disabled) {
+          return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.500`)}`;
+        }
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.800`)}`;
+      case 'secondary':
+        if (disabled) {
+          return `${BORDER_WIDTH} solid ${getColor(theme, 'shade.930')}`;
+        }
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.970`)}`;
+      case 'tertiary':
+        return '0px';
+      default:
+        if (disabled) {
+          return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.500`)}`;
+        }
+        return `${BORDER_WIDTH} solid ${getColor(theme, `${variantColor}.800`)}`;
+    }
+  },
+  height({ size, theme }) {
+    switch (size) {
+      case 'xsmall':
+        return theme.spacings.xlarge;
+      case 'small':
+        return makePxValue(3.5);
+      case 'medium':
+        return makePxValue(4.5);
+      case 'large':
+        return makePxValue(5);
+      default:
+        return makePxValue(4.5);
+    }
+  },
+  padding({ size, theme, children, variant }) {
+    switch (size) {
+      case 'xsmall':
+        if (children) {
+          return [0, relativePadding(variant, theme.spacings.small)];
+        }
+        return [0, relativePadding(variant, theme.spacings.xxsmall)];
+      case 'small':
+        if (children) {
+          return [0, relativePadding(variant, theme.spacings.large)];
+        }
+        return [0, relativePadding(variant, theme.spacings.xsmall)];
+      case 'medium':
+        if (children) {
+          return [0, relativePadding(variant, theme.spacings.xxlarge)];
+        }
+        return [0, relativePadding(variant, makePxValue(0.75))];
+      case 'large':
+        if (children) {
+          return [0, relativePadding(variant, theme.spacings.xxlarge)];
+        }
+        return [0, relativePadding(variant, theme.spacings.small)];
+      default:
+        if (children) {
+          return [0, relativePadding(variant, theme.spacings.xxlarge)];
+        }
+        return [0, relativePadding(variant, makePxValue(0.75))];
+    }
+  },
+  iconSize({ size, children }) {
+    switch (size) {
+      case 'xsmall':
+        if (children) {
+          return 'xsmall';
+        }
+        return 'small';
+      case 'small':
+        if (children) {
+          return 'small';
+        }
+        return 'medium';
+      case 'medium':
+        if (children) {
+          return 'medium';
+        }
+        return 'large';
+      case 'large':
+        if (children) {
+          return 'medium';
+        }
+        return 'large';
+      default:
+        if (children) {
+          return 'medium';
+        }
+        return 'large';
+    }
+  },
+  fontSize({ size }) {
+    switch (size) {
+      case 'xsmall':
+        return 'xxsmall';
+      case 'small':
+        return 'xsmall';
+      case 'medium':
+        return 'medium';
+      case 'large':
+        return 'medium';
+      default:
+        return 'medium';
+    }
+  },
+  align({ align }) {
+    switch (align) {
+      case 'left':
+        return 'flex-start';
+      case 'center':
+        return 'center';
+      case 'right':
+        return 'flex-end';
+      default:
+        return 'flex-start';
+    }
+  },
+  letterSpacing({ size }) {
+    switch (size) {
+      case 'xsmall':
+        return 'medium';
+      default:
+        return 'small';
+    }
+  },
+  spaceBetween({ size, iconAlign }) {
+    switch (size) {
+      case 'xsmall':
+        if (iconAlign === 'left') {
+          return [0, 0.5, 0, 0];
+        }
+        return [0, 0, 0, 0.5];
+      case 'small':
+        if (iconAlign === 'left') {
+          return [0, 0.5, 0, 0];
+        }
+        return [0, 0, 0, 0.5];
+      case 'medium':
+        if (iconAlign === 'left') {
+          return [0, 1, 0, 0];
+        }
+        return [0, 0, 0, 1];
+      case 'large':
+        if (iconAlign === 'left') {
+          return [0, 1, 0, 0];
+        }
+        return [0, 0, 0, 1];
+      default:
+        if (iconAlign === 'left') {
+          return [0, 1, 0, 0];
+        }
+        return [0, 0, 0, 1];
+    }
+  },
+  lineHeight({ size }) {
+    switch (size) {
+      case 'xsmall':
+        return 'xsmall';
+      case 'small':
+        return 'small';
+      case 'medium':
+        return 'medium';
+      case 'large':
+        return 'medium';
+      default:
+        return 'medium';
+    }
+  },
+  pointerEvents({ disabled }) {
+    if (disabled) {
+      return 'none';
+    }
+    return '';
+  },
+};
+
+const StyledButton = styled.button`
+  background-color: ${styles.backgroundColor};
+  border-radius: ${(props) => props.theme.spacings.xxsmall};
+  border: ${styles.border};
+  width: ${(props) => (props.block ? '100%' : '')};
+  cursor: pointer;
+  pointer-events: ${styles.pointerEvents};
+  outline: none;
+  &:hover {
+    border: ${styles.hoverBorder};
+    background-color: ${styles.hoverBackgroundColor};
+  }
+  &:focus {
+    border: ${styles.focusBorder};
+    background-color: ${styles.focusBackgroundColor};
+  }
+  &:active {
+    border: ${styles.activeBorder};
+    background-color: ${styles.activeBackgroundColor};
+  }
+`;
+
+// eslint-disable-next-line complexity
+const Button = ({
+  onClick,
+  children,
+  variant,
+  size,
+  disabled,
+  variantColor,
+  icon: Icon,
+  iconAlign,
+  align,
+  block,
+  type,
+  ...props
+}) => {
+  const theme = useContext(ThemeContext);
+
+  if (typeof children !== 'string' && typeof children !== 'undefined') {
+    throw new Error(
+      `Error in Button: expected \`children\` of type \`string\` but found ${typeof children}.`,
+    );
+  }
+
+  return (
+    <Flex
+      flex={block ? 1 : 0}
+      flexDirection="row"
+      alignItems="center"
+      alignSelf={styles.align({ align })}
+      justifyContent="center"
+      {...props}
+    >
+      <Size height={styles.height({ size, theme })}>
+        <Space padding={styles.padding({ size, children, theme, variant })}>
+          <StyledButton
+            variantColor={variantColor}
+            onClick={onClick}
+            disabled={disabled}
+            size={size}
+            block={block}
+            variant={variant}
+            type={type}
+            {...automation('ds-button')}
+            {...props}
+          >
+            <React.Fragment>
+              {Icon && iconAlign === 'left' ? (
+                <Icon
+                  size={styles.iconSize({ size, children })}
+                  fill={styles.fontColor({ variant, variantColor, disabled })}
+                />
+              ) : null}
+              {Icon && iconAlign === 'left' && children ? (
+                <Space margin={styles.spaceBetween({ size, iconAlign })}>
+                  <View />
+                </Space>
+              ) : null}
+              {children ? (
+                <Text
+                  color={styles.fontColor({ variant, variantColor, disabled })}
+                  size={styles.fontSize({ size })}
+                  align="center"
+                  weight="bold"
+                  _letterSpacing={styles.letterSpacing({ size })}
+                  _lineHeight={styles.lineHeight({ size })}
+                >
+                  {size === 'xsmall' ? children.toUpperCase() : children}
+                </Text>
+              ) : null}
+              {Icon && iconAlign === 'right' && children ? (
+                <Space margin={styles.spaceBetween({ size, iconAlign })}>
+                  <View />
+                </Space>
+              ) : null}
+              {Icon && iconAlign === 'right' ? (
+                <Icon
+                  size={styles.iconSize({ size, children })}
+                  fill={styles.fontColor({ variant, variantColor, disabled })}
+                />
+              ) : null}
+            </React.Fragment>
+          </StyledButton>
+        </Space>
+      </Size>
+    </Flex>
+  );
+};
+
+Button.propTypes = {
+  onClick: PropTypes.func,
+  children: PropTypes.string,
+  variant: PropTypes.oneOf(['primary', 'secondary', 'tertiary']),
+  variantColor: PropTypes.oneOf(getVariantColorKeys()),
+  block: PropTypes.bool,
+  size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large']),
+  align: PropTypes.oneOf(['left', 'center', 'right']),
+  disabled: PropTypes.bool,
+  icon: PropTypes.elementType,
+  iconAlign: PropTypes.oneOf(['left', 'right']),
+  type: PropTypes.oneOf(['submit', 'reset', 'button']),
+};
+
+Button.defaultProps = {
+  variant: 'primary',
+  variantColor: 'primary',
+  block: false,
+  align: 'left',
+  size: 'medium',
+  disabled: false,
+  iconAlign: 'left',
+  type: 'button',
+  onClick: () => {},
+};
+
+export default Button;

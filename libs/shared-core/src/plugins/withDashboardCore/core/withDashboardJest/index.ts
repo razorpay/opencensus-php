@@ -1,0 +1,1 @@
+export { withDashboardJest } from './withDashboardJest';

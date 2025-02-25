@@ -1,0 +1,1 @@
+export type DashboardGraphQLNextResolverFn<T> = () => Promise<T>;

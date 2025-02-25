@@ -1,7 +1,5 @@
-import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
-import { routes } from 'testConstants';
-import { expect } from 'utils/base';
-import { waitForSelectorToBeVisible } from 'utils/common';
+import { CTA_SELECTORS, CONTENT_SELECTORS } from '../../common';
+import { waitForSelectorToBeVisible, expect, routes } from '@libs/shared-qsuite/playwright';
 
 export const fillInputAndLoadSearchResults = async (
   page,

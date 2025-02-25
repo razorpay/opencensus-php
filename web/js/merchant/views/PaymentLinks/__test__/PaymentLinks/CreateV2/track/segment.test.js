@@ -6,7 +6,7 @@ const screen = 'Create Payment Link';
 const properties = {
   templateType: PL_TEMPLATE_TYPE,
   userId: 'Unknown',
-  mode: null,
+  mode: 'test',
   userRole: 'Unknown',
   merchantId: 'Unknown',
 };

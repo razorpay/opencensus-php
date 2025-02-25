@@ -1,13 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'shell/deprecated/withRouter';
-import { withZustand } from 'shell/commonStore';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import { withZustand } from '@federated/apps/shell/commonStore';
+import ListContainer from 'apps/self-serve/src/legacy/containers/ListContainer';
 import { bindActionCreators, compose } from 'redux';
-
-import { ListContainer } from '@dashboard/shared-ui/containers';
 import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
-import { isExperimentEnabled } from '@dashboard/shared-utils/splitz-utils';
+import { SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
+import { isExperimentEnabled } from '@libs/shared-utils';
 import { fetchMerchantColumnPreferences, fetchPaymentNotesKeys } from './model';
 import {
   ERROR_MESSAGES,
@@ -34,14 +33,14 @@ class PaymentsList extends ListContainer {
     isEditColumnsModalOpen: false,
   };
 
-  static contextType = SpiltzContext;
+  static contextTypes = SpiltzContext;
 
   componentDidMount() {
     const {
       store: {
         session: {
-          user: { isCustomTransactionTabView, isOptimizerEnabled, isSingleReconEnabled },
-        },
+          user: { isCustomTransactionTabView, isOptimizerEnabled, isSingleReconEnabled } = {},
+        } = {},
       },
       fetchProviders,
     } = this.props;

@@ -1,7 +1,7 @@
 // TODO: Fix the test properly, currently it's skipped in master
 
 import React from 'react';
-import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
+import  SuspenseWithLoader  from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 
 // import TransactionRoute from 'apps/self-serve/src/App/Transactions/__tests__/mocks/TransactionRoute';

@@ -13,7 +13,7 @@ describe('FtuxVisibility Utils', () => {
       expect(isVisible()).toBeTruthy();
     });
     test('should hide ftux banner if display count is more than threshold', () => {
-      localStorage.setItem(
+      window?.localStorage.setItem(
         KEY,
         JSON.stringify({
           count: 4,
@@ -21,10 +21,10 @@ describe('FtuxVisibility Utils', () => {
         }),
       );
       expect(isVisible()).toBeFalsy();
-      localStorage.removeItem(KEY);
+      window?.localStorage.removeItem(KEY);
     });
     test('should hide ftux banner is current time is before expire time', () => {
-      localStorage.setItem(
+      window?.localStorage.setItem(
         KEY,
         JSON.stringify({
           count: 1,
@@ -32,10 +32,10 @@ describe('FtuxVisibility Utils', () => {
         }),
       );
       expect(isVisible()).toBeFalsy();
-      localStorage.removeItem(KEY);
+      window?.localStorage.removeItem(KEY);
     });
     test('should display true when count is less than threshold and current time is more that expire time', () => {
-      localStorage.setItem(
+      window?.localStorage.setItem(
         KEY,
         JSON.stringify({
           count: 1,
@@ -43,13 +43,13 @@ describe('FtuxVisibility Utils', () => {
         }),
       );
       expect(isVisible()).toBeTruthy();
-      localStorage.removeItem(KEY);
+      window?.localStorage.removeItem(KEY);
     });
   });
 
   describe('Hide visibility', () => {
     const getStorageData = () => {
-      const storage = localStorage.getItem(KEY) || '{}';
+      const storage = window?.localStorage.getItem(KEY) || '{}';
       return JSON.parse(storage);
     };
 
@@ -64,7 +64,7 @@ describe('FtuxVisibility Utils', () => {
       expect(data.count).toEqual(2);
     });
     test('should not update anything if count breached the display threshold', () => {
-      localStorage.setItem(
+      window?.localStorage.setItem(
         KEY,
         JSON.stringify({
           count: 4,
@@ -74,7 +74,7 @@ describe('FtuxVisibility Utils', () => {
       hideFtux({ onGotIt: true });
       const data = getStorageData();
       expect(data.count).toEqual(4);
-      localStorage.removeItem(KEY);
+      window?.localStorage.removeItem(KEY);
     });
   });
 });

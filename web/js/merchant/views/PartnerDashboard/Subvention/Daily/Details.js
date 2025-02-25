@@ -1,6 +1,7 @@
 import CommissionDailyEntity, {
   EarningsBreakup,
 } from '../../Commissions/Daily/Details';
+import React from "react";
 
 export default function SubventionDailyEntity(props) {
   return (

@@ -72,7 +72,7 @@ describe('SingleAddMerchant', () => {
     server.use(
       rest.post('*/submerchants', (req, res, ctx) => {
         return res(
-          ctx.status(400),
+          ctx.status(200),
           ctx.json({
             status_code: 400,
             success: false,

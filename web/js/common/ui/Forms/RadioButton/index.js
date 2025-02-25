@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default props => {
   let { label, input, meta, htmlValue, ...otherProps } = props;
   var inputValue = input.value;

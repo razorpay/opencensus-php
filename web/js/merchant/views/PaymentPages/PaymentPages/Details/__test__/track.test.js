@@ -103,7 +103,7 @@ describe('_track', () => {
   test('should call sendToLumberjack, sendToSegment, and selfServeTrackInitiate when duplicatePage is called', () => {
     const properties = {
       merchantId: 'Unknown',
-      mode: null,
+      mode: 'test',
       userId: 'Unknown',
       userRole: 'Unknown',
       section: 'Details Payment Page',
@@ -131,7 +131,7 @@ describe('_track', () => {
     const properties = {
       section: 'Details Payment Page',
       merchantId: 'Unknown',
-      mode: null,
+      mode: 'test',
       userId: 'Unknown',
       userRole: 'Unknown',
       browser: undefined,
@@ -225,7 +225,7 @@ describe('_track', () => {
     const properties = {
       section: 'Details Payment Page',
       merchantId: 'Unknown',
-      mode: null,
+      mode: 'test',
       userId: 'Unknown',
       userRole: 'Unknown',
       browser: undefined,
@@ -264,7 +264,7 @@ describe('_track', () => {
     const properties = {
       section: 'Details Payment Page',
       merchantId: 'Unknown',
-      mode: null,
+      mode: 'test',
       userId: 'Unknown',
       userRole: 'Unknown',
       browser: undefined,

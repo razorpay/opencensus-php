@@ -1,9 +1,8 @@
-const { BASE_PATH, getStorageStatePath, routes } = require('testConstants');
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe('Magic Checkout Settings Tab @project=magic-checkout', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   test('should render magic checkout settings page correctly', async ({ page }) => {

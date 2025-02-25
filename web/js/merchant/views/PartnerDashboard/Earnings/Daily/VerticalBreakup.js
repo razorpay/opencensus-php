@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function VerticalBreakup(props) {
   const children = Array.isArray(props.children)
     ? props.children

@@ -1,0 +1,4 @@
+import { DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse, DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse } from './index';
+export type DashboardGraphQLOnboardingPaymentOrderCreateResponse =
+  | DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse
+  | DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse;

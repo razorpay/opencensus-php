@@ -1,4 +1,4 @@
-import { Component, useEffect, Suspense, useRef } from 'react';
+import React, { Component, useEffect, Suspense, useRef } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';

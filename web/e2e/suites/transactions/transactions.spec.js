@@ -1,9 +1,8 @@
-import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

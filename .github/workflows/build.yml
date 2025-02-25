@@ -1,318 +1,293 @@
 name: Build
-on: push
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.ref }}
-#   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
-
+on:
+  workflow_call:
+    inputs:
+      affected_all:
+        type: string
+        required: true
+      affected_libs:
+        type: string
+        required: true
+      affected_apps_p0:
+        type: string
+        required: true
+      affected_apps_p1:
+        type: string
+        required: true
+      affected_apps_p2:
+        type: string
+        required: true
+      onboarded_microapps:
+        type: string
+        required: true
 env:
   HOME: /actions-runner/_work
-  AWS_STAGE_BETA_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
   AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
-  AWS_STAGE_COMMON_CACHE_BUCKET: "rzp-1018-nonprod-actions-cache"
   AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
   NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-  BUILD_PATH: build/browser
   VERSION: ${{ github.sha }}
 
 jobs:
-  build-web:
-    name: Build Dashboard
-    runs-on: [non-api-premium]
-    # needs: [evaluate]
-    # if: contains(needs.evaluate.outputs.affected, 'web')
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 3
-
-      - name: Install dependencies with caching
-        uses: ./.github/actions/package-installer
-        with:
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: Build All
-        #Runs in parellel
-        run: pnpm nx run web:production:build
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          VERSION: ${{ github.sha }}
-
-      - name: Remove files
-        run: rm -rf .git
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-
-      - name: Web - Push build to Actions Cache
-        run: |
-          tar czf public.tar.gz public
-          aws s3 cp public.tar.gz s3://rzp-actions-cache/dashboard-${{ github.sha }}.tar.gz
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-
-      - name: Web - Login to Harbor
-        uses: docker/login-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-
-      - name: Web - Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-      - uses: razorpay/create-github-app-token@v1
-        name: Generate Github Token
-        id: app-token
-        with:
-          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
-          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
-          repositories: "dashboard,razorpay,trace,slack-laravel,spine,oauth-5-laravel,metrics-php,edge-passport-php"
-
-      - name: Web - PHP Server Build
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          tags: c.rzp.io/razorpay/dashboard:${{ github.sha }}
-          push: true
-          file: ./Dockerfile.ci
-          secrets: |
-            git_token=${{ steps.app-token.outputs.token }}
-          build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_USERNAME=rzp
-
-  build-micro-apps-devstack:
-    name: Build Dashboard - MFEs - Devstack
+  delay-job-p1:
+    name: Delay (~5s)
     runs-on: [non-api-premium]
     steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 3
+      - name: Execute Delay
+        run: sleep 5
 
-      # Sets env.AFFECTED
-      - name: Get affected projects
-        uses: ./.github/actions/affected-projects
-        with:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: Check output
-        run: echo ${{ env.AFFECTED }}
-
-      - name: Build micro apps
-        run: |
-          pnpm nx run-many --target devstack:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
-
-      - name: Remove files
-        run: rm -rf .git
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-
-      # Run based on output of affected
-      - name: Micro Apps - Push Artifacts for Devstack
-        run: |-
-          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET}}
-        env:
-          ENVIRONMENT: devstack
-
-  build-micro-apps-automation:
-    name: Build Dashboard - MFEs - Automation
+  delay-job-p2:
+    name: Delay (~15s)
+    needs: [delay-job-p1]
     runs-on: [non-api-premium]
     steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 3
+      - name: Execute Delay
+        run: sleep 10
 
-      # Sets env.AFFECTED
-      - name: Get affected projects
-        uses: ./.github/actions/affected-projects
-        with:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: Check output
-        run: echo ${{ env.AFFECTED }}
-
-      - name: Build micro apps
-        run: |
-          pnpm nx run-many --target automation:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
-
-      - name: Remove files
-        run: rm -rf .git
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
-          AWS_ACCESS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-
-      # Run based on output of affected
-      - name: Micro Apps - Push Artifacts for Automation
-        run: |-
-          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_STAGE_COMMON_CACHE_BUCKET}}
-        env:
-          ENVIRONMENT: automation
-
-  build-micro-apps-production:
-    name: Build Prod Dashboard - MFEs - Production
-    runs-on: [non-api-premium]
-    if: ${{ contains(github.ref, 'master') || contains(github.ref, 'hotfix') }}
+  build-shell-server-devstack:
+    name: Shell Server - Non Prod
+    needs: [delay-job-p1]
+    if: contains(inputs.affected_apps_p2, 'shell') 
+    strategy:
+      fail-fast: true
+      matrix:
+        targetEnvironment: ["devstack"]
+        targetProject: ["shell"]
+    runs-on:
+      - non-api
+      - linux-amd64
     steps:
       - name: Checkout Codebase
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 3
-
-      # Sets env.AFFECTED
-      - name: Get affected projects
-        uses: ./.github/actions/affected-projects
-        with:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-
-      - name: Check output
-        run: echo ${{ env.AFFECTED }}
-
-      - name: Build micro apps
-        run: |
-          pnpm nx run-many --target production:build --projects ${{env.AFFECTED}} --exclude=web,dashboard
-
-      - name: Remove files
-        run: rm -rf .git
-
-      - name: Configure AWS Credentials - Actions Cache
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
-
-      # TODO: move to shell script and run sync based on affected output
-      - name: Micro Apps - Push Artifacts for Production
-        run: |-
-          node .github/scripts/pushToS3.js ${{env.AFFECTED}} ${{env.AWS_PROD_COMMON_CACHE_BUCKET}}
-        env:
-          ENVIRONMENT: production
-
-  workflow_status:
-    runs-on: [self-hosted]
-    name: Update Status Check
-    needs: [build-web]
-    continue-on-error: false
-    if: always()
-    steps:
-      - name: Failed
-        id: failed
-        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
-        run: |
-          echo 'Failing the workflow for github status check.'
-          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
-          -d '{ "state" : "failure" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
-          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
-          exit 1
-      - name: Success
-        if: ${{ steps.failed.conclusion == 'skipped' }}
-        run: |
-          echo "Status check has passed!"
-          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
-          -d '{ "state" : "success" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
-          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
-          exit 0
-
-  build-e2e:
-    name: E2E test build
-    runs-on: [self-hosted]
-    needs: [build-web]
-    steps:
-      - uses: actions/checkout@v2
+          fetch-depth: 1
 
       - name: Login to Harbor
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
 
       - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
+        id: shell-non-prod-builder
 
-      - name: Build and push
-        uses: docker/build-push-action@v2
+      - name: Build Docker Image For Server
+        uses: docker/build-push-action@v6
         with:
-          context: ./e2e
-          file: ./e2e/Dockerfile
+          context: .
+          tags: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}-${{ github.sha }}
           push: true
-          tags: c.rzp.io/razorpay/dashboard:e2e_${{ github.sha }}
+          platforms: linux/amd64
+          file: ./apps/${{ matrix.targetProject }}/Dockerfile
           secrets: |
-            git_token=${{ secrets.CI_BOT_TOKEN }}
+            GITHUB_ACCESS_TOKEN=${{ secrets.CI_BOT_TOKEN }}
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_IO_AUTH_TOKEN }}
           build-args: |
-            GIT_USERNAME=rzp
+            STAGE=${{ matrix.targetEnvironment }}
+            APP_NAME=${{ matrix.targetProject }}
+            VERSION=${{ github.sha }}
+            DASHBOARD_MICROAPPS=${{ inputs.onboarded_microapps }}
+          builder: ${{ steps.shell-non-prod-builder.outputs.name }}
 
-  e2e-test-webhook:
-    name: E2E test webhook
-    runs-on: [self-hosted]
-    needs: [build-e2e]
+  build-shell-server-production:
+    name: Shell Server - Prod
+    needs: [delay-job-p1]
+    if: contains(inputs.affected_apps_p2, 'shell') 
+    strategy:
+      fail-fast: true
+      matrix:
+        targetArchitecture: ["amd64", "arm64"]
+        targetProject: ["shell"]
+    runs-on:
+      - non-api
+      - linux-${{ matrix.targetArchitecture }}
     steps:
-      - name: Get Prod API commit
-        uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
-        id: prodApiCommitId
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
         with:
-          url: "https://api.razorpay.com/commit.txt"
+          fetch-depth: 1
 
-      - name: Triggers argo workflows webhook to execute e2e tests
-        uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
+      - name: Login to Harbor
+        uses: docker/login-action@v3
         with:
-          url: "https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard"
-          method: "POST"
-          bearerToken: ${{ secrets.ARGO_TOKEN }}
-          # TODO: Remove empty line in api response
-          data: >
-            {
-              "kube_manifests_ref": "master",
-              "self": {
-                  "name": "dashboard",
-                  "commit_id": "${{ github.sha }}",
-                  "repository_name": "${{ github.repository }}",
-                  "node_selector":"node.kubernetes.io/worker-tests-app"
-              },
-              "dependencies": [
-                {
-                  "name": "api",
-                  "commit_id": ${{ steps.prodApiCommitId.outputs.response }},
-                  "node_selector":"node.kubernetes.io/worker-tests-app",
-                  "chart_values": {
-                    "enable_edge_base": true
-                  }
-                }
-              ]
-            }
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        id: shell-prod-builder
+
+      - name: Build Docker Image For Server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:production.${{ matrix.targetArchitecture }}-${{ github.sha }}
+          push: true
+          platforms: linux/${{ matrix.targetArchitecture }}
+          file: ./apps/${{ matrix.targetProject }}/Dockerfile
+          secrets: |
+            GITHUB_ACCESS_TOKEN=${{ secrets.CI_BOT_TOKEN }}
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+          build-args: |
+            STAGE=production
+            APP_NAME=${{ matrix.targetProject }}
+            VERSION=${{ github.sha }}
+            DASHBOARD_MICROAPPS=${{ inputs.onboarded_microapps }}
+          builder: ${{ steps.shell-prod-builder.outputs.name }}
+
+  shell-server-multi-arch-manifest:
+    name: Shell Server - Multi Arch
+    needs: ["build-shell-server-production"]
+    if: contains(inputs.affected_apps_p2, 'shell') 
+    runs-on: ["non-api"]
+    strategy:
+      fail-fast: true
+      matrix:
+        targetProject: ["shell"]
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        id: shell-prod-multiarch-builder
+
+      - uses: docker/metadata-action@v5
+        with:
+          images: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:production
+          flavor: suffix=-${{ github.sha }}
+
+      - uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:production-${{ github.sha }}
+          sources: |
+            c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:production.amd64-${{ github.sha }}
+            c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:production.arm64-${{ github.sha }}
+
+  build-p0:
+    name: P0
+    runs-on: [non-api-premium, cache-2]
+    strategy:
+      fail-fast: true
+      matrix:
+        targetEnvironment: ["devstack", "production"]
+        targetProject: ${{ fromJson(inputs.affected_apps_p0) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build App (${{ matrix.targetProject }})
+        run: |
+          TARGET_BUILD=browser pnpm nx run ${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}:build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+
+      - name: Push Browser Artifacts - S3 (${{ matrix.targetEnvironment }})
+        uses: ./.github/actions/push-artifacts
+        with:
+          targetEnvironment: ${{ matrix.targetEnvironment }}
+          targetProject: ${{ matrix.targetProject }}
+          prodCacheBucket: ${{ env.AWS_PROD_COMMON_CACHE_BUCKET }}
+          nonProdBucket: ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }}
+          buildDir: web/js/${{ matrix.targetProject }}/build/browser
+          awsRegion: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+          prodAwsAccessKeyId: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          prodAwsSecretAccessKey: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          nonProdAwsAccessKeyId: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          nonProdAwsSecretAccessKey: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+
+  build-p1:
+    # WN-D WebNexus-Devstack (Had to keep short as long name wasn't useful in terms of visibility.)
+    name: P1
+    runs-on: [non-api-premium, cache-2]
+    needs: [delay-job-p2]
+    strategy:
+      fail-fast: false
+      matrix:
+        targetEnvironment: ["devstack", "production"]
+        targetProject: ${{ fromJson(inputs.affected_apps_p1) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build App (${{ matrix.targetProject }})
+        run: |
+          TARGET_BUILD=browser pnpm nx run ${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}:build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+
+      - name: Push Browser Artifacts - S3 (${{ matrix.targetEnvironment }})
+        uses: ./.github/actions/push-artifacts
+        with:
+          targetEnvironment: ${{ matrix.targetEnvironment }}
+          targetProject: ${{ matrix.targetProject }}
+          prodCacheBucket: ${{ env.AWS_PROD_COMMON_CACHE_BUCKET }}
+          nonProdBucket: ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }}
+          buildDir: web/js/${{ matrix.targetProject }}/build/browser
+          awsRegion: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+          prodAwsAccessKeyId: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          prodAwsSecretAccessKey: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          nonProdAwsAccessKeyId: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          nonProdAwsSecretAccessKey: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+
+  build-microapps-browser:
+    name: Apps
+    runs-on: [non-api-premium, cache-2]
+    needs: [delay-job-p2]
+    strategy:
+      fail-fast: false
+      matrix:
+        targetEnvironment: ["devstack", "production"]
+        targetProject: ${{ fromJson(inputs.affected_apps_p2) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Manage Cache
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build Micro App for Browser (${{ matrix.targetProject }})
+        run: |
+          TARGET_BUILD=browser pnpm nx run ${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}:build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+
+      - name: Push Browser Artifacts - S3 (${{ matrix.targetEnvironment }})
+        uses: ./.github/actions/push-artifacts
+        with:
+          targetEnvironment: ${{ matrix.targetEnvironment }}
+          targetProject: ${{ matrix.targetProject }}
+          prodCacheBucket: ${{ env.AWS_PROD_COMMON_CACHE_BUCKET }}
+          nonProdBucket: ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }}
+          buildDir: apps/${{ matrix.targetProject }}/build/browser
+          awsRegion: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+          prodAwsAccessKeyId: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          prodAwsSecretAccessKey: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          nonProdAwsAccessKeyId: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          nonProdAwsSecretAccessKey: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}

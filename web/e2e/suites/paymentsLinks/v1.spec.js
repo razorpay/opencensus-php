@@ -1,8 +1,3 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expectSuccessNotification } from 'utils';
-import { test, expect } from 'utils/base';
-import { COMMON_SELECTORS } from 'utils/selectors';
-
 import { paymentLinksUIData } from './constants';
 import {
   cancelPLCreated,
@@ -19,7 +14,17 @@ import {
   getPLv1MockResponse,
   openPaymentLinkDetailsView,
 } from './utils';
-import { clickSkipAndStartBtn, waitForLoader } from 'utils';
+
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  expectSuccessNotification,
+  clickSkipAndStartBtn,
+  waitForLoader,
+  COMMON_SELECTORS,
+} from '@libs/shared-qsuite/playwright';
 
 const SELECTORS = {
   expiryChangeButton:
@@ -31,7 +36,7 @@ const SELECTORS = {
 test.describe
   .parallel('Test Payments Links V1 @flow=payment-links-v1 @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links @skip-unstable', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_NOT_IE_STATE,
+    storageState: getStorageStatePath('test').ACTIVATED_NOT_IE_STATE,
   });
 
   let createdPaymentLinkId = '';

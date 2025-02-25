@@ -10,7 +10,7 @@ import {
   getProgramContentSections,
   getProgramDenominationSections,
 } from 'merchant/views/GCMS/Programs/constants';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { fetchProgramById } from 'merchant/views/GCMS/Programs/queries';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';

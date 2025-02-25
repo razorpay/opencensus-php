@@ -1,1 +1,1 @@
-export { useMobile } from './useMobile';
+export { useMobile } from '@libs/shared-utils';

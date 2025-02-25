@@ -15,11 +15,7 @@ const defaultProps = {
 describe('test suite for Earnings List', () => {
   beforeEach(() => {
     // set system time for fixed query params
-    jest.useFakeTimers('modern');
     jest.setSystemTime(REQUEST_EPOCH_APRIL_2023);
-  });
-  afterEach(() => {
-    jest.useRealTimers();
   });
   // Note: the data fixtures for relevant api calls are present near the common component's test i.e. Commissions/__test__/mocks
   test('should render daily earnings for razorpay', async () => {

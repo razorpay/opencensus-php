@@ -8,22 +8,22 @@ import { useSplitzService } from 'common/splitz';
 import { GCMSSession, SessionContext } from './context';
 import { isGCMSExperimentEnabled } from './utils';
 import {
-  graphqlRequestMutation,
   graphqlRequestQuery,
-} from 'common/services/graphql/graphql-client';
+  graphqlRequestMutation,
+} from '@federated/apps/shell/graphql';
 import {
   QueryClient,
   QueryClientProvider as ReactQueryClientProvider,
+  MutationFunction
 } from '@tanstack/react-query';
-import { QueryFunction, MutationFunction } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: graphqlRequestQuery as QueryFunction,
+      queryFn: graphqlRequestQuery,
     },
     mutations: {
-      mutationFn: graphqlRequestMutation as MutationFunction,
+      mutationFn: graphqlRequestMutation as MutationFunction<unknown, unknown>,
     },
   },
 });

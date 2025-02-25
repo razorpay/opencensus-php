@@ -1,6 +1,7 @@
 import SupportButton from 'merchant/components/Home/SupportButton';
 import { Link } from 'react-router-dom';
 import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
+import React from "react";
 
 export const kycModalContent = (args = {}) => {
   const activationState = args.activationState;

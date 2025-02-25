@@ -1,5 +1,4 @@
-import { routes } from 'testConstants';
-import { expect } from 'utils/base';
+import { routes, expect } from '@libs/shared-qsuite/playwright';
 
 import { PAYMENT_PAGES_TYPES } from './constants';
 import { SELECTORS, BATCH_PP_SELECTORS } from './selectors';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { classList } from 'common/utils/rzp-utils';
 import sideBarBottomImage from '../../../../icons/merchant/sidebar-bottom.svg';
 

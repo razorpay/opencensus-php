@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/order
 import { createTrackObject, mockPathname as pathname } from './mocks/fixtures/tracking';
 import qs from 'query-string';
-
-import { analyticsTrack } from '@dashboard/shared-utils/analytics';
+import { analyticsTrack } from '@libs/shared-utils';
 import {
   TransactionsEntityRoute,
   TransactionsPagesMap,
@@ -22,6 +21,10 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 
 describe('Tracking Functions', () => {
+  beforeEach(() => {
+    const { getCommonAnalyticsProperties } = require('@libs/shared-utils');
+    getCommonAnalyticsProperties.mockReturnValue({ commonProp: 'value' });
+  });
   test('should call analyticsTrack with correct parameters for track function', () => {
     track({
       objectName: 'Test Object',

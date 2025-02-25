@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionList, ActionListSection, ActionListItem } from '@razorpay/blade/components';
-import { SectionOption, Option } from 'common/components/Dropdown/types';
+import { SectionOption, Option } from '@libs/web-nexus/common/components/Dropdown/types';
 import { ActionListWrapperProps } from './types';
 
 const ActionListWrapper = ({

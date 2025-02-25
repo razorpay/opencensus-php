@@ -13,6 +13,8 @@ import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
 import { render, screen, server, userEvent, waitFor, waitForElementToBeRemoved } from 'test-utils';
 
+jest.spyOn(analytics, 'track_EXPERIMENTAL');
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 window.IntersectionObserver = jest.fn(() => ({

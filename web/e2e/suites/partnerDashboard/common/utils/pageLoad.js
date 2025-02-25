@@ -1,10 +1,9 @@
-import { CTA_SELECTORS } from 'partnerDashboard/common/constants';
-import { routes } from 'testConstants';
-import { pageConsoleLog, waitForSelectorToBeVisible } from 'utils/common';
+import { CTA_SELECTORS } from '../../common';
+import { routes, pageConsoleLog, waitForSelectorToBeVisible } from '@libs/shared-qsuite/playwright';
 
 const hideInviteFlowFTUXBannerByLocalStorage = async ({ page }) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem(
+    window?.localStorage.setItem(
       'partnerships-invite-flow-tooltip',
       JSON.stringify({
         count: 3,

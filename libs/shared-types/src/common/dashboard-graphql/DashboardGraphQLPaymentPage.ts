@@ -1,0 +1,20 @@
+import { DashboardGraphQLPaymentPageAmount, DashboardGraphQLPaymentPageDate, DashboardGraphQLMaybe, DashboardGraphQLScalars, DashboardGraphQLPaymentPageItem, DashboardGraphQLPaymentPageSettings, DashboardGraphQLPaymentPageStatusEnum, DashboardGraphQLPaymentPageSupportDetails, DashboardGraphQLUser } from './index';
+export type DashboardGraphQLPaymentPage = {
+  __typename?: 'DashboardGraphQLPaymentPage';
+  amount: DashboardGraphQLPaymentPageAmount;
+  dates: DashboardGraphQLPaymentPageDate;
+  description?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  id: DashboardGraphQLScalars['ID'];
+  notes?: DashboardGraphQLMaybe<DashboardGraphQLScalars['JSONObject']>;
+  orderId?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  paymentPagesItems: Array<DashboardGraphQLPaymentPageItem>;
+  settings?: DashboardGraphQLMaybe<DashboardGraphQLPaymentPageSettings>;
+  status: DashboardGraphQLPaymentPageStatusEnum;
+  support?: DashboardGraphQLMaybe<DashboardGraphQLPaymentPageSupportDetails>;
+  terms?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  timesPaid?: DashboardGraphQLMaybe<DashboardGraphQLScalars['Int']>;
+  timesPayable?: DashboardGraphQLMaybe<DashboardGraphQLScalars['Int']>;
+  title: DashboardGraphQLScalars['String'];
+  url: DashboardGraphQLScalars['URL'];
+  user?: DashboardGraphQLMaybe<DashboardGraphQLUser>;
+};

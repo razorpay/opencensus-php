@@ -162,10 +162,8 @@ import videoKYCBannerReducer from 'merchant/reducers/videoKYCBanner';
 import { unlockIntlPaymentMethodsReducer } from 'merchant/reducers/unlockIntlPaymentMethods/reducer';
 
 export default combineReducers({
-  // modal: modalReducer,
   slider: sliderReducer,
   multiSlider: multiSliderReducer,
-  // notifications: notificationsReducer,
   form: formReducer,
   session: sessionReducer,
   app: appReducer,

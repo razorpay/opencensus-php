@@ -1,0 +1,7 @@
+export enum DashboardGraphQLMerchantWebsiteSectionEnum {
+  CONTACT_US = 'CONTACT_US',
+  PRIVACY = 'PRIVACY',
+  REFUND = 'REFUND',
+  SHIPPING = 'SHIPPING',
+  TERMS_AND_CONDITIONS = 'TERMS_AND_CONDITIONS',
+}

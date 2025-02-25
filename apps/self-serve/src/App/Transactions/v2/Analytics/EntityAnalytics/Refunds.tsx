@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Link, RefreshIcon, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-
-import Dropdown from '@dashboard/shared-ui/components/Dropdown/Dropdown';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import type { Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import Dropdown from '@libs/web-nexus/common/components/Dropdown';
+import { useMobile } from '@libs/shared-utils';
 import LoadFailed from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/LoadFailed';
 import OverviewContainer from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/OverviewContainer';
 import { useRefundsData } from 'apps/self-serve/src/App/Transactions/v2/Analytics/hooks';

@@ -1,68 +1,30 @@
-const universeJestConfig = require('@razorpay/universe-cli/jest.config');
-const nodeModulesRootDir = '<rootDir>/../..';
+const { withDashboardCore, DASHBOARD_FEDERATED_MODULES } = require('@libs/shared-core');
 
-module.exports = {
-  ...universeJestConfig,
-  clearMocks: true,
-  transform: {
-    '\\.(js|ts|jsx|tsx)?$': '../jest-transformer.js',
+module.exports = withDashboardCore({
+  browserJestOptions: {
+    moduleName: DASHBOARD_FEDERATED_MODULES.SELF_SERVE,
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!(?:.pnpm/)?(@commander|@razorpay|copy-anything|is-what|@table-library)).*/',
-  ],
-  moduleNameMapper: {
-    // Since jest doesn't know how to resolve these static assets, we mock them
-    '\\.(css|styl)$': `${nodeModulesRootDir}/../jest-styleMock.js`,
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|docx)$': `${nodeModulesRootDir}/../jest-fileMock.js`,
-    // these are needed to reference node_modules from the root of the project
-    '^shell/commonStore': `${nodeModulesRootDir}/../web/js/merchant/commonStore/index`,
-    '^shell/components/ShowWhen': `${nodeModulesRootDir}/../web/js/merchant_common/components/SharedShowWhen`,
-    '^shell/deprecated/withRouter': `${nodeModulesRootDir}/../web/js/common/deprecated/withRouter`,
-    '^shell/SettlementCycle': `${nodeModulesRootDir}/../web/js/merchant/views/Settlements/components/SettlementScheduleV2`,
-    '^shell/Navigator/constants': `${nodeModulesRootDir}/../web/js/merchant/views/Navigator/constants`,
-    '^shell/Transactions/v1/DownloadSwiftCopy': `${nodeModulesRootDir}/../web/js/merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy`,
-    '^shell/SpiltzServiceContext': `${nodeModulesRootDir}/../web/js/common/splitz/context/SplitzContextProvider`,
-    '^shell/I18Context': `${nodeModulesRootDir}/../web/js/common/i18/I18ServiceProvider`,
-    '^apps/self-serve/src(/.*)$': '<rootDir>/$1',
-    '^@dashboard/shared-utils/(.*)': `${nodeModulesRootDir}/../libs/shared-utils/src/$1`,
-    '^@dashboard/shared-utils$': `${nodeModulesRootDir}/../libs/shared-utils/src/index`,
-    '^@dashboard/shared-ui(.*)$': `${nodeModulesRootDir}/../libs/shared-ui/src$1`,
-    '^merchant(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant$1`,
-    '^merchant_common(/.*)?$': `${nodeModulesRootDir}/../web/js/merchant_common$1`,
-    '^common(/.*)?$': `${nodeModulesRootDir}/../web/js/common$1`,
+  extendBrowserJestConfig: (config) => {
+    config.moduleNameMapper = {
+      ...config.moduleNameMapper,
+      '^apps/self-serve/src(/.*)$': '<rootDir>/src/$1',
+    };
+
+    config.coverageThreshold = {
+      global: {
+        statements: 68,
+        branches: 53,
+        functions: 54,
+        lines: 69,
+      },
+    };
+
+    config.testPathIgnorePatterns = [
+      ...config.testPathIgnorePatterns,
+      '/Refunds/',
+      '/PaymentsDetails/',
+    ];
+
+    return config;
   },
-  collectCoverage: true,
-  collectCoverageFrom: [
-    '**/*.{ts,tsx,js,jsx}',
-    '!stories/**/*.{ts,tsx,js,jsx}',
-    '!coverage/**/*.{ts,tsx,js,jsx}',
-    '!entryBrowser.tsx',
-    '!**/*.stories.{js,jsx,ts,tsx}',
-    '!**/SupportSection.tsx',
-    '!**/e2e/**/*.{ts,tsx,js,jsx}',
-  ],
-  coverageThreshold: {
-    global: {
-      statements: 41,
-      branches: 40,
-      functions: 33.5,
-      lines: 41.5,
-    },
-  },
-  globalSetup: '<rootDir>/services/test/global-setup.ts',
-  // This is not the part of phase 1, remove this configuration when it's available
-  testPathIgnorePatterns: ['/Refunds/', '/PaymentsDetails/'],
-  moduleDirectories: [
-    'node_modules',
-    'src/services/test', // a utility folder
-    __dirname, // the root directory
-    'src',
-  ],
-  rootDir: 'src',
-  setupFilesAfterEnv: ['<rootDir>/services/test/setupTests.tsx'],
-  globals: {
-    __DEPLOYMENT_TYPE__: 'default',
-  },
-  modulePathIgnorePatterns: ['.*e2e.*'],
-  testTimeout: 10000,
-};
+});

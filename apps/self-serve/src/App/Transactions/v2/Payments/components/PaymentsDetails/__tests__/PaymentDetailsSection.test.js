@@ -1,13 +1,13 @@
 import React from 'react';
 
 import '@testing-library/jest-dom/extend-expect';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 import { render, screen, fireEvent, waitFor } from 'apps/self-serve/src/services/test/test-utils';
 import PaymentDetailsSection from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
 
-jest.mock('@dashboard/shared-ui/hooks', () => ({
-  ...jest.requireActual('@dashboard/shared-ui/hooks'),
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   useMobile: jest.fn(),
 }));
 

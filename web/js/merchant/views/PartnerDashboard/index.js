@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { Route, Routes } from 'react-router-dom';
 

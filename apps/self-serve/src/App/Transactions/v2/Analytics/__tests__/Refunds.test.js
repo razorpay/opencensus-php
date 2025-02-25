@@ -8,7 +8,7 @@ import {
   assertRefundData,
   assertHeadings,
 } from './mocks/fixtures/Refunds';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 
 describe.skip('Refund Analytics', () => {
   beforeEach(() => {

@@ -1,3 +1,5 @@
+import React from "react";
+
 import imageBackIcon from 'assets/partner-dashboard/back-icon-white.svg';
 import { CustomSecondaryButton } from 'newAuth/commonStyles';
 import { STEPS } from 'newAuth/signup/Constants';

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { withRouter } from 'common/deprecated/withRouter';
 import CommissionTransactionalDetails, {

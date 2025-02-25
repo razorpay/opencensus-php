@@ -1,4 +1,5 @@
 import { AsyncBtn } from 'common/new-ui/Button';
+import React from 'react';
 
 export default function LogStatus(props) {
   return (

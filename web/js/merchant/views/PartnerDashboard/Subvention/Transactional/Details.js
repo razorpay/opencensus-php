@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { withRouter } from 'common/deprecated/withRouter';
 import CommissionTransactionalEntity, {
   CommissionEarningBreakUp,

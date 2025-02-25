@@ -7,7 +7,7 @@ import {
   assertFailureData,
   assertHeadings,
 } from './mocks/fixtures/FailedPayments';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 
 // Skipping this as this is out of scope for phase 1
 describe.skip('Failed Payments Analytics', () => {

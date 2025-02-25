@@ -22,6 +22,7 @@ import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFo
 import { isSourceRX, isDedupeOldFunc } from 'merchant/components/Activation/ActivationUtils';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventsActions from 'merchant/reducers/trackEvents';
+import { getMode, switchMode } from '@libs/shared-utils';
 import { compose } from 'redux';
 
 const welcomeImg = '/img/activation/welcome.svg';
@@ -341,12 +342,11 @@ class ActivationContainer extends React.Component {
             });
           }
 
-          const isTestMode =
-            localStorage.getItem(`rzp_mode--${this.props.user.current}`) === 'test';
+          const isTestMode = getMode(this.props.user.current) === "test";
 
           //if recommand product payment gateway and business_website avilable
           if (response?.data?.business_website) {
-            localStorage.setItem('merchant_landing_page', 'payment_gateway');
+            window?.localStorage.setItem('merchant_landing_page', 'payment_gateway');
           }
 
           //render loader if poi status is initiated and post 20sec fetch data to check poi status.
@@ -374,7 +374,7 @@ class ActivationContainer extends React.Component {
               this.fetchMerchantDetails().then((res) => {
                 if (res?.data && res?.data?.poi_verification_status === 'verified') {
                   if (res?.data?.activated && isTestMode) {
-                    localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
+                    switchMode(this.props.user.current, 'live');
                     this.props.updateSession({ mode: 'live' });
                   }
                   this.updateSession(res.data);
@@ -449,7 +449,7 @@ class ActivationContainer extends React.Component {
             }
 
             if (response?.data?.activated && isTestMode) {
-              localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
+              switchMode(this.props.user.current, 'live');
               this.props.updateSession({ mode: 'live' });
               if (!user.isAutoPLEnabled) {
                 this.props.showNotification({

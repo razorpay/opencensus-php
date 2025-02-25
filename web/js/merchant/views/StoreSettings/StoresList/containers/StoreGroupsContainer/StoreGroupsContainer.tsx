@@ -3,7 +3,7 @@ import { Box, Text, Button, PlusIcon, Spinner } from '@razorpay/blade/components
 import { useQuery } from '@tanstack/react-query';
 
 import { REACT_QUERY_CACHE_KEYS } from 'common/constant';
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { useIntersectionObserver } from 'merchant/hooks/useIntersectionObserver';
 import StoreGroupCard from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupCard';
 import StoreGroupModal from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal';

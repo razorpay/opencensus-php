@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { I18ServiceProvider, I18ServiceContext } from 'shell/I18Context';
+import { I18ServiceContext, I18ServiceProvider } from '@federated/dashboards/payments/services/i18Service';
 
 import User from 'merchant/models/User';
 import { render } from 'test-utils';

@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from '@libs/shared-qsuite/playwright';
 
 export async function gotoOfferCreationFlow({ page }) {
   await page.getByRole('button', { name: /create new offer/i }).click();

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 
 import { useSplitzService } from 'common/splitz';
 import lazyLoader from 'merchant/routes/LazyLoader';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { isEligibleForReKyc } from '../../ReKycStatusAlerts/utils';
 
 const ReKycStatusModal = lazyLoader(() =>

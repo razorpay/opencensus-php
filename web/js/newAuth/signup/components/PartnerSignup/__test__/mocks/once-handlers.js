@@ -1,7 +1,7 @@
 import { rest } from 'msw';
 import { emailOtpErrorResponse, userRegisterOtpErrorResponse } from './fixtures';
 
-import { server } from 'common/services/test/test-utils';
+import { server } from '@libs/web-nexus/common/services/test/test-utils';
 
 export const mockEmailOtpSendError = () =>
   server.use(

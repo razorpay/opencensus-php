@@ -18,17 +18,16 @@ import {
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
 
-import { Amount } from '@dashboard/shared-ui/components';
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import Amount from '@libs/web-nexus/common//ui/Amount';
+import { toTitleCase } from '@libs/shared-utils';
 import {
   fetchSchedule,
   fetchHolidayList,
   fetchSettlementConfig,
-} from '@dashboard/shared-utils/reducers/settlements';
-import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
+} from '@dashboards/payments/reducers/settlements/details';
 
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import Tooltip from './Tooltip';
@@ -57,8 +56,9 @@ import {
 import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
 import { useLocation } from 'react-router-dom';
 import { trackDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
-import SettlementScheduleV2 from 'shell/SettlementCycle';
+import SettlementScheduleV2 from '@dashboards/payments/views/Settlements/components/SettlementScheduleV2';
 import { i18nifyConvertToMajorUnit } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
+import { useStore } from '@apps/shell/src/client/store/commonStore';
 
 const OverviewIcon = ({ status }: { status: IPaymentDetails['status'] }) => {
   const Icon = getBadgeIcon(status);
@@ -82,9 +82,11 @@ function PaymentDetailsOverview({
   fetchHolidayList,
   fetchSchedule,
   fetchSettlementConfig,
-  openModal,
   history,
 }: IPaymentDetailsOverview) {
+  const { openModal } = useStore((state) => ({
+    openModal: state.openModal,
+  }));
   const [isDeductionBreakdownOpen, setIsDeductionBreakdownOpen] = useState(false);
   const toggleDeductions = () => {
     setIsDeductionBreakdownOpen((prevValue) => !prevValue);
@@ -143,7 +145,7 @@ function PaymentDetailsOverview({
                       color={getBaseVariant(status)}
                       icon={(props) => <Tooltip type={status} {...props} />}
                     >
-                      {titleCase(status)}
+                      {toTitleCase(status)}
                     </Badge>
                     {applicationDetails?.name ? (
                       <Badge
@@ -192,7 +194,7 @@ function PaymentDetailsOverview({
                       color={getBaseVariant(status)}
                       icon={(props) => <Tooltip type={status} {...props} />}
                     >
-                      {titleCase(status)}
+                      {toTitleCase(status)}
                     </Badge>
                     {applicationDetails?.name ? (
                       <Badge
@@ -414,7 +416,6 @@ const mapStateToProps = (state: any) => {
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => {
   return bindActionCreators(
     {
-      ...ModalActions,
       fetchHolidayList,
       fetchSchedule,
       fetchSettlementConfig,

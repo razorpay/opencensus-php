@@ -1,0 +1,122 @@
+import { DashboardGraphQLAadhaarCaptchaResponse, DashboardGraphQLAadhaarCaptchaV2Response, DashboardGraphQLAddressByPincodeResponse, DashboardGraphQLBank, DashboardGraphQLBudgetsResponse, DashboardGraphQLMaybe, DashboardGraphQLEmiSummary, DashboardGraphQLExpenseCategoriesResponse, DashboardGraphQLFailedPaymentsOverviewResponse, DashboardGraphQLInvoice, DashboardGraphQLInvoicesResponse, DashboardGraphQLMerchantAnalytics, DashboardGraphQLMerchantBalance, DashboardGraphQLMerchantBankDetailsResponse, DashboardGraphQLMerchantBankingAccountsBalanceResponse, DashboardGraphQLMerchantBankingRole, DashboardGraphQLMerchantBusinessCategoriesResponse, DashboardGraphQLMerchantBusinessCategoriesResponseV2, DashboardGraphQLMerchantBusinessParentCategory, DashboardGraphQLMerchantBusinessTypesResponse, DashboardGraphQLMerchant, DashboardGraphQLMerchantClarificationDetailsResponse, DashboardGraphQLMerchantConfig, DashboardGraphQLMerchantConsentResponse, DashboardGraphQLMerchantContact, DashboardGraphQLMerchantContactFundAccountsResponse, DashboardGraphQLScalars, DashboardGraphQLMerchantContactsResponse, DashboardGraphQLMerchantCreditBalanceResponse, DashboardGraphQLMerchantDocumentByIdResponse, DashboardGraphQLMerchantEddDetailsResponse, DashboardGraphQLMerchantFeatureFlag, DashboardGraphQLMerchantGstResponse, DashboardGraphQLMerchantIdentityResponse, DashboardGraphQLMerchantInstrumentsStatus, DashboardGraphQLMerchantKycPartnerAccessResponse, DashboardGraphQLMerchantModularOnboardingDetailsResponse, DashboardGraphQLMerchantNcEligibilityResponse, DashboardGraphQLMerchantOnboardingQuestionDetailsResponse, DashboardGraphQLMerchantPaymentHandleResponse, DashboardGraphQLMerchantPaymentHandleAvailabilityResponse, DashboardGraphQLMerchantPaymentHandleSuggestionsResponse, DashboardGraphQLMerchantPolicyResponse, DashboardGraphQLMerchantPolicyPreviewResponse, DashboardGraphQLMerchantPolicyPreviewV2Response, DashboardGraphQLMerchantPolicyWizardV2EligibilityResponse, DashboardGraphQLMerchantPreference, DashboardGraphQLMerchantReferralResponse, DashboardGraphQLMerchantSelfServeWorkflowStatusResponse, DashboardGraphQLMerchantSettlementConfigResponse, DashboardGraphQLMerchantStore, DashboardGraphQLMerchantStoreListResponse, DashboardGraphQLMerchantSupportDetailsResponse, DashboardGraphQLMerchantValidateSocialMediaUrlResponse, DashboardGraphQLMerchantWebsitesResponse, DashboardGraphQLMerchantOnboardingPaymentDetails, DashboardGraphQLOrganisation, DashboardGraphQLPartnerConfigResponse, DashboardGraphQLPaymentAnalyticsResponse, DashboardGraphQLPayment, DashboardGraphQLPaymentInstantRefundEligibilityResponse, DashboardGraphQLPaymentLink, DashboardGraphQLPaymentLinksResponse, DashboardGraphQLPaymentOverviewResponse, DashboardGraphQLPaymentPage, DashboardGraphQLPaymentPageTransactionResponse, DashboardGraphQLPaymentPagesResponse, DashboardGraphQLPaymentsResponse, DashboardGraphQLPaymentsWidgets, DashboardGraphQLPayoutBatch, DashboardGraphQLPayoutBatchesResponse, DashboardGraphQLPayout, DashboardGraphQLPayoutLink, DashboardGraphQLPayoutLinksResponse, DashboardGraphQLPayoutPurpose, DashboardGraphQLPayoutsResponse, DashboardGraphQLPayoutsSummary, DashboardGraphQLWorkflowConfig, DashboardGraphQLPettyCash, DashboardGraphQLPointOfSaleKeyFetchResponse, DashboardGraphQLQrCodesResponse, DashboardGraphQLPaymentRefund, DashboardGraphQLRefundsResponse, DashboardGraphQLRepaymentsSummary, DashboardGraphQLSalesOnboardedMerchantsResponse, DashboardGraphQLSettlement, DashboardGraphQLSettlementCycle, DashboardGraphQLSettlementsResponse, DashboardGraphQLSmsNotificationStatusResponse, DashboardGraphQLTdsCategory, DashboardGraphQLTransaction, DashboardGraphQLTransactionsResponse, DashboardGraphQLTwoFactorPasswordEnabledResponse, DashboardGraphQLUserAuthentication, DashboardGraphQLUser, DashboardGraphQLValidateVpaResponse, DashboardGraphQLVendorPayment, DashboardGraphQLVendorPaymentsResponse, DashboardGraphQLWhatsappNotificationStatusResponse, DashboardGraphQLWithdrawalConfig, DashboardGraphQLWithdrawalsList, DashboardGraphQLWithdrawalValidity } from './index';
+export type DashboardGraphQLQuery = {
+  __typename?: 'DashboardGraphQLQuery';
+  /** @deprecated Use aadhaarCaptchaV2 instead */
+  aadhaarCaptcha: DashboardGraphQLAadhaarCaptchaResponse;
+  aadhaarCaptchaV2: DashboardGraphQLAadhaarCaptchaV2Response;
+  /** fetch state and city information from pincode */
+  addressByPincode: DashboardGraphQLAddressByPincodeResponse;
+  bankDetails: DashboardGraphQLBank;
+  budgets: DashboardGraphQLBudgetsResponse;
+  /** Get EMI Summary */
+  emiSummary?: DashboardGraphQLMaybe<DashboardGraphQLEmiSummary>;
+  expenseCategories: DashboardGraphQLExpenseCategoriesResponse;
+  failedPaymentsOverview: DashboardGraphQLFailedPaymentsOverviewResponse;
+  invoiceById: DashboardGraphQLInvoice;
+  invoices: DashboardGraphQLInvoicesResponse;
+  merchantAnalytics: DashboardGraphQLMerchantAnalytics;
+  merchantBalanceById: DashboardGraphQLMerchantBalance;
+  merchantBankDetails: DashboardGraphQLMerchantBankDetailsResponse;
+  merchantBankingAccountsBalance: DashboardGraphQLMerchantBankingAccountsBalanceResponse;
+  merchantBankingRoles: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantBankingRole>>;
+  merchantBusinessCategories: Array<DashboardGraphQLMerchantBusinessCategoriesResponse>;
+  merchantBusinessCategoriesV2: Array<DashboardGraphQLMerchantBusinessCategoriesResponseV2>;
+  merchantBusinessParentCategories: Array<DashboardGraphQLMerchantBusinessParentCategory>;
+  merchantBusinessTypes: DashboardGraphQLMerchantBusinessTypesResponse;
+  merchantById: DashboardGraphQLMerchant;
+  merchantClarificationDetails?: DashboardGraphQLMaybe<DashboardGraphQLMerchantClarificationDetailsResponse>;
+  merchantConfig: DashboardGraphQLMerchantConfig;
+  merchantConsent: DashboardGraphQLMerchantConsentResponse;
+  merchantContactById?: DashboardGraphQLMaybe<DashboardGraphQLMerchantContact>;
+  merchantContactFundAccounts: DashboardGraphQLMerchantContactFundAccountsResponse;
+  merchantContactTypes: Array<DashboardGraphQLScalars['String']>;
+  merchantContacts: DashboardGraphQLMerchantContactsResponse;
+  merchantCreditBalance: DashboardGraphQLMerchantCreditBalanceResponse;
+  merchantDocumentById: DashboardGraphQLMerchantDocumentByIdResponse;
+  merchantEddDetails: DashboardGraphQLMerchantEddDetailsResponse;
+  merchantFeatureFlags?: DashboardGraphQLMaybe<Array<DashboardGraphQLMerchantFeatureFlag>>;
+  merchantGst: DashboardGraphQLMerchantGstResponse;
+  merchantGstins: Array<DashboardGraphQLScalars['String']>;
+  merchantIdentity?: DashboardGraphQLMaybe<Array<DashboardGraphQLMerchantIdentityResponse>>;
+  merchantInstrumentsStatus: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantInstrumentsStatus>>;
+  merchantKYCPartnerAccess: DashboardGraphQLMerchantKycPartnerAccessResponse;
+  merchantModularOnboardingDetails?: DashboardGraphQLMaybe<DashboardGraphQLMerchantModularOnboardingDetailsResponse>;
+  merchantNeedsClarificationEligibility: DashboardGraphQLMerchantNcEligibilityResponse;
+  merchantOnboardingQuestionDetails: DashboardGraphQLMerchantOnboardingQuestionDetailsResponse;
+  merchantPaymentHandle: DashboardGraphQLMerchantPaymentHandleResponse;
+  /** DashboardGraphQLQuery to check payment handle availablity */
+  merchantPaymentHandleAvailability: DashboardGraphQLMerchantPaymentHandleAvailabilityResponse;
+  /** DashboardGraphQLQuery to fetch payment handle suggestions based on merchant's billing label */
+  merchantPaymentHandleSuggestions: DashboardGraphQLMerchantPaymentHandleSuggestionsResponse;
+  merchantPolicy: DashboardGraphQLMerchantPolicyResponse;
+  merchantPolicyPreview: DashboardGraphQLMerchantPolicyPreviewResponse;
+  merchantPolicyPreviewV2: DashboardGraphQLMerchantPolicyPreviewV2Response;
+  merchantPolicyWizardV2Eligibility: DashboardGraphQLMerchantPolicyWizardV2EligibilityResponse;
+  merchantPreferences: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantPreference>>;
+  /** DashboardGraphQLQuery to fetch M2M referral data for a merchant */
+  merchantReferral: DashboardGraphQLMerchantReferralResponse;
+  /** DashboardGraphQLQuery to fetch the self serve workflow details */
+  merchantSelfServeWorkflowStatus: DashboardGraphQLMerchantSelfServeWorkflowStatusResponse;
+  merchantSettlementConfig: DashboardGraphQLMerchantSettlementConfigResponse;
+  merchantStoreById: DashboardGraphQLMerchantStore;
+  merchantStoreList: DashboardGraphQLMerchantStoreListResponse;
+  merchantSupportDetails: DashboardGraphQLMerchantSupportDetailsResponse;
+  merchantValidateSocialMediaUrl: DashboardGraphQLMerchantValidateSocialMediaUrlResponse;
+  merchantWebsites: DashboardGraphQLMerchantWebsitesResponse;
+  onboardingPaymentDetails: DashboardGraphQLMerchantOnboardingPaymentDetails;
+  organisationInformation: DashboardGraphQLOrganisation;
+  organisationInformationByDomain: DashboardGraphQLOrganisation;
+  partnerConfigById: DashboardGraphQLPartnerConfigResponse;
+  paymentAnalytics: DashboardGraphQLPaymentAnalyticsResponse;
+  paymentById: DashboardGraphQLPayment;
+  paymentInstantRefundEligibility: DashboardGraphQLPaymentInstantRefundEligibilityResponse;
+  paymentLinkById: DashboardGraphQLPaymentLink;
+  paymentLinks: DashboardGraphQLPaymentLinksResponse;
+  paymentOverview: DashboardGraphQLPaymentOverviewResponse;
+  paymentPageById: DashboardGraphQLPaymentPage;
+  paymentPageTransactionsById?: DashboardGraphQLMaybe<DashboardGraphQLPaymentPageTransactionResponse>;
+  paymentPages?: DashboardGraphQLMaybe<DashboardGraphQLPaymentPagesResponse>;
+  payments: DashboardGraphQLPaymentsResponse;
+  paymentsWidgets: DashboardGraphQLPaymentsWidgets;
+  payoutBatchById: DashboardGraphQLPayoutBatch;
+  payoutBatches: DashboardGraphQLPayoutBatchesResponse;
+  payoutById: DashboardGraphQLPayout;
+  payoutLinkById: DashboardGraphQLPayoutLink;
+  payoutLinks: DashboardGraphQLPayoutLinksResponse;
+  payoutPurposes: Array<DashboardGraphQLPayoutPurpose>;
+  payouts: DashboardGraphQLPayoutsResponse;
+  payoutsSummary: Array<DashboardGraphQLPayoutsSummary>;
+  payoutsWorkflowConfig?: DashboardGraphQLMaybe<DashboardGraphQLWorkflowConfig>;
+  pettyCashById: DashboardGraphQLPettyCash;
+  pointOfSaleKeysFetch: DashboardGraphQLPointOfSaleKeyFetchResponse;
+  /** DashboardGraphQLQuery to fetch list of QR Codes merchant has created */
+  qrCodes: DashboardGraphQLQrCodesResponse;
+  refundById: DashboardGraphQLPaymentRefund;
+  refunds: DashboardGraphQLRefundsResponse;
+  /** Get Repayments Summary */
+  repaymentsSummary?: DashboardGraphQLMaybe<DashboardGraphQLRepaymentsSummary>;
+  salesOnboardedMerchants: DashboardGraphQLSalesOnboardedMerchantsResponse;
+  settlementById: DashboardGraphQLSettlement;
+  settlementByUtr: Array<DashboardGraphQLMaybe<DashboardGraphQLSettlement>>;
+  settlementCycle: DashboardGraphQLSettlementCycle;
+  settlements: DashboardGraphQLSettlementsResponse;
+  /** To get status of sms notification */
+  smsNotificationStatus: DashboardGraphQLSmsNotificationStatusResponse;
+  tdsCategories: Array<DashboardGraphQLTdsCategory>;
+  transactionById: DashboardGraphQLTransaction;
+  transactions: DashboardGraphQLTransactionsResponse;
+  /** DashboardGraphQLQuery to check if 2FA should be through password */
+  twoFactorPasswordEnabled: DashboardGraphQLTwoFactorPasswordEnabledResponse;
+  userAuthentication: DashboardGraphQLUserAuthentication;
+  userById: DashboardGraphQLUser;
+  validateVpa: DashboardGraphQLValidateVpaResponse;
+  vendorPaymentById: DashboardGraphQLVendorPayment;
+  vendorPayments: DashboardGraphQLVendorPaymentsResponse;
+  /** To get status of whatsapp notification */
+  whatsappNotificationStatus: DashboardGraphQLWhatsappNotificationStatusResponse;
+  /** Get Withdrawals DashboardGraphQLConfiguration */
+  withdrawalConfig?: DashboardGraphQLMaybe<DashboardGraphQLWithdrawalConfig>;
+  /** Get withdrawals List */
+  withdrawalList?: DashboardGraphQLMaybe<Array<DashboardGraphQLWithdrawalsList>>;
+  withdrawalValidity?: DashboardGraphQLMaybe<DashboardGraphQLWithdrawalValidity>;
+};

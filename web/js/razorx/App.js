@@ -2,8 +2,8 @@ import React from 'react';
 import { Route, Routes, Navigate, NavLink } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
-import { withRouter } from 'common/deprecated/withRouter';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import ErrorBoundary from '@libs/web-nexus/common/new-ui/ErrorBoundary';
 import MainNavLink from 'razorx/components/MainNavLink';
 import ModalContainer, { notifyError } from 'razorx/components/Modal';
 import AsyncButton from 'razorx/components/ui/AsyncButton';

@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantCreditBalanceFailureResponse, DashboardGraphQLMerchantCreditBalanceSuccessResponse } from './index';
+export type DashboardGraphQLMerchantCreditBalanceResponse =
+  | DashboardGraphQLMerchantCreditBalanceFailureResponse
+  | DashboardGraphQLMerchantCreditBalanceSuccessResponse;

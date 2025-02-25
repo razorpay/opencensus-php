@@ -3,7 +3,7 @@ import useConnectedNavigationStore from 'merchant/components/NavigationLayout/na
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import React, { useState } from 'react';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { useNavigationLayoutContext } from '../../context';
 import { ANALYTICS_ONENAV } from '../../constants';
 

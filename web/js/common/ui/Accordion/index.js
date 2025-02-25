@@ -1,4 +1,4 @@
-import { Children, Component, cloneElement } from 'react';
+import React, { Children, Component, cloneElement } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
 export default class Accordion extends Component {

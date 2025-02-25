@@ -178,6 +178,7 @@ class AdminController extends Controller
         return view('admin.pokedex', [
             'cdnDashboardAssetsUrl' => \Config::get('app.cdn_dashboard_assets_url'),
             'cdn' => \Config::get('app.cdn_dashboard_url'),
+            'cdnDashboardAssetsUrl' => \Config::get('app.cdn_dashboard_assets_url'),
             'user'  => $admin['data'],
         ]);
     }

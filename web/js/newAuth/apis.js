@@ -1,7 +1,7 @@
 /* eslint valid-jsdoc: 0 */
-import ajax from 'common/utils/ajax';
+import { commonAjax } from '@libs/shared-utils';
 import { BANK_NAMES } from 'newAuth/utils';
-import { getChannelID } from '../merchant/models/GrowthService/commonUtils';
+import { getChannelID } from 'newAuth/@deprecated/merchant/models/GrowthService/commonUtils';
 
 const ENDPOINTS = {
   ORG: '/org',
@@ -15,13 +15,13 @@ const OTP_AUTH_MODE = {
 };
 
 export const fetchOrg = () => {
-  return ajax({
+  return commonAjax({
     url: ENDPOINTS.ORG,
   });
 };
 
 export const fetchLoginCards = () => {
-  return ajax({
+  return commonAjax({
     method: 'post',
     data: {
       asset: 'LOGIN_CARD',

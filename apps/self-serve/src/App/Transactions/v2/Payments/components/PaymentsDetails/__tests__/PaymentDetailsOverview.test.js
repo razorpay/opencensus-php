@@ -2,9 +2,9 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import moment from 'moment';
 
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
-import * as SettlementActions from '@dashboard/shared-utils/reducers/settlements';
-import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
+import { toTitleCase as titleCase } from '@libs/shared-utils';
+import * as SettlementActions from '@libs/shared-utils/reducers/settlements';
+import * as ModalActions from '@libs/shared-utils/reducers/modals';
 import { render, screen, userEvent, waitFor } from 'apps/self-serve/src/services/test/test-utils';
 import PaymentDetailsOverview from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsOverview';
 import {

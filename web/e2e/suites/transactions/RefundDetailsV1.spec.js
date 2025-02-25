@@ -1,5 +1,4 @@
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 import { navigateToTransactions } from './utils';
 
@@ -58,7 +57,7 @@ const assertGatewayResponse = async (page, refundId) => {
 test.describe
   .parallel('Refunds transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').OPTIMIZER_V1_LOGIN_STATE,
+    storageState: getStorageStatePath('test').OPTIMIZER_V1_LOGIN_STATE,
   });
 
   test.describe.parallel('Refunds details', () => {

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Box, Text, Theme } from '@razorpay/blade/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import styled from 'styled-components';
 
 const TextWrapper = styled.div(

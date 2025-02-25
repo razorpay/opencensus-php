@@ -1,4 +1,4 @@
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import { toTitleCase } from '@libs/shared-utils';
 import { ModularPayload, PlanConfig } from '../types/modular';
 import {
   AvailableDevicePlans,
@@ -16,7 +16,7 @@ export const DeviceFees: DeviceFee[] = [
     customAmountField: MODULAR_DEVICE_FIELDS.DEVICE_SETUP_CUSTOM_FEE_AMOUNT,
   },
   {
-    title: (devicePlan: string) => `${titleCase(devicePlan)} Rental Charges`,
+    title: (devicePlan: string) => `${toTitleCase(devicePlan)} Rental Charges`,
     field: MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE,
     customAmountField: MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT,
     isHidden: (plan: PlanConfig) => {

@@ -14,7 +14,7 @@ import { track, trackTransactionsTabClick } from 'merchant/views/Transactions/v2
 import { Page } from 'merchant/views/Transactions/v2/common/types';
 import { useI18Service } from 'common/i18';
 import { shouldHideAnalytics } from 'merchant/views/Transactions/v2/common/utils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 const { ORDERS } = Page;
 const {

@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { IPaymentDetails, PaymentStatus } from './types';
 import { getAmountColor } from './utils';
-import CustomClipboard from '@dashboard/shared-ui/Clipboard/Custom'; // eslint-disable-line
+import CustomClipboard from '@libs/web-nexus/common/ui/Clipboard/Custom';
 
 export const getOverviewBgColor = (theme: Theme, status: IPaymentDetails['status']): string => {
   switch (status) {

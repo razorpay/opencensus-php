@@ -1,9 +1,8 @@
 import React from 'react';
 import { Box, Text } from '@razorpay/blade/components';
 
+import { toTitleCase } from '@libs/shared-utils';
 import BankTransferDetails from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/BankTransferDetails';
-
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
 import { IPaymentDetails } from './types';
 import CardIcon from 'apps/self-serve/src/assets/card.svg';
 import UpiIcon from 'apps/self-serve/src/assets/upi.svg';
@@ -26,7 +25,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
     if (method === 'card') {
       return (
         <>
-          {card?.international ? 'International' : 'Domestic'} {titleCase(card?.type)} card{' '}
+          {card?.international ? 'International' : 'Domestic'} {toTitleCase(card?.type)} card{' '}
           <span style={{ marginLeft: '8px' }}>
             (<img src={CardIcon} alt="card-icon" style={{ marginLeft: '4px' }} />
             xx{card?.last4})
@@ -76,7 +75,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
     }
 
     if (method === 'wallet') {
-      const walletName = titleCase(wallet);
+      const walletName = toTitleCase(wallet);
       return (
         <>
           Wallet
@@ -108,7 +107,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
       return <>Cardless EMI</>;
     }
 
-    return <>{titleCase(method)}</>;
+    return <>{toTitleCase(method)}</>;
   };
 
   const authCode = payment?.acquirer_data?.auth_code;

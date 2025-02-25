@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { productConfigMap } from './config';
 import useConnectedProducts from 'merchant/components/NavigationLayout/hooks/useConnectedProducts';
 import openProductModal from 'merchant/components/NavigationLayout/TopNavigation/utils/openProductModal';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 const ProductCardContent = ({ title, description }) => {
   return (

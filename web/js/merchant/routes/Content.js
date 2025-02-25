@@ -52,7 +52,6 @@ import SelfServeStateWrapper from 'merchant/views/Transactions/SelfServeStateWra
 
 import { isMicrofrontendSelfserveEnabled } from 'merchant/views/Transactions/v2/common/utils';
 import { withI18Service } from 'common/i18';
-import { importRemote } from 'merchant/utils/dynamic-remotes';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 import { isHelpWidgetDisabled } from 'merchant/components/Support/utils';
@@ -68,34 +67,18 @@ import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
+import { DashboardLoader } from '@libs/shared-ui';
 import { compose } from 'redux';
 
-// eslint-disable-next-line require-await
-const loadModule = async ({ module, scope }) =>
-  importRemote({
-    url: window.cdnDashboardAssetsUrl,
-    scope,
-    module,
-    isLoadedFromShell: true,
-  });
-
 const SelfServe = lazy(() =>
-  /**  webpackChunkName: "SelfServeRouter" */ loadModule({
-    module: 'SelfServeRouter',
-    scope: 'selfserve',
-  }),
+  import(/* webpackChunkName: "SelfServeRouter" */ '@federated/apps/self-serve/entry'),
 );
 
 const DigitalBills = lazy(() =>
-  /**  webpackChunkName: "DigitalBillsWrapper" */ loadModule({
-    module: 'DigitalBillsWrapper',
-    scope: 'digitalbills',
-  }),
+  import(/* webpackChunkName: "DigitalBills" */ '@federated/apps/digital-bills/entry'),
 );
 
-const PosApp = lazy(() =>
-  /**  webpackChunkName: "PosApp" */ loadModule({ module: 'PosApp', scope: 'pos' }),
-);
+const PosApp = lazy(() => import(/* webpackChunkName: "PosApp" */ '@federated/apps/pos/entry'));
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -889,7 +872,7 @@ class Content extends Component {
     const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
 
     return (
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={<DashboardLoader loaderType="wrt-product"/>}>
         <Routes location={this.baseLocation}>
           <Route path="*" element={<HandleIndex isConnectedNavigation={isConnectedNavigation} />} />
           <Route
@@ -2707,10 +2690,9 @@ class Content extends Component {
           overlayCustomClass={overlayCustomClass}
           closeUrl={this.checkIfBaseLocationSkipped() ? '' : this.baseLocation}
         >
-          {' '}
           <ErrorBoundary resetOnProps>
             <Suspense fallback={<Loader />}>
-              <DetailView {...this.detailProps} closeUrl={this.baseLocation.pathname} />{' '}
+              <DetailView {...this.detailProps} closeUrl={this.baseLocation.pathname} />
             </Suspense>
           </ErrorBoundary>
         </Slider>
@@ -2746,24 +2728,30 @@ class Content extends Component {
     return (
       // to add a new class alognside main-content if we are in the test mode and in m-web
       <main
-        className={classList(
-          !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
-          !fullPageView && !isWebView && this.props.isRTUXHomepage ? 'main-content--rtux' : '',
-          !fullPageView && !isWebView && isConnectedNavigation
-            ? 'main-content--connected-navigation'
-            : '',
-          isMobileSearchEnabled &&
-            !fullPageView &&
-            !isWebView &&
-            !isPosSalesAgent &&
-            !isConnectedNavigation &&
-            'search-header',
-          mode === 'test' && isMobileDevice() ? 'test-mode' : '',
-          isWebView && isJkOrg && 'main-content',
-        )}
+        className={
+          Boolean(window.ONE_DASHBOARD)
+            ? ''
+            : classList(
+                !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
+                !fullPageView && !isWebView && this.props.isRTUXHomepage
+                  ? 'main-content--rtux'
+                  : '',
+                !fullPageView && !isWebView && isConnectedNavigation
+                  ? 'main-content--connected-navigation'
+                  : '',
+                isMobileSearchEnabled &&
+                  !fullPageView &&
+                  !isWebView &&
+                  !isPosSalesAgent &&
+                  !isConnectedNavigation &&
+                  'search-header',
+                mode === 'test' && isMobileDevice() ? 'test-mode' : '',
+                isWebView && isJkOrg && 'main-content',
+              )
+        }
       >
         <ErrorBoundary resetOnProps>
-          <Suspense fallback={<Loader />}>
+          <Suspense fallback={<DashboardLoader loaderType="wrt-product"/>}>
             {BaseView}
             {DetailView}
             {ModalFormView}

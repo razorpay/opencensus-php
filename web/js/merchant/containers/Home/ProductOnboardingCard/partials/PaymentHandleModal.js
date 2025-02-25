@@ -9,7 +9,7 @@ import { validateAmount } from 'common/utils/validators';
 import { getHandleEntities } from 'merchant/containers/Home/ProductOnboardingCard/utils';
 import { trackCTAClick } from 'merchant/containers/Home/ProductOnboardingCard/events';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 
 const PaymentHandleModal = (props) => {
   const {

@@ -76,15 +76,6 @@ describe('BasicCOD Component', () => {
 });
 
 describe('Sync Profiles', () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.clearAllTimers();
-    jest.useRealTimers();
-  });
-
   test('Should not render Sync Now Button and Last Synced Badge if COD is false', () => {
     const magicSettings = { rcod: { enabled: false } };
     render(<BasicCOD />, { magic_settings: magicSettings });

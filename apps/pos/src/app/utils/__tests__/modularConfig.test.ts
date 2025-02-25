@@ -9,7 +9,6 @@ import {
 } from '../modularConfig';
 import { MerchantModularOnboardingDetailsSuccessResponse } from '../../types/modular';
 import { SUCCESS_MODULAR_RESPONSE } from 'apps/pos/src/services/mocks/fixtures/modularConfig';
-import { MerchantAddress } from '@dashboard/shared-utils/graphql/graph-types';
 
 describe('modularconfig utils', () => {
   const modularResponse = SUCCESS_MODULAR_RESPONSE.merchantModularOnboardingDetailsAsSales;
@@ -260,7 +259,7 @@ describe('isAddressPresent', () => {
       city: { value: 'XYZ' },
       state: { value: 'PQR' },
       zipCode: { value: '123456' },
-    } as MerchantAddress;
+    } as any;
 
     expect(isAddressPresent(address)).toBe(true);
   });
@@ -271,7 +270,7 @@ describe('isAddressPresent', () => {
       city: { value: 'XYZ' },
       state: { value: 'PQR' },
       zipCode: { value: null },
-    } as MerchantAddress;
+    } as any;
 
     expect(isAddressPresent(address)).toBe(false);
   });
@@ -282,7 +281,7 @@ describe('isAddressPresent', () => {
       city: { value: null },
       state: { value: null },
       zipCode: { value: null },
-    } as MerchantAddress;
+    } as any;
 
     expect(isAddressPresent(address)).toBe(false);
   });
@@ -293,7 +292,7 @@ describe('isAddressPresent', () => {
       city: { value: '' },
       state: { value: '' },
       zipCode: { value: '' },
-    } as MerchantAddress;
+    } as any;
 
     expect(isAddressPresent(address)).toBe(false);
   });

@@ -1,5 +1,6 @@
-import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
 import {
+  CTA_SELECTORS,
+  CONTENT_SELECTORS,
   loadClientAccountsDirectly,
   openInviteMerchantModalFromSideHeader,
   openShareReferralLinkModalFromSideHeader,
@@ -7,16 +8,14 @@ import {
   testPublicInviteFormValidation,
   testShareReferralLinkModal,
   testSingleInviteFormValidation,
-} from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH, routes } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+} from '../../common';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 // Reseller Partner Tests
 test.describe
   .parallel('Test Invite Flows for Reseller POS Agent @flow=partnerships-pos @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE,
   });
   test.beforeEach(async ({ page }) => {
     await loadClientAccountsDirectly(

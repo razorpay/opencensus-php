@@ -10,9 +10,9 @@ import {
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
 import React from 'react';
-import SettlementCycle from 'shell/SettlementCycle';
-import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
-import { useStore } from 'shell/commonStore';
+import SettlementCycle  from '@dashboards/payments/views/Settlements/components/SettlementScheduleV2';
+import { paiseToRupees } from '@libs/shared-utils';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { getLandingPageAnalyticsToolTip } from 'apps/self-serve/src/App/Transactions/v2/Analytics/utils';
 import { CapturedPaymentCardProps } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import {

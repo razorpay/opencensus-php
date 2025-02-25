@@ -2,8 +2,8 @@
 // @ts-nocheck
 import React from 'react';
 
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import { EntityTable } from '@dashboard/shared-ui/components';
+import { useMobile } from '@libs/shared-utils';
+import { EntityTable } from '@libs/web-nexus/common/ui/EntityTable';
 
 import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
 import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';

@@ -2,7 +2,7 @@ import React from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 
 type FunctionElement = () => any;
 
@@ -23,7 +23,7 @@ interface IProps {
 
 const ConfirmModal = (props: IProps) => {
   const confirmModelStyle = {
-    overlay: { ...Modal.defaultStyles.overlay, zIndex: zIndicesMap.dropdownOverlay },
+    overlay: { ...Modal.defaultStyles.overlay, zIndex: DASHBOARD_ZINDEX_MAP.dropdownOverlay },
     content: { ...Modal.defaultStyles.content, width: '325px' },
   };
   const {

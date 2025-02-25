@@ -4,10 +4,11 @@ import React from 'react';
 import { Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Outlet } from 'react-router-dom';
-import { useI18Service } from 'common/i18';
-import ErrorBoundary from '@dashboard/shared-ui/ErrorBoundary';
-import ShowWhen from 'shell/components/ShowWhen';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { useI18Service } from '@federated/dashboards/payments/services/i18Service';
+import {ErrorBoundary} from '@libs/shared-ui';
+import ShowWhen from "@libs/web-nexus/merchant/components/SharedShowWhen";
+import {withRouter} from "@libs/web-nexus/common/deprecated/withRouter";
+
 import EntityAnalytics from 'apps/self-serve/src/App/Transactions/v2/Analytics/EntityAnalytics';
 import { EntityOverviewType } from 'apps/self-serve/src/App/Transactions/v2/Analytics/types';
 import GoBack from 'apps/self-serve/src/App/Transactions/v2/common/components/GoBack';

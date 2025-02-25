@@ -1,4 +1,4 @@
-import { getUser } from 'shell/commonStore';
+import { getUser } from '@federated/apps/shell/commonStore';
 
 import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
 import {
@@ -78,7 +78,7 @@ export const statusOptions = [
 
 export const searchByOptionsMap = {
   id: 'Payment ID',
-  ...(user.isJnKOmniEnabled
+  ...(user?.isJnKOmniEnabled
     ? {}
     : {
         email: 'Email',
@@ -86,7 +86,7 @@ export const searchByOptionsMap = {
         order_id: 'Order ID',
         notes: 'Notes',
       }),
-  ...(user?.isRRNSearchEnabled || user.isJnKOmniEnabled ? { rrn: 'Payment Reference Number' } : {}),
+  ...(user?.isRRNSearchEnabled || user?.isJnKOmniEnabled ? { rrn: 'Payment Reference Number' } : {}),
 };
 
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);

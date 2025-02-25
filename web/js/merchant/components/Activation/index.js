@@ -3303,28 +3303,6 @@ function isFieldValid(field, activation) {
   return true;
 }
 
-function handleInstantActivationSuccess(props) {
-  if (props.user.business_type == 11) {
-    const { poi_verification_status, locked, isActivated, merchant } = props.user;
-    if (poi_verification_status == 'verified' && !locked) {
-      props.showPANStatusModal();
-      fireL1FormSuccessEvents(props.user);
-    } else if (!!locked && !isActivated && merchant.hold_funds) {
-      fireL1FormSuccessEvents(props.user);
-    }
-  } else {
-    const { isWhitelistFlow, isBlacklistFlow, isGraylistFlow, isL1Submitted } =
-      props?.user?.instantActivation ?? {};
-    if (isWhitelistFlow && isL1Submitted) {
-      props.showInstantActivationSuccessModal();
-      fireL1FormSuccessEvents(props.user);
-    } else if (isGraylistFlow && isL1Submitted) {
-      props.showKYCDetailsModal();
-      fireL1FormSuccessEvents(props.user);
-    }
-  }
-}
-
 export function CustomField(props) {
   const {
     name,

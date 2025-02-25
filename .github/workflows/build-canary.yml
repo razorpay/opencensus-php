@@ -1,0 +1,236 @@
+name: Build - Canary
+on:
+  workflow_call:
+    inputs:
+      affected_all:
+        type: string
+        required: true
+      affected_libs:
+        type: string
+        required: true
+      affected_apps_p0:
+        type: string
+        required: true
+      affected_apps_p1:
+        type: string
+        required: true
+      affected_apps_p2:
+        type: string
+        required: true
+      onboarded_microapps:
+        type: string
+        required: true
+
+env:
+  HOME: /actions-runner/_work
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  VERSION: ${{ github.sha }}
+
+jobs:
+  delay-job-p1:
+    name: Delay (~5s)
+    runs-on: [non-api-premium]
+    steps:
+      - name: Execute Delay
+        run: sleep 5
+
+  delay-job-p2:
+    name: Delay (~15s)
+    needs: [delay-job-p1]
+    runs-on: [non-api-premium]
+    steps:
+      - name: Execute Delay
+        run: sleep 10
+
+  build-shell-server-canary:
+    name: Shell Server - Canary
+    needs: [delay-job-p1]
+    if: contains(inputs.affected_apps_p2, 'shell') 
+    strategy:
+      fail-fast: true
+      matrix:
+        targetArchitecture: ["amd64", "arm64"]
+        targetProject: ["shell"]
+    runs-on:
+      - non-api
+      - linux-${{ matrix.targetArchitecture }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        id: shell-canary-builder
+
+      - name: Build Docker Image For Server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:canary.${{ matrix.targetArchitecture }}-${{ github.sha }}
+          push: true
+          platforms: linux/${{ matrix.targetArchitecture }}
+          file: ./apps/${{ matrix.targetProject }}/Dockerfile
+          secrets: |
+            GITHUB_ACCESS_TOKEN=${{ secrets.CI_BOT_TOKEN }}
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+          build-args: |
+            STAGE=canary
+            APP_NAME=${{ matrix.targetProject }}
+            VERSION=${{ github.sha }}
+            DASHBOARD_MICROAPPS=${{ inputs.onboarded_microapps }}
+          builder: ${{ steps.shell-canary-builder.outputs.name }}
+
+  shell-server-multi-arch-manifest-canary:
+    name: Shell Server - Multi Arch (Canary)
+    needs: ["build-shell-server-canary"]
+    if: contains(inputs.affected_apps_p2, 'shell') 
+    runs-on: ["non-api"]
+    strategy:
+      fail-fast: true
+      matrix:
+        targetProject: ["shell"]
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        id: shell-canary-multiarch-builder
+
+      - uses: docker/metadata-action@v5
+        with:
+          images: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:canary
+          flavor: suffix=-${{ github.sha }}
+
+      - uses: int128/docker-manifest-create-action@v2
+        with:
+          tags: c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:canary-${{ github.sha }}
+          sources: |
+            c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:canary.amd64-${{ github.sha }}
+            c.rzp.io/razorpay/dashboard-${{ matrix.targetProject }}:canary.arm64-${{ github.sha }}
+
+  build-p0:
+    name: P0
+    runs-on: [non-api-premium, cache-2]
+    strategy:
+      fail-fast: true
+      matrix:
+        targetEnvironment: ["canary"]
+        targetProject: ${{ fromJson(inputs.affected_apps_p0) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build App (${{ matrix.targetProject }})
+        run: |
+          TARGET_BUILD=browser pnpm nx run ${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}:build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+
+      - name: Push Browser Artifacts - S3 (${{ matrix.targetEnvironment }})
+        uses: ./.github/actions/push-artifacts-canary
+        with:
+          targetEnvironment: ${{ matrix.targetEnvironment }}
+          targetProject: ${{ matrix.targetProject }}
+          prodCacheBucket: ${{ env.AWS_PROD_COMMON_CACHE_BUCKET }}
+          buildDir: web/js/${{ matrix.targetProject }}/build/browser
+          awsRegion: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+          prodAwsAccessKeyId: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          prodAwsSecretAccessKey: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+
+  build-p1:
+    name: P1
+    needs: [delay-job-p2]
+    runs-on: [non-api-premium, cache-2]
+    strategy:
+      fail-fast: false
+      matrix:
+        targetEnvironment: ["canary"]
+        targetProject: ${{ fromJson(inputs.affected_apps_p1) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build App (${{ matrix.targetProject }})
+        run: |
+          TARGET_BUILD=browser pnpm nx run ${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}:build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+
+      - name: Push Browser Artifacts - S3 (${{ matrix.targetEnvironment }})
+        uses: ./.github/actions/push-artifacts-canary
+        with:
+          targetEnvironment: ${{ matrix.targetEnvironment }}
+          targetProject: ${{ matrix.targetProject }}
+          prodCacheBucket: ${{ env.AWS_PROD_COMMON_CACHE_BUCKET }}
+          buildDir: web/js/${{ matrix.targetProject }}/build/browser
+          awsRegion: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+          prodAwsAccessKeyId: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          prodAwsSecretAccessKey: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+
+  build-microapps-browser:
+    name: MA
+    needs: [delay-job-p2]
+    runs-on: [non-api-premium, cache-2]
+    strategy:
+      fail-fast: false
+      matrix:
+        targetEnvironment: ["canary"]
+        targetProject: ${{ fromJson(inputs.affected_apps_p2) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install And Manage Cache
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Build Micro App for Browser (${{ matrix.targetProject }})
+        run: |
+          TARGET_BUILD=browser pnpm nx run ${{ matrix.targetProject }}:${{ matrix.targetEnvironment }}:build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+
+      - name: Push Browser Artifacts - S3 (${{ matrix.targetEnvironment }})
+        uses: ./.github/actions/push-artifacts-canary
+        with:
+          targetEnvironment: ${{ matrix.targetEnvironment }}
+          targetProject: ${{ matrix.targetProject }}
+          prodCacheBucket: ${{ env.AWS_PROD_COMMON_CACHE_BUCKET }}
+          buildDir: apps/${{ matrix.targetProject }}/build/browser
+          awsRegion: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+          prodAwsAccessKeyId: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          prodAwsSecretAccessKey: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}

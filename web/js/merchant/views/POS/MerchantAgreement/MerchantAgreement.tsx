@@ -4,7 +4,8 @@ import { useBreakpoint } from '@razorpay/blade/utils';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import HandshakeImg from 'assets/pos/MerchantAgreement.svg';
 import { useNavigate } from 'react-router-dom';
-import { getOrg, getUser, useStore } from 'shell/commonStore';
+import { getOrg, getUser, useStore } from '@federated/apps/shell/commonStore';
+
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 import POSAgreementConfirmation from 'merchant/views/POS/MerchantAgreement/AgreementConfirmation';
 import {

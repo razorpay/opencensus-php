@@ -1,4 +1,5 @@
 import { render, delay } from 'test-utils';
+import React from "react";
 
 import TextHighlighter from 'common/ui/TextHighlighter';
 

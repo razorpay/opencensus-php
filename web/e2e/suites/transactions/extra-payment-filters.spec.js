@@ -1,12 +1,11 @@
 import moment from 'moment';
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expect, test } from 'utils/base';
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 import { navigateToTransactions, waitForListingLoader } from './utils';
 
 test.describe.parallel('Payment Filters(Test Mode)  @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').POS_ORDER_DETAILS_LOGIN_STATE,
+    storageState: getStorageStatePath('test').POS_ORDER_DETAILS_LOGIN_STATE,
   });
 
   test.describe.parallel('Transactions Filters', () => {

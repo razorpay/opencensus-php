@@ -1,4 +1,4 @@
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import axios from 'axios';
 import { v4 as uuid } from 'uuid';
 
@@ -60,30 +60,30 @@ const getCommonProperties = ({ screen, properties, user }) => {
   const source = getMobileDetect()?.isMobile() ? 'Mobile Dashboard' : 'Dashboard';
   const merchantID = store.getState().newAuth.merchantID;
 
-  if (typeof window.razorpayAnalytics !== 'undefined') {
-    utm = window.razorpayAnalytics.utils.getLandingParams();
-    gclid = window.razorpayAnalytics.utils.getCookie('gclid');
-    if (typeof window.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
-      browser_details = window.razorpayAnalytics.utils.getBrowserDetails();
+  if (typeof window?.razorpayAnalytics !== 'undefined') {
+    utm = window?.razorpayAnalytics.utils.getLandingParams();
+    gclid = window?.razorpayAnalytics.utils.getCookie('gclid');
+    if (typeof window?.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
+      browser_details = window.razorpayAnalytics?.utils.getBrowserDetails();
     }
   }
   const commonUserProperties = user
     ? {
-        email_id: user.email,
-        user_id: user.id,
-        mid: user.current,
-        user_role: user.role,
-        business_type: user.business_type,
-        activation_status: user.activated,
-        current_activation_status: user.activation_status,
+        email_id: user?.email,
+        user_id: user?.id,
+        mid: user?.current,
+        user_role: user?.role,
+        business_type: user?.business_type,
+        activation_status: user?.activated,
+        current_activation_status: user?.activation_status,
         previous_activation_status:
-          user.activationStatusChangeLogs?.[user.activationStatusChangeLogs.length - 1],
-        is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
-        is_aadhar_ekyc_mandatory: user.isAadharEkycMandatory,
-        is_gstin_mandatory: user.isGstinMandatory,
-        user_business_category: user.business_category,
-        user_business_sub_category: user.business_subcategory,
-        rzp_mode: getMode(user.id) ?? '',
+          user?.activationStatusChangeLogs?.[user.activationStatusChangeLogs.length - 1],
+        is_reg_auto_kyc_enabled: user?.isRegAutoKYCEnabled,
+        is_aadhar_ekyc_mandatory: user?.isAadharEkycMandatory,
+        is_gstin_mandatory: user?.isGstinMandatory,
+        user_business_category: user?.business_category,
+        user_business_sub_category: user?.business_subcategory,
+        rzp_mode: getMode(user?.id) ?? '',
       }
     : {
         clientId: getClientID(),
@@ -91,8 +91,8 @@ const getCommonProperties = ({ screen, properties, user }) => {
         mid: merchantID,
       };
   const commonProperties = {
-    pageUrl: window.location.href,
-    slug: window.location.pathname,
+    pageUrl: window?.location?.href,
+    slug: window?.location?.pathname,
     screen,
     eventTimestamp,
     source,
@@ -172,7 +172,7 @@ export const analyticsTrack = ({
   const commonProperties = getCommonProperties({ screen, properties, user });
   const Facebook = 'Facebook Pixel';
 
-  if (window.analytics && window.analytics.track) {
+  if (window?.analytics && window?.analytics?.track) {
     window.analytics.track(
       eventName,
       {
@@ -197,7 +197,7 @@ export const analyticsTrack = ({
     });
   }
 
-  if (window.rzpQ && window.rzpQ.push && isLJReqiuired) {
+  if (window?.rzpQ && window?.rzpQ?.push && isLJReqiuired) {
     switch (eventAction) {
       case 'initiated':
         window.rzpQ.push(

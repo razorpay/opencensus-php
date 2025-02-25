@@ -1,13 +1,11 @@
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expect, test } from 'utils/base';
-
+import { test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 import { navigateToSubscriptionsSettings } from './utils';
 
 const e2eTimeout = { timeout: 30000 }; // Due to E2E infrastructure instability causing failures, increasing the timeout here to prevent E2E from failing due to API response delays or related issues.
 
 test.describe.parallel('Payment Method @flow=subscriptions @country=MY', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).CURLEC_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().CURLEC_TEST_LOGIN_STATE,
   });
 
   test('should toggle Card Payment Method and Verify Notification', async ({ page }) => {

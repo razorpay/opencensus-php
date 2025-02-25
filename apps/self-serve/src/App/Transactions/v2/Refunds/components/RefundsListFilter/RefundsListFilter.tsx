@@ -3,13 +3,12 @@
 import React, { useRef, useState } from 'react';
 import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
 import moment from 'moment';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 
-import Dropdown from '@dashboard/shared-ui/components/Dropdown';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
-import lazy from '@dashboard/shared-utils/routes/LazyLoader';
+import type { Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import Dropdown from '@libs/web-nexus/common/components/Dropdown';
+import { useMobile, lazyImport as lazy } from '@libs/shared-utils';
+import  SuspenseWithLoader  from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
 import {
   CUSTOM,
   DESKTOP_CALENDAR_NUMBER_OF_MONTHS,
@@ -46,12 +45,7 @@ import {
   searchByOptionsMap,
   channelSectionName,
 } from './constants';
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const DateRangePicker = lazy(
-  // eslint-disable-next-line import/no-unresolved
-  () => import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
-);
+import DateRangePicker from '@libs/web-nexus/common/ui/Forms/DateRangePickerField';
 
 const RefundsListFilter = ({
   onSubmit,

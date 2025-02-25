@@ -4,7 +4,6 @@ import { compose } from 'redux';
 
 import Button from 'common/new-ui/Button';
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-import { setItem } from 'common/utils/localStorage';
 import OnBoarding, {
   OnBoardingWrapper,
   FeatureEnableSliderButton,
@@ -23,6 +22,8 @@ import { fetchUser } from 'merchant/reducers/session';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import KYCAlertModal from './KYCAlertModal';
+import { setItem } from 'common/utils/localStorage';
+import { switchMode } from '@libs/shared-utils';
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
 class MarketPlaceOnBoarding extends React.Component {
@@ -32,8 +33,7 @@ class MarketPlaceOnBoarding extends React.Component {
 
   switchToTestMode = () => {
     const { user } = this.props;
-
-    setItem(`rzp_mode--${user.current}`, 'test');
+    switchMode(user.current, 'test');
     window.location.reload();
   };
 

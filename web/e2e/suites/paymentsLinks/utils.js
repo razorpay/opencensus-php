@@ -1,11 +1,11 @@
 import {
+  routes,
+  expect,
   expectSuccessNotification,
-  fillExpiry,
   generateRandomText,
   clickSkipAndStartBtn,
-} from 'utils';
-import { expect } from 'utils/base';
-import { routes } from 'testConstants';
+  fillExpiry,
+} from '@libs/shared-qsuite/playwright';
 
 const SELECTORS = {
   detailsContainer: '.list-group.details-row-container',

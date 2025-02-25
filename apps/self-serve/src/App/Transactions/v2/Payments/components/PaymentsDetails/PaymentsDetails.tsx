@@ -2,7 +2,7 @@
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import {
   Box,
   useTheme,
@@ -25,11 +25,10 @@ import {
   refundPaymentFn,
   fetchAppDetails,
 } from 'apps/self-serve/src/App/Transactions/model';
-import { getErrorMessageFromResponse, deepClone } from '@dashboard/shared-utils/rzp-utils';
+import { getErrorMessageFromResponse, deepClone } from '@libs/shared-utils';
 import RefundModal from 'apps/self-serve/src/App/Transactions/v1/Payments/components/RefundModalNew';
-import * as ModalActions from '@dashboard/shared-utils/reducers/modals';
-import * as PaymentActions from 'merchant/reducers/payments/details';
-import { useStore } from 'shell/commonStore';
+import * as PaymentActions from '@dashboards/payments/reducers/payments/details';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { isIssueRefundDisabled } from './utils';
 import { ErrorWrapper, StyledGoBackBtn } from './styled';
 import {
@@ -49,12 +48,12 @@ import {
   trackDetailsPageLoad,
 } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
-import { User } from '@dashboard/shared-utils/typings';
+import { type PaymentsDashboardUser } from '@libs/shared-types/payments';
 
 const flexDirectionSettings: any = { base: 'column', xl: 'row', l: 'row' };
 
 interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
-  user: User;
+  user: PaymentsDashboardUser;
   fetchCurrentBalance: () => Promise<ICurrentBalance>;
   fetchRefundFee: () => Promise<Record<string, string>>;
 }
@@ -294,7 +293,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) =>
   bindActionCreators(
     {
       ...PaymentActions,
-      ...ModalActions,
     },
     dispatch,
   );

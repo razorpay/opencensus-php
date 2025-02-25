@@ -1,17 +1,13 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 import React, { useCallback } from 'react';
 import {
   getCurrencyList,
   getCurrencySymbol as i18nifyGetCurrencySymbol,
 } from '@razorpay/i18nify-js/currency';
 
-import { ANALYTICS } from 'common/constant';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getFormattedAmountByParts, classList } from 'common/utils/rzp-utils';
-import sanitizer from 'common/utils/xss-sanitizer';
-import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
-
+import { ANALYTICS } from '@libs/web-nexus/common/constant';
+import Popover, { PopoverBody } from '@libs/web-nexus/common/ui/Popover';
+import { analyticsTrack, classList, getFormattedAmountByParts, sanitizer } from '@libs/shared-utils';
+import useViewport, { ViewportProvider } from '@dashboards/payments/hooks/useViewPort';
 const RTL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 
 export function getCurrency(currencyISO) {

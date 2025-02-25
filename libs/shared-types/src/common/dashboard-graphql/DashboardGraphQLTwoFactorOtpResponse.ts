@@ -1,0 +1,2 @@
+import { DashboardGraphQLTwoFactorOtpFailureResponse, DashboardGraphQLTwoFactorOtpSuccessResponse } from './index';
+export type DashboardGraphQLTwoFactorOtpResponse = DashboardGraphQLTwoFactorOtpFailureResponse | DashboardGraphQLTwoFactorOtpSuccessResponse;

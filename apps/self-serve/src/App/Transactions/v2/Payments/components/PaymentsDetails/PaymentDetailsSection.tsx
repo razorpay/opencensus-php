@@ -1,6 +1,4 @@
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import copyToClipboard from '@dashboard/shared-utils/copyToClipboard';
-import { getI18FormattedPhoneNumber } from '@dashboard/shared-utils/i18/contact';
+import { getI18FormattedPhoneNumber } from '@dashboards/payments/components/Mask/Contact';
 import {
   Box,
   Card,
@@ -16,14 +14,12 @@ import {
   IconButton,
 } from '@razorpay/blade/components';
 import React, { useEffect, useState } from 'react';
-import { withRouter } from 'shell/deprecated/withRouter';
-import lazy from '@dashboard/shared-utils/routes/LazyLoader';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 
-import { User } from '@dashboard/shared-utils/typings';
-import { openModal } from '@dashboard/shared-utils/reducers/modals';
-import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
-import { useStore } from 'shell/commonStore';
-import { noop } from '@dashboard/shared-utils/rzp-utils';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import  SuspenseWithLoader  from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { noop, copyToClipboard, useMobile, lazyImport } from '@libs/shared-utils';
 import { fetchEncodedPaymentReceipt } from '../PaymentsList/model';
 import getNotes from './Notes';
 import PaymentMethod from './PaymentMethod';
@@ -42,7 +38,7 @@ import { isPosTransaction, onCopy } from './utils';
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
 
-const PaymentReceipt = lazy(
+const PaymentReceipt = lazyImport(
   () =>
     import(
       /* webpackChunkName: 'PaymentReceipt' */ 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentReceipt'
@@ -52,7 +48,7 @@ const PaymentReceipt = lazy(
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
   applicationDetails: ApplicationDetails | null;
-  user: User;
+  user: PaymentsDashboardUser;
 }
 
 interface DetailRowProps {
@@ -135,7 +131,7 @@ function PaymentDetailsSection({
     device_detail,
     upi,
   } = paymentDetails;
-  const showNotification = useStore((state) => state.showNotification);
+  const {showNotification, openModal} = useStore((state) => state);
 
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&

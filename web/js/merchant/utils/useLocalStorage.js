@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { getItem, setItem } from 'common/utils/localStorage';
 

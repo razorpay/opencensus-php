@@ -1,0 +1,2 @@
+import { DashboardGraphQLSetNewPasswordErrorResponse, DashboardGraphQLSetNewPasswordSuccessResponse } from './index';
+export type DashboardGraphQLSetNewPasswordResponse = DashboardGraphQLSetNewPasswordErrorResponse | DashboardGraphQLSetNewPasswordSuccessResponse;

@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
 import { Box, Link, RefreshIcon, Text } from '@razorpay/blade/components';
-import Dropdown from '@dashboard/shared-ui/components/Dropdown';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
+import { Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import Dropdown from '@libs/web-nexus/common/components/Dropdown';
 import {
   fetchSchedule as fetchScheduleFn,
   fetchHolidayList as fetchHolidayListFn,
   fetchSettlementConfig as fetchSettlementConfigFn,
-} from '@dashboard/shared-utils/reducers/settlements';
-import { useStore } from 'shell/commonStore';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+} from '@dashboards/payments/reducers/settlements/details';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { useMobile } from '@libs/shared-utils';
 import OverviewContainer from 'apps/self-serve/src/App/Transactions/v2/Analytics/components/OverviewContainer';
 import {
   usePaymentsData,
@@ -42,7 +42,6 @@ const LandingAnalytics = (): JSX.Element => {
   const session = useStore((state) => state.session);
   const mode = session.mode;
   const user = session.user;
-
   const isRefundPendingEnabled = user.isRefundPendingStatusEnabled;
   const {
     fetchPaymentData,
@@ -185,7 +184,7 @@ const LandingAnalytics = (): JSX.Element => {
   }, [duration]);
 
   useEffect(() => {
-    // TODO: Commenting thiese call as this moved to shell wrapper
+    // TODO: Commenting thiese call as this moved to webApp wrapper
     // Moved to Transactions/SelfServeStateWrapper.tsx
     // fetchSettlementConfig();
     // fetchSchedule();

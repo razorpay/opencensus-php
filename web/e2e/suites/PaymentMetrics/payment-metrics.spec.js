@@ -1,10 +1,8 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe.parallel('Payment Metrics @flow=payments-metrics @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantPaymentHandleUpdateFailureResponse, DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse } from './index';
+export type DashboardGraphQLMerchantPaymentHandleUpdateResponse =
+  | DashboardGraphQLMerchantPaymentHandleUpdateFailureResponse
+  | DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse;

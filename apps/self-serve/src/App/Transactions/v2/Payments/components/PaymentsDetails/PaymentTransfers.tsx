@@ -13,12 +13,12 @@ import { connect } from 'react-redux';
 
 import { fetchTransfersFn } from 'apps/self-serve/src/App/Transactions/model';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
-import ShowWhen from 'shell/components/ShowWhen';
-import { fetchTransfers as fetchTransfersAction } from 'merchant/reducers/payments/details';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ShowWhen from "@libs/web-nexus/merchant/components/SharedShowWhen";
+import { fetchTransfers as fetchTransfersAction } from '@dashboards/payments/reducers/payments/details';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from '@dashboards/payments/constants/tags';
 import { isPlatformTransaction } from 'apps/self-serve/src/App/Transactions/v1/Payments/Utils/platformUtils';
 import { useNavigate } from 'react-router-dom';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 import { getTooltipContent } from './constants';
 import TransferList from './TransferList';
 import { IPaymentTransfers, PaymentStatus } from './types';

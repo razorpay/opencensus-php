@@ -1,4 +1,4 @@
-import { decodeSensitiveFields } from '@dashboard/shared-utils/rzp-utils';
+import { decodeSensitiveFields } from '@libs/shared-utils';
 import { makeActionCollectionReducer, fetchAll } from './collection';
 import Dispute from 'apps/self-serve/src/bootstrap/models/Dispute';
 

@@ -1,6 +1,7 @@
 import moment from 'moment';
 import _refiner from 'refiner-js';
 
+import { getMode } from '@libs/shared-utils';
 import { initAnalytics } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 
@@ -9,7 +10,7 @@ export const initSegment = (app, user, callback) => {
   initAnalytics().then(() => {
     window.segment_loaded = true;
     if (window.analytics?.identify) {
-      const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+      const mode = getMode(user.id);
       const kycStatus = user.activated ? 'activated' : 'not activated';
       const activatedAt = user.activated_at;
 

@@ -1,3 +1,4 @@
+import React from "react";
 import { Amount } from '@razorpay/blade/components';
 import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 

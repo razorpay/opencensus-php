@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, render, waitFor } from 'apps/self-serve/src/services/test/test-utils';
 import Refund from 'apps/self-serve/src/App/Transactions/v2/Analytics/EntityAnalytics/Refunds';
 
-jest.mock('@dashboard/shared-ui/hooks', () => ({
+jest.mock('@libs/shared-utils', () => ({
   useMobile: jest.fn(() => false),
 }));
 

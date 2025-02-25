@@ -1,4 +1,4 @@
-import { Environments } from '@dashboard/shared-utils/typings';
+import { DASHBOARD_MODE } from '@libs/shared-types';
 import {
   AccumalateData,
   AccumalateResponse,
@@ -40,7 +40,7 @@ export const getSuccessRateRequestPayload = (
 
 export const getAnalyticsRequestPayload = (
   duration: Duration,
-  mode: Environments,
+  mode: DASHBOARD_MODE,
 ): Record<string, unknown> => {
   const { from: gte, to: lte } = duration;
   return {
@@ -160,7 +160,7 @@ export const getAnalyticsRequestPayload = (
 
 export const getRefundsRequestPayload = (
   duration: Duration,
-  mode: Environments,
+  mode: DASHBOARD_MODE,
 ): Record<string, unknown> => {
   const { from: gte, to: lte } = duration;
   return {

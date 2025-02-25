@@ -1,4 +1,5 @@
 import { PowerSelect, TypeAhead } from 'react-power-select';
+import React from 'react';
 
 const AddItemActionLabel = ({ options, select }) => (
   <div className="quick-create">

@@ -92,8 +92,8 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const [isModalClosed, setIsModalClosed] = useState(false);
 
   useEffect(() => {
-    const isSessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
-    let canShowModals: any = localStorage.getItem(`${user.current}--mweb_modal`);
+    const isSessionExpired = window?.session_id !== window?.sessionStorage.getItem('isNewNc');
+    let canShowModals: any = window?.localStorage.getItem(`${user.current}--mweb_modal`);
     canShowModals = JSON.parse(canShowModals);
 
     if (activationQueryStatus === 'success' && isInstantActivationEnabled) {

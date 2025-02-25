@@ -1,4 +1,3 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
 import colors, { namedColors } from 'common/utils/chart/colors';
 
 const API_ERROR = {

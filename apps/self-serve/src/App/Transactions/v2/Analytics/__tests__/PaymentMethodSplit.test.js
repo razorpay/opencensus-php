@@ -1,4 +1,4 @@
-import * as devices from '@dashboard/shared-utils/home-utils';
+import * as devices from '@libs/shared-utils/home-utils';
 import { props, renderApp } from './mocks/fixtures/PaymentMethodSplit';
 import { screen, userEvent, waitFor } from 'apps/self-serve/src/services/test/test-utils';
 

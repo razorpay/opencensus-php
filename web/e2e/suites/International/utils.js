@@ -1,7 +1,8 @@
 import { FORM_API_URL, DOCS } from './constants';
 
-const { resolve } = require('path');
-const { expect } = require('utils/base');
+import { resolve } from 'path';
+
+import { expect } from '@libs/shared-qsuite/playwright';
 
 const unStageFile = async (page, fileName) => {
   const closeButton = await page.locator(

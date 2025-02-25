@@ -7,8 +7,8 @@ export const mockCloseModal = jest.fn();
 
 jest.setTimeout(15000);
 
-jest.mock('shell/commonStore', () => ({
-  ...jest.requireActual('shell/commonStore'),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  ...jest.requireActual('@federated/apps/shell/commonStore'),
   useStore: () => mockCloseModal,
 }));
 

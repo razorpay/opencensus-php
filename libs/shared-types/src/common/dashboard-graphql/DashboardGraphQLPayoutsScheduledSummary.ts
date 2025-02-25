@@ -1,0 +1,7 @@
+import { DashboardGraphQLPayoutsScheduledSummaryAllTime, DashboardGraphQLPayoutsScheduledSummaryNextMonth, DashboardGraphQLPayoutsScheduledSummaryNextTwoDays, DashboardGraphQLPayoutsScheduledSummaryNextWeek, DashboardGraphQLPayoutsScheduledSummaryToday } from './index';
+export type DashboardGraphQLPayoutsScheduledSummary =
+  | DashboardGraphQLPayoutsScheduledSummaryAllTime
+  | DashboardGraphQLPayoutsScheduledSummaryNextMonth
+  | DashboardGraphQLPayoutsScheduledSummaryNextTwoDays
+  | DashboardGraphQLPayoutsScheduledSummaryNextWeek
+  | DashboardGraphQLPayoutsScheduledSummaryToday;

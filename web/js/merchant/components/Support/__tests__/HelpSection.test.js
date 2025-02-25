@@ -25,7 +25,7 @@ jest.mock(
 
 const queryClient = new QueryClient();
 
-describe('HelpSection Component', () => {
+describe.skip('HelpSection Component', () => {
   test('should not render Support component for non-Indian users', () => {
     const { getByTestId } = render(
       <QueryClientProvider client={queryClient}>

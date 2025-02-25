@@ -1,0 +1,79 @@
+name: Dashboard Core | CI
+
+on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+env:
+  HOME: /actions-runner/_work
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+  AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  VERSION: ${{ github.sha }}
+
+jobs:
+  initialize:
+    name: Initialize CI
+    secrets: inherit
+    uses: ./.github/workflows/initialize-ci.yml
+
+  build-php:
+    name: Build PHP
+    secrets: inherit
+    uses: ./.github/workflows/build-php.yml
+    with:
+      base_ref: ${{ github.base_ref }}
+
+  build-main:
+    name: Build
+    uses: ./.github/workflows/build.yml
+    needs: [initialize]
+    secrets: inherit
+    with:
+      affected_all: ${{ needs.initialize.outputs.affected_all }}
+      affected_libs: ${{ needs.initialize.outputs.affected_libs }}
+      affected_apps_p0: ${{ needs.initialize.outputs.affected_apps_p0 }}
+      affected_apps_p1: ${{ needs.initialize.outputs.affected_apps_p1 }}
+      affected_apps_p2: ${{ needs.initialize.outputs.affected_apps_p2 }}
+      onboarded_microapps: ${{ needs.initialize.outputs.onboarded_microapps }}
+
+  build-canary:
+    name: Build Canary
+    uses: ./.github/workflows/build-canary.yml
+    needs: [initialize]
+    secrets: inherit
+    with:
+      affected_all: ${{ needs.initialize.outputs.affected_all }}
+      affected_libs: ${{ needs.initialize.outputs.affected_libs }}
+      affected_apps_p0: ${{ needs.initialize.outputs.affected_apps_p0 }}
+      affected_apps_p1: ${{ needs.initialize.outputs.affected_apps_p1 }}
+      affected_apps_p2: ${{ needs.initialize.outputs.affected_apps_p2 }}
+      onboarded_microapps: ${{ needs.initialize.outputs.onboarded_microapps }}
+
+  code-integrity-suite:
+    name: Code Integrity Suite
+    uses: ./.github/workflows/code-integrity-suite.yml
+    needs: [initialize, build-main, build-canary] 
+    secrets: inherit
+    with:
+      affected_all: ${{ needs.initialize.outputs.affected_all }}
+      memory_intensive_ut_configured_apps: ${{ needs.initialize.outputs.memory_intensive_ut_configured_apps }}
+      memory_intensive_ut_configured_apps_shards_array: ${{ needs.initialize.outputs.memory_intensive_ut_configured_apps_shards_array }}
+      memory_intensive_ut_configured_apps_shards_total: ${{ needs.initialize.outputs.memory_intensive_ut_configured_apps_shards_total }}
+      default_ut_configured_apps_matrix: ${{ needs.initialize.outputs.default_ut_configured_apps_matrix }}
+
+  fe-e2e:
+    name: Run E2E Tests
+    uses: ./.github/workflows/fe-e2e.yml
+    needs: [initialize, build-main, build-canary]
+    secrets: inherit
+    with:
+      run_e2e: true
+      affected_apps: ${{ needs.initialize.outputs.affected_apps }}
+      playwright_configured_affected_apps_array: ${{ needs.initialize.outputs.playwright_configured_affected_apps_array }}
+      playwright_configured_affected_apps_comma_sep: ${{ needs.initialize.outputs.playwright_configured_affected_apps_comma_sep }}
+
+  

@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import React from 'react';
 
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';

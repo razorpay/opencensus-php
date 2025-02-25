@@ -1,4 +1,4 @@
-import { Component, Suspense } from 'react';
+import React, { Component, Suspense } from 'react';
 import { Box, Spinner } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';

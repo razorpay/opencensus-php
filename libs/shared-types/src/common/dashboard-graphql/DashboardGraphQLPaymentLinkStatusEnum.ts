@@ -1,0 +1,8 @@
+export enum DashboardGraphQLPaymentLinkStatusEnum {
+  CANCELLED = 'CANCELLED',
+  CREATED = 'CREATED',
+  DELETED = 'DELETED',
+  EXPIRED = 'EXPIRED',
+  PAID = 'PAID',
+  PARTIALLY_PAID = 'PARTIALLY_PAID',
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { ShowWhenComponent, RouteGuardComponent } from './RouteGuard';
 

@@ -1,4 +1,5 @@
 import { Field } from 'redux-form';
+import React from "react";
 
 import ListFilter from 'merchant/components/ListFilter';
 

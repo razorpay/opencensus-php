@@ -7,7 +7,6 @@ import { getDeviceMappingDetailsFromModularConfig } from 'apps/pos/src/app/utils
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
 import DeviceMappingScannerComponent from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceDeployment/DeviceMapping/DeviceMappingScannerComponent/DeviceMappingScannerComponent';
 import { DeviceModel } from 'apps/pos/src/app/utils/deviceSelection';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
 
@@ -38,7 +37,6 @@ const DeviceMappingScannerContainer = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.DEVICE_DEPLOYMENT }}
       fallbackComponent={

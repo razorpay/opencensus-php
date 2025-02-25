@@ -1,12 +1,16 @@
-import { test } from 'utils/base';
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { clickSkipAndStartBtn } from 'utils';
+import {
+  routes,
+  test,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+} from '@libs/shared-qsuite/playwright';
 
 import { invoiceData } from './constants';
 import { createInvoice, searchInvoiceAndOpenDetails } from './utils';
+
 test.describe.parallel('Test Invoices @flow=invoices @project=no-code', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

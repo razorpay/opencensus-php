@@ -1,4 +1,4 @@
-import { decodeSensitiveFields } from '@dashboard/shared-utils/rzp-utils';
+import { decodeSensitiveFields } from '@libs/shared-utils';
 import Payment from '../../models/Payment';
 import { makeActionCollectionReducer, fetchAll } from './collection';
 

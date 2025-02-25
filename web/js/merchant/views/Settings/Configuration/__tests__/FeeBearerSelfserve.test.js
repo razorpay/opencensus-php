@@ -2,7 +2,6 @@ import React from 'react';
 import FeeBearerSelfserve from 'merchant/views/Settings/Configuration/FeeBearerSelfserve';
 import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
 import { render, screen, waitFor, userEvent } from 'test-utils';
-import * as utils from 'common/utils/rzp-utils';
 
 const defaultInitialReduxState = getInitialReduxState({
   isQRCodeProductEnabled: true,
@@ -13,7 +12,7 @@ const defaultInitialReduxState = getInitialReduxState({
 
 describe('Fee bearer', () => {
   it('should call mockSupportTicket when clicking on "support ticket" link button when QR, SC & Route enabled', async () => {
-    const openModalSpy = jest.spyOn(utils, 'openTicketModal');
+    const openModalSpy = jest.spyOn(require('@libs/shared-utils'), 'openTicketModal');
 
     render(<FeeBearerSelfserve />, {
       initialState: defaultInitialReduxState,

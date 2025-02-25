@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import AsyncButton from 'react-async-button';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import BaseToggler from 'common/ui/Toggler/BaseToggler';

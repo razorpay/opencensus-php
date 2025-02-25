@@ -1,3 +1,4 @@
+import React from "react";
 export const NEEDS_CLARIFICATION = 'needs_clarification';
 export const CLARIFICATION_THROUGH_CALL = 'call';
 export const CLARIFICATION_THROUGH_EMAIL = 'email';

@@ -4,7 +4,7 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Button from 'common/components/Button';
+import Button from 'newAuth/@deprecated/common/components/Button';
 import {
   HeaderView,
   DesktopOnlyView,

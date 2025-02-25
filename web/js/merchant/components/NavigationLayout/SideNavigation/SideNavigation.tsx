@@ -21,7 +21,7 @@ import {
 } from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import useSideNavigation from './useSideNavigation';
 import { ANALYTICS_ONENAV } from '../constants';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 interface ProductOptions {
   title: string;

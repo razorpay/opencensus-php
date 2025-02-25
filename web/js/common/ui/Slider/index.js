@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -6,6 +6,7 @@ import { compose } from 'redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import { getItem } from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
+import { getMode } from '@libs/shared-utils';
 import * as SliderActions from 'merchant_common/reducers/slider';
 
 class ModalSlider extends Component {
@@ -69,8 +70,7 @@ class ModalSlider extends Component {
     // Method to get the current mode of the merchant
     const mode = () => {
       if (window && window.rzp_user?.current) {
-        /* querying loaclStorage to get the item  */
-        return getItem(`rzp_mode--${window.rzp_user.current}`);
+        return getMode(window.rzp_user.current);
       }
       return null;
     };

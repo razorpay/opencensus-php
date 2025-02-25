@@ -1,0 +1,7 @@
+export enum DashboardGraphQLBudgetStatusEnum {
+  ACTIVE = 'ACTIVE',
+  CREATED = 'CREATED',
+  DEACTIVATED = 'DEACTIVATED',
+  EXPIRED = 'EXPIRED',
+  PENDING_APPROVAL = 'PENDING_APPROVAL',
+}

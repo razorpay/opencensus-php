@@ -1,3 +1,4 @@
+import React from "react";
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import User from 'merchant/models/User';
 import store from 'merchant/store';

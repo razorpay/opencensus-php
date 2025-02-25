@@ -1,4 +1,3 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
 /*
  * TODO( pending things ):
  * Handle Bottom Position
@@ -7,7 +6,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import debounce from 'common/utils/debounce';
+import { debounce } from '@libs/shared-utils';
 
 const DEFAULT_OFFSET = 10;
 const TOOLTIP_DELAY = 200;

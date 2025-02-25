@@ -1,6 +1,6 @@
 import React from 'react';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { connect } from 'react-redux';
 import { Route, Routes, Navigate, Outlet, useMatch } from 'react-router-dom';
 
@@ -24,11 +24,6 @@ type POS = {
   mode: 'live' | 'test';
 };
 
-declare global {
-  interface Window {
-    SEGMENT_API_KEY: string;
-  }
-}
 
 try {
   // initialize analytics 2.0

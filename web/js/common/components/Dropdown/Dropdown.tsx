@@ -1,4 +1,3 @@
-// Todo: delete this directory, it's available in @dashboard/shared-ui
 import React, { useRef, useState } from 'react';
 import {
   Dropdown as BladeDropdown,
@@ -7,7 +6,7 @@ import {
   VisuallyHidden,
 } from '@razorpay/blade/components';
 import { DropdownProps, Option, ClickProps, DropdownCommonProps } from './types';
-import { useMobile } from 'common/hooks/useMobile';
+import { useMobile } from '@libs/shared-utils';
 import { getAllOptions, getDropdownContent, getDropdownTarget } from './utils';
 
 const Dropdowns = ({

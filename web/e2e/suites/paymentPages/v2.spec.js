@@ -1,13 +1,16 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { clickSkipAndStartBtn } from 'utils';
-import { test } from 'utils/base';
+import {
+  routes,
+  test,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+} from '@libs/shared-qsuite/playwright';
 
 import { PAYMENT_PAGES_TYPES, paymentPagesEcommerceData } from './constants';
 import { createPaymentPage } from './utils';
 
 test.describe.parallel('Test Payments Pages V2 @flow=payment-pages-v2 @project=no-code', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

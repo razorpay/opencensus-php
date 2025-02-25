@@ -56,11 +56,10 @@ describe('useReconTracking customHook', () => {
   });
 
   test('should clear timeout on unmount', () => {
-    jest.useFakeTimers();
+    window.clearTimeout = jest.fn();
     const { unmount } = renderHook(() => useReconTracking({ objectName, screen, properties }));
     unmount();
     expect(clearTimeout).toHaveBeenCalled();
-    jest.useRealTimers();
   });
 
   it('should use default properties when properties are not provided', () => {

@@ -19,7 +19,7 @@ import { updateEmailSettingsInStore } from 'merchant/reducers/graphql/configSett
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { useMutation } from '@tanstack/react-query';
-import { graphqlRequestMutation } from 'common/services/graphql/graphql-client';
+import { graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import { NOTIFICATION_EMAIL_UPDATE_MUTATION } from 'merchant/views/AccountAndSettings/NotificationSettings/queries';
 import { MutationNotificationEmailUpdateArgs } from 'common/typings/graph-types';
 import EmailNotificationProps from 'merchant/views/Settings/Configuration/typings/EmailNotification';

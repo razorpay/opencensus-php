@@ -27,7 +27,6 @@ export const getErrorType = (error: string): ERROR_TYPE => {
   return ERROR_TYPE.SERVER_ERROR;
 };
 
-// Todo: delete this function, it's available in @dashboard/shared-utils
 export const validateUnixTimestamp = (timestamp: string): number | null => {
   const unixTime = parseInt(timestamp, 10);
   if (moment(unixTime).isValid()) {
@@ -67,7 +66,7 @@ export const validateSettlementIdFilters = (
 };
 
 export const isEmptyStateVisible = (): boolean => {
-  const visibilityStatus = localStorage.getItem(EMPTY_STATE_KEY);
+  const visibilityStatus = window?.localStorage.getItem(EMPTY_STATE_KEY);
   if (!visibilityStatus) {
     return true;
   }
@@ -79,7 +78,7 @@ export const isEmptyStateVisible = (): boolean => {
 };
 
 export const hideEmptyState = (): void => {
-  localStorage.setItem(
+  window?.localStorage.setItem(
     EMPTY_STATE_KEY,
     JSON.stringify({
       expireAt: moment().add(1, 'days').format(),

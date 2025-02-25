@@ -1,4 +1,5 @@
 import lazy from 'merchant/routes/LazyLoader';
+import React from "react";
 
 const ReviewOrders = lazy(() =>
   import(

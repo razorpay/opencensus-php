@@ -1,9 +1,9 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import InlineFallbackComponent from './FallbackComponent';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 // TODO: Fix the import .ts issue
 import { Ranks, Teams } from './constants'; // Failing to load in .ts format
-import { getTeamName } from 'common/new-ui/ErrorBoundary/utils';
+import { getTeamName } from '@libs/shared-utils';
 
 export interface FallbackComponentProps extends React.FC<any> {
   eventId?: string | null;

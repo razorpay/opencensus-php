@@ -10,3 +10,5 @@ lerna-debug.log*
 node_modules
 
 pnpm-error.log*
+/.nx/cache
+/.nx/workspace-data

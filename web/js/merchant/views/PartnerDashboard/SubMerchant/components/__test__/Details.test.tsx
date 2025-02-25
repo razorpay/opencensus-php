@@ -202,7 +202,7 @@ describe('Submerchant Details', () => {
     await waitFor(() => {
       expect(screen.getByText(items[1].name)).toBeInTheDocument();
     });
-    const BureauButton = screen.getByRole('button', { name: 'Create Bureau Link' });
+    const BureauButton = screen.getByText('Create Bureau Link');
     expect(BureauButton).toBeInTheDocument();
     await userEvent.click(BureauButton);
 
@@ -217,7 +217,8 @@ describe('Submerchant Details', () => {
     await waitFor(() => {
       expect(screen.getByText(items[0].name)).toBeInTheDocument();
     });
-    const showButton = screen.getByRole('button', { name: /show more details/i });
+    const showButton = screen.getByText(/show more details/i);
+
     expect(showButton).toBeInTheDocument();
     await userEvent.click(showButton);
 
@@ -227,7 +228,7 @@ describe('Submerchant Details', () => {
     expect(screen.getByText(CapitalResponse.business_name)).toBeInTheDocument();
     expect(screen.getByText(CapitalResponse.account_name)).toBeInTheDocument();
     expect(screen.getByText(CapitalResponse.stage)).toBeInTheDocument();
-    const uploadButton = screen.getByRole('button', { name: 'Upload bank a/c document' });
+    const uploadButton = screen.getByText('Upload bank a/c document');
     expect(uploadButton).toBeInTheDocument();
     expect(uploadButton).not.toHaveAttribute('disabled');
 

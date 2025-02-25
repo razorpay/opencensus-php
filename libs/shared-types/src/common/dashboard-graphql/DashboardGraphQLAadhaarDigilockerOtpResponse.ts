@@ -1,0 +1,4 @@
+import { DashboardGraphQLAadhaarDigilockerOtpFailureResponse, DashboardGraphQLAadhaarDigilockerOtpSuccessResponse } from './index';
+export type DashboardGraphQLAadhaarDigilockerOtpResponse =
+  | DashboardGraphQLAadhaarDigilockerOtpFailureResponse
+  | DashboardGraphQLAadhaarDigilockerOtpSuccessResponse;

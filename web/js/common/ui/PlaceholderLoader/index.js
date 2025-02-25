@@ -1,5 +1,5 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
-import { classList } from 'common/utils/rzp-utils';
+import { classList } from '@libs/shared-utils';
+import React from 'react';
 
 export default (props) => (
   <span {...props} className={classList(props.className, 'PlaceholderLoader')} />

@@ -1,5 +1,5 @@
-import { merchantFetch } from '@dashboard/shared-utils/ajax';
-import { merge } from '@dashboard/shared-utils/immutable';
+import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
+import { merge } from '@libs/shared-utils';
 
 const FETCH_TERMINAL_PROVIDERS = 'FETCH_TERMINAL_PROVIDERS';
 

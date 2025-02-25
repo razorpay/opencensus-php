@@ -1,4 +1,4 @@
-import { Component, useEffect, useRef } from 'react';
+import React, { Component, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';

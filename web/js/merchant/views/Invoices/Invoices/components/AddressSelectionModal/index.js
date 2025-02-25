@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { capitalize } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import PropTypes from 'prop-types';
 
 import List from './Screens/List';
 import New from './Screens/New';

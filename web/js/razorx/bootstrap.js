@@ -9,8 +9,8 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { redirectToAppRoute } from 'common/utils/redirectToAppRoute';
 
 import App from './App';
-import css from '../../css/razorx.styl';
-import fontconfig from '../../dashboard.font';
+import '../../css/razorx.styl';
+import '../../dashboard.font';
 
 redirectToAppRoute('/razorx');
 

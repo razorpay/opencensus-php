@@ -13,7 +13,7 @@ export const isVisible = (
   workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
 ) => {
   if (isBankAccountUpdateWorkflow) {
-    const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
+    const workflowStatus = JSON.parse(window?.localStorage.getItem('workflow_status'));
     const workflowStatusKey = `${workflowType}--${merchantId}`;
     if (workflowStatus?.[workflowStatusKey]) {
       const { expireAt, isVisible } = workflowStatus[workflowStatusKey];
@@ -31,7 +31,7 @@ export const showWorkflowStatus = (
   workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
 ) => {
   const workflowStatusKey = `${workflowType}--${merchantId}`;
-  const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
+  const workflowStatus = JSON.parse(window?.localStorage.getItem('workflow_status') || '{}');
   const newWorkflowStatus = {
     ...workflowStatus,
     [workflowStatusKey]: {
@@ -39,14 +39,14 @@ export const showWorkflowStatus = (
       isVisible: true,
     },
   };
-  localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
+  window?.localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
 };
 
 export const hideWorkflowStatus = (
   merchantId,
   workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
 ) => {
-  const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
+  const workflowStatus = JSON.parse(window?.localStorage.getItem('workflow_status') || '{}');
   const workflowStatusKey = `${workflowType}--${merchantId}`;
   if (workflowStatus?.[workflowStatusKey]) {
     const newWorkflowStatus = {
@@ -56,6 +56,6 @@ export const hideWorkflowStatus = (
         isVisible: false,
       },
     };
-    localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
+    window?.localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
   }
 };

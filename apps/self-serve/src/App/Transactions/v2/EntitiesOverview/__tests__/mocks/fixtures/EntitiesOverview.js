@@ -1,7 +1,6 @@
 import React from 'react';
-import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
+import  SuspenseWithLoader  from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
-
 import EntitiesOverview from 'apps/self-serve/src/App/Transactions/v2/EntitiesOverview';
 import { TransactionsEntityRoute } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import 'jest-location-mock';

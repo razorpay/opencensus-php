@@ -1,0 +1,11 @@
+import { DashboardGraphQLResolversParentTypes, DashboardGraphQLResolver, DashboardGraphQLResolversTypes, DashboardGraphQLMaybe, DashboardGraphQLIsTypeOfResolverFn } from './index';
+export type DashboardGraphQLMerchantGstinUpdateInSyncFlowResponseResolvers<
+  ContextType = any,
+  ParentType extends DashboardGraphQLResolversParentTypes['DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse'] = DashboardGraphQLResolversParentTypes['DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse'],
+> = {
+  code?: DashboardGraphQLResolver<DashboardGraphQLResolversTypes['PositiveInt'], ParentType, ContextType>;
+  gstinUpdate?: DashboardGraphQLResolver<DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdate'], ParentType, ContextType>;
+  message?: DashboardGraphQLResolver<DashboardGraphQLMaybe<DashboardGraphQLResolversTypes['String']>, ParentType, ContextType>;
+  success?: DashboardGraphQLResolver<DashboardGraphQLResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: DashboardGraphQLIsTypeOfResolverFn<ParentType, ContextType>;
+};

@@ -1,7 +1,8 @@
-// Todo: delete this file, it's available in @dashboard/shared-ui
-import Alert from 'common/ui/Forms/Alert';
-import Pager from 'common/ui/Pager';
-import Table from 'common/ui/Table/Index';
+import React from 'react';
+
+import Table from '@libs/web-nexus/common/ui/Table/Index';
+import Alert from '@libs/web-nexus/common/ui/Forms/Alert';
+import Pager from '@libs/web-nexus/common/ui/Pager';
 
 /*
   // Usage: Check slider/details view of payments, plans, etc.

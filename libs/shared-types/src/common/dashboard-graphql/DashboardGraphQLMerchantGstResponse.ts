@@ -1,0 +1,2 @@
+import { DashboardGraphQLMerchantGstFailureResponse, DashboardGraphQLMerchantGstSuccessResponse } from './index';
+export type DashboardGraphQLMerchantGstResponse = DashboardGraphQLMerchantGstFailureResponse | DashboardGraphQLMerchantGstSuccessResponse;

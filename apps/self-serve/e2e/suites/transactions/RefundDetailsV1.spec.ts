@@ -1,5 +1,5 @@
 import { expect, test } from '../../utils/base';
-import { getStorageStatePath } from '@dashboard/shared-utils/e2e/constants/paths';
+import { getStorageStatePath } from '@libs/shared-utils/tests/e2e/constants/paths';
 import { BASE_PATH } from '../../constants';
 
 import { navigateToTransactions } from '../../utils';

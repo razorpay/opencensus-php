@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import copyToClipboard from 'common/utils/copyToClipboard';
+import copyToClipboard from '@libs/web-nexus/common/utils/copyToClipboard';
 
 export interface UseClipboardReturn {
   isCopied: boolean;

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
-import { fetch } from '@dashboard/shared-utils/rest-fetch';
-import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
+import { fetch } from '@federated/apps/shell/rest-fetch';
+import { paiseToRupees } from '@libs/shared-utils';
 import { accumalateCountAmount, getAnalyticsRequestPayload } from './utils';
 import {
   AnalyticsAPISegemntResult,

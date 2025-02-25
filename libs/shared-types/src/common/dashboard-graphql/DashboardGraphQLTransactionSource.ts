@@ -1,0 +1,8 @@
+import { DashboardGraphQLPayout, DashboardGraphQLTransactionSourceAdjustment, DashboardGraphQLTransactionSourceBankTransfer, DashboardGraphQLTransactionSourceExternal, DashboardGraphQLTransactionSourceFundAccountValidation, DashboardGraphQLTransactionSourceReversal } from './index';
+export type DashboardGraphQLTransactionSource =
+  | DashboardGraphQLPayout
+  | DashboardGraphQLTransactionSourceAdjustment
+  | DashboardGraphQLTransactionSourceBankTransfer
+  | DashboardGraphQLTransactionSourceExternal
+  | DashboardGraphQLTransactionSourceFundAccountValidation
+  | DashboardGraphQLTransactionSourceReversal;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TextInput, Button, Box, Text } from '@razorpay/blade/components';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { saveUserName } from './api';
 import { RazorpayLogoBlue } from 'apps/pos/src/assets';
 

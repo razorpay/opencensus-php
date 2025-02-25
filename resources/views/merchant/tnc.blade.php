@@ -16,6 +16,6 @@
         window.org = {!! $org !!};
     </script>
     @include('partials/common')
-		<script src="{{$cdnDashboardUrl}}/dist/merchantTnc-entry.js"></script>
+		<script src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/tnc-dashboard/tnc-dashboard.entry.js"></script>
 </body>
 </html>

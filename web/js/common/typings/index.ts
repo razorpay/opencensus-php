@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import type { ObjectSchema as YupObjectSchemaType } from 'yup';
 
-import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
+import type { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 
 export { default as User } from './User';
 export * from './Store';
@@ -27,4 +27,4 @@ export type DataTableColumn<T = TODO_PD> = {
 };
 export type DataTableColumns = Array<DataTableColumn>;
 
-export type YupObjectSchema = Yup.ObjectSchema;
+export type YupObjectSchema = YupObjectSchemaType;

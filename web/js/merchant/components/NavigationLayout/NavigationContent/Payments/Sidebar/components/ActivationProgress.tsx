@@ -9,7 +9,7 @@ import {
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import {

@@ -1,7 +1,7 @@
 import React from 'react';
 import lazy from 'merchant/routes/LazyLoader';
 import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { Amount } from '@razorpay/blade/components';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import Definition from 'common/ui/Definition';

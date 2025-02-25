@@ -78,7 +78,7 @@ describe('SettlementOverview', () => {
         business_type: undefined,
         current_activation_status: undefined,
         merchantId: undefined,
-        mode: null,
+        mode: 'test',
         pageUrl: 'http://localhost/',
         previous_activation_status: undefined,
         settlement_id: 'settlement_id',

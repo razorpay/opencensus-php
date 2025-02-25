@@ -2,7 +2,7 @@ import React from 'react';
 
 import Amount from 'common/ui/Amount';
 import Blockquote from 'common/ui/Blockquote';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 /*
  * Design

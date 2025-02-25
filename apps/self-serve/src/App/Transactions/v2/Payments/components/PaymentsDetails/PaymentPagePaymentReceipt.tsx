@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Box, Button, Text, Spinner } from '@razorpay/blade/components';
 
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import {
   getReceiptDetails,
   sendReceipt,

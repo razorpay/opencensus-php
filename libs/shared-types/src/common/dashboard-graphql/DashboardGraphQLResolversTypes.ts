@@ -1,0 +1,2146 @@
+import {
+  DashboardGraphQLAadhaarCaptchaErrorTypeEnum,
+  DashboardGraphQLResolverTypeWrapper,
+  DashboardGraphQLAadhaarCaptchaResponse,
+  DashboardGraphQLAadhaarCaptchaV2FailureResponse,
+  DashboardGraphQLAadhaarCaptchaV2SuccessResponse,
+  DashboardGraphQLAadhaarCaptchaVerifyErrorTypeEnum,
+  DashboardGraphQLAadhaarCaptchaVerifyResponse,
+  DashboardGraphQLAadhaarDigilockerOtpFailureResponse,
+  DashboardGraphQLAadhaarDigilockerOtpSuccessResponse,
+  DashboardGraphQLAadhaarDigilockerOtpVerifyFailureResponse,
+  DashboardGraphQLAadhaarDigilockerOtpVerifySuccessResponse,
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlErrorTypeEnum,
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlFailureResponse,
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlSuccessResponse,
+  DashboardGraphQLAadhaarDigilockerRedirectionVerificationErrorTypeEnum,
+  DashboardGraphQLAadhaarDigilockerRedirectionVerificationFailureResponse,
+  DashboardGraphQLAadhaarDigilockerRedirectionVerificationSuccessResponse,
+  DashboardGraphQLAadhaarOtpDigilockerErrorEnum,
+  DashboardGraphQLAadhaarOtpVerifyErrorTypeEnum,
+  DashboardGraphQLAadhaarOtpVerifyResponse,
+  DashboardGraphQLAcceptPaymentsProduct,
+  DashboardGraphQLAcceptPaymentsWidget,
+  DashboardGraphQLAccountVerificationOtpResendResponse,
+  DashboardGraphQLAccountVerificationOtpResponse,
+  DashboardGraphQLAcquirerData,
+  DashboardGraphQLAddress,
+  DashboardGraphQLAddressByPincodeFailureResponse,
+  DashboardGraphQLAddressByPincodeSuccessResponse,
+  DashboardGraphQLAmount,
+  DashboardGraphQLApiKeyRegenerationDelayTypeEnum,
+  DashboardGraphQLApproveIciciPayoutResponse,
+  DashboardGraphQLApprovePayoutBatchResponseFailure,
+  DashboardGraphQLApprovePayoutBatchResponseSuccess,
+  DashboardGraphQLApprovePayoutResponse,
+  DashboardGraphQLAuthErrorCodeEnum,
+  DashboardGraphQLAuthSourceEnum,
+  DashboardGraphQLAuthUnauthenticated,
+  DashboardGraphQLAuthUnregistered,
+  DashboardGraphQLAuthUser,
+  DashboardGraphQLBank,
+  DashboardGraphQLScalars,
+  DashboardGraphQLBudget,
+  DashboardGraphQLBudgetDate,
+  DashboardGraphQLBudgetStatusEnum,
+  DashboardGraphQLBudgetTypeEnum,
+  DashboardGraphQLBudgetsResponse,
+  DashboardGraphQLBusinessType,
+  DashboardGraphQLCaptchaModeEnum,
+  DashboardGraphQLCategoryModulePlacementEnum,
+  DashboardGraphQLCheckoutOptions,
+  DashboardGraphQLClarificationComment,
+  DashboardGraphQLClarificationComments,
+  DashboardGraphQLClientPlatformEnum,
+  DashboardGraphQLConfigData,
+  DashboardGraphQLConfiguration,
+  DashboardGraphQLCountryCodeEnum,
+  DashboardGraphQLCouponApplyResponse,
+  DashboardGraphQLCouponValidateResponse,
+  DashboardGraphQLCurrency,
+  DashboardGraphQLCurrencyCodeEnum,
+  DashboardGraphQLCurrencyInput,
+  DashboardGraphQLCurrencyNameEnum,
+  DashboardGraphQLCustomer,
+  DashboardGraphQLCustomerAddress,
+  DashboardGraphQLCustomerInput,
+  DashboardGraphQLDeregisterFcmTokenResponse,
+  DashboardGraphQLDestinationAccountDetailsInput,
+  DashboardGraphQLDeviceAnalyticsDataInput,
+  DashboardGraphQLDigilockerVerificationTypeEnum,
+  DashboardGraphQLDocumentUploadFieldValue,
+  DashboardGraphQLEmiSummary,
+  DashboardGraphQLEddEligibilityEnum,
+  DashboardGraphQLEmiSummaryCharges,
+  DashboardGraphQLEmiSummaryDetails,
+  DashboardGraphQLEmiTenureMap,
+  DashboardGraphQLExpenseCategoriesResponse,
+  DashboardGraphQLExpenseCategory,
+  DashboardGraphQLFailedPaymentsOverviewFailureResponse,
+  DashboardGraphQLFailedPaymentsOverviewSuccessResponse,
+  DashboardGraphQLFeeBasedGatingPaymentStatusEnum,
+  DashboardGraphQLFeeBearerEnum,
+  DashboardGraphQLFieldDetailsInput,
+  DashboardGraphQLGoalTrackerMetaData,
+  DashboardGraphQLGoalTrackerSettings,
+  DashboardGraphQLGstTypeEnum,
+  DashboardGraphQLImage,
+  DashboardGraphQLInvoice,
+  DashboardGraphQLInvoiceAmount,
+  DashboardGraphQLInvoiceDate,
+  DashboardGraphQLInvoiceItem,
+  DashboardGraphQLInvoiceSmsStatusEnum,
+  DashboardGraphQLInvoiceStatusEnum,
+  DashboardGraphQLInvoiceTypeEnum,
+  DashboardGraphQLInvoicesResponse,
+  DashboardGraphQLLoginOtpError,
+  DashboardGraphQLLoginOtpErrorCodeEnum,
+  DashboardGraphQLLoginOtpResendError,
+  DashboardGraphQLLoginOtpResendSuccess,
+  DashboardGraphQLLoginOtpSuccess,
+  DashboardGraphQLMerchant,
+  DashboardGraphQLMerchantAcceptanceChannel,
+  DashboardGraphQLMerchantAcceptanceChannelInput,
+  DashboardGraphQLMerchantAcceptanceChannelWhatsappSmsEmail,
+  DashboardGraphQLMerchantAcceptanceChannelWhatsappSmsEmailInput,
+  DashboardGraphQLOmit,
+  DashboardGraphQLMerchantActivation,
+  DashboardGraphQLMerchantActivationDedupe,
+  DashboardGraphQLMerchantActivationEscalationsBreached,
+  DashboardGraphQLMerchantActivationEscalationsNotBreached,
+  DashboardGraphQLMerchantActivationFlow,
+  DashboardGraphQLMerchantActivationFlowEnum,
+  DashboardGraphQLMerchantActivationMilestoneEnum,
+  DashboardGraphQLMerchantActivationResponse,
+  DashboardGraphQLMerchantActivationStatusEnum,
+  DashboardGraphQLMerchantAddress,
+  DashboardGraphQLMerchantAddressInput,
+  DashboardGraphQLMerchantAnalytics,
+  DashboardGraphQLMerchantApiKey,
+  DashboardGraphQLMerchantApiKeyCreateResponse,
+  DashboardGraphQLMerchantApiKeyRegenerateNew,
+  DashboardGraphQLMerchantApiKeyRegenerateOld,
+  DashboardGraphQLMerchantApiKeyRegenerateResponse,
+  DashboardGraphQLMerchantApiKeysCreateFailure,
+  DashboardGraphQLMerchantApiKeysCreateSuccess,
+  DashboardGraphQLMerchantAverageOrderField,
+  DashboardGraphQLMerchantAverageOrderFieldValue,
+  DashboardGraphQLMerchantBalance,
+  DashboardGraphQLMerchantBalanceAccountTypeEnum,
+  DashboardGraphQLMerchantBalanceProductTypeEnum,
+  DashboardGraphQLMerchantBank,
+  DashboardGraphQLMerchantBankAccountDetails,
+  DashboardGraphQLMerchantBankAccountDocumentUploadFailureResponse,
+  DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse,
+  DashboardGraphQLMerchantBankAccountUpdateFailureResponse,
+  DashboardGraphQLMerchantBankAccountUpdateSuccessResponse,
+  DashboardGraphQLMerchantBankDetails,
+  DashboardGraphQLMerchantBankDetailsFailureResponse,
+  DashboardGraphQLMerchantBankDetailsSuccessResponse,
+  DashboardGraphQLMerchantBankInput,
+  DashboardGraphQLMerchantBankVerificationErrorCodeEnum,
+  DashboardGraphQLMerchantBankingAccount,
+  DashboardGraphQLMerchantBankingAccountBalance,
+  DashboardGraphQLMerchantBankingAccountStatusEnum,
+  DashboardGraphQLMerchantBankingAccountTypeEnum,
+  DashboardGraphQLMerchantBankingAccountsBalanceResponse,
+  DashboardGraphQLMerchantBankingRole,
+  DashboardGraphQLMerchantBusiness,
+  DashboardGraphQLMerchantBusinessAddress,
+  DashboardGraphQLMerchantBusinessAddressInput,
+  DashboardGraphQLMerchantBusinessAppDetailsResponse,
+  DashboardGraphQLMerchantBusinessAppInput,
+  DashboardGraphQLMerchantBusinessCategoriesResponse,
+  DashboardGraphQLMerchantBusinessCategoriesResponseV2,
+  DashboardGraphQLMerchantBusinessCategoryIcon,
+  DashboardGraphQLMerchantBusinessCategoryIconEnum,
+  DashboardGraphQLMerchantBusinessInput,
+  DashboardGraphQLMerchantBusinessParentCategory,
+  DashboardGraphQLMerchantBusinessSubCategory,
+  DashboardGraphQLMerchantBusinessTypeEnum,
+  DashboardGraphQLMerchantBusinessTypeField,
+  DashboardGraphQLMerchantBusinessTypeInputField,
+  DashboardGraphQLMerchantBusinessTypesResponse,
+  DashboardGraphQLMerchantBusinessWebsiteDetailsResponse,
+  DashboardGraphQLMerchantBusinessWebsiteInput,
+  DashboardGraphQLMerchantClarificationDetail,
+  DashboardGraphQLMerchantClarificationDetailsResponse,
+  DashboardGraphQLMerchantClarificationDetailsSubmitResponse,
+  DashboardGraphQLMerchantClarificationDetailsUpdateResponse,
+  DashboardGraphQLMerchantClarificationFieldValues,
+  DashboardGraphQLMerchantClarificationFromEnum,
+  DashboardGraphQLMerchantClarificationInputType,
+  DashboardGraphQLMerchantClarificationStatusEnum,
+  DashboardGraphQLMerchantClarificationTypeEnum,
+  DashboardGraphQLMerchantClarifications,
+  DashboardGraphQLMerchantCommentTypeEnum,
+  DashboardGraphQLMerchantConfigFailure,
+  DashboardGraphQLMerchantConfigUpdateResponse,
+  DashboardGraphQLMerchantConfiguration,
+  DashboardGraphQLMerchantConfigurationNamespaceEnum,
+  DashboardGraphQLMerchantConsentData,
+  DashboardGraphQLMerchantConsentEvent,
+  DashboardGraphQLMerchantConsentFailure,
+  DashboardGraphQLMerchantConsentInput,
+  DashboardGraphQLMerchantConsentPayload,
+  DashboardGraphQLMerchantConsentSuccess,
+  DashboardGraphQLMerchantConsentsErrorTypeEnum,
+  DashboardGraphQLMerchantConsentsFailureResponse,
+  DashboardGraphQLMerchantConsentsSuccessResponse,
+  DashboardGraphQLMerchantConsentsTypeEnum,
+  DashboardGraphQLMerchantContact,
+  DashboardGraphQLMerchantContactCreateResponse,
+  DashboardGraphQLMerchantContactEmailOtpSendFailureResponse,
+  DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse,
+  DashboardGraphQLMerchantContactFundAccount,
+  DashboardGraphQLMaybe,
+  DashboardGraphQLMerchantContactFundAccountBankAccountInput,
+  DashboardGraphQLMerchantContactFundAccountCreateResponse,
+  DashboardGraphQLMerchantContactFundAccountDetailsBankAccount,
+  DashboardGraphQLMerchantContactFundAccountDetailsCard,
+  DashboardGraphQLMerchantContactFundAccountDetailsVpa,
+  DashboardGraphQLMerchantContactFundAccountDetailsWallet,
+  DashboardGraphQLMerchantContactFundAccountTypeEnum,
+  DashboardGraphQLMerchantContactFundAccountVpaInput,
+  DashboardGraphQLMerchantContactFundAccountsResponse,
+  DashboardGraphQLMerchantContactPerson,
+  DashboardGraphQLMerchantContactPersonInput,
+  DashboardGraphQLMerchantContactTypeCreateResponseDuplicate,
+  DashboardGraphQLMerchantContactTypeCreateResponseSuccess,
+  DashboardGraphQLMerchantContactUpdateResponse,
+  DashboardGraphQLMerchantContactsResponse,
+  DashboardGraphQLMerchantCreateVkycLinkResponse,
+  DashboardGraphQLMerchantCreditBalance,
+  DashboardGraphQLMerchantCreditBalanceFailureResponse,
+  DashboardGraphQLMerchantCreditBalanceSuccessResponse,
+  DashboardGraphQLMerchantDocument,
+  DashboardGraphQLMerchantDocumentByIdResponse,
+  DashboardGraphQLMerchantDocumentField,
+  DashboardGraphQLMerchantDocumentFieldValue,
+  DashboardGraphQLMerchantDocumentInput,
+  DashboardGraphQLMerchantDocumentInputField,
+  DashboardGraphQLMerchantDocumentUpload,
+  DashboardGraphQLMerchantDocumentUploadFailureResponse,
+  DashboardGraphQLMerchantDocumentUploadPurposeEnum,
+  DashboardGraphQLMerchantDocumentUploadSuccessResponse,
+  DashboardGraphQLMerchantEddDetailsFailureResponse,
+  DashboardGraphQLMerchantEddDetailsSuccessResponse,
+  DashboardGraphQLMerchantEddItemDetail,
+  DashboardGraphQLMerchantEddStatusEnum,
+  DashboardGraphQLMerchantEmailField,
+  DashboardGraphQLMerchantEmailInputField,
+  DashboardGraphQLMerchantEmailUpdateFailureResponse,
+  DashboardGraphQLMerchantEmailUpdateSuccessResponse,
+  DashboardGraphQLMerchantEscalationAction,
+  DashboardGraphQLMerchantEscalationLimit,
+  DashboardGraphQLMerchantEscalationTypeEnum,
+  DashboardGraphQLMerchantFeatureFlag,
+  DashboardGraphQLMerchantFeeBasedGating,
+  DashboardGraphQLMerchantFieldClarificationReason,
+  DashboardGraphQLMerchantGstFailureResponse,
+  DashboardGraphQLMerchantGstSuccessResponse,
+  DashboardGraphQLMerchantGstinUpdate,
+  DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse,
+  DashboardGraphQLMerchantGstinUpdateCustomerActionEnum,
+  DashboardGraphQLMerchantGstinUpdateFailureResponse,
+  DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse,
+  DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse,
+  DashboardGraphQLMerchantGstinUpdateV2,
+  DashboardGraphQLMerchantGstinUpdateV2FailureResponse,
+  DashboardGraphQLMerchantGstinUpdateV2SuccessResponse,
+  DashboardGraphQLMerchantGstinUpdateVersionEnum,
+  DashboardGraphQLMerchantGstinVerificationErrorCodeEnum,
+  DashboardGraphQLMerchantGstinWorkflowStatusEnum,
+  DashboardGraphQLMerchantIdentityResponse,
+  DashboardGraphQLMerchantIdentityTypeEnum,
+  DashboardGraphQLMerchantInstrument,
+  DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse,
+  DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse,
+  DashboardGraphQLMerchantInstrumentCreateFailureResponse,
+  DashboardGraphQLMerchantInstrumentCreateSuccessResponse,
+  DashboardGraphQLMerchantInstrumentReInitiateFailureResponse,
+  DashboardGraphQLMerchantInstrumentReInitiateSuccessResponse,
+  DashboardGraphQLMerchantInstrumentStatusEnum,
+  DashboardGraphQLMerchantInstrumentsStatus,
+  DashboardGraphQLMerchantKycPartnerAccessErrorTypeEnum,
+  DashboardGraphQLMerchantKycPartnerAccessInputTypeEnum,
+  DashboardGraphQLMerchantKycPartnerAccessResponse,
+  DashboardGraphQLMerchantKycPartnerAccessTypeEnum,
+  DashboardGraphQLMerchantKycPartnerAccessUpdateFailureResponse,
+  DashboardGraphQLMerchantKycPartnerAccessUpdateSuccessResponse,
+  DashboardGraphQLMerchantModularOnboardingComponentInput,
+  DashboardGraphQLMerchantModularOnboardingComponentPropertiesInput,
+  DashboardGraphQLMerchantMonthlyRevenueEnum,
+  DashboardGraphQLMerchantName,
+  DashboardGraphQLMerchantNcEligibilityResponse,
+  DashboardGraphQLMerchantNumberField,
+  DashboardGraphQLMerchantOnboardingConfig,
+  DashboardGraphQLMerchantOnboardingConfigurationInput,
+  DashboardGraphQLMerchantOnboardingPaymentDetails,
+  DashboardGraphQLMerchantOnboardingQuestionDetail,
+  DashboardGraphQLMerchantOnboardingQuestionDetailInput,
+  DashboardGraphQLMerchantOnboardingQuestionDetailsFailureResponse,
+  DashboardGraphQLMerchantOnboardingQuestionDetailsSuccessResponse,
+  DashboardGraphQLMerchantOnboardingQuestionDetailsUpdateResponse,
+  DashboardGraphQLMerchantPaymentAcceptanceChannels,
+  DashboardGraphQLMerchantPaymentAcceptanceChannelsInput,
+  DashboardGraphQLMerchantPaymentHandle,
+  DashboardGraphQLMerchantPaymentHandleAvailabilityFailureResponse,
+  DashboardGraphQLMerchantPaymentHandleAvailabilitySuccessResponse,
+  DashboardGraphQLMerchantPaymentHandleCreateFailureResponse,
+  DashboardGraphQLMerchantPaymentHandleCreateSuccessResponse,
+  DashboardGraphQLMerchantPaymentHandleEncryptedAmountFailureResponse,
+  DashboardGraphQLMerchantPaymentHandleEncryptedAmountSuccessResponse,
+  DashboardGraphQLMerchantPaymentHandleFailureResponse,
+  DashboardGraphQLMerchantPaymentHandleSuccessResponse,
+  DashboardGraphQLMerchantPaymentHandleSuggestionsResponse,
+  DashboardGraphQLMerchantPaymentHandleUpdateFailureResponse,
+  DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse,
+  DashboardGraphQLMerchantPhoneField,
+  DashboardGraphQLMerchantPhoneInputField,
+  DashboardGraphQLMerchantPoaStatus,
+  DashboardGraphQLMerchantPoaVerificationErrorCodeEnum,
+  DashboardGraphQLMerchantPolicy,
+  DashboardGraphQLMerchantPolicyEligibilityEnum,
+  DashboardGraphQLMerchantPolicyEmptyPreviewResponse,
+  DashboardGraphQLMerchantPolicyEmptyResponse,
+  DashboardGraphQLMerchantPolicyEmptyV2PreviewResponse,
+  DashboardGraphQLMerchantPolicyFailureResponse,
+  DashboardGraphQLMerchantPolicyPreview,
+  DashboardGraphQLMerchantPolicyPreviewFailureResponse,
+  DashboardGraphQLMerchantPolicyPreviewSuccessResponse,
+  DashboardGraphQLMerchantPolicyPreviewV2FailureResponse,
+  DashboardGraphQLMerchantPolicyPreviewV2SuccessResponse,
+  DashboardGraphQLMerchantPolicyPublishFailureResponse,
+  DashboardGraphQLMerchantPolicyPublishSuccessResponse,
+  DashboardGraphQLMerchantPolicySuccessResponse,
+  DashboardGraphQLMerchantPolicyWizardV2EligibilityResponse,
+  DashboardGraphQLMerchantPosActivationStatusEnum,
+  DashboardGraphQLMerchantPreference,
+  DashboardGraphQLMerchantPreferenceProductTypeEnum,
+  DashboardGraphQLMerchantReferralFailureResponse,
+  DashboardGraphQLMerchantReferralSuccessResponse,
+  DashboardGraphQLMerchantRoleEnum,
+  DashboardGraphQLMerchantSelfServeGstinPermissionEnum,
+  DashboardGraphQLMerchantSelfServeWorkflow,
+  DashboardGraphQLMerchantSelfServeWorkflowEnum,
+  DashboardGraphQLMerchantSelfServeWorkflowStatusFailureResponse,
+  DashboardGraphQLMerchantSelfServeWorkflowStatusSuccessResponse,
+  DashboardGraphQLMerchantSendMobileOtpResponseFailure,
+  DashboardGraphQLMerchantSendMobileOtpResponseSuccess,
+  DashboardGraphQLMerchantSettlementConfigFailureResponse,
+  DashboardGraphQLMerchantSettlementConfigSuccessResponse,
+  DashboardGraphQLMerchantShopEstablishment,
+  DashboardGraphQLMerchantShopEstablishmentInput,
+  DashboardGraphQLMerchantSocialMediaUrlField,
+  DashboardGraphQLMerchantSocialMediaUrlInputField,
+  DashboardGraphQLMerchantStakeholder,
+  DashboardGraphQLMerchantStakeholderInput,
+  DashboardGraphQLMerchantStore,
+  DashboardGraphQLMerchantStoreActivateFailureResponse,
+  DashboardGraphQLMerchantStoreActivateSuccessResponse,
+  DashboardGraphQLMerchantStoreDeactivateFailureResponse,
+  DashboardGraphQLMerchantStoreDeactivateSuccessResponse,
+  DashboardGraphQLMerchantStoreListResponse,
+  DashboardGraphQLMerchantStoreStatus,
+  DashboardGraphQLMerchantStoreUpdateFailureResponse,
+  DashboardGraphQLMerchantStoreUpdateInput,
+  DashboardGraphQLMerchantStoreUpdateSuccessResponse,
+  DashboardGraphQLMerchantStringField,
+  DashboardGraphQLMerchantStringInputField,
+  DashboardGraphQLMerchantSubCategoryRecommendations,
+  DashboardGraphQLMerchantSupportDetails,
+  DashboardGraphQLMerchantSupportDetailsFailureResponse,
+  DashboardGraphQLMerchantSupportDetailsSuccessResponse,
+  DashboardGraphQLMerchantSwitchResponse,
+  DashboardGraphQLMerchantTransactionLimit,
+  DashboardGraphQLMerchantUrlField,
+  DashboardGraphQLMerchantUrlInputField,
+  DashboardGraphQLMerchantValidateSocialMediaUrlResponse,
+  DashboardGraphQLMerchantVerificationDetail,
+  DashboardGraphQLMerchantVerificationDetailMetadata,
+  DashboardGraphQLMerchantVerificationStatusEnum,
+  DashboardGraphQLMerchantVerifyMobileOtpResponseFailure,
+  DashboardGraphQLMerchantVerifyMobileOtpResponseSuccess,
+  DashboardGraphQLMerchantVirtualAccount,
+  DashboardGraphQLMerchantVirtualAccountReceiver,
+  DashboardGraphQLMerchantVirtualAccountStatus,
+  DashboardGraphQLMerchantVirtualAccountsResponse,
+  DashboardGraphQLMerchantWebsite,
+  DashboardGraphQLMerchantWebsiteActionEnum,
+  DashboardGraphQLMerchantWebsiteAdditionalData,
+  DashboardGraphQLMerchantWebsiteAdditionalDataInput,
+  DashboardGraphQLMerchantWebsiteApplicationDetail,
+  DashboardGraphQLMerchantWebsiteApplicationInput,
+  DashboardGraphQLMerchantWebsiteApprovalStatusEnum,
+  DashboardGraphQLMerchantWebsiteDetailsFailureResponse,
+  DashboardGraphQLMerchantWebsiteDetailsResponse,
+  DashboardGraphQLMerchantWebsiteDetailsSubmitEnum,
+  DashboardGraphQLMerchantWebsiteDocumentDeleteFailureResponse,
+  DashboardGraphQLMerchantWebsiteDocumentDeleteSuccessResponse,
+  DashboardGraphQLMerchantWebsiteDocumentUploadFailureResponse,
+  DashboardGraphQLMerchantWebsiteDocumentUploadSuccessResponse,
+  DashboardGraphQLMerchantWebsitePlatformUrlsEnum,
+  DashboardGraphQLMerchantWebsitePublishFailureResponse,
+  DashboardGraphQLMerchantWebsitePublishSuccessResponse,
+  DashboardGraphQLMerchantWebsiteSection,
+  DashboardGraphQLMerchantWebsiteSectionEnum,
+  DashboardGraphQLMerchantWebsiteSectionInput,
+  DashboardGraphQLMerchantWebsiteSectionStatusEnum,
+  DashboardGraphQLMerchantWebsiteTermsAndConditions,
+  DashboardGraphQLMerchantWebsiteVerficationSection,
+  DashboardGraphQLMerchantWebsiteVerificationFailureResponse,
+  DashboardGraphQLMerchantWebsiteVerificationInput,
+  DashboardGraphQLMerchantWebsiteVerificationSuccessResponse,
+  DashboardGraphQLMerchantWorkflowClarificationSubmitFailureResponse,
+  DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse,
+  DashboardGraphQLMilestoneMeta,
+  DashboardGraphQLModularComponent,
+  DashboardGraphQLModularComponentMetUiFieldMetaRedirectUrl,
+  DashboardGraphQLModularComponentMeta,
+  DashboardGraphQLModularComponentMetaUi,
+  DashboardGraphQLModularComponentMetaUiField,
+  DashboardGraphQLModularComponentMetaUiFieldMeta,
+  DashboardGraphQLModularOnboardingConfig,
+  DashboardGraphQLModularOnboardingData,
+  DashboardGraphQLModularOnboardingFieldForDocumentUpload,
+  DashboardGraphQLModularOnboardingFieldMeta,
+  DashboardGraphQLModularOnboardingFieldWithBooleanValue,
+  DashboardGraphQLModularOnboardingFieldWithStringArrayValue,
+  DashboardGraphQLModularOnboardingFieldWithStringValue,
+  DashboardGraphQLModularOnboardingMilestone,
+  DashboardGraphQLModularOnboardingOption,
+  DashboardGraphQLModularOnboardingStepWithModularComponents,
+  DashboardGraphQLModularOnboardingStepWithSteps,
+  DashboardGraphQLMoney,
+  DashboardGraphQLMoneyInput,
+  DashboardGraphQLNotificationEmailUpdateFailureResponse,
+  DashboardGraphQLNotificationEmailUpdateSuccessResponse,
+  DashboardGraphQLNotificationWhatsAppOptIn,
+  DashboardGraphQLOAuthProviderEnum,
+  DashboardGraphQLOauthTokenAppleWatchOtp,
+  DashboardGraphQLOauthTokenAppleWatchResponseError,
+  DashboardGraphQLOauthTokenAppleWatchResponseSuccess,
+  DashboardGraphQLOnboardingManager,
+  DashboardGraphQLOnboardingPaymentEligibilityEnum,
+  DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse,
+  DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse,
+  DashboardGraphQLOnboardingPaymentOrderVerifyResponse,
+  DashboardGraphQLOnboardingPaymentStatusEnum,
+  DashboardGraphQLOnboardingState,
+  DashboardGraphQLOnboardingWidget,
+  DashboardGraphQLOptInForWhatsappEnum,
+  DashboardGraphQLOptInForWhatsappError,
+  DashboardGraphQLOptInForWhatsappSuccess,
+  DashboardGraphQLOrder,
+  DashboardGraphQLOrderAmount,
+  DashboardGraphQLOrderCreateFailureResponse,
+  DashboardGraphQLOrderCreateSuccessResponse,
+  DashboardGraphQLOrderDate,
+  DashboardGraphQLOrderStatusEnum,
+  DashboardGraphQLOrganisation,
+  DashboardGraphQLOrganisationEmail,
+  DashboardGraphQLOrganisationLogo,
+  DashboardGraphQLOrganisationName,
+  DashboardGraphQLOverViewResponseType,
+  DashboardGraphQLPpTrackingSettings,
+  DashboardGraphQLPageAcquirerData,
+  DashboardGraphQLPageItem,
+  DashboardGraphQLPageItemTaxDetails,
+  DashboardGraphQLPartnerConfigFailure,
+  DashboardGraphQLPartnerConfigSuccess,
+  DashboardGraphQLPartnerWebhookSettings,
+  DashboardGraphQLPayment,
+  DashboardGraphQLPaymentAggregationSummary,
+  DashboardGraphQLPaymentAmount,
+  DashboardGraphQLPaymentAnalytics,
+  DashboardGraphQLPaymentAnalyticsAggregateByEnum,
+  DashboardGraphQLPaymentAnalyticsFilterBy,
+  DashboardGraphQLPaymentAnalyticsFilterByDeviceEnum,
+  DashboardGraphQLPaymentAnalyticsFilterByOsEnum,
+  DashboardGraphQLPaymentAnalyticsFilterByPaymentEnum,
+  DashboardGraphQLPaymentAnalyticsFilterBySdkEnum,
+  DashboardGraphQLPaymentAnalyticsIntervalEnum,
+  DashboardGraphQLPaymentAnalyticsResponse,
+  DashboardGraphQLPaymentAnalyticsWidget,
+  DashboardGraphQLPaymentApplicationEnum,
+  DashboardGraphQLPaymentCaptureResponse,
+  DashboardGraphQLPaymentDetails,
+  DashboardGraphQLPaymentEmiDetails,
+  DashboardGraphQLPaymentError,
+  DashboardGraphQLPaymentHandleWidget,
+  DashboardGraphQLPaymentInstantRefundEligibilityAmount,
+  DashboardGraphQLPaymentInstantRefundEligibilityOptionEnum,
+  DashboardGraphQLPaymentInstantRefundEligibilityResponse,
+  DashboardGraphQLPaymentLink,
+  DashboardGraphQLPaymentLinkAmount,
+  DashboardGraphQLPaymentLinkCancelResponse,
+  DashboardGraphQLPaymentLinkCreateResponse,
+  DashboardGraphQLPaymentLinkDate,
+  DashboardGraphQLPaymentLinkNotifyBy,
+  DashboardGraphQLPaymentLinkNotifyByInput,
+  DashboardGraphQLPaymentLinkNotifyMedium,
+  DashboardGraphQLPaymentLinkNotifyResponse,
+  DashboardGraphQLPaymentLinkReminder,
+  DashboardGraphQLPaymentLinkReminderStatusEnum,
+  DashboardGraphQLPaymentLinkStatusEnum,
+  DashboardGraphQLPaymentLinksResponse,
+  DashboardGraphQLPaymentMethodApp,
+  DashboardGraphQLPaymentMethodBankTransfer,
+  DashboardGraphQLPaymentMethodCard,
+  DashboardGraphQLPaymentMethodCardCategoryEnum,
+  DashboardGraphQLPaymentMethodCardExpiry,
+  DashboardGraphQLPaymentMethodCardType,
+  DashboardGraphQLPaymentMethodCardlessEmi,
+  DashboardGraphQLPaymentMethodEmandate,
+  DashboardGraphQLPaymentMethodEmi,
+  DashboardGraphQLPaymentMethodEnum,
+  DashboardGraphQLPaymentMethodNetBanking,
+  DashboardGraphQLPaymentMethodPayLater,
+  DashboardGraphQLPaymentMethodUpiTransfer,
+  DashboardGraphQLPaymentMethodWallet,
+  DashboardGraphQLPaymentOverviewResponse,
+  DashboardGraphQLPaymentPage,
+  DashboardGraphQLPaymentPageAmount,
+  DashboardGraphQLPaymentPageDate,
+  DashboardGraphQLPaymentPageItem,
+  DashboardGraphQLPaymentPageSettings,
+  DashboardGraphQLPaymentPageStatusEnum,
+  DashboardGraphQLPaymentPageSupportDetails,
+  DashboardGraphQLPaymentPageTransaction,
+  DashboardGraphQLPaymentPageTransactionResponse,
+  DashboardGraphQLPaymentPagesResponse,
+  DashboardGraphQLPaymentPayerBankAccount,
+  DashboardGraphQLPaymentRefund,
+  DashboardGraphQLPaymentRefundResponse,
+  DashboardGraphQLPaymentRefundSpeed,
+  DashboardGraphQLPaymentRefundSpeedProcessedEnum,
+  DashboardGraphQLPaymentRefundSpeedRequestedEnum,
+  DashboardGraphQLPaymentRefundStatusEnum,
+  DashboardGraphQLPaymentStatusEnum,
+  DashboardGraphQLPaymentTerm,
+  DashboardGraphQLPaymentVirtualAccount,
+  DashboardGraphQLPaymentVirtualAccountAmount,
+  DashboardGraphQLPaymentVirtualAccountDates,
+  DashboardGraphQLPaymentsNewLaunchProductViewUpdate,
+  DashboardGraphQLPaymentsProductFtuxUpdateResponse,
+  DashboardGraphQLPaymentsResponse,
+  DashboardGraphQLPaymentsSegmentEnum,
+  DashboardGraphQLPaymentsWidgetError,
+  DashboardGraphQLPaymentsWidgetTypeEnum,
+  DashboardGraphQLPaymentsWidgets,
+  DashboardGraphQLPayout,
+  DashboardGraphQLPayoutApproveBulkResponseFailure,
+  DashboardGraphQLPayoutApproveBulkResponseSuccess,
+  DashboardGraphQLPayoutBatch,
+  DashboardGraphQLPayoutBatchDates,
+  DashboardGraphQLPayoutBatchPayoutsCount,
+  DashboardGraphQLPayoutBatchStatusEnum,
+  DashboardGraphQLPayoutBatchTypeEnum,
+  DashboardGraphQLPayoutBatchesResponse,
+  DashboardGraphQLPayoutCompositeCreateResponse,
+  DashboardGraphQLPayoutCompositeMerchantContactInput,
+  DashboardGraphQLPayoutCreateIciciResponse,
+  DashboardGraphQLPayoutCreateResponse,
+  DashboardGraphQLPayoutDate,
+  DashboardGraphQLPayoutFee,
+  DashboardGraphQLPayoutFeeEnum,
+  DashboardGraphQLPayoutInternalStatusEnum,
+  DashboardGraphQLPayoutLink,
+  DashboardGraphQLPayoutLinkCreateResponse,
+  DashboardGraphQLPayoutLinkDate,
+  DashboardGraphQLPayoutLinkSendVia,
+  DashboardGraphQLPayoutLinkSentVia,
+  DashboardGraphQLPayoutLinkStatusEnum,
+  DashboardGraphQLPayoutLinksResponse,
+  DashboardGraphQLPayoutModeEnum,
+  DashboardGraphQLPayoutPendingOnInput,
+  DashboardGraphQLPayoutPendingOnRoleEnum,
+  DashboardGraphQLPayoutPurpose,
+  DashboardGraphQLPayoutPurposeCreateResponse,
+  DashboardGraphQLPayoutPurposeTypeEnum,
+  DashboardGraphQLPayoutRejectBulkResponseFailure,
+  DashboardGraphQLPayoutRejectBulkResponseSuccess,
+  DashboardGraphQLPayoutSource,
+  DashboardGraphQLPayoutStatusEnum,
+  DashboardGraphQLPayoutWorkflowHistory,
+  DashboardGraphQLPayoutWorkflowRole,
+  DashboardGraphQLPayoutWorkflowRoleChecker,
+  DashboardGraphQLPayoutWorkflowRoleTypeEnum,
+  DashboardGraphQLPayoutWorkflowStep,
+  DashboardGraphQLPayoutWorkflowStepOperationTypeEnum,
+  DashboardGraphQLPayoutsPendingSummary,
+  DashboardGraphQLPayoutsQueuedReasonEnum,
+  DashboardGraphQLPayoutsQueuedSummaryBeneficiaryBankDown,
+  DashboardGraphQLPayoutsQueuedSummaryLowBalance,
+  DashboardGraphQLPayoutsQueuedSummaryNeftLimitExhausted,
+  DashboardGraphQLPayoutsQueuedSummaryNeftWindowClosed,
+  DashboardGraphQLPayoutsQueuedSummaryNpciSystemDown,
+  DashboardGraphQLPayoutsQueuedSummaryWithoutReason,
+  DashboardGraphQLPayoutsResponse,
+  DashboardGraphQLPayoutsScheduledPeriodEnum,
+  DashboardGraphQLPayoutsScheduledSummaryAllTime,
+  DashboardGraphQLPayoutsScheduledSummaryNextMonth,
+  DashboardGraphQLPayoutsScheduledSummaryNextTwoDays,
+  DashboardGraphQLPayoutsScheduledSummaryNextWeek,
+  DashboardGraphQLPayoutsScheduledSummaryToday,
+  DashboardGraphQLPayoutsSummary,
+  DashboardGraphQLPettyCash,
+  DashboardGraphQLPettyCashCreateResponse,
+  DashboardGraphQLPettyCashDate,
+  DashboardGraphQLPettyCashDestinationDetails,
+  DashboardGraphQLPettyCashModeEnum,
+  DashboardGraphQLPettyCashStatusEnum,
+  DashboardGraphQLPhone,
+  DashboardGraphQLPhoneInput,
+  DashboardGraphQLPlatformEnum,
+  DashboardGraphQLPointOfSale,
+  DashboardGraphQLPointOfSaleKeyFetchResponse,
+  DashboardGraphQLPointOfSalePaymentCreateFailureResponse,
+  DashboardGraphQLPointOfSalePaymentCreateSuccessResponse,
+  DashboardGraphQLPointOfSalePaymentTransactionInput,
+  DashboardGraphQLPointOfSalePaymentTransactionStatus,
+  DashboardGraphQLPointOfSalePaymentUpdateFailureResponse,
+  DashboardGraphQLPointOfSalePaymentUpdateSuccessResponse,
+  DashboardGraphQLProductTypeEnum,
+  DashboardGraphQLQrCode,
+  DashboardGraphQLQrCodeCreateFailureResponse,
+  DashboardGraphQLQrCodeCreateSuccessResponse,
+  DashboardGraphQLQrCodeDate,
+  DashboardGraphQLQrCodePaymentDetail,
+  DashboardGraphQLQrCodeStatusEnum,
+  DashboardGraphQLQrCodeTypeEnum,
+  DashboardGraphQLQrCodeUsageEnum,
+  DashboardGraphQLQrCodesResponse,
+  DashboardGraphQLRecentTransactionsWidget,
+  DashboardGraphQLRefreshAccessToken,
+  DashboardGraphQLRefundsResponse,
+  DashboardGraphQLRegisterBusinessResponse,
+  DashboardGraphQLRegisterEmailError,
+  DashboardGraphQLRegisterEmailSuccess,
+  DashboardGraphQLRegisterEmailVerificationMethodEnum,
+  DashboardGraphQLRegisterEmailVerifyResponseFailure,
+  DashboardGraphQLRegisterEmailVerifyResponseSuccess,
+  DashboardGraphQLRegisterFcmTokenResponse,
+  DashboardGraphQLRegisterMerchantErrorEnum,
+  DashboardGraphQLRegisterMerchantResponseFailure,
+  DashboardGraphQLRegisterMerchantResponseSuccess,
+  DashboardGraphQLRegisterMobileVerifyEnum,
+  DashboardGraphQLRegisterMobileVerifyResponseFailure,
+  DashboardGraphQLRegisterMobileVerifyResponseSuccess,
+  DashboardGraphQLRegisterOAuthEmailError,
+  DashboardGraphQLRegisterOAuthEmailExist,
+  DashboardGraphQLRegisterOAuthInvalidTokenError,
+  DashboardGraphQLRejectPayoutBatchResponseFailure,
+  DashboardGraphQLRejectPayoutBatchResponseSuccess,
+  DashboardGraphQLRejectPayoutResponse,
+  DashboardGraphQLRepaymentsBreakup,
+  DashboardGraphQLRepaymentsSummary,
+  DashboardGraphQLResendEmailOtp,
+  DashboardGraphQLResendTwoFactorLoginOtpResponse,
+  DashboardGraphQLResetPasswordEmail,
+  DashboardGraphQLSalesMerchantActivationStatusEnum,
+  DashboardGraphQLSalesOnboardedMerchant,
+  DashboardGraphQLSalesOnboardedMerchants,
+  DashboardGraphQLSalesOnboardedMerchantsError,
+  DashboardGraphQLSendApprovePayoutBatchOtp,
+  DashboardGraphQLSendApprovePayoutOtp,
+  DashboardGraphQLSendCreatePayoutLinkOtp,
+  DashboardGraphQLSendCreatePayoutOtp,
+  DashboardGraphQLSendEmailVerificationOtpEnum,
+  DashboardGraphQLSendEmailVerificationOtpErrorResponse,
+  DashboardGraphQLSendEmailVerificationOtpSuccessResponse,
+  DashboardGraphQLSendIciciPayoutOtpResponse,
+  DashboardGraphQLSendPayoutApproveBulkOtp,
+  DashboardGraphQLSendPayoutCompositeOtp,
+  DashboardGraphQLSetEmailPasswordEnum,
+  DashboardGraphQLSetEmailPasswordErrorResponse,
+  DashboardGraphQLSetEmailPasswordSuccessResponse,
+  DashboardGraphQLSetNewPasswordEnum,
+  DashboardGraphQLSetNewPasswordErrorResponse,
+  DashboardGraphQLSetNewPasswordSuccessResponse,
+  DashboardGraphQLSettlement,
+  DashboardGraphQLSettlementAmount,
+  DashboardGraphQLSettlementBreakup,
+  DashboardGraphQLSettlementBreakupComponentEnum,
+  DashboardGraphQLSettlementBreakupTransactionTypeEnum,
+  DashboardGraphQLSettlementCycle,
+  DashboardGraphQLSettlementStatusEnum,
+  DashboardGraphQLSettlementsResponse,
+  DashboardGraphQLSettlementsWidget,
+  DashboardGraphQLSmsNotificationStatusResponse,
+  DashboardGraphQLSmsNotificationToggle,
+  DashboardGraphQLSortByEnum,
+  DashboardGraphQLStepMeta,
+  DashboardGraphQLTdsCategory,
+  DashboardGraphQLTooltipBadge,
+  DashboardGraphQLTransaction,
+  DashboardGraphQLTransactionAmount,
+  DashboardGraphQLTransactionError,
+  DashboardGraphQLTransactionSourceAdjustment,
+  DashboardGraphQLTransactionSourceBankTransfer,
+  DashboardGraphQLTransactionSourceBankTransferModeEnum,
+  DashboardGraphQLTransactionSourceBankTransferPayee,
+  DashboardGraphQLTransactionSourceBankTransferPayer,
+  DashboardGraphQLTransactionSourceDetails,
+  DashboardGraphQLTransactionSourceExternal,
+  DashboardGraphQLTransactionSourceFundAccountValidation,
+  DashboardGraphQLTransactionSourceReversal,
+  DashboardGraphQLTransactionSourceTypeEnum,
+  DashboardGraphQLTransactionStatus,
+  DashboardGraphQLTransactionTypeEnum,
+  DashboardGraphQLTransactionsResponse,
+  DashboardGraphQLTwoFactorActionTypeEnum,
+  DashboardGraphQLTwoFactorAddMobileOtpErrorResponse,
+  DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse,
+  DashboardGraphQLTwoFactorAddMobileOtpVerifyErrorResponse,
+  DashboardGraphQLTwoFactorAddMobileOtpVerifySuccessResponse,
+  DashboardGraphQLTwoFactorAuthUpdateFailureResponse,
+  DashboardGraphQLTwoFactorAuthUpdateSuccessResponse,
+  DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse,
+  DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse,
+  DashboardGraphQLTwoFactorOtpFailureResponse,
+  DashboardGraphQLTwoFactorOtpMediumEnum,
+  DashboardGraphQLTwoFactorOtpSuccessResponse,
+  DashboardGraphQLTwoFactorPasswordCreateErrorResponse,
+  DashboardGraphQLTwoFactorPasswordCreateSuccessResponse,
+  DashboardGraphQLTwoFactorPasswordEnabledErrorResponse,
+  DashboardGraphQLTwoFactorPasswordEnabledSuccessResponse,
+  DashboardGraphQLTwoFactorUnverifiedMobileVerifyResponse,
+  DashboardGraphQLUpdateMerchantConsentResponse,
+  DashboardGraphQLUpiTerminalProcurementStatusEnum,
+  DashboardGraphQLUser,
+  DashboardGraphQLUserAcquisitionSourceEnum,
+  DashboardGraphQLUserAuthentication,
+  DashboardGraphQLUserContactDetails,
+  DashboardGraphQLUserContactDetailsUpdateResponse,
+  DashboardGraphQLUserDeviceAnalyticsResponse,
+  DashboardGraphQLUserExistsByEmailOrPhoneEnum,
+  DashboardGraphQLUserExistsByEmailOrPhoneError,
+  DashboardGraphQLUserExistsByEmailOrPhoneSuccess,
+  DashboardGraphQLUserLogout,
+  DashboardGraphQLUserOtpVerifyErrorTypeEnum,
+  DashboardGraphQLUserOtpVerifyResponse,
+  DashboardGraphQLUserRole,
+  DashboardGraphQLUserRoleBankingEnum,
+  DashboardGraphQLUserRolePaymentsEnum,
+  DashboardGraphQLUserSignupCampaignEnum,
+  DashboardGraphQLUserSignupMethodEnum,
+  DashboardGraphQLValidateVpaFailureResponse,
+  DashboardGraphQLValidateVpaSuccessResponse,
+  DashboardGraphQLVendorPayment,
+  DashboardGraphQLVendorPaymentCancelResponse,
+  DashboardGraphQLVendorPaymentDates,
+  DashboardGraphQLVendorPaymentGst,
+  DashboardGraphQLVendorPaymentInvoice,
+  DashboardGraphQLVendorPaymentInvoiceAttachment,
+  DashboardGraphQLVendorPaymentPayoutAmounts,
+  DashboardGraphQLVendorPaymentPayoutCreateResponse,
+  DashboardGraphQLVendorPaymentStatusEnum,
+  DashboardGraphQLVendorPaymentTds,
+  DashboardGraphQLVendorPaymentsResponse,
+  DashboardGraphQLVerifyEmailOtpEnum,
+  DashboardGraphQLVerifyEmailOtpErrorResponse,
+  DashboardGraphQLVerifyEmailOtpSuccessResponse,
+  DashboardGraphQLWhatsappNotificationStatusResponse,
+  DashboardGraphQLWhatsappNotificationToggle,
+  DashboardGraphQLWidgetVariantEnum,
+  DashboardGraphQLWithdrawal,
+  DashboardGraphQLWithdrawalConfig,
+  DashboardGraphQLWithdrawalListStatus,
+  DashboardGraphQLWithdrawalValidity,
+  DashboardGraphQLWithdrawalsList,
+  DashboardGraphQLWorkflow,
+  DashboardGraphQLWorkflowConfig,
+  DashboardGraphQLWorkflowConfigState,
+  DashboardGraphQLWorkflowConfigStateRulePayoutTypeBetween,
+  DashboardGraphQLWorkflowConfigStateRulePayoutTypeChecker,
+  DashboardGraphQLWorkflowConfigStateRulePayoutTypeMergeStates,
+  DashboardGraphQLWorkflowConfigStateTransition,
+  DashboardGraphQLWorkflowConfigStateTypeEnum,
+  DashboardGraphQLWorkflowConfigTemplate,
+  DashboardGraphQLWorkflowConfigTemplateTypeEnum,
+  DashboardGraphQLWorkflowCreator,
+  DashboardGraphQLWorkflowCreatorTypeEnum,
+  DashboardGraphQLWorkflowData,
+  DashboardGraphQLWorkflowState,
+  DashboardGraphQLWorkflowStateAction,
+  DashboardGraphQLWorkflowStateActionActor,
+  DashboardGraphQLWorkflowStateActionStatusEnum,
+  DashboardGraphQLWorkflowStateDates,
+  DashboardGraphQLWorkflowStateStatusEnum,
+  DashboardGraphQLWorkflowStatusEnum,
+  DashboardGraphQLCreateWithdrawalResponse,
+  DashboardGraphQLMerchantConfigurationUpdateResponse,
+  DashboardGraphQLMerchantModularOnboardingDetailsFailureResponse,
+  DashboardGraphQLMerchantModularOnboardingDetailsSuccessResponse,
+  DashboardGraphQLUserOtpResponse,
+} from './index';
+/** Mapping between all available schema types and the resolvers types */
+export type DashboardGraphQLResolversTypes = {
+  DashboardGraphQLAadhaarCaptchaErrorTypeEnum: DashboardGraphQLAadhaarCaptchaErrorTypeEnum;
+  DashboardGraphQLAadhaarCaptchaResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarCaptchaResponse>;
+  DashboardGraphQLAadhaarCaptchaV2FailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarCaptchaV2FailureResponse>;
+  DashboardGraphQLAadhaarCaptchaV2Response:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarCaptchaV2FailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarCaptchaV2SuccessResponse'];
+  DashboardGraphQLAadhaarCaptchaV2SuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarCaptchaV2SuccessResponse>;
+  DashboardGraphQLAadhaarCaptchaVerifyErrorTypeEnum: DashboardGraphQLAadhaarCaptchaVerifyErrorTypeEnum;
+  DashboardGraphQLAadhaarCaptchaVerifyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarCaptchaVerifyResponse>;
+  DashboardGraphQLAadhaarDigilockerOtpFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerOtpFailureResponse>;
+  DashboardGraphQLAadhaarDigilockerOtpResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerOtpFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerOtpSuccessResponse'];
+  DashboardGraphQLAadhaarDigilockerOtpSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerOtpSuccessResponse>;
+  DashboardGraphQLAadhaarDigilockerOtpVerifyFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerOtpVerifyFailureResponse>;
+  DashboardGraphQLAadhaarDigilockerOtpVerifyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerOtpVerifyFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerOtpVerifySuccessResponse'];
+  DashboardGraphQLAadhaarDigilockerOtpVerifySuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerOtpVerifySuccessResponse>;
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlErrorTypeEnum: DashboardGraphQLAadhaarDigilockerRedirectionUrlErrorTypeEnum;
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerRedirectionUrlFailureResponse>;
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerRedirectionUrlFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerRedirectionUrlSuccessResponse'];
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerRedirectionUrlSuccessResponse>;
+  DashboardGraphQLAadhaarDigilockerRedirectionUrlVerifyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerRedirectionVerificationFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarDigilockerRedirectionVerificationSuccessResponse'];
+  DashboardGraphQLAadhaarDigilockerRedirectionVerificationErrorTypeEnum: DashboardGraphQLAadhaarDigilockerRedirectionVerificationErrorTypeEnum;
+  DashboardGraphQLAadhaarDigilockerRedirectionVerificationFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerRedirectionVerificationFailureResponse>;
+  DashboardGraphQLAadhaarDigilockerRedirectionVerificationSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarDigilockerRedirectionVerificationSuccessResponse>;
+  DashboardGraphQLAadhaarOtpDigilockerErrorEnum: DashboardGraphQLAadhaarOtpDigilockerErrorEnum;
+  DashboardGraphQLAadhaarOtpVerifyErrorTypeEnum: DashboardGraphQLAadhaarOtpVerifyErrorTypeEnum;
+  DashboardGraphQLAadhaarOtpVerifyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAadhaarOtpVerifyResponse>;
+  DashboardGraphQLAcceptPaymentsProduct: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAcceptPaymentsProduct>;
+  DashboardGraphQLAcceptPaymentsWidget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAcceptPaymentsWidget>;
+  DashboardGraphQLAccountVerificationOtpResendResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAccountVerificationOtpResendResponse>;
+  DashboardGraphQLAccountVerificationOtpResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAccountVerificationOtpResponse>;
+  DashboardGraphQLAcquirerData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAcquirerData>;
+  DashboardGraphQLAddress: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAddress>;
+  DashboardGraphQLAddressByPincodeFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAddressByPincodeFailureResponse>;
+  DashboardGraphQLAddressByPincodeResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAddressByPincodeFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAddressByPincodeSuccessResponse'];
+  DashboardGraphQLAddressByPincodeSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAddressByPincodeSuccessResponse>;
+  DashboardGraphQLAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAmount>;
+  DashboardGraphQLApiKeyRegenerationDelayTypeEnum: DashboardGraphQLApiKeyRegenerationDelayTypeEnum;
+  DashboardGraphQLApproveIciciPayoutResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLApproveIciciPayoutResponse>;
+  DashboardGraphQLApprovePayoutBatchResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLApprovePayoutBatchResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLApprovePayoutBatchResponseSuccess'];
+  DashboardGraphQLApprovePayoutBatchResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLApprovePayoutBatchResponseFailure>;
+  DashboardGraphQLApprovePayoutBatchResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLApprovePayoutBatchResponseSuccess>;
+  DashboardGraphQLApprovePayoutResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLApprovePayoutResponse>;
+  DashboardGraphQLAuth:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAuthUnauthenticated']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAuthUnregistered']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAuthUser'];
+  DashboardGraphQLAuthErrorCodeEnum: DashboardGraphQLAuthErrorCodeEnum;
+  DashboardGraphQLAuthSourceEnum: DashboardGraphQLAuthSourceEnum;
+  DashboardGraphQLAuthUnauthenticated: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAuthUnauthenticated>;
+  DashboardGraphQLAuthUnregistered: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAuthUnregistered>;
+  DashboardGraphQLAuthUser: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLAuthUser>;
+  DashboardGraphQLBank: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLBank>;
+  BigInt: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['BigInt']>;
+  Boolean: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['Boolean']>;
+  DashboardGraphQLBudget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLBudget>;
+  DashboardGraphQLBudgetDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLBudgetDate>;
+  DashboardGraphQLBudgetStatusEnum: DashboardGraphQLBudgetStatusEnum;
+  DashboardGraphQLBudgetTypeEnum: DashboardGraphQLBudgetTypeEnum;
+  DashboardGraphQLBudgetsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLBudgetsResponse>;
+  DashboardGraphQLBusinessType: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLBusinessType>;
+  DashboardGraphQLCaptchaModeEnum: DashboardGraphQLCaptchaModeEnum;
+  DashboardGraphQLCategoryModulePlacementEnum: DashboardGraphQLCategoryModulePlacementEnum;
+  DashboardGraphQLCheckoutOptions: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCheckoutOptions>;
+  DashboardGraphQLClarificationComment: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLClarificationComment>;
+  DashboardGraphQLClarificationComments: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLClarificationComments>;
+  DashboardGraphQLClientPlatformEnum: DashboardGraphQLClientPlatformEnum;
+  DashboardGraphQLConfigData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLConfigData>;
+  DashboardGraphQLConfiguration: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLConfiguration>;
+  DashboardGraphQLCountryCodeEnum: DashboardGraphQLCountryCodeEnum;
+  DashboardGraphQLCouponApplyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCouponApplyResponse>;
+  DashboardGraphQLCouponValidateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCouponValidateResponse>;
+  DashboardGraphQLCurrency: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCurrency>;
+  DashboardGraphQLCurrencyCodeEnum: DashboardGraphQLCurrencyCodeEnum;
+  DashboardGraphQLCurrencyInput: DashboardGraphQLCurrencyInput;
+  DashboardGraphQLCurrencyNameEnum: DashboardGraphQLCurrencyNameEnum;
+  DashboardGraphQLCustomer: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCustomer>;
+  DashboardGraphQLCustomerAddress: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCustomerAddress>;
+  DashboardGraphQLCustomerInput: DashboardGraphQLCustomerInput;
+  DateTime: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['DateTime']>;
+  DeregisterFCMTokenResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLDeregisterFcmTokenResponse>;
+  DashboardGraphQLDestinationAccountDetailsInput: DashboardGraphQLDestinationAccountDetailsInput;
+  DashboardGraphQLDeviceAnalyticsDataInput: DashboardGraphQLDeviceAnalyticsDataInput;
+  DashboardGraphQLDigilockerVerificationTypeEnum: DashboardGraphQLDigilockerVerificationTypeEnum;
+  DashboardGraphQLDocumentUploadFieldValue: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLDocumentUploadFieldValue>;
+  EMISummary: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLEmiSummary>;
+  DashboardGraphQLEddEligibilityEnum: DashboardGraphQLEddEligibilityEnum;
+  EmailAddress: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['EmailAddress']>;
+  DashboardGraphQLEmiSummaryCharges: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLEmiSummaryCharges>;
+  DashboardGraphQLEmiSummaryDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLEmiSummaryDetails>;
+  DashboardGraphQLEmiTenureMap: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLEmiTenureMap>;
+  DashboardGraphQLExpenseCategoriesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLExpenseCategoriesResponse>;
+  DashboardGraphQLExpenseCategory: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLExpenseCategory>;
+  DashboardGraphQLFailedPaymentsOverviewFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLFailedPaymentsOverviewFailureResponse>;
+  DashboardGraphQLFailedPaymentsOverviewResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLFailedPaymentsOverviewFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLFailedPaymentsOverviewSuccessResponse'];
+  DashboardGraphQLFailedPaymentsOverviewSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLFailedPaymentsOverviewSuccessResponse>;
+  DashboardGraphQLFeeBasedGatingPaymentStatusEnum: DashboardGraphQLFeeBasedGatingPaymentStatusEnum;
+  DashboardGraphQLFeeBearerEnum: DashboardGraphQLFeeBearerEnum;
+  DashboardGraphQLFieldDetailsInput: DashboardGraphQLFieldDetailsInput;
+  Float: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['Float']>;
+  DashboardGraphQLGoalTrackerMetaData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLGoalTrackerMetaData>;
+  DashboardGraphQLGoalTrackerSettings: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLGoalTrackerSettings>;
+  DashboardGraphQLGstTypeEnum: DashboardGraphQLGstTypeEnum;
+  ID: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['ID']>;
+  DashboardGraphQLImage: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLImage>;
+  Int: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['Int']>;
+  DashboardGraphQLInvoice: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLInvoice>;
+  DashboardGraphQLInvoiceAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLInvoiceAmount>;
+  DashboardGraphQLInvoiceDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLInvoiceDate>;
+  DashboardGraphQLInvoiceItem: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLInvoiceItem>;
+  DashboardGraphQLInvoiceSmsStatusEnum: DashboardGraphQLInvoiceSmsStatusEnum;
+  DashboardGraphQLInvoiceStatusEnum: DashboardGraphQLInvoiceStatusEnum;
+  DashboardGraphQLInvoiceTypeEnum: DashboardGraphQLInvoiceTypeEnum;
+  DashboardGraphQLInvoicesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLInvoicesResponse>;
+  JSON: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['JSON']>;
+  JSONObject: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['JSONObject']>;
+  DashboardGraphQLLoginOtpError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLLoginOtpError>;
+  DashboardGraphQLLoginOtpErrorCodeEnum: DashboardGraphQLLoginOtpErrorCodeEnum;
+  DashboardGraphQLLoginOtpResendError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLLoginOtpResendError>;
+  DashboardGraphQLLoginOtpResendResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLLoginOtpResendError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLLoginOtpResendSuccess'];
+  DashboardGraphQLLoginOtpResendSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLLoginOtpResendSuccess>;
+  DashboardGraphQLLoginOtpResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLLoginOtpError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLLoginOtpSuccess'];
+  DashboardGraphQLLoginOtpSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLLoginOtpSuccess>;
+  DashboardGraphQLMerchant: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchant>;
+  DashboardGraphQLMerchantAcceptanceChannel: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantAcceptanceChannel>;
+  DashboardGraphQLMerchantAcceptanceChannelInput: DashboardGraphQLMerchantAcceptanceChannelInput;
+  DashboardGraphQLMerchantAcceptanceChannelWhatsappSmsEmail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantAcceptanceChannelWhatsappSmsEmail>;
+  DashboardGraphQLMerchantAcceptanceChannelWhatsappSmsEmailInput: DashboardGraphQLMerchantAcceptanceChannelWhatsappSmsEmailInput;
+  DashboardGraphQLMerchantActivation: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLMerchantActivation, 'merchantEscalations'> & {
+      merchantEscalations: DashboardGraphQLResolversTypes['DashboardGraphQLMerchantEscalations'];
+    }
+  >;
+  DashboardGraphQLMerchantActivationDedupe: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantActivationDedupe>;
+  DashboardGraphQLMerchantActivationEscalationsBreached: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantActivationEscalationsBreached>;
+  DashboardGraphQLMerchantActivationEscalationsNotBreached: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantActivationEscalationsNotBreached>;
+  DashboardGraphQLMerchantActivationFlow: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantActivationFlow>;
+  DashboardGraphQLMerchantActivationFlowEnum: DashboardGraphQLMerchantActivationFlowEnum;
+  DashboardGraphQLMerchantActivationMilestoneEnum: DashboardGraphQLMerchantActivationMilestoneEnum;
+  DashboardGraphQLMerchantActivationResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantActivationResponse>;
+  DashboardGraphQLMerchantActivationStatusEnum: DashboardGraphQLMerchantActivationStatusEnum;
+  DashboardGraphQLMerchantAddress: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantAddress>;
+  DashboardGraphQLMerchantAddressInput: DashboardGraphQLMerchantAddressInput;
+  DashboardGraphQLMerchantAnalytics: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantAnalytics>;
+  DashboardGraphQLMerchantApiKey: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKey>;
+  DashboardGraphQLMerchantApiKeyCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKeyCreateResponse>;
+  DashboardGraphQLMerchantApiKeyInterface:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKey']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeyCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeyRegenerateNew']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeyRegenerateOld']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeysCreateSuccess'];
+  DashboardGraphQLMerchantApiKeyRegenerateNew: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKeyRegenerateNew>;
+  DashboardGraphQLMerchantApiKeyRegenerateOld: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKeyRegenerateOld>;
+  DashboardGraphQLMerchantApiKeyRegenerateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKeyRegenerateResponse>;
+  DashboardGraphQLMerchantApiKeysCreateFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKeysCreateFailure>;
+  DashboardGraphQLMerchantApiKeysCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeysCreateFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeysCreateSuccess'];
+  DashboardGraphQLMerchantApiKeysCreateSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantApiKeysCreateSuccess>;
+  DashboardGraphQLMerchantAverageOrderField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantAverageOrderField>;
+  DashboardGraphQLMerchantAverageOrderFieldValue: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantAverageOrderFieldValue>;
+  DashboardGraphQLMerchantBalance: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBalance>;
+  DashboardGraphQLMerchantBalanceAccountTypeEnum: DashboardGraphQLMerchantBalanceAccountTypeEnum;
+  DashboardGraphQLMerchantBalanceProductTypeEnum: DashboardGraphQLMerchantBalanceProductTypeEnum;
+  DashboardGraphQLMerchantBank: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBank>;
+  DashboardGraphQLMerchantBankAccountDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankAccountDetails>;
+  DashboardGraphQLMerchantBankAccountDocumentUploadFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankAccountDocumentUploadFailureResponse>;
+  DashboardGraphQLMerchantBankAccountDocumentUploadResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountDocumentUploadFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse'];
+  DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse>;
+  DashboardGraphQLMerchantBankAccountUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankAccountUpdateFailureResponse>;
+  DashboardGraphQLMerchantBankAccountUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountUpdateSuccessResponse'];
+  DashboardGraphQLMerchantBankAccountUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankAccountUpdateSuccessResponse>;
+  DashboardGraphQLMerchantBankDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankDetails>;
+  DashboardGraphQLMerchantBankDetailsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankDetailsFailureResponse>;
+  DashboardGraphQLMerchantBankDetailsResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankDetailsSuccessResponse'];
+  DashboardGraphQLMerchantBankDetailsSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankDetailsSuccessResponse>;
+  DashboardGraphQLMerchantBankInput: DashboardGraphQLMerchantBankInput;
+  DashboardGraphQLMerchantBankVerificationErrorCodeEnum: DashboardGraphQLMerchantBankVerificationErrorCodeEnum;
+  DashboardGraphQLMerchantBankingAccount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankingAccount>;
+  DashboardGraphQLMerchantBankingAccountBalance: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankingAccountBalance>;
+  DashboardGraphQLMerchantBankingAccountStatusEnum: DashboardGraphQLMerchantBankingAccountStatusEnum;
+  DashboardGraphQLMerchantBankingAccountTypeEnum: DashboardGraphQLMerchantBankingAccountTypeEnum;
+  DashboardGraphQLMerchantBankingAccountsBalanceResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankingAccountsBalanceResponse>;
+  DashboardGraphQLMerchantBankingRole: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBankingRole>;
+  DashboardGraphQLMerchantBusiness: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusiness>;
+  DashboardGraphQLMerchantBusinessAddress: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessAddress>;
+  DashboardGraphQLMerchantBusinessAddressInput: DashboardGraphQLMerchantBusinessAddressInput;
+  DashboardGraphQLMerchantBusinessAppDetailsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessAppDetailsResponse>;
+  DashboardGraphQLMerchantBusinessAppInput: DashboardGraphQLMerchantBusinessAppInput;
+  DashboardGraphQLMerchantBusinessCategories:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBusinessCategoriesResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBusinessCategoriesResponseV2'];
+  DashboardGraphQLMerchantBusinessCategoriesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessCategoriesResponse>;
+  DashboardGraphQLMerchantBusinessCategoriesResponseV2: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessCategoriesResponseV2>;
+  DashboardGraphQLMerchantBusinessCategoryIcon: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessCategoryIcon>;
+  DashboardGraphQLMerchantBusinessCategoryIconEnum: DashboardGraphQLMerchantBusinessCategoryIconEnum;
+  DashboardGraphQLMerchantBusinessInput: DashboardGraphQLMerchantBusinessInput;
+  DashboardGraphQLMerchantBusinessParentCategory: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessParentCategory>;
+  DashboardGraphQLMerchantBusinessSubCategory: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessSubCategory>;
+  DashboardGraphQLMerchantBusinessTypeEnum: DashboardGraphQLMerchantBusinessTypeEnum;
+  DashboardGraphQLMerchantBusinessTypeField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessTypeField>;
+  DashboardGraphQLMerchantBusinessTypeInputField: DashboardGraphQLMerchantBusinessTypeInputField;
+  DashboardGraphQLMerchantBusinessTypesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessTypesResponse>;
+  DashboardGraphQLMerchantBusinessWebsiteDetailsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantBusinessWebsiteDetailsResponse>;
+  DashboardGraphQLMerchantBusinessWebsiteInput: DashboardGraphQLMerchantBusinessWebsiteInput;
+  DashboardGraphQLMerchantClarificationDetail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantClarificationDetail>;
+  DashboardGraphQLMerchantClarificationDetailsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantClarificationDetailsResponse>;
+  DashboardGraphQLMerchantClarificationDetailsSubmitResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantClarificationDetailsSubmitResponse>;
+  DashboardGraphQLMerchantClarificationDetailsUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantClarificationDetailsUpdateResponse>;
+  DashboardGraphQLMerchantClarificationFieldValues: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantClarificationFieldValues>;
+  DashboardGraphQLMerchantClarificationFromEnum: DashboardGraphQLMerchantClarificationFromEnum;
+  DashboardGraphQLMerchantClarificationInputType: DashboardGraphQLMerchantClarificationInputType;
+  DashboardGraphQLMerchantClarificationStatusEnum: DashboardGraphQLMerchantClarificationStatusEnum;
+  DashboardGraphQLMerchantClarificationTypeEnum: DashboardGraphQLMerchantClarificationTypeEnum;
+  DashboardGraphQLMerchantClarifications: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantClarifications>;
+  DashboardGraphQLMerchantCommentTypeEnum: DashboardGraphQLMerchantCommentTypeEnum;
+  DashboardGraphQLMerchantConfig:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConfigFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantOnboardingConfig'];
+  DashboardGraphQLMerchantConfigFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConfigFailure>;
+  DashboardGraphQLMerchantConfigUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConfigUpdateResponse>;
+  DashboardGraphQLMerchantConfiguration: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConfiguration>;
+  DashboardGraphQLMerchantConfigurationNamespaceEnum: DashboardGraphQLMerchantConfigurationNamespaceEnum;
+  DashboardGraphQLMerchantConsentData: DashboardGraphQLMerchantConsentData;
+  DashboardGraphQLMerchantConsentEvent: DashboardGraphQLMerchantConsentEvent;
+  DashboardGraphQLMerchantConsentFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConsentFailure>;
+  DashboardGraphQLMerchantConsentInput: DashboardGraphQLMerchantConsentInput;
+  DashboardGraphQLMerchantConsentPayload: DashboardGraphQLMerchantConsentPayload;
+  DashboardGraphQLMerchantConsentResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConsentFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConsentSuccess'];
+  DashboardGraphQLMerchantConsentSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConsentSuccess>;
+  DashboardGraphQLMerchantConsentsErrorTypeEnum: DashboardGraphQLMerchantConsentsErrorTypeEnum;
+  DashboardGraphQLMerchantConsentsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConsentsFailureResponse>;
+  DashboardGraphQLMerchantConsentsResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConsentsFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConsentsSuccessResponse'];
+  DashboardGraphQLMerchantConsentsSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConsentsSuccessResponse>;
+  DashboardGraphQLMerchantConsentsTypeEnum: DashboardGraphQLMerchantConsentsTypeEnum;
+  DashboardGraphQLMerchantContact: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContact>;
+  DashboardGraphQLMerchantContactCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactCreateResponse>;
+  DashboardGraphQLMerchantContactEmailOtpSendFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactEmailOtpSendFailureResponse>;
+  DashboardGraphQLMerchantContactEmailOtpSendResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactEmailOtpSendFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse'];
+  DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse>;
+  DashboardGraphQLMerchantContactFundAccount: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLMerchantContactFundAccount, 'details'> & {
+      details?: DashboardGraphQLMaybe<
+        DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactFundAccountDetails']
+      >;
+    }
+  >;
+  DashboardGraphQLMerchantContactFundAccountBankAccountInput: DashboardGraphQLMerchantContactFundAccountBankAccountInput;
+  DashboardGraphQLMerchantContactFundAccountCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactFundAccountCreateResponse>;
+  DashboardGraphQLMerchantContactFundAccountDetails:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactFundAccountDetailsBankAccount']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactFundAccountDetailsCard']
+    | DashboardGraphQLResolversTypes['MerchantContactFundAccountDetailsVPA']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactFundAccountDetailsWallet'];
+  DashboardGraphQLMerchantContactFundAccountDetailsBankAccount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactFundAccountDetailsBankAccount>;
+  DashboardGraphQLMerchantContactFundAccountDetailsCard: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactFundAccountDetailsCard>;
+  MerchantContactFundAccountDetailsVPA: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactFundAccountDetailsVpa>;
+  DashboardGraphQLMerchantContactFundAccountDetailsWallet: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactFundAccountDetailsWallet>;
+  DashboardGraphQLMerchantContactFundAccountTypeEnum: DashboardGraphQLMerchantContactFundAccountTypeEnum;
+  MerchantContactFundAccountVPAInput: DashboardGraphQLMerchantContactFundAccountVpaInput;
+  DashboardGraphQLMerchantContactFundAccountsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactFundAccountsResponse>;
+  DashboardGraphQLMerchantContactPerson: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactPerson>;
+  DashboardGraphQLMerchantContactPersonInput: DashboardGraphQLMerchantContactPersonInput;
+  DashboardGraphQLMerchantContactTypeCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactTypeCreateResponseDuplicate']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactTypeCreateResponseSuccess'];
+  DashboardGraphQLMerchantContactTypeCreateResponseDuplicate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactTypeCreateResponseDuplicate>;
+  DashboardGraphQLMerchantContactTypeCreateResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactTypeCreateResponseSuccess>;
+  DashboardGraphQLMerchantContactUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactUpdateResponse>;
+  DashboardGraphQLMerchantContactsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantContactsResponse>;
+  DashboardGraphQLMerchantCreateVkycLinkResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantCreateVkycLinkResponse>;
+  DashboardGraphQLMerchantCreditBalance: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantCreditBalance>;
+  DashboardGraphQLMerchantCreditBalanceFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantCreditBalanceFailureResponse>;
+  DashboardGraphQLMerchantCreditBalanceResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantCreditBalanceFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantCreditBalanceSuccessResponse'];
+  DashboardGraphQLMerchantCreditBalanceSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantCreditBalanceSuccessResponse>;
+  DashboardGraphQLMerchantDocument: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocument>;
+  DashboardGraphQLMerchantDocumentByIdResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocumentByIdResponse>;
+  DashboardGraphQLMerchantDocumentField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocumentField>;
+  DashboardGraphQLMerchantDocumentFieldValue: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocumentFieldValue>;
+  DashboardGraphQLMerchantDocumentFieldValueInterface:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantDocumentByIdResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantDocumentFieldValue'];
+  DashboardGraphQLMerchantDocumentInput: DashboardGraphQLMerchantDocumentInput;
+  DashboardGraphQLMerchantDocumentInputField: DashboardGraphQLMerchantDocumentInputField;
+  DashboardGraphQLMerchantDocumentUpload: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocumentUpload>;
+  DashboardGraphQLMerchantDocumentUploadFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocumentUploadFailureResponse>;
+  DashboardGraphQLMerchantDocumentUploadPurposeEnum: DashboardGraphQLMerchantDocumentUploadPurposeEnum;
+  DashboardGraphQLMerchantDocumentUploadResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantDocumentUploadFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantDocumentUploadSuccessResponse'];
+  DashboardGraphQLMerchantDocumentUploadSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantDocumentUploadSuccessResponse>;
+  DashboardGraphQLMerchantEddDetailsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEddDetailsFailureResponse>;
+  DashboardGraphQLMerchantEddDetailsResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantEddDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantEddDetailsSuccessResponse'];
+  DashboardGraphQLMerchantEddDetailsSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEddDetailsSuccessResponse>;
+  DashboardGraphQLMerchantEddItemDetail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEddItemDetail>;
+  DashboardGraphQLMerchantEddStatusEnum: DashboardGraphQLMerchantEddStatusEnum;
+  DashboardGraphQLMerchantEmailField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEmailField>;
+  DashboardGraphQLMerchantEmailInputField: DashboardGraphQLMerchantEmailInputField;
+  DashboardGraphQLMerchantEmailUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEmailUpdateFailureResponse>;
+  DashboardGraphQLMerchantEmailUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantEmailUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantEmailUpdateSuccessResponse'];
+  DashboardGraphQLMerchantEmailUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEmailUpdateSuccessResponse>;
+  DashboardGraphQLMerchantEscalationAction: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEscalationAction>;
+  DashboardGraphQLMerchantEscalationLimit: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantEscalationLimit>;
+  DashboardGraphQLMerchantEscalationTypeEnum: DashboardGraphQLMerchantEscalationTypeEnum;
+  DashboardGraphQLMerchantEscalations:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantActivationEscalationsBreached']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantActivationEscalationsNotBreached'];
+  DashboardGraphQLMerchantFeatureFlag: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantFeatureFlag>;
+  DashboardGraphQLMerchantFeeBasedGating: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantFeeBasedGating>;
+  DashboardGraphQLMerchantFieldClarificationReason: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantFieldClarificationReason>;
+  DashboardGraphQLMerchantFieldInterface:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantAverageOrderField']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBusinessTypeField']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantDocumentField']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantEmailField']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantNumberField']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPhoneField']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStringField']
+    | DashboardGraphQLResolversTypes['MerchantURLField'];
+  DashboardGraphQLMerchantGstFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstFailureResponse>;
+  DashboardGraphQLMerchantGstResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstSuccessResponse'];
+  DashboardGraphQLMerchantGstSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstSuccessResponse>;
+  DashboardGraphQLMerchantGstinUpdate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdate>;
+  DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse>;
+  DashboardGraphQLMerchantGstinUpdateCustomerActionEnum: DashboardGraphQLMerchantGstinUpdateCustomerActionEnum;
+  DashboardGraphQLMerchantGstinUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateFailureResponse>;
+  DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse>;
+  DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse>;
+  DashboardGraphQLMerchantGstinUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse'];
+  DashboardGraphQLMerchantGstinUpdateV2: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateV2>;
+  DashboardGraphQLMerchantGstinUpdateV2FailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateV2FailureResponse>;
+  DashboardGraphQLMerchantGstinUpdateV2Response:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateV2FailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateV2SuccessResponse'];
+  DashboardGraphQLMerchantGstinUpdateV2SuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantGstinUpdateV2SuccessResponse>;
+  DashboardGraphQLMerchantGstinUpdateVersionEnum: DashboardGraphQLMerchantGstinUpdateVersionEnum;
+  DashboardGraphQLMerchantGstinVerificationErrorCodeEnum: DashboardGraphQLMerchantGstinVerificationErrorCodeEnum;
+  DashboardGraphQLMerchantGstinWorkflowStatusEnum: DashboardGraphQLMerchantGstinWorkflowStatusEnum;
+  DashboardGraphQLMerchantIdentityResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantIdentityResponse>;
+  DashboardGraphQLMerchantIdentityTypeEnum: DashboardGraphQLMerchantIdentityTypeEnum;
+  DashboardGraphQLMerchantInstrument: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrument>;
+  DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse>;
+  DashboardGraphQLMerchantInstrumentCancelRequestMutationResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse'];
+  DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse>;
+  DashboardGraphQLMerchantInstrumentCreateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentCreateFailureResponse>;
+  DashboardGraphQLMerchantInstrumentCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCreateSuccessResponse'];
+  DashboardGraphQLMerchantInstrumentCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentCreateSuccessResponse>;
+  DashboardGraphQLMerchantInstrumentReInitiateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentReInitiateFailureResponse>;
+  DashboardGraphQLMerchantInstrumentReInitiateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentReInitiateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentReInitiateSuccessResponse'];
+  DashboardGraphQLMerchantInstrumentReInitiateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentReInitiateSuccessResponse>;
+  DashboardGraphQLMerchantInstrumentStatusEnum: DashboardGraphQLMerchantInstrumentStatusEnum;
+  DashboardGraphQLMerchantInstrumentsStatus: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantInstrumentsStatus>;
+  MerchantKYCPartnerAccessErrorTypeEnum: DashboardGraphQLMerchantKycPartnerAccessErrorTypeEnum;
+  MerchantKYCPartnerAccessInputTypeEnum: DashboardGraphQLMerchantKycPartnerAccessInputTypeEnum;
+  MerchantKYCPartnerAccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantKycPartnerAccessResponse>;
+  MerchantKYCPartnerAccessStatusUpdateResponse:
+    | DashboardGraphQLResolversTypes['MerchantKYCPartnerAccessUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['MerchantKYCPartnerAccessUpdateSuccessResponse'];
+  MerchantKYCPartnerAccessTypeEnum: DashboardGraphQLMerchantKycPartnerAccessTypeEnum;
+  MerchantKYCPartnerAccessUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantKycPartnerAccessUpdateFailureResponse>;
+  MerchantKYCPartnerAccessUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantKycPartnerAccessUpdateSuccessResponse>;
+  DashboardGraphQLMerchantModularOnboardingComponentInput: DashboardGraphQLMerchantModularOnboardingComponentInput;
+  DashboardGraphQLMerchantModularOnboardingComponentPropertiesInput: DashboardGraphQLMerchantModularOnboardingComponentPropertiesInput;
+  DashboardGraphQLMerchantMonthlyRevenueEnum: DashboardGraphQLMerchantMonthlyRevenueEnum;
+  DashboardGraphQLMerchantName: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantName>;
+  DashboardGraphQLMerchantNcEligibilityResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantNcEligibilityResponse>;
+  DashboardGraphQLMerchantNumberField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantNumberField>;
+  DashboardGraphQLMerchantOnboardingConfig: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantOnboardingConfig>;
+  DashboardGraphQLMerchantOnboardingConfigurationInput: DashboardGraphQLMerchantOnboardingConfigurationInput;
+  DashboardGraphQLMerchantOnboardingPaymentDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantOnboardingPaymentDetails>;
+  DashboardGraphQLMerchantOnboardingQuestionDetail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantOnboardingQuestionDetail>;
+  DashboardGraphQLMerchantOnboardingQuestionDetailInput: DashboardGraphQLMerchantOnboardingQuestionDetailInput;
+  DashboardGraphQLMerchantOnboardingQuestionDetailsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantOnboardingQuestionDetailsFailureResponse>;
+  DashboardGraphQLMerchantOnboardingQuestionDetailsResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantOnboardingQuestionDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantOnboardingQuestionDetailsSuccessResponse'];
+  DashboardGraphQLMerchantOnboardingQuestionDetailsSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantOnboardingQuestionDetailsSuccessResponse>;
+  DashboardGraphQLMerchantOnboardingQuestionDetailsUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantOnboardingQuestionDetailsUpdateResponse>;
+  DashboardGraphQLMerchantPaymentAcceptanceChannels: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentAcceptanceChannels>;
+  DashboardGraphQLMerchantPaymentAcceptanceChannelsInput: DashboardGraphQLMerchantPaymentAcceptanceChannelsInput;
+  DashboardGraphQLMerchantPaymentHandle: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandle>;
+  DashboardGraphQLMerchantPaymentHandleAvailabilityFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleAvailabilityFailureResponse>;
+  DashboardGraphQLMerchantPaymentHandleAvailabilityResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleAvailabilityFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleAvailabilitySuccessResponse'];
+  DashboardGraphQLMerchantPaymentHandleAvailabilitySuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleAvailabilitySuccessResponse>;
+  DashboardGraphQLMerchantPaymentHandleCreateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleCreateFailureResponse>;
+  DashboardGraphQLMerchantPaymentHandleCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleCreateSuccessResponse'];
+  DashboardGraphQLMerchantPaymentHandleCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleCreateSuccessResponse>;
+  DashboardGraphQLMerchantPaymentHandleEncryptedAmountFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleEncryptedAmountFailureResponse>;
+  DashboardGraphQLMerchantPaymentHandleEncryptedAmountResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleEncryptedAmountFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleEncryptedAmountSuccessResponse'];
+  DashboardGraphQLMerchantPaymentHandleEncryptedAmountSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleEncryptedAmountSuccessResponse>;
+  DashboardGraphQLMerchantPaymentHandleFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleFailureResponse>;
+  DashboardGraphQLMerchantPaymentHandleResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleSuccessResponse'];
+  DashboardGraphQLMerchantPaymentHandleSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleSuccessResponse>;
+  DashboardGraphQLMerchantPaymentHandleSuggestionsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleSuggestionsResponse>;
+  DashboardGraphQLMerchantPaymentHandleUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleUpdateFailureResponse>;
+  DashboardGraphQLMerchantPaymentHandleUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse'];
+  DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse>;
+  DashboardGraphQLMerchantPhoneField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPhoneField>;
+  DashboardGraphQLMerchantPhoneInputField: DashboardGraphQLMerchantPhoneInputField;
+  DashboardGraphQLMerchantPoaStatus: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPoaStatus>;
+  DashboardGraphQLMerchantPoaVerificationErrorCodeEnum: DashboardGraphQLMerchantPoaVerificationErrorCodeEnum;
+  DashboardGraphQLMerchantPolicy: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicy>;
+  DashboardGraphQLMerchantPolicyEligibilityEnum: DashboardGraphQLMerchantPolicyEligibilityEnum;
+  DashboardGraphQLMerchantPolicyEmptyPreviewResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyEmptyPreviewResponse>;
+  DashboardGraphQLMerchantPolicyEmptyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyEmptyResponse>;
+  DashboardGraphQLMerchantPolicyEmptyV2PreviewResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyEmptyV2PreviewResponse>;
+  DashboardGraphQLMerchantPolicyFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyFailureResponse>;
+  DashboardGraphQLMerchantPolicyPreview: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPreview>;
+  DashboardGraphQLMerchantPolicyPreviewFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPreviewFailureResponse>;
+  DashboardGraphQLMerchantPolicyPreviewResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyEmptyPreviewResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPreviewFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPreviewSuccessResponse'];
+  DashboardGraphQLMerchantPolicyPreviewSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPreviewSuccessResponse>;
+  DashboardGraphQLMerchantPolicyPreviewV2FailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPreviewV2FailureResponse>;
+  DashboardGraphQLMerchantPolicyPreviewV2Response:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyEmptyV2PreviewResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPreviewV2FailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPreviewV2SuccessResponse'];
+  DashboardGraphQLMerchantPolicyPreviewV2SuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPreviewV2SuccessResponse>;
+  DashboardGraphQLMerchantPolicyPublishFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPublishFailureResponse>;
+  DashboardGraphQLMerchantPolicyPublishResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPublishFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPublishSuccessResponse'];
+  DashboardGraphQLMerchantPolicyPublishSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyPublishSuccessResponse>;
+  DashboardGraphQLMerchantPolicyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyEmptyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicySuccessResponse'];
+  DashboardGraphQLMerchantPolicySuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicySuccessResponse>;
+  DashboardGraphQLMerchantPolicyWizardV2EligibilityResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPolicyWizardV2EligibilityResponse>;
+  DashboardGraphQLMerchantPosActivationStatusEnum: DashboardGraphQLMerchantPosActivationStatusEnum;
+  DashboardGraphQLMerchantPreference: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantPreference>;
+  DashboardGraphQLMerchantPreferenceProductTypeEnum: DashboardGraphQLMerchantPreferenceProductTypeEnum;
+  DashboardGraphQLMerchantReferralFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantReferralFailureResponse>;
+  DashboardGraphQLMerchantReferralResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantReferralFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantReferralSuccessResponse'];
+  DashboardGraphQLMerchantReferralSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantReferralSuccessResponse>;
+  DashboardGraphQLMerchantRoleEnum: DashboardGraphQLMerchantRoleEnum;
+  DashboardGraphQLMerchantSelfServeGstinPermissionEnum: DashboardGraphQLMerchantSelfServeGstinPermissionEnum;
+  DashboardGraphQLMerchantSelfServeWorkflow: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSelfServeWorkflow>;
+  DashboardGraphQLMerchantSelfServeWorkflowEnum: DashboardGraphQLMerchantSelfServeWorkflowEnum;
+  DashboardGraphQLMerchantSelfServeWorkflowStatusFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSelfServeWorkflowStatusFailureResponse>;
+  DashboardGraphQLMerchantSelfServeWorkflowStatusResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSelfServeWorkflowStatusFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSelfServeWorkflowStatusSuccessResponse'];
+  DashboardGraphQLMerchantSelfServeWorkflowStatusSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSelfServeWorkflowStatusSuccessResponse>;
+  MerchantSendMobileOTPResponse:
+    | DashboardGraphQLResolversTypes['MerchantSendMobileOTPResponseFailure']
+    | DashboardGraphQLResolversTypes['MerchantSendMobileOTPResponseSuccess'];
+  MerchantSendMobileOTPResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSendMobileOtpResponseFailure>;
+  MerchantSendMobileOTPResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSendMobileOtpResponseSuccess>;
+  DashboardGraphQLMerchantSettlementConfigFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSettlementConfigFailureResponse>;
+  DashboardGraphQLMerchantSettlementConfigResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSettlementConfigFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSettlementConfigSuccessResponse'];
+  DashboardGraphQLMerchantSettlementConfigSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSettlementConfigSuccessResponse>;
+  DashboardGraphQLMerchantShopEstablishment: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantShopEstablishment>;
+  DashboardGraphQLMerchantShopEstablishmentInput: DashboardGraphQLMerchantShopEstablishmentInput;
+  MerchantSocialMediaURLField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSocialMediaUrlField>;
+  MerchantSocialMediaURLInputField: DashboardGraphQLMerchantSocialMediaUrlInputField;
+  DashboardGraphQLMerchantStakeholder: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStakeholder>;
+  DashboardGraphQLMerchantStakeholderInput: DashboardGraphQLMerchantStakeholderInput;
+  DashboardGraphQLMerchantStore: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStore>;
+  DashboardGraphQLMerchantStoreActivateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreActivateFailureResponse>;
+  DashboardGraphQLMerchantStoreActivateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreActivateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreActivateSuccessResponse'];
+  DashboardGraphQLMerchantStoreActivateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreActivateSuccessResponse>;
+  DashboardGraphQLMerchantStoreDeactivateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreDeactivateFailureResponse>;
+  DashboardGraphQLMerchantStoreDeactivateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreDeactivateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreDeactivateSuccessResponse'];
+  DashboardGraphQLMerchantStoreDeactivateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreDeactivateSuccessResponse>;
+  DashboardGraphQLMerchantStoreListResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreListResponse>;
+  DashboardGraphQLMerchantStoreStatus: DashboardGraphQLMerchantStoreStatus;
+  DashboardGraphQLMerchantStoreUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreUpdateFailureResponse>;
+  DashboardGraphQLMerchantStoreUpdateInput: DashboardGraphQLMerchantStoreUpdateInput;
+  DashboardGraphQLMerchantStoreUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreUpdateSuccessResponse'];
+  DashboardGraphQLMerchantStoreUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStoreUpdateSuccessResponse>;
+  DashboardGraphQLMerchantStringField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantStringField>;
+  DashboardGraphQLMerchantStringInputField: DashboardGraphQLMerchantStringInputField;
+  DashboardGraphQLMerchantSubCategoryRecommendations: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSubCategoryRecommendations>;
+  DashboardGraphQLMerchantSupportDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSupportDetails>;
+  DashboardGraphQLMerchantSupportDetailsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSupportDetailsFailureResponse>;
+  DashboardGraphQLMerchantSupportDetailsResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSupportDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSupportDetailsSuccessResponse'];
+  DashboardGraphQLMerchantSupportDetailsSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSupportDetailsSuccessResponse>;
+  DashboardGraphQLMerchantSwitchResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantSwitchResponse>;
+  DashboardGraphQLMerchantTransactionLimit: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantTransactionLimit>;
+  MerchantURLField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantUrlField>;
+  MerchantURLInputField: DashboardGraphQLMerchantUrlInputField;
+  MerchantValidateSocialMediaURLResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantValidateSocialMediaUrlResponse>;
+  DashboardGraphQLMerchantVerificationDetail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVerificationDetail>;
+  DashboardGraphQLMerchantVerificationDetailMetadata: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVerificationDetailMetadata>;
+  DashboardGraphQLMerchantVerificationStatusEnum: DashboardGraphQLMerchantVerificationStatusEnum;
+  MerchantVerifyMobileOTPResponse:
+    | DashboardGraphQLResolversTypes['MerchantVerifyMobileOTPResponseFailure']
+    | DashboardGraphQLResolversTypes['MerchantVerifyMobileOTPResponseSuccess'];
+  MerchantVerifyMobileOTPResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVerifyMobileOtpResponseFailure>;
+  MerchantVerifyMobileOTPResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVerifyMobileOtpResponseSuccess>;
+  DashboardGraphQLMerchantVirtualAccount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVirtualAccount>;
+  DashboardGraphQLMerchantVirtualAccountReceiver: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVirtualAccountReceiver>;
+  DashboardGraphQLMerchantVirtualAccountStatus: DashboardGraphQLMerchantVirtualAccountStatus;
+  DashboardGraphQLMerchantVirtualAccountsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantVirtualAccountsResponse>;
+  DashboardGraphQLMerchantWebsite: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsite>;
+  DashboardGraphQLMerchantWebsiteActionEnum: DashboardGraphQLMerchantWebsiteActionEnum;
+  DashboardGraphQLMerchantWebsiteAdditionalData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteAdditionalData>;
+  DashboardGraphQLMerchantWebsiteAdditionalDataInput: DashboardGraphQLMerchantWebsiteAdditionalDataInput;
+  DashboardGraphQLMerchantWebsiteApplicationDetail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteApplicationDetail>;
+  DashboardGraphQLMerchantWebsiteApplicationInput: DashboardGraphQLMerchantWebsiteApplicationInput;
+  DashboardGraphQLMerchantWebsiteApprovalStatusEnum: DashboardGraphQLMerchantWebsiteApprovalStatusEnum;
+  DashboardGraphQLMerchantWebsiteDetailsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteDetailsFailureResponse>;
+  DashboardGraphQLMerchantWebsiteDetailsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteDetailsResponse>;
+  DashboardGraphQLMerchantWebsiteDetailsSubmitEnum: DashboardGraphQLMerchantWebsiteDetailsSubmitEnum;
+  DashboardGraphQLMerchantWebsiteDocumentDeleteFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteDocumentDeleteFailureResponse>;
+  DashboardGraphQLMerchantWebsiteDocumentDeleteResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDocumentDeleteFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDocumentDeleteSuccessResponse'];
+  DashboardGraphQLMerchantWebsiteDocumentDeleteSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteDocumentDeleteSuccessResponse>;
+  DashboardGraphQLMerchantWebsiteDocumentUploadFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteDocumentUploadFailureResponse>;
+  DashboardGraphQLMerchantWebsiteDocumentUploadResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDocumentUploadFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDocumentUploadSuccessResponse'];
+  DashboardGraphQLMerchantWebsiteDocumentUploadSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteDocumentUploadSuccessResponse>;
+  DashboardGraphQLMerchantWebsitePlatformUrlsEnum: DashboardGraphQLMerchantWebsitePlatformUrlsEnum;
+  DashboardGraphQLMerchantWebsitePublishFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsitePublishFailureResponse>;
+  DashboardGraphQLMerchantWebsitePublishResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsitePublishFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsitePublishSuccessResponse'];
+  DashboardGraphQLMerchantWebsitePublishSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsitePublishSuccessResponse>;
+  DashboardGraphQLMerchantWebsiteSection: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteSection>;
+  DashboardGraphQLMerchantWebsiteSectionEnum: DashboardGraphQLMerchantWebsiteSectionEnum;
+  DashboardGraphQLMerchantWebsiteSectionInput: DashboardGraphQLMerchantWebsiteSectionInput;
+  DashboardGraphQLMerchantWebsiteSectionStatusEnum: DashboardGraphQLMerchantWebsiteSectionStatusEnum;
+  DashboardGraphQLMerchantWebsiteTermsAndConditions: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteTermsAndConditions>;
+  DashboardGraphQLMerchantWebsiteVerficationSection: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteVerficationSection>;
+  DashboardGraphQLMerchantWebsiteVerificationFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteVerificationFailureResponse>;
+  DashboardGraphQLMerchantWebsiteVerificationInput: DashboardGraphQLMerchantWebsiteVerificationInput;
+  DashboardGraphQLMerchantWebsiteVerificationResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteVerificationFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteVerificationSuccessResponse'];
+  DashboardGraphQLMerchantWebsiteVerificationSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWebsiteVerificationSuccessResponse>;
+  DashboardGraphQLMerchantWebsitesResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDetailsResponse'];
+  DashboardGraphQLMerchantWorkflowClarificationSubmitFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWorkflowClarificationSubmitFailureResponse>;
+  DashboardGraphQLMerchantWorkflowClarificationSubmitResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWorkflowClarificationSubmitFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse'];
+  DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse>;
+  DashboardGraphQLMilestoneMeta: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMilestoneMeta>;
+  DashboardGraphQLModularComponent: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularComponent>;
+  DashboardGraphQLModularComponentMetUiFieldMetaRedirectUrl: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularComponentMetUiFieldMetaRedirectUrl>;
+  DashboardGraphQLModularComponentMeta: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularComponentMeta>;
+  DashboardGraphQLModularComponentMetaUi: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularComponentMetaUi>;
+  DashboardGraphQLModularComponentMetaUiField: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularComponentMetaUiField>;
+  DashboardGraphQLModularComponentMetaUiFieldMeta: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularComponentMetaUiFieldMeta>;
+  DashboardGraphQLModularOnboardingConfig: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingConfig>;
+  DashboardGraphQLModularOnboardingData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingData>;
+  DashboardGraphQLModularOnboardingField:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingFieldForDocumentUpload']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingFieldWithBooleanValue']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingFieldWithStringArrayValue']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingFieldWithStringValue'];
+  DashboardGraphQLModularOnboardingFieldForDocumentUpload: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingFieldForDocumentUpload>;
+  DashboardGraphQLModularOnboardingFieldMeta: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingFieldMeta>;
+  DashboardGraphQLModularOnboardingFieldWithBooleanValue: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingFieldWithBooleanValue>;
+  DashboardGraphQLModularOnboardingFieldWithStringArrayValue: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingFieldWithStringArrayValue>;
+  DashboardGraphQLModularOnboardingFieldWithStringValue: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingFieldWithStringValue>;
+  DashboardGraphQLModularOnboardingMilestone: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLModularOnboardingMilestone, 'steps'> & {
+      steps?: DashboardGraphQLMaybe<
+        Array<
+          DashboardGraphQLMaybe<
+            DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingStep']
+          >
+        >
+      >;
+    }
+  >;
+  DashboardGraphQLModularOnboardingOption: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingOption>;
+  DashboardGraphQLModularOnboardingStep:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingStepWithModularComponents']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingStepWithSteps'];
+  DashboardGraphQLModularOnboardingStepInterface:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingStepWithModularComponents']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLModularOnboardingStepWithSteps'];
+  DashboardGraphQLModularOnboardingStepWithModularComponents: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingStepWithModularComponents>;
+  DashboardGraphQLModularOnboardingStepWithSteps: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLModularOnboardingStepWithSteps>;
+  DashboardGraphQLMoney: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMoney>;
+  DashboardGraphQLMoneyInput: DashboardGraphQLMoneyInput;
+  DashboardGraphQLMutation: DashboardGraphQLResolverTypeWrapper<{}>;
+  DashboardGraphQLMutationResponseInterface:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarCaptchaVerifyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAadhaarOtpVerifyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLApproveIciciPayoutResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLApprovePayoutResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAuthUser']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLCouponApplyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLCouponValidateResponse']
+    | DashboardGraphQLResolversTypes['DeregisterFCMTokenResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLLoginOtpError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLLoginOtpSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantActivationResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeyCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeyRegenerateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeysCreateFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantApiKeysCreateSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBankAccountUpdateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBusinessAppDetailsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantBusinessWebsiteDetailsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantClarificationDetailsSubmitResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantClarificationDetailsUpdateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConfigUpdateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantConsentFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactEmailOtpSendFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactEmailOtpSendSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactFundAccountCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactUpdateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantDocumentUploadSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantGstinUpdateV2SuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCancelRequestMutationFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCancelRequestMutationSucessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentReInitiateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantInstrumentReInitiateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantNcEligibilityResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantOnboardingPaymentDetails']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPaymentHandleUpdateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyPublishSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantPolicyWizardV2EligibilityResponse']
+    | DashboardGraphQLResolversTypes['MerchantSendMobileOTPResponseFailure']
+    | DashboardGraphQLResolversTypes['MerchantSendMobileOTPResponseSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreActivateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreActivateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreDeactivateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreDeactivateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreUpdateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantSwitchResponse']
+    | DashboardGraphQLResolversTypes['MerchantVerifyMobileOTPResponseFailure']
+    | DashboardGraphQLResolversTypes['MerchantVerifyMobileOTPResponseSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDocumentDeleteSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsiteDocumentUploadSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWebsitePublishSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantWorkflowClarificationSubmitSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLNotificationEmailUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLNotificationEmailUpdateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLNotificationWhatsAppOptIn']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOauthTokenAppleWatchOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOauthTokenAppleWatchResponseError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOnboardingPaymentOrderVerifyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOptInForWhatsappError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOptInForWhatsappSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOrderCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOrderCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentCaptureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentLinkCancelResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentLinkCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentLinkNotifyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentRefundResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentsNewLaunchProductViewUpdate']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentsProductFtuxUpdateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutCompositeCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutCreateIciciResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutLinkCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutPurposeCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPettyCashCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentUpdateSuccessResponse']
+    | DashboardGraphQLResolversTypes['QRCodeCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['QRCodeCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterBusinessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterEmailError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterEmailSuccess']
+    | DashboardGraphQLResolversTypes['RegisterFCMTokenResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMerchantResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMerchantResponseSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMobileVerifyResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMobileVerifyResponseSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRejectPayoutResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLResendEmailOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLResendTwoFactorLoginOtpResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendApprovePayoutBatchOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendApprovePayoutOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendCreatePayoutLinkOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendCreatePayoutOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendEmailVerificationOtpErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendEmailVerificationOtpSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendIciciPayoutOtpResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendPayoutApproveBulkOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendPayoutCompositeOtp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetEmailPasswordErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetEmailPasswordSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetNewPasswordErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetNewPasswordSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSmsNotificationToggle']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpVerifyErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpVerifySuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorOtpFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorOtpSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorPasswordCreateErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorPasswordCreateSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorUnverifiedMobileVerifyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUpdateMerchantConsentResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserContactDetailsUpdateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserDeviceAnalyticsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserExistsByEmailOrPhoneError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserExistsByEmailOrPhoneSuccess']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserOtpVerifyResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVendorPaymentCancelResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVendorPaymentPayoutCreateResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVerifyEmailOtpErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVerifyEmailOtpSuccessResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLWhatsappNotificationToggle']
+    | DashboardGraphQLResolversTypes['merchantConfigurationUpdateResponse'];
+  NonNegativeInt: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['NonNegativeInt']>;
+  DashboardGraphQLNotificationEmailUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLNotificationEmailUpdateFailureResponse>;
+  DashboardGraphQLNotificationEmailUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLNotificationEmailUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLNotificationEmailUpdateSuccessResponse'];
+  DashboardGraphQLNotificationEmailUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLNotificationEmailUpdateSuccessResponse>;
+  DashboardGraphQLNotificationWhatsAppOptIn: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLNotificationWhatsAppOptIn>;
+  DashboardGraphQLOAuthProviderEnum: DashboardGraphQLOAuthProviderEnum;
+  DashboardGraphQLOauthTokenAppleWatchOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOauthTokenAppleWatchOtp>;
+  DashboardGraphQLOauthTokenAppleWatchResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOauthTokenAppleWatchResponseError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOauthTokenAppleWatchResponseSuccess'];
+  DashboardGraphQLOauthTokenAppleWatchResponseError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOauthTokenAppleWatchResponseError>;
+  DashboardGraphQLOauthTokenAppleWatchResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOauthTokenAppleWatchResponseSuccess>;
+  DashboardGraphQLOnboardingManager: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOnboardingManager>;
+  DashboardGraphQLOnboardingPaymentEligibilityEnum: DashboardGraphQLOnboardingPaymentEligibilityEnum;
+  DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse>;
+  DashboardGraphQLOnboardingPaymentOrderCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOnboardingPaymentOrderCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse'];
+  DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOnboardingPaymentOrderCreateSuccessResponse>;
+  DashboardGraphQLOnboardingPaymentOrderVerifyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOnboardingPaymentOrderVerifyResponse>;
+  DashboardGraphQLOnboardingPaymentStatusEnum: DashboardGraphQLOnboardingPaymentStatusEnum;
+  DashboardGraphQLOnboardingState: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOnboardingState>;
+  DashboardGraphQLOnboardingWidget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOnboardingWidget>;
+  DashboardGraphQLOptInForWhatsappEnum: DashboardGraphQLOptInForWhatsappEnum;
+  DashboardGraphQLOptInForWhatsappError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOptInForWhatsappError>;
+  DashboardGraphQLOptInForWhatsappResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOptInForWhatsappError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOptInForWhatsappSuccess'];
+  DashboardGraphQLOptInForWhatsappSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOptInForWhatsappSuccess>;
+  DashboardGraphQLOrder: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrder>;
+  DashboardGraphQLOrderAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrderAmount>;
+  DashboardGraphQLOrderCreateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrderCreateFailureResponse>;
+  DashboardGraphQLOrderCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOrderCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOrderCreateSuccessResponse'];
+  DashboardGraphQLOrderCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrderCreateSuccessResponse>;
+  DashboardGraphQLOrderDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrderDate>;
+  DashboardGraphQLOrderStatusEnum: DashboardGraphQLOrderStatusEnum;
+  DashboardGraphQLOrganisation: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrganisation>;
+  DashboardGraphQLOrganisationEmail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrganisationEmail>;
+  DashboardGraphQLOrganisationLogo: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrganisationLogo>;
+  DashboardGraphQLOrganisationName: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOrganisationName>;
+  DashboardGraphQLOverViewResponseType: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLOverViewResponseType>;
+  PPTrackingSettings: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPpTrackingSettings>;
+  DashboardGraphQLPageAcquirerData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPageAcquirerData>;
+  DashboardGraphQLPageItem: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPageItem>;
+  DashboardGraphQLPageItemTaxDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPageItemTaxDetails>;
+  DashboardGraphQLPaginationResponseInterface:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLBudgetsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLExpenseCategoriesResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLInvoicesResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactFundAccountsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantContactsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantStoreListResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLMerchantVirtualAccountsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentLinksResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentPageTransactionResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentPagesResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutBatchesResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutLinksResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsResponse']
+    | DashboardGraphQLResolversTypes['QRCodesResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRefundsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSalesOnboardedMerchants']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSettlementsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTransactionsResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVendorPaymentsResponse'];
+  DashboardGraphQLPartnerConfigFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPartnerConfigFailure>;
+  DashboardGraphQLPartnerConfigResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPartnerConfigFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPartnerConfigSuccess'];
+  DashboardGraphQLPartnerConfigSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPartnerConfigSuccess>;
+  DashboardGraphQLPartnerWebhookSettings: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPartnerWebhookSettings>;
+  DashboardGraphQLPayment: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLPayment, 'method'> & {
+      method?: DashboardGraphQLMaybe<
+        DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethod']
+      >;
+    }
+  >;
+  DashboardGraphQLPaymentAggregationSummary: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentAggregationSummary>;
+  DashboardGraphQLPaymentAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentAmount>;
+  DashboardGraphQLPaymentAnalytics: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentAnalytics>;
+  DashboardGraphQLPaymentAnalyticsAggregateByEnum: DashboardGraphQLPaymentAnalyticsAggregateByEnum;
+  DashboardGraphQLPaymentAnalyticsFilterBy: DashboardGraphQLPaymentAnalyticsFilterBy;
+  DashboardGraphQLPaymentAnalyticsFilterByDeviceEnum: DashboardGraphQLPaymentAnalyticsFilterByDeviceEnum;
+  DashboardGraphQLPaymentAnalyticsFilterByOsEnum: DashboardGraphQLPaymentAnalyticsFilterByOsEnum;
+  DashboardGraphQLPaymentAnalyticsFilterByPaymentEnum: DashboardGraphQLPaymentAnalyticsFilterByPaymentEnum;
+  DashboardGraphQLPaymentAnalyticsFilterBySdkEnum: DashboardGraphQLPaymentAnalyticsFilterBySdkEnum;
+  DashboardGraphQLPaymentAnalyticsIntervalEnum: DashboardGraphQLPaymentAnalyticsIntervalEnum;
+  DashboardGraphQLPaymentAnalyticsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentAnalyticsResponse>;
+  DashboardGraphQLPaymentAnalyticsWidget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentAnalyticsWidget>;
+  DashboardGraphQLPaymentApplicationEnum: DashboardGraphQLPaymentApplicationEnum;
+  DashboardGraphQLPaymentCaptureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentCaptureResponse>;
+  DashboardGraphQLPaymentDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentDetails>;
+  DashboardGraphQLPaymentEmiDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentEmiDetails>;
+  DashboardGraphQLPaymentError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentError>;
+  DashboardGraphQLPaymentHandleWidget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentHandleWidget>;
+  DashboardGraphQLPaymentInstantRefundEligibilityAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentInstantRefundEligibilityAmount>;
+  DashboardGraphQLPaymentInstantRefundEligibilityOptionEnum: DashboardGraphQLPaymentInstantRefundEligibilityOptionEnum;
+  DashboardGraphQLPaymentInstantRefundEligibilityResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentInstantRefundEligibilityResponse>;
+  DashboardGraphQLPaymentLink: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLink>;
+  DashboardGraphQLPaymentLinkAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkAmount>;
+  DashboardGraphQLPaymentLinkCancelResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkCancelResponse>;
+  DashboardGraphQLPaymentLinkCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkCreateResponse>;
+  DashboardGraphQLPaymentLinkDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkDate>;
+  DashboardGraphQLPaymentLinkNotifyBy: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkNotifyBy>;
+  DashboardGraphQLPaymentLinkNotifyByInput: DashboardGraphQLPaymentLinkNotifyByInput;
+  DashboardGraphQLPaymentLinkNotifyMedium: DashboardGraphQLPaymentLinkNotifyMedium;
+  DashboardGraphQLPaymentLinkNotifyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkNotifyResponse>;
+  DashboardGraphQLPaymentLinkReminder: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinkReminder>;
+  DashboardGraphQLPaymentLinkReminderStatusEnum: DashboardGraphQLPaymentLinkReminderStatusEnum;
+  DashboardGraphQLPaymentLinkStatusEnum: DashboardGraphQLPaymentLinkStatusEnum;
+  DashboardGraphQLPaymentLinksResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentLinksResponse>;
+  DashboardGraphQLPaymentMethod:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodApp']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodBankTransfer']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodCard']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodCardlessEmi']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodEmandate']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodEmi']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodNetBanking']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodPayLater']
+    | DashboardGraphQLResolversTypes['PaymentMethodUPITransfer']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentMethodWallet'];
+  DashboardGraphQLPaymentMethodApp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodApp>;
+  DashboardGraphQLPaymentMethodBankTransfer: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodBankTransfer>;
+  DashboardGraphQLPaymentMethodCard: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodCard>;
+  DashboardGraphQLPaymentMethodCardCategoryEnum: DashboardGraphQLPaymentMethodCardCategoryEnum;
+  DashboardGraphQLPaymentMethodCardExpiry: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodCardExpiry>;
+  DashboardGraphQLPaymentMethodCardType: DashboardGraphQLPaymentMethodCardType;
+  DashboardGraphQLPaymentMethodCardlessEmi: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodCardlessEmi>;
+  DashboardGraphQLPaymentMethodEmandate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodEmandate>;
+  DashboardGraphQLPaymentMethodEmi: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodEmi>;
+  DashboardGraphQLPaymentMethodEnum: DashboardGraphQLPaymentMethodEnum;
+  DashboardGraphQLPaymentMethodNetBanking: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodNetBanking>;
+  DashboardGraphQLPaymentMethodPayLater: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodPayLater>;
+  PaymentMethodUPITransfer: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodUpiTransfer>;
+  DashboardGraphQLPaymentMethodWallet: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentMethodWallet>;
+  DashboardGraphQLPaymentOverviewResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentOverviewResponse>;
+  DashboardGraphQLPaymentPage: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPage>;
+  DashboardGraphQLPaymentPageAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageAmount>;
+  DashboardGraphQLPaymentPageDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageDate>;
+  DashboardGraphQLPaymentPageItem: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageItem>;
+  DashboardGraphQLPaymentPageSettings: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageSettings>;
+  DashboardGraphQLPaymentPageStatusEnum: DashboardGraphQLPaymentPageStatusEnum;
+  DashboardGraphQLPaymentPageSupportDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageSupportDetails>;
+  DashboardGraphQLPaymentPageTransaction: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageTransaction>;
+  DashboardGraphQLPaymentPageTransactionResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPageTransactionResponse>;
+  DashboardGraphQLPaymentPagesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPagesResponse>;
+  DashboardGraphQLPaymentPayerBankAccount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentPayerBankAccount>;
+  DashboardGraphQLPaymentRefund: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentRefund>;
+  DashboardGraphQLPaymentRefundResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentRefundResponse>;
+  DashboardGraphQLPaymentRefundSpeed: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentRefundSpeed>;
+  DashboardGraphQLPaymentRefundSpeedProcessedEnum: DashboardGraphQLPaymentRefundSpeedProcessedEnum;
+  DashboardGraphQLPaymentRefundSpeedRequestedEnum: DashboardGraphQLPaymentRefundSpeedRequestedEnum;
+  DashboardGraphQLPaymentRefundStatusEnum: DashboardGraphQLPaymentRefundStatusEnum;
+  DashboardGraphQLPaymentStatusEnum: DashboardGraphQLPaymentStatusEnum;
+  DashboardGraphQLPaymentTerm: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentTerm>;
+  DashboardGraphQLPaymentVirtualAccount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentVirtualAccount>;
+  DashboardGraphQLPaymentVirtualAccountAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentVirtualAccountAmount>;
+  DashboardGraphQLPaymentVirtualAccountDates: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentVirtualAccountDates>;
+  DashboardGraphQLPaymentsNewLaunchProductViewUpdate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentsNewLaunchProductViewUpdate>;
+  DashboardGraphQLPaymentsProductFtuxUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentsProductFtuxUpdateResponse>;
+  DashboardGraphQLPaymentsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentsResponse>;
+  DashboardGraphQLPaymentsSegmentEnum: DashboardGraphQLPaymentsSegmentEnum;
+  DashboardGraphQLPaymentsWidgetError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPaymentsWidgetError>;
+  DashboardGraphQLPaymentsWidgetTypeEnum: DashboardGraphQLPaymentsWidgetTypeEnum;
+  DashboardGraphQLPaymentsWidgets: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLPaymentsWidgets, 'widgets'> & {
+      widgets: Array<DashboardGraphQLResolversTypes['DashboardGraphQLWidget']>;
+    }
+  >;
+  DashboardGraphQLPayout: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLPayout, 'workflow'> & {
+      workflow?: DashboardGraphQLMaybe<
+        DashboardGraphQLResolversTypes['DashboardGraphQLPayoutWorkflow']
+      >;
+    }
+  >;
+  DashboardGraphQLPayoutApproveBulkResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutApproveBulkResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutApproveBulkResponseSuccess'];
+  DashboardGraphQLPayoutApproveBulkResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutApproveBulkResponseFailure>;
+  DashboardGraphQLPayoutApproveBulkResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutApproveBulkResponseSuccess>;
+  DashboardGraphQLPayoutBatch: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutBatch>;
+  DashboardGraphQLPayoutBatchDates: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutBatchDates>;
+  DashboardGraphQLPayoutBatchPayoutsCount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutBatchPayoutsCount>;
+  DashboardGraphQLPayoutBatchStatusEnum: DashboardGraphQLPayoutBatchStatusEnum;
+  DashboardGraphQLPayoutBatchTypeEnum: DashboardGraphQLPayoutBatchTypeEnum;
+  DashboardGraphQLPayoutBatchesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutBatchesResponse>;
+  DashboardGraphQLPayoutCompositeCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutCompositeCreateResponse>;
+  DashboardGraphQLPayoutCompositeMerchantContactInput: DashboardGraphQLPayoutCompositeMerchantContactInput;
+  DashboardGraphQLPayoutCreateIciciResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutCreateIciciResponse>;
+  DashboardGraphQLPayoutCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutCreateResponse>;
+  DashboardGraphQLPayoutDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutDate>;
+  DashboardGraphQLPayoutFee: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutFee>;
+  DashboardGraphQLPayoutFeeEnum: DashboardGraphQLPayoutFeeEnum;
+  DashboardGraphQLPayoutInternalStatusEnum: DashboardGraphQLPayoutInternalStatusEnum;
+  DashboardGraphQLPayoutLink: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutLink>;
+  DashboardGraphQLPayoutLinkCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutLinkCreateResponse>;
+  DashboardGraphQLPayoutLinkDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutLinkDate>;
+  DashboardGraphQLPayoutLinkSendVia: DashboardGraphQLPayoutLinkSendVia;
+  DashboardGraphQLPayoutLinkSentVia: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutLinkSentVia>;
+  DashboardGraphQLPayoutLinkStatusEnum: DashboardGraphQLPayoutLinkStatusEnum;
+  DashboardGraphQLPayoutLinksResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutLinksResponse>;
+  DashboardGraphQLPayoutModeEnum: DashboardGraphQLPayoutModeEnum;
+  DashboardGraphQLPayoutPendingOnInput: DashboardGraphQLPayoutPendingOnInput;
+  DashboardGraphQLPayoutPendingOnRoleEnum: DashboardGraphQLPayoutPendingOnRoleEnum;
+  DashboardGraphQLPayoutPurpose: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutPurpose>;
+  DashboardGraphQLPayoutPurposeCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutPurposeCreateResponse>;
+  DashboardGraphQLPayoutPurposeTypeEnum: DashboardGraphQLPayoutPurposeTypeEnum;
+  DashboardGraphQLPayoutRejectBulkResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutRejectBulkResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutRejectBulkResponseSuccess'];
+  DashboardGraphQLPayoutRejectBulkResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutRejectBulkResponseFailure>;
+  DashboardGraphQLPayoutRejectBulkResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutRejectBulkResponseSuccess>;
+  DashboardGraphQLPayoutSource: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutSource>;
+  DashboardGraphQLPayoutStatusEnum: DashboardGraphQLPayoutStatusEnum;
+  DashboardGraphQLPayoutWorkflow:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutWorkflowHistory']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLWorkflow'];
+  DashboardGraphQLPayoutWorkflowHistory: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutWorkflowHistory>;
+  DashboardGraphQLPayoutWorkflowRole: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutWorkflowRole>;
+  DashboardGraphQLPayoutWorkflowRoleChecker: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutWorkflowRoleChecker>;
+  DashboardGraphQLPayoutWorkflowRoleTypeEnum: DashboardGraphQLPayoutWorkflowRoleTypeEnum;
+  DashboardGraphQLPayoutWorkflowStep: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutWorkflowStep>;
+  DashboardGraphQLPayoutWorkflowStepOperationTypeEnum: DashboardGraphQLPayoutWorkflowStepOperationTypeEnum;
+  DashboardGraphQLPayoutsPendingSummary: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsPendingSummary>;
+  DashboardGraphQLPayoutsQueuedReasonEnum: DashboardGraphQLPayoutsQueuedReasonEnum;
+  DashboardGraphQLPayoutsQueuedSummary:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsQueuedSummaryBeneficiaryBankDown']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsQueuedSummaryLowBalance']
+    | DashboardGraphQLResolversTypes['PayoutsQueuedSummaryNEFTLimitExhausted']
+    | DashboardGraphQLResolversTypes['PayoutsQueuedSummaryNEFTWindowClosed']
+    | DashboardGraphQLResolversTypes['PayoutsQueuedSummaryNPCISystemDown']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsQueuedSummaryWithoutReason'];
+  DashboardGraphQLPayoutsQueuedSummaryBeneficiaryBankDown: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsQueuedSummaryBeneficiaryBankDown>;
+  DashboardGraphQLPayoutsQueuedSummaryLowBalance: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsQueuedSummaryLowBalance>;
+  PayoutsQueuedSummaryNEFTLimitExhausted: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsQueuedSummaryNeftLimitExhausted>;
+  PayoutsQueuedSummaryNEFTWindowClosed: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsQueuedSummaryNeftWindowClosed>;
+  PayoutsQueuedSummaryNPCISystemDown: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsQueuedSummaryNpciSystemDown>;
+  DashboardGraphQLPayoutsQueuedSummaryWithoutReason: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsQueuedSummaryWithoutReason>;
+  DashboardGraphQLPayoutsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsResponse>;
+  DashboardGraphQLPayoutsScheduledPeriodEnum: DashboardGraphQLPayoutsScheduledPeriodEnum;
+  DashboardGraphQLPayoutsScheduledSummary:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsScheduledSummaryAllTime']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsScheduledSummaryNextMonth']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsScheduledSummaryNextTwoDays']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsScheduledSummaryNextWeek']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsScheduledSummaryToday'];
+  DashboardGraphQLPayoutsScheduledSummaryAllTime: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsScheduledSummaryAllTime>;
+  DashboardGraphQLPayoutsScheduledSummaryNextMonth: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsScheduledSummaryNextMonth>;
+  DashboardGraphQLPayoutsScheduledSummaryNextTwoDays: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsScheduledSummaryNextTwoDays>;
+  DashboardGraphQLPayoutsScheduledSummaryNextWeek: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsScheduledSummaryNextWeek>;
+  DashboardGraphQLPayoutsScheduledSummaryToday: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPayoutsScheduledSummaryToday>;
+  DashboardGraphQLPayoutsSummary: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLPayoutsSummary, 'queued' | 'scheduled'> & {
+      queued: Array<DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsQueuedSummary']>;
+      scheduled: Array<DashboardGraphQLResolversTypes['DashboardGraphQLPayoutsScheduledSummary']>;
+    }
+  >;
+  DashboardGraphQLPettyCash: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPettyCash>;
+  DashboardGraphQLPettyCashCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPettyCashCreateResponse>;
+  DashboardGraphQLPettyCashDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPettyCashDate>;
+  DashboardGraphQLPettyCashDestinationDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPettyCashDestinationDetails>;
+  DashboardGraphQLPettyCashModeEnum: DashboardGraphQLPettyCashModeEnum;
+  DashboardGraphQLPettyCashStatusEnum: DashboardGraphQLPettyCashStatusEnum;
+  DashboardGraphQLPhone: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPhone>;
+  DashboardGraphQLPhoneInput: DashboardGraphQLPhoneInput;
+  DashboardGraphQLPlatformEnum: DashboardGraphQLPlatformEnum;
+  DashboardGraphQLPointOfSale: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPointOfSale>;
+  DashboardGraphQLPointOfSaleKeyFetchResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPointOfSaleKeyFetchResponse>;
+  DashboardGraphQLPointOfSalePaymentCreateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPointOfSalePaymentCreateFailureResponse>;
+  DashboardGraphQLPointOfSalePaymentCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentCreateSuccessResponse'];
+  DashboardGraphQLPointOfSalePaymentCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPointOfSalePaymentCreateSuccessResponse>;
+  DashboardGraphQLPointOfSalePaymentTransactionInput: DashboardGraphQLPointOfSalePaymentTransactionInput;
+  DashboardGraphQLPointOfSalePaymentTransactionStatus: DashboardGraphQLPointOfSalePaymentTransactionStatus;
+  DashboardGraphQLPointOfSalePaymentUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPointOfSalePaymentUpdateFailureResponse>;
+  DashboardGraphQLPointOfSalePaymentUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPointOfSalePaymentUpdateSuccessResponse'];
+  DashboardGraphQLPointOfSalePaymentUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLPointOfSalePaymentUpdateSuccessResponse>;
+  PositiveInt: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['PositiveInt']>;
+  DashboardGraphQLProductTypeEnum: DashboardGraphQLProductTypeEnum;
+  QRCode: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLQrCode>;
+  QRCodeCreateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLQrCodeCreateFailureResponse>;
+  QRCodeCreateResponse:
+    | DashboardGraphQLResolversTypes['QRCodeCreateFailureResponse']
+    | DashboardGraphQLResolversTypes['QRCodeCreateSuccessResponse'];
+  QRCodeCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLQrCodeCreateSuccessResponse>;
+  QRCodeDate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLQrCodeDate>;
+  QRCodePaymentDetail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLQrCodePaymentDetail>;
+  QRCodeStatusEnum: DashboardGraphQLQrCodeStatusEnum;
+  QRCodeTypeEnum: DashboardGraphQLQrCodeTypeEnum;
+  QRCodeUsageEnum: DashboardGraphQLQrCodeUsageEnum;
+  QRCodesResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLQrCodesResponse>;
+  DashboardGraphQLQuery: DashboardGraphQLResolverTypeWrapper<{}>;
+  DashboardGraphQLRecentTransactionsWidget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRecentTransactionsWidget>;
+  DashboardGraphQLRefreshAccessToken: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRefreshAccessToken>;
+  DashboardGraphQLRefundsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRefundsResponse>;
+  DashboardGraphQLRegisterBusinessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterBusinessResponse>;
+  DashboardGraphQLRegisterEmail:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterEmailError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterEmailSuccess'];
+  DashboardGraphQLRegisterEmailError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterEmailError>;
+  DashboardGraphQLRegisterEmailSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterEmailSuccess>;
+  DashboardGraphQLRegisterEmailVerificationMethodEnum: DashboardGraphQLRegisterEmailVerificationMethodEnum;
+  DashboardGraphQLRegisterEmailVerifyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterEmailVerifyResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterEmailVerifyResponseSuccess'];
+  DashboardGraphQLRegisterEmailVerifyResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterEmailVerifyResponseFailure>;
+  DashboardGraphQLRegisterEmailVerifyResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterEmailVerifyResponseSuccess>;
+  RegisterFCMTokenResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterFcmTokenResponse>;
+  DashboardGraphQLRegisterMerchantErrorEnum: DashboardGraphQLRegisterMerchantErrorEnum;
+  DashboardGraphQLRegisterMerchantResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMerchantResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMerchantResponseSuccess'];
+  DashboardGraphQLRegisterMerchantResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterMerchantResponseFailure>;
+  DashboardGraphQLRegisterMerchantResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterMerchantResponseSuccess>;
+  DashboardGraphQLRegisterMobileVerifyEnum: DashboardGraphQLRegisterMobileVerifyEnum;
+  DashboardGraphQLRegisterMobileVerifyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMobileVerifyResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterMobileVerifyResponseSuccess'];
+  DashboardGraphQLRegisterMobileVerifyResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterMobileVerifyResponseFailure>;
+  DashboardGraphQLRegisterMobileVerifyResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterMobileVerifyResponseSuccess>;
+  DashboardGraphQLRegisterOAuth:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAuthUser']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterOAuthEmailError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterOAuthEmailExist']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRegisterOAuthInvalidTokenError'];
+  DashboardGraphQLRegisterOAuthEmailError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterOAuthEmailError>;
+  DashboardGraphQLRegisterOAuthEmailExist: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterOAuthEmailExist>;
+  DashboardGraphQLRegisterOAuthInvalidTokenError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRegisterOAuthInvalidTokenError>;
+  DashboardGraphQLRejectPayoutBatchResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRejectPayoutBatchResponseFailure']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRejectPayoutBatchResponseSuccess'];
+  DashboardGraphQLRejectPayoutBatchResponseFailure: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRejectPayoutBatchResponseFailure>;
+  DashboardGraphQLRejectPayoutBatchResponseSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRejectPayoutBatchResponseSuccess>;
+  DashboardGraphQLRejectPayoutResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRejectPayoutResponse>;
+  DashboardGraphQLRepaymentsBreakup: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRepaymentsBreakup>;
+  DashboardGraphQLRepaymentsSummary: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLRepaymentsSummary>;
+  DashboardGraphQLResendEmailOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLResendEmailOtp>;
+  DashboardGraphQLResendTwoFactorLoginOtpResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLResendTwoFactorLoginOtpResponse>;
+  DashboardGraphQLResetPasswordEmail: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLResetPasswordEmail>;
+  DashboardGraphQLSalesMerchantActivationStatusEnum: DashboardGraphQLSalesMerchantActivationStatusEnum;
+  DashboardGraphQLSalesOnboardedMerchant: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSalesOnboardedMerchant>;
+  DashboardGraphQLSalesOnboardedMerchants: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSalesOnboardedMerchants>;
+  DashboardGraphQLSalesOnboardedMerchantsError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSalesOnboardedMerchantsError>;
+  DashboardGraphQLSalesOnboardedMerchantsResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSalesOnboardedMerchants']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSalesOnboardedMerchantsError'];
+  DashboardGraphQLSendApprovePayoutBatchOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendApprovePayoutBatchOtp>;
+  DashboardGraphQLSendApprovePayoutOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendApprovePayoutOtp>;
+  DashboardGraphQLSendCreatePayoutLinkOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendCreatePayoutLinkOtp>;
+  DashboardGraphQLSendCreatePayoutOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendCreatePayoutOtp>;
+  DashboardGraphQLSendEmailVerificationOtpEnum: DashboardGraphQLSendEmailVerificationOtpEnum;
+  DashboardGraphQLSendEmailVerificationOtpErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendEmailVerificationOtpErrorResponse>;
+  DashboardGraphQLSendEmailVerificationOtpResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendEmailVerificationOtpErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSendEmailVerificationOtpSuccessResponse'];
+  DashboardGraphQLSendEmailVerificationOtpSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendEmailVerificationOtpSuccessResponse>;
+  DashboardGraphQLSendIciciPayoutOtpResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendIciciPayoutOtpResponse>;
+  DashboardGraphQLSendPayoutApproveBulkOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendPayoutApproveBulkOtp>;
+  DashboardGraphQLSendPayoutCompositeOtp: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSendPayoutCompositeOtp>;
+  DashboardGraphQLSetEmailPasswordEnum: DashboardGraphQLSetEmailPasswordEnum;
+  DashboardGraphQLSetEmailPasswordErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSetEmailPasswordErrorResponse>;
+  DashboardGraphQLSetEmailPasswordResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetEmailPasswordErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetEmailPasswordSuccessResponse'];
+  DashboardGraphQLSetEmailPasswordSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSetEmailPasswordSuccessResponse>;
+  DashboardGraphQLSetNewPasswordEnum: DashboardGraphQLSetNewPasswordEnum;
+  DashboardGraphQLSetNewPasswordErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSetNewPasswordErrorResponse>;
+  DashboardGraphQLSetNewPasswordResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetNewPasswordErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSetNewPasswordSuccessResponse'];
+  DashboardGraphQLSetNewPasswordSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSetNewPasswordSuccessResponse>;
+  DashboardGraphQLSettlement: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSettlement>;
+  DashboardGraphQLSettlementAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSettlementAmount>;
+  DashboardGraphQLSettlementBreakup: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSettlementBreakup>;
+  DashboardGraphQLSettlementBreakupComponentEnum: DashboardGraphQLSettlementBreakupComponentEnum;
+  DashboardGraphQLSettlementBreakupTransactionTypeEnum: DashboardGraphQLSettlementBreakupTransactionTypeEnum;
+  DashboardGraphQLSettlementCycle: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSettlementCycle>;
+  DashboardGraphQLSettlementStatusEnum: DashboardGraphQLSettlementStatusEnum;
+  DashboardGraphQLSettlementsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSettlementsResponse>;
+  DashboardGraphQLSettlementsWidget: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSettlementsWidget>;
+  DashboardGraphQLSmsNotificationStatusResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSmsNotificationStatusResponse>;
+  DashboardGraphQLSmsNotificationToggle: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLSmsNotificationToggle>;
+  DashboardGraphQLSortByEnum: DashboardGraphQLSortByEnum;
+  DashboardGraphQLStepMeta: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLStepMeta>;
+  String: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['String']>;
+  TDSCategory: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTdsCategory>;
+  DashboardGraphQLTooltipBadge: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTooltipBadge>;
+  DashboardGraphQLTransaction: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLTransaction, 'source'> & {
+      source: DashboardGraphQLResolversTypes['DashboardGraphQLTransactionSource'];
+    }
+  >;
+  DashboardGraphQLTransactionAmount: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionAmount>;
+  DashboardGraphQLTransactionError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionError>;
+  DashboardGraphQLTransactionSource:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPayout']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTransactionSourceAdjustment']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTransactionSourceBankTransfer']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTransactionSourceExternal']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTransactionSourceFundAccountValidation']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTransactionSourceReversal'];
+  DashboardGraphQLTransactionSourceAdjustment: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceAdjustment>;
+  DashboardGraphQLTransactionSourceBankTransfer: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceBankTransfer>;
+  DashboardGraphQLTransactionSourceBankTransferModeEnum: DashboardGraphQLTransactionSourceBankTransferModeEnum;
+  DashboardGraphQLTransactionSourceBankTransferPayee: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceBankTransferPayee>;
+  DashboardGraphQLTransactionSourceBankTransferPayer: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceBankTransferPayer>;
+  DashboardGraphQLTransactionSourceDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceDetails>;
+  DashboardGraphQLTransactionSourceExternal: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceExternal>;
+  DashboardGraphQLTransactionSourceFundAccountValidation: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceFundAccountValidation>;
+  DashboardGraphQLTransactionSourceReversal: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionSourceReversal>;
+  DashboardGraphQLTransactionSourceTypeEnum: DashboardGraphQLTransactionSourceTypeEnum;
+  DashboardGraphQLTransactionStatus: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionStatus>;
+  DashboardGraphQLTransactionTypeEnum: DashboardGraphQLTransactionTypeEnum;
+  DashboardGraphQLTransactionsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTransactionsResponse>;
+  DashboardGraphQLTwoFactorActionTypeEnum: DashboardGraphQLTwoFactorActionTypeEnum;
+  DashboardGraphQLTwoFactorAddMobileOtpErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorAddMobileOtpErrorResponse>;
+  DashboardGraphQLTwoFactorAddMobileOtpResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse'];
+  DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorAddMobileOtpSuccessResponse>;
+  DashboardGraphQLTwoFactorAddMobileOtpVerifyErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorAddMobileOtpVerifyErrorResponse>;
+  DashboardGraphQLTwoFactorAddMobileOtpVerifyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpVerifyErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAddMobileOtpVerifySuccessResponse'];
+  DashboardGraphQLTwoFactorAddMobileOtpVerifySuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorAddMobileOtpVerifySuccessResponse>;
+  DashboardGraphQLTwoFactorAuthUpdateFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorAuthUpdateFailureResponse>;
+  DashboardGraphQLTwoFactorAuthUpdateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAuthUpdateFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorAuthUpdateSuccessResponse'];
+  DashboardGraphQLTwoFactorAuthUpdateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorAuthUpdateSuccessResponse>;
+  DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse>;
+  DashboardGraphQLTwoFactorEmailOtpVerifyResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorEmailOtpVerifyFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse'];
+  DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorEmailOtpVerifySuccessResponse>;
+  DashboardGraphQLTwoFactorOtpFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorOtpFailureResponse>;
+  DashboardGraphQLTwoFactorOtpMediumEnum: DashboardGraphQLTwoFactorOtpMediumEnum;
+  DashboardGraphQLTwoFactorOtpResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorOtpFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorOtpSuccessResponse'];
+  DashboardGraphQLTwoFactorOtpSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorOtpSuccessResponse>;
+  DashboardGraphQLTwoFactorPasswordCreateErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorPasswordCreateErrorResponse>;
+  DashboardGraphQLTwoFactorPasswordCreateResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorPasswordCreateErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorPasswordCreateSuccessResponse'];
+  DashboardGraphQLTwoFactorPasswordCreateSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorPasswordCreateSuccessResponse>;
+  DashboardGraphQLTwoFactorPasswordEnabledErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorPasswordEnabledErrorResponse>;
+  DashboardGraphQLTwoFactorPasswordEnabledResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorPasswordEnabledErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLTwoFactorPasswordEnabledSuccessResponse'];
+  DashboardGraphQLTwoFactorPasswordEnabledSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorPasswordEnabledSuccessResponse>;
+  DashboardGraphQLTwoFactorUnverifiedMobileVerifyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLTwoFactorUnverifiedMobileVerifyResponse>;
+  URL: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['URL']>;
+  DashboardGraphQLUpdateMerchantConsentResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUpdateMerchantConsentResponse>;
+  DashboardGraphQLUpiTerminalProcurementStatusEnum: DashboardGraphQLUpiTerminalProcurementStatusEnum;
+  Upload: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['Upload']>;
+  DashboardGraphQLUser: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUser>;
+  DashboardGraphQLUserAcquisitionSourceEnum: DashboardGraphQLUserAcquisitionSourceEnum;
+  DashboardGraphQLUserAuthentication: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserAuthentication>;
+  DashboardGraphQLUserContactDetails: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserContactDetails>;
+  DashboardGraphQLUserContactDetailsUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserContactDetailsUpdateResponse>;
+  DashboardGraphQLUserDeviceAnalyticsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserDeviceAnalyticsResponse>;
+  DashboardGraphQLUserExistsByEmailOrPhoneEnum: DashboardGraphQLUserExistsByEmailOrPhoneEnum;
+  DashboardGraphQLUserExistsByEmailOrPhoneError: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserExistsByEmailOrPhoneError>;
+  DashboardGraphQLUserExistsByEmailOrPhoneResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserExistsByEmailOrPhoneError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLUserExistsByEmailOrPhoneSuccess'];
+  DashboardGraphQLUserExistsByEmailOrPhoneSuccess: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserExistsByEmailOrPhoneSuccess>;
+  DashboardGraphQLUserLogout: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserLogout>;
+  DashboardGraphQLUserOtpVerifyErrorTypeEnum: DashboardGraphQLUserOtpVerifyErrorTypeEnum;
+  DashboardGraphQLUserOtpVerifyResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserOtpVerifyResponse>;
+  DashboardGraphQLUserRole: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserRole>;
+  DashboardGraphQLUserRoleBankingEnum: DashboardGraphQLUserRoleBankingEnum;
+  DashboardGraphQLUserRolePaymentsEnum: DashboardGraphQLUserRolePaymentsEnum;
+  DashboardGraphQLUserSignupCampaignEnum: DashboardGraphQLUserSignupCampaignEnum;
+  DashboardGraphQLUserSignupMethodEnum: DashboardGraphQLUserSignupMethodEnum;
+  VPA: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLScalars['VPA']>;
+  DashboardGraphQLValidateVpaFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLValidateVpaFailureResponse>;
+  DashboardGraphQLValidateVpaResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLValidateVpaFailureResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLValidateVpaSuccessResponse'];
+  DashboardGraphQLValidateVpaSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLValidateVpaSuccessResponse>;
+  DashboardGraphQLVendorPayment: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPayment>;
+  DashboardGraphQLVendorPaymentCancelResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentCancelResponse>;
+  DashboardGraphQLVendorPaymentDates: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentDates>;
+  VendorPaymentGST: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentGst>;
+  DashboardGraphQLVendorPaymentInvoice: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentInvoice>;
+  DashboardGraphQLVendorPaymentInvoiceAttachment: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentInvoiceAttachment>;
+  DashboardGraphQLVendorPaymentPayoutAmounts: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentPayoutAmounts>;
+  DashboardGraphQLVendorPaymentPayoutCreateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentPayoutCreateResponse>;
+  DashboardGraphQLVendorPaymentStatusEnum: DashboardGraphQLVendorPaymentStatusEnum;
+  VendorPaymentTDS: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentTds>;
+  DashboardGraphQLVendorPaymentsResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVendorPaymentsResponse>;
+  DashboardGraphQLVerifyEmailOtpEnum: DashboardGraphQLVerifyEmailOtpEnum;
+  DashboardGraphQLVerifyEmailOtpErrorResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVerifyEmailOtpErrorResponse>;
+  DashboardGraphQLVerifyEmailOtpResponse:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVerifyEmailOtpErrorResponse']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLVerifyEmailOtpSuccessResponse'];
+  DashboardGraphQLVerifyEmailOtpSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLVerifyEmailOtpSuccessResponse>;
+  DashboardGraphQLWhatsappNotificationStatusResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWhatsappNotificationStatusResponse>;
+  DashboardGraphQLWhatsappNotificationToggle: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWhatsappNotificationToggle>;
+  DashboardGraphQLWidget:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLAcceptPaymentsWidget']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLOnboardingWidget']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentAnalyticsWidget']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentHandleWidget']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLPaymentsWidgetError']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLRecentTransactionsWidget']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLSettlementsWidget'];
+  DashboardGraphQLWidgetVariantEnum: DashboardGraphQLWidgetVariantEnum;
+  DashboardGraphQLWithdrawal: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWithdrawal>;
+  DashboardGraphQLWithdrawalConfig: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWithdrawalConfig>;
+  DashboardGraphQLWithdrawalListStatus: DashboardGraphQLWithdrawalListStatus;
+  DashboardGraphQLWithdrawalValidity: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWithdrawalValidity>;
+  DashboardGraphQLWithdrawalsList: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWithdrawalsList>;
+  DashboardGraphQLWorkflow: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflow>;
+  DashboardGraphQLWorkflowConfig: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowConfig>;
+  DashboardGraphQLWorkflowConfigState: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLWorkflowConfigState, 'rule'> & {
+      rule: DashboardGraphQLResolversTypes['DashboardGraphQLWorkflowConfigStateRulePayout'];
+    }
+  >;
+  DashboardGraphQLWorkflowConfigStateRulePayout:
+    | DashboardGraphQLResolversTypes['DashboardGraphQLWorkflowConfigStateRulePayoutTypeBetween']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLWorkflowConfigStateRulePayoutTypeChecker']
+    | DashboardGraphQLResolversTypes['DashboardGraphQLWorkflowConfigStateRulePayoutTypeMergeStates'];
+  DashboardGraphQLWorkflowConfigStateRulePayoutTypeBetween: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowConfigStateRulePayoutTypeBetween>;
+  DashboardGraphQLWorkflowConfigStateRulePayoutTypeChecker: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowConfigStateRulePayoutTypeChecker>;
+  DashboardGraphQLWorkflowConfigStateRulePayoutTypeMergeStates: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowConfigStateRulePayoutTypeMergeStates>;
+  DashboardGraphQLWorkflowConfigStateTransition: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowConfigStateTransition>;
+  DashboardGraphQLWorkflowConfigStateTypeEnum: DashboardGraphQLWorkflowConfigStateTypeEnum;
+  DashboardGraphQLWorkflowConfigTemplate: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowConfigTemplate>;
+  DashboardGraphQLWorkflowConfigTemplateTypeEnum: DashboardGraphQLWorkflowConfigTemplateTypeEnum;
+  DashboardGraphQLWorkflowCreator: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowCreator>;
+  DashboardGraphQLWorkflowCreatorTypeEnum: DashboardGraphQLWorkflowCreatorTypeEnum;
+  DashboardGraphQLWorkflowData: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowData>;
+  DashboardGraphQLWorkflowState: DashboardGraphQLResolverTypeWrapper<
+    DashboardGraphQLOmit<DashboardGraphQLWorkflowState, 'rule'> & {
+      rule: DashboardGraphQLResolversTypes['DashboardGraphQLWorkflowConfigStateRulePayout'];
+    }
+  >;
+  DashboardGraphQLWorkflowStateAction: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowStateAction>;
+  DashboardGraphQLWorkflowStateActionActor: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowStateActionActor>;
+  DashboardGraphQLWorkflowStateActionStatusEnum: DashboardGraphQLWorkflowStateActionStatusEnum;
+  DashboardGraphQLWorkflowStateDates: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLWorkflowStateDates>;
+  DashboardGraphQLWorkflowStateStatusEnum: DashboardGraphQLWorkflowStateStatusEnum;
+  DashboardGraphQLWorkflowStatusEnum: DashboardGraphQLWorkflowStatusEnum;
+  createWithdrawalResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLCreateWithdrawalResponse>;
+  merchantConfigurationUpdateResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantConfigurationUpdateResponse>;
+  merchantModularOnboardingDetailsFailureResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantModularOnboardingDetailsFailureResponse>;
+  merchantModularOnboardingDetailsResponse:
+    | DashboardGraphQLResolversTypes['merchantModularOnboardingDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['merchantModularOnboardingDetailsSuccessResponse'];
+  merchantModularOnboardingDetailsSuccessResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLMerchantModularOnboardingDetailsSuccessResponse>;
+  merchantModularOnboardingDetailsUpdateResponse:
+    | DashboardGraphQLResolversTypes['merchantModularOnboardingDetailsFailureResponse']
+    | DashboardGraphQLResolversTypes['merchantModularOnboardingDetailsSuccessResponse'];
+  userOtpResponse: DashboardGraphQLResolverTypeWrapper<DashboardGraphQLUserOtpResponse>;
+};

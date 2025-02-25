@@ -1,0 +1,1 @@
+export type DashboardGraphQLResolverTypeWrapper<T> = Promise<T> | T;

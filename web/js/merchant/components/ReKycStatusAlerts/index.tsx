@@ -13,7 +13,7 @@ import {
   AlertCircleIcon,
 } from '@razorpay/blade/components';
 import kycImage from 'assets/onboarding/ncKyc.svg';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 import { getItem, setItem } from 'common/utils/localStorage';
 

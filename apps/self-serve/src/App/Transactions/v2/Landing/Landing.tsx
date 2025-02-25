@@ -2,8 +2,8 @@ import React, { ReactNode, useEffect } from 'react';
 import { Outlet, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
-import ErrorBoundary from '@dashboard/shared-ui/ErrorBoundary';
-import ShowWhen from 'shell/components/ShowWhen';
+import { ErrorBoundary } from '@libs/shared-ui';
+import ShowWhen from "@libs/web-nexus/merchant/components/SharedShowWhen";
 import LandingPageAnalyticsOverview from 'apps/self-serve/src/App/Transactions/v2/Analytics/LandingAnalytics';
 import PaymentsContainer from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsContainer';
 import { TransactionsEntityRoute } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
@@ -17,7 +17,6 @@ import {
   trackTransactionsTabClick,
 } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import { Page } from 'apps/self-serve/src/App/Transactions/v2/common/types';
-
 import store from 'apps/self-serve/src/bootstrap/Store';
 
 const { ORDERS } = Page;

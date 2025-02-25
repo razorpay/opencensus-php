@@ -1,8 +1,15 @@
 import React from 'react';
-import * as useMobile from '@dashboard/shared-ui/hooks/useMobile';
+import * as sharedUtils from '@libs/shared-utils';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 import PaymentsTable from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable';
 import 'jest-location-mock';
+
+// jest.mock('@libs/shared-utils', () => {
+//   return {
+//     __esModule: true,
+//     ...jest.requireActual('@libs/shared-utils'),
+//   };
+// });
 
 const generatePayment = ({ method, status = 'authorized', cardType = 'debit' }) => {
   const id = `payment_id_${Math.floor(Math.random() * 100)}`;
@@ -90,7 +97,7 @@ export const mockFetchPaymentItems = (n = 25) => {
   return items;
 };
 
-export const useMobileSpy = jest.spyOn(useMobile, 'useMobile');
+export const useMobileSpy = jest.spyOn(sharedUtils, 'useMobile');
 
 export const renderApp = (props = {}) => {
   return render(<PaymentsTable location={{}} {...props} />);

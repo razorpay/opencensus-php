@@ -1,4 +1,4 @@
-// Platfoms
+import React from "react";
 
 export const PlatformsTitle = 'Choose your website platform';
 

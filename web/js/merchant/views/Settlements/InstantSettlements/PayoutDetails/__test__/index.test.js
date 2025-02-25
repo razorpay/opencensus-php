@@ -25,7 +25,6 @@ describe('PayoutDetails', () => {
     });
 
   beforeEach(() => {
-    jest.useFakeTimers();
     trackSpy.mockClear();
     settlementActionsSpy.mockClear();
     settlementAmountSpy.mockClear();
@@ -54,7 +53,7 @@ describe('PayoutDetails', () => {
 
   test('should fetch total settlement amount when amount settled is zero', async () => {
     renderApp();
-    await waitFor(() => {
+    waitFor(() => {
       expect(settlementAmountSpy).toHaveBeenCalled();
       expect(settlementAmountSpy).toHaveBeenCalledWith(settlementId);
     });

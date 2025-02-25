@@ -3,10 +3,11 @@ import { Box, ChevronRightIcon, Link } from '@razorpay/blade/components';
 import qs from 'query-string';
 import { useNavigate } from 'react-router-dom';
 
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import ShowWhen from 'shell/components/ShowWhen';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
-import PaymentDownloadSwiftCopy from 'shell/Transactions/v1/DownloadSwiftCopy';
+import { useMobile } from '@libs/shared-utils';
+
+import  PaymentDownloadSwiftCopy  from '@dashboards/payments/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy';
+import ShowWhen from '@libs/web-nexus/merchant/components/SharedShowWhen';
+import { SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
 import { paymentMethodOptionsMap } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter/constants';
 import {
   mobileBreakoints,

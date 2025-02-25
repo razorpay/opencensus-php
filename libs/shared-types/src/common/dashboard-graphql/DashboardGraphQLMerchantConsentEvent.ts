@@ -1,0 +1,6 @@
+export enum DashboardGraphQLMerchantConsentEvent {
+  DIGILOCKER = 'DIGILOCKER',
+  L2 = 'L2',
+  NO_CODE_POLICY_WIZARD = 'NO_CODE_POLICY_WIZARD',
+  WEBSITE_POLICY_WIZARD = 'WEBSITE_POLICY_WIZARD',
+}

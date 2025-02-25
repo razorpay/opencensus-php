@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import EmailUpdateComp from '@razorpay/commander-shield/src/bootstrap/EmailUpdateWrapper';
-import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
+import EmailUpdateComp from 'newAuth/@commander-shield/bootstrap/EmailUpdateWrapper';
 import { fetchOrg, transformFetchOrgData } from 'newAuth/apis';
 
 const defaultLogoPath = 'img/logo_black.png';
@@ -19,11 +18,7 @@ const EmailUpdate = () => {
       });
   }, []);
 
-  return (
-    <CommanderShieldThemeWrapper>
-      <EmailUpdateComp logo={orgLogoUrl} />
-    </CommanderShieldThemeWrapper>
-  );
+  return <EmailUpdateComp logo={orgLogoUrl} />;
 };
 
 export default EmailUpdate;

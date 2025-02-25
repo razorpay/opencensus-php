@@ -1,5 +1,6 @@
 import { Button } from '@razorpay/blade/components';
 import { NavLink } from 'react-router-dom';
+import React from "react";
 
 import ModalHeader from 'common/ui/ModalHeader';
 import { isMobileDevice } from 'merchant/components/Home/data';

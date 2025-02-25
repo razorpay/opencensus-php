@@ -1,4 +1,4 @@
-import { objectDiff, isBlank } from '@dashboard/shared-utils/rzp-utils';
+import { objectDiff, isBlank } from '@libs/shared-utils';
 
 /*
   - Model-based approach makes it more handy to handle the serialization/deserialization of crud calls.

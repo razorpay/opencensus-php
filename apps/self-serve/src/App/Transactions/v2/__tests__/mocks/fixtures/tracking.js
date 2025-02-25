@@ -1,9 +1,5 @@
 import { TransactionsEntityRoute } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 
-jest.mock('@dashboard/shared-utils/rzp-utils', () => ({
-  getCommonAnalyticsProperties: jest.fn(() => ({ commonProp: 'value' })),
-}));
-
 jest.mock('query-string', () => ({
   parse: jest.fn().mockReturnValue({ init_page: 'some-section' }),
 }));

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 
 import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
 import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';

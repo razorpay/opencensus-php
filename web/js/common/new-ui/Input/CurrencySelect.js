@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { PowerSelect } from 'react-power-select';
 import { connect } from 'react-redux';
 

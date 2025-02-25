@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 
 import { PolicyPagesDetails, WebsitePolicyPagesCreationPayload } from '../types';
 import { WEBSITE_UPDATE_API_BASE_URL } from '../utils';

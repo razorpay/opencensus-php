@@ -1,31 +1,122 @@
 {
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": []
-      }
-    }
-  },
-  "affected": {
-    "defaultBase": "master"
-  },
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "targetDefaults": {
+    "test:e2e": {
+      "executor": "nx:run-commands",
+      "inputs": ["{projectRoot}/"],
+      "outputs": ["{projectRoot}/.playwright-report"],
+      "cache": true,
+      "parallelism": true,
+      "dependsOn": ["@libs/shared-core:build", "@libs/shared-qsuite:build"],
+      "options": {
+        "command": "pnpm exec playwright test",
+        "env": {
+          "INCLUDE_GROUPS": "@project=payments|@project=partner-dashboard|@project=no-code-stable|@project=offers|@project=sample-tests",
+          "EXCLUDE_GROUPS": "@skip-unstable|@project=payment-links"
+        }
+      }
+    },
+    "test:jest": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "parallelism": true,
+      "outputs": ["{projectRoot}/.jest-analysis"],
+      "inputs": ["{projectRoot}/"],
+      "dependsOn": ["@libs/shared-core:build"],
+      "options": {
+        "command": "JEST_TARGET=browser jest --config=./jest.config.js",
+        "env": {
+          "__STAGE__": "production"
+        }
+      }
+    },
+    "test:jest:ci": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "parallelism": true,
+      "dependsOn": ["@libs/shared-core:build"],
+      "outputs": ["{projectRoot}/.jest-analysis"],
+      "inputs": ["{projectRoot}/"],
+      "options": {
+        "command": "JEST_TARGET=browser CI=true jest --config=./jest.config.js --silent --ci --json --coverage --testLocationInResults --outputFile=./.jest-analysis/main-report.json",
+        "env": {
+          "__STAGE__": "production"
+        }
+      }
+    },
+    "devstack:build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "parallelism": true,
+      "dependsOn": ["@libs/shared-core:build"],
+      "outputs": ["{projectRoot}/build"],
+      "inputs": ["{projectRoot}/"],
+      "options": {
+        "command": "NODE_OPTIONS=--max-old-space-size=8192 STAGE=devstack universe build --disable-differential-builds"
+      }
+    },
+    "canary:build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "parallelism": true,
+      "dependsOn": ["@libs/shared-core:build"],
+      "outputs": ["{projectRoot}/build"],
+      "inputs": ["{projectRoot}/"],
+      "options": {
+        "command": "NODE_OPTIONS=--max-old-space-size=8192 STAGE=canary universe build --disable-differential-builds"
+      }
+    },
+    "production:build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "parallelism": true,
+      "dependsOn": ["@libs/shared-core:build"],
+      "outputs": ["{projectRoot}/build"],
+      "inputs": ["{projectRoot}/"],
+      "options": {
+        "command": "NODE_OPTIONS=--max-old-space-size=8192 STAGE=production universe build --disable-differential-builds"
+      }
+    },
     "test": {
       "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"]
     },
     "tsc": {
       "dependsOn": ["^tsc"]
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default"]
+    },
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
-  "generators": {
-    "@nx/react": {
-      "application": {
-        "babel": true
-      },
-      "library": {
-        "unitTestRunner": "jest"
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json"
+    ],
+    "sharedGlobals": []
+  },
+  "generators": {},
+  "plugins": [
+    {
+      "plugin": "@nx/rollup/plugin",
+      "options": {
+        "buildTargetName": "build"
       }
     }
-  }
+  ],
+  "workspaceLayout": {
+    "appsDir": "./apps",
+    "libsDir": "./libs"
+  },
+  "defaultBase": "master"
 }

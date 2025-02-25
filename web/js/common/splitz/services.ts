@@ -1,8 +1,11 @@
 import abService from '@razorpay/universe-cli/ab';
 
-import { evaluatedExperimentParser, evaluatedBulkExperimentsParser } from 'common/splitz/utils';
+import {
+  evaluatedExperimentParser,
+  evaluatedBulkExperimentsParser,
+  getTargettedExperimentId,
+} from 'common/splitz/utils';
 
-import { APP_ENV } from './constants';
 import { ExperimentType, InitABServiceConfig, VariantAPICallArgs } from './types';
 
 // for bulk calls, response modified as per our usecase
@@ -14,7 +17,7 @@ export const getVariant = async ({
   return abService
     .getVariant(
       {
-        experimentId: (experimentId[APP_ENV] as string) ?? experimentId.beta,
+        experimentId: getTargettedExperimentId(experimentId),
         variables: requestData,
       },
       defaultVariant,
@@ -22,7 +25,7 @@ export const getVariant = async ({
     .then((value) => {
       return evaluatedExperimentParser({
         variables: value.variables,
-        experiment_id: (experimentId[APP_ENV] as string) ?? experimentId.beta,
+        experiment_id: getTargettedExperimentId(experimentId),
       });
     });
 };
@@ -35,7 +38,7 @@ export const getVariants = async (
 
   const parsedExperiments = experiments.map(
     ({ defaultVariant: { name, variables }, experimentId, uniqueHashKey, requestData }) => {
-      const refEnvExperimentId = (experimentId[APP_ENV] as string) ?? experimentId.beta;
+      const refEnvExperimentId = getTargettedExperimentId(experimentId);
       tempMap[refEnvExperimentId] = uniqueHashKey;
 
       return {

@@ -1,0 +1,6 @@
+import { DashboardGraphQLMerchantContactFundAccountDetailsBankAccount, DashboardGraphQLMerchantContactFundAccountDetailsCard, DashboardGraphQLMerchantContactFundAccountDetailsVpa, DashboardGraphQLMerchantContactFundAccountDetailsWallet } from './index';
+export type DashboardGraphQLMerchantContactFundAccountDetails =
+  | DashboardGraphQLMerchantContactFundAccountDetailsBankAccount
+  | DashboardGraphQLMerchantContactFundAccountDetailsCard
+  | DashboardGraphQLMerchantContactFundAccountDetailsVpa
+  | DashboardGraphQLMerchantContactFundAccountDetailsWallet;

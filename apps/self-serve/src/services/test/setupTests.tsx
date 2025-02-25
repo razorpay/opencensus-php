@@ -1,21 +1,18 @@
 // Polyfill "window.fetch" used in the React component.
-import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import 'regenerator-runtime/runtime';
 import 'whatwg-fetch';
-import { clearStore } from 'shell/commonStore';
+import 'regenerator-runtime/runtime';
+import { type ComponentType } from 'react';
+import { clearStore } from '@federated/apps/shell/commonStore';
 import { server } from '../mocks/setup';
+import { TextEncoder, TextDecoder } from 'util';
+
+Object.assign(global, { TextDecoder, TextEncoder, __STAGE__: 'production' });
 
 process.env.hostName = 'http://localhost:6006';
 
 const RetryTimes = 3;
-
-declare global {
-  interface Window {
-    rzpAnalytics: jest.Mock;
-    RZP: any;
-  }
-}
 
 // Global mocks
 
@@ -29,7 +26,7 @@ jest.mock('react-lottie', () => ({
   default: 'div',
 }));
 
-jest.mock('merchant/reducers/session', () => {
+jest.mock('@dashboards/payments/reducers/session', () => {
   return {
     initialState: {
       user: {
@@ -57,27 +54,21 @@ jest.mock('merchant/reducers/session', () => {
   };
 });
 
-jest.mock('@dashboard/shared-utils/analytics', () => ({
-  ...jest.requireActual('@dashboard/shared-utils/analytics'),
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
+  toTitleCase: jest.fn(jest.requireActual('@libs/shared-utils').toTitleCase),
+  useMobile: jest.fn(),
   analyticsTrack: jest.fn(),
   analyticsTrackWithUserInfo: jest.fn(),
+  getCommonAnalyticsProperties: jest.fn(),
+  decodeSensitiveFields: jest.fn((search) => search),
 }));
-jest.mock('@razorpay/universe-utils/analytics', () => {
-  const originalModule = jest.requireActual('@razorpay/universe-utils/analytics');
-  return {
-    __esModule: true,
-    ...originalModule,
-    default: {
-      track_EXPERIMENTAL: jest.fn(),
-    },
-  };
-});
 
 jest.mock('common/i18', () => {
   return {
     __esModule: true,
     withI18Service:
-      (Component: React.ComponentType<any>) =>
+      (Component: ComponentType<any>) =>
       (props: any): JSX.Element =>
         <Component {...props} i18={{ isConfigTagEnabled: jest.fn() }} />,
     useI18Service: (): { isConfigTagEnabled: jest.MockedFunction<() => boolean> } => ({

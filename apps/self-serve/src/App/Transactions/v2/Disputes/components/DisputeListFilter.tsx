@@ -11,9 +11,9 @@ import {
 } from '@razorpay/blade/components';
 import moment from 'moment';
 import isEmpty from 'lodash/isEmpty';
-import lazy from '@dashboard/shared-utils/routes/LazyLoader';
+import { useMobile } from '@libs/shared-utils';
 
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
+import { type Option } from '@libs/web-nexus/common/components/Dropdown/types';
 import {
   disputeDurationSectionName,
   searchByOptionsMap,
@@ -57,15 +57,11 @@ import {
   getFromTime,
   getValue,
 } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
-import { SuspenseWithLoader } from '@dashboard/shared-ui/components';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import  SuspenseWithLoader  from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
 import DisputeFilter from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeFilter';
-import { withRouter } from 'shell/deprecated/withRouter';
-import Dropdown from '@dashboard/shared-ui/components/Dropdown';
-
-const DateRangePicker = lazy(
-  () => import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
-);
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import Dropdown from '@libs/web-nexus/common/components/Dropdown';
+import DateRangePicker from '@libs/web-nexus/common/ui/Forms/DateRangePickerField';
 
 const DisputeListFilter = ({
   onSubmit,

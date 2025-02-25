@@ -1,4 +1,4 @@
-import { useEffect, ReactNode } from 'react';
+import React, { useEffect, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 

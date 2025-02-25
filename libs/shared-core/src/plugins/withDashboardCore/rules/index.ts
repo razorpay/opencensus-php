@@ -1,0 +1,1 @@
+export { getCommonRules } from './rules';

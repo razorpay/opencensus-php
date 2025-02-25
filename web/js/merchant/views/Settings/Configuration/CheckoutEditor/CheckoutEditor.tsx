@@ -65,7 +65,7 @@ import {
 import {
   CUSTOM_MESSAGE_FEATURE_FLAG,
   CheckoutEditorProvider,
-  CheckoutEditorProviderProps,
+  type CheckoutEditorProviderProps,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { mapCheckoutEmailConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/helpers';
 import blockAnalytics from 'merchant/views/Settings/Configuration/CheckoutEditor/track/blockAnalytics';

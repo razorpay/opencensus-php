@@ -49,9 +49,13 @@ const SettlementTimeline = ({
   } = settlementDetails;
 
   useEffect(() => {
-    fetchHolidayList().then((data) => {
-      holidayList = data;
-    });
+    try{
+      fetchHolidayList().then((data) => {
+        holidayList = data;
+      });
+    }catch(e){
+      console.log(e);
+    }
   }, []);
 
   const viewHolidayList = () => {

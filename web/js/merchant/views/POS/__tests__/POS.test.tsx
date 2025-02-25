@@ -8,6 +8,8 @@ import { MOCK_PRICING_PLAN } from './mocks/fixtures';
 import { setupIntersectionObserverMock } from 'merchant/views/POS/utils/IntersectionObserverMock';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
+jest.spyOn(analytics, 'track_EXPERIMENTAL');
+
 jest.mock('merchant/views/POS/services', () => ({
   ...(jest.requireActual('merchant/views/POS/services') as Record<string, string>),
   getPricingPlan: () => MOCK_PRICING_PLAN,

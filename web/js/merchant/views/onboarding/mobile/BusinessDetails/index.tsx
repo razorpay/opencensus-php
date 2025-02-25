@@ -40,7 +40,7 @@ import {
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import BusinessName from 'merchant/views/onboarding/mobile/Fields/BusinessName';
 import GstinAutoPopulate from 'merchant/views/onboarding/mobile/Fields/GstinAutoPopulate';
 import usePartnerActivation from 'merchant/views/onboarding/mobile/hooks/usePartnerActivation';

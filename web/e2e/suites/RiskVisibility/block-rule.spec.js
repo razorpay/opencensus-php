@@ -1,7 +1,5 @@
-import { BASE_PATH, getStorageStatePath, routes } from 'testConstants';
-
-const { resolve } = require('path');
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
+import { resolve } from 'path';
 
 const ELEMENT_CONFIG = {
   SLIDE_1_TITLE: 'text="Razorpay Shield"',
@@ -16,51 +14,49 @@ const ELEMENT_CONFIG = {
   SUCCESS_MODAL_TITLE: 'text="Request sent successfully"',
 };
 
-test.describe.parallel(
-  'Test risk visibility block rule feature @flow=risk-visibility @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast',
-  () => {
-    test.use({
-      storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
-    });
+test.describe
+  .parallel('Test risk visibility block rule feature @flow=risk-visibility @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast', () => {
+  test.use({
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
+  });
 
-    test.beforeEach(async ({ page }) => {
-      await page.goto(routes.RISK_AND_FRAUD);
-      await expect(page).toHaveURL(routes.RISK_AND_FRAUD);
-      await expect(page.locator(ELEMENT_CONFIG.SLIDE_1_TITLE)).toBeVisible();
-      await page.locator(ELEMENT_CONFIG.SKIP_BUTTON).click();
-    });
+  test.beforeEach(async ({ page }) => {
+    await page.goto(routes.RISK_AND_FRAUD);
+    await expect(page).toHaveURL(routes.RISK_AND_FRAUD);
+    await expect(page.locator(ELEMENT_CONFIG.SLIDE_1_TITLE)).toBeVisible();
+    await page.locator(ELEMENT_CONFIG.SKIP_BUTTON).click();
+  });
 
-    test('Should open popup and show error if send request is clicked @priority=normal', async ({
-      page,
-    }) => {
-      await expect(page.locator(ELEMENT_CONFIG.BLOCK_RULE_TITLE)).toBeVisible();
-      await page.locator(ELEMENT_CONFIG.REQUEST_BLACKLIST_BUTTON).first().click();
+  test('Should open popup and show error if send request is clicked @priority=normal', async ({
+    page,
+  }) => {
+    await expect(page.locator(ELEMENT_CONFIG.BLOCK_RULE_TITLE)).toBeVisible();
+    await page.locator(ELEMENT_CONFIG.REQUEST_BLACKLIST_BUTTON).first().click();
 
-      await expect(page.locator(ELEMENT_CONFIG.MODAL_TITLE)).toBeVisible();
-      await page.locator(ELEMENT_CONFIG.SEND_REQUEST_BUTTON).click();
+    await expect(page.locator(ELEMENT_CONFIG.MODAL_TITLE)).toBeVisible();
+    await page.locator(ELEMENT_CONFIG.SEND_REQUEST_BUTTON).click();
 
-      await expect(page.locator(ELEMENT_CONFIG.ERROR)).toHaveCount(2);
+    await expect(page.locator(ELEMENT_CONFIG.ERROR)).toHaveCount(2);
 
-      await page.locator(ELEMENT_CONFIG.CANCEL).click();
-      await expect(page.locator(ELEMENT_CONFIG.MODAL_TITLE)).not.toBeVisible();
-    });
+    await page.locator(ELEMENT_CONFIG.CANCEL).click();
+    await expect(page.locator(ELEMENT_CONFIG.MODAL_TITLE)).not.toBeVisible();
+  });
 
-    test('Should show success modal if all the information is filled successfully', async ({
-      page,
-    }) => {
-      await page.locator(ELEMENT_CONFIG.REQUEST_BLACKLIST_BUTTON).first().click();
+  test('Should show success modal if all the information is filled successfully', async ({
+    page,
+  }) => {
+    await page.locator(ELEMENT_CONFIG.REQUEST_BLACKLIST_BUTTON).first().click();
 
-      await page.locator(ELEMENT_CONFIG.PARAMETER_DROPDOWN).click();
-      await page.getByRole('option', { name: 'Contact' }).click();
+    await page.locator(ELEMENT_CONFIG.PARAMETER_DROPDOWN).click();
+    await page.getByRole('option', { name: 'Contact' }).click();
 
-      await page.setInputFiles('input[type="file"]', resolve(__dirname, 'test-doc.xlsx'));
+    await page.setInputFiles('input[type="file"]', resolve(__dirname, 'test-doc.xlsx'));
 
-      await page.locator(ELEMENT_CONFIG.SEND_REQUEST_BUTTON).click();
+    await page.locator(ELEMENT_CONFIG.SEND_REQUEST_BUTTON).click();
 
-      await expect(page.locator(ELEMENT_CONFIG.ERROR)).not.toBeVisible();
+    await expect(page.locator(ELEMENT_CONFIG.ERROR)).not.toBeVisible();
 
-      /*Api is failing, BE will fix it*/
-      //await page.locator(ELEMENT_CONFIG.SUCCESS_MODAL_TITLE).toBeVisible();
-    });
-  },
-);
+    /*Api is failing, BE will fix it*/
+    //await page.locator(ELEMENT_CONFIG.SUCCESS_MODAL_TITLE).toBeVisible();
+  });
+});

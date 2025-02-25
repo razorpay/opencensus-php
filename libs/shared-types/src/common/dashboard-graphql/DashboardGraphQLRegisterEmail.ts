@@ -1,0 +1,2 @@
+import { DashboardGraphQLRegisterEmailError, DashboardGraphQLRegisterEmailSuccess } from './index';
+export type DashboardGraphQLRegisterEmail = DashboardGraphQLRegisterEmailError | DashboardGraphQLRegisterEmailSuccess;

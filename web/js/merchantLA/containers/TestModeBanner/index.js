@@ -3,17 +3,18 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ShowWhen from 'merchantLA/components/ShowWhen';
 import { withI18Service } from 'common/i18';
-import { setItem } from 'common/utils/localStorage';
 import Banner from 'common/ui/Banner';
 import { trackLinkClick } from './ga';
+import { switchMode } from '@libs/shared-utils';
 
 class TestModeBanner extends Component {
   switchToLiveMode = () => {
     const { user } = this.props;
 
-    trackLinkClick('Swith - Mode');
+    trackLinkClick('Switch - Mode');
 
-    setItem(`rzp_mode--${user.current}`, 'live');
+    switchMode(user.current, 'live');
+
     window.location.reload();
   };
 

@@ -1,0 +1,20 @@
+import { DashboardGraphQLMaybe, DashboardGraphQLUser, DashboardGraphQLVendorPaymentDates, DashboardGraphQLScalars, DashboardGraphQLMerchantContactFundAccount, DashboardGraphQLVendorPaymentGst, DashboardGraphQLVendorPaymentInvoice, DashboardGraphQLMerchantContact, DashboardGraphQLVendorPaymentPayoutAmounts, DashboardGraphQLPayout, DashboardGraphQLVendorPaymentStatusEnum, DashboardGraphQLMoney, DashboardGraphQLVendorPaymentTds } from './index';
+export type DashboardGraphQLVendorPayment = {
+  __typename?: 'DashboardGraphQLVendorPayment';
+  cancelledBy?: DashboardGraphQLMaybe<DashboardGraphQLUser>;
+  createdBy: DashboardGraphQLUser;
+  dates: DashboardGraphQLVendorPaymentDates;
+  description?: DashboardGraphQLMaybe<DashboardGraphQLScalars['String']>;
+  fundAccount?: DashboardGraphQLMaybe<DashboardGraphQLMerchantContactFundAccount>;
+  gst?: DashboardGraphQLMaybe<DashboardGraphQLVendorPaymentGst>;
+  id: DashboardGraphQLScalars['ID'];
+  invoice: DashboardGraphQLVendorPaymentInvoice;
+  merchantContact?: DashboardGraphQLMaybe<DashboardGraphQLMerchantContact>;
+  notes?: DashboardGraphQLMaybe<DashboardGraphQLScalars['JSONObject']>;
+  payoutAmounts?: DashboardGraphQLMaybe<DashboardGraphQLVendorPaymentPayoutAmounts>;
+  payouts: Array<DashboardGraphQLPayout>;
+  status: DashboardGraphQLVendorPaymentStatusEnum;
+  subtotal?: DashboardGraphQLMaybe<DashboardGraphQLMoney>;
+  tds?: DashboardGraphQLMaybe<DashboardGraphQLVendorPaymentTds>;
+  total?: DashboardGraphQLMaybe<DashboardGraphQLMoney>;
+};

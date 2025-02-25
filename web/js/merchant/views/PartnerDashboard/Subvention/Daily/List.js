@@ -1,5 +1,6 @@
 import Amount from 'common/ui/Amount';
 import CommissionsDailyList from '../../Commissions/Daily/List';
+import React from "react";
 
 const amountColumn = {
   title: 'Total Subvention',

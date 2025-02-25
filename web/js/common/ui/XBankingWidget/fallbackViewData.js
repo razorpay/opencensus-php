@@ -1,5 +1,6 @@
 import { isProductionEnv } from 'common/utils/rzp-utils';
 import razorpayxLogo from 'assets/x_banking_widget/razorpayx_logo.svg';
+import React from 'react';
 
 const isProd = isProductionEnv();
 

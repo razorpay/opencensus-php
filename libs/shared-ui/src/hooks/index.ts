@@ -1,1 +1,0 @@
-export { useMobile } from './useMobile';

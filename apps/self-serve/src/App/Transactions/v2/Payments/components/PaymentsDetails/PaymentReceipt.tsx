@@ -9,17 +9,16 @@ import {
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
-import Loader from 'common/ui/Loader';
-import { closeModal } from '@dashboard/shared-utils/reducers/modals';
-import { withRouter } from 'shell/deprecated/withRouter';
-import { useStore } from 'shell/commonStore';
+import Loader from '@libs/web-nexus/common/ui/Loader';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { fetchEncodedPaymentReceipt } from '../PaymentsList/model';
 
-const PaymentReceipt = ({ closeModal, id }) => {
+const PaymentReceipt = ({ id }) => {
   const [encodedImage, setEncodedImage] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState<boolean>(true);
-  const showNotification = useStore((state) => state.showNotification);
+  const { showNotification, closeModal } = useStore((state) => state);
   const dismissModal = () => {
     setIsOpen(false);
     closeModal();
@@ -97,12 +96,6 @@ const PaymentReceipt = ({ closeModal, id }) => {
   );
 };
 
-const mapDispatchToProps = (dispatch) =>
-  bindActionCreators(
-    {
-      closeModal,
-    },
-    dispatch,
-  );
+const mapDispatchToProps = (dispatch) => bindActionCreators({}, dispatch);
 
 export default withRouter<any>(compose(connect(null, mapDispatchToProps)(PaymentReceipt)));

@@ -1,4 +1,5 @@
 import Amount from 'common/ui/Amount';
+import React from "react";
 
 import CommissionDailyEntity, {
   EarningsBreakup,

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { useState } from 'react';
 import { useApp } from 'common/context/App';
 import { getMode } from 'common/services/mode';

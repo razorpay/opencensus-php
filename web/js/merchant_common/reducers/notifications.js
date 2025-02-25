@@ -1,12 +1,11 @@
 // This utility is used to show and hide notifications
 // This is directly updating zustand store for notification actions
 
-import { useStore } from 'shell/commonStore';
-
 import {
-  getShowNotificationState,
+  useStore,
   getHideNotificationState,
-} from 'merchant/commonStore/stateActions/notifications';
+  getShowNotificationState,
+} from '@federated/apps/shell/commonStore';
 
 const NOTIFICATION_SHOW = 'NOTIFICATION_SHOW';
 const NOTIFICATION_HIDE = 'NOTIFICATION_HIDE';

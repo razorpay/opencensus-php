@@ -1,7 +1,6 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
-import Settlement from 'merchant/models/Settlement';
-import { set, merge } from 'common/utils/immutable';
-import { merchantFetch } from 'merchant/utils/ajax';
+import Settlement from '@dashboards/payments/models/Settlement';
+import { set, merge } from '@libs/shared-utils';
+import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
 
 const SETTLEMENT_FETCH = 'SETTLEMENT_FETCH';
 const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';

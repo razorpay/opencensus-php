@@ -1,6 +1,6 @@
 import React from 'react';
 
-// import { useStore } from 'shell/commonStore';
+// import { useStore } from '@federated/apps/shell/commonStore';
 
 import Wrapper from '../Wrapper/Wrapper';
 import SelfServeTransactionV2Landing from 'apps/self-serve/src/App/Transactions/v2/Landing';

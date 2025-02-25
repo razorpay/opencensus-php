@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { merchantFetch } from '@dashboard/shared-utils/ajax';
-import { useStore } from 'shell/commonStore';
+import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { View } from 'apps/self-serve/src/App/Transactions/v2/common/types';
 import Content from './Content';
 

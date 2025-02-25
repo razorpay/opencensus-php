@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { SingleDatePicker } from 'react-dates';
 import moment from 'moment';
 

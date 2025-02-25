@@ -1,3 +1,4 @@
+import React from 'react';
 import Button from 'common/new-ui/Button';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';

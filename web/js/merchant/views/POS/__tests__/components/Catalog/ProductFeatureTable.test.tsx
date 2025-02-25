@@ -1,13 +1,14 @@
 import React from 'react';
-import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
-
 import { screen, render, waitFor, userEvent, waitForElementToBeRemoved, server } from 'test-utils';
+import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import ProductFeatureTable from 'merchant/views/POS/Catalog/ProductFeatureTable';
 import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
 import { setupIntersectionObserverMock } from 'merchant/views/POS/utils/IntersectionObserverMock';
 import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
+
+jest.spyOn(analytics, 'track_EXPERIMENTAL');
 
 describe('ProductFeatureTable', () => {
   beforeEach(() => {

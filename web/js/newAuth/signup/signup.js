@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
-import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
+import Auth from 'newAuth/@commander-shield/bootstrap/SignUpWrapper';
 import QueryString from 'query-string';
 import { ThemeProvider } from 'styled-components';
-
-import { FullPageLoader } from 'common/components/Loader';
-import { setCookie } from 'common/utils/cookies';
+import { FullPageLoader } from 'newAuth/@deprecated/common/components/Loader'; // eslint-disable-line
+import { setCookie } from '@libs/shared-utils';
 import { fetchOrg } from 'newAuth/apis';
-import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { ContentContainer } from 'newAuth/commonStyles';
 import {
   getURLQueryParams,
@@ -64,7 +62,7 @@ const SignUp = () => {
       //set recommend product to localstorage.
       const query = QueryString.parse(window.location.search);
       if (query?.recommended_product) {
-        localStorage.setItem('merchant_landing_page', query.recommended_product);
+        window?.localStorage.setItem('merchant_landing_page', query.recommended_product);
       }
     } catch (e) {
       // ignore silently
@@ -149,18 +147,16 @@ const SignUp = () => {
                   <RelativeView>
                     <RefereeBanner />
                     <AbsoluteView>
-                      <CommanderShieldThemeWrapper>
-                        <Auth
-                          appName="dashboard"
-                          authClientId={window.OAUTH_CLIENT_ID}
-                          oneTapInfo={oneTapInfo}
-                          showPasswordRules={isPasswordUXImprovementEnabled()}
-                          skipCaptcha={isTestEnvironment() || captchaDisabled}
-                          autoReadOtpSignup
-                          showMobileSignup
-                          orgName={orgName}
-                        />
-                      </CommanderShieldThemeWrapper>
+                      <Auth
+                        appName="dashboard"
+                        authClientId={window.OAUTH_CLIENT_ID}
+                        oneTapInfo={oneTapInfo}
+                        showPasswordRules={isPasswordUXImprovementEnabled()}
+                        skipCaptcha={isTestEnvironment() || captchaDisabled}
+                        autoReadOtpSignup
+                        showMobileSignup
+                        orgName={orgName}
+                      />
                     </AbsoluteView>
                     <InfoContainer handleContactUsClick={handleContactUsClick} />
                   </RelativeView>

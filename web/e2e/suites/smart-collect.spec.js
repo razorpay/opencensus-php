@@ -1,6 +1,12 @@
-import { test, expect } from 'utils/base';
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expectSuccessNotification, getRandomCustomerData, clickSkipAndStartBtn } from 'utils';
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+  expectSuccessNotification,
+  getRandomCustomerData,
+} from '@libs/shared-qsuite/playwright';
 
 async function createVirtulaAccount({ page }) {
   await page.getByRole('button', { name: 'Create Customer Identifier' }).click();
@@ -48,7 +54,7 @@ async function searchAndOpenDetails({ page, virtualAccountId }) {
 
 test.describe.serial('Test smart collect @flow=smart-collect @project=no-code', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   let virtualAccountId = '';

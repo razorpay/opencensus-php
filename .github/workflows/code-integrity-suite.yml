@@ -1,0 +1,247 @@
+name: Code Integrity Suite
+
+on:
+  workflow_call:
+    inputs:
+      affected_all:
+        type: string
+        required: true
+      memory_intensive_ut_configured_apps:
+        type: string
+        required: true
+      memory_intensive_ut_configured_apps_shards_array:
+        type: string
+        required: true
+      memory_intensive_ut_configured_apps_shards_total:
+        type: string
+        required: true
+      default_ut_configured_apps_matrix:
+        type: string
+        required: true
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  HOME: /actions-runner/_work
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+
+jobs:
+  report-summary-init:
+    name: Generate Jest Analysis Report Links
+    runs-on: [non-api-premium]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github/
+
+      - name: Setup Node v18.12.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.12.1
+
+      - name: Generate Jest Analysis Report Summary
+        env:
+          DEFAULT_APPS_MATRIX: ${{ inputs.default_ut_configured_apps_matrix }}
+          MEMORY_INTENSIVE_APPS: ${{ inputs.memory_intensive_ut_configured_apps }}
+          SHARDS_TOTAL: ${{ inputs.memory_intensive_ut_configured_apps_shards_total }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY
+        run: |
+          node .github/scripts/summary-generators/jest-report-summary.js
+
+  run-jest-analysis-memory-intensive:
+    name: Jest - MI
+    runs-on: [non-api-premium, cache-2]
+    strategy:
+      fail-fast: false
+      matrix:
+        targetProject: ${{ fromJson(inputs.memory_intensive_ut_configured_apps) }}
+        shardsArray: ${{ fromJson(inputs.memory_intensive_ut_configured_apps_shards_array) }}
+    env:
+      shardsTotal: ${{ inputs.memory_intensive_ut_configured_apps_shards_total }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Get Project Dirs Map
+        id: get-project-dir
+        uses: ./.github/actions/get-project-dir
+        with:
+          targetProject: ${{ matrix.targetProject }}
+
+      - name: Run Unit Tests
+        id: run-tests
+        shell: bash
+        continue-on-error: true
+        run: |
+          SHARD=${{ matrix.shardsArray }} JEST_TARGET=browser CI=true pnpm nx run ${{ matrix.targetProject }}:test:jest:ci --runInBand --shard=${{ matrix.shardsArray }}/${{ env.shardsTotal }}
+        env:
+          DISABLE_REPORT_PORTAL_INTEGRATION: true
+
+      - name: Configure AWS Credentials For Dashboard Assets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+
+      - name: Push Jest Analysis Artifacts to S3
+        shell: bash
+        run: |
+          node .github/scripts/jest-cis-s3-sync.js ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }} ${{ matrix.targetProject }} ${{ steps.get-project-dir.outputs.project_root }}
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          SHARD: ${{ matrix.shardsArray }}
+          SHARDS_TOTAL: ${{ env.shardsTotal }}
+
+      - name: Determine Final Shard Status
+        id: determine-test-status
+        shell: bash
+        run: |
+          if [ "${{ steps.run-tests.outcome }}" != "success" ]; then
+            exit 1
+          fi
+  
+
+  combine-sharded-analysis:
+    name: Combine Sharded Jest Analysis
+    runs-on: [non-api-premium]
+    needs: [run-jest-analysis-memory-intensive]
+    strategy:
+      matrix:
+        targetProject: ${{ fromJson(inputs.memory_intensive_ut_configured_apps) }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+          fetch-depth: 1
+          sparse-checkout: |
+            .github/
+
+      - name: Setup Node v22.11.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+
+      - name: Remove all package.json files (Fail Safe)
+        run: |
+          find . -type f -name "package.json" -exec git rm -f {} \;
+
+      - name: Install Required Tools
+        run: |
+          npm install glob lcov-result-merger istanbul-lib-coverage istanbul-lib-report istanbul-reports xml2js
+
+          # Install LCOV (GenHTML)
+          curl -LO https://ftp.debian.org/debian/pool/main/l/lcov/lcov_1.14.orig.tar.gz
+          tar -xzf lcov_1.14.orig.tar.gz
+          cd lcov-1.14
+          make install PREFIX=$HOME/.local
+
+          # Add LCOV tools to PATH
+          echo 'Adding LCOV tools to PATH...'
+          echo 'export PATH=$HOME/.local/bin:$PATH' >> $GITHUB_ENV
+
+          echo "Installation complete!"
+
+      - name: Configure AWS Credentials For Dashboard Assets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+
+      - name: Combine Sharded Jest Analysis
+        run: |
+          node .github/scripts/cis-combine-shards.js ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }} ${{ matrix.targetProject }}
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+
+  run-jest-analysis-default:
+    name: Jest - Default
+    runs-on: [non-api-premium, cache-2]
+    strategy:
+      fail-fast: false
+      matrix:
+        targetProjects: ${{ fromJson(inputs.default_ut_configured_apps_matrix) }}
+    steps:
+      - name: Echo Target Projects
+        run: |
+          echo "Target Projects: ${{ matrix.targetProjects }}"
+
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Install And Cache Dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Get Project Dirs Map
+        id: get-project-dirs
+        uses: ./.github/actions/get-project-dirs
+        with:
+          targetProjects: ${{ matrix.targetProjects }}
+
+      - name: Run Unit Tests
+        id: run-tests
+        shell: bash
+        continue-on-error: true
+        run: |
+          MAX_WORKERS=2 pnpm nx run-many -t test:jest:ci --parallel=4 --projects=${{ matrix.targetProjects }}
+        env:
+          DISABLE_REPORT_PORTAL_INTEGRATION: true
+
+      - name: Configure AWS Credentials For Dashboard Assets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+
+      - name: Push Jest Analysis Artifacts to S3
+        shell: bash
+        run: |
+          node .github/scripts/jest-cis-s3-sync.js ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }} ${{ matrix.targetProjects }} ${{ steps.get-project-dirs.outputs.project_roots }}
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+
+      - name: Determine Final Status
+        id: determine-test-status
+        shell: bash
+        run: |
+          if [ "${{ steps.run-tests.outcome }}" != "success" ]; then
+            exit 1
+          fi
+
+  # tsc-eslint-analysis:
+  #   name: Tsc & Eslint Analysis
+  #   runs-on: [non-api-premium, cache-2]
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         token: ${{ secrets.CI_BOT_TOKEN }}
+
+  #     - name: Install And Cache Dependencies
+  #       uses: ./.github/actions/install-dependencies
+  #       with:
+  #         GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+  #     - name: Run TSC & ESLint Analysis
+  #       run: |
+  #         pnpm nx run-many -t lint,tsc --parallel=12 --projects=${{ inputs.affected_all }}
+  #       env:
+  #         GITHUB_SHA: ${{ github.sha }}

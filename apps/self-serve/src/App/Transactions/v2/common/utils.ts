@@ -6,20 +6,17 @@ import {
 import moment, { Moment } from 'moment';
 import qs from 'query-string';
 
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
-import { SpiltzContextState } from '@dashboard/shared-utils/splitz/types';
-import {
-  isExperimentEnabled,
-  isInternalTestingEnabled,
-} from '@dashboard/shared-utils/splitz-utils';
-import { User } from '@dashboard/shared-utils/typings';
-import { getDateFormat } from '@dashboard/shared-utils/date-utils';
+import type { Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import { SpiltzContextState } from '@federated/dashboards/payments/services/splitzService';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import {
   stringifyQueryParams,
   encodeSensitiveFields,
   decodeSensitiveFields,
-} from '@dashboard/shared-utils/rzp-utils';
-import { validateUnixTimestamp } from '@dashboard/shared-utils';
+  validateUnixTimestamp,
+  isExperimentEnabled,
+  getDateFormat,
+} from '@libs/shared-utils';
 
 import {
   ALL_VALUE,
@@ -35,6 +32,7 @@ import {
 import { Duration, DurationOption, DurationOptionsMap, Paginate } from './types';
 import { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import { SearchQueryParamType } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter/types';
+import { isInternalTestingEnabled } from '@libs/web-nexus/common/splitz/utils';
 
 export const generateOptions = (optionsMap: {
   [key: string]: string;
@@ -213,11 +211,14 @@ export const getCreatedOnTime = ({ created_at }: { created_at: number }): string
   return createdAt;
 };
 
-export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User): boolean => {
+export const isTransactionsV2Enabled = (
+  splitz: SpiltzContextState,
+  user: PaymentsDashboardUser,
+): boolean => {
   const { abExperiments } = splitz || { abExperiments: { Transactions_Revamp: undefined } };
   const isV2ForCurlecEnabled = isExperimentEnabled(abExperiments?.enable_trxn_v2_for_curlec);
 
-  if (!abExperiments?.Transactions_Revamp) return false;
+  if (!abExperiments?.['Transactions_Revamp']) return false;
 
   // for curlec merchants, if experiment is enabled, then show trxn v2
   if (user.isOrgCurlec) {
@@ -231,20 +232,20 @@ export const isTransactionsV2Enabled = (splitz: SpiltzContextState, user: User):
     Boolean(user.isCountryIndia) &&
     user.isOrgRZP &&
     !user.isFeatureEnabled('raas') &&
-    isExperimentEnabled(abExperiments.Transactions_Revamp)
+    isExperimentEnabled(abExperiments['Transactions_Revamp'])
   );
 };
 
 export const isSettlementRetryTimelineEnabled = (
   splitz: SpiltzContextState,
-  user: User,
+  user: PaymentsDashboardUser,
 ): boolean => {
   const { abExperiments } = splitz || { abExperiments: { Transaction_Retry_Timeline: undefined } };
-  if (!abExperiments?.Transaction_Retry_Timeline) return false;
+  if (!abExperiments?.['Transaction_Retry_Timeline']) return false;
   if (user.isOrgCurlec) {
     return false;
   }
-  return isExperimentEnabled(abExperiments.Transaction_Retry_Timeline) && user.isOrgRZP;
+  return isExperimentEnabled(abExperiments['Transaction_Retry_Timeline']) && user.isOrgRZP;
 };
 
 export const i18nifyConvertToMajorUnit = (

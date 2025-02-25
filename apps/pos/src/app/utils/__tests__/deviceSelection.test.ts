@@ -1,4 +1,4 @@
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 import { QuantityActions } from '../../types/DeviceSelection';
 import {
   getCatalogDataFromModularConfig,
@@ -118,7 +118,7 @@ describe('deviceSelection utils', () => {
   describe('getFieldsForDeliveryAddressFromMerchantDetails', () => {
     test('should return delivery address from merchant details', () => {
       const { registered, operation } = getFieldsForDeliveryAddressFromMerchantDetails({
-        merchant: MOCK_MERCHANT_DETAILS as unknown as Merchant,
+        merchant: MOCK_MERCHANT_DETAILS as unknown as DashboardGraphQLMerchant,
         countryCode: 'IN',
       });
 

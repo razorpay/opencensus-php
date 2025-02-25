@@ -1,0 +1,36 @@
+export const supportedExtensionsToResolveForBrowser = [
+  '.wasm',
+  '.desktop.ts',
+  '.web.ts',
+  '.ts',
+  '.desktop.tsx',
+  '.web.tsx',
+  '.tsx',
+  '.mjs',
+  '.desktop.js',
+  '.web.js',
+  '.js',
+  '.desktop.jsx',
+  '.web.jsx',
+  '.jsx',
+  '.json',
+];
+
+export const supportedExtensionsToResolveForNode = [
+  '.wasm',
+  '.node.ts',
+  '.desktop.ts',
+  '.web.ts',
+  '.ts',
+  '.node.tsx',
+  '.desktop.tsx',
+  '.web.tsx',
+  '.tsx',
+  '.mjs',
+  '.node.js',
+  '.desktop.js',
+  '.web.js',
+  '.js',
+  '.json',
+];
+

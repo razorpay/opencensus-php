@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -12,7 +12,7 @@ import * as EventsActions from 'merchant/reducers/trackEvents';
 import KycForm from 'merchant/containers/Activation/new';
 import { setInstantActivationsTracking } from 'merchant/containers/Activation/ga_new';
 import User from 'merchant/models/User';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { formatBusinessTypeOptions } from 'merchant/components/Activation/ActivationUtils';
 

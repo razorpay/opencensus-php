@@ -1,6 +1,12 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { test, expect } from 'utils/base';
-import { COMMON_SELECTORS } from 'utils/selectors';
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  clickSkipAndStartBtn,
+  waitForLoader,
+  COMMON_SELECTORS,
+} from '@libs/shared-qsuite/playwright';
 
 import { upiLinksData } from './constants';
 import {
@@ -12,7 +18,6 @@ import {
   searchPLAndOpenDetails,
   verifyPLCreated,
 } from './utils';
-import { waitForLoader, clickSkipAndStartBtn } from 'utils';
 
 const SELECTORS = {
   REFERENCE_ID_CHANGE_BTN:
@@ -22,7 +27,7 @@ const SELECTORS = {
 test.describe
   .parallel('Test UPI Payment Links @flow=payment-links-upi @project=no-code @project=no-code-stable @project=no-code-roast @project=payment-links', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   let createdPaymentLinkId = '';

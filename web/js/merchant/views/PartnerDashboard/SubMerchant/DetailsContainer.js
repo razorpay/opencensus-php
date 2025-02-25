@@ -1,9 +1,9 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
+import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
 
-import { withRouter } from 'common/deprecated/withRouter';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { fetchProducts } from 'merchant/reducers/capital';
 import { switchMerchant } from 'merchant/reducers/session';

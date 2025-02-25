@@ -5,7 +5,7 @@ import { Button, PlusIcon, Heading } from '@razorpay/blade/components';
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { withRouter } from 'common/deprecated/withRouter';
 import { RZPFeatures } from 'merchant/helpers/data';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';

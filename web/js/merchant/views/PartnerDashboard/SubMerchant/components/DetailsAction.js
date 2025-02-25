@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ButtonTrans from '@razorpay/blade-old/src/atoms/Button';
 import moment from 'moment';
 import PropTypes from 'prop-types';

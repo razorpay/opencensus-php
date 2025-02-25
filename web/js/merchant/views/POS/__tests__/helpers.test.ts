@@ -98,7 +98,7 @@ describe('helpers', () => {
         code: 'fake-product',
       },
     ];
-    const localStorageSpy = jest.spyOn(Storage.prototype, 'getItem');
+    const localStorageSpy = jest.spyOn(localStorage, 'getItem');
     localStorageSpy.mockReturnValue(JSON.stringify(cartItems));
     const retainedCartItems = getCartFromLocalStorage({ userId: 'mock-user-id' });
     expect(retainedCartItems).toStrictEqual([PROUDCT]);

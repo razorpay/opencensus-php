@@ -1,0 +1,89 @@
+{
+  "name": "{{ appName }}",
+  "description": "{{ appDescription }}",
+  "version": "0.0.1",
+  "private": true,
+  "author": "razorpay",
+  "license": "UNLICENSED",
+  "repository": "https://github.com/razorpay/dashboard",
+  "scripts": {
+    "start": "STAGE=development universe dev"
+  },
+"dependencies": {
+    "axios": "0.21.1",
+    "react": "17.0.2",
+    "graphql-tag": "2.12.6",
+    "react-dom": "17.0.2",
+    "@razorpay/universe-cli": "19.0.3",
+    "@razorpay/blade": "12.8.2",
+    "@razorpay/i18nify-js": "1.12.3",
+    "react-router-dom": "6.14.2",
+    "styled-components": "5.3.11",
+    "moment": "2.29.4",
+    "zustand": "3.1.2",
+    "@tanstack/react-query": "4.33.0",
+    "msw": "0.21.2",
+    "@libs/shared-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.4.1",
+    "@types/jsdom": "16.2.15",
+    "@types/node": "17.0.41",
+    "@tanstack/query-core": "4.33.0",
+    "@tanstack/react-query-devtools": "4.33.0",
+    "@testing-library/dom": "8.20.0",
+    "@testing-library/jest-dom": "5.11.4",
+    "@testing-library/react": "10.4.8",
+    "@testing-library/react-hooks": "3.2.1",
+    "@testing-library/user-event": "14.4.3",
+    "@types/react": "17.0.39",
+    "@types/react-dom": "17.0.11",
+    "@types/styled-components": "5.1.28",
+    "@types/testing-library__jest-dom": "5.14.9"
+  },
+  "engines": {
+    "node": ">=18.12.1",
+    "npm": ">=8.1.2",
+    "pnpm": "^9.0.0"
+  },
+  "nx": {
+    "targets": {
+      "test:e2e": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/{{ appName }}"
+        }
+      },
+      "test:jest": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/{{ appName }}"
+        }
+      },
+      "test:jest:ci": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/{{ appName }}"
+        }
+      },
+      "devstack:build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/{{ appName }}"
+        }
+      },
+      "canary:build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/{{ appName }}"
+        }
+      },
+      "production:build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/{{ appName }}"
+        }
+      }
+    }
+  }
+}

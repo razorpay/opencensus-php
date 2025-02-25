@@ -1,4 +1,5 @@
 import Datetime from 'react-datetime';
+import React from 'react';
 
 export default props => {
   const { placeholder, meta, input, ...otherProps } = props;

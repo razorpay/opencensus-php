@@ -2,13 +2,12 @@ import React, { useContext } from 'react';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
 import errorService from '@razorpay/universe-cli/errorService';
 import { Box } from '@razorpay/blade/components';
-import useOnboardingContext from '../../../providers';
+import useOnboardingContext from '../../../providers/useOnboardingContext';
 import DevicePayment from './DevicePayment';
 import { getDevicePaymentFields } from 'apps/pos/src/app/utils/deviceSelection';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import PageError from 'apps/pos/src/app/components/PageError';
 import { MODULES } from 'apps/pos/src/app/types/common';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import { SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
 
 const DevicePaymentForPosSalesAgent = (): JSX.Element | null => {
   const { states, handlers } = useOnboardingContext();
@@ -28,7 +27,6 @@ const DevicePaymentForPosSalesAgent = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.DEVICE_PAYMENT }}
       fallbackComponent={

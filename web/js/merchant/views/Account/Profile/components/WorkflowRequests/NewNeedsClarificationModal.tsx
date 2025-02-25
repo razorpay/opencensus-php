@@ -15,7 +15,7 @@ import {
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
@@ -241,7 +241,7 @@ const NeedsClarificationModal = ({
       isOpen={isModalOpen}
       onDismiss={handleOnDismiss}
       size="small"
-      zIndex={zIndicesMap.modalOverlay}
+      zIndex={DASHBOARD_ZINDEX_MAP.modalOverlay}
     >
       <BladeModalHeader title="Need Clarification" />
       <BladeModalBody>

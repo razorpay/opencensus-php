@@ -1,4 +1,4 @@
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 import { ActivationStatusKeys, APIResponse } from './common';
 import { BeforeInstallPromptEvent } from '../views/PosEkyc/types';
 
@@ -128,7 +128,7 @@ export interface Business {
   };
 }
 
-export type MerchantDetails = Merchant;
+export type MerchantDetails = DashboardGraphQLMerchant;
 
 export enum SalesMerchantActivationStatusEnum {
   ACTIVATED = 'ACTIVATED',

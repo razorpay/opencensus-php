@@ -108,8 +108,9 @@ jest.mock('merchant/views/EcosystemDowntimes', () => ({
   },
 }));
 
-jest.mock('shell/commonStore', () => ({
-  ...jest.requireActual('shell/commonStore'),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  __esModule: true,
+  ...jest.requireActual('@federated/apps/shell/commonStore'),
   useStore: (cb) => cb({ session: { user: {} } }),
 }));
 

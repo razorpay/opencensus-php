@@ -1,7 +1,6 @@
 import React from 'react';
-import { SEAMLESS_PROVIDERS } from 'shell/Navigator/constants';
-import { titleCase, getFormattedAmount } from '@dashboard/shared-utils/rzp-utils';
-import copyToClipboard from '@dashboard/shared-utils/copyToClipboard';
+import { SEAMLESS_PROVIDERS } from '@dashboards/payments/views/Navigator/constants';
+import { toTitleCase, getFormattedAmount, copyToClipboard } from '@libs/shared-utils';
 import { Theme, BadgeProps, Text, Link, ChevronRightIcon } from '@razorpay/blade/components';
 import Lottie from 'react-lottie';
 import moment from 'moment';
@@ -152,7 +151,7 @@ export const getSettlementTimelineData = (payment: IPaymentDetails): TimelineJou
       title: 'Settlement',
       timestamp: data.timestamp,
       metadata: {
-        statusInfo: titleCase(data.status),
+        statusInfo: toTitleCase(data.status),
         amount: settlement.amount,
         settlementId: settlement.id,
       },
@@ -174,7 +173,7 @@ export const getDisputesTimelineData = (payment: any): TimelineJourneyPoint[] =>
         title: 'Dispute',
         timestamp: dispute.created_at,
         metadata: {
-          statusInfo: titleCase(dispute.status),
+          statusInfo: toTitleCase(dispute.status),
           disputeId: dispute.id,
         },
       });
@@ -198,7 +197,7 @@ export const getRefundsTimelineData = (
         title: 'Refund',
         timestamp: getRefundTimestamp(refund),
         metadata: {
-          statusInfo: titleCase(refund.status),
+          statusInfo: toTitleCase(refund.status),
           refundId: refund.id,
           refund,
         },

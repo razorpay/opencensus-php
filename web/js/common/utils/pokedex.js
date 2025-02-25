@@ -1,4 +1,4 @@
-import { groupBy, arrayToObject } from './rzp-utils';
+import { groupBy, arrayToObject } from '@libs/shared-utils';
 
 export const OTHERS = 'Others';
 export const MOBILE_SDK = 'Mobile SDK';

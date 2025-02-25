@@ -7,7 +7,7 @@ import {
   TableRow,
   TableCell,
 } from '@razorpay/blade/components';
-
+import React from 'react';
 import { getTableTemplateColumnsValue } from 'common/utils/rzp-utils';
 
 export default ({

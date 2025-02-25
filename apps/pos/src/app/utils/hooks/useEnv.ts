@@ -1,21 +1,17 @@
 interface UseEnvResponse {
   isProduction: boolean;
   cdnBaseUrl: string;
-}
-declare global {
-  interface Window {
-    APP_ENV: string;
-    cdnBaseUrl: string;
-    INSTANCE_TYPE: 'production' | 'canary' | '';
-  }
+  cdnDashboardAssetsUrl: string;
 }
 
 const useEnv = (): UseEnvResponse => {
   const isProduction = window.APP_ENV === 'production';
   const cdnBaseUrl = window.cdnBaseUrl;
+  const cdnDashboardAssetsUrl = window.cdnDashboardAssetsUrl;
   return {
     isProduction,
     cdnBaseUrl,
+    cdnDashboardAssetsUrl,
   };
 };
 

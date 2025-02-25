@@ -9,6 +9,8 @@ import { ProductPlans, PosDeviceStoreState } from 'merchant/views/POS/types';
 import { render, screen, server, userEvent, waitForElementToBeRemoved, within } from 'test-utils';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
+jest.spyOn(analytics, 'track_EXPERIMENTAL');
+
 const renderApp = (isSideModal = false) => {
   const MOCK_CART_ITEMS = [
     {

@@ -1,4 +1,5 @@
 import { sanitizeHTML } from 'common/utils/rzp-utils';
+import React from 'react';
 
 const createHighlighedOption = (label, searchTerm) => {
   if (searchTerm) {

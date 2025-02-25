@@ -1,4 +1,5 @@
-import ajax from '@dashboard/shared-utils/ajax';
+import ajax from '@dashboards/payments/utils/ajax';
+
 import Base from './Base';
 
 /*

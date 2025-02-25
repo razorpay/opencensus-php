@@ -1,5 +1,4 @@
 import React from 'react';
-
 import ContactInfo from 'newAuth/signup/components/PartnerSignup/components/SignupForm/components/ContactInfo';
 import { render, screen, fireEvent, userEvent } from 'test-utils';
 // TODO: detailed tests to be covered later, only basic ones added for now.

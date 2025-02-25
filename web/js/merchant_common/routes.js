@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { matchPath } from 'react-router';
+import { matchPath } from 'react-router-dom';
 import { showWhenUtil } from './components/RouteGuard';
 import { validateRoute } from 'common/utils/validateRoute';
 // import {withRouter} from "common/deprecated/withRouter"

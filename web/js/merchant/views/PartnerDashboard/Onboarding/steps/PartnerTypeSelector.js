@@ -1,6 +1,7 @@
 import { Description, Label } from 'common/new-ui/Input';
 import { classList } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
+import React from "react";
 
 export default class PartnerTypeSelector extends React.Component {
   static defaultProps = {

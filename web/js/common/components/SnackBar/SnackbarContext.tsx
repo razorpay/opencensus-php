@@ -1,7 +1,8 @@
-import React, { createContext, ReactNode, useState } from 'react';
+import React, { createContext, ReactNode, useState, lazy, Suspense } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { Layer } from 'common/components/Layer';
-import Snackbar from './Snackbar';
+
+const Snackbar = lazy(() => import(/* webpackChunkName: 'Snackbar' */ './Snackbar'));
 
 const snackbarMap = {
   error: {
@@ -96,14 +97,16 @@ export const SnackbarProvider: React.FC<ProviderPropsT> = ({ children }) => {
       {children}
       {snackbar.message && (
         <Layer>
-          <Snackbar
-            message={snackbar.message}
-            type={snackbar.type}
-            color={snackbar.color}
-            icon={snackbar.icon}
-            onClose={() => clearSnackbar()}
-            shouldAnimateIn={shouldAnimateIn}
-          />
+          <Suspense fallback={<></>}>
+            <Snackbar
+              message={snackbar.message}
+              type={snackbar.type}
+              color={snackbar.color}
+              icon={snackbar.icon}
+              onClose={() => clearSnackbar()}
+              shouldAnimateIn={shouldAnimateIn}
+            />
+          </Suspense>
         </Layer>
       )}
     </snackbarContext.Provider>

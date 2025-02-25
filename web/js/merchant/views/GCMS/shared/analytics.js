@@ -1,8 +1,8 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-const SESSION_ID = localStorage.getItem('analytics_session_id') ?? 'not available';
-const VALIDITY = localStorage.getItem('_uetvid_exp') ?? 'not available';
+const SESSION_ID = window?.localStorage.getItem('analytics_session_id') ?? 'not available';
+const VALIDITY = window?.localStorage.getItem('_uetvid_exp') ?? 'not available';
 export const track = ({ properties, ...args }) => {
   try {
     analyticsTrack({

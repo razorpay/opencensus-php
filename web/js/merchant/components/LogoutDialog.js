@@ -3,12 +3,13 @@ import qs from 'query-string';
 
 import BgDesktopImage from 'assets/logout/bg-desk.png';
 import BgMobileImage from 'assets/logout/bg-mob.png';
+import { getMode } from "@libs/shared-utils";
 
 const LogoutDialog = ({ user }) => {
   const sendLjData = (state, event) => {
     let utm, gclid, browserDetails, source, mode;
     try {
-      mode = localStorage.getItem(`rzp_mode--${user?.id}`);
+      mode = getMode(user?.id);
     } catch (e) {
       // ignore silently
     }

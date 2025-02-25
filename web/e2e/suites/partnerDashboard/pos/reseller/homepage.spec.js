@@ -1,15 +1,15 @@
-import { CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
-import { loadPartnerDashboardHomePage } from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { waitForSelectorToBeVisible } from 'utils/common';
-
-const { test } = require('utils/base');
+import { CONTENT_SELECTORS, loadPartnerDashboardHomePage } from '../../common';
+import {
+  test,
+  waitForSelectorToBeVisible,
+  getStorageStatePath,
+} from '@libs/shared-qsuite/playwright';
 
 // Reseller Partner POS Tests
 test.describe
   .parallel('Test Reseller Partner POS Dashboard landing page @flow=partnerships-pos @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_POS_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_POS_TEST_LOGIN_STATE,
   });
   test.beforeEach(async ({ page }) => {
     await loadPartnerDashboardHomePage(

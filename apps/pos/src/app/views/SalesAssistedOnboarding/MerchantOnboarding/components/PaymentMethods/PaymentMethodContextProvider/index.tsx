@@ -65,7 +65,7 @@ import {
 } from 'apps/pos/src/app/constants/PaymentsAndService';
 import { BrandEmiFormData } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/BrandEMIForm/BrandEMIFormContainer';
 import { AvailableComponents } from 'apps/pos/src/app/types/common';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import { SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
 import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 const createDefaultForm = (type: PaymentMethodFormType): PaymentMethodForm => {

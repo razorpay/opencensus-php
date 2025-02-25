@@ -1,6 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import * as graphqlUtils from '@dashboard/shared-utils/graphql/graphql';
+import * as graphqlUtils from '@federated/apps/shell/graphql';
 import SalesDashboard from '../SalesDashboard';
 import {
   SUCCESS_SALES_MAPPED_MERCHANTS_EMPTY_RESPONSE,
@@ -8,9 +8,16 @@ import {
 } from './mocks/fixtures';
 import { render, screen, userEvent, waitFor, within } from 'apps/pos/src/services/test/test-utils';
 
+jest.mock('@federated/apps/shell/graphql', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('@federated/apps/shell/graphql'),
+  };
+});
+
 jest.setTimeout(30000);
 
-jest.mock('@dashboard/shared-ui/components/Forms/DateRangePickerField', () => {
+jest.mock('@libs/web-nexus/common/ui/Forms/DateRangePickerField', () => {
   return {
     __esModule: true,
     default: ({ onDatesChange }) => (

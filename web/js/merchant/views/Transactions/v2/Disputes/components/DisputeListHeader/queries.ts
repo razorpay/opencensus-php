@@ -1,4 +1,4 @@
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 
 const DOWNLOAD_REPORT_ENDPOINT = 'merchant/report/dispute/download';
 

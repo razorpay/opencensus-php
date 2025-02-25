@@ -37,7 +37,7 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExp
   const { nestedTabsStatus } = settings;
   const isLoading = nestedTabsStatus === FETCH_STATUS.LOADING;
   const isFormView = !currentView.includes(CARD);
-  const showAllFormView = localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
+  const showAllFormView = window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
   const showCTA = isFormView || showAllFormView;
 
   //hiding the analytics settings section in the store setting tab, as a separate tab for analytics settings was added

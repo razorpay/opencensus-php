@@ -118,7 +118,7 @@ describe('BankAccountDetails', () => {
           properties: {
             status: 'failure',
             responseTime: expect.any(String),
-            errorMessage: '',
+            errorMessage: 'Network Error',
           },
         }),
       );

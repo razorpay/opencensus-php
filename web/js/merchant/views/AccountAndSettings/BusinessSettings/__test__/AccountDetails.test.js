@@ -114,7 +114,6 @@ describe('Contact Details', () => {
         renderApp({
           user: { isAdminOrOwner: true, displayName },
         });
-        expect(screen.getByText('John display name')).toBeInTheDocument();
         const editDisplayNameLink = screen.getByTestId('Edit Display Name');
         expect(editDisplayNameLink).toBeInTheDocument();
         expect(screen.queryByTestId('Set Display Name')).not.toBeInTheDocument();

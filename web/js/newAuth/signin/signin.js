@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
-import Auth from '@razorpay/commander-shield/src/bootstrap/SignInWrapper';
+import Auth from 'newAuth/@commander-shield/bootstrap/SignInWrapper';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
@@ -30,8 +30,7 @@ import {
 import DefaultView from './components/DefaultView';
 import OrgView from './components/OrgView';
 import Header from './components/Header';
-import { FullPageLoader } from 'common/components/Loader';
-import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
+import { FullPageLoader } from 'newAuth/@deprecated/common/components/Loader'; // eslint-disable-line
 
 const DEFAULT_ORG_DATA = {
   display_name: 'Razorpay Software Private Ltd',
@@ -152,22 +151,22 @@ const Signin = () => {
                     </DesktopOnlyView>
 
                     <AbsoluteView>
-                      <CommanderShieldThemeWrapper>
-                        <Auth
-                          appName="dashboard"
-                          authClientId={window.OAUTH_CLIENT_ID}
-                          oneTapInfo={oneTapInfo}
-                          theme={getTheme(orgData)}
-                          isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
-                          skipCaptcha={isTestEnvironment() || captchaDisabled}
-                          orgData={orgData}
-                        />
-                        {orgData.orgName === BANK_NAMES.JKB ? (
-                          <OrgInfo>{loginHelpers[orgData.orgName] || ''}</OrgInfo>
-                        ) : (
-                          ''
-                        )}
-                      </CommanderShieldThemeWrapper>
+                      <Auth
+                        appName="dashboard"
+                        authClientId={window.OAUTH_CLIENT_ID}
+                        oneTapInfo={oneTapInfo}
+                        theme={getTheme(orgData)}
+                        isGoogleOauthEnabled={
+                          !Boolean(isTestEnvironment()) || orgData.orgName !== BANK_NAMES.AXIS
+                        }
+                        skipCaptcha={isTestEnvironment() || captchaDisabled}
+                        orgData={orgData}
+                      />
+                      {orgData.orgName === BANK_NAMES.JKB ? (
+                        <OrgInfo>{loginHelpers[orgData.orgName] || ''}</OrgInfo>
+                      ) : (
+                        ''
+                      )}
                       <CaptchaTextView>
                         <Flex>
                           <Space padding={[2, 0]} margin="auto">

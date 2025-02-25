@@ -1,15 +1,16 @@
-import { CTA_SELECTORS, CONTENT_SELECTORS } from 'partnerDashboard/common/constants';
-import { navigateToClientAccounts } from 'partnerDashboard/common/utils';
-import { getStorageStatePath, BASE_PATH } from 'testConstants';
-import { waitForSelectorToBeVisible } from 'utils/common';
-
-const { test, expect } = require('utils/base');
+import { CTA_SELECTORS, CONTENT_SELECTORS, navigateToClientAccounts } from '../common';
+import {
+  test,
+  expect,
+  getStorageStatePath,
+  waitForSelectorToBeVisible,
+} from '@libs/shared-qsuite/playwright';
 
 // Reseller Partner Tests
 test.describe
   .parallel('Test Client Accounts for Reseller @flow=partner-homepage @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_TEST_LOGIN_STATE,
   });
   test.beforeEach(async ({ page }) => {
     await navigateToClientAccounts(

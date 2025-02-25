@@ -1,0 +1,6 @@
+import { DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse, DashboardGraphQLMerchantGstinUpdateFailureResponse, DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse, DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse } from './index';
+export type DashboardGraphQLMerchantGstinUpdateResponse =
+  | DashboardGraphQLMerchantGstinUpdateAsyncFlowSuccessResponse
+  | DashboardGraphQLMerchantGstinUpdateFailureResponse
+  | DashboardGraphQLMerchantGstinUpdateInSyncFlowResponse
+  | DashboardGraphQLMerchantGstinUpdateInSyncWorkFlowCreatedResponse;

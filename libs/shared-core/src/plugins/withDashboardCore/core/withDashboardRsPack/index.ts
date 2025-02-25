@@ -1,0 +1,1 @@
+export { withDashboardRsPack } from './withDashboardRsPack';

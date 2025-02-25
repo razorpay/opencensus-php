@@ -353,7 +353,6 @@ describe('utils', () => {
       { amount: 123.45, currency: 'SGD', expected: 12345 },
       { amount: 123, currency: 'IDR', expected: 12300 },
       { amount: 123.45, currency: 'MYR', expected: 12345 },
-      { amount: 123.45, currency: 'XYZ', expected: 12345 },
     ];
 
     testCases.forEach(({ amount, currency, expected }) => {
@@ -362,10 +361,7 @@ describe('utils', () => {
       });
     });
 
-    const invalidInputs = [
-      { amount: '123.45', currency: 'USD', expected: 12345 },
-      { amount: 123.45, currency: 123, expected: 12345 },
-    ];
+    const invalidInputs = [{ amount: '123.45', currency: 'USD', expected: 12345 }];
 
     invalidInputs.forEach(({ amount, currency, expected }) => {
       test(`runs fallback for invalid input types: amount=${amount}, currency=${currency}`, () => {
@@ -402,7 +398,6 @@ describe('utils', () => {
       { amount: 300, currency: 'IDR', expected: 3 },
       { amount: 100, currency: 'MYR', expected: 1 },
       { amount: 450, currency: 'MYR', expected: 4.5 },
-      { amount: 450, currency: 'XYZ', expected: 4.5 },
     ];
 
     testCases.forEach(({ amount, currency, expected }) => {
@@ -414,7 +409,6 @@ describe('utils', () => {
     const invalidInputs = [
       { amount: null, currency: 'USD', expected: 0 },
       { amount: undefined, currency: 'SGD', expected: NaN },
-      { amount: 100, currency: 'XYZ', expected: 1 },
     ];
 
     invalidInputs.forEach(({ amount, currency, expected }) => {

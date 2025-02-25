@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantBankAccountDocumentUploadFailureResponse, DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse } from './index';
+export type DashboardGraphQLMerchantBankAccountDocumentUploadResponse =
+  | DashboardGraphQLMerchantBankAccountDocumentUploadFailureResponse
+  | DashboardGraphQLMerchantBankAccountDocumentUploadSuccessResponse;

@@ -54,37 +54,3 @@ export const sendDataToSalesForce = (data, user = {}, mode = 'live') => {
     },
   });
 };
-
-// TODO: Need to update this definition in banner carousel improvement for v1 release
-export const evaluateSplitz = (mid = 'G5KWPzRBj0ysa0', experiment_id = 'IffQdDSr2O36Bm') => {
-  // TODO: remvoe default value
-
-  return merchantFetch({
-    url: `splitz/evaluate`,
-    data: {
-      mid,
-      experiment_id,
-    },
-    method: 'post',
-    // mode: 'live', // TODO: Ask shivam
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => {
-      console.log('campaignId');
-      const { data: { response: { variant = [] } = {} } = {} } = response;
-      const campaignId =
-        variant?.[0].key.toLowerCase() === 'campaign_id'
-          ? variant?.[0].value
-          : 'Platform Growth - CA Awareness';
-      sendDataToSalesForce(
-        {
-          Campaign_ID: campaignId,
-          product_name: 'Current_Account',
-        },
-        {},
-      );
-    })
-    .catch((_) => console.log('error'));
-};

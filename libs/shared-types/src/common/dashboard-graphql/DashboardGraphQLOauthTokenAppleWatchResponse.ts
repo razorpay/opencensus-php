@@ -1,0 +1,4 @@
+import { DashboardGraphQLOauthTokenAppleWatchResponseError, DashboardGraphQLOauthTokenAppleWatchResponseSuccess } from './index';
+export type DashboardGraphQLOauthTokenAppleWatchResponse =
+  | DashboardGraphQLOauthTokenAppleWatchResponseError
+  | DashboardGraphQLOauthTokenAppleWatchResponseSuccess;

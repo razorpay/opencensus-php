@@ -1,5 +1,4 @@
-import { expect } from 'utils/base';
-import { fillExpiry } from 'utils';
+import { expect, fillExpiry } from '@libs/shared-qsuite/playwright';
 
 export const fillCustomerDetails = async (page, customerData) => {
   // Wait for 10 seconds before starting to fill the form, due to the delay API response

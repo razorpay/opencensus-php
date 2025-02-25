@@ -1,4 +1,5 @@
 import Input from 'common/new-ui/Input';
+import React from 'react';
 
 export default function(props) {
   return (

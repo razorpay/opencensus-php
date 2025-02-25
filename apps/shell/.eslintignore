@@ -1,0 +1,21 @@
+# editor configs
+.idea
+.vscode
+.gradle
+.DS_Store
+
+build
+
+# debug logs
+npm-debug.log*
+lerna-debug.log*
+
+node_modules
+tsconfig.json
+
+# include dot files and folders
+!.github/
+!.lintstagedrc.js
+!.prettierrc.js
+!.stylelintrc.js
+!.babelrc.js

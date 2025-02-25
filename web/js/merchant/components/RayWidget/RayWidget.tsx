@@ -11,15 +11,8 @@ import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { fireCustomEvent } from 'merchant/components/Support/utils';
 import { getRayUser } from './utils';
 
-declare global {
-  interface Window {
-    cdnDashboardAssetsUrl: string;
-  }
-}
-
 const loadModule = async ({ module, scope }) =>
   importRemote({
-    url: window.cdnDashboardAssetsUrl,
     scope,
     module,
   });

@@ -1,4 +1,4 @@
-import { analyticsTrack } from 'common/services/tracking/segment';
+import { analyticsTrack } from '@libs/web-nexus/common/services/tracking/segment';
 
 export const trackWithSegment = (props) => {
   const enrichedProps = {

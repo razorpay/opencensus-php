@@ -15,7 +15,6 @@ import NACHFormEkyc, {
   NachFormObject,
 } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/MerchantAdditionalDetails/NACHFormEkyc/NACHFormEkyc';
 import useOnboardingContext from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/providers/useOnboardingContext';
-import { sentryHub } from 'apps/pos/src/bootstrap/Wrapper/Wrapper';
 import React, { useState } from 'react';
 
 interface TextChange {
@@ -62,7 +61,6 @@ const NACHFormEkycContainer = (): JSX.Element | null => {
 
   return (
     <ErrorBoundary
-      sentryHub={sentryHub?.sentryHub}
       rank={errorService.ErrorRank.P0}
       tags={{ module: MODULES.ADDITIONAL_DETAILS }}
       fallbackComponent={

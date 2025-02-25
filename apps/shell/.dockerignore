@@ -1,0 +1,20 @@
+# editor configs
+.idea
+.vscode
+.gradle
+.DS_Store
+
+# logs
+*-debug.log
+*-error.log
+
+# .env files
+.env.*
+!.env.development
+
+node_modules
+package-lock.json
+
+# build directories
+build
+lib

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { constructListItems } from 'merchant/components/NavigationLayout/utils';
 import { fetchUCSData } from 'merchant/containers/Home/RTUX/hooks/useUCSDataQuery';
 import { determineNavigationType } from 'merchant/components/NavigationLayout/utils';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 import isEmpty from 'lodash/isEmpty';
 import { defaultConnectedProductsData, partnersFallbackData } from '../constants';
 import { ExtendedListItems } from 'merchant/components/NavigationLayout/utils';

@@ -4,7 +4,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
-import Button from 'common/components/Button';
+import Button from 'newAuth/@deprecated/common/components/Button';
 import { media } from './breakpoints';
 const themeDarkBlue = theme.bladeOld.colors.highlight[700];
 const themePrimary = theme.bladeOld.colors.primary[900];

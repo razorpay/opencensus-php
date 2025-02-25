@@ -22,7 +22,7 @@ import {
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { track } from 'merchant/widgets/utils';
-import { getUser } from 'shell/commonStore';
+import { getUser } from '@federated/apps/shell/commonStore';
 
 // returns data in this format: February 7
 export function getFormattedDateFromTimestamp(timestamp: number): string {
@@ -509,17 +509,17 @@ export const RISK_DISABLE_TAGS = [
 ];
 
 const hasTags = (userTags: string[] | undefined, tagsList: string[]): boolean => {
-  return userTags?.some((tag) => tagsList.includes(tag)) ?? false;
+  return userTags?.some?.((tag) => tagsList?.includes?.(tag)) ?? false;
 };
 
 export const isRiskFoh = (): boolean => {
   const user = getUser();
-  return hasTags(user.tags, RISK_FOH_TAGS) && !!user.merchant?.hold_funds;
+  return hasTags(user?.tags, RISK_FOH_TAGS) && !!user.merchant?.hold_funds;
 };
 
 export const isRiskDisabled = (): boolean => {
   const user = getUser();
-  return hasTags(user.tags, RISK_DISABLE_TAGS) && !user.live;
+  return hasTags(user?.tags, RISK_DISABLE_TAGS) && !user.live;
 };
 
 export const showContactSupport = (ticketStatus) => {
@@ -530,8 +530,8 @@ export const blockTicketCreationFoh = (user, fohTicketStatus) => {
   const ticketStatus =
     fohTicketStatus !== 'Closed' && fohTicketStatus !== 'Auto Closed' && fohTicketStatus !== '';
   const isRiskFohMerchant =
-    user.tags?.some((tag) => RISK_FOH_TAGS.includes(tag)) && user.merchant?.hold_funds;
+    user.tags?.some?.((tag) => RISK_FOH_TAGS.includes(tag)) && user.merchant?.hold_funds;
   const isRiskDisableMerchant =
-    user.tags?.some((tag) => RISK_DISABLE_TAGS.includes(tag)) && !user.live;
+    user.tags?.some?.((tag) => RISK_DISABLE_TAGS.includes(tag)) && !user.live;
   return ticketStatus && (isRiskFohMerchant || isRiskDisableMerchant);
 };

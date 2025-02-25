@@ -1,4 +1,4 @@
-import { titleCase } from '@dashboard/shared-utils/rzp-utils';
+import { toTitleCase } from '@libs/shared-utils';
 import { Provider } from './types';
 
 const LOGO_PATH = 'static/assets/merchant-dash/providers';
@@ -50,7 +50,7 @@ export const findProviderDetails = (
   }
   if (!provider && settled_by) {
     provider = {
-      Provider_name: titleCase(settled_by),
+      Provider_name: toTitleCase(settled_by),
       Gateway: settled_by === 'Razorpay' ? 'razorpay' : settled_by,
     };
   }

@@ -25,6 +25,7 @@ import FormField from 'apps/pos/src/app/components/FormField';
 import { BASE_ROUTE, ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
 import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
+import { DashboardGraphQLMerchantPosActivationStatusEnum } from '@libs/shared-types';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
 import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
 

@@ -6,7 +6,7 @@ const KEY = 'left_nav_items_cache';
 const EXPIRY = 1; // in days
 
 export const getLeftNavItemsCache = ({ merchantId }): NavLinkData[] | null => {
-  const leftNavItemsCache = localStorage.getItem(`${KEY}_${merchantId}`);
+  const leftNavItemsCache = window?.localStorage.getItem(`${KEY}_${merchantId}`);
   if (!leftNavItemsCache) {
     return null;
   }
@@ -29,7 +29,7 @@ export const setLeftNavItemsCache = ({
   merchantId: string;
   leftNavItems: NavLinkData[];
 }) => {
-  localStorage.setItem(
+  window?.localStorage.setItem(
     `${KEY}_${merchantId}`,
     JSON.stringify({
       data: leftNavItems,

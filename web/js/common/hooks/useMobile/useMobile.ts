@@ -1,4 +1,4 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
+
 import { useTheme, Theme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 

@@ -1,0 +1,2 @@
+import { DashboardGraphQLOmit, DashboardGraphQLMaybe } from './index';
+export type DashboardGraphQLMakeMaybe<T, K extends keyof T> = DashboardGraphQLOmit<T, K> & { [SubKey in K]: DashboardGraphQLMaybe<T[SubKey]> };

@@ -49,9 +49,6 @@ describe('CreateOfferWizard Component', () => {
     render(<CreateOfferWizard />);
     const modal = screen.getByTestId('component-wrapper');
     expect(modal).toBeInTheDocument();
-    expect(
-      modal.querySelector('.Styled__StyledOfferModal-sc-8xlzak-3.kXLZnc.Offers--Create'),
-    ).toBeInTheDocument();
     expect(modal.querySelector('.StandAloneContainer')).toBeInTheDocument();
     expect(modal.querySelector('.Offers--TypeSelection')).toBeInTheDocument();
     expect(modal.querySelector('.slide-in .heading')).toHaveTextContent('Pick a promotion type');

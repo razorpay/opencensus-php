@@ -113,12 +113,6 @@ export type ActivationStatusKeys =
   | 'pending'
   | 'underReview';
 
-declare global {
-  interface Window {
-    cdnBaseUrl: string;
-  }
-}
-
 export enum MODULES {
   SALES_DASHBOARD = 'Sales Dashboard',
   MERCHANT_REGISTRATION = 'Merchant Registration',

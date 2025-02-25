@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import AsyncButton from 'react-async-button';
 
 export default class BaseToggler extends Component {

@@ -1,4 +1,4 @@
-const { expect } = require('utils/base');
+import { expect } from '@libs/shared-qsuite/playwright';
 
 export const getSearchResultsEl = async ({ page, searchBox, searchTerm }) => {
   await searchBox.clear();

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 
 export default function useConfigDetails(namespace: string): any {
   const { status, data, refetch } = useQuery({

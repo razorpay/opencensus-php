@@ -1,4 +1,5 @@
 import { classList } from 'common/utils/rzp-utils';
+import React from 'react';
 
 export const ProgressBar = ({ value, min, max, type, className, color }) => {
   let completionPercentage = `${100 / (max - min) * value}%`;

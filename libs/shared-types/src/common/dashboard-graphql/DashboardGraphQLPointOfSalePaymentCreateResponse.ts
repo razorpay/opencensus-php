@@ -1,0 +1,4 @@
+import { DashboardGraphQLPointOfSalePaymentCreateFailureResponse, DashboardGraphQLPointOfSalePaymentCreateSuccessResponse } from './index';
+export type DashboardGraphQLPointOfSalePaymentCreateResponse =
+  | DashboardGraphQLPointOfSalePaymentCreateFailureResponse
+  | DashboardGraphQLPointOfSalePaymentCreateSuccessResponse;

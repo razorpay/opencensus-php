@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
 import moment from 'moment';
 
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useMobile } from '@libs/shared-utils';
 import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
 import { CreatedOnProps } from './types';

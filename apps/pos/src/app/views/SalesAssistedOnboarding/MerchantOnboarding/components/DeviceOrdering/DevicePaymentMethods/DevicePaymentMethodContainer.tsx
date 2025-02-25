@@ -10,7 +10,7 @@ import {
 } from 'apps/pos/src/app/utils/deviceSelection';
 import moment from 'moment';
 import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
-import { SpiltzContext } from 'shell/SpiltzServiceContext';
+import { SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
 import { analyticsTypes, trackEvent } from 'apps/pos/src/services/analytics';
 
 const DevicePaymentMethodContainer = (): JSX.Element | null => {

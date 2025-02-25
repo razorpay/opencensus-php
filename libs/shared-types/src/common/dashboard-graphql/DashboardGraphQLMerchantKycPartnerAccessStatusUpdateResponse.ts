@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantKycPartnerAccessUpdateFailureResponse, DashboardGraphQLMerchantKycPartnerAccessUpdateSuccessResponse } from './index';
+export type DashboardGraphQLMerchantKycPartnerAccessStatusUpdateResponse =
+  | DashboardGraphQLMerchantKycPartnerAccessUpdateFailureResponse
+  | DashboardGraphQLMerchantKycPartnerAccessUpdateSuccessResponse;

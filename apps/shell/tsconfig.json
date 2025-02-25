@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "typeRoots": ["node_modules/@types"],
+    "outDir": "./dist"
+  },
+  "include": [
+    "../../libs/shared-types/global.d.ts",
+    "*.json",
+    "**/*.json",
+    "src",
+    "e2e",
+    "custom.d.ts"
+  ],
+  "exclude": ["node_modules", "**/*.stories.ts", "**/*.stories.tsx", "**/*.stories.jsx", "out"],
+  "types": ["resize-observer-browser", "jest", "jest-dom", "./src/@types/express.d.ts"],
+  "references": [
+    { "path": "../../libs/shared-utils" },
+    { "path": "../../libs/shared-ui" },
+    { "path": "../../libs/shared-types" },
+    { "path": "../../libs/shared-qsuite" },
+    { "path": "../../web/js/merchant" }
+  ]
+}

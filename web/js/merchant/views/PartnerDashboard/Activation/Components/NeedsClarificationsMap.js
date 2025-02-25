@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { ndcFields } from 'merchant/components/Activation/ActivationFormMap';
+import React from "react";
 
 export const getNeedsClarificationTabsData = (
   allFieldsMap,

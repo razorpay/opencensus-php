@@ -1,13 +1,19 @@
-import { test, expect } from 'utils/base';
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-import { expectSuccessNotification, generateRandomText, clickSkipAndStartBtn } from 'utils';
+import {
+  routes,
+  test,
+  expect,
+  getStorageStatePath,
+  generateRandomText,
+  clickSkipAndStartBtn,
+  expectSuccessNotification,
+} from '@libs/shared-qsuite/playwright';
 
 test.describe.serial('Test subscription @flow=subscription @project=no-code', () => {
   let planName = '';
   let subscriptionId = '';
 
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {

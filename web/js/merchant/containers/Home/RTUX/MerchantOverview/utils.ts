@@ -1,7 +1,7 @@
 import { UpcomingSettlementKeys } from './types';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getMode, getUser } from 'merchant/store';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 // returns date in this format: 'Wed, Feb 7'

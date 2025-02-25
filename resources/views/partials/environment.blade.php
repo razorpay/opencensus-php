@@ -34,7 +34,6 @@
     // Sentry related configs
     window.APP_ENV = "{!! env('APP_ENV') !!}";
     window.INSTANCE_TYPE = "{!! env('INSTANCE_TYPE') !!}";
-    window.SENTRY_DSN = "{!! env('SENTRY_DSN') !!}";
 
     // Public API URL
     window.PUBLIC_API_URL = "{{ config('api.public_api_url') }}";

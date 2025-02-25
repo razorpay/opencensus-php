@@ -1,0 +1,2 @@
+import { DashboardGraphQLOrderCreateFailureResponse, DashboardGraphQLOrderCreateSuccessResponse } from './index';
+export type DashboardGraphQLOrderCreateResponse = DashboardGraphQLOrderCreateFailureResponse | DashboardGraphQLOrderCreateSuccessResponse;

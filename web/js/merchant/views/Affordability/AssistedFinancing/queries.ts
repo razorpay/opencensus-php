@@ -1,5 +1,5 @@
 import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { getUser } from 'merchant/store';

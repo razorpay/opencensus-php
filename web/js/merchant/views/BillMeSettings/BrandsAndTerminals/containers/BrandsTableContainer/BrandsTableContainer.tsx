@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, TextInput, Button, SearchIcon } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
-import { graphqlRequest } from 'common/services/graphql/graphql-client';
+import { graphqlRequest } from '@federated/apps/shell/graphql';
 import BrandModalComponent from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/components/BrandModalComponent';
 import BrandsTableComponent from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/components/BrandsTableComponent';
 import { BRAND_OPERATION_TYPE } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/constants';

@@ -59,7 +59,7 @@ import {
   SCREENS,
   midLimitGTMViewedStatus,
 } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import SelectModeOfTransaction from './SelectModeOfTransaction';
 
 const GtmModalContent = lazy(
@@ -117,7 +117,7 @@ const KeyValuePair = ({
           <Tooltip
             placement="bottom"
             onOpenChange={onTooltipOpen}
-            zIndex={zIndicesMap.tooltip}
+            zIndex={DASHBOARD_ZINDEX_MAP.tooltip}
             content={tooltip.content}
           >
             <Box marginLeft="spacing.2" display="inline-flex" alignItems="center">

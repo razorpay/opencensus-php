@@ -1,6 +1,4 @@
-// Todo: delete this file, it's available in @dashboard/shared-utils
-import { matchPath } from 'react-router';
-
+import { matchPath } from 'react-router-dom';
 import {
   ABVariant,
   ExperimentType,
@@ -9,6 +7,7 @@ import {
   VariantConfigArgs,
 } from 'common/splitz/types';
 import { defaultRequestData, requestDataArgs } from './configs/requestDataConfig';
+import { APP_ENV } from './constants';
 
 export const evaluatedExperimentParser = (
   evaluatedExperiment: Pick<ABVariant, 'experiment_id' | 'variables'>,
@@ -57,6 +56,19 @@ export const getBaseUrl = (urlString: string): string => {
   const host = url.host;
 
   return `${protocol}//${host}`;
+};
+
+export const getTargettedExperimentId = (
+  experimentId: VariantConfigArgs['experimentId'],
+): string => {
+  const fallbackEnvBackMap = {
+    stage: 'beta',
+    canary: 'production',
+  };
+
+  return (
+    experimentId?.[APP_ENV] || experimentId?.[fallbackEnvBackMap?.[APP_ENV]] || experimentId.beta
+  );
 };
 
 export const isExperimentEnabled = (experiment: ExperimentType): boolean => {

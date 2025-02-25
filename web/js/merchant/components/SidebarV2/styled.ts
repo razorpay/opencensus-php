@@ -1,7 +1,7 @@
 import { makeMotionTime } from '@razorpay/blade/utils';
 import styled, { css } from 'styled-components';
 
-import { zIndicesMap } from 'common/constant';
+import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 
 interface RTUXProps {
   isRTUXHomepage: boolean;
@@ -27,7 +27,7 @@ export const SidebarContainer = styled.div<SidebarContainerProps>(
       : '#2e3345'
   };
   width: ${isRTUXHomepage ? 216 : 248}px;
-  z-index: ${isMobile ? 1001 : zIndicesMap.sidebar};
+  z-index: ${isMobile ? 1001 : DASHBOARD_ZINDEX_MAP.sidebar};
   transform: translate(-100%,0);
   transition: transform ${makeMotionTime(theme.motion.delay.short)} ${theme.motion.easing.standard};
   will-change: transform;
@@ -124,7 +124,7 @@ export const SidebarBackgroundOverlay = styled.div(
   left: 0;
   bottom: 0;
   right: 0;
-  z-index: ${zIndicesMap.sidebarBgOverlay};
+  z-index: ${DASHBOARD_ZINDEX_MAP.sidebarBgOverlay};
   cursor: pointer;
   background-color: ${theme.colors.overlay.background.subtle};
 `,

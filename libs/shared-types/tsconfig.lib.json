@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "declaration": true,
+    "skipLibCheck": true,
+    "emitDeclarationOnly": false,
+    "typeRoots": ["./node_modules/@types"],
+    "strict": true,
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "lib": ["ESNext"],
+    "types": ["react"]
+  },
+  "include": ["src"],
+  "exclude": ["**/node_modules", "dist"]
+}

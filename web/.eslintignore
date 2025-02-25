@@ -13,3 +13,6 @@ js/common/ui/ConfirmModal/ConfirmModalProvider.js
 js/merchant/containers/Home/OnboardingCard/Instant/LiveMode.js
 js/common/deprecated
 **/*.json
+
+**/dist
+**/build

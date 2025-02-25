@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { useApp } from 'common/context/App';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import useActivation from './useActivation';

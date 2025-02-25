@@ -1,6 +1,4 @@
-import { routes } from 'testConstants';
-import { expect } from 'utils/base';
-import { navigateTo } from 'utils/common';
+import { routes, expect, navigateTo } from '@libs/shared-qsuite/playwright';
 
 // helpers - start
 export const clickButton = async (page, buttonText) => {
@@ -105,7 +103,7 @@ export const expectTooltipContent = async ({ page, iconSelector, content }) => {
 
 // TODO: @parth-p-ui Check commented code and resolve
 export const navigateToOptimizer = async (page) => {
-  await navigateTo(page, routes.OPTIMIZER);
+  await navigateTo({ page }, routes.OPTIMIZER);
   // const modalClose = page.locator('span', { hasText: '×', timeout: 000 });
   // if (modalClose) {
   //   await modalClose.click();

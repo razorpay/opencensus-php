@@ -41,13 +41,13 @@ export const PricingBundle = ({
   const maxImpressions = 10;
   const { pricing_bundles, loading } = pricing_bundles_obj || {};
   const impressionCount = Number(
-    localStorage.getItem(`${LS_LABELS.IMPRESSION_COUNT}-${user?.current}`),
+    window?.localStorage.getItem(`${LS_LABELS.IMPRESSION_COUNT}-${user?.current}`),
   );
   const isWithinTimeInterval = Boolean(
     getCookie(`${LS_LABELS.LAST_IMPRESSION_WITHIN_INTERVAL}-${user?.current}`),
   );
   const isNotInterested = Boolean(
-    localStorage.getItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`),
+    window?.localStorage.getItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`),
   );
   const { abExperiments: { STREAKS_REWARDS_GROWTH } = {} } = useSplitzService();
 

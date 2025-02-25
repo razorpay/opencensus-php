@@ -1,4 +1,4 @@
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 import { checkIfKycComplete, isKycQualified } from '../merchantActivation';
 
 const COMMON_PAYMENT_ACCEPTANCE_CHANNELS = {
@@ -29,7 +29,7 @@ describe('checkIfKycComplete', () => {
       activation: {
         isFormSubmitted: true,
       },
-    } as unknown as Merchant;
+    } as unknown as DashboardGraphQLMerchant;
 
     expect(checkIfKycComplete({ merchant })).toBe(true);
   });
@@ -46,7 +46,7 @@ describe('checkIfKycComplete', () => {
       activation: {
         isFormSubmitted: true,
       },
-    } as unknown as Merchant;
+    } as unknown as DashboardGraphQLMerchant;
 
     expect(checkIfKycComplete({ merchant })).toBe(true);
   });
@@ -63,7 +63,7 @@ describe('checkIfKycComplete', () => {
       activation: {
         isFormSubmitted: false,
       },
-    } as unknown as Merchant;
+    } as unknown as DashboardGraphQLMerchant;
 
     expect(checkIfKycComplete({ merchant })).toBe(false);
   });
@@ -80,7 +80,7 @@ describe('checkIfKycComplete', () => {
       activation: {
         isFormSubmitted: false,
       },
-    } as unknown as Merchant;
+    } as unknown as DashboardGraphQLMerchant;
 
     expect(checkIfKycComplete({ merchant })).toBe(false);
   });
@@ -97,7 +97,7 @@ describe('checkIfKycComplete', () => {
       activation: {
         isFormSubmitted: false,
       },
-    } as unknown as Merchant;
+    } as unknown as DashboardGraphQLMerchant;
 
     expect(checkIfKycComplete({ merchant })).toBe(false);
   });

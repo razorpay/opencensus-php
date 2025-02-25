@@ -7,8 +7,8 @@ import store from 'merchant/store';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDetailsSection from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
-import { fireEvent, render, screen, userEvent, waitFor } from 'test-utils';
-import { useStore } from 'shell/commonStore';
+import { render, screen, fireEvent, waitFor, userEvent } from 'test-utils';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { fetchBouncememo } from 'merchant/views/Transactions/v1/Payments/BounceMemo.types';
 
 const bounceMemoExperimentMock = {
@@ -26,8 +26,8 @@ jest.mock('common/hooks/useMobile', () => ({
   useMobile: jest.fn(),
 }));
 
-jest.mock('shell/commonStore', () => ({
-  ...jest.requireActual('shell/commonStore'),
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  ...jest.requireActual('@federated/apps/shell/commonStore'),
   useStore: jest.fn(),
 }));
 

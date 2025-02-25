@@ -1,7 +1,7 @@
-import { Merchant } from '@dashboard/shared-utils/graphql/graph-types';
+import { DashboardGraphQLMerchant } from '@libs/shared-types';
 
 interface CheckIfKycCompleteProps {
-  merchant: Merchant;
+  merchant: DashboardGraphQLMerchant;
 }
 
 /**

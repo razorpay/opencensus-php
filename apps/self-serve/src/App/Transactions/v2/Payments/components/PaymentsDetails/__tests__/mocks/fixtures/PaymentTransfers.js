@@ -4,8 +4,8 @@ import { render } from 'apps/self-serve/src/services/test/test-utils';
 import PaymentTransfers from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/PaymentTransfers';
 import { mockPaymentTransfers } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/handlers';
 
-jest.mock('@dashboard/shared-ui/hooks', () => ({
-  ...jest.requireActual('@dashboard/shared-ui/hooks'),
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   useMobile: jest.fn(),
 }));
 

@@ -5,6 +5,7 @@ import { fetchOrders } from 'merchant/reducers/collection';
 import { analyticsTrack } from 'common/utils/analytics';
 
 jest.mock('common/utils/analytics', () => ({
+  __esModule: true,
   ...jest.requireActual('common/utils/analytics'),
   analyticsTrack: jest.fn(),
 }));
@@ -78,7 +79,7 @@ describe('Orders - List Component', () => {
     });
 
     test('should pass status as failure when fetchOrders response is failure', async () => {
-      jest.spyOn(require('common/utils/rzp-utils'), 'getKeysSeparatedByPipe').mockReturnValue('');
+      jest.spyOn(require('@libs/shared-utils'), 'getKeysSeparatedByPipe').mockReturnValue('');
       fetchOrders.mockReturnValue({
         type: 'ORDERS_FETCH',
         payload: Promise.reject({

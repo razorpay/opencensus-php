@@ -1,10 +1,10 @@
 import imageInfoIcon from 'assets/partner-dashboard/info-icon.png';
-import { Modal, ModalBody } from 'common/components/Modal';
-import Loader from 'common/ui/Loader';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { Modal, ModalBody } from '@libs/web-nexus/common/components/Modal';
+import Loader from '@libs/web-nexus/common/ui/Loader';
+import { isMobileAndTablet } from '@libs/shared-utils';
 import { Formik } from 'formik';
 import isEmpty from 'lodash/isEmpty';
-import { merchantFetch } from 'merchant/utils/ajax';
+import { newAuthFetch } from '@dashboards/newAuth/utils/newAuthFetch';
 import {
   updatePartnerTypeAndConsent,
   userPreSignup,
@@ -45,7 +45,7 @@ const BusinessTypeSelection = ({
       location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
     });
     setIsLoading(true);
-    merchantFetch('merchant/onboarding/business_types')
+    newAuthFetch('merchant/onboarding/business_types')
       .then((res) => {
         if (res.status_code === 200 && res.success) {
           setRegistered(res?.data?.registered);

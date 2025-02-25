@@ -1,10 +1,10 @@
 import React from 'react';
-import * as useMobile from '@dashboard/shared-ui/hooks/useMobile';
+import * as sharedUtils from '@libs/shared-utils';
 import { render } from 'apps/self-serve/src/services/test/test-utils';
 import RefundsTable from 'apps/self-serve/src/App/Transactions/v2/Refunds/components/RefundsTable';
 import 'jest-location-mock';
 
-export const useMobileSpy = jest.spyOn(useMobile, 'useMobile');
+export const useMobileSpy = jest.spyOn(sharedUtils, 'useMobile');
 
 export const desktopColumns = [
   'Refund ID',

@@ -1,4 +1,4 @@
-import { ClickProps, Option, Options } from 'common/components/Dropdown/types';
+import { ClickProps, Option, Options } from '@libs/web-nexus/common/components/Dropdown/types';
 export interface ActionListWrapperProps {
   isMultipleSelection: boolean;
   selectedOptions: Option[];

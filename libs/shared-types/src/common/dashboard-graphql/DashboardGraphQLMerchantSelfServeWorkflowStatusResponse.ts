@@ -1,0 +1,4 @@
+import { DashboardGraphQLMerchantSelfServeWorkflowStatusFailureResponse, DashboardGraphQLMerchantSelfServeWorkflowStatusSuccessResponse } from './index';
+export type DashboardGraphQLMerchantSelfServeWorkflowStatusResponse =
+  | DashboardGraphQLMerchantSelfServeWorkflowStatusFailureResponse
+  | DashboardGraphQLMerchantSelfServeWorkflowStatusSuccessResponse;

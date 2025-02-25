@@ -1,0 +1,5 @@
+import { DashboardGraphQLWorkflowConfigStateRulePayoutTypeBetween, DashboardGraphQLWorkflowConfigStateRulePayoutTypeChecker, DashboardGraphQLWorkflowConfigStateRulePayoutTypeMergeStates } from './index';
+export type DashboardGraphQLWorkflowConfigStateRulePayout =
+  | DashboardGraphQLWorkflowConfigStateRulePayoutTypeBetween
+  | DashboardGraphQLWorkflowConfigStateRulePayoutTypeChecker
+  | DashboardGraphQLWorkflowConfigStateRulePayoutTypeMergeStates;

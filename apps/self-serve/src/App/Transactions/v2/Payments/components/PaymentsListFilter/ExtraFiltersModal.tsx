@@ -14,10 +14,10 @@ import {
   Text,
 } from '@razorpay/blade/components';
 import { useLocation } from 'react-router-dom';
-import { useStore } from 'shell/commonStore';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
-import { withRouter } from 'shell/deprecated/withRouter';
-import { useMobile } from '@dashboard/shared-ui/hooks';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { type Option } from '@libs/web-nexus/common/components/Dropdown/types';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import { useMobile } from '@libs/shared-utils';
 import { ALL_VALUE } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { trackMethodFilter } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
 import { ExtraFiltersModalProps, PaymentMethodOption } from './types';

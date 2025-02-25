@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 
-import LocalStorageService from 'common/utils/localStorage';
+import { getItem, removeItem, setItem } from 'common/utils/localStorage';
+import { switchMode } from '@libs/shared-utils';
 
 import { LIVE_MODE, TEST_MODE } from './data';
 
 export const switchToMode = (merchantId, mode = TEST_MODE, url = null) => {
-  if (!LocalStorageService.getItem(`hide-mode-dd-popover`)) {
-    LocalStorageService.removeItem(`hide-mode-dd-popover`);
-    LocalStorageService.setItem(`show-mode-dd-popover`, 'true');
+  if (!getItem(`hide-mode-dd-popover`)) {
+    removeItem(`hide-mode-dd-popover`);
+    setItem(`show-mode-dd-popover`, 'true');
   }
 
-  LocalStorageService.setItem(`rzp_mode--${merchantId}`, mode);
+  switchMode(merchantId, mode);
 
   if (url) {
     window.location = url;

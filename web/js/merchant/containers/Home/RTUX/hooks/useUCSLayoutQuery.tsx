@@ -1,10 +1,8 @@
 import React from 'react';
-import { QueryKey, useQuery } from '@tanstack/react-query';
-import { AxiosRequestConfig } from 'axios';
-
-import { fetchUCS } from 'common/services/rest/rest-fetch';
+import { type QueryKey, useQuery } from '@tanstack/react-query';
+import { type AxiosRequestConfig } from 'axios';
+import { fetchUCS } from '@federated/apps/shell/rest-fetch';
 import { User } from 'common/typings';
-
 import { isRTUXHomepageEnabled } from '../utils';
 
 // Todo : Add type for return value

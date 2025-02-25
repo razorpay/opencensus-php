@@ -1,7 +1,7 @@
 ---
-"@dashboard/shared-utils": minor
+"@libs/shared-utils": minor
 "self-serve": minor
-"@dashboard/shared-ui": minor
+"@libs/shared-ui": minor
 "web": major
 ---
 

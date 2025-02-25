@@ -1,7 +1,6 @@
-import Dropdown from '@dashboard/shared-ui/components/Dropdown';
-import { Option } from '@dashboard/shared-ui/components/Dropdown/types';
-import { useMobile } from '@dashboard/shared-ui/hooks';
-import { paiseToRupees } from '@dashboard/shared-utils/rzp-utils';
+import {type Option} from '@libs/web-nexus/common/components/Dropdown/types';
+import Dropdown from "@libs/web-nexus/common/components/Dropdown"
+import { useMobile, paiseToRupees } from '@libs/shared-utils';
 import {
   Amount,
   Box,
@@ -30,7 +29,7 @@ import { getDisputesOverviewValues } from 'apps/self-serve/src/App/Transactions/
 import { Currency } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import LoadFailedIcon from 'apps/self-serve/src/assets/load-failed.svg';
 import React, { useEffect, useState } from 'react';
-import { useStore } from 'shell/commonStore';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 const DisputeOverview = (): JSX.Element => {
   const isMobile = useMobile(mobileBreakoints);

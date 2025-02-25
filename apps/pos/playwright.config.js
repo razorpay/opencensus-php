@@ -1,14 +1,11 @@
-const playwrightBaseConfig = require('../../playwright.config');
-const { getProjects } = require('../../playwright/utils/config');
+const { withDashboardCore } = require('@libs/shared-core');
 
-module.exports = {
-  ...playwrightBaseConfig,
-  testDir: 'e2e/suites',
-  // re-setting it to undefined to avoid running globalSetup.
-  globalSetup: undefined,
-  projects: getProjects({ projectType: 'POS' }),
-  use: {
-    ...playwrightBaseConfig.use,
-    actionTimeout: 30 * 1000,
+module.exports = withDashboardCore({
+  playwrightOptions: {
+    moduleName: 'POS',
   },
-};
+  extendPlaywrightConfig: (config) => {
+    config.testDir = 'e2e/suites';
+    return config;
+  },
+});

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { withRouter } from 'shell/deprecated/withRouter';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import NoSearchResult from 'apps/self-serve/src/App/Transactions/v2/common/components/NoSearchResult';
 import { TransactionsPagesMap } from 'apps/self-serve/src/App/Transactions/v2/common/constants';

@@ -1,0 +1,31 @@
+import { DashboardGraphQLMerchantActivationStatusEnum, DashboardGraphQLMaybe, DashboardGraphQLMerchantPosActivationStatusEnum, DashboardGraphQLScalars, DashboardGraphQLMerchantActivationDedupe, DashboardGraphQLMerchantFeeBasedGating, DashboardGraphQLMerchantActivationFlow, DashboardGraphQLMerchantEscalations, DashboardGraphQLMerchantActivationMilestoneEnum, DashboardGraphQLMerchantActivationFlowEnum } from './index';
+export type DashboardGraphQLMerchantActivation = {
+  __typename?: 'DashboardGraphQLMerchantActivation';
+  activationStatusChangeLogs: Array<DashboardGraphQLMerchantActivationStatusEnum>;
+  allowedPosStatus: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantPosActivationStatusEnum>>;
+  allowedStatus: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationStatusEnum>>;
+  canSubmitForm: DashboardGraphQLScalars['Boolean'];
+  dedupe?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationDedupe>;
+  documentsSubmittedAt?: DashboardGraphQLMaybe<DashboardGraphQLScalars['DateTime']>;
+  feeBasedGating?: DashboardGraphQLMaybe<DashboardGraphQLMerchantFeeBasedGating>;
+  flow?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationFlow>;
+  isActivated: DashboardGraphQLScalars['Boolean'];
+  isAutoKycDone: DashboardGraphQLScalars['Boolean'];
+  isDedupe: DashboardGraphQLScalars['Boolean'];
+  isFormLocked?: DashboardGraphQLMaybe<DashboardGraphQLScalars['Boolean']>;
+  isFormSubmitted: DashboardGraphQLScalars['Boolean'];
+  isHardLimitReached: DashboardGraphQLScalars['Boolean'];
+  isInternational: DashboardGraphQLScalars['Boolean'];
+  isPgosMerchant?: DashboardGraphQLMaybe<DashboardGraphQLScalars['Boolean']>;
+  /** Signifies whether the user has transacted or not */
+  isTransacted: DashboardGraphQLScalars['Boolean'];
+  merchantEscalations: DashboardGraphQLMerchantEscalations;
+  milestone?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationMilestoneEnum>;
+  paymentsActivatedAt?: DashboardGraphQLMaybe<DashboardGraphQLScalars['DateTime']>;
+  posActivationFlow?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationFlowEnum>;
+  posActivationStatus?: DashboardGraphQLMaybe<DashboardGraphQLMerchantPosActivationStatusEnum>;
+  posActivationStatusChangeLogs: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantPosActivationStatusEnum>>;
+  posDetailsSubmitted: DashboardGraphQLScalars['Boolean'];
+  progressPercent: DashboardGraphQLScalars['NonNegativeInt'];
+  status?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationStatusEnum>;
+};

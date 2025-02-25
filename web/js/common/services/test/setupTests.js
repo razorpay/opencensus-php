@@ -5,6 +5,7 @@ import { QueryCache } from '@tanstack/react-query';
 import 'jest-canvas-mock';
 import 'regenerator-runtime/runtime';
 import 'whatwg-fetch';
+
 import { server } from '../../../../mocks/node';
 
 process.env.hostName = 'http://localhost:6006';
@@ -15,7 +16,7 @@ const RetryTimes = process.env.UT_RETRY_TIMES || 3;
 
 const TransformStream = require('web-streams-polyfill').TransformStream;
 
-// Global mocks
+Object.assign(global, { __STAGE__: 'production' });
 
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
@@ -28,21 +29,20 @@ jest.mock('merchant/utils/ajax');
 jest.mock('merchant/views/TicketSupport/utils.js', () => ({
   CreateTicketEmitter: jest.fn(),
 }));
-jest.mock('common/utils/analytics', () => ({
-  ...jest.requireActual('common/utils/analytics'),
+
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   analyticsTrack: jest.fn(),
   analyticsTrackWithUserInfo: jest.fn(),
 }));
-jest.mock('@razorpay/universe-utils/analytics', () => {
-  const originalModule = jest.requireActual('@razorpay/universe-utils/analytics');
+
+jest.mock('common/utils/localStorage', () => {
   return {
     __esModule: true,
-    ...originalModule,
-    default: {
-      track_EXPERIMENTAL: jest.fn(),
-    },
+    ...jest.requireActual('common/utils/localStorage'),
   };
 });
+
 jest.mock('common/services/tracking/segment', () => ({
   ...jest.requireActual('common/services/tracking/segment'),
   analyticsTrack: jest.fn(),
@@ -141,6 +141,17 @@ if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
 
 afterEach(() => {
   queryCache.clear();
+  const actualLocalStorage = window?.localStorage;
+
+  Object.defineProperty(global, 'localStorage', {
+    value: {
+      getItem: jest.fn((...args) => actualLocalStorage?.getItem?.(...args)),
+      setItem: jest.fn((...args) => actualLocalStorage?.setItem?.(...args)),
+      removeItem: jest.fn((...args) => actualLocalStorage?.removeItem?.(...args)),
+      clear: jest.fn(() => actualLocalStorage?.clear?.()),
+    },
+    writable: true,
+  });
 });
 
 if (process.env.CI === 'true') {

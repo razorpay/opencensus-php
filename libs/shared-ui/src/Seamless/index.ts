@@ -1,1 +1,0 @@
-export { CommonPoints } from './CommonPoints';

@@ -85,8 +85,8 @@ module.exports = {
       },
       alias: {
         map: [
-          ['@dashboard/shared-ui', path.resolve(__dirname, '../../libs/shared-ui/src')],
-          ['@dashboard/shared-utils', path.resolve(__dirname, '../../libs/shared-utils/src')],
+          ['@libs/shared-ui', path.resolve(__dirname, '../../libs/shared-ui/src')],
+          ['@libs/shared-utils', path.resolve(__dirname, '../../libs/shared-utils/src')],
           ['apps/self-serve', path.resolve(__dirname)],
         ],
         extensions: ['.js', '.jsx', '.tsx', '.ts'],

@@ -22,8 +22,8 @@ jest.mock('query-string', () => ({
   parse: jest.fn(() => ({})),
 }));
 
-jest.mock('@dashboard/shared-utils/rzp-utils', () => ({
-  ...jest.requireActual('@dashboard/shared-utils/rzp-utils'),
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   decodeSensitiveFields: jest.fn((arg) => arg),
 }));
 

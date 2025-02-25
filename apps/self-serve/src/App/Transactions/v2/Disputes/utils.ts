@@ -22,22 +22,21 @@ import {
   getDefaultSearchByValueAndOption,
   getDefaultSingleSelectValueAndOption,
 } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
-import { SpiltzContextState } from '@dashboard/shared-utils/splitz/types';
-import { User } from '@dashboard/shared-utils/typings';
-import { isExperimentEnabled } from '@dashboard/shared-utils/splitz-utils';
-import { getFormattedAmountNew } from '@dashboard/shared-utils/rzp-utils';
+import { type SpiltzContextState } from '@federated/dashboards/payments/services/splitzService';
+import { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import { isExperimentEnabled, getFormattedAmountNew } from '@libs/shared-utils';
 
-export const isDisputesRevampV2Enabled = (splitz: SpiltzContextState, user: User): boolean => {
+export const isDisputesRevampV2Enabled = (splitz: SpiltzContextState, user: PaymentsDashboardUser): boolean => {
   const { abExperiments } = splitz ?? { abExperiments: { Disputes_Revamp_V2: undefined } };
 
-  if (!abExperiments?.Disputes_Revamp_V2) return false;
+  if (!abExperiments?.['Disputes_Revamp_V2']) return false;
 
   if (user.isOrgCurlec) {
     return false;
   }
 
   return (
-    isExperimentEnabled(abExperiments.Disputes_Revamp_V2) &&
+    isExperimentEnabled(abExperiments['Disputes_Revamp_V2']) &&
     Boolean(user.isCountryIndia) &&
     user.isOrgRZP
   );

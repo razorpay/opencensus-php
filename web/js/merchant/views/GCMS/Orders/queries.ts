@@ -1,8 +1,8 @@
-import errorService from '@razorpay/universe-utils/errorService';
+import errorService from '@razorpay/universe-cli/errorService';
 
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { ModeT } from 'common/services/mode';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import { fetchBatchAjax } from 'merchant/reducers/batches';
 import {

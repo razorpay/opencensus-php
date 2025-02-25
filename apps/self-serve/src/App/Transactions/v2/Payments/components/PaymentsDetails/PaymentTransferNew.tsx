@@ -5,8 +5,8 @@ import { connect } from 'react-redux';
 import { AnyAction, Dispatch, bindActionCreators } from 'redux';
 import NewPaymentTransfer from 'apps/self-serve/src/App/Marketplace/Transfers/New';
 import { fetchTransfersFn } from 'apps/self-serve/src/App/Transactions/model';
-import ShowWhen from 'shell/components/ShowWhen';
-import { fetchTransfers as fetchTransfersAction } from 'merchant/reducers/payments/details';
+import ShowWhen from "@libs/web-nexus/merchant/components/SharedShowWhen";
+import { fetchTransfers as fetchTransfersAction } from '@dashboards/payments/reducers/payments/details';
 import { useNavigate } from 'react-router-dom';
 import { IPaymentTransferNew } from './types';
 

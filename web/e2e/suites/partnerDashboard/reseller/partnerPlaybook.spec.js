@@ -1,11 +1,9 @@
-import { routes, getStorageStatePath, BASE_PATH } from 'testConstants';
-
-const { test, expect } = require('utils/base');
+import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
 test.describe
   .parallel('Test Partner Playbook experience @flow=partner-playbook @project=partner-dashboard', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).RESELLER_PARTNER_TEST_LOGIN_STATE,
+    storageState: getStorageStatePath().RESELLER_PARTNER_TEST_LOGIN_STATE,
   });
 
   test.skip('should load the Partner Playbook page and search @priority=critical', async ({

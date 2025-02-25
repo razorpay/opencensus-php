@@ -2,7 +2,8 @@ import React from 'react';
 import { render, waitFor } from 'apps/self-serve/src/services/test/test-utils';
 import LandingAnalytics from 'apps/self-serve/src/App/Transactions/v2/Analytics/LandingAnalytics';
 
-jest.mock('@dashboard/shared-ui/hooks', () => ({
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   useMobile: jest.fn(() => false),
 }));
 

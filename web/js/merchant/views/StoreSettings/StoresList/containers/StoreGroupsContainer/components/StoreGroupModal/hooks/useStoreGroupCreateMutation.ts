@@ -1,7 +1,7 @@
 import { useToast } from '@razorpay/blade/components';
 import { useMutation, UseMutateFunction } from '@tanstack/react-query';
 
-import { graphqlRequestMutation } from 'common/services/graphql/graphql-client';
+import { graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import { CREATE_STORE_GROUP_MUTATION } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/mutations';
 
 import type {

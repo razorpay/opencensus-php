@@ -29,7 +29,7 @@ export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
 
   const { nestedTabsStatus } = settings;
   const isLoading = nestedTabsStatus === FETCH_STATUS.LOADING;
-  const showAllFormView = localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
+  const showAllFormView = window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
   const isFormView = !currentView.includes(CARD);
   const showCTA = isFormView || showAllFormView;
   const showSettings = (setting) =>

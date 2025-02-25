@@ -1,7 +1,11 @@
-import { set, merge, unshift, remove } from '@dashboard/shared-utils/immutable';
-
-import { analyticsTrack } from '@dashboard/shared-utils/analytics';
-import { getCommonSegmentProperties } from '@dashboard/shared-utils/rzp-utils';
+import {
+  getCommonSegmentProperties,
+  set,
+  merge,
+  unshift,
+  remove,
+  analyticsTrack,
+} from '@libs/shared-utils';
 import createReducer from './createReducer';
 
 const defaultInitialState = {

@@ -17,7 +17,7 @@ import {
   CardHeader,
 } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components';
 import { useQuery } from '@tanstack/react-query';
-import { fetch } from 'common/services/rest/rest-fetch';
+import { fetch } from '@federated/apps/shell/rest-fetch';
 import { Spinner, Text } from '@razorpay/blade/components';
 import { getStatusData } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/util';
 import { useTracking } from 'react-tracking';

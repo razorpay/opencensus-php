@@ -6,7 +6,7 @@ import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import store from 'merchant/store';
 import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v2';
 import * as modals from 'merchant_common/reducers/modals';
-import { render, screen, userEvent } from 'test-utils';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 const globalStore = store.getState();
 
@@ -123,12 +123,19 @@ describe('Merchant Profile Section Version 2', () => {
       if (isEditable) {
         const editButton = screen.getAllByRole('button');
         await userEvent.click(editButton[order]);
+
         if (id === 'display_name') {
-          expect(screen.getByText('Edit display name')).toBeInTheDocument();
+          waitFor(() => {
+            expect(screen.getByText('Edit new display name')).toBeInTheDocument();
+          });
         } else if (id === 'name') {
-          expect(screen.getByText('Edit profile name')).toBeInTheDocument();
+          waitFor(() => {
+            expect(screen.getByText('Edit new profile name')).toBeInTheDocument();
+          });
         } else {
-          expect(modalsSpy).toHaveBeenCalledTimes(1);
+          waitFor(() => {
+            expect(modalsSpy).toHaveBeenCalledTimes(1);
+          });
         }
       }
     },

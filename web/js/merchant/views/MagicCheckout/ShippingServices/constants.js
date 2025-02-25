@@ -1,3 +1,4 @@
+import React from "react";
 import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
 import DelhiveryIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/delhivery.svg';
 import IThinkLogisticsIcon from 'assets/ithink-logistics-logo.png';

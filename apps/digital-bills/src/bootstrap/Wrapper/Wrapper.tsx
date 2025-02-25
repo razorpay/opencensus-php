@@ -9,7 +9,7 @@ import {
   graphqlClient,
   graphqlRequestQuery,
   graphqlRequestMutation,
-} from '@apps/digital-bills/src/utils/graphql';
+} from '@federated/apps/shell/graphql';
 import App from '@apps/digital-bills/src/app';
 import ErrorPage from '@apps/digital-bills/src/common/components/ErrorPage';
 import { DIGITAL_BILLS, ERROR_PAGE_DESCRIPTION } from '@apps/digital-bills/src/utils/constants';
@@ -17,6 +17,7 @@ import { DIGITAL_BILLS, ERROR_PAGE_DESCRIPTION } from '@apps/digital-bills/src/u
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      // @ts-ignore
       queryFn: graphqlRequestQuery,
     },
     mutations: {
@@ -28,7 +29,7 @@ export const queryClient = new QueryClient({
 // set 'apollographql-client-name' header for Apollo studio to automatically categorize the requests
 graphqlClient.setHeader(
   'apollographql-client-name',
-  process.env.UNIVERSE_PUBLIC_APP_NAME as string,
+  process.env['UNIVERSE_PUBLIC_APP_NAME'] as string,
 );
 
 const Wrapper = (): React.ReactElement => {

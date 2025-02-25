@@ -1,4 +1,5 @@
 import DateRangePicker from 'common/ui/DateRangePicker';
+import React from "react";
 
 export default props => {
   const onDatesChange = (from, to) => {

@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withRouter } from 'shell/deprecated/withRouter';
-import ListContainer from 'merchant/containers/ListContainer';
+import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
+import ListContainer from 'apps/self-serve/src/legacy/containers/ListContainer';
+import { fetchDisputes as fetchAll } from 'apps/self-serve/src/bootstrap/Store/reducers/disputesReducer';
 import { handleDetailsClick } from 'apps/self-serve/src/App/Transactions/v2/common/components/Details/Details';
 import {
   TransactionsEntityRoute,
@@ -15,7 +16,6 @@ import DisputeListHeader from 'apps/self-serve/src/App/Transactions/v2/Disputes/
 import DisputeOverview from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputeOverview';
 import DisputesTable from 'apps/self-serve/src/App/Transactions/v2/Disputes/components/DisputesTable.tsx';
 import withSplitzService from 'apps/self-serve/src/App/Transactions/v2/Disputes/hoc/withSplitzService';
-import { fetchDisputes as fetchAll } from 'apps/self-serve/src/bootstrap/Store/reducers/disputesReducer';
 
 class DisputeList extends ListContainer {
   onExport = () => {

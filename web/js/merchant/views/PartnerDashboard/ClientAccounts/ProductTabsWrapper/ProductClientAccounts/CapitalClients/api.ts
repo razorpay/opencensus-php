@@ -1,8 +1,8 @@
 import {
-  FetchSubmerchantsParams,
+  type FetchSubmerchantsParams,
   fetchSubmerchants,
-  PGAcceptedInviteItem,
-  FetchInviteResponse,
+  type PGAcceptedInviteItem,
+  type FetchInviteResponse,
 } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import {
   getActivationStatusBulk,

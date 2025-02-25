@@ -1,0 +1,1 @@
+export { withDashboardWebpack } from './withDashboardWebpack';
