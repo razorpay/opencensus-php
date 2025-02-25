@@ -560,7 +560,7 @@ class Service extends Base\Service
 
     // 1. Check qr code table by merchant reference
     // 2. Check using qr code config
-    protected function findQrCodeForQrPayment(array $gatewayResponse, string $gateway)
+    protected function findQrCodeForQrPayment(array &$gatewayResponse, string $gateway)
     {
         $merchantReference = $gatewayResponse['upi']['merchant_reference'] ?? null;
 
@@ -612,6 +612,13 @@ class Service extends Base\Service
                 {
                     return [null, null];
                 }
+
+                $gatewayResponse['upi']['merchant_reference'] = $qrCodeId;
+                $this->trace->info(TraceCode::QR_PAYMENT_CALLBACK_UPDATED_FROM_QR_CODE_CONFIG, [
+                    'qrCodeId' => $qrCodeId,
+                    'gateway'  => $gateway,
+                    'message'  => 'qrCodeId is updated in the pre-processed Callback data for processing unrecognized merchant reference ',
+                ]);
 
                 // Assuming that we shall be doing this only for live mode. Internal test mode will not need this by design.
                 return [$qrCode, Mode::LIVE];

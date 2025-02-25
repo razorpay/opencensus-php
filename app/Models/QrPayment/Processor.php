@@ -277,33 +277,35 @@ class Processor extends Base\Core
 
         if ($entity->isExpected() === true)
         {
-            if ((! $this->qrCode->isCheckoutQrCode()) && (!$this->qrCode->isPaymentLinksQrCode()))
+            if ($entity->payment->hasBeenCaptured() === false)
             {
+                if (($this->qrCode->isCheckoutQrCode() === false) and
+                    ($this->qrCode->isPaymentLinksQrCode() === false))
+                {
                     $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
 
-                            $mutex = App::getFacadeRoot()['api.mutex'];
+                    $mutex = App::getFacadeRoot()['api.mutex'];
 
-                            $mutex->acquireAndRelease($orderMutex,
-                                function() use ($paymentProcessor, $payment)
-                                {
-                        $paymentProcessor->autoCapturePayment($payment);
-                    });
-            }
+                    $mutex->acquireAndRelease($orderMutex,
+                        function() use ($paymentProcessor, $payment)
+                        {
+                            $paymentProcessor->autoCapturePayment($payment);
+                        });
+                }
+                else
+                {
+                    // Adding the order id mutex for solving multiple captured payment on same order
+                    // If payment has order id then resource will contain order id else payment id
+                    $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
 
-            else if ($entity->payment->hasBeenCaptured() === false)
-            {
+                    $mutex = App::getFacadeRoot()['api.mutex'];
 
-                // Adding the order id mutex for solving multiple captured payment on same order
-                // If payment has order id then resource will contain order id else payment id
-                $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
-
-                $mutex = App::getFacadeRoot()['api.mutex'];
-
-                $mutex->acquireAndRelease($orderMutex,
-                    function() use ($paymentProcessor, $payment)
-                    {
-                        $paymentProcessor->autoCapturePaymentUsingOrderIfApplicable($payment);
-                    });
+                    $mutex->acquireAndRelease($orderMutex,
+                        function() use ($paymentProcessor, $payment)
+                        {
+                            $paymentProcessor->autoCapturePaymentUsingOrderIfApplicable($payment);
+                        });
+                }
             }
         }
         else
