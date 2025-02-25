@@ -273,10 +273,8 @@ export const waitUntil = (condition, cb) => {
 };
 
 export const devStackCheckoutConfig = {
-  api: `${DEV_BASE_URL}/api/`,
-  frameApi: `${DEV_BASE_URL}/api/`,
-  frame: 'https://api-cc.func.razorpay.in/test/checkout.html',
-  js: 'http://checkout.pronav.in/dist/',
+  // which API server to use. comment out this prop to use prod as default (api.razorpay.com)
+  api: new URL(DEV_BASE_URL).origin,
 };
 
 const isProd = isProductionEnv();
