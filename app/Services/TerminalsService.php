@@ -118,6 +118,7 @@ class TerminalsService
 
     const CREATE_TERMINAL_V3          = 'create_terminal_v3';
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
+    const TOGGLE_TERMINAL_V3          = 'toggle_terminal_v3';
 
     const SET_BANKS_TERMINAL_V3       = 'set_banks_terminal_v3';
     const SET_WALLETS_TERMINAL_V3   = 'set_wallets_terminal_v3';
@@ -259,6 +260,10 @@ class TerminalsService
             self::PATH   => 'v3/terminals/%s/wallets',
             self::METHOD => Requests::PATCH
         ],
+        self::TOGGLE_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/toggle',
+            self::METHOD => Requests::PUT
+        ]
     ];
 
     protected array $terminal_admin_dashboard_routes = [
@@ -1553,6 +1558,30 @@ class TerminalsService
             ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
 
         $params = self::PARAMS[self::SET_BANKS_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function toggleTerminalV3($terminalId, $input) {
+
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $enabled = $terminal->isEnabled();
+        list($original, $dirty) = [
+            ['terminal_enable' => $enabled],
+            ['terminal_enable' => !$enabled],
+        ];
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle($original, $dirty);
+
+        $params = self::PARAMS[self::TOGGLE_TERMINAL_V3];
 
         $path = sprintf($params[self::PATH], $terminalId);
 

@@ -553,6 +553,10 @@ class Service extends Base\Service
 
     public function toggleTerminal($id, $input)
     {
+        if($this->isSplitzEnabled('toggle_terminal') === true){
+            return $this->app['terminals_service']->toggleTerminalV3($id, $input);
+        }
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->getById($id);
