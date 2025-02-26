@@ -42,6 +42,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Partner\Commission\Type as CommissionType;
 use RZP\Models\Partner\Commission\Constants as CommissionConstants;
+use RZP\Services\Dcs\Features\Constants as DcsFeaturesConstants;
 
 class CommissionCreateTest extends TestCase
 {
@@ -56,9 +57,11 @@ class CommissionCreateTest extends TestCase
 
         parent::setUp();
 
+        $this->mockPartnershipsServiceTreatment([], false, 'evaluateSwitchOverPartnershipsSplitzExperiment');
+        $this->mockPartnershipsServiceTreatment([], [], 'pushMetricForPartnershipsSwitchOver');
 
     }
-
+    
     private function enableVirtualAccountQrcodeAndMethods(string $merchantId, string $appId) {
         $this->fixtures->merchant->enableMethod($merchantId, 'bank_transfer');
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
@@ -2670,26 +2673,28 @@ class CommissionCreateTest extends TestCase
         $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
 
-        $input = [
-            "experiment_id" => "Mb8g2Q7MqDUKOz",
-            "id"            => $application->getId(),
-        ];
+        // mock DCS output
+        $dcsMock = $this->getMockBuilder(\RZP\Services\Dcs\Features\Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['fetchByEntityIdAndName'])
+            ->getMock();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                    "variables"=> [
-                        [
-                            "key" => "payment",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $this->app->instance('dcs', $dcsMock);
 
-        $this->mockSplitzTreatment($input, $output);
+        // Note: getCustomPricingPlanForOauth is called thrice in this flow.
+        $dcsMock->expects($this->exactly(3))
+            ->method('fetchByEntityIdAndName')
+            ->with($application->getId(), 'pp_oauth_pricing_payment', Mode::TEST)
+            ->willReturn(new Feature\Entity([
+                'entity_type' => 'application',
+                'entity_id' => $application->getId(),
+                'name' => 'pp_oauth_pricing_payment',
+            ]));
+
+        // manually set dcs enabled features
+        DcsFeaturesConstants::$loadedReadEnabledFeatures = ['org' => [
+            'pp_oauth_pricing_payment' => "direct",
+        ], 'merchant' => []];
 
         $client = $this->getAppClientByEnv($application);
 
@@ -2724,10 +2729,85 @@ class CommissionCreateTest extends TestCase
 
         $testData['request']['url'] = '/payments/'.$response['razorpay_payment_id'].'/capture';
 
-        $this->startTest($testData);
+        $data = $this->startTest($testData);
+
+        $this->assertEquals(1100, $data['fee']);
 
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
 
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
+    public function testPlatformPartnerAppLevelCustomPricingPlan()
+    {
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        // mock DCS output
+        $dcsMock = $this->getMockBuilder(\RZP\Services\Dcs\Features\Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['fetchByEntityIdAndName'])
+            ->getMock();
+
+        $this->app->instance('dcs', $dcsMock);
+
+        // Note: getCustomPricingPlanForOauth is called thrice in this flow.
+        $dcsMock->expects($this->exactly(3))
+            ->method('fetchByEntityIdAndName')
+            ->with($application->getId(), 'pp_oauth_pricing_payment', Mode::TEST)
+            ->willReturn(new Feature\Entity([
+                'entity_type' => 'application',
+                'entity_id' => $application->getId(),
+                'name' => 'pp_oauth_pricing_payment',
+            ]));
+
+        // manually set dcs enabled features
+        DcsFeaturesConstants::$loadedReadEnabledFeatures = ['org' => [
+            'pp_oauth_pricing_payment' => "direct",
+        ], 'merchant' => []];
+
+        $client = $this->getAppClientByEnv($application);
+
+        $this->generateOAuthAccessTokenForClient(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'scopes' => ['read_write'],
+            ],
+            $client);
+
+        $this->ba->oauthPublicTokenAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $payment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+        // Create app level config with a different default plan id
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+                'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            ]);
+
+        $this->fixtures->pricing->editTwoPercentPricingPlan(['percent_rate' => 150]);
+
+        $this->setSubmerchantPrivateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $testData['request']['url'] = '/payments/'.$response['razorpay_payment_id'].'/capture';
+
+        $data = $this->startTest($testData);
+        
+        $this->assertEquals(850, $data['fee']);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
         $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
     }
 

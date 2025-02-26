@@ -13,6 +13,7 @@ final class Metric
     const PAYMENT_COMMISSION_CREATE_FAILED       = 'payment_commission_create_failed';
 
     const OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_FAILED     = 'oauth_transaction_default_pricing_fetch_failed';
+    const OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH_METRICS     = 'oauth_transaction_custom_pricing_fetch_metrics';
 
     const COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED = 'commission_flush_to_kafka_topic_failed';
     const COMMISSION_FAILED_TOTAL = 'commission_failed_total';
