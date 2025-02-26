@@ -11773,7 +11773,6 @@ class Core extends Base\Core
             $resource,
             function () use ($input, $merchant) {
                 return $this->repo->transaction(function () use ($input, $merchant) {
-                    (new Merchant\Validator())->validateIfAmountForFundWithdrawalIsValid($input['amount'], $input, $merchant);
 
                     $input['amount'] = -1 * abs($input['amount']);
                     (new Adjustment\Core)->createAdjustment($input, $merchant);
