@@ -489,6 +489,12 @@ export const fetchAllRouteBatches = fetchBatches([
   'linked_account_create',
   'transfer_reversal',
 ]);
+export const fetchAllRouteBatchesWithAccountCode = fetchBatches([
+  'payment_transfer',
+  'linked_account_create',
+  'transfer_reversal',
+  'linked_account_create_with_account_code',
+]);
 export const createTransferBatch = createBatch('payment_transfer');
 export const validateTransferBatch = validateBatch('payment_transfer');
 export const createLinkedAccountBatch = createBatch('linked_account_create');

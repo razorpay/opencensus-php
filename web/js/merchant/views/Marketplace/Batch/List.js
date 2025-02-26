@@ -1,12 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-
+import { compose } from 'redux';
 import { titleCase } from 'common/utils/rzp-utils';
 import BatchList from 'merchant/containers/BatchNew/ListV2';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
-import { fetchAllRouteBatches as fetchAll } from 'merchant/reducers/batches';
+import {
+  fetchAllRouteBatches,
+  fetchAllRouteBatchesWithAccountCode,
+} from 'merchant/reducers/batches';
+import { isAccountCodeEnabled } from 'merchant/views/Settlements/components/utils';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
+import { withSplitzService } from 'common/splitz';
 
 import CreateBatch from './CreateBatch';
 
@@ -42,7 +47,15 @@ const BatchTypeFilterField = () => (
 
 class BatchListContainer extends Component {
   render() {
-    const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
+    const {
+      isPlatformFeeTabEnabled,
+      user,
+      isPartnerPlatformFeeEnabled,
+      splitz,
+      fetchAllRouteBatches,
+      fetchAllRouteBatchesWithAccountCode,
+    } = this.props;
+    const isACEnabled = isAccountCodeEnabled(splitz) && user.isRouteCodeSupportEnabled;
     return (
       <BatchList
         form="batchListFilter"
@@ -54,12 +67,17 @@ class BatchListContainer extends Component {
         multiBatch
         emptyResultsDescription={emptyResultsDescription}
         propsTabData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
+        fetchAll={isACEnabled ? fetchAllRouteBatchesWithAccountCode : fetchAllRouteBatches}
         {...this.props}
       />
     );
   }
 }
 
-export default connect((state) => ({ user: state.session.user }), {
-  fetchAll,
-})(BatchListContainer);
+export default compose(
+  connect((state) => ({ user: state.session.user }), {
+    fetchAllRouteBatchesWithAccountCode,
+    fetchAllRouteBatches,
+  }),
+  withSplitzService,
+)(BatchListContainer);

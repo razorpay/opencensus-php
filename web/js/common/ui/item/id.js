@@ -36,6 +36,7 @@ const batchBaseUrls = {
   linked_account_reversal: 'reversals',
   payment_transfer: 'route',
   linked_account_create: 'route',
+  linked_account_create_with_account_code: 'route',
   transfer_reversal: 'route',
   virtual_account_edit: 'smartcollect',
   payment_page: 'paymentpages',
