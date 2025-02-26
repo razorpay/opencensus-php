@@ -58,3 +58,7 @@ export const isGranularOfferExperimentEnabled = (splitz) => {
     splitz?.abExperiments?.upi_granular_offer_dashboard || undefined;
   return isExperimentEnabled(upi_granular_offer_dashboard);
 };
+
+export const getIs10DigitBinExperimentEnabled = (splitz) => {
+  return isExperimentEnabled(splitz?.abExperiments?.OE_FETCH_IIN_FROM_BIN_EXP);
+};

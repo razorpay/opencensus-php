@@ -5,7 +5,7 @@ import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/O
 import Wizard from 'merchant/views/Offers/New/components/Wizard';
 import { prepareDataForSubmit } from 'merchant/views/Offers/New/helpers';
 import { OFFER_TYPES, PAYER_ACCOUNT_TYPES_OPTIONS, UPI_APP_PROVIDERS } from '../../constants';
-import { isGranularOfferExperimentEnabled } from '../../utils';
+import { getIs10DigitBinExperimentEnabled, isGranularOfferExperimentEnabled } from '../../utils';
 
 const SCREEN_MAP = {
   0: 'description',
@@ -160,10 +160,13 @@ export default class BaseForm extends React.Component {
     }
     const isGranularOfferExpEnabled = isGranularOfferExperimentEnabled(splitz);
 
+    const is10DigitBinExperimentEnabled = getIs10DigitBinExperimentEnabled(splitz);
+
     const preparedFormData = prepareDataForSubmit(
       values,
       isLowCostExperimentEnabled,
       isGranularOfferExpEnabled,
+      is10DigitBinExperimentEnabled,
     );
 
     return this.props.onSubmit(preparedFormData);

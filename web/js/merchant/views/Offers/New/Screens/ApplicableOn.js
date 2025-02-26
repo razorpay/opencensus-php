@@ -39,7 +39,10 @@ import {
   DISPLAY_TEXT,
   PAYER_ACCOUNT_TYPES_DISPLAY,
 } from 'merchant/views/Offers/constants';
-import { isGranularOfferExperimentEnabled } from 'merchant/views/Offers/utils';
+import {
+  getIs10DigitBinExperimentEnabled,
+  isGranularOfferExperimentEnabled,
+} from 'merchant/views/Offers/utils';
 
 import UPISelector, { UPI_APPS_SELECT_OPTIONS } from '../components/UPISelector';
 
@@ -381,7 +384,11 @@ class ApplicableOn extends React.Component {
               label="IINs"
               labelPosition="left"
               name="iins"
-              placeholder="6 digit IINs for cards. Separated by comma if more than one"
+              placeholder={
+                getIs10DigitBinExperimentEnabled(splitz)
+                  ? '6-10 digit IINs for cards. Separated by comma if more than one'
+                  : '6 digit IINs for cards. Separated by comma if more than one'
+              }
               helpText={
                 <p>
                   {'Note: Bin based offers on Amex saved card will not work post tokenisation.'}

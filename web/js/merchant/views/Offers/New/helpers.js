@@ -11,10 +11,14 @@ export const isGranularPSPOfferEnabled = (payment_method, type) => {
   return payment_method === PAYMENT_METHODS.UPI && type === OFFER_TYPES.Cashback;
 };
 
+export const getIinsRegexToTest = (is10DigitBinExperimentEnabled, isSubscription) =>
+  isSubscription ? /^\d{6}$/ : is10DigitBinExperimentEnabled ? /^\d{6,10}$/ : /^\d{6}$/;
+
 export function prepareDataForSubmit(
   formData,
   isLowCostExperimentEnabled,
   isGranularOfferExpEnabled = false,
+  is10DigitBinExperimentEnabled = false,
 ) {
   const transformedFormData = {
     ...formData,
@@ -74,10 +78,15 @@ export function prepareDataForSubmit(
 
   //convert comma separated iins to array
   if (formData.iins) {
+    const iinRegexToTest = getIinsRegexToTest(
+      is10DigitBinExperimentEnabled,
+      formData.product_type === 'subscription',
+    );
+
     formData.iins = formData.iins
       .split(',')
       .map((iin) => iin.trim())
-      .filter((iin) => /^\d{6}$/.test(iin));
+      .filter((iin) => iinRegexToTest.test(iin));
     transformedFormData.iins = formData.iins;
   }
 

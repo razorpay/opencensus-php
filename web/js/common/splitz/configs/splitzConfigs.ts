@@ -1468,6 +1468,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [/offers.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'OE_FETCH_IIN_FROM_BIN_EXP',
+          experimentId: {
+            beta: 'PyL71FJgUotGil',
+            production: 'PzDdB6h4PFn1Uc',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: [/^(\/magic(\/.*)?|\/configuration\/magic\/.*)$/, '/dashboard/*'],
       abExperiments: [
         {
