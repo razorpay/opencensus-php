@@ -61,6 +61,7 @@ class Gateway
     const AXIS                   = 'axis';
     const IDFC                   = 'idfc';
     const YESBANK                = 'yesbank';
+    const JKBANK                 = 'jkbank';
 
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
@@ -129,6 +130,7 @@ class Gateway
     const UPI_SBI                = 'upi_sbi';
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_JKBANK             = 'upi_jkbank';
     const UPI_HULK               = 'upi_hulk';
     const UPI_RBL                = 'upi_rbl';
     const UPI_AXISOLIVE          = 'upi_axisolive';
@@ -449,6 +451,7 @@ class Gateway
         self::PAYTM                 => self::PAYTM,
         self::UPI_AXIS              => self::AXIS,
         self::UPI_ICICI             => self::ICICI,
+        self::UPI_JKBANK            => self::JKBANK,
         self::UPI_MINDGATE          => self::HDFC,
         self::WALLET_PAYPAL         => self::WALLET_PAYPAL,
         self::WORLDLINE             => [
