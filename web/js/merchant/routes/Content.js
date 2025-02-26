@@ -640,8 +640,9 @@ class Content extends Component {
       splitz: {
         abExperiments: { tnc_update_modal },
       },
+      user,
     } = this.props;
-    return isExperimentEnabled(tnc_update_modal);
+    return isExperimentEnabled(tnc_update_modal) && user?.country_code === 'IN';
   };
   checkIsSettlementsV3RevampEnabled = () => {
     const { splitz, user } = this.props;
