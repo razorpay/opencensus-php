@@ -19,7 +19,7 @@ export const merchantConfigStoreFetchMiddleware: MerchantConfigStoreFetchMiddlew
 
     if (!Boolean(res.locals.user_session?.merchant_id)) {
       req.shellLogger.warn({
-        message: 'Fallback to empty merchant config store object',
+        message: 'Fallback to empty merchant config store object (MID Not Found).',
         moduleName: '@merchantConfigStoreFetchMiddleware',
       });
       res.locals.config_store = {};
@@ -102,5 +102,16 @@ export const merchantConfigStoreFetchMiddleware: MerchantConfigStoreFetchMiddlew
             },
           });
         }
+      })
+      .catch((error) => {
+        req.shellLogger.warn({
+          message: 'Something went wrong!',
+          moduleName: '@merchantConfigStoreFetchMiddleware',
+          context: {
+            dashboardBackendRequestId,
+            error,
+          },
+        });
+        res.locals.config_store = {};
       });
   };
