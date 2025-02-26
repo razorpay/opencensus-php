@@ -3809,6 +3809,7 @@ class Service extends Base\Service
         $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_INITIATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED;
 
         $this->trace->info($traceCode, [
+            DetailConstants::VERSION => $version,
             Entity::GSTIN => $input[Entity::GSTIN]
         ]);
 

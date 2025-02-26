@@ -79,11 +79,13 @@ class Constants
 
     const PERMISSION_VS_CONTROLLER = [
         'merchant_activation_save_admin_login' => 'RZP\Http\Controllers\MerchantController@postSaveActivationDetails',
+        'merchant_gstin_update_permission'    => 'RZP\Http\Controllers\MerchantController@postGstinSelfServe',
         'merchant_rekyc_update'                => 'RZP\Http\Controllers\MerchantController@postMerchantReKycUpdate',
     ];
 
     const PERMISSION_VS_CONTROLLER_FUNCTION = [
         'merchant_activation_save_admin_login' => 'postSaveActivationDetails',
+        'merchant_gstin_update_permission'    => 'postGstinSelfServe',
     ];
 
     public static function getActionRejectHandlerByPermissionName(string $permissionName): ?string
