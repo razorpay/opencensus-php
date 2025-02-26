@@ -74,7 +74,7 @@ export const LandingContainer = ({ children }) => {
 
         <ShowWhen
           additionalCondition={(user) =>
-            user.international &&
+            user.isInttCurrenciesEnabled &&
             user.isAllowedView('b2b_payments') &&
             !isConfigTagEnabled('transactions.upload_invoices') &&
             !user.isCountrySingapore
