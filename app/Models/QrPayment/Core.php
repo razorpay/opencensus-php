@@ -2,6 +2,8 @@
 
 namespace RZP\Models\QrPayment;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -70,7 +72,12 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex);
+            // Add a trace code here for better visibility
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::QR_PAYMENT_PROCESSING_FAILED
+            );
 
             $errorMessage = $ex->getMessage();
 
