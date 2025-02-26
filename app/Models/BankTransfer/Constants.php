@@ -59,7 +59,6 @@ class Constants
         self::OUTBOUND_TELEMARKTING,
         self::PAWN_SHOPS,
         self::POLITCAL_ORGANIZATIONS,
-        self::PRECIOUS_STONES_AND_METALS,
         self::SEEDS_OR_PLANTS,
         self::TOBACCO,
     ];

@@ -2818,7 +2818,7 @@ class Route
 
         'capture_pacb_bank_transfer_payments'  => ['post',     'pacb/bank-transfer/capture',                         'BankTransferController@captureCronForPACBBankTransferPayments'                   ],
         'toggle_international_virtual_account'              => ['post',     'international/virtual_account/toggle',   'BankTransferController@toggleInternationalVirtualAccountForMerchant'          ],
-
+        'merchant_integration_get_by_param' => ['post',     'internal/merchant_integrations',                                          'BankTransferController@fetchMerchantIntegrationByParams'        ],
 
         //Global Bank account solution
 
@@ -6990,6 +6990,7 @@ class Route
         'create_qr_for_single_stack',
         'merchant_international_enablement_draft_internal',
         'merchant_fetch_bank_account_internal',
+        'merchant_integration_get_by_param',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12508,6 +12509,10 @@ class Route
             'payout_create_internal',
             'payment_fetch_by_id',
             'api_entity_fetch'
+        ],
+
+        'payments_bank_transfer_service' => [
+            'merchant_integration_get_by_param',
         ],
 
         'xperience' => [

@@ -207,4 +207,11 @@ class Validator extends Base\Validator
         'merchant_id'                      => 'required|string|size:14',
         'priority'                         => 'required|string|in:P0,P1',
     ];
+
+    protected static $fetchMerchantIntegrationByParamsRules = [
+        'paramKey'                             => 'required|string|in:merchant_id,integration_entity,integration_key,reference_id',
+        'paramValue'                           => 'required|array',
+    ];
+
+
 }

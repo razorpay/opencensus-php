@@ -1375,4 +1375,13 @@ class Authorization
 
         $this->appAuth('rzp_'. $mode, $pwd);
     }
+
+    public function paymentsBankTransferAppAuth($mode = 'test'): void
+    {
+        $bankTransferServiceConfig = \Config::get('applications.payments_bank_transfer_service');
+        $pwd = $bankTransferServiceConfig['secret'];
+
+        $this->appAuth('rzp_'. $mode, $pwd);
+        $this->proxy = true;
+    }
 }

@@ -883,6 +883,10 @@ class Processor
 
         $library = $input['_']['library'];
 
+        $this->trace->info(TraceCode::CROSS_BORDER_LIBRARY_VALUE, [
+            'Cross Border library value: '      =>  $library,
+        ]);
+
         $internationalSupportedLibraries = [
             Payment\Analytics\Metadata::CHECKOUTJS,
             Payment\Analytics\Metadata::HOSTED

@@ -434,6 +434,30 @@ return [
         ]
     ],
 
+    'testTradeCallFailingSettlementCronForB2BPayments' => [
+        'request' => [
+            'url' => '/b2b/payments/settlement',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testSuccessfulSettlementCronForB2BPayments' => [
+        'request' => [
+            'url' => '/b2b/payments/settlement',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
     'testGetBalanceDetailsForMerchantVA' => [
         'request' => [
             'url' => '/international/virtual_accounts/balance/USD',

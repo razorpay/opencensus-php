@@ -3937,4 +3937,8 @@ class BasicAuth
         return $this->customAccessRoles;
     }
 
+    public function isPaymentsBankTransferApp(): bool
+    {
+        return ($this->getInternalApp() === 'payments_bank_transfer_service');
+    }
 }

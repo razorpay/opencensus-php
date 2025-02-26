@@ -1389,4 +1389,12 @@ class BankTransferController extends Controller
 
         return ApiResponse::json($data);
     }
+    public function fetchMerchantIntegrationByParams()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMerchantIntegrationByParams($input);
+
+        return ApiResponse::json($data);
+    }
 }

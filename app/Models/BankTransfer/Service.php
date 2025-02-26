@@ -1712,7 +1712,7 @@ class Service extends Base\Service
 
                     $mii = $this->updateBankAccountDetailsByVACurrency($merchantId, $mii, $va_currency, $enableAllCurrencies);
 
-                    $this->setMerchantProductInternationalPACB();
+                    $this->setMerchantProductInternationalPACB($merchantId);
 
                 }, 600,
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
@@ -1816,7 +1816,7 @@ class Service extends Base\Service
             try {
                 $bankAccount = $this->getFundingAccountDetailsByCurrency($request, $currency);
             } catch (\Exception $ex) {
-               // log the error, metric and continue
+                // log the error, metric and continue
                 $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
                     'merchant_id' => $merchantId,
                     'currency' => $currency,
@@ -1873,6 +1873,25 @@ class Service extends Base\Service
                 [
                     'error_data' => $ex->getData() ?? [],
                 ]);
+        }
+
+        //   adding an alert if response comes empty from cc
+        //    "data": {
+        //            "_raw": "{\"funding_accounts\":[]}",
+        //            "status": "successful",
+        //            "funding_accounts": []
+        //    }
+        // slack ref :- https://razorpay.slack.com/archives/C7WEGELHJ/p1738922809860609?thread_ts=1738307080.571999&cid=C7WEGELHJ
+
+        if (empty($response['data']) || empty($response['data']['funding_accounts'])) {
+
+            $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
+                'currency' => $va_currency,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                'currency' => $va_currency
+            ]);
         }
 
         $funding_accounts = $response['data']['funding_accounts'];
@@ -2331,19 +2350,42 @@ class Service extends Base\Service
                         'term_agreement' => "true",
                     ];
 
-                    $createConversionResponse = $this->app->mozart->sendMozartRequest('payments', $gateway, 'create_conversion', $createConversionRequest);
+                    try {
+                        $createConversionResponse = $this->app->mozart->sendMozartRequest('payments', $gateway, 'create_conversion', $createConversionRequest);
 
-                    if (!isset($createConversionResponse['data']['client_buy_amount']) || $createConversionResponse['data']['client_buy_amount'] < 1) {
+                        if (!isset($createConversionResponse['data']['client_buy_amount']) || $createConversionResponse['data']['client_buy_amount'] < 1) {
+                            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE, null, [
+                                'gateway' => Payment\Gateway::CURRENCY_CLOUD,
+                                'data' => $createConversionResponse['data'],
+                                'action' => "create_conversion",
+                            ]);
+                        }
+
+                        $createPaymentRequest['conversion_id'] = $createConversionResponse['data']['id'];
+                        $createPaymentRequest['amount'] = $createConversionResponse['data']['client_buy_amount'];
+
+                    } catch (\Exception $ex) {
+                        $this->trace->traceException(
+                            $ex,
+                            null,
+                            TraceCode::B2B_PAYMENTS_SETTLED_WITH_BANKING_PARTNER_FAILED,
+                            [
+                                'currency' => $currency,
+                                'settlement_currency' => $settlementCurrency,
+                                'error' => $ex->getMessage(),
+                            ]
+                        );
+
+                        $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_SETTLEMENT_CONVERT_CURRENCY_FAILED, [
+                            'sell_currency' => $currency,
+                            'action' => 'create_conversion',
+                        ]);
+
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE, null, [
                             'gateway' => Payment\Gateway::CURRENCY_CLOUD,
-                            'data' => $createConversionResponse['data'],
-                            'action' => "create_conversion",
+                            'action' => 'create_conversion',
                         ]);
                     }
-
-                    $createPaymentRequest['conversion_id'] = $createConversionResponse['data']['id'];
-                    $createPaymentRequest['amount'] = $createConversionResponse['data']['client_buy_amount'];
-
                 }
 
                 $this->app->mozart->sendMozartRequest('payments', $gateway, 'payment_create', $createPaymentRequest, 'v2');
@@ -3017,25 +3059,31 @@ class Service extends Base\Service
 
     /**
      * @throws LogicException
+     * @throws \Throwable
      */
-    private function setMerchantProductInternationalPACB(): void
+    private function setMerchantProductInternationalPACB($merchantID): void
     {
-        $enabledStatus = '1';
-
-        $productInternational = $this->merchant->getProductInternational();
-
-        $productPacbPosition = ProductInternationalMapper::PRODUCT_POSITION['products_pa_cb'];
-
-        $currentStatus = $productInternational[$productPacbPosition];
-
-        if ($currentStatus !== $enabledStatus)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantID)
         {
-            $productInternational[$productPacbPosition] = $enabledStatus;
+            $merchant = $this->repo->merchant->findByPublicId($merchantID);
 
-            $this->merchant->setProductInternational((string) $productInternational);
-        }
+            $enabledStatus = '1';
 
-        $this->repo->merchant->saveOrFail($this->merchant);
+            $productInternational = $this->merchant->getProductInternational();
+
+            $productPacbPosition = ProductInternationalMapper::PRODUCT_POSITION['products_pa_cb'];
+
+            $currentStatus = $productInternational[$productPacbPosition];
+
+            if ($currentStatus !== $enabledStatus)
+            {
+                $productInternational[$productPacbPosition] = $enabledStatus;
+
+                $merchant->setProductInternational((string) $productInternational);
+
+                $this->repo->merchant->saveOrFail($merchant);
+            }
+        });
     }
 
     public function isAsyncInternationalVirtualAccountActivationEnabled(string $merchantId): bool
@@ -3681,6 +3729,27 @@ class Service extends Base\Service
         }
 
         return preg_replace('/[^a-zA-Z0-9]+/', '', $payerAccount);
+    }
+
+    public function fetchMerchantIntegrationByParams($input)
+    {
+        // paramKey value can only be one of these values integration_entity,integration_key,reference_id
+        try {
+            (new Validator)->validateInput('fetch_merchant_integration_by_params', $input);
+            return (new InternationalIntegration\Core)->getByParamKey($input["paramKey"],$input["paramValue"]);
+        }
+        catch (\Exception $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::MII_FETCH_FAILED,
+                [
+                    'message' => 'MII Entry not found based on provided param condition',
+                    'input params'  => $input
+                ]
+            );
+            throw $ex;
+        }
     }
 
 

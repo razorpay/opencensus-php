@@ -2174,4 +2174,14 @@ return [
         'test_username' => env('CMS_TEST_USERNAME'),
         'test_password' => env('CMS_TEST_PASSWORD'),
     ],
+
+    'payments_bank_transfer_service' => [
+        'mock'      => env('PAYMENTS_BANK_TRANSFER_SERVICE_MOCK', false),
+        'username'  => env('PAYMENTS_BANK_TRANSFER_SERVICE_USERNAME', 'payments_bank_transfer_user'),
+        'secret'    => env('PAYMENTS_BANK_TRANSFER_SERVICE_SECRET','RANDOM_BTS_SECRET'),
+        'url'       => [
+            'live' => env('PAYMENTS_BANK_TRANSFER_SERVICE_LIVE_URL'),
+            'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
+        ],
+    ],
 ];

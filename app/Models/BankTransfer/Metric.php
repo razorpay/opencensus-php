@@ -13,4 +13,6 @@ class Metric
     const COLLECTX_UNEXPECTED_PAYMENT_TRANSFER_COUNT = "collectx_unexpected_payment_transfer_count";
     const B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED = "b2b_bank_account_fetch_account_by_currency_failed";
     const INTERNATIONAL_B2B_CURRENCY_CLOUD_BANK_ACCOUNT_CREATION_FAILED = "international_b2b_currency_cloud_bank_account_creation_failed";
+    const INTL_BANK_TRANSFER_SETTLEMENT_CONVERT_CURRENCY_FAILED = "intl_bank_transfer_settlement_convert_currency_failed";
+    const INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD = "intl_bank_transfer_empty_account_returned_from_currency_cloud";
 }

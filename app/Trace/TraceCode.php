@@ -8506,6 +8506,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INTERNATIONAL_INTEGRATION_DELETE           = 'MERCHANT_INTERNATIONAL_INTEGRATION_DELETE';
     const MERCHANT_INTERNATIONAL_INTEGRATION_DELETE_FAILED    = 'MERCHANT_INTERNATIONAL_INTEGRATION_DELETE_FAILED';
 
+
     // Merchant Owner Detail
     const MERCHANT_OWNER_DETAIL_SAVE                          = 'MERCHANT_OWNER_DETAIL_SAVE';
     const MERCHANT_OWNER_DETAIL_SAVE_FAILED                   = 'MERCHANT_OWNER_DETAIL_SAVE_FAILED';
@@ -11339,6 +11340,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_PAGE_SUBJECT_CREATION_FOR_INVOICE         = 'PAYMENT_PAGE_SUBJECT_CREATION_FOR_INVOICE';
 
     const UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS        = 'UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS';
+    const CROSS_BORDER_LIBRARY_VALUE                        = 'CROSS_BORDER_LIBRARY_VALUE';
+
 
     const SAVE_MERCHANT_METHODS                             = 'SAVE_MERCHANT_METHODS';
     const SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK             = 'SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK';
@@ -12871,6 +12874,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_COLLECTX_CLOSE_REQUEST                         = 'VIRTUAL_ACCOUNT_COLLECTX_CLOSE_REQUEST';
     const VIRTUAL_ACCOUNT_COLLECTX_CLOSE_RESPONSE                       = 'VIRTUAL_ACCOUNT_COLLECTX_CLOSE_RESPONSE';
     const DEACTIVATE_VIRTUAL_ACCOUNT_MOZART_REQUEST         = 'DEACTIVATE_VIRTUAL_ACCOUNT_MOZART_REQUEST';
+    const MII_FETCH_FAILED                                  = "MII_FETCH_FAILED";
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
