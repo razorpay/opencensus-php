@@ -1171,7 +1171,7 @@ class Service extends QrCode\Service
 
         if (($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) ===  false) and
             ($qrCode->source !== null) and
-            ($qrCode->getRequestSource !== RequestSource::EZETAP))
+            ($qrCode->getRequestSource() !== RequestSource::EZETAP))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_EXISTING_QR_CODE_ID, Entity::ID, [$id]);
         }

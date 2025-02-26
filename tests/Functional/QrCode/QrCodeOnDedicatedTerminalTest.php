@@ -2714,6 +2714,35 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($order['status'],'paid');
     }
 
+    public function testCallFetchQrCodeWithId()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $order = $this->createOrderForQrCode(
+            ['amount' => 4000],
+            'live',
+            'LiveAccountMer');
+
+        $this->createQrCode(['usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000,
+            'order_id' => $order['id'],
+            'request_source' => 'ezetap',
+        ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getDbLastEntity('qr_code', 'live');
+
+        $qrCode = $this->makeRequestAndGetContent([
+            'method' => 'GET',
+            'url' => '/v1/payments/qr_codes/qr_'. $qrCodeEntity['id']
+        ]);
+
+        $this->assertEquals('qr_'.$qrCodeEntity['id'], $qrCode['id']);
+    }
+
     public function testDelayedCallbackOnSingleUseQrCodeWithOrderIdForPosQr()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
