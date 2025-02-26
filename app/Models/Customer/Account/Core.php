@@ -231,10 +231,8 @@ class Core extends Base\Core
 
     protected function createCustomerViaCMS($customer, $input, $merchantId)
     {
-        $cmsService = new CMSService\Service($this->app);
         $cmsInput = $input;
-        $data = $cmsService->createCustomerV2($cmsInput, $merchantId);
-
+        $data = $this->app['cms']->createCustomerV2($cmsInput, $merchantId);
         (new Customer\Account\Transformations())->fillV2CustomerInfoInCustomerEntity($customer, $data);
     }
 

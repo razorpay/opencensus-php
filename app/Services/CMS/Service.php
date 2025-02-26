@@ -61,7 +61,7 @@ class Service {
      * @throws ServerErrorException
      * @throws BadRequestException
      */
-    public function createCustomerV2($input,$merchantId)
+    public function createCustomerV2($input, $merchantId)
     {
         $input = (new Transformations())->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
         return $this->sendRequest(self::CMS_ROUTES['create_customer'], 'post', $input);

@@ -939,7 +939,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $ignoredRelations = [
         self::ORDER,
         // Required as customer entity will be created via CMS and may not be present in API DB
-        ConstantsEntity::CUSTOMER
+        ConstantsEntity::CUSTOMER,
+        'globalCustomer',
     ];
 
     protected array $sensitiveFields = [

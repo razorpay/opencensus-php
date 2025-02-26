@@ -941,6 +941,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerCredcase();
 
         $this->registerCredcaseService();
+
+        $this->registerCMSService();
     }
 
     protected function registerCacheManager()
@@ -2973,6 +2975,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                 return new Mock\Route($app);
             }
             return new Route\Api($app);
+        });
+    }
+
+    protected function registerCMSService()
+    {
+        $this->app->singleton('cms', function($app)
+        {
+            return new CMS\Service($app);
         });
     }
 }
