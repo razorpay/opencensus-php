@@ -608,7 +608,7 @@ class Core extends QrCode\Core
         return false;
     }
 
-    protected function validateAndFetchTerminalIfAvailable(array $input, $additionalData = null)
+    public function validateAndFetchTerminalIfAvailable(array $input, $additionalData = null)
     {
 
         if ((isset($input['vpa']) === false) or
@@ -634,9 +634,14 @@ class Core extends QrCode\Core
         $vpa = strtolower($input['vpa']);
         $gateway = $this->fetchGatewayFromVpa($vpa);
 
-        $terminalDetails = [
-            TerminalEntity::MERCHANT_ID => $this->merchant->getId(),
-        ];
+        $terminalDetails = [];
+
+        if(empty($this->merchant) === false)
+        {
+            $terminalDetails = [
+                TerminalEntity::MERCHANT_ID => $this->merchant->getId(),
+            ];
+        }
 
         if (in_array($gateway, ['upi_airtel', 'upi_icici', 'upi_mindgate']))
         {
@@ -649,7 +654,7 @@ class Core extends QrCode\Core
 
         if ($gateway === null)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);

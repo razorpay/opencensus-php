@@ -845,6 +845,7 @@ class Route
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'qr_code_merchant_create'                  => ['post',     'payments/merchant/qr_codes',                     'QrCodeController@createQrForMerchant'                              ],
         'internal_qr_code_merchant_create'         => ['post',     'internal/payments/merchant/qr_codes',            'QrCodeController@createQrForMerchant'                              ],
+        'create_sqr_for_single_stack'              => ['post',     'payments/singlestack/qr_codes',                  'QrCodeController@createSqrWithVPA'                           ],
         'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                   'QrCodeController@setDeviceIdForQr'                              ],
         'qr_code_device_id_unmap'                  => ['put',      'payments/qr_codes/device/unmap',                 'QrCodeController@unMapDeviceIdForQr'                               ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
@@ -6991,6 +6992,7 @@ class Route
         'merchant_international_enablement_draft_internal',
         'merchant_fetch_bank_account_internal',
         'merchant_integration_get_by_param',
+        'create_sqr_for_single_stack'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17596,7 +17598,8 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
-            'create_qr_for_single_stack'
+            'create_qr_for_single_stack',
+            'create_sqr_for_single_stack'
         ],
 
         'billme' => [

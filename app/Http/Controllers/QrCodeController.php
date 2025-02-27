@@ -261,4 +261,17 @@ class QrCodeController extends Controller
         }
     }
 
+    public function createSqrWithVPA()
+    {
+        $input = Request::all();
+
+        $requestSource = Request::header(Constants::REQUEST_SOURCE);
+
+        $this->setRequestSourceIfApplicable($input, $requestSource);
+
+        $response = (new NonVAQrCodeService())->createSqrWithVPA($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

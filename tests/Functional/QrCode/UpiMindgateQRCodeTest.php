@@ -850,4 +850,31 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $this->assertTrue($response['success']);
     }
+
+    public function testCreateQrCodeForSingleStackMerchant()
+    {
+        $this->setMockSplitzTreatment();
+
+        $this->ba->appAuth();
+
+        $qrCode = $this->createQrForSingleStack([
+            'content' => [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+                'vpa'   => 'razorpay@hdfcbank'
+            ],
+            'url'     => '/payments/singlestack/qr_codes'
+        ]);
+
+        $this->assertEquals('LiveAccountMer', $qrCode['merchant_id']);
+
+        $qrCodeEntity = $this->getDbEntityById('qr_code', $qrCode['id'], 'live');
+
+        $this->assertEquals('multiple_use', $qrCodeEntity->getUsageType());
+        $this->assertNotNull($qrCodeEntity->getQrString());
+        $this->assertEquals('LiveAccountMer', $qrCodeEntity->getMerchantId());
+        $this->assertStringContainsString('razorpay@hdfcbank', $qrCodeEntity->getQrString());
+        $this->assertEquals(false, $qrCodeEntity->hasFixedAmount());
+        $this->assertEquals('upi_qr', $qrCodeEntity->getProvider());
+    }
 }

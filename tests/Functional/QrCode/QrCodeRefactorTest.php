@@ -3224,13 +3224,15 @@ class QrCodeRefactorTest extends TestCase
             'merchant_id' => 'LiveAccountMer',
         ]);
 
-        $this->createQrForSingleStack(
-            [
-                'merchant_id'        => 'LiveAccountMer',
-                'vpa'                => 'testvpa@rxairtel',
-                'device_id'          => '12345Test',
-                'qr_string'         => 'upi://pay?ver=01&pa=testvpa@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
-            ]);
+        $this->createQrForSingleStack([
+            'content'       => [
+                'merchant_id'   => 'LiveAccountMer',
+                'vpa'           => 'testvpa@rxairtel',
+                'device_id'     => '12345Test',
+                'qr_string'     => 'upi://pay?ver=01&pa=testvpa@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ],
+            'url'           => '/payments/terminal/qr_codes/device/create'
+        ]);
 
         $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
         $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
@@ -3297,13 +3299,15 @@ class QrCodeRefactorTest extends TestCase
 
         $this->app->instance('terminals_service', $terminalsServiceMock);
 
-        $this->createQrForSingleStack(
-            [
-                'merchant_id'        => 'LiveAccountMer',
-                'vpa'                => 'testvpa1@rxairtel',
-                'device_id'          => '12345Test',
-                'qr_string'         => 'upi://pay?ver=01&pa=testvpa1@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
-            ]);
+        $this->createQrForSingleStack([
+            'content'       => [
+                'merchant_id'   => 'LiveAccountMer',
+                'vpa'           => 'testvpa1@rxairtel',
+                'device_id'     => '12345Test',
+                'qr_string'     => 'upi://pay?ver=01&pa=testvpa1@rxairtel&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ],
+            'url'           => '/payments/terminal/qr_codes/device/create'
+        ]);
 
 
 
