@@ -13793,9 +13793,21 @@ class Core extends Base\Core
                                                                                                        'merchant_id' => $merchant->getId(),
                                                                                                    ]
             );
+
+            $this->trace->count( DetailMetric::ACTIVATION_FORM_SUBMIT_EVENT_FOR_CMMA_CASE_CREATION, [
+                "topic" => $activationFormSubmissionEventTopic,
+                "event_type"  => $eventType,
+                "status" => "success"
+            ]);
         }
         catch (\Throwable $ex)
         {
+            $this->trace->count( DetailMetric::ACTIVATION_FORM_SUBMIT_EVENT_FOR_CMMA_CASE_CREATION, [
+                "topic" => $activationFormSubmissionEventTopic,
+                "event_type"  => $eventType,
+                "status" => "failed"
+            ]);
+
             $this->trace->traceException(
                 $ex,
                 500,
@@ -13968,4 +13980,3 @@ class Core extends Base\Core
     }
 
 }
-
