@@ -1213,6 +1213,8 @@ return array(
 
     'append_gateway_payment_id_payu_exp_id' => env('APPEND_GATEWAY_PAYMENT_ID_PAYU_EXP_ID'),
 
+    'upi_recurring_optimizer_experiment_id' => env('UPI_RECURRING_OPTIMIZER_EXPERIMENT_ID'),
+
     'enabled_rearch_optimizer_recurring_flow' => env('ENABLED_REARCH_OPTIMIZER_RECURRING_FLOW'),
 
     'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),
