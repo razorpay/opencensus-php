@@ -26,10 +26,12 @@ use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Settings\Module;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Constants\Mode as EnvMode;
+use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Jobs\PayoutServiceDualWrite;
@@ -18490,5 +18492,109 @@ class RblBankingAccountStatementTest extends TestCase
 
         Queue::assertNotPushed(PayoutServiceDualWrite::class);
         Queue::assertPushed(AccountStatementDualWrite::class, 1);
+    }
+
+    public function testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataSuccess()
+    {
+        $this->ba->payoutInternalAppAuth('test');
+
+        /* @var Balance\Entity $balance */
+        $balance = $this->fixtures->create('balance', [
+            'id'             => '11111111111110',
+            'merchant_id'    => '10000000000000',
+            'account_number' => '0004001156789',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl'
+        ]);
+
+        /* @var BasDetails\Entity $basd */
+        $basd = $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000007',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000000',
+            BasDetails\Entity::BALANCE_ID                          => '11111111111110',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2224440041626007',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 100,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123400,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 0,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123400
+        ]);
+
+        $this->fixtures->create('settings', [
+            'key'         => 'last_fetched_at',
+            'value'       => 0,
+            'entity_id'   => '11111111111110',
+            'entity_type' => 'balance',
+            'module'      => 'balance'
+        ]);
+
+        $this->startTest();
+
+        $basd->reload();
+
+        $settingsAccessor = Accessor::for($balance, Module::BALANCE);
+        $settings         = $settingsAccessor->all()->toArray();
+
+        $this->assertEquals(1000000000, $basd->getLastStatementAttemptAt());
+        $this->assertEquals(1000000000, $settings['last_fetched_at']);
+    }
+
+    public function testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataValidationError()
+    {
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataNoAction()
+    {
+        $this->ba->payoutInternalAppAuth('test');
+
+        $this->testData[__FUNCTION__] = $this->testData['testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataSuccess'];
+
+        /* @var Balance\Entity $balance */
+        $balance = $this->fixtures->create('balance', [
+            'id'             => '11111111111110',
+            'merchant_id'    => '10000000000000',
+            'account_number' => '0004001156789',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl'
+        ]);
+
+        /* @var BasDetails\Entity $basd */
+        $basd = $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000007',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000000',
+            BasDetails\Entity::BALANCE_ID                          => '11111111111110',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2224440041626007',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 100,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123400,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 0,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123400,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 1000000001
+        ]);
+
+        $this->fixtures->create('settings', [
+            'key'         => 'last_fetched_at',
+            'value'       => 1000000001,
+            'entity_id'   => '11111111111110',
+            'entity_type' => 'balance',
+            'module'      => 'balance'
+        ]);
+
+        $this->startTest();
+
+        $basd->reload();
+
+        $settingsAccessor = Accessor::for($balance, Module::BALANCE);
+        $settings         = $settingsAccessor->all()->toArray();
+
+        $this->assertEquals(1000000001, $basd->getLastStatementAttemptAt());
+        $this->assertEquals(1000000001, $settings['last_fetched_at']);
     }
 }

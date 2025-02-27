@@ -210,6 +210,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LAST_STATEMENT_ATTEMPT_AT, $currentTime);
     }
 
+    public function updateLastStatementAttemptAt(int $lastAttemptAt)
+    {
+        $this->setAttribute(self::LAST_STATEMENT_ATTEMPT_AT, $lastAttemptAt);
+    }
+
     public function setBalanceLastFetchedAt(int $currentTime)
     {
         $this->setAttribute(self::BALANCE_LAST_FETCHED_AT, $currentTime);

@@ -242,4 +242,42 @@ class Core extends Base\Core
 
         $this->updateBasDetailsInPayoutService($basDetails->getId(), $data);
     }
+
+    public function updateStatementLastFetchedData(array $input)
+    {
+        (new Validator)->validateInput(Validator::UPDATE_STATEMENT_LAST_FETCHED_DATA_INPUT, $input);
+
+        $statementUpdateInput = $input['input'];
+
+        $id = $statementUpdateInput[Entity::ID];
+
+        /* @var Entity $basDetailEntity */
+        $basDetailEntity = $this->repo->banking_account_statement_details->find($id);
+
+        if ($basDetailEntity != null &&
+            $basDetailEntity->getLastStatementAttemptAt() > $statementUpdateInput['last_statement_attempt_at']
+        )
+        {
+            $this->trace->info(
+                TraceCode::UPDATE_STATEMENT_LAST_FETCHED_DATA_NO_ACTION,
+                [
+                    'input'         => $statementUpdateInput,
+                    'current_value' => $basDetailEntity->getLastStatementAttemptAt()
+                ]
+            );
+
+            return ['status' => 'success'];
+        }
+
+        // Update BASD table
+        $basDetailEntity->updateLastStatementAttemptAt($statementUpdateInput['last_statement_attempt_at']);
+        $this->repo->saveOrFail($basDetailEntity);
+
+        // Update Settings table
+        /* @var \RZP\Models\Merchant\Balance\Entity $balanceEntity */
+        $balanceEntity = $basDetailEntity->balance;
+        $balanceEntity->updateLastFetchedAtTo($statementUpdateInput['last_statement_attempt_at']);
+
+        return ['status' => 'success'];
+    }
 }

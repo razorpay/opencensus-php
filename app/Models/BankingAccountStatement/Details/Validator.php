@@ -8,6 +8,7 @@ class Validator extends Base\Validator
 {
     const PRE_FETCH_RULES = 'pre_fetch';
     const STATUS_UPDATE_RULES = 'status_update';
+    const UPDATE_STATEMENT_LAST_FETCHED_DATA_INPUT = 'update_statement_last_fetched_data_input';
 
     protected static $createRules = [
         Entity::BALANCE_ID                          => 'required|size:14',
@@ -23,6 +24,13 @@ class Validator extends Base\Validator
     protected static $preFetchRules = [
         Entity::CHANNEL             => 'required|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+    ];
+
+    protected static $updateStatementLastFetchedDataInputRules = [
+        'entity_type'                                     => 'required',
+        'input'                                           => 'required|array',
+        'input' . '.' . Entity::ID                        => 'required|string',
+        'input' . '.' . Entity::LAST_STATEMENT_ATTEMPT_AT => 'required|epoch',
     ];
 
     protected static $statusUpdateRules = [

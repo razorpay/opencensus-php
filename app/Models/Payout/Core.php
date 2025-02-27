@@ -9110,6 +9110,20 @@ class Core extends Base\Core
                 $input
             );
         }
+        else if (array_key_exists('entity_type', $input) === true && ($input['entity_type'] == 'accounts_bas'))
+        {
+            $response = (new BankingAccountStatement\Details\Core())->updateStatementLastFetchedData($input);
+
+            $this->trace->info(
+                TraceCode::ACCOUNTS_DUAL_WRITE_COMPLETE,
+                [
+                    'input'    => $input,
+                    'response' => $response
+                ]
+            );
+
+            return $response;
+        }
         else
         {
             PayoutServiceDualWrite::dispatch($this->mode, $input);
