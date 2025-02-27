@@ -12834,6 +12834,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_VALIDATE_GIFT_CARD_REQUEST                            = 'GATEWAY_VALIDATE_GIFT_CARD_REQUEST';
     const VALIDATE_GIFT_CARD_SUCCESS                                    = 'VALIDATE_GIFT_CARD_SUCCESS';
+    const GIFT_CARDS_REARCH_SPLITZ_RESPONSE                             = 'GIFT_CARDS_REARCH_SPLITZ_RESPONSE';
+
+    const GIFT_CARDS_REARCH_SPLITZ_ERROR                                = 'GIFT_CARDS_REARCH_SPLITZ_ERROR';
 
     const BAD_REQUEST_QR_ALREADY_MAPPED= 'BAD_REQUEST_QR_ALREADY_MAPPED';
 

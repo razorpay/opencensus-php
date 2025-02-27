@@ -315,6 +315,11 @@ class Processor
     const NETBANKING_PAYMENTS_VIA_PGROUTER = 'netbanking_payments_via_pg_router';
 
     /**
+     * Splitz Experiment to control gift_cards traffic to rearch
+     */
+    const GIFTCARDS_PAYMENTS_VIA_PGROUTER_EXPERIMENT_ID = 'app.gift_cards_payments_via_pg_router_experiment_id';
+
+    /**
      * Razorx flag to decide if payments should go via pg-router to UPS.
      */
     const UPS_PAYMENTS_VIA_PGROUTER = 'ups_payments_via_pg_router';
@@ -4369,6 +4374,62 @@ class Processor
         return false;
     }
 
+    private function canRouteThroughGiftCardsRearchFlow($input): bool {
+
+        if ($input[Payment\Entity::METHOD] !== Payment\METHOD::GIFT_CARDS)
+        {
+            return false;
+        }
+
+        // test mode not supported on rearch
+        if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
+        {
+            return false;
+        }
+
+        $merchant = $this->app['basicauth']->getMerchant();
+        $experimentId = $this->app['config']->get(self::GIFTCARDS_PAYMENTS_VIA_PGROUTER_EXPERIMENT_ID);
+
+        $properties = [
+            'id'            => $this->app['request']->getTaskId(),
+            'experiment_id' => $experimentId,
+            'request_data'  => json_encode(['merchant_id' => $merchant->getId(), 'mode' => $this->mode]),
+        ];
+
+        try
+        {
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::GIFT_CARDS_REARCH_SPLITZ_RESPONSE, [
+                'merchant_id' => $merchant->getId(),
+                'experiment_id' => $experimentId,
+                'splitz_response' => $response,
+                'variant' => $variant
+            ]);
+
+            if ($variant !== 'variant_on') {
+
+                return false;
+            }
+
+            return true;
+        }
+        catch (\Throwable $ex)
+        {
+
+            $this->trace->info(TraceCode::GIFT_CARDS_REARCH_SPLITZ_ERROR, [
+                'merchant_id' => $merchant->getId(),
+                'experiment_id' => $experimentId,
+                'exception' => $ex
+            ]);
+
+            return false;
+        }
+    }
+
     private function performEmandateRearchFlowChecks(array $input, Merchant\Entity $merchant, string $currentRouteName): array
     {
         $routeViaReArch = true;
@@ -4870,7 +4931,8 @@ class Processor
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input, $isUpiDfb) === true) or
                 ($this->canRouteFpxThroughRearchFlow($input) === true) or
-                ($this->canRouteEmandateThroughRearchFlow($input) === true)))
+                ($this->canRouteEmandateThroughRearchFlow($input) === true) or
+                ($this->canRouteThroughGiftCardsRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 
