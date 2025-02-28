@@ -1,5 +1,6 @@
-import { test as playwrightTest, expect, Page, TestInfo, Response } from '@playwright/test';
+import { test as _test, expect, Page, TestInfo, Response } from '@playwright/test';
 import { routes } from '../constants';
+import { pushSRData } from '.';
 
 // Utility function to set a value in localStorage
 async function setTestConfigInLocalStorageForAnalytics(page: Page, testInfo: TestInfo) {
@@ -15,7 +16,7 @@ async function setTestConfigInLocalStorageForAnalytics(page: Page, testInfo: Tes
   }, info);
 }
 
-function extractDevstackLabel(url: string): string {
+function extractDevstackLabel(url: string = ''): string {
   // Regular expression pattern to extract ITF label
   const pattern = /itf[\w\d]+/;
 
@@ -41,11 +42,11 @@ type ExtendedPage = Omit<Page, 'goto'> & {
 };
 
 // Extend the test with the new ExtendedPage type
-const testExtended = playwrightTest.extend<{
+const testExtended = _test.extend<{
   page: ExtendedPage;
 }>({
   // @ts-ignore
-  page: async ({ page }: { page: Page }, use: typeof playwrightTest.use, testInfo: TestInfo) => {
+  page: async ({ page }: { page: Page }, use, testInfo: TestInfo) => {
     await page.goto(routes.DASHBOARD);
     await setTestConfigInLocalStorageForAnalytics(page, testInfo);
 
@@ -61,20 +62,30 @@ const testExtended = playwrightTest.extend<{
       }
 
       // Custom logic for handling the URL change
-      await page.evaluate((url: string) => {
+      const domain = await page.evaluate((url: string) => {
         window.history.pushState({}, '', url);
         dispatchEvent(new PopStateEvent('popstate', {}));
       }, url);
 
       // Extract domain and generate Grafana URL
-      const domain = await page.evaluate(() => window.location.origin);
-      const devstackLabel = extractDevstackLabel(domain);
+      const devstackLabel = extractDevstackLabel(domain as unknown as string);
+      const grafanaUrl = `https://grafana.np.razorpay.in/d/fffac27f-2f8f-477b-879c-0efbee34b653/merchant-dashboard-devstack?orgId=1&var-namespace=All&var-deployment=All&var-devstack_label=${devstackLabel}&from=now-2d&to=now`;
+      console.log(`Devstack label: ${devstackLabel}`);
+      console.log(`Grafana URL: ${grafanaUrl}`);
       return null; // Return null explicitly to match the expected return type
     };
 
-    // Use the extended page in the test
-    // @ts-ignore
     await use(page);
+    await pushSRData({ testInfo });
+  },
+});
+
+// This is only to be used for login e2es
+const playwrightTest = _test.extend({
+  // @ts-ignore
+  page: async ({ page }, use, testInfo) => {
+    await use(page);
+    await pushSRData({ testInfo });
   },
 });
 

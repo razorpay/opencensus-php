@@ -68,6 +68,12 @@
   },
   "nx": {
     "targets": {
+      "test:e2e": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/self-serve"
+        }
+      },
       "test:jest": {
         "executor": "nx:run-commands",
         "options": {

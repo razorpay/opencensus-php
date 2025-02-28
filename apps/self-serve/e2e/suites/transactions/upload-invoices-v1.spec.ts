@@ -1,6 +1,6 @@
-import { getStorageStatePath } from '@libs/shared-utils/tests/e2e/constants/paths';
+import { getStorageStatePath } from '@libs/shared-qsuite/playwright';
 import { expect, test } from '../../utils/base';
-import { uploadInvoices, BASE_PATH } from '../../constants';
+import { uploadInvoices } from '../../constants';
 
 import {
   assertColumnsVisibility,
@@ -11,7 +11,7 @@ import {
 
 test.describe.parallel('Transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show payments list in Upload Invoices', async ({ page }) => {

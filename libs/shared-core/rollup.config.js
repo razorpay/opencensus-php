@@ -22,7 +22,8 @@ module.exports = withNx(
       './src/plugins/withDashboardCore/core/withDashboardJest/transformers/fileTransformer.jest.ts',
       './src/plugins/withDashboardCore/core/withDashboardPlaywright/scripts/addProdCommit.playwright.ts',
       './src/plugins/withDashboardCore/core/withDashboardPlaywright/scripts/initializeE2EInfra.playwright.ts',
-      './src/plugins/withDashboardCore/core/withDashboardPlaywright/scripts/global-setup.playwright.ts',
+      './src/plugins/withDashboardCore/core/withDashboardPlaywright/scripts/auth.global-setup.playwright.ts',
+      './src/plugins/withDashboardCore/core/withDashboardPlaywright/scripts/config.global-setup.playwright.ts',
     ],
   },
   {

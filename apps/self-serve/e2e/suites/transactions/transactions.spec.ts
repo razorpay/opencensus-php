@@ -1,12 +1,11 @@
-import { getStorageStatePath } from '@libs/shared-utils/tests/e2e/constants/paths';
+import { getStorageStatePath } from '@libs/shared-qsuite/playwright';
 import { expect, test } from '../../utils/base';
-import { BASE_PATH } from '../../constants';
 
 import { navigateToTransactions } from '../../utils';
 
 test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test('should show Batch Upload modal in Batch Payments', async ({ page }) => {

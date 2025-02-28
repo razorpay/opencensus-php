@@ -12,8 +12,8 @@ export const withDashboardPlaywright: WithDashboardJestType = (args) => {
   const globalSetup =
     // @ts-ignore
     targetProject === 'Login'
-      ? path.resolve(DASHBOARD_ROOT, 'libs/shared-core/dist/global-setup.playwright.cjs')
-      : undefined;
+      ? path.resolve(DASHBOARD_ROOT, 'libs/shared-core/dist/auth.global-setup.playwright.cjs')
+      : path.resolve(DASHBOARD_ROOT, 'libs/shared-core/dist/config.global-setup.playwright.cjs');
 
   const config: PlaywrightConfigType = {
     testMatch: ['**/?(*.)+(spec).[jt]s?(x)'],

@@ -46,6 +46,7 @@ export const playwrightEnvs = {
   MOBILE_TEST_MODE_POS_KYC_STATUS_NC: process.env.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
   POS_SALES_AGENT_USERNAME: process.env.POS_SALES_AGENT_USERNAME,
   POS_SALES_AGENT_PASSWORD: process.env.POS_SALES_AGENT_PASSWORD,
+  E2E_SR_LUMBERJACK_KEY: process.env.LUMBERJACK_KEY,
 
   TEST_ENV: process.env.TEST_ENV ?? 'devstack',
 };
@@ -69,6 +70,7 @@ export const getStorageStatePath = (targetMode?: 'live' | 'test') => {
     RESELLER_PARTNER_POS_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-pos-desktop-test-mode-login.json`,
     RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
     SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
+    POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
   };
 
   const isTestMode = mode === 'test';

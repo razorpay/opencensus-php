@@ -1,7 +1,7 @@
-import { getStorageStatePath, routes } from '@libs/shared-utils/tests/e2e/constants/paths';
+import { getStorageStatePath, routes } from '@libs/shared-qsuite/playwright';
 import { expect, test } from '../../utils/base';
 
-import { payments, BASE_PATH } from '../../constants';
+import { payments } from '../../constants';
 import {
   navigateToTransactions,
   gotoTransactionDetailsPageById,
@@ -17,7 +17,7 @@ import {
 test.describe
   .parallel('Payments transactions (Test Mode) @flow=transactions @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.describe.parallel('Transactions Landing screen Overview section', () => {

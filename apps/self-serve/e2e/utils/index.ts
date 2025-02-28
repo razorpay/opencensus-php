@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { routes } from '@libs/shared-utils/tests/e2e/constants/paths';
+import { routes } from '@libs/shared-qsuite/playwright';
 import { expect } from './base';
 // import { formatPhoneNumber } from '@razorpay/i18nify-js';
 

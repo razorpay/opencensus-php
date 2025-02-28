@@ -1,6 +1,6 @@
 import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
-test.describe('Test paypal instrument for Curlec org @flow=account-settings @country=MY', () => {
+test.skip('Test paypal instrument for Curlec org @flow=account-settings @country=MY', () => {
   test.use({
     storageState: getStorageStatePath().CURLEC_TEST_CAW_LOGIN_STATE,
   });

@@ -1,17 +1,15 @@
-import { getStorageStatePath, routes } from '@libs/shared-utils/tests/e2e/constants/paths';
-import { navigateTo } from '@libs/shared-utils/tests/e2e/utils/common';
-import { BASE_PATH, payments } from '../../constants';
+import { getStorageStatePath, routes } from '@libs/shared-qsuite/playwright';
+import { payments } from '../../constants';
 import { expect, test } from '../../utils/base';
-import { gotoTransactionDetailsPageById } from '../..//utils';
+import { gotoTransactionDetailsPageById } from '../../utils';
 
 test.describe
   .parallel('Payments transactions (Live Mode) @flow=transactionsV1 @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH, 'test').ACTIVATED_RZP_MERCHANT,
+    storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
   test.beforeEach(async ({ page }) => {
-    await navigateTo(page, routes.PAYMENTS);
     await page.goto(routes.PAYMENTS);
   });
   test.describe.parallel('Payment details', () => {

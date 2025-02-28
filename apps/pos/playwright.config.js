@@ -1,8 +1,8 @@
-const { withDashboardCore } = require('@libs/shared-core');
+const { withDashboardCore, DASHBOARD_FEDERATED_MODULES } = require('@libs/shared-core');
 
 module.exports = withDashboardCore({
   playwrightOptions: {
-    moduleName: 'POS',
+    moduleName: DASHBOARD_FEDERATED_MODULES.POS,
   },
   extendPlaywrightConfig: (config) => {
     config.testDir = 'e2e/suites';

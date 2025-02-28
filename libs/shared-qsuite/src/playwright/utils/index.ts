@@ -1,10 +1,11 @@
-import { expect, ElementHandle } from '@playwright/test';
+import { expect, ElementHandle, TestInfo } from '@playwright/test';
+import { playwrightEnvs } from '../constants';
 // @ts-ignore
 import { formatPhoneNumber } from '@razorpay/i18nify-js';
 import moment from 'moment';
 import { COMMON_SELECTORS } from './selectors';
 import { routes } from '../constants';
-import {ExtendedPage as Page} from "./base";
+import { ExtendedPage as Page } from './base';
 
 export const getI18FormattedPhoneNumber = (contact: string): string => {
   try {
@@ -202,8 +203,104 @@ export const waitForLoader = async ({
   await expect(page.locator(selector)).not.toBeVisible();
 };
 
+// ================================
+//  Utils for Success Rate
+// ================================
+const removeTags = (str: string) => str.replace(/@.*$/i, '');
 
-export * from "./base";
-export * from "./common";
-export * from "./verification";
-export * from "./selectors";
+export const formatDataForSR = ({
+  file,
+  titlePath,
+  status,
+}: Pick<TestInfo, 'file' | 'titlePath' | 'status'>) => {
+  const formattedTitle = titlePath
+    .slice(1)
+    .map(removeTags)
+    .map((str) => str.trim())
+    .join(' | ')
+    .toLowerCase()
+    .trim();
+  const dataPoints = {
+    title: formattedTitle,
+    status: status === 'passed' ? 'passed' : 'failed',
+    module: file.toLowerCase(),
+  };
+  return dataPoints;
+};
+
+export const pushSRData = async ({ testInfo }: { testInfo: TestInfo }) => {
+  const isCI = process.env.CI;
+  const { E2E_SR_LUMBERJACK_KEY: LJ_KEY } = playwrightEnvs;
+  const { file, titlePath, status } = testInfo;
+
+  const metricName = 'merchant.dashboard.e2e.status';
+  const srData = formatDataForSR({ file, titlePath, status });
+  if (isCI) {
+    // push to querybook
+    const body = {
+      mode: 'live',
+      key: LJ_KEY,
+      events: [
+        {
+          event_type: 'pg-dashboard',
+          event: metricName,
+          event_version: 'v1',
+          timestamp: new Date().getTime(),
+          properties: {
+            ...srData,
+          },
+        },
+      ],
+    };
+
+    await fetch('https://lumberjack.razorpay.com/v1/track', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: true,
+    })
+      .then(() => {
+        console.log('Successfully pushed SR data');
+      })
+      .catch((e) => {
+        console.log('Error in pushing SR data', e);
+      });
+
+    // push to grafana
+    const myHeaders = new Headers();
+    myHeaders.append('Accept', '*/*');
+    myHeaders.append('Connection', 'keep-alive');
+    myHeaders.append('Content-Type', 'application/json');
+    const raw = JSON.stringify({
+      key: LJ_KEY,
+      metrics: [
+        {
+          name: metricName,
+          labels: [srData],
+        },
+      ],
+    });
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+    };
+    await fetch(
+      'https://lumberjack-metrics.razorpay.com/v1/frontend-metrics',
+      requestOptions,
+    ).catch(() => {});
+  } else {
+    console.log('SR Metric', srData);
+  }
+};
+
+// ================================
+//  End of Utils for Success Rate
+// ================================
+
+export * from './base';
+export * from './common';
+export * from './verification';
+export * from './selectors';

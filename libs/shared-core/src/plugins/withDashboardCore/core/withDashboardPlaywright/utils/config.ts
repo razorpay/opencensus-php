@@ -7,22 +7,22 @@ export const getReporter = () => {
   const playwrightAnalysisFolder = path.resolve(process.cwd(), '.playwright-analysis/analysis');
 
   return [
-    isCi && [
-      '@reportportal/agent-js-playwright',
-      {
-        apiKey: process.env.REPORT_PORTAL_TOKEN,
-        endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
-        project: process.env.REPORT_PORTAL_PROJECT,
-        launch: `${process.env.REPO_NAME}`,
-        skippedIssue: false,
-        attributes: [
-          {
-            key: 'build',
-            value: process.env.COMMIT_ID,
-          },
-        ],
-      },
-    ],
+    // isCi && [
+    //   '@reportportal/agent-js-playwright',
+    //   {
+    //     apiKey: process.env.REPORT_PORTAL_TOKEN,
+    //     endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
+    //     project: process.env.REPORT_PORTAL_PROJECT,
+    //     launch: `${process.env.REPO_NAME}`,
+    //     skippedIssue: false,
+    //     attributes: [
+    //       {
+    //         key: 'build',
+    //         value: process.env.COMMIT_ID,
+    //       },
+    //     ],
+    //   },
+    // ],
     isCi && ['dot'],
     [
       'html',

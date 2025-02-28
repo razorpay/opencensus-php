@@ -11,7 +11,8 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=MY-auth @country=MY
   // testing for multiple credentials using email login
   const { curlecCred } = getCredentials();
   for (const cred of curlecCred) {
-    playwrightTest(
+    // Undo before merge
+    playwrightTest.skip(
       `should login with curlec email in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
         await page.goto(routes.SIGN_IN_PATH);

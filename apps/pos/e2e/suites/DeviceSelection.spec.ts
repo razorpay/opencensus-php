@@ -1,21 +1,21 @@
-import { routes, getStorageStatePath } from '@dashboard/shared-utils/e2e/constants/paths';
-import { navigateTo } from '@dashboard/shared-utils/e2e/utils/common';
+import { routes, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 import { test, expect } from 'apps/pos/e2e/utils/test';
 import { waitForSalesAssistedScreenToLoad } from 'apps/pos/e2e/utils';
-import { BASE_PATH, STATUS_TEXT, ERROR_MESSAGES } from 'apps/pos/e2e/constants';
+import { STATUS_TEXT, ERROR_MESSAGES } from 'apps/pos/e2e/constants';
 import { queryMocks } from '../mocks/handlers';
 import path from 'path';
 
 test.describe
   .parallel('POS Device Selection & Ordering Step @flow=pos-sales-assisted @project=payments', () => {
   test.use({
-    storageState: getStorageStatePath(BASE_PATH).POS_SALES_AGENT,
+    storageState: getStorageStatePath().POS_SALES_AGENT,
   });
 
   test.beforeEach(async ({ page, worker }) => {
     await worker.use(queryMocks.SalesOnboardedMerchants);
     await worker.use(queryMocks.MerchantById);
-    await navigateTo(page, routes.DASHBOARD);
+    await page.goto(routes.DASHBOARD);
+    await expect(page).toHaveTitle(/Razorpay Dashboard/);
     await waitForSalesAssistedScreenToLoad({ page });
     await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
     await page.waitForSelector('text=Merchant Details');
