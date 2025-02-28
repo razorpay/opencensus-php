@@ -2455,58 +2455,6 @@ trait Authorize
         }
     }
 
-    public function autoCapturePaymentUsingOrderIfApplicable(Payment\Entity $payment)
-    {
-
-        $response = $this->shouldAutoCaptureOrder($payment);
-
-        // For Optimizer payments, additional check
-        // Ref : https://docs.google.com/document/d/1FQEGHojgb74pyBtS0r7t_qWg05XsZ_636UyYYkUNKdE/edit#
-        if($payment->isOptimizerCaptureSettingsEnabled() === true)
-        {
-            $response = $this->shouldAutoCaptureOptimizerExternalPgPayment($payment, $response);
-        }
-
-        if (isset($response) === false)
-        {
-            return;
-        }
-
-        $properties = $response ?? [];
-
-        if ($response['should_auto_capture'] === true)
-        {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_TRIGGERED_REASON,
-                [
-                    'reason'    => $response['reason'],
-                ]);
-
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
-
-            // If payment_capture was sent as true in order,
-            // then we capture it in this step only.
-            $this->autoCapturePayment($payment);
-//            return true;
-        }
-        elseif ($response['should_auto_capture'] === false)
-        {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => $response['reason'],
-                ]);
-
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NOT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
-
-            if ($this->shouldGatewayCapturePayment($payment) === true and
-                $payment->hasSubscription() === false)
-            {
-                $this->gatewayCapturePaymentViaQueue($payment);
-            }
-        }
-    }
-
     protected function updateLateAuthFlag(Payment\Entity $payment)
     {
         $payment->setLateAuthorized(false);
@@ -10633,8 +10581,7 @@ trait Authorize
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
             else if (($payment->hasOrder() === true) &&
-                     ($payment->isUpiTransfer() === false) &&
-                     ($payment->isQrV2UpiPayment() === false)
+                     ($payment->isUpiTransfer() === false)
             ) {
                 // adding isUpiTransfer check because icici upi transfer callback happens in direct auth
                 // this is a hack. other upi va callbacks might not need this check

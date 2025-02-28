@@ -12352,19 +12352,6 @@ class Processor
         }
 
         //
-        //  As Order is been associated with the payment here , if it is a qrv2 payment and has the order it will not be auto captured
-        //
-
-        if($payment->isQrV2UpiPayment() === true)
-        {
-            $response['should_auto_capture'] = false;
-
-            $response['reason'] = Constants::UPI_QR_CODE_PAYMENT;
-
-            return $response;
-        }
-
-        //
         // The flow would reach till here because subscription creates
         // an invoice, which in turn creates an order.
         //
