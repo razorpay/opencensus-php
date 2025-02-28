@@ -16,6 +16,7 @@ export const combineUserPayload = (res: Response) => {
     return {
       ...res.locals.user,
       ...res.locals.merchant_details,
+      activated: res.locals.user?.activated,
       role: res.locals.user?.role,
       updated_at: res.locals.user?.updated_at,
       created_at: res.locals.user?.created_at,

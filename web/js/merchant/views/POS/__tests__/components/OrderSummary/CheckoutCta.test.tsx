@@ -1,7 +1,12 @@
 import React from 'react';
 
 import CheckoutCta from 'merchant/views/POS/OrderSummary/CheckoutCta';
-import { MOCK_USER, MOCK_GTM } from 'merchant/views/POS/__tests__/mocks/fixtures';
+import {
+  MOCK_USER,
+  MOCK_GTM,
+  SUCCESSFUL_POS_ONBOARDING_RESPONSE,
+  FAILED_POS_ONBOARDING_RESPONSE,
+} from 'merchant/views/POS/__tests__/mocks/fixtures';
 import {
   createActvationCaseHandler,
   createOrderHandler,
@@ -14,6 +19,7 @@ import * as posServices from 'merchant/views/POS/services';
 import { PosDeviceStoreState, ProductPlans } from 'merchant/views/POS/types';
 import { render, screen, server, userEvent, waitFor, waitForElementToBeRemoved } from 'test-utils';
 import 'jest-location-mock';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const initProps = {
   isDisabled: false,
@@ -44,6 +50,12 @@ jest.mock('common/splitz', () => ({
     abExperiments: MOCK_GTM,
   }),
 }));
+
+jest.mock('common/splitz/utils', () => ({
+  isExperimentEnabled: jest.fn(),
+}));
+
+const mockIsExperimentEnabled = isExperimentEnabled as jest.Mock;
 
 describe('<CheckoutCta/>', () => {
   window.Razorpay = CheckoutMock;
@@ -489,6 +501,45 @@ describe('<CheckoutCta/>', () => {
     await userEvent.click(screen.getByText('Confirm Address & Pay'));
     await waitFor(() => {
       expect(screen.getByText('Pincode not serviceable! Arriving Soon.')).toBeVisible();
+    });
+  });
+
+  test('should call initiatePosOnboarding if isPOSEnabledForAPIMerchant is true', async () => {
+    const user = {
+      ...MOCK_USER,
+      submitted: true,
+      business_website: 'www.mock-website.com',
+      pos_activation_status: null,
+    };
+    mockIsExperimentEnabled.mockImplementation(() => true);
+
+    const initiatePosOnboardingSpy = jest
+      .spyOn(posServices, 'initiatePosOnboarding')
+      .mockResolvedValue(SUCCESSFUL_POS_ONBOARDING_RESPONSE);
+    renderApp(undefined, user);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    await waitFor(() => {
+      expect(initiatePosOnboardingSpy).toHaveBeenCalled();
+    });
+  });
+
+  test('should throw error if initiatePosOnboarding fails', async () => {
+    const user = {
+      ...MOCK_USER,
+      submitted: true,
+      business_website: 'www.mock-website.com',
+    };
+    mockIsExperimentEnabled.mockImplementation(() => true);
+
+    jest
+      .spyOn(posServices, 'initiatePosOnboarding')
+      .mockResolvedValue(FAILED_POS_ONBOARDING_RESPONSE);
+    renderApp(undefined, user);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    await waitFor(() => {
+      expect(screen.getByText('Something went wrong. Please try again')).toBeVisible();
     });
   });
 });

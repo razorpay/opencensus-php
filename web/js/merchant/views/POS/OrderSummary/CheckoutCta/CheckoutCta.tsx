@@ -7,6 +7,7 @@ import { compose } from 'redux';
 
 import rzpLogo from 'assets/rzp_logo.jpg';
 import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import {
   ACTIONS,
@@ -20,7 +21,12 @@ import {
   loadCheckoutForPos,
   preCheckoutAdditionalDetails,
 } from 'merchant/views/POS/helpers';
-import { createOrder, createActvationCase, getPincodeInfo } from 'merchant/views/POS/services';
+import {
+  createOrder,
+  createActvationCase,
+  getPincodeInfo,
+  initiatePosOnboarding,
+} from 'merchant/views/POS/services';
 import { ApiResponse, DeviceConfig, OrderDetailsItem } from 'merchant/views/POS/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -68,6 +74,7 @@ const CheckoutCta = ({
   const availableCities = typeof gtmCities === 'string' ? gtmCities.split(',') : [];
 
   const isPanIndiaLive = checkIfPanIndiaLive({ abExperiments });
+  const isPOSEnabledForAPIMerchant = isExperimentEnabled(abExperiments.pos_api_merchant_enablement);
 
   const isTermsAndConditionCheck = created_at ? created_at < POS_TERMS_AND_CONDITION_DATE : false;
 
@@ -113,6 +120,7 @@ const CheckoutCta = ({
     const { isRequired, url, isCaseCreateRequired } = preCheckoutAdditionalDetails({
       user: user as User,
     });
+
     analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
       label: 'Confirm Address & Pay',
       whatsAppUpdates: 'No',
@@ -121,6 +129,20 @@ const CheckoutCta = ({
       section: 'Pre-checkout',
       subSection: 'Pre-checkout',
     });
+
+    try {
+      if (isPOSEnabledForAPIMerchant) {
+        const initiatePosOnboardingRes = await initiatePosOnboarding();
+        if (!initiatePosOnboardingRes?.success) throw new Error();
+      }
+    } catch (error: unknown) {
+      handleOnPaymentFailure(
+        error instanceof Error && error?.message
+          ? error.message
+          : 'Something went wrong. Please try again',
+        true,
+      );
+    }
 
     if (isRequired && url) {
       setAdditionalInfoModal(() => ({ isRequired, url }));

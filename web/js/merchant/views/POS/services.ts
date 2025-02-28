@@ -181,13 +181,16 @@ export const agreeToPosMerchantAgreement = async ({
 };
 
 interface PosOnboardingInitiateResponse {
-  workflow_id: string;
-  downstream_status_code: number;
+  status_code: number;
+  success: boolean;
+  data: {
+    workflow_id: string;
+    downstream_status_code: number;
+  };
 }
 
-export const initiatePosOnboarding = async (): Promise<PosOnboardingInitiateResponse> => {
-  return await merchantFetch({
+export const initiatePosOnboarding = async (): Promise<PosOnboardingInitiateResponse> =>
+  merchantFetch({
     url: 'pg/onboarding/initiate_pos_onboarding',
     method: 'post',
   });
-};

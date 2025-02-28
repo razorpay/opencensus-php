@@ -984,6 +984,24 @@ export const MOCK_PRODUCT_OFFERS = {
   },
 };
 
+export const SUCCESSFUL_POS_ONBOARDING_RESPONSE = {
+  status_code: 200,
+  success: true,
+  data: {
+    workflow_id: 'mock-workflow-id',
+    downstream_status_code: 200
+  }
+}
+
+export const FAILED_POS_ONBOARDING_RESPONSE = {
+  status_code: 500,
+  success: false,
+  data: {
+    workflow_id: 'mock-workflow-id',
+    downstream_status_code: 500
+  }
+}
+
 interface GetMockModularResponse {
   consented?: string;
   isCustomRateEnabled?: boolean;

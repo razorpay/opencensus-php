@@ -29,12 +29,12 @@ export class ShellRedirectionService {
       };
     }
 
-    const currentMerchant = this.data?.user?.merchant;
+    const currentMerchant = this.data?.user?.current;
 
-    if (!currentMerchant) {
+    if (!Boolean(currentMerchant)) {
       this.request.shellLogger.warn({
         moduleName: '@shellRedirectionService',
-        message: 'No merchant found',
+        message: 'No merchant id found',
       });
 
       return { destination: AppConstants.DESTINATION_PHP_BE };

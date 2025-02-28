@@ -76,8 +76,7 @@ function ReserveBalance({
   const showReserveBalanceSelfServeButton =
     !user.isOrgAxis &&
     user.isReserveBalanceSelfServeEnabled &&
-    [rolesList.OWNER, rolesList.ADMIN].includes(user.role) &&
-    !user.isCreditSelfServeDisabled;
+    [rolesList.OWNER, rolesList.ADMIN].includes(user.role);
 
   return (
     <Card>
@@ -128,22 +127,24 @@ function ReserveBalance({
                 type="reserve_balance"
                 submitHandler={fetchReserveBalanceAfterWithdrawal}
               />
-              <div>
-                <Button
-                  variant="secondary"
-                  isDisabled={mode !== 'live'}
-                  onClick={() => handlAddFunds('reserve')}
-                >
-                  Add Funds
-                </Button>
-                {mode !== 'live' ? (
-                  <Popover align="bottom" theme="dark">
-                    <PopoverBody>
-                      You cannot add funds in test mode. Switch to live mode to add funds.
-                    </PopoverBody>
-                  </Popover>
-                ) : null}
-              </div>
+              {!user.isCreditSelfServeDisabled ? (
+                <div>
+                  <Button
+                    variant="secondary"
+                    isDisabled={mode !== 'live'}
+                    onClick={() => handlAddFunds('reserve')}
+                  >
+                    Add Funds
+                  </Button>
+                  {mode !== 'live' ? (
+                    <Popover align="bottom" theme="dark">
+                      <PopoverBody>
+                        You cannot add funds in test mode. Switch to live mode to add funds.
+                      </PopoverBody>
+                    </Popover>
+                  ) : null}
+                </div>
+              ) : null}
             </Box>
           ) : null}
         </Box>

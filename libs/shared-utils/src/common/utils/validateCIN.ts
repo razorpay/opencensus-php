@@ -14,7 +14,7 @@
  */
 export function validateCIN(value: string | null | undefined, type: string = 'CIN'): true | string {
   if (value) {
-    if (value.length !== 21 && type === 'CIN') {
+    if (value.length != 21 && type === 'CIN') {
       return 'CIN length must be 21 characters';
     } else if (
       !/^([a-z]{3}-\d{4}|([F|f]\w{3}-\d{4})|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i.test(value)
@@ -22,6 +22,4 @@ export function validateCIN(value: string | null | undefined, type: string = 'CI
       return `Please provide a valid ${type}`;
     }
   }
-  
-  return true; // Return true if all validations pass
 }

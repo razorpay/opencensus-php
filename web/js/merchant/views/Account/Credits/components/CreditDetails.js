@@ -135,8 +135,7 @@ function CreditDetails({
     analyticsTrack(clickHistoryCreditsGA(title));
   };
 
-  const showSelfServeButtons =
-    [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && !user.isCreditSelfServeDisabled;
+  const showSelfServeButtons = [rolesList.OWNER, rolesList.ADMIN].includes(user.role);
 
   return (
     <Card>
@@ -177,24 +176,26 @@ function CreditDetails({
                 type={type}
                 submitHandler={fetchCreditBalance}
               />
-              <Box width={{ base: '100%', s: '185px' }}>
-                <Button
-                  isFullWidth
-                  variant="secondary"
-                  isDisabled={mode !== 'live'}
-                  onClick={() => addCreditsHandler(type)}
-                >
-                  Add {title}
-                </Button>
-                {mode !== 'live' ? (
-                  <Popover align="bottom" theme="dark">
-                    <PopoverBody>
-                      You cannot add {type} credits in test mode. Switch to live mode to add
-                      credits.
-                    </PopoverBody>
-                  </Popover>
-                ) : null}
-              </Box>
+              {!user.isCreditSelfServeDisabled ? (
+                <Box width={{ base: '100%', s: '185px' }}>
+                  <Button
+                    isFullWidth
+                    variant="secondary"
+                    isDisabled={mode !== 'live'}
+                    onClick={() => addCreditsHandler(type)}
+                  >
+                    Add {title}
+                  </Button>
+                  {mode !== 'live' ? (
+                    <Popover align="bottom" theme="dark">
+                      <PopoverBody>
+                        You cannot add {type} credits in test mode. Switch to live mode to add
+                        credits.
+                      </PopoverBody>
+                    </Popover>
+                  ) : null}
+                </Box>
+              ) : null}
             </Box>
           ) : null}
         </Box>
