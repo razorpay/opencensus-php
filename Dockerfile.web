@@ -55,6 +55,9 @@ RUN --mount=type=secret,id=git_token,required=true set -eux && \
     make error-module-fetch && \
     rm -f ~/.netrc
 
+# Add TIFF Support for ImageMagick
+RUN apk add --no-cache imagemagick imagemagick-dev tiff tiff-dev libjpeg-turbo-dev
+
 EXPOSE 80
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.web.sh"]
