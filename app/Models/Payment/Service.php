@@ -1778,7 +1778,9 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
-        if ($this->auth->isAppAuth() && $this->auth->isRouteApp())
+        $isRouteAppAuth = $this->auth->isAppAuth() && $this->auth->isRouteApp();
+
+        if ($isRouteAppAuth)
         {
             $payment = $this->repo->payment->findByPublicId($id);
 
@@ -1787,7 +1789,7 @@ class Service extends Base\Service
             $this->auth->setMerchant($this->merchant);
         }
 
-        if ((new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input))
+        if (($isRouteAppAuth == false) and (new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input))
         {
             $resp = $this->app['route']->createPaymentTransfer($id, $input);
 
