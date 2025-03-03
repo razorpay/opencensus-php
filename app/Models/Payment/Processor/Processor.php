@@ -9319,8 +9319,19 @@ class Processor
                 ($token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)) {
                 $response = [
                     'razorpay_payment_id' => $payment->getPublicId(),
-                    'token_id' => $token->getPublicId(),
                 ];
+
+                if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+                    ($this->app->runningInQueue() === false))
+                {
+                    if ($payment->hasOrder() === true)
+                    {
+                        $this->fillReturnDataWithOrder($payment, $response);
+                    }
+                }
+
+                $response['token_id'] = $token->getPublicId();
+
                 return $response;
             }
         }
