@@ -33,19 +33,36 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Check If Skip Applicable
+        id: check-skip
+        run: |
+          URL="https://dashboard-assets.np.razorpay.in/dashboard/ci-archive/dashboard-core/skipped-workflows/.playwright/${{ github.sha }}.json"
+          echo "Checking if skip file exists: $URL"
+          if curl --head --silent --fail "$URL" > /dev/null; then
+            echo "skip_job=true" >> $GITHUB_OUTPUT
+            echo "Skip file exists. Exiting job successfully."
+            exit 0
+          else
+            echo "skip_job=false" >> $GITHUB_OUTPUT
+            echo "Not applicable"
+          fi
+
       - name: Install And Cache Dependencies
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         uses: ./.github/actions/install-dependencies
         with:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Set Playwright Browsers Path
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         run: echo "PLAYWRIGHT_BROWSERS_PATH=./playwright-browsers" >> $GITHUB_ENV
 
       - name: Install Playwright with Chromium, Binaries
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         run: npx playwright install --with-deps chromium
 
       - name: Set Target Projects
-        # TODO: Find a better name for output
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         id: target-projects-with-newauth
         run: |
           if [[ -n "${{ inputs.playwright_configured_affected_apps_comma_sep }}" ]]; then
@@ -57,12 +74,14 @@ jobs:
           echo "playwright_configured_affected_apps_with_newauth_comma_sep=$PROJECTS_WITH_NEWAUTH" >> $GITHUB_OUTPUT
       
       - name: Get Project Dirs Map
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         id: get-project-dirs
         uses: ./.github/actions/get-project-dirs
         with:
           targetProjects: ${{ steps.target-projects-with-newauth.outputs.playwright_configured_affected_apps_with_newauth_comma_sep }}
 
       - name: Playwright Rerun Analysis
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         env:
           GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
           COMMIT_SHA: ${{ github.sha }}
@@ -70,6 +89,7 @@ jobs:
           node .github/scripts/playwright-rerun-analyser.js ${{ inputs.playwright_configured_affected_apps_comma_sep }} ${{ steps.get-project-dirs.outputs.project_roots }}
 
       - name: Echo Playwright Rerun Analysis Results
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         id: validate-playwright-rerun-analysis
         run: |
           echo "Validating environment variables set by the previous script..."
@@ -79,11 +99,13 @@ jobs:
           echo "FILTERED_PROJECTS_FOR_FAILED_RERUN: ${FILTERED_PROJECTS_FOR_FAILED_RERUN}"
 
       - name: Update Downstream Dependencies
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         timeout-minutes: 2
         run: pnpm nx test:e2e:add-prod-commits
 
       - name: Generate Devstack Labels
         id: generate-devstack-labels
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         run: |
           COMMIT_SHA="${{ github.sha }}"
           COMMIT_LABEL="e2e${COMMIT_SHA:0:8}"
@@ -95,6 +117,7 @@ jobs:
 
       - name: Prepare Infra For E2Es
         run: pnpm nx test:e2e:infra
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         timeout-minutes: 20
         env:
           COMMIT_ID: ${{ github.sha }}
@@ -108,6 +131,7 @@ jobs:
 
       - name: Login & Redirection E2Es (Mandatory Run)
         id: login-e2e-tests
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         continue-on-error: true
         env:
           CI: true
@@ -131,7 +155,7 @@ jobs:
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
           REPO_NAME: ${{ github.event.repository.name }}
           FILTERED_PROJECTS_FOR_FAILED_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN }}
-        if: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN != '' }}
+        if: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN != '' && steps.check-skip.outputs.skip_job == 'false' }}
         run: |
           pnpm nx run-many \
             -t test:e2e \
@@ -151,7 +175,7 @@ jobs:
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
           REPO_NAME: ${{ github.event.repository.name }}
           FILTERED_PROJECTS_FOR_FULL_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN }}
-        if: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN != '' }}
+        if: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN != '' && steps.check-skip.outputs.skip_job == 'false' }}
         run: |
           pnpm nx run-many \
             -t test:e2e \
@@ -160,6 +184,7 @@ jobs:
 
       - name: Configure AWS Credentials For Dashboard Assets
         uses: aws-actions/configure-aws-credentials@v4
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         with:
           aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
@@ -167,12 +192,14 @@ jobs:
 
       - name: Push Playwright Analysis Artifacts to S3
         shell: bash
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         env:
           COMMIT_SHA: ${{ github.sha }}
         run: |
           node .github/scripts/playwright-cis-s3-sync.js ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }} ${{ steps.target-projects-with-newauth.outputs.playwright_configured_affected_apps_with_newauth_comma_sep }} ${{ steps.get-project-dirs.outputs.project_roots }}
 
       - name: Generate Playwright Analysis Report Summary
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         env:
           PLAYWRIGHT_CONFIGURED_AFFECTED_APPS: ${{ inputs.playwright_configured_affected_apps_array }}
           GITHUB_SHA: ${{ github.sha }}
@@ -182,13 +209,14 @@ jobs:
           node .github/scripts/summary-generators/playwright-report-summary.js
 
       - name: Cleanup Temporary Files
-        if: always()
+        if: ${{ always() && steps.check-skip.outputs.skip_job == 'false' }}
         run: |
           echo "Cleaning up installed binaries..."
           rm -rf ./playwright-browsers
         
       - name: Determine Final Status
         id: determine-test-status
+        if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         shell: bash
         env:
           FILTERED_PROJECTS_FOR_FULL_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN }}

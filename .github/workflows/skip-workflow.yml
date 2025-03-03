@@ -1,0 +1,77 @@
+name: Dashboard Core | Skip Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      workflow_name:
+        description: "Name Of The Workflow To Skip"
+        type: choice
+        required: true
+        options:
+          - "Run E2E Tests"
+      doe_approval:
+        description: "DOE Approval Slack Thread URL"
+        type: string
+        required: true
+      why_skip:
+        description: "Reason For Skipping The Workflow"
+        type: string
+        required: true
+      commit_sha:
+        description: "Commit Id"
+        type: string
+        required: true
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  HOME: /actions-runner/_work
+  AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
+
+jobs:
+  skip-workflow:
+    name: Skip Workflow
+    runs-on: [non-api, linux-amd64]
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Validate Authorized Usage
+        id: validate_approver
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const actor = github.actor;
+            console.log("Labeler: ", actor);
+
+            // Check if the user who triggered the workflow is in the approversList
+            const approversList = ["rahul-rzp", "abhieshekumar", "vinilvasani", "AniketOnWeb", "joel-jaimon", "dhruvdutt"];
+            if (!approversList.includes(actor)) {
+              console.log(`User ${actor} is not in the approvers list.`);
+              process.exit(1);
+            }
+            console.log(`Approved by ${actor}`);
+
+      - name: Configure AWS Credentials For Dashboard Assets
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          aws-region: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
+
+      - name: Setup Node v18.12.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.12.1
+
+      - name: Skip Trigger
+        run: |
+          node .github/scripts/skip-workflow-executor.js
+        env:
+          target_bucket: ${{ env.AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET }}
+          workflow_name: ${{ github.event.inputs.workflow_name }}
+          doe_approval: ${{ github.event.inputs.doe_approval }}
+          why_skip: ${{ github.event.inputs.why_skip }}
+          commit_sha: ${{ github.event.inputs.commit_sha }}

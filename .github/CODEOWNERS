@@ -101,9 +101,9 @@ web/e2e/suites/partnerDashboard/pos/partnerAgent/clientAccounts.spec.js  @razorp
 
 
 # Platform Configs
-scripts/*                                                                @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-.github/*                                                                @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-libs/*                                                                   @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+scripts                                                                  @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+.github                                                                  @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+libs                                                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 apps/digital-bills/webpack.config.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 apps/self-serve/webpack.config.js                                        @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 apps/pos/webpack.config.js                                               @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
@@ -114,7 +114,7 @@ web/js/newAuth/webpack.config.js                                         @joel-j
 web/js/pokedex/webpack.config.js                                         @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 
 # Critical Boot Configs
-web/entry/*                                                              @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/entry                                                                @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 web/js/merchant/views/bootstrap.js                                       @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 web/js/merchantLA/views/bootstrap.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
 web/js/merchantTnc/bootstrap.js                                          @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
@@ -132,5 +132,5 @@ apps/shell                                                               @joel-j
 
 # PHP Critical
 app/Http/Controllers/UserController.php                                  @joel-jaimon @dhruvdutt @razorpay-sanjib @shubham25kr07
-resources/views/merchant/*                                               @joel-jaimon @dhruvdutt
-resources/views/partials/*                                               @joel-jaimon @dhruvdutt
+resources/views/merchant                                                 @joel-jaimon @dhruvdutt
+resources/views/partials                                                 @joel-jaimon @dhruvdutt
