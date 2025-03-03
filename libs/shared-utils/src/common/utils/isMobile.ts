@@ -24,7 +24,7 @@ const PHONE_NUMBER_REGEX_MAP = {
   MY: /^(0|60)-*(1|11)-*[0-9]{8}$/,
 };
 
-export const isMobile = (mobile: string = '', countryCode: string = 'IN'): boolean => {
+export const isMobile = (mobile: string = '', countryCode: keyof typeof PHONE_NUMBER_REGEX_MAP = 'IN'): boolean => {
   const mobileRegExp = new RegExp(PHONE_NUMBER_REGEX_MAP[countryCode]);
   return mobileRegExp.test(mobile);
 };

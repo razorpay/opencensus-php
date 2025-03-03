@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { deepClone } from "./deepClone";
 
 /**
@@ -15,33 +17,32 @@ import { deepClone } from "./deepClone";
  * // returns { sample: [{ key: 'newValue' }] }
  */
 export function stringToObj(path: string, value: any, srcObj?: Record<string, any>): Record<string, any> {
-  // Ensure newObj is always a Record<string, any>
-  const newObj: Record<string, any> = deepClone(srcObj) || {};
+  const newObj = srcObj ? deepClone(srcObj) : srcObj;
+  // for supporting sample[0][sampleKey]
   const squareBracketPattern = /\[|\]/;
-  const parts: string[] = path.split(squareBracketPattern).filter((pathEl) => pathEl);
-
-  // Ensure there are parts to process
-  if (parts.length === 0) return newObj;
-
-  let last: string | number = parts.pop() as string | number; // Last part as string or number
-  last = isNaN(Number(last)) ? last : Number(last); // Convert last to number if numeric
-
-  let obj: Record<string, any> = newObj;
-
-  for (const part of parts) {
-    const key: string | number = isNaN(Number(part)) ? part : Number(part); // Key as string or number
-
-    // Initialize the next level in the object if it doesn't exist
-    if (obj[key] === undefined) {
-      obj[key] = isNaN(Number(parts[0])) ? {} : [];
-    } else if (typeof obj[key] !== 'object' || obj[key] === null) {
-      // Convert to an array or object if it's not the right type
-      obj[key] = isNaN(Number(parts[0])) ? {} : [];
-    }
-
-    obj = obj[key]; // Move down to the next level
+  if (squareBracketPattern.test(path)) {
+    parts = path.split(squareBracketPattern).filter((pathEl) => !!pathEl); //splitting with regex gives empty strings
+  } else {
+    parts = path.split('.');
   }
 
-  obj[last] = value; // Set the value
-  return newObj; // Return the modified object
+  let last = parts.pop();
+
+  // converts if numeric for array
+  last = isNaN(last) ? last : Number(last);
+  let obj = newObj;
+
+  while ((part = parts.shift())) {
+    // converts if numeric for array
+    part = isNaN(part) ? part : Number(part);
+
+    if (typeof obj[part] !== 'object') {
+      // assigning an array if upcoming part is number
+      obj[part] = isNaN(parts[0]) ? {} : [];
+    }
+    obj = obj[part]; // nosemgrep : javascript.lang.security.audit.prototype-pollution.prototype-pollution-loop.prototype-pollution-loop
+  }
+  obj[last] = value;
+  var parts, part;
+  return newObj;
 }

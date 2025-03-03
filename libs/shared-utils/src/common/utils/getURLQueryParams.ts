@@ -19,7 +19,7 @@ export const getURLQueryParams = (url: string = document.location.hash): Record<
     and get the key-value pairs for query params. */
     params = search.split('&').reduce((prev, curr) => {
       const [key, value] = curr.split('=');
-      prev[key] = value;
+      prev[key] = window?.decodeURIComponent?.(value);
       return prev;
     }, {} as Record<string, string | undefined>);
   }

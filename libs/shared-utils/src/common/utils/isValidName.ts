@@ -5,6 +5,6 @@
  * @returns {boolean} - Returns `true` if the name is valid, otherwise `false`.
  */
 export const isValidName = (name: string = ''): boolean => {
-  const nameRegExp = /^[a-zA-Z ]+$/;
+  const nameRegExp = new RegExp(/^[a-zA-Z ]+$/);
   return nameRegExp.test(name);
 };

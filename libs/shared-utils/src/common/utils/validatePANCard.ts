@@ -14,16 +14,12 @@
  * const invalidFormat = validatePANCard('12345ABCDE');
  * // returns 'Invalid PAN card'
  */
-export function validatePANCard(value: string | null | undefined): true | string {
-  if (!value) {
-    return true; // Return true if value is not present; mandatory validation should be handled elsewhere
+export function validatePANCard(value: string | null | undefined) {
+  if (value) {
+    if (value.length !== 10) {
+      return 'PAN card must be 10 characters';
+    } else if (!/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value)) {
+      return 'Invalid PAN card';
+    }
   }
-
-  if (value.length !== 10) {
-    return 'PAN card must be 10 characters';
-  } else if (!/^[a-zA-Z]{5}\d{4}[a-zA-Z]{1}$/.test(value)) {
-    return 'Invalid PAN card';
-  }
-
-  return true; // Return true if all validations pass
 }

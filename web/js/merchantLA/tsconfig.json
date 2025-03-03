@@ -16,15 +16,8 @@
     { "path": "../../../libs/shared-ui" },
     { "path": "../../../libs/shared-types" },
     { "path": "../../../libs/shared-qsuite" },
-    { "path": "../../../apps/digital-bills" },
-    { "path": "../../../apps/pos" },
-    { "path": "../../../apps/self-serve" },
     { "path": "../merchant" },
     { "path": "../common" },
     { "path": "../merchant_common" },
-    { "path": "../merchantTnc" },
-    { "path": "../newAuth" },
-    { "path": "../pokedex" },
-    { "path": "../razorx" }
   ]
 }

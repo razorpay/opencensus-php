@@ -55,16 +55,4 @@ try {
       app: 'payments-dashboard',
     },
   });
-
-  // Temp Fall Back Mechanism (Till New Arch Is At 100%)
-  if (
-    !Boolean(
-      document?.cookie
-        ?.split?.('; ')
-        ?.some?.((cookie) => cookie?.startsWith?.('dashboard_legacy=')),
-    )
-  ) {
-    document.cookie = `dashboard_legacy=true; path=/;`;
-    window.location.reload?.(true);
-  }
 }

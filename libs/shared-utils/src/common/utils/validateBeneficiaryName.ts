@@ -12,7 +12,7 @@
  * // returns false
  */
 export function validateBeneficiaryName(value: string | null | undefined): boolean {
-  const regex = /^[a-zA-Z0-9 ]+$/;
+  const regex = new RegExp(/^[a-zA-Z0-9 ]+$/);
 
   if (value === null || value === undefined) {
     return false; // Return false for null or undefined values

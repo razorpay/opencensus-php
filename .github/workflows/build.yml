@@ -21,6 +21,10 @@ on:
       onboarded_microapps:
         type: string
         required: true
+      target_envs:
+        type: string
+        required: true
+
 env:
   HOME: /actions-runner/_work
   AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
@@ -48,7 +52,7 @@ jobs:
   build-shell-server-devstack:
     name: Shell Server - Non Prod
     needs: [delay-job-p1]
-    if: contains(inputs.affected_apps_p2, 'shell') 
+    if: contains(inputs.affected_apps_p2, 'shell') && contains(inputs.target_envs, 'devstack')
     strategy:
       fail-fast: true
       matrix:
@@ -95,7 +99,7 @@ jobs:
   build-shell-server-production:
     name: Shell Server - Prod
     needs: [delay-job-p1]
-    if: contains(inputs.affected_apps_p2, 'shell') 
+    if: contains(inputs.affected_apps_p2, 'shell') && contains(inputs.target_envs, 'production')
     strategy:
       fail-fast: true
       matrix:
@@ -142,7 +146,7 @@ jobs:
   shell-server-multi-arch-manifest:
     name: Shell Server - Multi Arch
     needs: ["build-shell-server-production"]
-    if: contains(inputs.affected_apps_p2, 'shell') 
+    if: contains(inputs.affected_apps_p2, 'shell') && contains(inputs.target_envs, 'production')
     runs-on: ["non-api"]
     strategy:
       fail-fast: true
@@ -178,7 +182,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        targetEnvironment: ["devstack", "production"]
+        targetEnvironment: ${{ fromJson(inputs.target_envs) }}
         targetProject: ${{ fromJson(inputs.affected_apps_p0) }}
     steps:
       - name: Checkout Codebase
@@ -219,7 +223,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        targetEnvironment: ["devstack", "production"]
+        targetEnvironment: ${{ fromJson(inputs.target_envs) }}
         targetProject: ${{ fromJson(inputs.affected_apps_p1) }}
     steps:
       - name: Checkout Codebase
@@ -259,7 +263,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        targetEnvironment: ["devstack", "production"]
+        targetEnvironment: ${{ fromJson(inputs.target_envs) }}
         targetProject: ${{ fromJson(inputs.affected_apps_p2) }}
     steps:
       - name: Checkout Codebase

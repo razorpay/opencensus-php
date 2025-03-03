@@ -11,10 +11,6 @@
  * const invalidResult = validateIFSC('SBIN001234');
  * // returns 'IFSC code must be 11 characters'
  */
-export function validateIFSC(value: string | null | undefined): true | string {
-  if (!value) {
-    return true; // Return true if value is not present; mandatory validation should be handled elsewhere
-  }
-
-  return value.length !== 11 ? 'IFSC code must be 11 characters' : true;
+export function validateIFSC(value: string | null | undefined): any {
+  return value && value.length != 11 && 'IFSC code must be 11 characters';
 }

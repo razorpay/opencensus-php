@@ -2,7 +2,15 @@ name: Initialize CI
 
 on:
   workflow_call:
+    inputs:
+      branch_name:
+        required: true
+        type: string
     outputs:
+      target_envs:
+        value: ${{ jobs.initialize.outputs.target_envs }}
+      run_canary_build:
+        value: ${{ jobs.initialize.outputs.run_canary_build }}
       affected_all:
         value: ${{ jobs.initialize.outputs.affected_all }}
       affected_libs:
@@ -39,6 +47,8 @@ jobs:
     name: Cache Deps & Generate NX Affected
     runs-on: [non-api-premium, cache-2]
     outputs:
+      target_envs: ${{ steps.get_env_configs.outputs.target_envs }}
+      run_canary_build: ${{ steps.get_env_configs.outputs.run_canary_build }}
       affected_all: ${{ steps.parse_affected.outputs.affected_all }}
       affected_libs: ${{ steps.parse_affected.outputs.affected_libs }}
       affected_apps: ${{ steps.parse_affected.outputs.affected_apps }}
@@ -66,6 +76,18 @@ jobs:
       - name: Identify Affected Projects with NX
         id: affected_projects
         uses: ./.github/actions/affected-projects
+
+      - name: Determine Env Configs
+        id: get_env_configs
+        run: |
+          BRANCH_NAME="${{ inputs.branch_name }}"
+          if [[ "$BRANCH_NAME" == master || "$BRANCH_NAME" == hotfix/* ]]; then
+            echo "target_envs=[\"production\",\"devstack\"]" >> $GITHUB_OUTPUT
+            echo "run_canary_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "target_envs=[\"devstack\"]" >> $GITHUB_OUTPUT
+            echo "run_canary_build=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get Jest Configured Apps
         id: get-ut-configured-apps

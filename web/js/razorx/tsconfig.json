@@ -11,20 +11,8 @@
   "exclude": ["**/node_modules", "./razorx-dashboard.entry.js"],
   "types": ["resize-observer-browser", "jest", "jest-dom"],
   "references": [
-    { "path": "../../../apps/shell" },
     { "path": "../../../libs/shared-utils" },
     { "path": "../../../libs/shared-ui" },
-    { "path": "../../../libs/shared-qsuite" },
-    { "path": "../../../libs/shared-types" },
-    { "path": "../../../apps/digital-bills" },
-    { "path": "../../../apps/pos" },
-    { "path": "../../../apps/self-serve" },
-    { "path": "../merchant" },
     { "path": "../common" },
-    { "path": "../merchant_common" },
-    { "path": "../merchantLA" },
-    { "path": "../merchantTnc" },
-    { "path": "../newAuth" },
-    { "path": "../pokedex" },
   ]
 }

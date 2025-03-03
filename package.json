@@ -206,7 +206,10 @@
         "executor": "nx:run-commands",
         "dependsOn": [
           "newauth-dashboard:test:e2e:auth"
-        ]
+        ],
+        "options":{
+          "command": "echo Authenticated States Saved!"
+        }
       },
       "test:e2e:infra": {
         "executor": "nx:run-commands",

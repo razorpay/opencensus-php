@@ -19,6 +19,8 @@ jobs:
     name: Initialize CI
     secrets: inherit
     uses: ./.github/workflows/initialize-ci.yml
+    with:
+      branch_name: ${{ github.ref_name }}
 
   build-php:
     name: Build PHP
@@ -33,6 +35,7 @@ jobs:
     needs: [initialize]
     secrets: inherit
     with:
+      target_envs: ${{ needs.initialize.outputs.target_envs }}
       affected_all: ${{ needs.initialize.outputs.affected_all }}
       affected_libs: ${{ needs.initialize.outputs.affected_libs }}
       affected_apps_p0: ${{ needs.initialize.outputs.affected_apps_p0 }}
@@ -45,7 +48,9 @@ jobs:
     uses: ./.github/workflows/build-canary.yml
     needs: [initialize]
     secrets: inherit
+    if: ${{ needs.initialize.outputs.run_canary_build == 'true' }}
     with:
+      run_canary_build: ${{ needs.initialize.outputs.run_canary_build == 'true' }}
       affected_all: ${{ needs.initialize.outputs.affected_all }}
       affected_libs: ${{ needs.initialize.outputs.affected_libs }}
       affected_apps_p0: ${{ needs.initialize.outputs.affected_apps_p0 }}
@@ -56,7 +61,8 @@ jobs:
   code-integrity-suite:
     name: Code Integrity Suite
     uses: ./.github/workflows/code-integrity-suite.yml
-    needs: [initialize, build-main, build-canary] 
+    needs: [initialize, build-main, build-php, build-canary]
+    if: ${{ always() && needs.build-main.result == 'success' && needs.build-php.result == 'success' && (needs.build-canary.result == 'success' || needs.build-canary.result == 'skipped') }}
     secrets: inherit
     with:
       affected_all: ${{ needs.initialize.outputs.affected_all }}
@@ -68,7 +74,8 @@ jobs:
   fe-e2e:
     name: Run E2E Tests
     uses: ./.github/workflows/fe-e2e.yml
-    needs: [initialize, build-main, build-canary]
+    needs: [initialize, build-main, build-php, build-canary]
+    if: ${{ always() && needs.build-main.result == 'success' && needs.build-php.result == 'success' && (needs.build-canary.result == 'success' || needs.build-canary.result == 'skipped') }}
     secrets: inherit
     with:
       run_e2e: true
@@ -76,4 +83,38 @@ jobs:
       playwright_configured_affected_apps_array: ${{ needs.initialize.outputs.playwright_configured_affected_apps_array }}
       playwright_configured_affected_apps_comma_sep: ${{ needs.initialize.outputs.playwright_configured_affected_apps_comma_sep }}
 
-  
+  workflow-final-status:
+    name: Workflow Status
+    needs: [initialize, build-main, build-php, build-canary, code-integrity-suite, fe-e2e]
+    runs-on: [ubuntu-latest]
+    if: ${{ always() }}
+    steps:
+      - name: Evaluate Overall Workflow Status
+        id: evaluate-status
+        run: |
+          status="success"
+          if [ "${{ needs.build-main.result }}" != "success" ]; then
+            status="failure"
+          fi
+          if [ "${{ needs.build-php.result }}" != "success" ]; then
+            status="failure"
+          fi
+          if [ "${{ needs.build-canary.result }}" != "success" ] && [ "${{ needs.build-canary.result }}" != "skipped" ]; then
+            status="failure"
+          fi
+          if [ "${{ needs.code-integrity-suite.result }}" != "success" ]; then
+            status="failure"
+          fi
+          if [ "${{ needs.fe-e2e.result }}" != "success" ]; then
+            status="failure"
+          fi
+          echo "status=${status}" >> $GITHUB_OUTPUT
+
+      - name: Set Overall Workflow Status
+        run: |
+          if [ "${{ steps.evaluate-status.outputs.status }}" = "failure" ]; then
+            echo "Dashboard Core | CI Failed"
+            exit 1
+          else
+            echo "Dashboard Core | CI Completed"
+          fi

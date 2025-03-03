@@ -2,6 +2,9 @@ name: Build - Canary
 on:
   workflow_call:
     inputs:
+      run_canary_build:
+        type: boolean
+        required: true
       affected_all:
         type: string
         required: true
@@ -33,6 +36,7 @@ jobs:
   delay-job-p1:
     name: Delay (~5s)
     runs-on: [non-api-premium]
+    if: ${{ inputs.run_canary_build }}
     steps:
       - name: Execute Delay
         run: sleep 5
@@ -41,6 +45,7 @@ jobs:
     name: Delay (~15s)
     needs: [delay-job-p1]
     runs-on: [non-api-premium]
+    if: ${{ inputs.run_canary_build }}
     steps:
       - name: Execute Delay
         run: sleep 10
@@ -48,7 +53,7 @@ jobs:
   build-shell-server-canary:
     name: Shell Server - Canary
     needs: [delay-job-p1]
-    if: contains(inputs.affected_apps_p2, 'shell') 
+    if: ${{ inputs.run_canary_build && contains(inputs.affected_apps_p2, 'shell') }}
     strategy:
       fail-fast: true
       matrix:
@@ -133,6 +138,7 @@ jobs:
       matrix:
         targetEnvironment: ["canary"]
         targetProject: ${{ fromJson(inputs.affected_apps_p0) }}
+    if: ${{ inputs.run_canary_build }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
@@ -170,6 +176,7 @@ jobs:
       matrix:
         targetEnvironment: ["canary"]
         targetProject: ${{ fromJson(inputs.affected_apps_p1) }}
+    if: ${{ inputs.run_canary_build }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
@@ -207,6 +214,7 @@ jobs:
       matrix:
         targetEnvironment: ["canary"]
         targetProject: ${{ fromJson(inputs.affected_apps_p2) }}
+    if: ${{ inputs.run_canary_build }}
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4

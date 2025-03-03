@@ -1,4 +1,4 @@
-name: Production Deploy - Dashboard
+name: Deploy - Dashboard
 
 on: deployment
 
@@ -12,19 +12,18 @@ env:
   NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   VERSION: ${{ github.event.deployment.payload.version }}
   STAGE: ${{ github.event.deployment.environment }}
+  DEPLOYMENT_MODULE: ${{ github.event.deployment.payload.deploymentModule }}
   AWS_PROD_COMMON_CACHE_BUCKET: "rzp-actions-cache"
   AWS_PROD_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1415-prod-dashboard-assets"
   AWS_DEFAULT_REGION: ap-south-1
   AWS_S3_PROD_ROLE: arn:aws:iam::141592612890:role/gha-prod-dashboard_action
 
 jobs:
-  production-dashboard-deploy-all:
-    name: Production Deploy - All
+  dashboard-deploy:
+    name: Deploy - Dashboard (${{ github.event.deployment.payload.deploymentModule }}, ${{github.event.deployment.environment}})
     runs-on: [self-hosted]
     timeout-minutes: 30
-    if: |
-      github.event.deployment.environment == 'production' &&
-      github.event.deployment.payload.deploymentModule == '*'
+    if: ${{ github.event.deployment.environment && github.event.deployment.payload.deploymentModule }}
     permissions:
       id-token: write
       contents: write
@@ -41,8 +40,10 @@ jobs:
           role-to-assume: ${{ env.AWS_S3_PROD_ROLE }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
-      # Since meta data is already added during build artifact upload step, we can simply copy s3 - s3 to speed up entire process
-      - name: Copy Artifacts from Action Cache To Production S3
+      - name: Copy Artifacts from Action Cache To Production S3 - All
+        if: |
+          github.event.deployment.environment == 'production' &&
+          github.event.deployment.payload.deploymentModule == '*'
         run: |
           aws s3 cp \
           s3://${AWS_PROD_COMMON_CACHE_BUCKET}/dashboard/core-bundles/production/${VERSION}/ \
@@ -50,63 +51,36 @@ jobs:
           --recursive \
           --metadata-directive=COPY
 
-      - name: Mark Deployment Success
-        if: ${{ success() }}
-        run: |
-          curl --location --request POST 'https://api.github.com/repos/razorpay/dashboard/deployments/${{ github.event.deployment.id }}/statuses' \
-          --header 'Authorization: Bearer ${{ github.token }}' \
-          --header 'Accept: application/vnd.github+json' \
-          --header 'X-GitHub-Api-Version: 2022-11-28' \
-          --header 'Content-Type: application/json' \
-          --data-raw '{
-              "environment": "${{ env.STAGE }}",
-              "state": "success",
-              "description": "Deployment completed"
-            }'
-
-      - name: Mark Deployment Failure
-        if: ${{ failure() }}
-        run: |
-          curl --location --request POST 'https://api.github.com/repos/razorpay/dashboard/deployments/${{ github.event.deployment.id }}/statuses' \
-          --header 'Authorization: Bearer ${{ github.token }}' \
-          --header 'Accept: application/vnd.github+json' \
-          --header 'X-GitHub-Api-Version: 2022-11-28' \
-          --header 'Content-Type: application/json' \
-          --data-raw '{
-              "environment": "${{ env.STAGE }}",
-              "state": "failure",
-              "description": "Deployment failed"
-            }'
-
-  canary-dashboard-deploy-all:
-    name: Canary Deploy - All
-    runs-on: [self-hosted]
-    timeout-minutes: 30
-    if: |
-      github.event.deployment.environment == 'canary' &&
-      github.event.deployment.payload.deploymentModule == '*'
-    permissions:
-      id-token: write
-      contents: write
-      deployments: write
-    steps:            
-      - name: Use Node v22.11.0
-        uses: actions/setup-node@v1
-        with:
-          node-version: 22.11.0
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.AWS_S3_PROD_ROLE }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      # Since meta data is already added during build artifact upload step, we can simply copy s3 - s3 to speed up entire process
-      - name: Copy Artifacts from Action Cache To Canary S3
+      - name: Copy Artifacts from Action Cache To Canary S3 - All
+        if: |
+          github.event.deployment.environment == 'canary' &&
+          github.event.deployment.payload.deploymentModule == '*'
         run: |
           aws s3 cp \
           s3://${AWS_PROD_COMMON_CACHE_BUCKET}/dashboard/core-bundles/canary/${VERSION}/ \
           s3://${AWS_PROD_DASHBOARD_ASSETS_CDN_BUCKET}/dashboard-canary/core-bundles/ \
+          --recursive \
+          --metadata-directive=COPY
+
+      - name: Copy Artifacts from Action Cache To Production S3 - Micro App
+        if: |
+          github.event.deployment.environment == 'production' &&
+          github.event.deployment.payload.deploymentModule != '*'
+        run: |
+          aws s3 cp \
+          s3://${AWS_PROD_COMMON_CACHE_BUCKET}/dashboard/core-bundles/production/${VERSION}/${DEPLOYMENT_MODULE}/ \
+          s3://${AWS_PROD_DASHBOARD_ASSETS_CDN_BUCKET}/dashboard/core-bundles/${DEPLOYMENT_MODULE}/ \
+          --recursive \
+          --metadata-directive=COPY
+
+      - name: Copy Artifacts from Action Cache To Canary S3 - Micro App
+        if: |
+          github.event.deployment.environment == 'canary' &&
+          github.event.deployment.payload.deploymentModule != '*'
+        run: |
+          aws s3 cp \
+          s3://${AWS_PROD_COMMON_CACHE_BUCKET}/dashboard/core-bundles/canary/${VERSION}/${DEPLOYMENT_MODULE}/ \
+          s3://${AWS_PROD_DASHBOARD_ASSETS_CDN_BUCKET}/dashboard-canary/core-bundles/${DEPLOYMENT_MODULE}/ \
           --recursive \
           --metadata-directive=COPY
 
