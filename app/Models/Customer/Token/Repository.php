@@ -81,6 +81,9 @@ class Repository extends Base\Repository
                             $query->whereNull(Token\Entity::USED_AT)
                                   ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
                         }
+                        $query->orwhereNull(Token\Entity::USED_AT)
+                            ->where(Token\Entity::FREQUENCY, '=', Token\Constants::ONE_TIME_FREQUENCY)
+                            ->where(Token\Entity::RECURRING_STATUS, '!=', Token\RecurringStatus::INITIATED);
                         $query->orWhereNotNull(Token\Entity::USED_AT);
                     })
                     ->where(function($query)

@@ -37,4 +37,5 @@ class Constants
     const LAST_UPDATED_MONTH        = "last_updated_month";
     const LAST_UPDATED_ON           = "last_updated_on";
     const TOKEN_FLOW                = "token_flow";
+    const ONE_TIME_FREQUENCY        = "one_time";
 }

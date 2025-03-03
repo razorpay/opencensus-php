@@ -8584,6 +8584,7 @@ trait Authorize
                 $saveMethodInput[Token\Entity::MAX_AMOUNT] = $this->upiMandate->getMaxAmount() ?? null;
                 $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->upiMandate->getEndTime() ?? null;
                 $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
+                $saveMethodInput[Token\Entity::FREQUENCY] = $this->upiMandate->getFrequency() ?? null;
             }
 
             if ($payment->isUpiRecurring() and
