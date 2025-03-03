@@ -1055,6 +1055,8 @@ return array(
 
     'greylisted_inclusion_for_automation' => env('GREYLISTED_INCLUSION_FOR_AUTOMATION'),
 
+    'vcip_for_mkyc_merchant_admin_dashboard' => env('VCIP_FOR_MKYC_MERCHANT_ADMIN_DASHBOARD'),
+
     'pgos_l2_submit' => env('PGOS_L2_SUBMIT'),
 
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),

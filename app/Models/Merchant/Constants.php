@@ -133,6 +133,7 @@ final class Constants
 
 
     const MERCHANT_ID                             = 'merchant_id';
+    const ACTOR_DETAILS                           = 'actor_details';
     const SUBMERCHANT_ID                          = 'submerchant_id';
     const PARTNER_ID                              = 'partner_id';
     const MARK_AS_PARTNER_IN_PROGRESS             = 'mark_as_partner_in_progress';

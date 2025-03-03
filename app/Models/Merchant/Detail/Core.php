@@ -13592,6 +13592,20 @@ class Core extends Base\Core
         return (isset($vcipEntities) && !empty($vcipEntities)) ? $vcipEntities[0] : [];
     }
 
+    private function shouldCreateVCIPEntityForMkycMerchants(MerchantEntity $merchant) : bool {
+        $isExperimentEnabled = (new MerchantCore)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.vcip_for_mkyc_merchant_admin_dashboard')
+            ],
+            DetailConstants::ENABLE
+        );
+
+        $isModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
+
+        return ($isExperimentEnabled and $isModularMerchant);
+    }
+
     public function createVCIPEntity($input)
     {
         $actorDetails = $this->getActorDetails();
@@ -13608,6 +13622,23 @@ class Core extends Base\Core
         $service = new Merchant\Service();
         $merchantId = $input['merchant_id'];
         $isRekycMerchant = $service->isRekycMerchant($merchantId,$activationStatus);
+
+        if ($this->shouldCreateVCIPEntityForMkycMerchants($merchant) === true) {
+            $payload = [
+                Constants::ACTOR_DETAILS => $actorDetails,
+                Constants::MERCHANT_ID => $merchantId
+            ];
+
+            $this->trace->info(TraceCode::CREATE_VCIP_ENTITY_FOR_MKYC_MERCHANTS_PGOS_PROXY_REQUEST, [
+                Constants::ACTOR_DETAILS => $actorDetails,
+                Constants::MERCHANT_ID => $merchantId,
+            ]);
+
+            $result = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::GET_VCIP_LINK, $payload, $merchant);
+            $this->pgosProxyController->errorHandler($result);
+
+            return $result['data'];
+        }
 
         if($isRekycMerchant) {
             $details = $service->getAdditionalDetailsFromASV($merchantId);
