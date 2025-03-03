@@ -1784,7 +1784,7 @@ class Core extends Base\Core
                 $this->prefillSystemUrlsInAdminWebsiteDetails($merchantDetails);
             }
 
-            $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+            $this->updateActivationStatus($merchant, $activationStatusData, $merchant, true, false);
         }
 
         $eventAttributes = $merchant->toArrayEvent();
@@ -4166,7 +4166,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true): Entity
+    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true, bool $triggerEddWorkflow = true): Entity
     {
         $startTime = microtime(true);
 
@@ -4344,6 +4344,7 @@ class Core extends Base\Core
         });
 
         $this->repo->transactionOnLiveAndTestAndAsv(function() use (
+            $triggerEddWorkflow,
             $rejectionOption,
             $merchantDetails,
             $oldMerchantDetails,
@@ -4437,24 +4438,34 @@ class Core extends Base\Core
             if (($input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING) and
                 ($merchant->isLinkedAccount() === false))
             {
-                $this->app['workflow']
-                    ->setEntity($merchantDetails->getEntity())
-                    ->setOriginal($oldMerchantDetails)
-                    ->setDirty($newMerchantDetails)
-                    ->handle();
+                if ($triggerEddWorkflow === true)
+                {
+                    $this->trace->info(TraceCode::WORKFLOW_CREATION_FOR_EDD_PENDING, [
+                        'activation_status' => $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS],
+                    ]);
 
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->app['workflow']
+                        ->setEntity($merchantDetails->getEntity())
+                        ->setOriginal($oldMerchantDetails)
+                        ->setDirty($newMerchantDetails)
+                        ->handle();
+                }
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($triggerEddWorkflow, $merchant) {
                     $this->triggerRequestToBvs($merchant, Status::EDD_PENDING);
 
                     // Adding changes for activation for cross border usecase
-                    if ($this->pgosProxyController->isCrossBorderIndiaModularMerchant($merchant) === true) {
+                    if ($this->pgosProxyController->isCrossBorderIndiaModularMerchant($merchant) === true)
+                    {
                         $payload = [
                             'action' => CrossBorderCommonUseCases::ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT,
                             'merchant_id' => $merchant->getMerchantId(),
                             'mode' =>  Mode::LIVE,
                         ];
                         CrossBorderCommonUseCases::dispatch($payload)->delay(10);
-                    } else {
+                    }
+                    else if ($triggerEddWorkflow === true)
+                    {
                         $pgosPayload = [
                             Entity::MERCHANT_ID => $merchant->getId(),
                             DeviceDetailConstants::PRODUCT => DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
@@ -4466,6 +4477,11 @@ class Core extends Base\Core
                                 DeviceDetailConstants::START_VKYC => true
                             ]
                         ];
+                        $this->trace->info(TraceCode::WORKFLOW_CREATION_FOR_EDD_PENDING, [
+                            'trigger_edd_workflow' => $triggerEddWorkflow,
+                            'info'=> 'triggering_onboarding_save_call',
+                            'payload' => $pgosPayload
+                        ]);
 
                         $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ONBOARDING_SAVE, $pgosPayload, $merchant, true);
                     }
