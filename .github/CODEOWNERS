@@ -1,141 +1,136 @@
-* @joel-jaimon @dhruvdutt
+* @razorpay/merchant-dashboard
 
-# * @razorpay/merchant-dashboard
+.github/CODEOWNERS                                                       @razorpay/deploy-leads-dashboard
 
-# app/Http/Kernel.php                               @razorpay/spine-edge
-# # app/Http/routes.php                               @razorpay/spine-edge - Will add it back later after shell rollout
-# app/Http/Middleware                               @razorpay/spine-edge
-# app/Http/Providers                                @razorpay/spine-edge
-# app/Http/Session                                  @razorpay/spine-edge
-# app/User/Service.php                              @razorpay/spine-edge
-# config/admin-auth-routes.php                      @razorpay/spine-edge
-# config/auth.php                                   @razorpay/spine-edge
-# config/oauth.php                                  @razorpay/spine-edge
-# config/oauth-5-laravel.php                        @razorpay/spine-edge
-# config/passport.php                               @razorpay/spine-edge
-# config/session.php                                @razorpay/spine-edge
-# config/user-roles.php                             @razorpay/spine-edge
-# web/js/merchant/components/Announcements          @razorpay/platform-growth-fe
-# web/js/merchant/models/GrowthService              @razorpay/platform-growth-fe
-# web/js/common/ui/AnnouncementBanner               @razorpay/platform-growth-fe
-# web/js/common/ui/NotificationsDropdown            @razorpay/platform-growth-fe
-# web/js/common/ui/OffersForYou                     @razorpay/platform-growth-fe
-# web/js/common/ui/WhatsNew                         @razorpay/platform-growth-fe
-# web/js/common/ui/DashboardBanner                  @razorpay/platform-growth-fe
-# web/js/common/ui/GrowthServiceModal               @razorpay/platform-growth-fe
-# web/js/common/ui/ExclusiveOffer                   @razorpay/platform-growth-fe
-# web/js/common/ui/MultiSlider                      @razorpay/platform-growth-fe
-# web/js/merchant/Reports                           @joel-jaimon @TanroopSing @asp48
-# web/js/merchant/ReportsAsync                      @joel-jaimon @TanroopSing @asp48
-# web/js/merchant/reducers/reports                  @joel-jaimon @TanroopSing @asp48
-# web/js/merchant/reducers/reports.js               @joel-jaimon @TanroopSing @asp48
-# web/js/merchant/models/Reports                    @joel-jaimon @TanroopSing @asp48
-# web/js/merchant/PartnerDashboard/Reports          @joel-jaimon @TanroopSing @asp48
-# web/js/merchantLA/containers/Reports              @joel-jaimon @TanroopSing @asp48
-# web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp48
-# web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
-# web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard
-# web/js/merchant/views/Transactions/v1/SuccessRate @akash-sachan @NarasimhaSwamy
-# config/splitz.php                                 @razorpay/ssab-fe
-# web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
-# web/js/merchant/views/POS                         @razorpay/omni-acquisition-fe
-# web/js/merchant/components/NavigationLayout       @shridhar52war @vinilvasani @joel-jaimon @dhruvdutt
-# plugins/i18n-rules                                @razorpay/i18n-fe
-# smart-linter.js                                   @razorpay/i18n-fe
-# # apps/digital-bills                                @mihir-karbelkar-rp           - Will add it back later after shell rollout
-# apps/pos                                          @razorpay/omni-acquisition-fe @razorpay/partnerships-fe 
-# pnpm-lock.yaml                                    @razorpay/ssab-fe
-# web/js/common/utils/posAgent.ts                   @razorpay/omni-acquisition-fe
-# environment/.env.vault.j2                         @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp
-# .github/workflows/e2e.yml                         @razorpay/deploy-leads-dashboard
-# playwright/config/devstack.json                   @razorpay/deploy-leads-dashboard
-# playwright/utils/infraE2EUtils.js                 @razorpay/deploy-leads-dashboard
-# playwright/utils/copyDependecy.js                 @razorpay/deploy-leads-dashboard
-# playwright/utils/removeNpmrc.js                   @razorpay/deploy-leads-dashboard
-# # Each change to homepage needs to be reviewed by design team
-# web/js/merchant/containers/Home/RTUX/index.tsx    @razorpay/ssab-fe
-# # Monitoring the folders until old cold is removed
-# web/js/merchant/views/Transactions                @abhieshekumar @Satvik1911
-# web/js/merchant/views/Settlements                 @abhieshekumar @Satvik1911
-# web/js/merchant/reducers/submerchant.js           @1995navinkumar @shashi-vc
-# web/js/newAuth/signup/components/PartnerSignup    @1995navinkumar @shashi-vc
-# web/js/merchant/views/Marketplace/Transfers       @1995navinkumar @shashi-vc
-# web/js/merchant/views/Marketplace/PlatformFee     @1995navinkumar @shashi-vc
-# web/js/merchant/views/onboarding/mobile           @1995navinkumar @shashi-vc
-# web/js/merchant/views/PartnerAppStore             @1995navinkumar @shashi-vc  
-# web/js/merchant_common/views/Reports/redux/reducer.ts    @1995navinkumar @shashi-vc
-# web/js/merchant/views/POS/PartnerExclusiveContainer      @1995navinkumar @shashi-vc
-# # Optimizer folders
-# web/js/merchant/views/Navigator                     @parth-p-ui @ravid7000 @sanchit-razorpay
-# web/js/merchant/views/Optimizer                     @parth-p-ui @ravid7000 @sanchit-razorpay
-# web/js/merchant/views/Marketplace/OptimizerAccounts @parth-p-ui @ravid7000 @sanchit-razorpay
+app/Http/Kernel.php                                                      @razorpay/spine-edge
+app/Http/routes.php                                                      @razorpay/spine-edge 
+app/Http/Middleware                                                      @razorpay/spine-edge
+app/Http/Providers                                                       @razorpay/spine-edge
+app/Http/Session                                                         @razorpay/spine-edge
+app/User/Service.php                                                     @razorpay/spine-edge
+config/admin-auth-routes.php                                             @razorpay/spine-edge
+config/auth.php                                                          @razorpay/spine-edge
+config/oauth.php                                                         @razorpay/spine-edge
+config/oauth-5-laravel.php                                               @razorpay/spine-edge
+config/passport.php                                                      @razorpay/spine-edge
+config/session.php                                                       @razorpay/spine-edge
+config/user-roles.php                                                    @razorpay/spine-edge
+web/js/merchant/components/Announcements                                 @razorpay/platform-growth-fe
+web/js/merchant/models/GrowthService                                     @razorpay/platform-growth-fe
+web/js/common/ui/AnnouncementBanner                                      @razorpay/platform-growth-fe
+web/js/common/ui/NotificationsDropdown                                   @razorpay/platform-growth-fe
+web/js/common/ui/OffersForYou                                            @razorpay/platform-growth-fe
+web/js/common/ui/WhatsNew                                                @razorpay/platform-growth-fe
+web/js/common/ui/DashboardBanner                                         @razorpay/platform-growth-fe
+web/js/common/ui/GrowthServiceModal                                      @razorpay/platform-growth-fe
+web/js/common/ui/ExclusiveOffer                                          @razorpay/platform-growth-fe
+web/js/common/ui/MultiSlider                                             @razorpay/platform-growth-fe
+web/js/merchant/Reports                                                  @joel-jaimon @TanroopSing @asp48
+web/js/merchant/ReportsAsync                                             @joel-jaimon @TanroopSing @asp48
+web/js/merchant/reducers/reports                                         @joel-jaimon @TanroopSing @asp48
+web/js/merchant/reducers/reports.js                                      @joel-jaimon @TanroopSing @asp48
+web/js/merchant/models/Reports                                           @joel-jaimon @TanroopSing @asp48
+web/js/merchant/PartnerDashboard/Reports                                 @joel-jaimon @TanroopSing @asp48
+web/js/merchantLA/containers/Reports                                     @joel-jaimon @TanroopSing @asp48
+web/js/merchant_common/views/Reports                                     @joel-jaimon @TanroopSing @asp48
+web/js/merchant_common/containers/ReportsAsync                           @joel-jaimon @TanroopSing @asp48
+web/js/merchant/views/PartnerDashboard                                   @razorpay/partnerships-fe @razorpay/merchant-dashboard
+web/js/merchant/views/Transactions/v1/SuccessRate                        @akash-sachan @NarasimhaSwamy
+config/splitz.php                                                        @razorpay/ssab-fe
+web/js/merchant/views/Transactions/v2                                    @razorpay/ssab-fe
+web/js/merchant/views/POS                                                @razorpay/omni-acquisition-fe
+web/js/merchant/components/NavigationLayout                              @shridhar52war @vinilvasani @joel-jaimon @dhruvdutt
+plugins/i18n-rules                                                       @razorpay/i18n-fe
+smart-linter.js                                                          @razorpay/i18n-fe
+apps/digital-bills                                                       @mihir-karbelkar-rp          
+apps/pos                                                                 @razorpay/omni-acquisition-fe @razorpay/partnerships-fe 
+pnpm-lock.yaml                                                           @razorpay/ssab-fe
+web/js/common/utils/posAgent.ts                                          @razorpay/omni-acquisition-fe
+environment/.env.vault.j2                                                @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp
 
-# # Disabled E2Es - Requires PR approval from dashboard deploy leads
-# web/e2e/suites/partnerDashboard/pos/partnerAgent/inviteFlows.spec.js     @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/pos/reseller/clientAccounts.spec.js      @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/pos/reseller/homepage.spec.js            @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/pos/reseller/partnerManageTeam.spec.js   @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/reseller/clientAccounts.spec.js          @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/reseller/partnerPlaybook.spec.js         @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/aggregator/homepage.spec.js              @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/platform/homepage.spec.js                @razorpay/deploy-leads-dashboard
-# web/e2e/suites/partnerDashboard/reseller/homepage.spec.js                @razorpay/deploy-leads-dashboard
-# web/e2e/suites/RizeMarketplace/app-store-banner.spec.js                  @razorpay/deploy-leads-dashboard
-# web/e2e/suites/RizeMarketplace/marketplace.spec.js                       @razorpay/deploy-leads-dashboard
-# web/e2e/suites/paymentsLinks/batch.spec.js                               @razorpay/deploy-leads-dashboard
-# web/e2e/suites/paymentsLinks/upi.spec.js                                 @razorpay/deploy-leads-dashboard
-# web/e2e/suites/paymentsLinks/v1.spec.js                                  @razorpay/deploy-leads-dashboard
-# web/e2e/suites/paymentsLinks/v2.spec.js                                  @razorpay/deploy-leads-dashboard
-# web/e2e/suites/RizeMarketplace/listing.spec.js                           @razorpay/deploy-leads-dashboard
-# web/e2e/suites/GCMS/orderCreate.spec.js                                  @razorpay/deploy-leads-dashboard
-# web/e2e/suites/offers/offerCreationFlow.spec.js                          @razorpay/deploy-leads-dashboard
-# web/e2e/suites/transactions/payments.spec.js                             @razorpay/deploy-leads-dashboard
-# web/e2e/suites/transactions/refunds.spec.js                              @razorpay/deploy-leads-dashboard
-# web/e2e/suites/paymentButtons/paymentButtons.spec.js                     @razorpay/deploy-leads-dashboard
-# web/e2e/suites/CAW/registration_link.spec.js                             @razorpay/deploy-leads-dashboard
-# web/e2e/suites/GCMS/resellers.spec.js                                    @razorpay/deploy-leads-dashboard
-# web/e2e/suites/GCMS/reports.spec.js                                      @razorpay/deploy-leads-dashboard
-# web/e2e/suites/RTUX/homepage-rtux.spec.js                                @razorpay/deploy-leads-dashboard
-# web/e2e/suites/Wallet/reports.spec.js                                    @razorpay/deploy-leads-dashboard
-# # [IMP] DO NOT REMOVE (KEEP AT THE END!) DO NOT OVERRIDE ANYTHING THAT FALLS UNDER THIS SCOPE! ----------
-# scripts/*                                                                @joel-jaimon @dhruvdutt
-# .github/*                                                                @joel-jaimon @dhruvdutt
-# .github/CODEOWNERS                                                       @razorpay/deploy-leads-dashboard
-# libs/*                                                                   @joel-jaimon @dhruvdutt
-# apps/*                                                                   @joel-jaimon @dhruvdutt
-# apps/digital-bills                                                       @joel-jaimon @dhruvdutt
-# apps/self-serve                                                          @joel-jaimon @dhruvdutt
-# apps/pos/webpack.config.js                                               @joel-jaimon @dhruvdutt
-# apps/pos/package.json                                                    @joel-jaimon @dhruvdutt
-# web/entry/*                                                              @joel-jaimon @dhruvdutt
-# web/js/merchant/containers/App.js                                        @joel-jaimon @dhruvdutt
-# web/js/merchant/commonStore/*                                            @joel-jaimon @dhruvdutt
-# web/js/common/deprecated/withRouter.tsx                                  @joel-jaimon @dhruvdutt
-# web/js/merchant/utils/ajax.js                                            @joel-jaimon @dhruvdutt
-# web/js/merchant/hooks/*                                                  @joel-jaimon @dhruvdutt
-# web/js/merchant/views/bootstrap.js                                       @joel-jaimon @dhruvdutt
-# web/js/merchant/views/public-paths.js                                    @joel-jaimon @dhruvdutt
-# web/js/merchantLA/views/bootstrap.js                                     @joel-jaimon @dhruvdutt
-# web/js/merchantLA/views/public-paths.js                                  @joel-jaimon @dhruvdutt
-# web/js/merchantLA/containers/App.js                                      @joel-jaimon @dhruvdutt
-# web/js/merchantTnc/bootstrap.js                                          @joel-jaimon @dhruvdutt
-# web/js/newAuth/public-paths.js                                           @joel-jaimon @dhruvdutt
-# web/js/newAuth/bootstrap.js                                              @joel-jaimon @dhruvdutt
-# web/js/pokedex/public-paths.js                                           @joel-jaimon @dhruvdutt
-# web/js/pokedex/bootstrap.js                                              @joel-jaimon @dhruvdutt
-# web/js/razorx/App.js                                                     @joel-jaimon @dhruvdutt
-# web/public-paths.js                                                      @joel-jaimon @dhruvdutt
-# web/package.json                                                         @joel-jaimon @dhruvdutt
-# web/webpack.config.js                                                    @joel-jaimon @dhruvdutt
-# web/tsconfig.json                                                        @joel-jaimon @dhruvdutt
-# tsconfig.base.json                                                       @joel-jaimon @dhruvdutt
-# pnpm-workspace.yaml                                                      @joel-jaimon @dhruvdutt
-# nx.json                                                                  @joel-jaimon @dhruvdutt
-# package.json                                                             @joel-jaimon @dhruvdutt
-# # If these files are affected, would need indepth walkthrough of the PR
-# app/Http/Controllers/UserController.php                                  @joel-jaimon @dhruvdutt
-# app/Http/routes.php                                                      @joel-jaimon @dhruvdutt
-# resources/views/merchant/*                                               @joel-jaimon @dhruvdutt
-# resources/views/partials/*                                               @joel-jaimon @dhruvdutt
-# web/e2e/suites/partnerDashboard/pos/partnerAgent/clientAccounts.spec.js @razorpay/deploy-leads-dashboard
-# web/js/merchant/views/AccountAndSettings/PaymentMethods/Tabs/International @parth-p-ui @ravid7000
+# Each change to homepage needs to be reviewed by design team
+web/js/merchant/containers/Home/RTUX/index.tsx                           @razorpay/ssab-fe
+
+# Monitoring the folders until old cold is removed
+web/js/merchant/views/Transactions                                       @abhieshekumar @Satvik1911
+web/js/merchant/views/Settlements                                        @abhieshekumar @Satvik1911
+web/js/merchant/reducers/submerchant.js                                  @1995navinkumar @shashi-vc
+web/js/newAuth/signup/components/PartnerSignup                           @1995navinkumar @shashi-vc
+web/js/merchant/views/Marketplace/Transfers                              @1995navinkumar @shashi-vc
+web/js/merchant/views/Marketplace/PlatformFee                            @1995navinkumar @shashi-vc
+web/js/merchant/views/onboarding/mobile                                  @1995navinkumar @shashi-vc
+web/js/merchant/views/PartnerAppStore                                    @1995navinkumar @shashi-vc  
+web/js/merchant_common/views/Reports/redux/reducer.ts                    @1995navinkumar @shashi-vc
+web/js/merchant/views/POS/PartnerExclusiveContainer                      @1995navinkumar @shashi-vc
+
+# Optimizer folders
+web/js/merchant/views/Navigator                                          @parth-p-ui @ravid7000 @sanchit-razorpay
+web/js/merchant/views/Optimizer                                          @parth-p-ui @ravid7000 @sanchit-razorpay
+web/js/merchant/views/Marketplace/OptimizerAccounts                      @parth-p-ui @ravid7000 @sanchit-razorpay
+
+web/js/merchant/views/AccountAndSettings/PaymentMethods/Tabs/International @parth-p-ui @ravid7000
+
+# Disabled E2Es - Requires PR approval from dashboard deploy leads
+web/e2e/suites/partnerDashboard/pos/partnerAgent/inviteFlows.spec.js     @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/pos/reseller/clientAccounts.spec.js      @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/pos/reseller/homepage.spec.js            @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/pos/reseller/partnerManageTeam.spec.js   @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/reseller/clientAccounts.spec.js          @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/reseller/partnerPlaybook.spec.js         @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/aggregator/homepage.spec.js              @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/platform/homepage.spec.js                @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/reseller/homepage.spec.js                @razorpay/deploy-leads-dashboard
+web/e2e/suites/RizeMarketplace/app-store-banner.spec.js                  @razorpay/deploy-leads-dashboard
+web/e2e/suites/RizeMarketplace/marketplace.spec.js                       @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/batch.spec.js                               @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/upi.spec.js                                 @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/v1.spec.js                                  @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentsLinks/v2.spec.js                                  @razorpay/deploy-leads-dashboard
+web/e2e/suites/RizeMarketplace/listing.spec.js                           @razorpay/deploy-leads-dashboard
+web/e2e/suites/GCMS/orderCreate.spec.js                                  @razorpay/deploy-leads-dashboard
+web/e2e/suites/offers/offerCreationFlow.spec.js                          @razorpay/deploy-leads-dashboard
+web/e2e/suites/transactions/payments.spec.js                             @razorpay/deploy-leads-dashboard
+web/e2e/suites/transactions/refunds.spec.js                              @razorpay/deploy-leads-dashboard
+web/e2e/suites/paymentButtons/paymentButtons.spec.js                     @razorpay/deploy-leads-dashboard
+web/e2e/suites/CAW/registration_link.spec.js                             @razorpay/deploy-leads-dashboard
+web/e2e/suites/GCMS/resellers.spec.js                                    @razorpay/deploy-leads-dashboard
+web/e2e/suites/GCMS/reports.spec.js                                      @razorpay/deploy-leads-dashboard
+web/e2e/suites/RTUX/homepage-rtux.spec.js                                @razorpay/deploy-leads-dashboard
+web/e2e/suites/Wallet/reports.spec.js                                    @razorpay/deploy-leads-dashboard
+web/e2e/suites/partnerDashboard/pos/partnerAgent/clientAccounts.spec.js  @razorpay/deploy-leads-dashboard
+
+
+# Platform Configs
+scripts/*                                                                @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+.github/*                                                                @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+libs/*                                                                   @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+apps/digital-bills/webpack.config.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+apps/self-serve/webpack.config.js                                        @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+apps/pos/webpack.config.js                                               @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/merchant/webpack.config.js                                        @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/merchantLA/webpack.config.js                                      @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/merchantTnc/webpack.config.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/newAuth/webpack.config.js                                         @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/pokedex/webpack.config.js                                         @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+
+# Critical Boot Configs
+web/entry/*                                                              @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/merchant/views/bootstrap.js                                       @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/merchantLA/views/bootstrap.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/merchantTnc/bootstrap.js                                          @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/newAuth/bootstrap.js                                              @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/js/pokedex/bootstrap.js                                              @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+
+# Root Configs
+pnpm-workspace.yaml                                                      @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+package.json                                                             @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+tsconfig.base.json                                                       @joel-jaimon @dhruvdutt
+nx.json                                                                  @joel-jaimon @dhruvdutt
+
+# Shell Owners
+apps/shell                                                               @joel-jaimon @dhruvdutt
+
+# PHP Critical
+app/Http/Controllers/UserController.php                                  @joel-jaimon @dhruvdutt @razorpay-sanjib @shubham25kr07
+resources/views/merchant/*                                               @joel-jaimon @dhruvdutt
+resources/views/partials/*                                               @joel-jaimon @dhruvdutt
