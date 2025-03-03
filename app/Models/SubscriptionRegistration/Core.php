@@ -276,6 +276,12 @@ class Core extends Base\Core
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY]  = $frequency;
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] = $maxAmount;
 
+        $defaultExpiry = Carbon::now()->addYear(10)->getTimestamp();
+        if($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] === UpiMandate\Frequency::ONETIME)
+        {
+            $defaultExpiry = Carbon::now()->addDays(60)->getTimestamp();
+        }
+
         $orderPayLoad =
             [
                 Order\Entity::RECEIPT         => $input[Order\Entity::RECEIPT] ?? null,
@@ -291,7 +297,7 @@ class Core extends Base\Core
                         UpiMandate\Entity::START_TIME      => Carbon::now()->addDay(1)->getTimestamp(),
                         UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at'])
                                                                 ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at']
-                                                                : Carbon::now()->addYear(10)->getTimestamp(),
+                                                                : $defaultExpiry,
                     ]
             ];
 
@@ -1198,7 +1204,7 @@ class Core extends Base\Core
         }
 
         $products = [];
-        
+
         if (!empty($previousOrder->products))
         {
             foreach ($previousOrder->products as $product)

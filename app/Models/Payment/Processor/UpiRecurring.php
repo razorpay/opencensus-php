@@ -392,7 +392,7 @@ trait UpiRecurring
         }
 
         $gateway = $tokenTerminal->getGateway();
-
+        
         $input = [
             'terminal'    => $tokenTerminal,
             'gateway'     => $gateway,
