@@ -6,7 +6,7 @@ import {
   LINKED_PRODUCTS_MAP,
   STORES_SEARCH_BY_FIELDS,
 } from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer/constants';
-import { screen, render, userEvent } from 'test-utils';
+import { screen, render, userEvent, act } from 'test-utils';
 
 const setStoresFilterLinkedProducts = jest.fn();
 const setStoresFilterStoreType = jest.fn();
@@ -37,11 +37,17 @@ describe('StoresSearchComponent', () => {
     expect(screen.getByText('Linked Razorpay Products')).toBeInTheDocument();
     const linkedProductsField = screen.getByPlaceholderText('Select Linked Razorpay Products');
     expect(linkedProductsField).toBeInTheDocument();
-    await userEvent.click(linkedProductsField);
-    expect(screen.getAllByRole('option')).toHaveLength(1);
-    await userEvent.click(
+    await act(async () => {
+      await userEvent.click(linkedProductsField);
+    });
+    expect(
       screen.getByRole('option', { name: LINKED_PRODUCTS_MAP.DIGITAL_BILLING.label }),
-    );
+    ).toBeInTheDocument();
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole('option', { name: LINKED_PRODUCTS_MAP.DIGITAL_BILLING.label }),
+      );
+    });
     expect(setStoresFilterLinkedProducts).toHaveBeenCalledWith([
       LINKED_PRODUCTS_MAP.DIGITAL_BILLING.value,
     ]);
@@ -50,31 +56,43 @@ describe('StoresSearchComponent', () => {
     expect(screen.getByText('Store Type')).toBeInTheDocument();
     const storeTypeField = screen.getByPlaceholderText('Select Store Type');
     expect(storeTypeField).toBeInTheDocument();
-    await userEvent.click(storeTypeField);
-    expect(screen.getAllByRole('option')).toHaveLength(4);
-    await userEvent.click(screen.getByRole('option', { name: STORE_TYPE_MAP.OFFLINE.label }));
+    await act(async () => {
+      await userEvent.click(storeTypeField);
+    });
+    expect(screen.getByRole('option', { name: STORE_TYPE_MAP.ALL.label })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: STORE_TYPE_MAP.OFFLINE.label })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: STORE_TYPE_MAP.ONLINE.label })).toBeInTheDocument();
+    await act(async () => {
+      await userEvent.click(screen.getByRole('option', { name: STORE_TYPE_MAP.OFFLINE.label }));
+    });
     expect(setStoresFilterStoreType).toHaveBeenCalledWith(STORE_TYPE_MAP.OFFLINE.value);
 
     // Search By field
     expect(screen.getByText('Search By')).toBeInTheDocument();
     const searchByField = screen.getByPlaceholderText('Select Search By field');
     expect(searchByField).toBeInTheDocument();
-    await userEvent.click(searchByField);
+    await act(async () => {
+      await userEvent.click(searchByField);
+    });
     expect(
       screen.getByRole('option', { name: STORES_SEARCH_BY_FIELDS.STORE_NAME.label }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('option', { name: STORES_SEARCH_BY_FIELDS.STORE_CODE.label }),
     ).toBeInTheDocument();
-    await userEvent.click(
-      screen.getByRole('option', { name: STORES_SEARCH_BY_FIELDS.STORE_CODE.label }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole('option', { name: STORES_SEARCH_BY_FIELDS.STORE_CODE.label }),
+      );
+    });
     expect(setStoreSearchByColumn).toHaveBeenCalledWith(STORES_SEARCH_BY_FIELDS.STORE_CODE.value);
 
     // Search field
     const searchField = screen.getByPlaceholderText('Search');
     expect(searchField).toBeInTheDocument();
-    await userEvent.type(searchField, '123');
+    await act(async () => {
+      await userEvent.type(searchField, '123');
+    });
     expect(setStoresFilterSearchTerm).toHaveBeenCalledTimes(3);
 
     // Search icon
@@ -84,9 +102,13 @@ describe('StoresSearchComponent', () => {
     expect(fetchFilteredStoresData).toHaveBeenCalledTimes(1);
 
     // 'Enter' key from Search field should trigger 'fetchFilteredStoresData'
-    await userEvent.type(searchField, '45');
+    await act(async () => {
+      await userEvent.type(searchField, '45');
+    });
     expect(setStoresFilterSearchTerm).toHaveBeenCalledTimes(5);
-    await userEvent.type(searchField, '{enter}');
+    await act(async () => {
+      await userEvent.type(searchField, '{enter}');
+    });
     expect(fetchFilteredStoresData).toHaveBeenCalledTimes(2);
   });
 
@@ -114,20 +136,26 @@ describe('StoresSearchComponent', () => {
     expect(filterFields).toHaveLength(3);
 
     // Linked Razorpay Products
-    await userEvent.click(filterFields[0]);
+    await act(async () => {
+      await userEvent.click(filterFields[0]);
+    });
     expect(
       screen.getByRole('option', { name: LINKED_PRODUCTS_MAP.DIGITAL_BILLING.label }),
     ).toHaveAttribute('aria-selected', 'true');
 
     // Store Type
-    await userEvent.click(filterFields[1]);
+    await act(async () => {
+      await userEvent.click(filterFields[1]);
+    });
     expect(screen.getByRole('option', { name: STORE_TYPE_MAP.ONLINE.label })).toHaveAttribute(
       'aria-selected',
       'true',
     );
 
     // Search By field
-    await userEvent.click(filterFields[2]);
+    await act(async () => {
+      await userEvent.click(filterFields[2]);
+    });
     expect(
       screen.getByRole('option', { name: STORES_SEARCH_BY_FIELDS.STORE_CODE.label }),
     ).toHaveAttribute('aria-selected', 'true');
