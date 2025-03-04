@@ -104,6 +104,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   }
   const splitz = useSplitzService();
   const isPaymentsRoute = location.pathname.includes('/payments');
+  const isCollectXEnabled = user.isCollectXEnabled;
 
   const shouldShowOptimizerDetails = user.isOptimizerView();
 
@@ -275,7 +276,10 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               paymentIdRefundDetails={paymentIdRefundDetails}
               applicationDetails={applicationDetails}
             />
-            {!isDesktop && !isConfigTagEnabled('refunds.refund') && !user.isJnKOmniEnabled ? (
+            {!isDesktop &&
+            !isConfigTagEnabled('refunds.refund') &&
+            !user.isJnKOmniEnabled &&
+            !isCollectXEnabled ? (
               <Box>
                 <Button
                   isFullWidth

@@ -106,6 +106,7 @@ function PaymentRefundDetails({
   const hasFooter = refund_status !== null;
   const subsequentRefunds = paymentIdRefundDetails.slice(1);
   const splitz = useSplitzService();
+  const isCollectXEnabled = user.isCollectXEnabled;
 
   const onRefundSuccess = () => {
     reFetchPageDetails(paymentDetails!.id);
@@ -171,14 +172,16 @@ function PaymentRefundDetails({
             >
               Refund
             </Text>
-            <Button
-              size="small"
-              variant="secondary"
-              isDisabled={isIssueRefundDisabled(paymentDetails!, user)}
-              onClick={openIssueRefundModal}
-            >
-              Issue refund
-            </Button>
+            {!isCollectXEnabled ? (
+              <Button
+                size="small"
+                variant="secondary"
+                isDisabled={isIssueRefundDisabled(paymentDetails!, user)}
+                onClick={openIssueRefundModal}
+              >
+                Issue refund
+              </Button>
+            ) : null}
           </SectionHeader>
           {paymentIdRefundDetails.length > 0 ? (
             <PaymentRefundContent

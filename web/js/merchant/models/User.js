@@ -1483,6 +1483,10 @@ export default class User {
     return this.isFeatureEnabled('loc_stage_2');
   }
 
+  get isCollectXEnabled() {
+    return this.isFeatureEnabled('collectx_enabled');
+  }
+
   get isLocCliOfferEnabled() {
     return this.isFeatureEnabled('loc_cli_offer');
   }
