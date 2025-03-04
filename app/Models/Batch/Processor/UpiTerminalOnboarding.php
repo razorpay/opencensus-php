@@ -66,7 +66,7 @@ class UpiTerminalOnboarding extends Base
 
         $otherInputs = [];
 
-        if ((($gateway === Payment\Gateway::UPI_ICICI) or ($gateway === Payment\Gateway::UPI_RZPAPB)) and
+        if ((($gateway === Payment\Gateway::UPI_ICICI) or ($gateway === Payment\Gateway::UPI_RZPAPB) or ($gateway === Payment\Gateway::UPI_YESBANK)) and
             (boolval($recurring) === true))
         {
             $features['recurring'] = '1';

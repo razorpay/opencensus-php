@@ -7651,7 +7651,7 @@ class Processor
 
                 $variant = $response['response']['variant']['name'] ?? '';
 
-                return ($variant === 'variant_on' or $payment->getGateway() === Payment\Gateway::UPI_RZPAPB);
+                return ($variant === 'variant_on' or $payment->getGateway() === Payment\Gateway::UPI_RZPAPB or $payment->getGateway() === Payment\Gateway::UPI_YESBANK);
 
             }
         } catch (\Throwable $e) {

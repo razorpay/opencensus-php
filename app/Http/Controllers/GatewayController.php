@@ -2107,7 +2107,7 @@ class GatewayController extends Controller
 
             $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
-            return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+            return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB or $gateway === Payment\Gateway::UPI_YESBANK);
 
         } catch (\Throwable $e) {
 

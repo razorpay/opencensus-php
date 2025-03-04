@@ -4007,6 +4007,7 @@ class Gateway
         Gateway::PAYU,
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
+        Gateway::UPI_YESBANK,
     ];
 
     public static $cardMandateGateways = [
@@ -4025,6 +4026,7 @@ class Gateway
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
         Gateway::BILLDESK_OPTIMIZER,
+        Gateway::UPI_YESBANK,
     ];
 
     public static $recurringCardNetworks = [
@@ -4756,6 +4758,9 @@ class Gateway
     public static $s2sMandateCallbackGateways = [
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
+        Gateway::UPI_RZPAPB,
+        Gateway::UPI_YESBANK,
+        Gateway::UPI_AXIS,
     ];
 
     /**

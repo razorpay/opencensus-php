@@ -314,7 +314,7 @@ class Core extends Base\Core
 
                 $variant = $response['response']['variant']['name'] ?? '';
 
-                return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+                return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB or $gateway === Payment\Gateway::UPI_YESBANK);
 
             }
         } catch (\Throwable $e) {

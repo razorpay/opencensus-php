@@ -634,6 +634,46 @@ class Service extends UpiPaymentService
             }
         }
 
+        if($content['gateway'] === 'upi_yesbank')
+        {
+            $recurringApbPayload = json_decode($content['body'], true);
+            if ($recurringApbPayload['mandateDtls'][0]['mandate'] === true) {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $recurringApbPayload['mandateDtls'][0]['payerVpa'] ?? '',
+                        'status_code' => $recurringApbPayload['mandateDtls'][0]['respCode'],
+                        'npci_reference_id' => $recurringApbPayload['mandateDtls'][0]['custRefNo'],
+                        'merchant_reference' => $recurringApbPayload['requestInfo']['pspRefNo'],
+                    ],
+                    'payment' => [
+                        'id' => substr($recurringApbPayload['requestInfo']['pspRefNo'], 0,14),
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($recurringApbPayload['mandateDtls'][0]['amount'] * 100),
+                        'recurring' => true
+                    ],
+                ];
+
+                if($recurringApbPayload['mandateDtls'][0]['status'] === 'PAUSE')
+                {
+                    $data['data']['upi_mandate']['status'] = 'pause';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['mandateDtls'][0]['UMN'];
+                }
+
+                if($recurringApbPayload['mandateDtls'][0]['status'] === 'UNPAUSE')
+                {
+                    $data['data']['upi_mandate']['status'] = 'resume';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['mandateDtls'][0]['UMN'];
+                }
+
+                if($recurringApbPayload['mandateDtls'][0]['status'] === 'REVOKED')
+                {
+                    $data['data']['upi_mandate']['status'] = 'revoke';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['mandateDtls'][0]['UMN'];
+                }
+                $recurringApbPayload['code'] = '0';
+            }
+        }
         $data['success'] = true;
         $data['error'] = null;
         $data['next'] = null;
