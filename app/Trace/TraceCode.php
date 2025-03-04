@@ -1090,7 +1090,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION                 = 'LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION';
     const BLACKLISTED_IIN_FOR_ALT_AND_TOKEN                     = 'BLACKLISTED_IIN_FOR_ALT_AND_TOKEN';
     const FORBIDDEN_HEADLESS_BIN                                = 'FORBIDDEN_HEADLESS_BIN';
-
+    const UPDATE_TRANSACTION_ENTITY                             = 'UPDATE_TRANSACTION_ENTITY';
     //circuit breaker
     const CIRCUIT_BREAKER_CLOSED    = "CIRCUIT_BREAKER_CLOSED";
     const CIRCUIT_BREAKER_OPEN    = "CIRCUIT_BREAKER_OPEN";
