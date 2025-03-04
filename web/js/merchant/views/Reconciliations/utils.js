@@ -8,4 +8,11 @@ const checkCustomReportingEnabled = (splitz) => {
   return abExperiments?.enable_custom_reporting?.variables?.turned === 'on';
 };
 
-export { checkReconSaasEnabled, checkCustomReportingEnabled };
+const checkAllowedMerchantToDeleteReconRun = (splitz) => {
+  const { abExperiments } = splitz || {
+    abExperiments: { allow_merchant_to_delete_recon_run: undefined },
+  };
+  return abExperiments?.allow_merchant_to_delete_recon_run?.variables?.turned === 'on';
+};
+
+export { checkReconSaasEnabled, checkCustomReportingEnabled, checkAllowedMerchantToDeleteReconRun };

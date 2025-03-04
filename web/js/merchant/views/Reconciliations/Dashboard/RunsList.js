@@ -1,36 +1,51 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Box } from '@razorpay/blade/components';
+import { useMutation } from '@tanstack/react-query';
+import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import RunsListTable from 'merchant/views/Reconciliations/Dashboard/RunsListTable';
+import { deleteReconRun } from 'merchant/views/Reconciliations/api';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { useReconTracking } from 'merchant/views/Reconciliations/hooks';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-export default function ProcessRunsList({ activeProcess }) {
+const ReconRunsList = ({ activeProcess, showNotification }) => {
   const [runsList, setRunsList] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const { processId: activeProcessesId } = useParams();
+  const isProcessSpecific = Boolean(activeProcess);
+
+  const {
+    mutate: deleteReconRunMutate,
+    isLoading: isLoadingForDeleteReconRun,
+    isSuccess: isSuccessForDeleteReconRun,
+    isError: isErrorForDeleteReconRun,
+  } = useMutation({
+    mutationFn: ({ runId }) => deleteReconRun({ runId }),
+  });
 
   const fetchRuns = useCallback(
     async (props = {}) => {
+      setError(false);
       try {
         const raw = {
-          filter: {
-            merchant_process_id: [activeProcessesId],
-          },
+          filter: isProcessSpecific
+            ? { merchant_process_id: [activeProcessesId] }
+            : { product_id: [], type: [], status: [] },
           sort_key: '',
           page: 1,
           offset: 0,
           page_size: 10,
           ...props,
         };
-        setError(false);
         setIsLoading(true);
         const res = await merchantFetch({
           url: `recon-saas/recon_run`,
@@ -56,18 +71,39 @@ export default function ProcessRunsList({ activeProcess }) {
         setIsLoading(false);
       }
     },
-    [activeProcessesId, currentPage],
+    [isProcessSpecific, activeProcessesId, currentPage],
   );
 
   useReconTracking({
-    objectName: 'recon run listing',
-    screen: ReconScreens.ProcessListing,
-    properties: {
-      activeProcessesId,
-      activeProcessName: activeProcess?.name,
-      activeProcessType: activeProcess?.type,
-    },
+    objectName: isProcessSpecific ? 'recon run listing' : 'recon global runs list',
+    screen: isProcessSpecific ? ReconScreens.ProcessListing : ReconScreens.GlobalRunListing,
+    properties: isProcessSpecific
+      ? {
+          activeProcessesId,
+          activeProcessName: activeProcess?.name,
+          activeProcessType: activeProcess?.type,
+        }
+      : {},
   });
+
+  useEffect(() => {
+    if (isSuccessForDeleteReconRun) {
+      showNotification({
+        type: 'success',
+        message: 'Recon run deleted successfully',
+      });
+      fetchRuns();
+    }
+  }, [isSuccessForDeleteReconRun]);
+
+  useEffect(() => {
+    if (isErrorForDeleteReconRun) {
+      showNotification({
+        type: 'error',
+        message: 'Unable to delete the recon run',
+      });
+    }
+  }, [isErrorForDeleteReconRun]);
 
   useEffect(() => {
     fetchRuns();
@@ -86,17 +122,27 @@ export default function ProcessRunsList({ activeProcess }) {
   };
 
   return (
-    <Box testID="recon-process-runs">
+    <Box testID={isProcessSpecific ? 'recon-process-runs' : 'recon-runs-listing'}>
       <RenderErrorLoadingOrChild isError={error} isLoading={isLoading}>
         <RunsListTable
           nodes={runsList}
           currentPage={currentPage}
           handlePagination={handlePagination}
           paginationData={paginationData}
-          screen={ReconScreens.ProcessRunListing}
+          screen={
+            isProcessSpecific ? ReconScreens.ProcessRunListing : ReconScreens.GlobalRunListing
+          }
           activeProcess={activeProcess}
+          isLoadingForDeleteReconRun={isLoadingForDeleteReconRun}
+          deleteReconRunMutate={deleteReconRunMutate}
         />
       </RenderErrorLoadingOrChild>
     </Box>
   );
-}
+};
+
+export default compose(
+  connect(null, {
+    showNotification,
+  }),
+)(ReconRunsList);

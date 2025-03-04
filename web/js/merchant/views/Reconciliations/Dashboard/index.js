@@ -6,7 +6,7 @@ import { useSplitzService } from 'common/splitz';
 import DownloadList from 'merchant/views/Reconciliations/Dashboard/DownloadList';
 import Processes from 'merchant/views/Reconciliations/Dashboard/Processes';
 import ReportList from 'merchant/views/Reconciliations/Dashboard/ReportList';
-import Runs from 'merchant/views/Reconciliations/Dashboard/Runs';
+import RunsList from 'merchant/views/Reconciliations/Dashboard/RunsList';
 import { TabItemRouterLink } from 'merchant/views/Reconciliations/Dashboard/TabItemRouterLink';
 import { checkCustomReportingEnabled } from 'merchant/views/Reconciliations/utils';
 
@@ -97,7 +97,7 @@ const ReconDashboard = () => {
                 <Processes />
               </TabPanel>
               <TabPanel value={DashboardTabs.RUNS}>
-                <Runs />
+                <RunsList />
               </TabPanel>
               {enableCustomReporting ? (
                 <>

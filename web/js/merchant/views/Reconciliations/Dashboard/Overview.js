@@ -23,8 +23,8 @@ import { useCalendarRange } from 'merchant/views/Reconciliations/hooks';
 
 import ProcessCharts from './ProcessCharts';
 import ProcessOverview from './ProcessOverview';
-import ProcessRunsList from './ProcessRunsList';
 import ProcessTransactions from './ProcessTransactions';
+import ProcessRunsList from './RunsList';
 import { TabItemRouterLink } from './TabItemRouterLink';
 import { ProcessTabs } from './constants';
 

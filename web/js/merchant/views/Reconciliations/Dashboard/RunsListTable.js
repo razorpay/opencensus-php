@@ -15,13 +15,17 @@ import {
   Box,
   Text,
   Button,
+  Tooltip,
   ArrowLeftIcon,
   ArrowRightIcon,
+  IconButton,
+  TrashIcon,
 } from '@razorpay/blade/components';
 import ReconciledIcon from 'assets/reconciliations/reconciled.svg';
 import moment from 'moment';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
@@ -30,17 +34,26 @@ import {
   FILE_WORKFLOW_KEY,
 } from 'merchant/views/Reconciliations/Dashboard/constants';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
-const cols = ['Run ID', 'Process Name', 'Last Update', 'Run Completion', 'Summary', ''];
-export default function RunsListTable({
+import { checkAllowedMerchantToDeleteReconRun } from 'merchant/views/Reconciliations/utils';
+
+const cols = ['Run ID', 'Process Name', 'Last Update', 'Run Completion', 'Summary', '', ''];
+
+const RunsListTable = ({
   nodes,
   currentPage,
   handlePagination,
   paginationData,
   screen,
   activeProcess,
-}) {
+  isLoadingForDeleteReconRun,
+  deleteReconRunMutate,
+}) => {
+  const { abExperiments } = useSplitzService();
   const navigate = useNavigate();
   const { processId } = useParams();
+
+  const isAllowedToDeleteReconRun = checkAllowedMerchantToDeleteReconRun({ abExperiments });
+
   const downloadReport = async (id) => {
     analyticsTrackWithUserInfo({
       screen,
@@ -59,10 +72,12 @@ export default function RunsListTable({
       window.open(res?.data?.report_url, '_blank');
     }
   };
+
   const getPercentReconciled = (stats) => {
     const percent = Number(stats?.recon_output.Reconciled.percentage);
     return isNaN(percent) ? '' : `${Math.round(percent)}%`;
   };
+
   const goToRunDetailsPage = ({ runId }) => {
     analyticsTrackWithUserInfo({
       screen: processId ? ReconScreens.ProcessRunListing : ReconScreens.GlobalRunListing,
@@ -81,9 +96,17 @@ export default function RunsListTable({
         : `/reconciliations/dashboard/${DashboardTabs.RUNS}/${runId}`,
     );
   };
+
   return (
-    <>
-      <Table data={{ nodes }} gridTemplateColumns="1fr 1fr 1fr 1fr 1fr 1.5fr">
+    <Box marginTop="spacing.3">
+      <Table
+        data={{ nodes }}
+        gridTemplateColumns={
+          isAllowedToDeleteReconRun
+            ? '1fr 1fr 1fr 1fr 1fr 1.5fr 1fr 0.1fr'
+            : '1fr 1fr 1fr 1fr 1fr 1.5fr 1fr'
+        }
+      >
         {(tableData) => (
           <>
             <TableHeader>
@@ -91,6 +114,7 @@ export default function RunsListTable({
                 {cols.map((column, idx) => {
                   return <TableHeaderCell key={idx}>{column}</TableHeaderCell>;
                 })}
+                {isAllowedToDeleteReconRun ? <TableHeaderCell /> : null}
               </TableHeaderRow>
             </TableHeader>
             <TableBody>
@@ -120,20 +144,42 @@ export default function RunsListTable({
                     </TableCell>
                     <TableCell>
                       <Box display="flex" gap="spacing.6" alignItems="center">
-                        {isComplete ? (
-                          <BladeLink
-                            onClick={() => downloadReport(item?.id)}
-                            alignItems="center"
-                            icon={DownloadIcon}
-                          >
-                            Download Report
-                          </BladeLink>
-                        ) : null}
-                        <BladeLink onClick={() => goToRunDetailsPage({ runId: item.id })}>
-                          Details
+                        <BladeLink
+                          onClick={() => downloadReport(item?.id)}
+                          alignItems="center"
+                          icon={DownloadIcon}
+                          isDisabled={!isComplete}
+                        >
+                          Download Report
                         </BladeLink>
                       </Box>
                     </TableCell>
+                    <TableCell>
+                      <BladeLink onClick={() => goToRunDetailsPage({ runId: item.id })}>
+                        Details
+                      </BladeLink>
+                    </TableCell>
+                    {isAllowedToDeleteReconRun ? (
+                      <TableCell>
+                        <Box display="flex" gap="spacing.6" alignItems="center">
+                          <Tooltip content="This will delete the recon run" placement="bottom">
+                            <IconButton
+                              icon={() => (
+                                <TrashIcon
+                                  color={
+                                    !isComplete || isLoadingForDeleteReconRun
+                                      ? 'interactive.icon.negative.disabled'
+                                      : 'interactive.icon.negative.subtle'
+                                  }
+                                />
+                              )}
+                              isDisabled={!isComplete || isLoadingForDeleteReconRun}
+                              onClick={() => deleteReconRunMutate({ runId: item.id })}
+                            />
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    ) : null}
                   </TableRow>
                 );
               })}
@@ -159,6 +205,8 @@ export default function RunsListTable({
           Next
         </Button>
       </Box>
-    </>
+    </Box>
   );
-}
+};
+
+export default RunsListTable;
