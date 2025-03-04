@@ -684,6 +684,8 @@ return array(
 
     'skip_cvv_card_payments_rearch_experiment_id' => env('SKIP_CVV_CARD_PAYMENTS_REARCH_EXPERIMENT_ID'),
 
+    'pos_payments_reference13_experiment_id' => env('POS_PAYMENTS_REFERENCE13_EXPERIMENT_ID'),
+
     'validate_vpa_splitz_experiment_id' => env('VALIDATE_VPA_SPLITZ_EXPERIMENT_ID'),
 
     'pricing_fallback_standard_plan_experiment_id' => env('PRICING_FALLBACK_STANDARD_PLAN_EXPERIMENT_ID'),

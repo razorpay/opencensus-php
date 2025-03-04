@@ -17,6 +17,7 @@ use RZP\Models\Payment\Constant;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Offer\OffersEngine;
 use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Models\QrPayment\Constants as QRConstant;
 use RZP\Services\Shield;
 use Neves\Events\TransactionalClosureEvent;
 use Route;
@@ -4828,6 +4829,10 @@ class Processor
 
         unset($input['receiver_type'] , $input['status'],
             $input['reference1'],$input['reference2']);
+
+        if( $this->shouldAddSourceChannelAsInPersonForPosPayment($this->merchant->getId())) {
+            $input[Payment\Entity::SOURCE_CHANNEL] = QRConstant::PAYMENT_TYPE_IN_PERSON;
+        }
 
         if($input['method'] === 'card')
         {
@@ -15558,6 +15563,44 @@ public function isNBPlusRearchTpv($merchant): bool
                 $e,
                 null,
                 TraceCode::SKIP_CVV_CARD_PAYMENTS_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
+    /**
+     * shouldAddSourceChannelAsInPersonForPosPayment checks if POS_PAYMENTS_REFERENCE13_EXPERIMENT_ID splitz is enabled
+     *
+     * @param string $merchantId
+     * @return boolean
+     */
+    private function shouldAddSourceChannelAsInPersonForPosPayment($merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.pos_payments_reference13_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::POS_PAYMENTS_REFERENCE13_SPLITZ_VARIANT, [
+                'merchant_id' => $merchantId,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::POS_PAYMENTS_REFERENCE13_SPLITZ_ERROR);
         }
 
         return false;
