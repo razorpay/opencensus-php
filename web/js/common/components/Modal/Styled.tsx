@@ -39,7 +39,7 @@ export const Dialog = styled.div<any>`
     outline: 'none';
   }
 `;
-// Button from blade not attaching className to DOM, hence using container
+// Button from blade not attaching className to DOM, hence using container.
 export const CloseIconContainer = styled.div<any>`
   position: absolute;
   top: ${({ theme }) => theme.bladeOld.spacings.small};
