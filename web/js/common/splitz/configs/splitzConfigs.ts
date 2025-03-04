@@ -694,6 +694,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'storefront_social_handle',
+        experimentId: {
+          beta: 'Oux2ojFCgYupHe',
+          production: 'PxWciJBkjUEhtI',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'stores',
         experimentId: {
           beta: 'Pirv5Qn3rEAHRl',

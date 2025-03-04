@@ -32,7 +32,7 @@ import {
 import lazy from 'merchant/routes/LazyLoader';
 import { IBannerImage, CropDimensions } from 'merchant/reducers/paymentPages/types';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { MAX_BANNERS_ALLOWED } from '../../constants';
+import { MAX_BANNERS_ALLOWED, MAX_ENABLED_BANNERS } from '../../constants';
 
 const BannerList = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1BannerList' */ './BannerList'),
@@ -103,20 +103,20 @@ const isLessThanThreeItemsEnabled = (items: IBannerImage[]): boolean => {
 };
 
 const processBannerData = (bannerData: IBannerImage[]) => {
-  if (bannerData.length <= 3) {
+  if (bannerData.length <= MAX_ENABLED_BANNERS) {
     return bannerData
       .map((banner) => ({ ...banner, isSwitchEnabled: true }))
       .sort((a, b) => a.position - b.position);
   } else {
     const enabledCount = bannerData.filter((banner) => banner.enabled).length;
-    if (enabledCount === 3) {
+    if (enabledCount === MAX_ENABLED_BANNERS) {
       return bannerData
         .map((banner) => ({
           ...banner,
           isSwitchEnabled: banner.enabled ? true : false,
         }))
         .sort((a, b) => a.position - b.position);
-    } else if (enabledCount < 3) {
+    } else if (enabledCount < MAX_ENABLED_BANNERS) {
       return bannerData
         .map((banner) => ({ ...banner, isSwitchEnabled: true }))
         .sort((a, b) => a.position - b.position);

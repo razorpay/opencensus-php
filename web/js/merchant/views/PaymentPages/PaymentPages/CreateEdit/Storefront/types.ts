@@ -2,7 +2,11 @@ import {
   IPaymentPagesProduct,
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
-import { ICategories } from 'merchant/reducers/paymentPages/types';
+import {
+  ICategories,
+  SocialMediaHandle,
+  SocialMediaHandles,
+} from 'merchant/reducers/paymentPages/types';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export type TripleState = -1 | 0 | 1;
@@ -158,4 +162,62 @@ export interface PixelCrop {
   y: number;
   width: number;
   height: number;
+}
+
+export interface AlertState {
+  showBannerAlert: boolean;
+  showSocialHandleAlert: boolean;
+}
+
+export interface SocialHandleDrawerProps {
+  handleClose: () => void;
+  isMobile: boolean;
+  addSocialHandle: (payload: SocialMediaHandle) => void;
+  storefront: PaymentPagesStorefrontType;
+  storefrontId: string;
+  reorderSocialHandle: (payload: any) => void;
+  updateSocialHandle: (payload: SocialMediaHandle) => void;
+  deleteSocialHandle: (payload: { platform: string }) => void;
+}
+
+export interface SocialHandle {
+  name: string;
+  label: string;
+  src: string;
+  inputLabel: string;
+  inputPlaceholder: string;
+}
+
+export interface SocialHandleModalProps {
+  onSave: () => void;
+  storefront?: PaymentPagesStorefrontType;
+  inputVal: string;
+  selectedHandle: SocialHandle | null;
+  setSelectedHandle: React.Dispatch<React.SetStateAction<SocialHandle | null>>;
+  handleInputChange: (e: any) => void;
+  onCancel: () => void;
+}
+
+export interface ModalFooterButtonsProps {
+  onCancel: () => void;
+  onSave: () => void;
+  inputVal: string;
+  isSaveDisabled?: boolean;
+}
+
+export interface ISingleSocialHandleProps {
+  id: string;
+  platform: string;
+  logo_url: string;
+  handleDelete: (val: string) => void;
+  handleEdit: (val: string) => void;
+  isMobile: boolean;
+}
+
+export interface SocialHandleListProps {
+  reorderSocialHandle: (payload: any) => void;
+  isMobile: boolean;
+  socialHandleList: SocialMediaHandles;
+  handleEditClick: (handle: string) => void;
+  handleDeleteClick: (handle: string) => void;
 }

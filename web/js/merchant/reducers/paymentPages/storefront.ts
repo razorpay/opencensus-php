@@ -7,7 +7,11 @@ import {
   fetchStorefrontEntity,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { transformStorefront, transformLineItem, transformCatalog } from './transformer';
-import { IBannerImage } from 'merchant/reducers/paymentPages/types';
+import {
+  IBannerImage,
+  SocialMediaHandle,
+  SocialMediaHandles,
+} from 'merchant/reducers/paymentPages/types';
 
 // TODO: Remove dependency from here
 
@@ -43,7 +47,6 @@ export interface IPaymentPagesCategory {
   alias: string;
   created_at: number;
 }
-
 export interface PaymentPagesStorefrontType {
   id: null | string;
   isLoading: boolean;
@@ -53,6 +56,7 @@ export interface PaymentPagesStorefrontType {
   entity: {
     title: string;
     banner_images: Array<IBannerImage>;
+    social_handles: SocialMediaHandles | [];
     contactPhone: string;
     contactEmail: string;
     terms?: string;
@@ -73,6 +77,7 @@ export interface PaymentPagesStorefrontType {
       enable_receipt?: string;
       base_config?: {
         banner_feature_enabled: boolean;
+        social_handles_enabled: boolean;
       };
     };
   };
@@ -100,6 +105,10 @@ const PP_FETCH_PRODUCTS = 'PP_FETCH_PRODUCTS';
 const ADD_CATEGORIES = 'ADD_CATEGORIES';
 const PP_PREVIEW_DEVICE = 'PP_PREVIEW_DEVICE';
 const RESET_PP_STOREFRONT = 'RESET_PP_STOREFRONT';
+const ADD_SOCIAL_HANDLE = 'ADD_SOCIAL_HANDLE';
+const REORDER_SOCIAL_HANDLE = 'REORDER_SOCIAL_HANDLE';
+const UPDATE_SOCIAL_HANDLE = 'UPDATE_SOCIAL_HANDLE';
+const DELETE_SOCIAL_HANDLE = 'DELETE_SOCIAL_HANDLE';
 
 export const fetchStorefront = (id: string, isIntentDuplicate?: boolean) => {
   return {
@@ -130,6 +139,34 @@ export const editStorefront = (key: string, value: string | boolean) => {
       key,
       value,
     },
+  };
+};
+
+export const addSocialHandle = (payload: SocialMediaHandle) => {
+  return {
+    type: ADD_SOCIAL_HANDLE,
+    payload,
+  };
+};
+
+export const updatedSocialHandle = (payload: SocialMediaHandle) => {
+  return {
+    type: UPDATE_SOCIAL_HANDLE,
+    payload,
+  };
+};
+
+export const reorderSocialHandle = (payload: any) => {
+  return {
+    type: REORDER_SOCIAL_HANDLE,
+    payload,
+  };
+};
+
+export const deleteSocialHandle = (payload: { platform: string }) => {
+  return {
+    type: DELETE_SOCIAL_HANDLE,
+    payload,
   };
 };
 
@@ -196,6 +233,7 @@ const initialState: PaymentPagesStorefrontType = {
     expire_by: null,
     settings: {},
     slug: '',
+    social_handles: [],
   },
   allCategories: {
     data: [],
@@ -382,6 +420,47 @@ export default (state = initialState, action) => {
         },
       });
     }
+
+    case ADD_SOCIAL_HANDLE:
+      return merge(state, {
+        entity: {
+          ...state.entity,
+          social_handles: [...state.entity.social_handles, action.payload],
+        },
+      });
+
+    case UPDATE_SOCIAL_HANDLE:
+      return merge(state, {
+        entity: {
+          ...state.entity,
+          social_handles: state.entity.social_handles.map((handle) =>
+            handle.platform === action.payload.platform ? { ...handle, ...action.payload } : handle,
+          ),
+        },
+      });
+
+    case REORDER_SOCIAL_HANDLE:
+      return merge(state, {
+        entity: {
+          ...state.entity,
+          social_handles: action.payload,
+        },
+      });
+
+    case DELETE_SOCIAL_HANDLE:
+      const updatedHandles = state.entity.social_handles
+        .filter((handle) => handle.platform !== action.payload.platform)
+        .map((handle, index) => ({
+          ...handle,
+          position: index,
+        }));
+
+      return merge(state, {
+        entity: {
+          ...state.entity,
+          social_handles: updatedHandles,
+        },
+      });
 
     case 'PP_STOREFRONT_ACTIVE':
       return merge(state, {

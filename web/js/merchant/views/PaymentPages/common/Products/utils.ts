@@ -193,6 +193,7 @@ export const generateStorefrontRequest = (
       slug,
       terms,
       banner_images,
+      social_handles,
     },
   } = storefront;
   //TODO: manual receipt is not enabled, hardcoding enbablement for now
@@ -215,6 +216,7 @@ export const generateStorefrontRequest = (
     banner_images: banner_images.map(({ isSwitchEnabled, ...rest }) => {
       return { ...rest };
     }),
+    social_handles,
     // notes: {
     //   key1: 'Select your favourite Chocolate',
     // },

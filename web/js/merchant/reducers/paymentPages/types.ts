@@ -97,6 +97,7 @@ export interface IStorefrontResponse {
   type: 'store';
   slug: string;
   banner_images: Array<IBannerImage>;
+  social_handles: SocialMediaHandles;
   meta_data: StoreFrontMetaData;
   short_url: string;
   mode: Mode;
@@ -109,3 +110,13 @@ export interface IStorefrontResponse {
   terms?: string;
   configs;
 }
+
+export type SocialMediaHandle = {
+  id?: string;
+  platform: string;
+  profile_url: string;
+  logo_url?: string;
+  position?: number;
+};
+
+export type SocialMediaHandles = SocialMediaHandle[];

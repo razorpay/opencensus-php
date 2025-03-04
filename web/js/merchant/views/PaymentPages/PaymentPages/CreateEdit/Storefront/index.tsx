@@ -61,7 +61,7 @@ import {
   onStorefrontProductChange,
   getAllowedStorefrontDomain,
 } from './iframe';
-import { IHostedPagesMerchant, IStorefrontProps, TripleState } from './types';
+import { AlertState, IHostedPagesMerchant, IStorefrontProps, TripleState } from './types';
 import {
   convertToHostedPagesProduct,
   getStorefrontHostedPagesFormat,
@@ -89,11 +89,15 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const AddBuisnessDetails = lazy(
-  () => import(/* webpackChunkName: 'StorefrontV1BusinessDetails' */ './AddBuisnessDetails'),
+  () => import(/* webpackChunkName: 'AddBuisnessDetails' */ './AddBuisnessDetails'),
 );
 
 const AddBannerDetails = lazy(
-  () => import(/* webpackChunkName: 'StorefrontV1BannerDetails' */ './AddBannerDetails'),
+  () => import(/* webpackChunkName: 'AddBannerDetails' */ './AddBannerDetails'),
+);
+
+const AddSocialMediaDetails = lazy(
+  () => import(/* webpackChunkName: 'AddSocialMediaDetails' */ './AddSocialMediaDetails'),
 );
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();
@@ -142,11 +146,17 @@ const StoreFront = ({
   const [isReceiptSettingsOpen, setIsReceiptSettingsOpen] = useState(false);
   const [openBuisnessDetailsDrawer, setOpenBuisnessDetailsDrawer] = useState(false);
   const [openAddBannerDrawer, setOpenAddBannerDrawer] = useState(false);
-  const [showBannerAlert, setShowBannerAlert] = useState(false);
+  const [openSocialMediaDrawer, setOpenSocialMediaDrawer] = useState(false);
+  const [showAlert, setShowAlert] = useState<AlertState>({
+    showBannerAlert: false,
+    showSocialHandleAlert: false,
+  });
   const navigate = useNavigate();
   const splitzConfig = useSplitzService();
   const { abExperiments } = splitzConfig;
-  const isStorefrontV1Enabled = isExperimentEnabled(abExperiments?.storefront_v1);
+
+  const isStorefrontV1Enabled = isExperimentEnabled(abExperiments?.['storefront_v1']);
+  const isSocialHandlesEnabled = isExperimentEnabled(abExperiments?.['storefront_social_handle']);
 
   const setIsIframeLoadedRef = (data: boolean) => {
     isIframeLoadedRef.current = data;
@@ -170,6 +180,10 @@ const StoreFront = ({
       storefrontId: id ?? undefined,
       isNewStoreFront: Boolean(isCreate),
     });
+  };
+
+  const handleSocialMediaClick = (val: boolean) => {
+    setOpenSocialMediaDrawer(val);
   };
 
   const getMerchantDetails = useCallback(
@@ -356,18 +370,20 @@ const StoreFront = ({
     const { search } = location;
     const queryParams = getURLQueryParams(search);
     // edit & duplicate flow
-    if (!isCreate || queryParams.duplicate_id) {
-      const idToFetch = queryParams.duplicate_id ? queryParams.duplicate_id : id;
-      const promises = [fetchStorefront(idToFetch), fetchCategories()];
-      Promise.all(promises).then(() => {
-        setIsInitialLoaded(1);
+    if (!isCreate || queryParams['duplicate_id']) {
+      const idToFetch = queryParams['duplicate_id'] ? queryParams['duplicate_id'] : id;
+      if (idToFetch) {
+        const promises = [fetchStorefront(idToFetch), fetchCategories()];
+        Promise.all(promises).then(() => {
+          setIsInitialLoaded(1);
 
-        if (queryParams.modal === 'page') {
-          setIsPageSettingsOpen(true);
-        } else if (queryParams.modal === 'receipt') {
-          setIsReceiptSettingsOpen(true);
-        }
-      });
+          if (queryParams['modal'] === 'page') {
+            setIsPageSettingsOpen(true);
+          } else if (queryParams['modal'] === 'receipt') {
+            setIsReceiptSettingsOpen(true);
+          }
+        });
+      }
     } else {
       // create flow
       const promises = [getSupportDetails(), fetchProductCatalogs(10, false), fetchCategories()];
@@ -566,6 +582,15 @@ const StoreFront = ({
     }
   };
 
+  const checkForSocialHanldesAlert = () => {
+    let isSocialHandlesEnabled = storefront.entity.settings?.base_config?.social_handles_enabled;
+    if (isSocialHandlesEnabled) {
+      return storefront?.entity?.social_handles?.length === 0;
+    } else {
+      return false;
+    }
+  };
+
   const onSubmit = (): any => {
     // adding before validity check, so as to create proper funnel for events
     track.publishPageClicked({
@@ -575,10 +600,20 @@ const StoreFront = ({
 
     //Check for banner
     if (isStorefrontV1Enabled && checkForBannerAlert()) {
-      setShowBannerAlert(true);
+      setShowAlert((prev) => ({
+        ...prev,
+        showBannerAlert: true,
+      }));
       return;
     }
 
+    if (isSocialHandlesEnabled && checkForSocialHanldesAlert()) {
+      setShowAlert((prev) => ({
+        ...prev,
+        showSocialHandleAlert: true,
+      }));
+      return;
+    }
     // validate
     const { isValid, error } = validateStorefront(storefront);
 
@@ -835,24 +870,51 @@ const StoreFront = ({
                         <Box
                           display="flex"
                           flexDirection="column"
-                          gap={isMobile ? 'spacing.0' : 'spacing.8'}
+                          gap={isMobile ? 'spacing.0' : 'spacing.5'}
                           marginTop="32px"
+                          marginBottom="spacing.8"
                         >
                           <AddBuisnessDetails
                             handleClick={handleBuisnessDetailsClick}
                             openBuisnessDetailsDrawer={openBuisnessDetailsDrawer}
                             isMobile={isMobile}
                           />
+
+                          {isSocialHandlesEnabled && (
+                            <AddSocialMediaDetails
+                              handleClick={handleSocialMediaClick}
+                              openSocialMediaDrawer={openSocialMediaDrawer}
+                              showSocialMedialAlert={showAlert.showSocialHandleAlert}
+                              setShowSocialMedialAlert={setShowAlert}
+                              storefrontId={id}
+                            />
+                          )}
+
                           <AddBannerDetails
                             handleClick={handleAddBannerClick}
                             openAddBannerDrawer={openAddBannerDrawer}
-                            showBannerAlert={showBannerAlert}
-                            setShowBannerAlert={setShowBannerAlert}
+                            showBannerAlert={showAlert.showBannerAlert}
+                            setShowBannerAlert={setShowAlert}
                           />
                         </Box>
                       </SuspenseWithLoader>
                     ) : (
-                      <ContactDetails isLoaded={isInitialLoaded !== -1} />
+                      <>
+                        <ContactDetails isLoaded={isInitialLoaded !== -1} />
+                        {isSocialHandlesEnabled && (
+                          <SuspenseWithLoader>
+                            <Box marginTop="32px" marginBottom="spacing.8">
+                              <AddSocialMediaDetails
+                                handleClick={handleSocialMediaClick}
+                                openSocialMediaDrawer={openSocialMediaDrawer}
+                                showSocialMedialAlert={showAlert.showSocialHandleAlert}
+                                setShowSocialMedialAlert={setShowAlert}
+                                storefrontId={id}
+                              />
+                            </Box>
+                          </SuspenseWithLoader>
+                        )}
+                      </>
                     )}
                   </LeftContentWrapper>
                 </StorefrontLeftWrapper>

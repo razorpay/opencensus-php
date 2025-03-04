@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -11,6 +11,7 @@ import {
 } from 'merchant/reducers/paymentPages/storefront';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { AlertState } from './types';
 
 const UploadBannerDrawer = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1UploadBanner' */ './UploadBannerDrawer'),
@@ -22,7 +23,7 @@ interface IAddBannerDetailsProps {
   storefront: PaymentPagesStorefrontType;
   editStorefront: (name: string, value: unknown) => void;
   showBannerAlert: boolean;
-  setShowBannerAlert: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowBannerAlert: React.Dispatch<React.SetStateAction<AlertState>>;
   isMobile: boolean;
 }
 
@@ -98,18 +99,25 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
     handleBannerSetting(isChecked);
   };
 
+  const toggleBannerAlert = () => {
+    setShowBannerAlert((prev) => ({
+      ...prev,
+      showBannerAlert: false,
+    }));
+  };
+
   const handleAlertPrimaryClick = () => {
     track.uploadBannerClickedOnMissingBannerMsg({
       storefrontId: storefront?.id,
       isNewStoreFront: Boolean(!storefront?.id),
     });
-    setShowBannerAlert(false);
+    toggleBannerAlert();
     handleBannerSetting(true);
     handleClick(true);
   };
 
   const handleAlertSecondaryClick = () => {
-    setShowBannerAlert(false);
+    toggleBannerAlert();
     handleBannerSetting(false);
   };
 
@@ -122,11 +130,6 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
       ) : (
         <LineItems
           title="Add store banner"
-          subTitle={
-            <Text color="surface.text.gray.muted" variant="body" size="small" weight="regular">
-              This is an optional field
-            </Text>
-          }
           rightChildren={<RightChildren handleClick={handleClick} />}
           extraItems={
             <BannerSwitch
@@ -153,7 +156,7 @@ const AddBannerDetails: React.FC<IAddBannerDetailsProps> = ({
           }}
           color="notice"
           emphasis="intense"
-          onDismiss={() => setShowBannerAlert(false)}
+          onDismiss={() => toggleBannerAlert()}
         />
       )}
     </>

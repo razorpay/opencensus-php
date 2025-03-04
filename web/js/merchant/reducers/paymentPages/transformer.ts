@@ -5,7 +5,9 @@ import {
 import { IPaymentPagesProduct, PaymentPagesStorefrontType } from './storefront';
 import { IBannerImage, ICatalog, ILineItem, IStorefrontResponse } from './types';
 import { decodeHTMLEntities } from 'common/utils/rzp-utils';
-import { MAX_ENABLED_BANNERS } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import {
+  MAX_ENABLED_BANNERS,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 export const transformCatalog = (catalog: ICatalog): IPaymentPagesProduct => {
   return {
@@ -58,6 +60,7 @@ export const transformStorefront = (
     shortUrl: response.short_url,
     expire_by: response.expire_by,
     settings: response.configs || {},
+    social_handles: response.social_handles || [],
   };
 };
 

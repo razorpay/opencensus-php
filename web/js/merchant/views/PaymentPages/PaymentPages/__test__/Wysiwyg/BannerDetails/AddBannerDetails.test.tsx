@@ -49,7 +49,15 @@ describe('AddBannerDetails Component', () => {
 
     const primaryButton = screen.getByText('Upload Banner');
     fireEvent.click(primaryButton);
-    expect(mockSetShowBannerAlert).toHaveBeenCalledWith(false);
+
+    expect(mockSetShowBannerAlert).toHaveBeenCalled();
+    const updateFunction = mockSetShowBannerAlert.mock.calls[0][0];
+    const previousState = { showSocialHandleAlert: true, showBannerAlert: true };
+    const result = updateFunction(previousState);
+    expect(result).toEqual({
+      showSocialHandleAlert: true,
+      showBannerAlert: false,
+    });
 
     expect(editStorefront).toHaveBeenCalledWith('settings', {
       ...storefrontData.entity.settings,
@@ -75,8 +83,16 @@ describe('AddBannerDetails Component', () => {
 
     const secondaryButton = screen.getByText('Disable Banner');
     fireEvent.click(secondaryButton);
+    expect(mockSetShowBannerAlert).toHaveBeenCalled();
 
-    expect(mockSetShowBannerAlert).toHaveBeenCalledWith(false);
+    const updateFunction = mockSetShowBannerAlert.mock.calls[0][0];
+
+    const previousState = { showSocialHandleAlert: true, showBannerAlert: true };
+    const result = updateFunction(previousState);
+    expect(result).toEqual({
+      showSocialHandleAlert: true,
+      showBannerAlert: false,
+    });
 
     expect(editStorefront).toHaveBeenCalledWith('settings', {
       ...storefrontData.entity.settings,
