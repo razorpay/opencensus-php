@@ -22,6 +22,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { StyledSettlementJourneyMetadata, StyledTimelineRevamp } from './styled';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from '@libs/shared-utils';
 
 const getFailedSettlementInfo = (journeyPoint): JSX.Element | null => {
   const { failedType } = journeyPoint;
@@ -102,10 +104,16 @@ const getSettlementJourneyMeta = (journeyPoint): JSX.Element => {
 };
 
 const Timeline = ({ settlement, settlementConfig, user }): JSX.Element => {
+  const { abExperiments } = useSplitzService();
+  const isTimeOffsetDisabled = isExperimentEnabled(
+    abExperiments?.is_time_offset_disabled_settlements,
+  );
+
   const timelineJourney = getTimelineJourneyDetailsRevamp({
     settlement,
     settlementConfig,
     user,
+    isTimeOffsetDisabled,
   });
 
   return (

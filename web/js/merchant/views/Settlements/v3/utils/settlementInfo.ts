@@ -109,8 +109,8 @@ export const getTimelineJourneyDetails = ({
   return journey;
 };
 
-function isPastSettlementTime(unixTimestamp) {
-  const istOffset = 5.5 * 60 * 60 * 1000;
+function isPastSettlementTime(unixTimestamp, isTimeOffsetDisabled = false) {
+  const istOffset = isTimeOffsetDisabled ? 0 : 5.5 * 60 * 60 * 1000;
   const currentDate = new Date();
   const initialDate = new Date(unixTimestamp * 1000 + istOffset);
 
@@ -119,8 +119,8 @@ function isPastSettlementTime(unixTimestamp) {
   return currentDate > initialDate;
 }
 
-function getSettlementProcessedTime(unixTimestamp) {
-  const istOffset = 5.5 * 60 * 60 * 1000;
+function getSettlementProcessedTime(unixTimestamp, isTimeOffsetDisabled = false) {
+  const istOffset = isTimeOffsetDisabled ? 0 : 5.5 * 60 * 60 * 1000;
   const currentDate = new Date();
   const initialDate = new Date(unixTimestamp * 1000 + istOffset);
 
@@ -136,6 +136,7 @@ export const getTimelineJourneyDetailsRevamp = ({
   settlement,
   settlementConfig,
   user,
+  isTimeOffsetDisabled = false,
 }: any): any[] => {
   const { created_at, status, amount, utr } = settlement;
   const now = moment();
@@ -208,11 +209,11 @@ export const getTimelineJourneyDetailsRevamp = ({
   }
 
   if (status === SettlementStatus.PROCESSED) {
-    const shouldHaveSettled = isPastSettlementTime(created_at);
+    const shouldHaveSettled = isPastSettlementTime(created_at, isTimeOffsetDisabled);
     journey.push({
       status,
       title: 'Settlement processed',
-      subtitle: getSettlementProcessedTime(created_at),
+      subtitle: getSettlementProcessedTime(created_at, isTimeOffsetDisabled),
       mutedInfo: `We have successfully processed the settlement. It may take 2-3 hours for the funds to reflect in your bank account. If the money has still not been deposited after this time, please contact your bank using the UTR number (${
         utr ?? '-'
       }).`,

@@ -854,7 +854,7 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
-        uniqueHashKey: 'enable_trxn_v2_for_JK_omni_merchants',
+        uniqueHashKey: 'is_time_offset_disabled_settlements',
         experimentId: {
           beta: 'Pc7dMi2j0TG8Wr',
           production: 'PcBRdh07FrBDtZ',
