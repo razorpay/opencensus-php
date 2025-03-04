@@ -134,6 +134,9 @@ final class Metric
     const PAYOUT_FTS_SYNC_CALL_DURATION                                  = 'payout_fts_sync_call_duration';
     const SET_PRICING_RULE_INFO_IN_PAYOUT_SERVICE_REDIS_DURATION         = 'set_pricing_rule_info_in_payout_service_redis_duration';
 
+    // Get Payout By Id
+    const GET_PAYOUT_BY_ID_FLOW = 'payout_by_id_flow';
+
     // Dimension constants
     const SOURCE         = 'source';
     const BATCH          = 'batch';

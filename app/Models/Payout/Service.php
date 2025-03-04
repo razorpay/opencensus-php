@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Exception\LogicException;
+use RZP\Exception\RuntimeException;
 use RZP\Http\Route;
 
 use RZP\Models\Vpa;
@@ -1956,35 +1957,16 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
-        $payout = null;
-
-        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true)
-        {
-            try
-            {
-                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
-            }
-
-            catch (\Exception $e)
-            {
-                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID)
-                {
-                    throw $e;
-                }
-            }
+        $merchantId = $this->merchant->getId();
+        $requestPayload = [
+            'id' => $merchantId,
+            'experiment_name' => RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
+        if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE)){
+            return $this->getPayoutDetailsWithDBFirst($id, $input);
         }
-
-        if (empty($payout) === true)
-        {
-            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
-
-            //tracking slack app related events
-            $this->trackPayoutsFetchEvent($input, $payout);
-
-            return $payout->toArrayPublic();
-        }
-
-        return $payout;
+        return $this->getPayoutDetailWithPSFirst($id, $input);
     }
 
     public function fetchSourceEventInfo(string $id): array
@@ -7066,5 +7048,119 @@ class Service extends Base\Service
         return [
             'success' => true,
         ];
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     * @throws Throwable
+     */
+    public function getPayoutDetailsWithDBFirst(string $id, array $input): array
+    {
+        $exceptionFromAPIDB = null;
+        try {
+            $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                Constants\Metric::LABEL_MESSAGE => "API_DB"
+            ]);
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
+
+            if (!empty($payout)) {
+                $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Fetched Payout from API DB",
+                    'id' => $id,
+                    'payout' => $payout->toArrayPublic()
+                ]);
+                return $payout->toArrayPublic();
+            }
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::FETCH_PAYOUT_BY_ID, [
+                'message' => "Exception Fetch Payout from API DB",
+                'id' => $id,
+                'payout' => $payout,
+                'exception' => $e
+            ]);
+            $exceptionFromAPIDB = $e;
+        }
+
+        $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+            Constants\Metric::LABEL_MESSAGE => "API_DB_FAIL"
+        ]);
+
+        //Check And Fetch from Payout Service
+        if ($this->isLiveTraffic()) {
+            try {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+                $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Fetch Payout from PS",
+                    'id' => $id,
+                    'payout' => $payout
+                ]);
+                $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                    Constants\Metric::LABEL_MESSAGE => "PS_CALL_SUCCESS"
+                ]);
+                return $payout;
+            } catch (\Throwable $e){
+                $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                    Constants\Metric::LABEL_MESSAGE => "PS_CALL_FAILURE",
+                    Constants\Metric::LABEL_ERROR_CODE => $e->getCode()
+                ]);
+                $this->trace->error(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Exception Fetch Payout from Payout Service",
+                    'id' => $id,
+                    'payout' => $payout,
+                    'exception' => $e
+                ]);
+                throw $e;
+            }
+        }
+        $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+            Constants\Metric::LABEL_MESSAGE => "PS_CALL_DISABLED"
+        ]);
+        throw $exceptionFromAPIDB ?? new RuntimeException("The id provided does not exist.", [
+            "id" => $id
+        ]);
+    }
+
+    /**
+     * @param array $input
+     * @param string $id
+     * @return array|null
+     * @throws \Exception
+     */
+    public function getPayoutDetailWithPSFirst(string $id, array $input): ?array
+    {
+        $payout = null;
+
+        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true) {
+            try {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+            } catch (\Exception $e) {
+                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID) {
+                    throw $e;
+                }
+            }
+        }
+
+        if (empty($payout) === true) {
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
+
+            return $payout->toArrayPublic();
+        }
+
+        return $payout;
+    }
+
+    /**
+     * @return true if mode is LIVE
+     */
+    protected function isLiveTraffic(): bool
+    {
+        return $this->mode == Constants\Mode::LIVE;
     }
 }

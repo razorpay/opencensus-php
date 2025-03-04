@@ -1092,6 +1092,7 @@ final class RazorxTreatment
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
+    const PS_API_MERCHANT_MIGRATION_ON_ID = 'ps_api_merchant_migration_on_id';
 
     const Allowed_alt_id_experiments = [
         "non_rearch_alt__RUPAY_isg_kotak",

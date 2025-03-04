@@ -59,6 +59,8 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Models\Payout\Service as PayoutService;
+use RZP\Services\PayoutService\Fetch as PayoutServiceFetch;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
@@ -170,6 +172,14 @@ class PayoutTest extends OAuthTestCase
     protected $payoutService;
 
     private   $unitTestCase;
+
+    /**
+     * @return string
+     */
+    public function generatePsPayoutId(): string
+    {
+        return str_pad(substr(base_convert(time() . mt_rand(1000, 9999), 10, 36), 0, 14), 14, '0', STR_PAD_RIGHT);
+    }
 
     protected function setUp(): void
     {
@@ -4681,6 +4691,26 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
         $this->assertEquals('beneficiary_bank_confirmation_pending', $payout2['status_summary']['processing'][0]['reason']);
         $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM.', $payout2['status_summary']['processing'][0]['description']);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: API DB able to provide data for payoutId
+        $payout3 = $this->startTest();
+        $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout3);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $payout3['status_summary']['processing'][0]['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM.', $payout3['status_summary']['processing'][0]['description']);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testStatusSummaryObjectNullCaseInGetPayout()
@@ -4696,6 +4726,25 @@ class PayoutTest extends OAuthTestCase
         $payout2 = $this->startTest();
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
         $this->assertNull($payout2[Payout\Entity::STATUS_SUMMARY]);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: API DB able to provide data for payoutId
+        $payout3 = $this->startTest();
+        $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout3);
+        $this->assertNull($payout3[Payout\Entity::STATUS_SUMMARY]);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testPayoutStatusReasonMapping()
@@ -13184,10 +13233,27 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
 
         $payoutResp = $this->startTest();
-
         $this->assertNotNull($payoutResp['reversal']);
-
         $this->assertArrayNotHasKey('transaction_id', $payoutResp['reversal']);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: API DB able to provide data for payoutId
+        $payoutResp = $this->startTest();
+        $this->assertNotNull($payoutResp['reversal']);
+        $this->assertArrayNotHasKey('transaction_id', $payoutResp['reversal']);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testGetPayoutWithReversalForPrivateAuth()
@@ -13205,8 +13271,24 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
 
         $payoutResp = $this->startTest();
-
         $this->assertArrayNotHasKey('reversal', $payoutResp);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+        //Scenario: API DB able to provide data for payoutId
+        $payoutResp = $this->startTest();
+        $this->assertArrayNotHasKey('reversal', $payoutResp);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testGetPayoutWithReversalForPrivilegeAuthNonAccountingApp()
@@ -13413,6 +13495,24 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayNotHasKey(Payout\Entity::REMARKS, $payout2);
 
         $this->assertArraySelectiveEquals($payout2, $payout);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+        //Scenario: API DB able to provide data for payoutId
+        $payout3 = $this->startTest();
+        $this->assertArrayNotHasKey(Payout\Entity::REMARKS, $payout3);
+        $this->assertArraySelectiveEquals($payout3, $payout);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testCreatePaymentPayout(): array
@@ -46293,6 +46393,146 @@ class PayoutTest extends OAuthTestCase
         $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
 
         $this->startTest();
+    }
+
+    public function testGetPayoutForAPIDBFirstFlow()
+    {
+        $this->createEsIndex();
+        $this->testCreatePayout();
+        $payout = $this->getDbLastEntity('payout');
+        $this->ba->privateAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+
+        //Splitz Experimentation Disabled Flow Check
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: When API DB able to provide data for payoutId
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled - Returns API DB Exception
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
+    }
+
+    public function testGetPayoutForAPIDBFirstFlowOnLiveMode()
+    {
+        list($psPayoutId, $payoutMockData) = $this->mockPayoutServiceFetchClient();
+
+        $this->mockPayoutService();
+
+        $this->createEsIndex();
+
+        $this->testCreatePayoutOnLiveMode();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->ba->privateAuth("rzp_live_TheLiveAuthKey");
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+
+        //Splitz Experimentation Disabled Flow Check and Call to PS Microservice disabled
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+        //Enabled Call to PS Microservice
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        $payoutResp = $this->startTest();
+        $this->assertEquals($payoutResp['id'], $payoutMockData['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payoutMockData);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: When API DB able to provide data for payoutId
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+
+        //Scenario: API DB doesn't find the Payout and PS Call is enabled and return's payout
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], $payoutMockData['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payoutMockData);
+    }
+
+    /**
+     * @return array
+     */
+    public function mockPayoutServiceFetchClient(): array
+    {
+        $psPayoutId = $this->generatePsPayoutId();
+        $payoutMockData = [
+            "id" => "pout_" . $psPayoutId,
+            "entity" => "payout",
+            "fund_account_id" => "fa_100000000000fa",
+            "amount" => 2000000,
+            "currency" => "INR",
+            "notes" => [
+                "abc" => "xyz"
+            ],
+            "fees" => 1062,
+            "tax" => 162,
+            "status" => "processing",
+            "purpose" => "refund",
+            "utr" => null,
+            "mode" => "IMPS",
+            "reference_id" => null,
+            "narration" => "Batman",
+            "batch_id" => null,
+            "failure_reason" => null,
+            "created_at" => 1740501773,
+            "fee_type" => null,
+            "scheduled_at" => null,
+            "status_details" => [
+                "reason" => null,
+                "description" => null,
+                "source" => null
+            ],
+            "merchant_id" => "10000000000000",
+            "status_details_id" => null
+        ];
+
+        $payoutFetchClientMock = Mockery::mock('RZP\Services\PayoutService\Fetch',
+            [$this->app])->makePartial();
+        $payoutFetchClientMock->shouldReceive('fetch')->with('payout', "pout_" . $psPayoutId, Mockery::type('array'))->andReturn($payoutMockData);
+        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE_FETCH, $payoutFetchClientMock);
+        return array($psPayoutId, $payoutMockData);
+    }
+
+    /**
+     * @return void
+     */
+    public function mockPayoutService(): void
+    {
+        $payoutServiceMock = Mockery::mock('RZP\Models\Payout\Service',
+            [$this->app])->makePartial();
+        $payoutServiceMock->shouldAllowMockingProtectedMethods();
+        $payoutServiceMock->shouldReceive('isLiveTraffic')->andReturn(true);
+        $this->app->instance(PayoutService::class, $payoutServiceMock);
     }
 }
 

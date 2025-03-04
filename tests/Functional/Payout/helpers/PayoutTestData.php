@@ -26353,7 +26353,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
-
+    'testGetPayoutForAPIDBFirstFlow' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+    'testGetPayoutForAPIDBFirstFlowOnLiveMode' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
     'testCreateSharedPayoutInLedgerShadowModeWithInsufficientBalanceRetry' => [
         'request'  => [
             'method'  => 'POST',

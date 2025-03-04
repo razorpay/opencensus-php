@@ -6067,6 +6067,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCC_PAYOUT_DETAILS_ENTITY_COUNTS                          = "DCC_PAYOUT_DETAILS_ENTITY_COUNTS";
     const DCC_PAYOUT_DATA_FETCH_RESPONSE                            = "DCC_PAYOUT_DATA_FETCH_RESPONSE";
 
+    const FETCH_PAYOUT_BY_ID                          = "FETCH_PAYOUT_BY_ID";
     const FETCH_PAYOUT_SERVICE_PAYOUT                  = "FETCH_PAYOUT_SERVICE_PAYOUT";
     const FETCH_PAYOUT_SERVICE_PAYOUT_SUCCESS          = "FETCH_PAYOUT_SERVICE_PAYOUT_SUCCESS";
     const FETCH_PAYOUT_SERVICE_REVERSAL                = "FETCH_PAYOUT_SERVICE_REVERSAL";
