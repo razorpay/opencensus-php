@@ -43,7 +43,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const actor = github.actor;
+            const actor = context.payload.sender.login;
             console.log("Labeler: ", actor);
 
             // Check if the user who triggered the workflow is in the approversList

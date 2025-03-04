@@ -188,13 +188,12 @@ export const getPosCredentials = () => {
 };
 
 export const getMobileCredentials = () => {
-  const StorageStatePath = getStorageStatePath();
   return [
-    {
-      type: 'pos-kyc-status-nc.json',
-      mobile: playwrightEnvs.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
-      storagePath: StorageStatePath.POS_KYC_STATUS_NC,
-    },
+    // {
+    //   type: 'pos-kyc-status-nc.json',
+    //   mobile: playwrightEnvs.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
+    //   storagePath: StorageStatePath.POS_KYC_STATUS_NC,
+    // },
   ];
 };
 

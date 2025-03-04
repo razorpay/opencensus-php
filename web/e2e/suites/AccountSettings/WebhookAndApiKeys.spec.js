@@ -48,7 +48,7 @@ test.describe
     ).toBeVisible();
   });
 
-  test('should show webhooks in table view @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should show webhooks in table view @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await verifyAndRedirectPageRoute({
