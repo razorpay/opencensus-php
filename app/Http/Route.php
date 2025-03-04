@@ -18732,6 +18732,11 @@ class Route
         'credcase' => ['expire_keys'],
 
         'razorassist' => [
+            'action_comment_create',
+            'action_diff_get',
+            'internal_workflow_observer_data_update',
+            'action_checker_create',
+            'workflow_needs_merchant_clarification',
             'workflow_action_update',
             'workflow_observer_data_update',
             'merchant_tag_add',
