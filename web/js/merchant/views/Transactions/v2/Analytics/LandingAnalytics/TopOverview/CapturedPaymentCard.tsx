@@ -29,7 +29,6 @@ const CapturedPaymentCard = ({
   paymentCapturedCount,
   isMobile,
   durationOption,
-  orgName,
 }: CapturedPaymentCardProps): JSX.Element => {
   const viewSettlementCycle = () => {
     openModal({
@@ -70,10 +69,7 @@ const CapturedPaymentCard = ({
                 Collected Amount
               </Text>
               <TooltipWrapper>
-                <Tooltip
-                  content={getLandingPageAnalyticsToolTip(orgName).Collected}
-                  placement="top"
-                >
+                <Tooltip content={getLandingPageAnalyticsToolTip().Collected} placement="top">
                   <TooltipInteractiveWrapper>
                     <InfoIcon color="feedback.icon.neutral.intense" size="small" />
                   </TooltipInteractiveWrapper>
@@ -114,12 +110,6 @@ const CapturedPaymentCard = ({
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    orgName: state.session.org?.business_name,
-  };
-};
-
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
@@ -129,4 +119,4 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CapturedPaymentCard);
+export default connect(null, mapDispatchToProps)(CapturedPaymentCard);

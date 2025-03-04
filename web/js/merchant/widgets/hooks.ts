@@ -16,7 +16,7 @@ export const useRetryWidget = (queryKey: QueryKey) => {
      * The function finds the position of the widget in the cached response and updates it with the new response.
      * Response can also be nested within a widget.
      */
-    onSuccess: (retryResponse) => {
+    onSuccess: (retryResponse, variables) => {
       queryClient.setQueryData(queryKey, (cachedResponse: any) => {
         const clonedResponse: any = cloneDeep(cachedResponse);
 
@@ -28,7 +28,10 @@ export const useRetryWidget = (queryKey: QueryKey) => {
           );
           // handle response update for a widget
           if (cachedWidgetId !== -1) {
-            clonedResponse.components[cachedWidgetId] = response;
+            clonedResponse.components[cachedWidgetId] = {
+              ...response,
+              variables,
+            };
           } else {
             // handle response update for a sub widget
             const totalComponents = cachedResponse.components.length;
@@ -38,7 +41,10 @@ export const useRetryWidget = (queryKey: QueryKey) => {
                 (component) => component.id === responseWidgetId,
               );
               if (cachedSubWidgetId !== -1) {
-                clonedResponse.components[i].components[cachedSubWidgetId] = response;
+                clonedResponse.components[i].components[cachedSubWidgetId] = {
+                  ...response,
+                  variables,
+                };
                 break;
               }
             }

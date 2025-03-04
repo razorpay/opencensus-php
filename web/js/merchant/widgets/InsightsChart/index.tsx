@@ -29,14 +29,20 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
   queryKey,
   inputs,
   type,
+  variables,
 }): JSX.Element | null => {
   const [isRetrying, retryHandler] = useRetryWidget(queryKey);
-  const [date, setDate] = useState<DateRangeValues | ''>('');
   const splitz = useSplitzService();
 
   const isDatePickerEnabled = isDateRangeForInsightChartsEnabled(splitz?.abExperiments);
   const input = inputs.find((input) => input.type === 'select');
-  const defaultValue = input?.default_value;
+  const defaultValue =
+    variables?.date_time?.quick ||
+    ((variables?.date_time?.custom
+      ? durationOptionKeys.CUSTOM
+      : input?.default_value) as DateRangeValues);
+
+  const [date, setDate] = useState<DateRangeValues | ''>(defaultValue);
 
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
@@ -97,6 +103,7 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
             renderInput({
               widget: input,
               value: date,
+              variables,
               onChange: handleDateChange,
               analyticsProperties: {
                 screen,

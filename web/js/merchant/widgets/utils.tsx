@@ -106,7 +106,13 @@ export const getUcsAliasFromQueryKey = (queryKey: QueryKey) => {
   return '';
 };
 
-export const getDateRangeValues = (option: string): [Date, Date] => {
+export const getDateRangeValues = (
+  option: string,
+  range?: { from: number; to: number },
+): [Date, Date] => {
+  if (range) {
+    return [moment.unix(range.from).toDate(), moment.unix(range.to).toDate()];
+  }
   switch (option) {
     case durationOptionKeys.TODAY:
       return [moment().toDate(), moment().toDate()];

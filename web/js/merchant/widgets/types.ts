@@ -13,6 +13,10 @@ export interface CommonWidgetProps {
     enabled: boolean;
   };
   analyticsProperties?: Record<string, any>;
+  variables?: {
+    id: string;
+    date_time?: DateTime;
+  };
 }
 
 export interface renderWidgetProps {
@@ -25,7 +29,7 @@ export interface renderWidgetProps {
   analyticsProperties?: Record<string, any>;
 }
 
-interface DateTime {
+export interface DateTime {
   quick?: DateRangeValues;
   custom?: {
     from: number;

@@ -25,14 +25,20 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
   components,
   inputs,
   type,
+  variables,
 }) => {
   const [isRetrying, retryHandler] = useRetryWidget(queryKey);
-  const [date, setDate] = useState<DateRangeValues | ''>('');
   const splitz = useSplitzService();
 
   const isDatePickerEnabled = isDateRangeForInsightChartsEnabled(splitz?.abExperiments);
   const input = inputs.find((input) => input.type === 'select');
-  const defaultValue = input?.default_value;
+  const defaultValue =
+    variables?.date_time?.quick ||
+    ((variables?.date_time?.custom
+      ? durationOptionKeys.CUSTOM
+      : input?.default_value) as DateRangeValues);
+
+  const [date, setDate] = useState<DateRangeValues | ''>(defaultValue);
 
   useEffect(() => {
     // if default_value is truthy and date is empty (initial mount scenario)
@@ -109,6 +115,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
             renderInput({
               widget: input,
               value: date,
+              variables,
               onChange: handleDateChange,
               analyticsProperties: {
                 screen,

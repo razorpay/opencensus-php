@@ -48,11 +48,11 @@ describe('Widget->common->utils->makeLink', () => {
   });
   test('should return empty string is refund_id key in not present', () => {
     const url = makeLink('refund_details', {});
-    expect(url).toBe('/refunds/');
+    expect(url).toBe('/refunds');
   });
   test('should return correct url for payment_failed', () => {
     const url = makeLink('payment_failed', { from: 123, to: 456, status: 'failed' });
-    expect(url).toBe('/failed-payments');
+    expect(url).toBe('/failed-payments?from=123&to=456&status=failed');
   });
   test('should return correct url for refund_failed', () => {
     const url = makeLink('refund_failed', { from: 123, to: 456, public_status: 'failed' });

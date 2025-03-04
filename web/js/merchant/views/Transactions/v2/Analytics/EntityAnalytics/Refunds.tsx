@@ -23,7 +23,7 @@ import { endOfDay, getFromTime } from 'merchant/views/Transactions/v2/common/uti
 
 import AnalyticsBoilerPlate from './AnalyticsBoilerPlate';
 
-const RefundsOverview = ({ mode, user, orgName }: RefundsOverviewProps): JSX.Element => {
+const RefundsOverview = ({ mode, user }: RefundsOverviewProps): JSX.Element => {
   const isRefundPendingEnabled = user.isRefundPendingStatusEnabled;
   const {
     fetchRefundData,
@@ -98,7 +98,7 @@ const RefundsOverview = ({ mode, user, orgName }: RefundsOverviewProps): JSX.Ele
         <AnalyticsBoilerPlate
           isLoading={isLoading}
           isMobile={isMobile}
-          data={getAnalyticsPropsForRefunds(refundsData, orgName)}
+          data={getAnalyticsPropsForRefunds(refundsData)}
         />
       )}
     </OverviewContainer>
@@ -108,6 +108,5 @@ const RefundsOverview = ({ mode, user, orgName }: RefundsOverviewProps): JSX.Ele
 const mapStateToProps = (state) => ({
   mode: state.session.mode,
   user: state.session.user,
-  orgName: state.session.org?.business_name,
 });
 export default connect(mapStateToProps)(RefundsOverview);

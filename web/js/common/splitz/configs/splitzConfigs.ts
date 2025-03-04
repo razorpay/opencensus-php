@@ -422,6 +422,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'rtux_top_insights_details_cta',
+        experimentId: {
+          beta: 'PesKDFb25KJNeW',
+          production: 'PebDaH1KpqjGEv',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'connected_navigation',
         experimentId: {
           beta: 'PK7igAoTxqLVkl',

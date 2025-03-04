@@ -117,9 +117,7 @@ export const tabsMeta = {
     index: 'payments',
     getGroupObj,
     getGroupQuery,
-    helpText:
-      'Payment volume is the amount of "authorised"' +
-      'payments, which were created in the selected time range.',
+    helpText: 'Total amount of "authorised" ' + 'payments created within the selected time range.',
     // eslint-disable-next-line func-names
     getCountQuery: function () {
       return {
@@ -158,7 +156,7 @@ export const tabsMeta = {
     getGroupQuery,
     helpText:
       // eslint-disable-next-line no-useless-concat
-      'Number of "authorised" payments, which' + ' were created in the selected time range.',
+      'Total number of "authorised" payments created within the selected time range.',
     // eslint-disable-next-line func-names
     getCountQuery: function () {
       return {
@@ -193,7 +191,7 @@ export const tabsMeta = {
     index: 'refunds',
     getGroupObj,
     getGroupQuery,
-    helpText: 'Number of refunds created in the selected time range.',
+    helpText: 'Total number of refunds created within the selected time range.',
     // eslint-disable-next-line func-names
     getCountQuery: function () {
       return {

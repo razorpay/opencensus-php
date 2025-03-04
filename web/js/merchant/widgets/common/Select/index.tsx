@@ -26,11 +26,14 @@ function Select({
   analyticsProperties,
   customRange,
   toggleHelpWidget,
+  variables,
 }: SelectProps) {
   const isMobile = useMobile();
 
   const [key, setKey] = useState('');
-  const [dates, setDates] = useState<[Date, Date]>(getDateRangeValues(value));
+  const [dates, setDates] = useState<[Date, Date]>(
+    getDateRangeValues(value, variables?.date_time?.custom),
+  );
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const handleOptionChange = (e: SelectChangeEvent, custom_range?: [Date, Date]) => {

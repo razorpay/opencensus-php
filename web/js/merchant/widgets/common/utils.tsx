@@ -28,7 +28,13 @@ export const convertToNumber = (value: string): number => {
   return isNaN(number) ? 0 : number;
 };
 
+const getParamsString = (params: Record<string, any> = {}) => {
+  return new URLSearchParams(params).toString();
+};
+
 export const makeLink = (key: string, params: Record<string, any> = {}) => {
+  const areParamsAvailable = params.from && params.to;
+
   switch (key.toLowerCase()) {
     case 'additional_website':
     case 'add_additional_website':
@@ -46,13 +52,21 @@ export const makeLink = (key: string, params: Record<string, any> = {}) => {
     case 'support_ticket':
       return ROUTES_INFO.SUPPORT_TICKETS_MERCHANT;
     case 'payment_details':
-      return `/payments/${params.payment_id ?? ''}`;
+      return params.payment_id
+        ? `/payments/${params.payment_id}`
+        : areParamsAvailable
+        ? `/payments?${getParamsString(params)}`
+        : '/payments';
     case 'refund_details':
-      return `/refunds/${params.refund_id ?? ''}`;
+      return params.refund_id
+        ? `/refunds/${params.refund_id}`
+        : areParamsAvailable
+        ? `/refund?${getParamsString(params)}`
+        : '/refunds';
     case 'payment_failed':
-      return '/failed-payments';
+      return `/failed-payments${areParamsAvailable ? `?${getParamsString(params)}` : ''}`;
     case `refund_failed`:
-      return `/refunds?${new URLSearchParams(params).toString()}`;
+      return `/refunds?${getParamsString(params)}`;
     case `qr_codes`:
       return BASE_ROUTES.qrCodes;
     case 'payment_links':
@@ -82,12 +96,14 @@ export const renderInput = ({
   onChange,
   analyticsProperties = {},
   customRange,
+  variables,
 }: any) => {
   const widgetComponent = inputKeyToComponentMapping[widget.type];
   if (widgetComponent) {
     return widgetComponent({
       ...widget,
       value,
+      variables,
       onChange,
       analyticsProperties,
       customRange: widget.name === 'date' && widget.type === 'select' ? customRange : undefined,

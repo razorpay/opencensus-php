@@ -28,7 +28,7 @@ import { endOfDay, getFromTime } from 'merchant/views/Transactions/v2/common/uti
 
 import AnalyticsBoilerPlate from './AnalyticsBoilerPlate';
 
-const FailedPaymentsOverview = ({ mode, user, orgName }): JSX.Element => {
+const FailedPaymentsOverview = ({ mode, user }): JSX.Element => {
   const {
     failedPaymentsData,
     failureInfo,
@@ -109,7 +109,7 @@ const FailedPaymentsOverview = ({ mode, user, orgName }): JSX.Element => {
         <AnalyticsBoilerPlate
           isLoading={isLoading}
           isMobile={isMobile}
-          data={getAnalyticsPropsForFailedPyaments(failedPaymentsData, failureInfo, orgName)}
+          data={getAnalyticsPropsForFailedPyaments(failedPaymentsData, failureInfo)}
         />
       )}
       {shouldShowSR ? (
@@ -127,6 +127,5 @@ const FailedPaymentsOverview = ({ mode, user, orgName }): JSX.Element => {
 const mapStateToProps = (state) => ({
   mode: state.session.mode,
   user: state.session.user,
-  orgName: state.session.org?.business_name,
 });
 export default connect(mapStateToProps)(FailedPaymentsOverview);
