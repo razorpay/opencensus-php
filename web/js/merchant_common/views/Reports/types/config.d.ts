@@ -18,6 +18,7 @@ export interface BaseConfigType {
       compression_format?: string;
       disable_quotes?: boolean;
     };
+    external_platform?: string;
   };
   sftp_job_name?: string;
   pipeline_params?: {

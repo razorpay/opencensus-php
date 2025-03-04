@@ -102,4 +102,19 @@ export const mockConfigs = [
     type: 'batch_pages',
     updated_at: 1683898079,
   },
+  {
+    id: 'config_PwfRDh1tNuKT6E',
+    consumer: '100000Razorpay',
+    report_type: 'merchant',
+    type: 'payments',
+    scheduled: false,
+    name: 'Payments XML Report',
+    description:
+      'This report provides details of all payments that were created in the selected time range. Details include payment ID, status, method, issuer name, date, amount, and others in an XML format.',
+    template: { external_platform: 'billing_xml' },
+    created_by: '100000Razorpay',
+    status: null,
+    created_at: 1513699685,
+    updated_at: 1538574478,
+  },
 ];

@@ -24,14 +24,15 @@ import {
   BATCH_PAYMENT_PAGE_PAYMENT_REPORT,
   CONFIG_TYPE_BATCH_PAGES,
   PAYMENT_STATUS_OPTIONS,
+  PAYMENTS_XML_REPORT,
 } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
+import DownloadReport from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport';
 import {
   BATCH_ID_OPTIONS,
   BATCH_PAGE_ITEMS,
   getBatchIds,
   getPaymentPagesFileUploadPages,
 } from './mocks/handlers';
-import DownloadReport from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport';
 import {
   BATCH_ID,
   BATCH_PAGE,
@@ -407,5 +408,15 @@ describe('Download Reports', () => {
     await userEvent.click(screen.getByLabelText('Start Download'));
 
     expect(screen.getByText(BATCH_PAGE.ERROR_TEXT)).toBeInTheDocument();
+  });
+  test.only('Should show only XML format if XML type report is selected', async () => {
+    const config = mockConfigs.find(({ name }) => name === PAYMENTS_XML_REPORT);
+    renderDetailedApp({ configId: config?.id });
+
+    const formatsInput = screen.getByPlaceholderText(FORMATS_PLACEHOLDER);
+    await userEvent.click(formatsInput);
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent('XML');
   });
 });

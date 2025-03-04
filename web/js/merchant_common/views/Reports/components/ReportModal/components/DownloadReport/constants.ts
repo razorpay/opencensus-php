@@ -7,6 +7,7 @@ export const ERROR_IN_FOURTH_SECTION = 3;
 // Batch Payment pages section.
 export const BATCH_PAYMENT_PAGE_CUSTOMER_REPORT = 'Bulk Payment Page Customers Report';
 export const BATCH_PAYMENT_PAGE_PAYMENT_REPORT = 'Bulk Payment Page Payments Report';
+export const PAYMENTS_XML_REPORT = 'Payments XML Report';
 
 export const ALL_OPTION = { label: 'All', value: 'all' };
 

@@ -43,6 +43,7 @@ import {
   REPORT_GENERATE_LOG_POST_SUCCESS,
   REPORT_GENERATE_LOG_POST_INVALID_RES,
 } from 'merchant_common/views/Reports/constants/notifications';
+import { XML_FORMAT } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
 import { trackDownloadModal } from 'merchant_common/views/Reports/configs/analytics.config';
 import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
 import { Delimiter, Format } from 'merchant_common/views/Reports/types';
@@ -138,6 +139,8 @@ export const DownloadReportModal = ({
   const [isSubmitButtonLoading, setSubmitButtonLoading] = useState(false);
 
   const [selectedAccount, setSelectedAccount] = useState<AccountType>();
+  const isReportTypeXML = selectedConfig?.template?.external_platform === 'billing_xml';
+  const formatsToDisplay = isReportTypeXML ? [XML_FORMAT] : availableFormats;
 
   const renderDurationInfo = () => {
     if (!isCustomDurationEnabled && selectedPredefinedDurationRange) {
@@ -499,7 +502,7 @@ export const DownloadReportModal = ({
             />
 
             <Formats
-              availableFormats={availableFormats}
+              availableFormats={formatsToDisplay}
               selectedFormat={selectedFormat}
               selectedDelimiter={selectedDelimiter}
               setSelectedFormat={setSelectedFormat}

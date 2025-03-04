@@ -25,6 +25,11 @@ export const RPT_FORMAT = {
   value: 'rpt',
 };
 
+export const XML_FORMAT = {
+  label: 'XML',
+  value: 'xml',
+};
+
 const DELIMITERS = [
   { label: 'Comma', value: ',' },
   { label: 'Pipe', value: '|' },

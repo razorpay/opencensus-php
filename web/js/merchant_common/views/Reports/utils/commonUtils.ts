@@ -101,6 +101,7 @@ export const parseReqDataFromConfigs = (configs): BaseConfigType[] => {
       type,
       template: {
         referred_accounts: template?.referred_accounts,
+        external_platform: template?.external_platform,
       },
       type_title: otherProps?.type_title,
       emails: otherProps?.emails ?? [],

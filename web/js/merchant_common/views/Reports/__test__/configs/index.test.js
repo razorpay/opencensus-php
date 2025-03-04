@@ -58,6 +58,6 @@ describe('Validate: getReportsDashboardConfig', () => {
       },
     });
     const res = parseConfigs(mockConfigs);
-    expect(res).toHaveLength(3);
+    expect(res).toHaveLength(4);
   });
 });
