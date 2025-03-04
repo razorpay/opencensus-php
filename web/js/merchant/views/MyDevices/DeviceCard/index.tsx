@@ -90,7 +90,7 @@ const DeviceCard = ({ device, key }) => {
         >
           {device.id}
         </Text>
-        <DeviceStatusBadge isActive={device.status === 'Active'} />
+        <DeviceStatusBadge isActive={device?.status?.toLowerCase() === 'active'} />
       </Box>
       <Box
         flex="1"
