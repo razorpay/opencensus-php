@@ -22,11 +22,9 @@ import { StandardPaymentBlock } from './StandardPaymentBlocksList';
 
 export function SortableStandardBlocksList({
   list,
-  allBlocks,
   onUpdateSortList,
 }: {
   list: SortableListItemData<StandardPaymentBlock>[];
-  allBlocks: StandardPaymentBlock[];
   onUpdateSortList: (updatedSequence: string[]) => void;
 }) {
   const {
@@ -44,11 +42,11 @@ export function SortableStandardBlocksList({
     isVisible: boolean,
     itemAllBlocksIndex: number,
   ) {
-    const hiddenBlocks = allBlocks
-      .filter((listItem) => listItem.isVisible === false)
+    const hiddenBlocks = list
+      .filter((listItem) => listItem.item.isVisible === false)
       .map((listItem) => {
         return {
-          method: listItem.slug,
+          method: listItem.item.slug,
         } as PaymentConfigInstrument;
       });
     if (isVisible) {
@@ -62,13 +60,13 @@ export function SortableStandardBlocksList({
       }
 
       // add block into sequence at appropriate index
-      const oldStandardBlocksSequence = allBlocks
-        .filter((listItem) => listItem.isVisible)
-        .map((listItem) => listItem.slug);
-      // Find where to insert in visible array
+      const oldStandardBlocksSequence = list
+        .filter((listItem) => listItem.item.isVisible)
+        .map((listItem) => listItem.item.slug);
+      // find where to insert in visible array
       const insertIndex = oldStandardBlocksSequence.findIndex((visibleItem) => {
-        const visibleItemAllBlocksIndex = allBlocks.findIndex(
-          (allItem) => allItem.slug === visibleItem,
+        const visibleItemAllBlocksIndex = list.findIndex(
+          (allItem) => allItem.item.slug === visibleItem,
         );
         return visibleItemAllBlocksIndex > itemAllBlocksIndex;
       });
@@ -109,11 +107,9 @@ export function SortableStandardBlocksList({
       handlePreviewScreenChange(PREVIEW_SCREEN.METHODS);
     } else {
       // add to hidden blocks
-      // remove from sequence if present
       hiddenBlocks.push({ method: slug });
-      if (slug === 'emi') {
-        hiddenBlocks.push({ method: 'cardless_emi' });
-      }
+
+      // remove from sequence if present
       const sequence = selectedConfig.checkout_config?.display?.sequence ?? [];
       const updatedSequence = sequence.filter((blockName) => blockName !== slug);
       handleSelectedConfigChange({
@@ -125,7 +121,7 @@ export function SortableStandardBlocksList({
             hide: hiddenBlocks,
             sequence: updatedSequence,
             preferences: {
-              show_default_blocks: !(hiddenBlocks.length === allBlocks.length),
+              show_default_blocks: !(hiddenBlocks.length === list.length),
             },
           },
         },

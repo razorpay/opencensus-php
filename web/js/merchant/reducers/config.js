@@ -1339,6 +1339,18 @@ const configReducer = (state = initialState, action) => {
     case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::SUCCESS`: {
       const configs = [...state.checkoutPaymentConfigs.data];
       const payloadConfig = action.payload.data.checkout_configuration.checkout_config_registry;
+
+      // remove default from other configs if new config is set as default
+      const isPayloadConfigDefault = payloadConfig?.is_default ?? false;
+      if (isPayloadConfigDefault) {
+        configs.forEach((config) => {
+          if (config.is_default) {
+            config.is_default = false;
+          }
+        });
+      }
+
+      // update existing config or add new config
       const updatedConfigIndex = configs.findIndex(
         (config) => config.config_id === payloadConfig.config_id,
       );
@@ -1347,6 +1359,8 @@ const configReducer = (state = initialState, action) => {
       } else {
         configs.push(payloadConfig);
       }
+
+      // set new config as selected
       return merge(state, {
         checkoutPaymentConfigs: {
           loading: false,
@@ -1354,7 +1368,7 @@ const configReducer = (state = initialState, action) => {
           error: null,
         },
         selectedPaymentConfig: payloadConfig,
-        isConfigSetAsDefaultInitially: payloadConfig.is_default,
+        isConfigSetAsDefaultInitially: isPayloadConfigDefault,
       });
     }
 

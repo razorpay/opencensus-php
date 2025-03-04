@@ -32,7 +32,7 @@ export function StandardPaymentBlocksList({
     : hiddenBlocks.slice(0, 2);
 
   const displayBlocksOrder = displayBlocks.map((block) => block.slug);
-  const displayBlocksOrderMap = new Map(displayBlocks.map((value) => [value.slug, value]));
+  const displayBlocksOrderMap = new Map(displayBlocks.map((block) => [block.slug, block]));
 
   const [displayBlocksOrderState, setDisplayBlocksOrderState] = useState(displayBlocksOrder);
 
@@ -65,7 +65,6 @@ export function StandardPaymentBlocksList({
         <SortableStandardBlocksList
           key={sortableBlocksListIDKey}
           list={sortableBlocksList}
-          allBlocks={allBlocks}
           onUpdateSortList={onUpdateSortOrder}
         />
       </Box>

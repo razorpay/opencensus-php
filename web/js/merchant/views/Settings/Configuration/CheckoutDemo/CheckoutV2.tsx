@@ -28,12 +28,17 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
     update: (value: Record<string, unknown>) => void;
   }> | null>(null);
 
+  const merchantKeyRef = useRef<string | null>(null);
+
   const splitz = useSplitzService();
 
   // only change initialisation
   const init = (node: HTMLIFrameElement) => {
-    if (node && values && !updateCheckout.current && merchantAPIKey) {
+    if (!node || !values) return;
+    const shouldReInitialize = merchantKeyRef.current !== merchantAPIKey || !updateCheckout.current;
+    if (shouldReInitialize) {
       updateCheckout.current = initCheckout(node, values, splitz?.abExperiments);
+      merchantKeyRef.current = merchantAPIKey;
     }
   };
 
@@ -72,13 +77,22 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
 
   return merchantAPIKey ? (
     <CheckoutFrame
+      key={merchantAPIKey}
       tabIndex="-1"
       src={CHECKOUT_IFRAME_URL}
       ref={init}
       isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
       zoomTitleStyle={zoomTitleStyle}
     />
-  ) : null;
+  ) : (
+    <CheckoutFrame
+      tabIndex="-1"
+      src={CHECKOUT_IFRAME_URL}
+      ref={init}
+      isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
+      zoomTitleStyle={zoomTitleStyle}
+    />
+  );
 };
 
 export default CheckoutV2;

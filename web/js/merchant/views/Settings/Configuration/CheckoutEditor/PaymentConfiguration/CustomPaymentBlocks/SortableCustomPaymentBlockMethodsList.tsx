@@ -125,6 +125,9 @@ export function SortableCustomPaymentBlockMethodsList({
         method,
       };
       const instrumentsToBeAdded = [instrument];
+
+      // in custom blocks of checkout, emi and cardless_emi are separate
+      // but as per our logic, emi and cardless_emi should come and go together
       if (method === 'emi') {
         const cardlessEMIInstrument: PaymentConfigInstrument = {
           method: 'cardless_emi',
@@ -156,6 +159,9 @@ export function SortableCustomPaymentBlockMethodsList({
       let newBlockInstruments = oldBlockInstruments.filter(
         (instrument) => instrument.method !== method,
       );
+
+      // in custom blocks of checkout, emi and cardless_emi are separate
+      // but as per our logic, emi and cardless_emi should come and go together
       if (method === 'emi') {
         newBlockInstruments = newBlockInstruments.filter(
           (instrument) => instrument.method !== 'cardless_emi',
