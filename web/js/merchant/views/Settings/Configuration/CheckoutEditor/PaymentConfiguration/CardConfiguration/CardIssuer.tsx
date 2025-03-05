@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRightIcon, Badge, Box, Link, Switch, Text } from '@razorpay/blade/components';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
 import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/helpers/getInstrumentLogo';
+import _track from './track';
 
 export default function CardIssuer({
   finalCardConfigurationObj,
   setFinalCardConfigurationObj,
   cardIssuer,
 }) {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <Box
@@ -83,6 +84,7 @@ export default function CardIssuer({
                         issuers: updatedIssuers,
                       };
                     });
+                    _track.cardIssuerToggled(item.code, isChecked);
                   }}
                 />
               </Box>

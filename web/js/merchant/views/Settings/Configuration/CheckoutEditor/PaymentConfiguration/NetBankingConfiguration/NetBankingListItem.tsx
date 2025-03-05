@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Badge, Box, Switch, Text } from '@razorpay/blade/components';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
 import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/helpers/getInstrumentLogo';
+import _track from './track';
 
 export default function NetBankingListItem({ item, activeBanks, setActiveBanks }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +64,7 @@ export default function NetBankingListItem({ item, activeBanks, setActiveBanks }
                     };
                 return updatedBanks;
               });
+              _track.bankVisibilityToggled(item.code, isChecked);
             }}
           />
         </Box>

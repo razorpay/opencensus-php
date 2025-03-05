@@ -27,8 +27,11 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 import { nonNullable } from 'merchant/views/Settings/Configuration/CheckoutEditor/helpers/index';
 import { DeleteBlockModal } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CustomPaymentBlocks/DeleteBlockModal';
+import debounce from 'common/utils/debounce';
 import { CustomBlockBody } from './styled';
 import { getCustomBlockDescription } from './utils';
+import _track from './track';
+import { CustomPaymentBlock } from './CustomPaymentBlocks';
 
 export type CustomPaymentBlockMethod = {
   slug: string;
@@ -127,6 +130,7 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
   }, [allMethodDetails]);
   const customBlockMethods = sortAndFilterCustomBlockMethods(block, enabledInstruments);
   const customBlockMethodsListKey = customBlockMethods.length;
+  const debouncedTrackCustomBlockRename = debounce(_track.customPaymentBlockRenamed, 1000);
 
   function handleBlockNameUpdate(value: string) {
     const updatedBlock = {
@@ -150,6 +154,7 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
       name: value,
       isCustomBlock: true,
     });
+    debouncedTrackCustomBlockRename(updatedBlock);
   }
 
   function handleDeleteCustomBlock(key: string) {
@@ -175,11 +180,25 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
       isCustomBlock: false,
     });
     setIsOpenDeleteModal(false);
+    const customPaymentBlock: CustomPaymentBlock = {
+      slug: key,
+      name: block?.name ?? '',
+      description: getCustomBlockDescription(block?.instruments ?? []),
+      instruments: block?.instruments ?? [],
+    };
+    _track.customPaymentBlockDeleted(customPaymentBlock);
   }
 
   function handleCustomBlockFormClose() {
     setIsExpanded(false);
     setIsClosing(true);
+    const customPaymentBlock: CustomPaymentBlock = {
+      slug: blockKey,
+      name: block?.name ?? '',
+      description: getCustomBlockDescription(block?.instruments ?? []),
+      instruments: block?.instruments ?? [],
+    };
+    _track.customPaymentBlockCollapsed(customPaymentBlock);
   }
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { SortableListItemData } from 'merchant/views/Settings/Configuration/Chec
 
 import { nonNullable } from 'merchant/views/Settings/Configuration/CheckoutEditor/helpers/index';
 import { SortableStandardBlocksList } from './SortableStandardBlocksList';
+import _track from './track';
 
 export type StandardPaymentBlock = {
   slug: string;
@@ -53,6 +54,11 @@ export function StandardPaymentBlocksList({
 
   function toggleSetShouldShowAllBlocks() {
     setShouldShowAllBlocks(!shouldShowAllBlocks);
+    if (shouldShowAllBlocks) {
+      _track.hideSomeClicked();
+    } else {
+      _track.showAllClicked();
+    }
   }
 
   function onUpdateSortOrder(updatedSequence: string[]) {

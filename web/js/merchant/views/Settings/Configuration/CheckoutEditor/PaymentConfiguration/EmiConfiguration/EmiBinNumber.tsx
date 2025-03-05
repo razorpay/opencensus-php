@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Tag, TextInput } from '@razorpay/blade/components';
 import { isEmpty } from 'lodash';
+import _track from './track';
 
 export default function EmiBinNumber({ finalCardConfigurationObj, setFinalCardConfigurationObj }) {
-  const [singleBINNumber, setSingleBINNumber] = React.useState<string>('');
-  const [validationError, setValidationError] = React.useState<string | undefined>();
+  const [singleBINNumber, setSingleBINNumber] = useState<string>('');
+  const [validationError, setValidationError] = useState<string | undefined>();
 
   const handleAddBIN = () => {
     if (singleBINNumber.length === 6) {
@@ -17,6 +18,7 @@ export default function EmiBinNumber({ finalCardConfigurationObj, setFinalCardCo
     } else {
       setValidationError('Bin number should be 6 digits');
     }
+    _track.cardBinNumberAdded(singleBINNumber);
   };
 
   const handleRemoveBIN = (values: string[]) => {

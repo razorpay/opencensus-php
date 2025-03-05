@@ -15,6 +15,7 @@ import {
 
 import { CustomPaymentBlockForm } from './CustomPaymentBlockForm';
 import { CustomPaymentBlock } from './CustomPaymentBlocks';
+import _track from './track';
 
 export type SortableCustomPaymentBlocksListProps = {
   list: SortableListItemData<CustomPaymentBlock>[];
@@ -61,7 +62,9 @@ export function SortableCustomPaymentBlocksList({
 
   function updateSortableList(blocks: SortableListItemData<CustomPaymentBlock>[]) {
     const updatedCustomBlocksOrder = blocks.map((block) => block.item.slug);
+    const oldCustomBlocksOrder = list.map((block) => block.item.slug);
     updateCustomBlocksSequence(updatedCustomBlocksOrder);
+    _track.reorderCustomBlock(oldCustomBlocksOrder, updatedCustomBlocksOrder);
   }
 
   function handleShowCustomBlockDetails(blockDetails: CustomPaymentBlock) {
@@ -72,6 +75,7 @@ export function SortableCustomPaymentBlocksList({
       name: block?.name ?? '',
       isCustomBlock: true,
     });
+    _track.customPaymentBlockExpanded(blockDetails);
   }
 
   function handleCustomBlockClick(blockDetails: CustomPaymentBlock) {

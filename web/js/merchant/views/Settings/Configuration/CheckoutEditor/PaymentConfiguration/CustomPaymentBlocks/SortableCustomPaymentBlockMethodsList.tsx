@@ -27,6 +27,7 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 import { nonNullable } from 'merchant/views/Settings/Configuration/CheckoutEditor/helpers/index';
 import { PREVIEW_SCREEN } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
+import _track from './track';
 
 export function SortableCustomPaymentBlockMethodsList({
   blockKey,
@@ -110,8 +111,13 @@ export function SortableCustomPaymentBlockMethodsList({
 
   function updateSortableList(sortedBlocks: SortableListItemData<CustomPaymentBlockMethod>[]) {
     const newCustomBlockMethodsSequence = sortedBlocks.map((block) => block.item.slug);
+    const oldCustomBlockMethodsSequence = list.map((block) => block.item.slug);
     updateCustomBlockMethodsSequence(newCustomBlockMethodsSequence);
     onUpdateSortList(newCustomBlockMethodsSequence);
+    _track.customPaymentBlockMethodReordered(
+      oldCustomBlockMethodsSequence,
+      newCustomBlockMethodsSequence,
+    );
   }
 
   function handleCustomBlockMethodVisibilityChange(method: string, isVisible: boolean) {
@@ -185,6 +191,10 @@ export function SortableCustomPaymentBlockMethodsList({
         },
       });
     }
+    _track.customPaymentBlockMethodVisibilityToggled(oldBlock, {
+      methodName: method,
+      isVisible,
+    });
   }
 
   function openModal(slug: string) {
@@ -231,6 +241,7 @@ export function SortableCustomPaymentBlockMethodsList({
       isCustomBlock: true,
     });
     handlePreviewScreenChange(PREVIEW_SCREEN.METHODS);
+    _track.customPaymentBlockMethodClicked(block);
   }
 
   function removeSingleInstrument(slug: string) {
@@ -264,6 +275,7 @@ export function SortableCustomPaymentBlockMethodsList({
         },
       },
     });
+    _track.customPaymentBlockSingleInstrumentRemoved(singleMatchingInstrument);
   }
   return (
     <>

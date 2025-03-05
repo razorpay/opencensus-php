@@ -4,6 +4,7 @@ import { Box, Button, Divider, useTheme } from '@razorpay/blade/components';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/createContext';
 import { PreventDiscardChangesModal } from './PaymentConfiguration/ConfigurationDetails/PreventDiscardChangesModal';
 import { SlideUp } from './components/styles';
+import sendToSegment from './track';
 
 const ConfigControls = () => {
   const { isSaving, isValueModified, handleDiscardAllChanges, handleSave } = useCheckoutEditor();
@@ -16,6 +17,13 @@ const ConfigControls = () => {
   function handleDiscardChangesContinue() {
     setIsPreventDiscardChangesModalOpen(false);
     handleDiscardAllChanges();
+    sendToSegment(
+      'discard changes continue',
+      'clicked',
+      {},
+      'Checkout Settings',
+      'Checkout Editor',
+    );
   }
 
   // this is done to support flying-in/out animation

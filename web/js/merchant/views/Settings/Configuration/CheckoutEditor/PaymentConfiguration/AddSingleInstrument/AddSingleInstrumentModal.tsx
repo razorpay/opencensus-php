@@ -28,6 +28,7 @@ import {
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { PREVIEW_SCREEN } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
+import _track from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CustomPaymentBlocks/track/index';
 export function AddSingleInstrumentModal({
   onClose,
   blockID,
@@ -114,6 +115,7 @@ export function AddSingleInstrumentModal({
       isCustomBlock: true,
     });
     handlePreviewScreenChange(PREVIEW_SCREEN.METHODS);
+    _track.customPaymentBlockSingleInstrumentAdded(singleInstrumentConfig);
   };
   const Footer = () => {
     return (

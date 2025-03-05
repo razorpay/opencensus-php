@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowRightIcon,
   Box,
@@ -9,10 +9,11 @@ import {
   TextInput,
 } from '@razorpay/blade/components';
 import { isEmpty } from 'lodash';
+import _track from './track';
 
 export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfigurationObj }) {
-  const [singleBINNumber, setSingleBINNumber] = React.useState<string>('');
-  const [validationError, setValidationError] = React.useState<string | undefined>();
+  const [singleBINNumber, setSingleBINNumber] = useState<string>('');
+  const [validationError, setValidationError] = useState<string | undefined>();
 
   const handleAddBIN = () => {
     if (singleBINNumber.length === 6) {
@@ -22,6 +23,7 @@ export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfi
       }));
       setSingleBINNumber('');
       setValidationError(undefined);
+      _track.cardBinNumberAdded(singleBINNumber);
     } else {
       setValidationError('Bin number should be 6 digits');
     }
@@ -47,7 +49,7 @@ export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfi
       <Link href="#" display="flex" icon={ArrowRightIcon} iconPosition="right">
         See documentation
       </Link>
-      <Box gap="spacing.5" display="flex" flexDirection="column" marginTop={'spacing.5'}>
+      <Box gap="spacing.5" display="flex" flexDirection="column" marginTop="spacing.5">
         <Box display="flex" gap="spacing.5">
           <TextInput
             placeholder="Enter BIN number"

@@ -13,6 +13,7 @@ import {
 
 import { ConfigurationListItem } from './ConfigurationListItem';
 import { CreateNewConfiguration } from './CreateNewConfiguration';
+import _track from './track';
 
 type ConfigurationListProps = {
   showConfigDetails: () => void;
@@ -40,8 +41,10 @@ function ConfigurationList({ showConfigDetails, org }: ConfigurationListProps) {
     handleSelectedConfigChange({ ...config });
     if (config.config_id) {
       handleOriginalPaymentConfigChange({ ...config });
+      _track.paymentConfigEditClicked(config.config_id);
     } else {
       handleOriginalPaymentConfigChange({ ...DEFAULT_PAYMENT_CONFIG });
+      _track.createNewPaymentConfigClicked();
     }
   }
 

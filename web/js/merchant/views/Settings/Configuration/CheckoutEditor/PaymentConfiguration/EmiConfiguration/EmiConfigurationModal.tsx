@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@razorpay/blade/components';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import EmiCardTypeList from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/EmiConfiguration/EmiCardTypeList';
 import EmiCardProviderList from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/EmiConfiguration/EmiCardProviderList';
@@ -61,10 +61,7 @@ export default function EmiConfigurationModal({
   };
   const { debit: debitCardProviders, credit: creditCardProviders, cardless } = providers;
 
-  const [emiIssuers, setEmiIssuers] = React.useState([
-    ...debitCardProviders,
-    ...creditCardProviders,
-  ]);
+  const [emiIssuers, setEmiIssuers] = useState([...debitCardProviders, ...creditCardProviders]);
 
   const isInitialConfigExists = currentConfig.filter((item) => item.method === 'emi').length > 0;
   const initialFinalCardConfigurationObj = {
@@ -82,7 +79,7 @@ export default function EmiConfigurationModal({
         ? cardType.map((type) => type.title)
         : initialState.types,
   };
-  const [activeEMI, setActiveEMI] = React.useState(initialFinalCardConfigurationObj);
+  const [activeEMI, setActiveEMI] = useState(initialFinalCardConfigurationObj);
   const initialObjects = currentConfig.filter((item) => item.method === 'cardless_emi');
   const isInitialConfigExistsCardless =
     currentConfig.filter((item) => item.method === 'cardless_emi').length > 0;
@@ -105,16 +102,19 @@ export default function EmiConfigurationModal({
         : initialObject.providers,
   };
 
-  const [activeCardLessEmi, setActiveCardLessEmi] = React.useState(
+  const [activeCardLessEmi, setActiveCardLessEmi] = useState(
     initialFinalCardConfigurationObCardless,
   );
-  const [isEnableSaveButton, setIsEnableSaveButton] = React.useState(false);
+  const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
+
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     setIsEnableSaveButton(
       !isEqual(initialObject, activeCardLessEmi) || !isEqual(initialState, activeEMI),
     );
   }, [activeCardLessEmi, activeEMI]);
 
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     let issuers: { code: string; name: any }[] = [];
     if ((activeEMI?.types ?? []).length === 0) {
@@ -129,6 +129,7 @@ export default function EmiConfigurationModal({
     }
     setEmiIssuers(issuers);
   }, [activeEMI?.types]);
+
   const handleSave = () => {
     const updatedInstruments = [
       ...((selectedPaymentConfig?.checkout_config?.display?.blocks?.[blockName]?.instruments ||

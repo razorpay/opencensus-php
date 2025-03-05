@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowUpRightIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
+import _track from './track';
 
 export type ConfigurationHeadingProps = {
   org: { business_name: string };
@@ -27,6 +28,9 @@ function ConfigurationHeading({ org }: ConfigurationHeadingProps) {
           icon={ArrowUpRightIcon}
           target="_blank"
           href={`https://${org.business_name.toLowerCase()}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods`}
+          onClick={() => {
+            _track.setupGuideClicked();
+          }}
         >
           Setup Guide
         </Link>

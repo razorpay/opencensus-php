@@ -30,6 +30,7 @@ import {
 
 import { PreventDiscardChangesModal } from './PreventDiscardChangesModal';
 import { IconButtonWrapper } from './styled';
+import _track from './track';
 
 export type HeaderProps = {
   org: { business_name: string };
@@ -98,6 +99,7 @@ function Header({ org, hideConfigDetails }: HeaderProps) {
 
   function handleConfigNameModalSave(updatedName: string) {
     handleConfigNameChange(selectedConfig, updatedName);
+    _track.configurationRenamed(updatedName);
   }
 
   function handleSetConfigAsDefaultModalSave() {
@@ -116,6 +118,28 @@ function Header({ org, hideConfigDetails }: HeaderProps) {
     } else {
       handleGoBack();
     }
+    _track.goBackButtonClicked();
+  }
+
+  function handleRenameConfigurationClicked() {
+    setIsConfigNameModalOpen(true);
+    _track.renameConfigurationClicked();
+  }
+
+  function handleSaveAsDefaultClicked() {
+    setIsSetDefaultConfigModalOpen(true);
+    _track.saveAsDefaultClicked();
+  }
+
+  function handleViewSetupGuideClicked() {
+    const url = `https://${org.business_name.toLowerCase()}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods`;
+    window.open(url, '_blank');
+    _track.viewSetupGuideClicked();
+  }
+
+  function handleDiscardChangesContinue() {
+    handleGoBack();
+    _track.discardChangesContinueClicked();
   }
 
   return (
@@ -158,20 +182,16 @@ function Header({ org, hideConfigDetails }: HeaderProps) {
               </IconButtonWrapper>
 
               <MenuOverlay>
-                <MenuItem
-                  onClick={() => setIsConfigNameModalOpen(true)}
-                  title="Rename configuration"
-                />
+                <MenuItem onClick={handleRenameConfigurationClicked} title="Rename configuration" />
                 <MenuItem
                   isDisabled={!!selectedConfig?.is_default || isNewConfig}
-                  onClick={() => setIsSetDefaultConfigModalOpen(true)}
+                  onClick={handleSaveAsDefaultClicked}
                   title="Save as default"
                 />
                 <MenuItem
-                  target="_blank"
-                  href={`https://${org.business_name.toLowerCase()}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods`}
                   title="View Setup Guide"
                   trailing={<ArrowUpRightIcon />}
+                  onClick={handleViewSetupGuideClicked}
                 />
               </MenuOverlay>
             </Menu>
@@ -196,7 +216,7 @@ function Header({ org, hideConfigDetails }: HeaderProps) {
         title="Are you sure you want to go back?"
         content="Going back will discard your progress. Are you sure you want to continue?"
         onClose={() => setIsPreventDiscardChangesModalOpen(false)}
-        onDiscard={handleGoBack}
+        onDiscard={handleDiscardChangesContinue}
       />
     </Box>
   );

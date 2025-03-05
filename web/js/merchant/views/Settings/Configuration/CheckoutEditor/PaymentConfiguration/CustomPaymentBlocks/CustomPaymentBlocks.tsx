@@ -18,6 +18,7 @@ import {
   NEW_CUSTOM_BLOCK_NAME,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/constants/custom_block';
 import { getCustomBlockDescription } from './utils';
+import _track from './track';
 
 export type CustomPaymentBlock = {
   slug: string;
@@ -85,6 +86,7 @@ export function CustomPaymentBlocks() {
     });
     handlePreviewScreenChange(PREVIEW_SCREEN.METHODS);
     setNewBlockKey(newBlockKey);
+    _track.createNewCustomBlockClicked();
   }
 
   return (

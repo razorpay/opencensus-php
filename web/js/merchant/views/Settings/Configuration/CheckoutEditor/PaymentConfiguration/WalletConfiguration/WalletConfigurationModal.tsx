@@ -54,6 +54,7 @@ export default function WalletConfigurationModal({
   const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
   const [activeBanks, setActiveBanks] = useState(initialFinalCardConfigurationObj);
 
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     setIsEnableSaveButton(!isEqual(initialObject, activeBanks));
   }, [activeBanks, initialObject]);

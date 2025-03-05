@@ -63,6 +63,7 @@ import {
   skipCardMandateSummaryProps,
 } from 'merchant/views/Settings/Configuration/settings-config-constants';
 import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
+import _payment_config_track from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/track';
 
 export type CheckoutEditorProviderProps = {
   children: React.ReactNode;
@@ -417,6 +418,11 @@ const CheckoutEditorProvider = ({
             merchantCheckoutSelectedPaymentConfig: selectedPaymentConfig ?? razorpayConfig,
           },
         });
+
+        const paymentConfigIDs = (merchantCheckoutPaymentConfigs?.data ?? []).map(
+          (config) => config?.config_id ?? '',
+        );
+        _payment_config_track.paymentConfigsLoaded(paymentConfigIDs);
       }
     }
   }, [merchantCheckoutPaymentConfigs, selectedPaymentConfig]);

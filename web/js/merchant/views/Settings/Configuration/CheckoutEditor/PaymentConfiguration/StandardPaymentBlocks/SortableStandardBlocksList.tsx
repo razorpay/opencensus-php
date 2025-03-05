@@ -19,6 +19,7 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 
 import { StandardPaymentBlock } from './StandardPaymentBlocksList';
+import _track from './track';
 
 export function SortableStandardBlocksList({
   list,
@@ -135,6 +136,10 @@ export function SortableStandardBlocksList({
         isCustomBlock: false,
       });
     }
+    _track.toggleStandardBlockVisibility({
+      slug,
+      isVisible,
+    });
   }
 
   function updateStandardBlocksSequence(updatedStandardBlocksSequence: string[]) {
@@ -159,21 +164,24 @@ export function SortableStandardBlocksList({
 
   function updateSortableList(blocks: SortableListItemData<StandardPaymentBlock>[]) {
     const updatedStandardBlocksSequence = blocks.map((block) => block.item.slug);
+    const oldStandardBlocksSequence = allBlocks.map((block) => block.slug);
     const visibleBlocksSequence = blocks
       .filter((block) => block.item.isVisible)
       .map((block) => block.item.slug);
     updateStandardBlocksSequence(visibleBlocksSequence);
     onUpdateSortList(updatedStandardBlocksSequence);
+    _track.reorderStandardBlocks(oldStandardBlocksSequence, updatedStandardBlocksSequence);
   }
 
-  function selectPaymentMethod(method: string, shouldOpenPreview: boolean) {
+  function selectPaymentMethod(method: string, shouldOpenMethodScreenInPreview: boolean) {
     handlePreviewScreenChange(PREVIEW_SCREEN.METHODS);
-    if (shouldOpenPreview) {
+    if (shouldOpenMethodScreenInPreview) {
       handleSelectedPaymentOptionChange({
         name: method,
         isCustomBlock: false,
       });
     }
+    _track.standardBlockClicked(method);
   }
 
   return (

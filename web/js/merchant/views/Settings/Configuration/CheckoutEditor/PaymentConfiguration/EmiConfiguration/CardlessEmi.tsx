@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge, Box, Switch, Text } from '@razorpay/blade/components';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
 import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/helpers/getInstrumentLogo';
+import _track from './track';
 
 export default function CardlessEmi({
   finalCardConfigurationObj,
@@ -69,6 +70,7 @@ export default function CardlessEmi({
                         providers: updatedNetworks,
                       };
                     });
+                    _track.cardlessEMIToggled(item.code, isChecked);
                   }}
                 />
               </Box>

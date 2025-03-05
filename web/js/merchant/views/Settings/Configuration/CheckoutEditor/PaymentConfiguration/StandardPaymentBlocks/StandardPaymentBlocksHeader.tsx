@@ -7,6 +7,7 @@ import {
   CHECKOUT_EDITOR_FIELDS,
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
+import _track from './track';
 
 export type StandardPaymentBlocksHeaderProps = {
   isAllBlocksVisible: boolean;
@@ -44,6 +45,7 @@ export function StandardPaymentBlocksHeader({
           },
         },
       });
+      _track.hideAllClicked();
     } else {
       // remove all method-only blocks from hide
       // we won't remove partial method blocks from hide (eg. {method: 'netbanking', banks: ['HDFC']} won't be removed)
@@ -64,6 +66,7 @@ export function StandardPaymentBlocksHeader({
           },
         },
       });
+      _track.enableAllClicked();
     }
   }
 

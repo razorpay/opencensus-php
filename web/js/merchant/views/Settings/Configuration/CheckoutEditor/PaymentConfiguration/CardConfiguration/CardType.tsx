@@ -2,6 +2,7 @@ import React from 'react';
 import startCase from 'lodash/startCase';
 import { ArrowRightIcon, Box, Link, Switch, Text } from '@razorpay/blade/components';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
+import _track from './track';
 
 export default function CardType({
   finalCardConfigurationObj,
@@ -56,6 +57,7 @@ export default function CardType({
                       types: updatedTypes,
                     };
                   });
+                  _track.cardTypeToggled(item.title, isChecked);
                 }}
               />
             }

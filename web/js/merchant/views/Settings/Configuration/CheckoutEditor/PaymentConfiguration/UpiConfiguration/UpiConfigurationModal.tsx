@@ -17,6 +17,7 @@ import {
   CHECKOUT_EDITOR_FIELDS,
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import _track from './track';
 
 export default function UpiConfigurationModal({
   isOpen,
@@ -48,6 +49,7 @@ export default function UpiConfigurationModal({
     initialFinalCardConfigurationObj,
   );
 
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     if (!isEqual(initialObject, upiFeatureEnabledList)) {
       setIsEnableSaveButton(true);
@@ -153,6 +155,7 @@ export default function UpiConfigurationModal({
                       method: upiFeatureEnabledList.method,
                       flows: newFlow,
                     });
+                    _track.upiFlowToggled(item.flows, isChecked);
                   }}
                 />
               }

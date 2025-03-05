@@ -31,6 +31,9 @@ function _track() {
     togglePreview: (preview) => {
       sendToSegment('toggle preview', 'click', { preview }, section, subSection);
     },
+    toggleZoom: (zoomedScreen) => {
+      sendToSegment('toggle zoom', 'click', { zoomedScreen }, section, subSection);
+    },
   };
 }
 

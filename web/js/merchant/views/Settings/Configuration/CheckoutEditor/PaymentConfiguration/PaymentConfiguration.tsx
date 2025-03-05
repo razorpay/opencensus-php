@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { ConfigurationDetails } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/ConfigurationDetails/ConfigurationDetails';
 import { PAYMENT_CONFIG_SCREEN } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
@@ -9,6 +9,7 @@ import {
 
 import ConfigurationHeading from './ConfigurationHeading';
 import ConfigurationList from './ConfigurationList';
+import _track from './track';
 
 export function PaymentConfiguration() {
   const { values, handlePaymentConfigScreenChange } = useCheckoutEditor();
@@ -22,6 +23,11 @@ export function PaymentConfiguration() {
   function handleHideConfigDetails() {
     handlePaymentConfigScreenChange(PAYMENT_CONFIG_SCREEN.CONFIG_LIST);
   }
+
+  useEffect(() => {
+    _track.paymentConfigVisited();
+  }, []);
+
   return (
     <>
       <ConfigurationHeading />

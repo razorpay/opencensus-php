@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge, Box, Switch, Text } from '@razorpay/blade/components';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
 import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/helpers/getInstrumentLogo';
+import _track from './track';
 
 export default function EmiCardProviderList({
   finalCardConfigurationObj,
   setFinalCardConfigurationObj,
   cardProvider,
 }) {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <Box borderRadius="large">
       <Box gap="16px" display="flex" flexDirection="column">
@@ -17,7 +18,7 @@ export default function EmiCardProviderList({
             elevation="lowRaised"
             key={index}
             Title={
-              <Text variant="body" weight="medium" size="medium" color={'surface.text.gray.normal'}>
+              <Text variant="body" weight="medium" size="medium" color="surface.text.gray.normal">
                 {item.name}
               </Text>
             }
@@ -65,6 +66,7 @@ export default function EmiCardProviderList({
                         networks: updatedNetworks,
                       };
                     });
+                    _track.cardProviderToggled(item.name, isChecked);
                   }}
                 />
               </Box>

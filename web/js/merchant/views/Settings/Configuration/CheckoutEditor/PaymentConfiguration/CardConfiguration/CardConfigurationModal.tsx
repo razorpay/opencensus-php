@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
   Box,
@@ -77,7 +77,7 @@ export default function CardConfigurationModal({
         ? cardType.map((type) => type.title)
         : initialObject.types,
   };
-  const [finalCardConfigurationObj, setFinalCardConfigurationObj] = React.useState(
+  const [finalCardConfigurationObj, setFinalCardConfigurationObj] = useState(
     initialFinalCardConfigurationObj,
   );
 
@@ -85,6 +85,8 @@ export default function CardConfigurationModal({
     onClose();
     setCardConfigType(['']);
   };
+
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     cardType.forEach((item) => {
       if (!types[item.title]) {
@@ -93,6 +95,7 @@ export default function CardConfigurationModal({
     });
   }, [types]);
 
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     if (!isEqual(initialObject, finalCardConfigurationObj)) {
       setIsEnableSaveButton(true);

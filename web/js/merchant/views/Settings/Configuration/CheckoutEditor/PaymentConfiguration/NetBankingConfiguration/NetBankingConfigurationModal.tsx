@@ -72,6 +72,7 @@ export default function NetBankingConfigurationModal({
   const [searchFilter, setSearchFilter] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState<string>('');
 
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     setIsEnableSaveButton(!isEqual(initialObject, activeBanks));
   }, [activeBanks, initialObject]);
@@ -88,6 +89,7 @@ export default function NetBankingConfigurationModal({
     setFilteredBanks(filtered);
   };
 
+  // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {
     handleSearch(searchValue.toLowerCase());
   }, [searchFilter, searchValue]);
