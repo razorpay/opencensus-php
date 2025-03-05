@@ -454,7 +454,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
     protected function persistReconciliationData(array $rowDetails)
     {
-        $refundTransaction = $this->refund->transaction;
+        $refundTransaction = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($this->refund->getId());
 
         if ($refundTransaction === null)
         {

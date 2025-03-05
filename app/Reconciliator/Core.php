@@ -92,7 +92,8 @@ class Core extends Base\Core
 
     public function attemptToCreateMissingRefundTransaction(Refund\Entity $refund)
     {
-        $paymentTransaction = $refund->payment->transaction;
+
+        $paymentTransaction = $this->repo->transaction->fetchByIdFromTiDB($refund->payment->getTransactionId());
 
         if ($paymentTransaction === null)
         {
