@@ -2642,34 +2642,6 @@ class Processor
                 return true;
             }
 
-            // IIN not available
-            if (empty($iin) === true)
-            {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'iin' => $iinId,
-                    'reason' => "iin_not_available",
-                    'merchant_id' => $merchant->getId(),
-                ]);
-                return false;
-            }
-
-            $supportedNetworks = [
-                Card\Network::MC,
-                Card\Network::VISA,
-                Card\Network::RUPAY,
-                Card\Network::DICL,
-                Card\Network::AMEX,
-            ];
-
-            if((in_array($iin->getNetworkCode(), $supportedNetworks, true) === false)){
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "network_not_supported",
-                    'network' => $iin->getNetworkCode(),
-                    'merchant_id' => $merchant->getId(),
-                ]);
-                return false;
-            }
-
             if($input[Payment\Entity::METHOD] == Payment\METHOD::CARD &&
                 $this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === true) {
                 return true;
