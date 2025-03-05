@@ -13,13 +13,11 @@
  * const result2 = validateCompanyAB('ABC Corp', 'XYZ Ltd', true);
  * // returns true
  */
-export function validateCompanyAB(value1: string = '', value2: string = '', isExpOn: boolean = false): true | string {
-  if (!isExpOn) return true; // No validation if not enabled
-
+export function validateCompanyAB(value1: string = '', value2: string = '', isExpOn: boolean = false): boolean | string {
+  if (!isExpOn) return false;
   value1 = value1 === null ? '' : value1;
   value2 = value2 === null ? '' : value2;
-
   return value1.toLowerCase() === value2.toLowerCase()
-    ? 'Company name cannot be the same as Contact Name'
-    : true; // Return true if valid
+    ? 'Company name cannot be same as Contact Name'
+    : false;
 }
