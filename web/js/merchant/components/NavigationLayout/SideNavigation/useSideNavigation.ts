@@ -2,13 +2,14 @@ import { useMemo, useState, useEffect } from 'react';
 import useConnectedProducts from '../hooks/useConnectedProducts';
 import usePaymentsSideNavHook from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import usePartnersSideNavHook from '../NavigationContent/Partner/Sidebar/useSideNavHook';
+import getRizeSideTab from '../NavigationContent/Rize/SideBar/rizeSideNavHook';
 import type { IconComponent } from '@razorpay/blade/components';
 import { ProductAlias } from '../typings/component';
 
 export type SideNavSectionList = {
   section_name?: string;
   section_id: string;
-  max_default_options: number;
+  max_default_options?: number;
   product_options: Array<{
     href: string;
     icon: IconComponent;
@@ -26,9 +27,21 @@ export interface useSideNavigationProps {
   footer: SideNavFooter;
   banner: SideNavBanner;
 }
-
+const getSideNavData = (productAlias: ProductAlias) => {
+  switch (productAlias) {
+    case 'company_registration_top_navigation_item':
+      return getRizeSideTab();
+    default:
+      return {
+        listItems: [],
+        footer: null,
+        banner: null,
+      };
+  }
+};
 const useSideNavigation = (productAlias: ProductAlias): useSideNavigationProps => {
   const { getProductAction } = useConnectedProducts();
+
   const partnersSideNav = usePartnersSideNavHook();
   const paymentsSideNav = usePaymentsSideNavHook();
 
@@ -36,8 +49,9 @@ const useSideNavigation = (productAlias: ProductAlias): useSideNavigationProps =
     () => ({
       partners_top_navigation_item: partnersSideNav,
       payments_top_navigation_item: paymentsSideNav,
+      [productAlias]: getSideNavData(productAlias), // Add more mapping in getSideNavData function
     }),
-    [partnersSideNav, paymentsSideNav],
+    [partnersSideNav, paymentsSideNav, productAlias],
   );
 
   // If productAlias is not defined, return empty sideNav immediately

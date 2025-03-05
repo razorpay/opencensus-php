@@ -13,6 +13,7 @@ const Partner = React.lazy(() => import('./Partner/Partner'));
 const Payroll = React.lazy(() => import('./Payroll/Payroll'));
 const BillMe = React.lazy(() => import('./BillMe/BillMe'));
 const Rize = React.lazy(() => import('./Rize/Rize'));
+const RizeIncorporation = React.lazy(() => import('../../../views/CompanyRegistration'));
 
 const PaymentsWithLayout = withConnectedLayout(Payments);
 const BankingWithLayout = withConnectedLayout(Banking);
@@ -20,6 +21,7 @@ const PartnerWithLayout = withConnectedLayout(Partner);
 const PayrollWithLayout = withConnectedLayout(Payroll);
 const BillMeWithLayout = withConnectedLayout(BillMe);
 const RizeWithLayout = withConnectedLayout(Rize);
+const RizeIncorporationWithLayout = withConnectedLayout(RizeIncorporation);
 
 const GrowthPageWithLayout = withConnectedLayout(GrowthPage);
 const AccessDeniedWithLayout = withConnectedLayout(AccessDeniedPage);
@@ -104,6 +106,9 @@ const MicroFrontendLoader: React.FC<{ renderFullPageView?: boolean } & Record<st
         break;
       case 'rize_top_navigation_item':
         WrappedComponent = renderFullPageView ? Rize : RizeWithLayout;
+        break;
+      case 'company_registration_top_navigation_item':
+        WrappedComponent = renderFullPageView ? RizeIncorporation : RizeIncorporationWithLayout;
         break;
       default:
         WrappedComponent = ErrorPage;
