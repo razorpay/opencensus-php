@@ -27,12 +27,12 @@ const StoreDetailsCell = ({ store, brand }: StoreDetailsCellProps): React.ReactE
       </Box>
       <Box>
         <Box whiteSpace="normal">
-          <Text size="medium" weight="semibold">
+          <Text size="medium" weight="semibold" wordBreak="break-all">
             {`${store?.storeInfo?.storeCode} - ${store?.name}`}
           </Text>
         </Box>
         <Box whiteSpace="normal">
-          <Text size="small" marginTop="spacing.2">
+          <Text size="small" marginTop="spacing.2" wordBreak="break-all">
             {store?.address?.displayAddress}
           </Text>
         </Box>

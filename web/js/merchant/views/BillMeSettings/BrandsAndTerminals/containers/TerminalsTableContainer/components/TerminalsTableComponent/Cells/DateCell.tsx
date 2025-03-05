@@ -8,8 +8,8 @@ type DateCellProps = {
 
 const DateCell = ({ time }: DateCellProps): React.ReactElement => {
   return (
-    <Box>
-      <Text>{time ? `${moment(time).format('DD/MM/YYYY')}` : '-'}</Text>
+    <Box whiteSpace="normal">
+      <Text wordBreak="break-all">{time ? `${moment(time).format('DD/MM/YYYY')}` : '-'}</Text>
     </Box>
   );
 };

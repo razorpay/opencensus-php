@@ -14,7 +14,7 @@ import {
 import { ArrayHelpers, useField } from 'formik';
 import { useSearchParams } from 'react-router-dom';
 
-import TerminalStatusChangeAlertModal from 'merchant/views/StoreSettings/StoreCreateOrEdit/components/TerminalStatusChangeAlertModal';
+import StatusChangeAlertModal from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/components/StatusChangeAlertModal';
 import useStoreTerminalCreateMutation from 'merchant/views/StoreSettings/StoreCreateOrEdit/hooks/useStoreTerminalCreateMutation';
 import useStoreTerminalUpdateMutation from 'merchant/views/StoreSettings/StoreCreateOrEdit/hooks/useStoreTerminalUpdateMutation';
 import { useStoresCreateStore } from 'merchant/views/StoreSettings/StoreCreateOrEdit/stores/storesCreateFormStore';
@@ -193,7 +193,7 @@ const BillingTerminalRow = ({
   return (
     <>
       {shouldShowAlertModal && (
-        <TerminalStatusChangeAlertModal
+        <StatusChangeAlertModal
           modalProps={{
             isOpen: shouldShowAlertModal,
             onDismiss: () => setShouldShowAlertModal(false),

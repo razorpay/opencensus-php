@@ -68,7 +68,7 @@ const ChannelStatusTable = ({
                   <TableRow key={id} item={{ id }}>
                     <TableCell>
                       <Box whiteSpace="normal">
-                        <Text>{cellHeader}</Text>
+                        <Text wordBreak="break-all">{cellHeader}</Text>
                       </Box>
                     </TableCell>
                     {TITLES[id as keyof typeof TITLES]
@@ -81,7 +81,7 @@ const ChannelStatusTable = ({
                       .map((cellValue: React.ReactElement | string, index: number) => (
                         <TableCell key={`${index}`}>
                           <Box whiteSpace="normal">
-                            <Text>{cellValue}</Text>
+                            <Text wordBreak="break-all">{cellValue}</Text>
                           </Box>
                         </TableCell>
                       ))}

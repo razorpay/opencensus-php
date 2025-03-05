@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 
 import { DEFAULT_COUNTRY_CODE } from '@apps/digital-bills/src/utils/constants';
 
@@ -9,7 +9,13 @@ type ContactCellProps = {
 };
 
 const ContactCell = ({ contact, countryCode }: ContactCellProps): React.ReactElement => {
-  return <Text>{contact ? `${countryCode ?? DEFAULT_COUNTRY_CODE} ${contact}` : '-'}</Text>;
+  return (
+    <Box whiteSpace="normal">
+      <Text wordBreak="break-all">
+        {contact ? `${countryCode ?? DEFAULT_COUNTRY_CODE} ${contact}` : '-'}
+      </Text>
+    </Box>
+  );
 };
 
 export default ContactCell;

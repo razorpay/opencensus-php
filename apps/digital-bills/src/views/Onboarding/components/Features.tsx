@@ -115,7 +115,7 @@ const Features = ({ isInWaitlist, updateActiveScreen }: FeaturesProps) => {
               display="flex"
               justifyContent="space-between"
               marginY={{ base: 'spacing.7', l: 'spacing.10' }}
-              gap="spacing.5"
+              gap="spacing.6"
               flexDirection={{ base: 'column', l: 'row' }}
             >
               {FEATURE_CARDS_DATA.map((card) => {

@@ -14,8 +14,8 @@ const StoreDetailsCell = ({ store }: StoreDetailsCellProps): React.ReactElement 
   const { storeCode = '', storeType } = storeInfo || {};
   const { label, color } = STORE_TYPE_MAP[storeType] || {};
   return (
-    <Box display="flex" flexDirection="column" gap="spacing.2">
-      <Text>
+    <Box display="flex" flexDirection="column" gap="spacing.2" whiteSpace="normal">
+      <Text wordBreak="break-all">
         {storeCode} - {name}
       </Text>
       <Badge color={color || 'neutral'}>{label || '-'}</Badge>

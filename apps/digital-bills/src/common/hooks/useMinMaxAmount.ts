@@ -23,7 +23,13 @@ const useMinMaxAmount = (
     if (type === 'max') max = value === '' ? null : Number(value);
 
     if ((min !== null && isNaN(min)) || (max !== null && isNaN(max))) return;
-    if (min !== null && max !== null && min > max) {
+    if (min !== null && max === null) {
+      setMaxAmountValidationState('error');
+      setMaxAmountErrorMsg('Max amount is required');
+    } else if (max !== null && min === null) {
+      setMinAmountValidationState('error');
+      setMinAmountErrorMsg('Min amount is required');
+    } else if (min !== null && max !== null && min > max) {
       setMinAmountValidationState('error');
       setMaxAmountValidationState('error');
       setMinAmountErrorMsg('Min amount should be less than max amount');

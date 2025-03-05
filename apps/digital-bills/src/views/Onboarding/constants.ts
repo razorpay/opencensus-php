@@ -9,12 +9,12 @@ export const FEATURE_CARDS_DATA = [
     image: GstCompliantImage,
     title: 'Convert paper bills into GST-compliant digital bills',
     description:
-      'Generate tax-compliant digital bills based on product price and pin code. Sendl bills directly to customers’ phones through WhatsApp, Email & SMS.',
+      'Generate tax-compliant digital bills based on product price and pin code. Send bills directly to customers’ phones through WhatsApp, Email & SMS.',
   },
   {
     id: 2,
     image: AdsOnBillsImage,
-    title: 'Drive traffic with ads on bills',
+    title: 'Drive traffic with ads on digital bills',
     description:
       'Engage customers with promotions, personalized offers and discounts through the engagement touchpoints and drive repeat purchases.',
   },

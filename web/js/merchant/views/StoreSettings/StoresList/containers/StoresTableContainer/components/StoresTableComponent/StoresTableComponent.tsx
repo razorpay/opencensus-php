@@ -100,7 +100,7 @@ const StoresTableComponent = ({
             <TableToolbar />
           )
         }
-        gridTemplateColumns="35% 15% 15% 35%"
+        gridTemplateColumns="40% 20% 15% 25%"
       >
         {(tableData) => (
           <>
@@ -147,7 +147,7 @@ const StoresTableComponent = ({
                       </TableCell>
                       <TableCell>
                         <Box whiteSpace="normal">
-                          <Text>{tableItem?.storeInfo?.storeCode}</Text>
+                          <Text wordBreak="break-all">{tableItem?.storeInfo?.storeCode}</Text>
                         </Box>
                       </TableCell>
                       <TableCell>

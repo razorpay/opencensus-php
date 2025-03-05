@@ -67,7 +67,7 @@ const BillVisitTable = ({ visits = [] }: BillVisitTableProps): React.ReactElemen
                   <TableRow key={id} item={{ id, device, browser, os, ip }}>
                     <TableCell>
                       <Box whiteSpace="normal">
-                        <Text>{device || '-'}</Text>
+                        <Text wordBreak="break-all">{device || '-'}</Text>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -78,7 +78,7 @@ const BillVisitTable = ({ visits = [] }: BillVisitTableProps): React.ReactElemen
                           width="32px"
                           height="32px"
                         />
-                        <Text>{browser || '-'}</Text>
+                        <Text wordBreak="break-all">{browser || '-'}</Text>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -89,12 +89,12 @@ const BillVisitTable = ({ visits = [] }: BillVisitTableProps): React.ReactElemen
                           width="32px"
                           height="32px"
                         />
-                        <Text>{os || '-'}</Text>
+                        <Text wordBreak="break-all">{os || '-'}</Text>
                       </Box>
                     </TableCell>
                     <TableCell>
                       <Box whiteSpace="normal">
-                        <Text>{ip || '-'}</Text>
+                        <Text wordBreak="break-all">{ip || '-'}</Text>
                       </Box>
                     </TableCell>
                   </TableRow>

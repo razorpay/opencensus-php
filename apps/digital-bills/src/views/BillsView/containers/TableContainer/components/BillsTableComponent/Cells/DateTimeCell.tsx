@@ -6,11 +6,9 @@ type DateTimeCellProps = { billCreationTime: string };
 
 const DateTimeCell = ({ billCreationTime }: DateTimeCellProps): React.ReactElement => {
   return billCreationTime ? (
-    <Box>
-      {/* nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232 */}
-      <Text>{`${moment(billCreationTime).format('DD MMM YYYY')},`}</Text>
-      {/* nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232 */}
-      <Text>{moment(billCreationTime).format('h:mm A')}</Text>
+    <Box whiteSpace="normal">
+      <Text wordBreak="break-all">{`${moment(billCreationTime).format('DD MMM YYYY')},`}</Text>
+      <Text wordBreak="break-all">{moment(billCreationTime).format('h:mm A')}</Text>
     </Box>
   ) : (
     <Box>-</Box>

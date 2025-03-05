@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Table,
@@ -62,6 +62,12 @@ const TerminalsTableComponent = ({
   const [activeTerminalInfo, setActiveTerminalInfo] = useState<ActiveTerminalInfoType>(
     ACTIVE_TERMINAL_INFO_INIT_VALUE,
   );
+
+  useEffect(() => {
+    return () => {
+      window.sessionStorage.setItem('storeTerminalStatusAlertAcknowledged', 'false');
+    };
+  }, []);
 
   const handleStatusToggleChange = ({ id, isActive }: { id: string; isActive: boolean }) => {
     if (
@@ -172,7 +178,7 @@ const TerminalsTableComponent = ({
                       </TableCell>
                       <TableCell>
                         <Box whiteSpace="normal">
-                          <Text>{tableItem?.terminalInfo?.licenseKey}</Text>
+                          <Text wordBreak="break-all">{tableItem?.terminalInfo?.licenseKey}</Text>
                         </Box>
                       </TableCell>
                       <TableCell>

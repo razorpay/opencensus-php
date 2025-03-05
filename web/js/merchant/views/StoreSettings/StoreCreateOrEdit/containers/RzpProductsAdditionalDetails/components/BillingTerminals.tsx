@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Link, PlusCircleIcon } from '@razorpay/blade/components';
 import { FieldArray, useFormikContext } from 'formik';
 import BillingTerminalRow from './BillingTerminalRow';
@@ -6,6 +6,13 @@ import { TerminalFormValues } from 'merchant/views/StoreSettings/StoreCreateOrEd
 
 const BillingTerminals = () => {
   const { values } = useFormikContext<TerminalFormValues>();
+
+  useEffect(() => {
+    return () => {
+      window.sessionStorage.setItem('storeTerminalStatusAlertAcknowledged', 'false');
+    };
+  }, []);
+
   return (
     <Box display="flex" flexDirection="column" gap="spacing.7">
       <FieldArray

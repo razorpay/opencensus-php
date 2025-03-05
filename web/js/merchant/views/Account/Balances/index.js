@@ -33,6 +33,7 @@ import { TicketSystemEmitter } from 'merchant/care/init';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { BellIcon, Box, Heading, Link, Text } from '@razorpay/blade/components';
+import { withSplitzService } from 'common/splitz';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -237,8 +238,9 @@ class AddFundsContainer extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, splitz } = this.props;
     const { ticketGenerated } = this.state;
+    const { abExperiments } = splitz;
 
     return (
       <div className="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
@@ -288,7 +290,7 @@ class AddFundsContainer extends Component {
               Note: Standard TDR charges applies on adding funds
             </Text>
             {/* TODO: to add 'mode' condition check before Go-Live */}
-            {/* {isBillMeMerchant() ? <CompanyBalance /> : null} */}
+            {isBillMeMerchant({ abExperiments }) ? <CompanyBalance /> : null}
           </Box>
         </Box>
       </div>
@@ -317,4 +319,4 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddFundsContainer);
+export default withSplitzService(connect(mapStateToProps, mapDispatchToProps)(AddFundsContainer));

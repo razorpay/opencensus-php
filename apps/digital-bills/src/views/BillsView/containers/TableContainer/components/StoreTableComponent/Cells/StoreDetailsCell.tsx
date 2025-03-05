@@ -19,11 +19,11 @@ const StoreDetailsCell = ({ store }: StoreDetailsCellProps): React.ReactElement 
           alt={`${name} brand logo`}
         />
       </Box>
-      <Box>
-        <Text>
+      <Box whiteSpace="normal">
+        <Text wordBreak="break-all">
           {storeCode} - {name}
         </Text>
-        <Text marginTop="spacing.2" color="surface.text.gray.muted">
+        <Text marginTop="spacing.2" color="surface.text.gray.muted" wordBreak="break-all">
           {store?.address?.displayAddress}
         </Text>
       </Box>

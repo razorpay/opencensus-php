@@ -113,7 +113,7 @@ const BrandsTableComponent = ({
                   </TableCell>
                   <TableCell>
                     <Box whiteSpace="normal">
-                      <Text>{tableItem?.description || '-'}</Text>
+                      <Text wordBreak="break-all">{tableItem?.description || '-'}</Text>
                     </Box>
                   </TableCell>
                 </TableRow>

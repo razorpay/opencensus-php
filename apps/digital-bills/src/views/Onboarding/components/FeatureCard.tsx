@@ -10,7 +10,7 @@ type FeatureCardProps = {
 const FeatureCard = ({ title, description, image }: FeatureCardProps) => {
   return (
     <Box
-      maxWidth={{ base: '100%', l: '260px' }}
+      maxWidth={{ base: '100%', l: '275px' }}
       padding="spacing.5"
       borderRadius="small"
       borderWidth="thin"

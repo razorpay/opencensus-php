@@ -16,6 +16,7 @@ export const CompanyBalance = () => {
         document: BILL_ME_COMPANY_BALANCE_QUERY,
       }),
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   return (
@@ -56,12 +57,8 @@ export const CompanyBalance = () => {
         <Amount
           type="heading"
           size="large"
-          value={
-            (companyBalance.billWalletBalance.balance,
-            {
-              currency: 'INR',
-            })
-          }
+          weight="semibold"
+          value={companyBalance.billWalletBalance.balance}
           currency="INR"
           color={
             companyBalance.billWalletBalance.balance < 0
