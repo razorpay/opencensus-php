@@ -14,7 +14,7 @@ export const REPORT_HEADER_MAP = {
   international: 'International',
   payment_created_at: 'Payment Created At',
   dispute_created_at: 'Dispute Created At',
-  expires_on: 'Expires On',
+  expires_on: 'Respond By',
   reference_number: 'Reference No.',
   debit_reversal_status: 'Debit Reversal Status',
   customer_email: 'Customer Email',
