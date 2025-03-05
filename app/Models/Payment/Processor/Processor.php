@@ -2224,6 +2224,15 @@ class Processor
                         $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
                         $iinId = substr($card_number, 0, 6);
                         $iin = $this->repo->iin->find($iinId);
+                        if ($iin->getCountry() !== 'IN')
+                        {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "international_card_initial",
+                                'merchant_id' => $merchant->getId(),
+                                'flow' => 'card_recurring',
+                            ]);
+                            return false;
+                        }
 
                         $app = App::getFacadeRoot();
                         if ($iin->isRupay() || $app->mandateHQ->isBinSupported($iin->getIin()))
@@ -2239,6 +2248,17 @@ class Processor
                     } else {
                         $token = (new Token\Core)->getByTokenIdAndMerchant($input[Payment\Entity::TOKEN], $merchant);
                         $card = $this->repo->card->fetchForToken($token);
+
+                        if ($card->isInternational() === true)
+                        {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "international_card_initial",
+                                'merchant_id' => $merchant->getId(),
+                                'flow' => 'card_recurring',
+                            ]);
+                            return false;
+                        }
+
                         $iin = $card->getIin();
                         $app = App::getFacadeRoot();
                         if ($card->isRupay() || $app->mandateHQ->isBinSupported($iin))
