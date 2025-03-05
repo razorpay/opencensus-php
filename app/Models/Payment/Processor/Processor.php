@@ -2434,6 +2434,7 @@ class Processor
 
                                 return false;
                             }
+
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
                                 $networkToken = (new TokenCore())->fetchToken($token, false);
@@ -2539,9 +2540,16 @@ class Processor
                                     $card->setTrivia('3');
                                 }
 
-                                if (($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false) || ($mcScofTokenResult === 'on'))
+                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
+                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
+                                if ($tokenRearchResult == 'enable' && app()->isEnvironmentProduction() && ($card->getNetwork() == 'Visa' || $card->getNetwork() == 'Mastercard') && $card->getVault() == Card\Vault::RZP_VAULT)
                                 {
-                                    $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input, $token);
+                                    $tokenRearchResult = 'on';
+                                }
+
+                                if (($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false) || $mcScofTokenResult === 'on')
+                                {
+                                    $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input, $token, $tokenRearchResult);
                                     if($this->inputCurrencyNotINR($input)){
                                         return false;
                                     }
@@ -2565,7 +2573,7 @@ class Processor
                                 }
                                 else {
                                     $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant, 'null', $card);
-                                    $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
+                                    $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token, $tokenRearchResult);
                                     if ( $card->getVault() === Card\Vault::HDFC)
                                     {
                                         $input[Payment\Entity::API_VAULT] = $card->getVault();
@@ -3066,7 +3074,7 @@ class Processor
         return false;
     }
 
-    protected function getCardInputWithoutCryptogramForRearch($card, $input, $token)
+    protected function getCardInputWithoutCryptogramForRearch($card, $input, $token, $tokenRearchResult)
     {
         if ($card->getTrivia() === '3')
         {
@@ -3099,6 +3107,16 @@ class Processor
 
             $input[E::TOKEN_REFERENCE_NUMBER ] =  $trn;
         }
+        else if ($tokenRearchResult == 'on')
+        {
+            $input = [
+                Card\Entity::TOKENISED => true,
+                Card\Entity::VAULT => "rzpvault",
+                Card\Entity::CVV => $input['card']['cvv'] ?? null,
+                Card\Entity::TOKEN_PROVIDER => 'Razorpay',
+                Card\Entity::REWARD => $input['card']['reward']
+            ];
+        }
         else
         {
             $input = [
@@ -3116,22 +3134,28 @@ class Processor
         return $input;
     }
 
-    protected function getCardInputForRearch($cryptogram, $card, $input,$token)
+    protected function getCardInputForRearch($cryptogram, $card, $input,$token, $tokenRearchResult = null)
     {
         $input = [
-            Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
-            Card\Entity::NAME                   => $card->getName(),
-            Card\Entity::EXPIRY_MONTH           => $cryptogram['token_expiry_month'] ?? null,
-            Card\Entity::EXPIRY_YEAR            => $cryptogram['token_expiry_year'] ?? null,
-            Card\Entity::LAST4                  => $card->getLast4(),
-            Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             Card\Entity::CVV                    => $input['card']['cvv'] ?? null,
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::REWARD                 => $input['card']['reward'],
-            Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? "",
         ];
+
+        if ($tokenRearchResult != 'on')
+        {
+            $input += [
+                Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
+                Card\Entity::NAME                   => $card->getName(),
+                Card\Entity::EXPIRY_MONTH           => $cryptogram['token_expiry_month'] ?? null,
+                Card\Entity::EXPIRY_YEAR            => $cryptogram['token_expiry_year'] ?? null,
+                Card\Entity::LAST4                  => $card->getLast4(),
+                Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
+                Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? ""
+            ];
+        }
 
         if ( $card->getVault() === Card\Vault::HDFC)
         {

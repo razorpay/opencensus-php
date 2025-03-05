@@ -18216,6 +18216,7 @@ class Route
             'cps_iin_flow_disable',
             'add_token_iin',
             'internal_payment_pricing',
+            'token_fetch_card_internal',
             'internal_pricing',
             'internal_merchant_risk_notification',
             'fetch_iin_by_token_iin',
