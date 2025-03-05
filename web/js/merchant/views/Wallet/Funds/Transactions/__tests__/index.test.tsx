@@ -5,7 +5,12 @@ import Transactions from 'merchant/views/Wallet/Funds/Transactions';
 import { SessionContext } from 'merchant/views/Wallet/context';
 import { render, waitForLoadingToFinish, screen } from 'test-utils';
 
-describe('Wallet: Funds transactions tab', () => {
+{
+  /**
+   * TODO: unskip once backend fixes the API and txn tab is added back. Slack: https://razorpay.slack.com/archives/C34U44N5Q/p1737619157741209?thread_ts=1733222346.707809&cid=C34U44N5Q
+   */
+}
+describe.skip('Wallet: Funds transactions tab', () => {
   it('should render expected elements in the tab', async () => {
     render(
       <SessionContext.Provider

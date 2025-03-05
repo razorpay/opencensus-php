@@ -19,10 +19,15 @@ export const Transactions = (): JSX.Element => {
     count: 25,
   });
 
-  const transactions = useQuery<ListApiResponse<Transaction>, Error>({
-    queryKey: ['wallet:funds:transactions', mode, paginationState],
-    queryFn: () => fetchFundTransactions({ ...paginationState, mode }),
-  });
+  {
+    /**
+     * TODO: Uncomment once backend fixes the API. Slack: https://razorpay.slack.com/archives/C34U44N5Q/p1737619157741209?thread_ts=1733222346.707809&cid=C34U44N5Q
+     */
+  }
+  // const transactions = useQuery<ListApiResponse<Transaction>, Error>({
+  //   queryKey: ['wallet:funds:transactions', mode, paginationState],
+  //   queryFn: () => fetchFundTransactions({ ...paginationState, mode }),
+  // });
 
   const fundsSummary = useQuery<FundsSummary, Error>({
     queryKey: ['wallet:funds:summary', mode, merchant_id],
@@ -48,7 +53,10 @@ export const Transactions = (): JSX.Element => {
           )}
         </Box>
       </Box>
-      <div className="content-wrapper">
+      {/**
+       * TODO: Uncomment once backend fixes the API
+       */}
+      {/* <div className="content-wrapper">
         <DataTable
           title="Transactions"
           columns={[ID, CREATED_AT, AMOUNT, TYPE, REFERENCE_ID]}
@@ -60,7 +68,7 @@ export const Transactions = (): JSX.Element => {
           loading={transactions.isLoading}
           hasMoreData={transactions.data?.has_more ?? true}
         />
-      </div>
+      </div> */}
     </>
   );
 };
