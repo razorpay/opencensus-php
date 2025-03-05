@@ -20,6 +20,7 @@ import {
   ISSUERS,
   OFFER_DISABLE_CTA_NETWORKS,
   PAYER_ACCOUNT_TYPES_DISPLAY,
+  PAYMENT_METHODS,
 } from 'merchant/views/Offers/constants';
 import { withSplitzService } from 'common/splitz';
 import { isOfferIdClickable } from 'merchant/views/Offers/utils';
@@ -221,6 +222,7 @@ export class OffersDetails extends React.Component {
       display_text,
       percent_rate,
       payment_method,
+      instruments,
       iins: offerIINs,
       payment_method_type,
       payment_network,
@@ -248,10 +250,19 @@ export class OffersDetails extends React.Component {
 
     const discountType = percent_rate !== null ? 'Percentage' : 'Flat';
     const isPercentageDiscount = discountType === 'Percentage';
-    const isCardPayment = payment_method == 'card';
+
+    const paymentMethods =
+      payment_method === PAYMENT_METHODS.Multiple
+        ? instruments?.map(({ method }) => method)
+        : [payment_method];
+
+    const paymentMethodsSet = new Set(paymentMethods);
+
+    const isCardPayment =
+      paymentMethodsSet.size === 1 && paymentMethodsSet.has(PAYMENT_METHODS.Card);
     const iins = (offerIINs && offerIINs.join(', ')) || '--';
 
-    let paymentMethod = payment_method || '--';
+    let paymentMethod = paymentMethods.join(', ') || '--';
     if (paymentMethod === 'card') {
       paymentMethod = 'Debit Card';
       if (payment_method_type == 'credit') {

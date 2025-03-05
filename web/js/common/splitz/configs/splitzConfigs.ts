@@ -1519,6 +1519,27 @@ export const splitzConfig: SplitzInitConfig = {
       routesToMatch: [/offers.*/i],
       abExperiments: [
         {
+          uniqueHashKey: 'multi_payment_offer',
+          experimentId: {
+            beta: 'PsNO6QFeqdmnJN',
+            production: 'PrXqu08KMp5FN1',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: [/offers.*/i],
+      abExperiments: [
+        {
           uniqueHashKey: 'OE_FETCH_IIN_FROM_BIN_EXP',
           experimentId: {
             beta: 'PyL71FJgUotGil',

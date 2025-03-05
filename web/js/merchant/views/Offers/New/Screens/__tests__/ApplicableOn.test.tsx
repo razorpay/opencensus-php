@@ -1,9 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 
+import { OFFER_TYPES, PAYMENT_METHODS, UPI_APP_PROVIDERS } from 'merchant/views/Offers/constants';
 import { render } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
-import { OFFER_TYPES, PAYMENT_METHODS, UPI_APP_PROVIDERS } from 'merchant/views/Offers/constants';
 
 import ApplicableOn from '../ApplicableOn';
 
@@ -30,7 +30,7 @@ jest.mock('common/splitz', () => ({
 
 const defaultProps = {
   values: {
-    payment_method: '',
+    selectedInstruments: [],
     issuer: '',
     payment_method_type: '',
     payment_network: '',
@@ -55,7 +55,7 @@ describe('ApplicableOn Component', () => {
     const props = {
       values: {
         ...defaultProps.values,
-        payment_method: PAYMENT_METHODS.Wallet,
+        selectedInstruments: [PAYMENT_METHODS.Wallet],
       },
     };
     renderApp(props);
@@ -66,7 +66,7 @@ describe('ApplicableOn Component', () => {
     const props = {
       values: {
         ...defaultProps.values,
-        payment_method: PAYMENT_METHODS.CardLessEmi,
+        selectedInstruments: [PAYMENT_METHODS.CardLessEmi],
       },
     };
     renderApp(props);
@@ -77,7 +77,7 @@ describe('ApplicableOn Component', () => {
     const props = {
       values: {
         ...defaultProps.values,
-        payment_method: PAYMENT_METHODS.Card,
+        selectedInstruments: [PAYMENT_METHODS.Card],
       },
     };
     renderApp(props);
@@ -89,7 +89,7 @@ describe('ApplicableOn Component', () => {
     const props = {
       values: {
         ...defaultProps.values,
-        payment_method: PAYMENT_METHODS.EMI,
+        selectedInstruments: [PAYMENT_METHODS.EMI],
       },
     };
     renderApp(props);
@@ -100,7 +100,7 @@ describe('ApplicableOn Component', () => {
     const props = {
       values: {
         ...defaultProps.values,
-        payment_method: PAYMENT_METHODS.NetBanking,
+        selectedInstruments: [PAYMENT_METHODS.NetBanking],
       },
     };
     renderApp(props);
@@ -110,7 +110,7 @@ describe('ApplicableOn Component', () => {
     const props = {
       values: {
         ...defaultProps.values,
-        payment_method: PAYMENT_METHODS.UPI,
+        selectedInstruments: [PAYMENT_METHODS.UPI],
         type: OFFER_TYPES.Cashback,
         upiApps: UPI_APP_PROVIDERS.ALL,
         upiAppsList: [],
@@ -121,5 +121,33 @@ describe('ApplicableOn Component', () => {
 
     expect(screen.getByTestId('upi-apps')).not.toBe(null);
     expect(screen.getByTestId('payer-account-types')).not.toBe(null);
+  });
+
+  it('should not render Granular Offer inputs when payment_method is UPI and Card and offer type is Cashback', () => {
+    const props = {
+      values: {
+        ...defaultProps.values,
+        selectedInstruments: [PAYMENT_METHODS.UPI, PAYMENT_METHODS.Card],
+        type: OFFER_TYPES.Cashback,
+        upiApps: UPI_APP_PROVIDERS.ALL,
+        upiAppsList: [],
+        payerAccountTypes: [],
+      },
+    };
+    renderApp(props);
+
+    expect(screen.queryByText('upi-apps')).not.toBeInTheDocument();
+    expect(screen.queryByText('payer-account-types')).not.toBeInTheDocument();
+  });
+
+  it('should not render EMI related inputs when payment method is EMI & UPI', () => {
+    const props = {
+      values: {
+        ...defaultProps.values,
+        selectedInstruments: [PAYMENT_METHODS.EMI, PAYMENT_METHODS.UPI],
+      },
+    };
+    renderApp(props);
+    expect(screen.queryByText('Card Type')).not.toBeInTheDocument();
   });
 });

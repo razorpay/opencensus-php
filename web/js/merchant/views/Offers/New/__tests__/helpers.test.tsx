@@ -1,4 +1,4 @@
-import { MAX_DISCOUNT, OFFER_TYPES, PAYMENT_METHODS } from 'merchant/views/Offers/constants';
+import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
 
 import {
   prepareDataForSubmit,
@@ -38,6 +38,16 @@ describe('validatePaymentMethod', () => {
 
   it('should return false if payment method is not empty', () => {
     const result = validatePaymentMethod('card');
+    expect(result).toBe(false);
+  });
+
+  it('should return error message if payment method is empty', () => {
+    const result = validatePaymentMethod([]);
+    expect(result).toBe('Payment method cannot be empty');
+  });
+
+  it('should return false if payment method is not empty', () => {
+    const result = validatePaymentMethod(['card']);
     expect(result).toBe(false);
   });
 });

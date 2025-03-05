@@ -1,6 +1,7 @@
 import { rupeesToPaise, deepClone } from 'common/utils/rzp-utils';
 import { filterNoCostTenures } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 import {
+  ALL_PRE_PAID_PAYMENT_METHODS,
   MAX_DISCOUNT,
   OFFER_TYPES,
   PAYMENT_METHODS,
@@ -18,6 +19,7 @@ export function prepareDataForSubmit(
   formData,
   isLowCostExperimentEnabled,
   isGranularOfferExpEnabled = false,
+  isMultiPaymentOfferExperimentEnabled = false,
   is10DigitBinExperimentEnabled = false,
 ) {
   const transformedFormData = {
@@ -56,9 +58,31 @@ export function prepareDataForSubmit(
     'payerAccountTypes',
     'upiApps',
     'upiAppsList',
+    'selectedInstruments',
   ];
 
   const checkboxFields = ['default_offer', 'block', 'creation_terms_accepted'];
+
+  // backward compatibility with payment_method
+  const instruments = transformedFormData.selectedInstruments
+    ? transformedFormData.selectedInstruments
+        .filter((instrument) => instrument !== ALL_PRE_PAID_PAYMENT_METHODS)
+        .map((instrument) => ({ method: instrument }))
+    : [
+        {
+          method: transformedFormData.payment_method,
+        },
+      ];
+
+  const isSinglePaymentMethodOffer = instruments.length === 1;
+  const selectedSingleInstrument = instruments[0].method;
+
+  if (isMultiPaymentOfferExperimentEnabled) {
+    transformedFormData.instruments = instruments;
+    transformedFormData.payment_method = 'multiple';
+  } else {
+    transformedFormData.payment_method = selectedSingleInstrument;
+  }
 
   checkboxFields.forEach((field) => {
     transformedFormData[field] = parseInt(formData[field], 10);
@@ -127,7 +151,8 @@ export function prepareDataForSubmit(
     fieldsToBeDeleted.push('merchant_borne_discount');
   }
 
-  if (!['card', 'emi'].includes(formData.payment_method)) {
+  // granular checks only applicable for single instrument
+  if (!isSinglePaymentMethodOffer || !['card', 'emi'].includes(selectedSingleInstrument)) {
     fieldsToBeDeleted.push('max_payment_count');
   }
 
@@ -148,8 +173,9 @@ export function prepareDataForSubmit(
 
   // Transform UPI data
   if (
+    isSinglePaymentMethodOffer &&
     isGranularOfferExpEnabled &&
-    isGranularPSPOfferEnabled(formData.payment_method, formData.type)
+    isGranularPSPOfferEnabled(selectedSingleInstrument, formData.type)
   ) {
     const { payerAccountTypes, upiApps, upiAppsList } = transformedFormData;
 
@@ -194,7 +220,7 @@ export function prepareDataForSubmit(
 }
 
 export const validatePaymentMethod = (val) => {
-  if (!val) {
+  if (!val || !val.length) {
     return 'Payment method cannot be empty';
   }
   return false;

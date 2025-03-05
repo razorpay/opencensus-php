@@ -4,8 +4,11 @@ import { getCurrency } from 'common/ui/Amount';
 import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
 import Wizard from 'merchant/views/Offers/New/components/Wizard';
 import { prepareDataForSubmit } from 'merchant/views/Offers/New/helpers';
-import { OFFER_TYPES, PAYER_ACCOUNT_TYPES_OPTIONS, UPI_APP_PROVIDERS } from '../../constants';
-import { getIs10DigitBinExperimentEnabled, isGranularOfferExperimentEnabled } from '../../utils';
+import {
+  getIsMultiPaymentMethodExperimentEnabled,
+  getIs10DigitBinExperimentEnabled,
+  isGranularOfferExperimentEnabled,
+} from 'merchant/views/Offers/utils';
 
 const SCREEN_MAP = {
   0: 'description',
@@ -112,7 +115,7 @@ export default class BaseForm extends React.Component {
     }
 
     // Applicable On
-    if (fieldName === 'payment_method') {
+    if (fieldName === 'payment_method' || fieldName === 'selectedInstruments') {
       if (values.payment_method_type) {
         newState.values.payment_method_type = null;
       }
@@ -159,6 +162,7 @@ export default class BaseForm extends React.Component {
       isLowCostExperimentEnabled = isLowCostEnabled(Low_cost_offer);
     }
     const isGranularOfferExpEnabled = isGranularOfferExperimentEnabled(splitz);
+    const isMultiPaymentOfferExperimentEnabled = getIsMultiPaymentMethodExperimentEnabled(splitz);
 
     const is10DigitBinExperimentEnabled = getIs10DigitBinExperimentEnabled(splitz);
 
@@ -166,6 +170,7 @@ export default class BaseForm extends React.Component {
       values,
       isLowCostExperimentEnabled,
       isGranularOfferExpEnabled,
+      isMultiPaymentOfferExperimentEnabled,
       is10DigitBinExperimentEnabled,
     );
 

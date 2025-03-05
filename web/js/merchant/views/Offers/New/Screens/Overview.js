@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Checkbox, CheckboxGroup } from '@razorpay/blade/components';
 
 import { findBy } from 'common/utils/rzp-utils';
@@ -18,9 +17,10 @@ import {
   DISCOUNT_TYPES,
   APPLICABLE_ON_OPTIONS,
   REDEMPTION_TYPE_OPTIONS,
+  ALL_PRE_PAID_PAYMENT_METHODS,
 } from 'merchant/views/Offers/constants';
 
-const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, issuer) => {
+const getPaymentMethodDisplayString = (paymentMethod, cardType, paymentNetwork, issuer) => {
   switch (paymentMethod) {
     case PAYMENT_METHODS.Card:
       return `All ${wordWithSpace(BANK_MAP[issuer])}${wordWithSpace(
@@ -52,6 +52,21 @@ const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, is
   }
 };
 
+const summarizePaymentMethodsData = (
+  instruments,
+  paymentMethod,
+  cardType,
+  paymentNetwork,
+  issuer,
+) => {
+  return (instruments || [paymentMethod])
+    .filter((instrument) => instrument !== ALL_PRE_PAID_PAYMENT_METHODS)
+    .map((instrument) =>
+      getPaymentMethodDisplayString(instrument, cardType, paymentNetwork, issuer),
+    )
+    .join(', ');
+};
+
 export default function OverView(props) {
   const {
     currencySymbol,
@@ -65,6 +80,7 @@ export default function OverView(props) {
       percent_rate,
       max_cashback,
       issuer,
+      selectedInstruments,
       payment_method,
       payment_network,
       payment_method_type,
@@ -142,6 +158,7 @@ export default function OverView(props) {
             {applicableOn && <DualColumnTable heading="Applies to">{applicableOn}</DualColumnTable>}
             <DualColumnTable heading="Payment Method">
               {summarizePaymentMethodsData(
+                selectedInstruments,
                 payment_method,
                 payment_method_type,
                 payment_network,

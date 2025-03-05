@@ -15,6 +15,7 @@ import {
   RegistrationLinkRoles,
   posPartnerRoles,
 } from 'merchant/helpers/data';
+import { PAYMENT_METHODS } from 'merchant/views/Offers/constants';
 
 import * as id from './id';
 
@@ -319,7 +320,10 @@ export const promotionType = {
 
 export const paymentMethod = {
   title: 'Payment Method',
-  value: (item) => item.payment_method,
+  value: (item) =>
+    item.payment_method === PAYMENT_METHODS.Multiple && item.instruments?.length
+      ? item.instruments.map(({ method }) => method).join(', ')
+      : item.payment_method,
 };
 
 export const qrCodeId = {

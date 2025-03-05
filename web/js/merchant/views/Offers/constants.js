@@ -1,3 +1,15 @@
+import {
+  CalendarIcon,
+  ClockIcon,
+  CreditCardIcon,
+  CurrentAccountIcon,
+  PosIcon,
+  RupeeIcon,
+  WalletIcon,
+} from '@razorpay/blade/components';
+
+import UpiIcon from 'merchant/views/Offers/Icons/UpiIcon';
+
 /* eslint-disable i18n-rules/no-hardcoded-i18n-types */
 export const MAX_DISCOUNT = 2147483647;
 export const PAYMENT_NETWORK_MAP = {
@@ -118,19 +130,64 @@ export const PAYMENT_METHODS = {
   PayLater: 'paylater',
   CardLessEmi: 'cardless_emi',
   // Emandate: 'emandate'
+  Multiple: 'multiple',
 };
 
-// TODO: Rename to all caps
-export const PaymentMethodsOptions = [
-  { label: '--Select Payment method--', name: '' },
-  { label: 'Card', name: PAYMENT_METHODS.Card },
-  { label: 'Net Banking', name: PAYMENT_METHODS.NetBanking },
-  { label: 'Wallet', name: PAYMENT_METHODS.Wallet },
-  { label: 'UPI', name: PAYMENT_METHODS.UPI },
-  { label: 'EMI', name: PAYMENT_METHODS.EMI },
-  { label: 'Pay Later', name: PAYMENT_METHODS.PayLater },
-  { label: 'Cardless EMI', name: PAYMENT_METHODS.CardLessEmi },
+export const PAYMENT_TYPE_BUSINESS_KEYS_VS_METHODS = {
+  isCard: PAYMENT_METHODS.Card,
+  isNetBanking: PAYMENT_METHODS.NetBanking,
+  isWallet: PAYMENT_METHODS.Wallet,
+  isUPI: PAYMENT_METHODS.UPI,
+  isEMI: PAYMENT_METHODS.EMI,
+  isPayLater: PAYMENT_METHODS.PayLater,
+  isCardLessEmi: PAYMENT_METHODS.CardLessEmi,
+};
+
+export const ALL_PRE_PAID_PAYMENT_METHODS = 'ALL_PRE_PAID_PAYMENT_METHODS';
+
+export const PAYMENT_METHOD_VS_ICON = {
+  [ALL_PRE_PAID_PAYMENT_METHODS]: RupeeIcon,
+  [PAYMENT_METHODS.Card]: CreditCardIcon,
+  [PAYMENT_METHODS.NetBanking]: CurrentAccountIcon,
+  [PAYMENT_METHODS.Wallet]: WalletIcon,
+  [PAYMENT_METHODS.UPI]: UpiIcon,
+  [PAYMENT_METHODS.EMI]: CalendarIcon,
+  [PAYMENT_METHODS.PayLater]: ClockIcon,
+  [PAYMENT_METHODS.CardLessEmi]: PosIcon,
+};
+
+export const PAYMENT_METHOD_OPTION_VS_TITLE = {
+  [PAYMENT_METHODS.Card]: 'Card',
+  [PAYMENT_METHODS.NetBanking]: 'Net Banking',
+  [PAYMENT_METHODS.Wallet]: 'Wallet',
+  [PAYMENT_METHODS.UPI]: 'UPI',
+  [PAYMENT_METHODS.EMI]: 'EMI',
+  [PAYMENT_METHODS.PayLater]: 'Pay Later',
+  [PAYMENT_METHODS.CardLessEmi]: 'Cardless EMI',
+};
+
+export const PAYMENT_METHODS_OPTIONS = [
+  { label: 'All Pre-Paid Payment Methods', name: ALL_PRE_PAID_PAYMENT_METHODS },
+  { label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.UPI], name: PAYMENT_METHODS.UPI },
+  { label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.Card], name: PAYMENT_METHODS.Card },
+  {
+    label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.NetBanking],
+    name: PAYMENT_METHODS.NetBanking,
+  },
+  { label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.Wallet], name: PAYMENT_METHODS.Wallet },
+  { label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.EMI], name: PAYMENT_METHODS.EMI },
+  {
+    label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.PayLater],
+    name: PAYMENT_METHODS.PayLater,
+  },
+  {
+    label: PAYMENT_METHOD_OPTION_VS_TITLE[PAYMENT_METHODS.CardLessEmi],
+    name: PAYMENT_METHODS.CardLessEmi,
+  },
 ];
+
+export const PAYMENT_METHODS_OPTIONS_WITHOUT_ALL = PAYMENT_METHODS_OPTIONS.slice(1);
+
 export const SUBSCRIPTION_OFFERS_PAYMENT_METHODS = {
   Card: 'card',
   UPI: 'upi',

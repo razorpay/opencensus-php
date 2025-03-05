@@ -11,6 +11,7 @@ import {
   RadioGroup,
   Radio,
   Divider,
+  ActionListItemIcon,
 } from '@razorpay/blade/components';
 
 import { withSplitzService } from 'common/splitz';
@@ -24,7 +25,7 @@ import {
 } from 'merchant/views/Offers/New/helpers';
 import {
   PAYMENT_METHODS,
-  PaymentMethodsOptions,
+  PAYMENT_METHODS_OPTIONS,
   PaymentIssuersOptions,
   PaymentNetworksOptions,
   WalletIssuersOptions,
@@ -38,10 +39,16 @@ import {
   UPI_APP_PROVIDERS,
   DISPLAY_TEXT,
   PAYER_ACCOUNT_TYPES_DISPLAY,
+  ALL_PRE_PAID_PAYMENT_METHODS,
+  PAYMENT_TYPE_BUSINESS_KEYS_VS_METHODS,
+  PAYMENT_METHOD_VS_ICON,
+  PAYMENT_METHOD_OPTION_VS_TITLE,
+  PAYMENT_METHODS_OPTIONS_WITHOUT_ALL,
 } from 'merchant/views/Offers/constants';
 import {
-  getIs10DigitBinExperimentEnabled,
   isGranularOfferExperimentEnabled,
+  getIsMultiPaymentMethodExperimentEnabled,
+  getIs10DigitBinExperimentEnabled,
 } from 'merchant/views/Offers/utils';
 
 import UPISelector, { UPI_APPS_SELECT_OPTIONS } from '../components/UPISelector';
@@ -50,18 +57,24 @@ class ApplicableOn extends React.Component {
   state = { selectedPaymentMethodType: '' };
 
   get currentSelectedPaymentMethod() {
-    const { payment_method } = this.props.values;
-    const { Card, NetBanking, Wallet, UPI, EMI, PayLater, CardLessEmi } = PAYMENT_METHODS;
-    return {
-      isCard: payment_method === Card,
-      isNetBanking: payment_method === NetBanking,
-      isWallet: payment_method === Wallet,
-      isUPI: payment_method === UPI,
-      isEMI: payment_method === EMI,
-      isPayLater: payment_method === PayLater,
-      isCardLessEmi: payment_method === CardLessEmi,
-    };
+    const { selectedInstruments } = this.props.values;
+
+    const isMultiplePaymentMethodSelected =
+      Array.isArray(selectedInstruments) && selectedInstruments.length > 1;
+
+    const selectedPaymentMethodsSet = new Set(selectedInstruments || []);
+
+    return Object.keys(PAYMENT_TYPE_BUSINESS_KEYS_VS_METHODS).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: isMultiplePaymentMethodSelected
+          ? false
+          : selectedPaymentMethodsSet.has(PAYMENT_TYPE_BUSINESS_KEYS_VS_METHODS[key]),
+      }),
+      {},
+    );
   }
+
   handleFormChange = (name, value) => {
     this.props.setFieldTouched(name);
     this.props.setFieldValue(name, value);
@@ -108,31 +121,63 @@ class ApplicableOn extends React.Component {
   };
 
   onPaymentMethodChange = ({ name, values }) => {
-    const { payment_method: previous_payment_method } = this.props.values;
+    const previousSelectedPaymentMethods = this.props.values.selectedInstruments || [];
 
-    const newPaymentMethod = values[0];
-    if (newPaymentMethod === previous_payment_method) return;
+    if (previousSelectedPaymentMethods === values) return;
 
-    if (newPaymentMethod === PAYMENT_METHODS.UPI) {
+    if (values.length === 1 && values[0] === PAYMENT_METHODS.UPI) {
       this.resetGranularOffers();
     }
-    this.handleFormChange(name, newPaymentMethod);
+
+    if (!getIsMultiPaymentMethodExperimentEnabled(this.props.splitz)) {
+      this.handleFormChange(name, values);
+      return;
+    }
+
+    let newPaymentMethodValues = [];
+
+    const isAllPrepaidPaymentMethodSelected = values.includes(ALL_PRE_PAID_PAYMENT_METHODS);
+
+    const isValueAdded = values.length > previousSelectedPaymentMethods.length;
+
+    const getPaymentMethodWithAllAtLast = () => {
+      return [
+        ...PAYMENT_METHODS_OPTIONS.filter(
+          (method) => method.name !== ALL_PRE_PAID_PAYMENT_METHODS,
+        ).map((method) => method.name),
+        ALL_PRE_PAID_PAYMENT_METHODS,
+      ];
+    };
+
+    if (isAllPrepaidPaymentMethodSelected) {
+      newPaymentMethodValues = isValueAdded
+        ? getPaymentMethodWithAllAtLast()
+        : values.filter((value) => value !== ALL_PRE_PAID_PAYMENT_METHODS);
+    } else if (isValueAdded && PAYMENT_METHODS_OPTIONS.length - 1 === values.length) {
+      newPaymentMethodValues = getPaymentMethodWithAllAtLast();
+    } else if (values.length !== PAYMENT_METHODS_OPTIONS.length - 1) {
+      newPaymentMethodValues = values;
+    }
+
+    this.handleFormChange(name, newPaymentMethodValues);
   };
 
   render() {
     const { splitz } = this.props;
+    const isMultiPaymentOfferExperimentEnabled = getIsMultiPaymentMethodExperimentEnabled(splitz);
     const { selectedPaymentMethodType } = this.state;
     const { isFormLocked, values, errors, touched, hideType } = this.props;
 
     const {
       issuer,
       payment_network,
-      payment_method,
+      selectedInstruments = [],
       type,
       payerAccountTypes,
       upiApps,
       upiAppsList,
     } = values;
+
     const { isEMI, isWallet, isCard, isNetBanking, isCardLessEmi, isUPI } =
       this.currentSelectedPaymentMethod;
 
@@ -148,9 +193,10 @@ class ApplicableOn extends React.Component {
     if (isUPI && ALL_PAT_SELECTED) {
       valuesPAT = PAYER_ACCOUNT_TYPES_DISPLAY.map(({ name }) => name);
     }
-    const isGranularOffer = isGranularPSPOfferEnabled(payment_method, type);
+    const isGranularOffer =
+      selectedInstruments.length === 1 && isGranularPSPOfferEnabled(selectedInstruments[0], type);
 
-    errors.payment_method = validatePaymentMethod(payment_method);
+    errors.selectedInstruments = validatePaymentMethod(selectedInstruments);
     errors.max_payment_count = validateMaxPaymentCount(values.max_payment_count);
     errors.upiAppsList =
       isGranularOfferExperimentEnabled(splitz) &&
@@ -169,6 +215,11 @@ class ApplicableOn extends React.Component {
     hideType
       ? Object.fromEntries(Object.entries(errors).filter(([key]) => key !== 'type'))
       : (errors.type = validateDiscountType(values.type));
+
+    const selectedInstrumentsValue = isMultiPaymentOfferExperimentEnabled
+      ? selectedInstruments
+      : selectedInstruments[0];
+
     return (
       <React.Fragment>
         {!hideType && (
@@ -200,27 +251,50 @@ class ApplicableOn extends React.Component {
             </DropdownOverlay>
           </Dropdown>
         )}
-        <Dropdown isDisabled={isFormLocked} marginBottom="spacing.7">
+        <Dropdown
+          isDisabled={isFormLocked}
+          marginBottom="spacing.7"
+          selectionType={isMultiPaymentOfferExperimentEnabled ? 'multiple' : 'single'}
+        >
           <SelectInput
             isRequired
             necessityIndicator="required"
             label="Payment Method"
             placeholder="--Select Payment Method--"
-            name="payment_method"
+            name="selectedInstruments"
             labelPosition="left"
-            value={values.payment_method}
+            value={selectedInstrumentsValue}
+            helpText={
+              isMultiPaymentOfferExperimentEnabled &&
+              selectedInstruments.length > 1 &&
+              `Note: Applicable across all ${values.selectedInstruments
+                .filter((method) => method !== ALL_PRE_PAID_PAYMENT_METHODS)
+                .map((method) => PAYMENT_METHOD_OPTION_VS_TITLE[method])
+                .join(', ')}`
+            }
             onChange={this.onPaymentMethodChange}
-            validationState={touched.payment_method && errors?.payment_method ? 'error' : 'none'}
-            errorText={errors?.payment_method}
+            validationState={
+              touched.selectedInstruments && errors?.selectedInstruments ? 'error' : 'none'
+            }
+            errorText={errors?.selectedInstruments}
           />
           <DropdownOverlay>
             <ActionList>
-              {Object.values(PaymentMethodsOptions).map((type) => (
+              {Object.values(
+                isMultiPaymentOfferExperimentEnabled
+                  ? PAYMENT_METHODS_OPTIONS
+                  : PAYMENT_METHODS_OPTIONS_WITHOUT_ALL,
+              ).map((type) => (
                 <ActionListItem
                   key={type.name}
                   title={type.label}
                   value={type.name}
                   testID={`option-${type.name}`}
+                  trailing={
+                    isMultiPaymentOfferExperimentEnabled ? (
+                      <ActionListItemIcon icon={PAYMENT_METHOD_VS_ICON[type.name]} />
+                    ) : undefined
+                  }
                 />
               ))}
             </ActionList>

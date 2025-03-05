@@ -59,6 +59,9 @@ export const isGranularOfferExperimentEnabled = (splitz) => {
   return isExperimentEnabled(upi_granular_offer_dashboard);
 };
 
+export const getIsMultiPaymentMethodExperimentEnabled = (splitz) =>
+  isExperimentEnabled(splitz?.abExperiments?.multi_payment_offer);
+
 export const getIs10DigitBinExperimentEnabled = (splitz) => {
   return isExperimentEnabled(splitz?.abExperiments?.OE_FETCH_IIN_FROM_BIN_EXP);
 };
