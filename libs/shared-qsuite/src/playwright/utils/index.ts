@@ -260,18 +260,13 @@ export const pushSRData = async ({ testInfo }: { testInfo: TestInfo }) => {
         'Content-Type': 'application/json',
       },
       keepalive: true,
-    })
-      .then(() => {
-        console.log('Successfully pushed SR data');
-      })
-      .catch((e) => {
-        console.log('Error in pushing SR data', e);
-      });
+    }).catch((err) => {
+      console.log('Error in pushing SR data to lumberjack', err);
+    });
 
     // push to grafana
     const myHeaders = new Headers();
     myHeaders.append('Accept', '*/*');
-    myHeaders.append('Connection', 'keep-alive');
     myHeaders.append('Content-Type', 'application/json');
     const raw = JSON.stringify({
       key: LJ_KEY,
@@ -290,7 +285,9 @@ export const pushSRData = async ({ testInfo }: { testInfo: TestInfo }) => {
     await fetch(
       'https://lumberjack-metrics.razorpay.com/v1/frontend-metrics',
       requestOptions,
-    ).catch(() => {});
+    ).catch((err) => {
+      console.log('Error in pushing SR data to Grafana', err);
+    });
   } else {
     console.log('SR Metric', srData);
   }
