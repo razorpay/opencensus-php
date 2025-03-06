@@ -11081,8 +11081,10 @@ class Processor
             ($this->order->isExternal() === true))
         {
             $input = [
-                Order\Entity::ATTEMPTS => $this->order->getAttempts(),
-                Order\Entity::STATUS   => $this->order->getStatus()
+                Order\Entity::ATTEMPTS     => $this->order->getAttempts(),
+                Order\Entity::STATUS       => $this->order->getStatus(),
+                Payment\Entity::ID         => $this->payment->getId(),
+                Payment\Entity::PUBLIC_KEY => $this->payment->getPublicKey(),
             ];
 
             $order = $this->order;
