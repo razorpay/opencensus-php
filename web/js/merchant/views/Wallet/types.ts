@@ -1,6 +1,7 @@
 import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
 
 import type { ModeT } from 'common/services/mode';
+import { AttributeTypes } from './Campaigns/types';
 
 enum AccountStatus {
   active = 'active',
@@ -267,4 +268,164 @@ export interface ReportsProps {
   fetchReportsConfigsSuccess: (x: { configs: BaseConfigType[] }) => void;
   fetchReportsConfigsFailed: () => void;
   showNotification: (x: unknown) => void;
+}
+
+interface TriggerEventFieldConfig {
+  type: AttributeTypes;
+  required: boolean;
+  map?: Record<string, TriggerEventFieldConfig>;
+}
+
+export interface CampaignTriggerEventsResponse {
+  pagination: {
+    page_no: number;
+    page_size: number;
+    total_pages: number;
+  };
+  event_configs: Array<{
+    id: string;
+    merchant_id: string;
+    is_active: boolean;
+    name: string;
+    payload_config: Record<
+      string,
+      {
+        type: AttributeTypes;
+        required: boolean;
+        map?: Record<string, TriggerEventFieldConfig>;
+      }
+    >;
+  }>;
+}
+
+export interface CampaignWalletsApiResponse {
+  entity: string;
+  total_count: string;
+  count: string;
+  items: Array<{ id: string; name: string; merchant: string; type: string }>;
+}
+
+export interface CampaignProgramCreateResponse {
+  id: string;
+  name: string;
+  type: string;
+  merchant_id: string;
+}
+
+export interface CampaignCreateParams {
+  campaign_name: string;
+  event_config_id: string;
+  campaign_starts_at: number;
+  campaign_ends_at: number | null;
+  rules: {
+    rule: {
+      type: 'DIRECT_EVALUATION';
+      main_rule: string;
+      has_filter: boolean;
+      filter_rule: string;
+    };
+    actions: {
+      type: string;
+      max_points: number | null;
+      config: {
+        amount: {
+          type: 'constant' | 'expression';
+          value: string | number;
+          is_points_field: boolean;
+        };
+        user_id?: {
+          type: 'dynamic';
+          value: string;
+        };
+        contact?: {
+          type: 'dynamic';
+          value: string;
+        };
+        email?: {
+          type: 'dynamic';
+          value: string;
+        };
+        partner_user_id?: {
+          type: 'dynamic';
+          value: string;
+        };
+        program_id: {
+          type: 'constant';
+          value: string;
+        };
+        merchant_id: {
+          type: 'constant';
+          value: string;
+        };
+        type?: {
+          type: 'constant';
+          value: string;
+        };
+        notes?: {
+          type: 'dynamic';
+          value: string;
+        };
+        action?: {
+          type: 'constant';
+          value: string;
+        };
+        method?: {
+          type: 'constant';
+          value: string;
+        };
+        currency?: {
+          type: 'constant';
+          value: string;
+        };
+        description?: {
+          type: 'constant';
+          value: string;
+        };
+      };
+    }[];
+  }[];
+  usage_limits?: {
+    type: 'SINGLE_CAMPAIGN' | 'SINGLE_CAMPAIGN_USER';
+    config: {
+      budget?: number;
+      frequency: string;
+      count?: number;
+    }[];
+  }[];
+}
+
+export interface CampaignCreateResponse {
+  message: string;
+}
+
+//TODO: Create campaign & pagination types separately once campagin details comes in
+export interface CampaignListApiResponse {
+  campaigns: Array<{
+    id: string;
+    name: string;
+    merchant_id: string;
+    event_config_id: string;
+    status: string;
+    starts_at: number;
+    ends_at: number;
+    has_usage_limits: boolean;
+    currency: string;
+    created_at: number;
+    updated_at: number;
+    campaign_metrics: {
+      events_processed: number;
+      points_credited: number;
+    };
+  }>;
+  pagination: {
+    page_no: number;
+    page_size: number;
+    previous_page_no?: number | null;
+    next_page_no: number | null;
+    total_pages: number;
+  };
+}
+
+export interface CampaignUpdateResponse {
+  message: string;
 }

@@ -17,6 +17,8 @@ import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { walletPaths } from './constants';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import Campaigns from 'merchant/views/Wallet/Campaigns';
+import { ToastContainer } from '@razorpay/blade/components';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,6 +37,14 @@ const WalletContainer = (session: WalletSession): JSX.Element => {
       <SessionContext.Provider value={session}>
         <div className="tabbed-container">
           <header>
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.isIssuingBulkUploadEnabled &&
+                isExperimentEnabled(splitz?.abExperiments?.wallet_campaigns)
+              }
+            >
+              <NavLink to={walletPaths.campaigns}>Campaigns</NavLink>
+            </ShowWhen>
             <ShowWhen additionalCondition={(user) => user.isIssuingBulkUploadEnabled}>
               <NavLink to={walletPaths.batchActions}>Batch Actions</NavLink>
             </ShowWhen>
@@ -86,6 +96,14 @@ const WalletContainer = (session: WalletSession): JSX.Element => {
           </header>
           <div className="content">
             <Routes>
+              <Route
+                path={`${walletPaths.campaigns.replace('/wallet/', '')}/*`}
+                element={
+                  <RouteGuard>
+                    <Campaigns />
+                  </RouteGuard>
+                }
+              />
               <Route
                 path={`${walletPaths.accountDetail.replace('/wallet/', '')}/*`}
                 element={
@@ -153,6 +171,7 @@ const WalletContainer = (session: WalletSession): JSX.Element => {
               <Route index element={<Navigate to={walletPaths.funds} replace />} />
             </Routes>
           </div>
+          <ToastContainer />
         </div>
       </SessionContext.Provider>
     </QueryClientProvider>

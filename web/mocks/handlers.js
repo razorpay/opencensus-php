@@ -33,6 +33,7 @@ import accountDetailHandlers from 'merchant/views/Wallet/AccountDetail/__tests__
 import walletLoadsHandlers from 'merchant/views/Wallet/Loads/__tests__/mocks/index';
 import walletPaymentHandlers from 'merchant/views/Wallet/Payments/__tests__/mocks/index';
 import walletReportHandlers from 'merchant/views/Wallet/Reports/__tests__/mocks/handlers';
+import walletCampaignHandlers from 'merchant/views/Wallet/Campaigns/__tests__/mocks/handlers';
 import { commisionsHandler } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/handlers';
 import { submerchantKYCHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/KYC/__tests__/mocks/handlers';
 import { codEngineHandlers } from 'merchant/views/MagicCheckout/CODSettings/__tests__/mocks/handlers';
@@ -58,6 +59,7 @@ export const handlers = [
   ...walletLoadsHandlers,
   ...walletPaymentHandlers,
   ...walletReportHandlers,
+  ...walletCampaignHandlers,
 
   // Handles a "Login" mutation
   graphql.mutation('Login', (req, res, ctx) => {

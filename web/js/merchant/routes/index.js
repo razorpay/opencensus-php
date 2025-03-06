@@ -389,6 +389,12 @@ const OptimizerAccountDetails = lazy(() =>
   ),
 );
 
+const WalletCampaignNew = lazy(() =>
+  import(
+    /* webpackChunkName: "WalletCampaignNew" */ 'merchant/views/Wallet/Campaigns/CreateNewCampaign'
+  ),
+);
+
 /**
  * FPV(Full Page View) of component doesnt have header included. But we are extending FPV with Header for
  * Magic Checkout
@@ -797,6 +803,9 @@ const fullPageViewsMap = {
   },
   '/app-support': {
     component: AppSupport,
+  },
+  '/wallet/campaigns/new': {
+    component: WalletCampaignNew,
   },
 };
 

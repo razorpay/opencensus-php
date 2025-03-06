@@ -47,7 +47,7 @@ export const playwrightEnvs = {
   POS_SALES_AGENT_USERNAME: process.env.POS_SALES_AGENT_USERNAME,
   POS_SALES_AGENT_PASSWORD: process.env.POS_SALES_AGENT_PASSWORD,
   E2E_SR_LUMBERJACK_KEY: process.env.LUMBERJACK_KEY,
-
+  WALLET_ENABLED_MERCHANT_MOBILE: process.env.WALLET_ENABLED_MERCHANT_MOBILE,
   TEST_ENV: process.env.TEST_ENV ?? 'devstack',
 };
 
@@ -71,6 +71,7 @@ export const getStorageStatePath = (targetMode?: 'live' | 'test') => {
     RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
     SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
     POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
+    WALLET_MERCHANT_LOGIN_STATE: `${BASE_PATH}/wallet-merchant.json`,
   };
 
   const isTestMode = mode === 'test';
@@ -188,7 +189,14 @@ export const getPosCredentials = () => {
 };
 
 export const getMobileCredentials = () => {
+  const StorageStatePath = getStorageStatePath();
+
   return [
+    {
+      type: 'wallet-merchant.json',
+      mobile: playwrightEnvs.WALLET_ENABLED_MERCHANT_MOBILE,
+      storagePath: StorageStatePath.WALLET_MERCHANT_LOGIN_STATE,
+    },
     // {
     //   type: 'pos-kyc-status-nc.json',
     //   mobile: playwrightEnvs.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
@@ -293,4 +301,5 @@ export const routes: Record<string, string> = {
   SMART_COLLECT: '/app/smartcollect/virtualaccounts',
   NEW_REGISTRATION_LINKS: '/app/registration_links/new',
   OFFERS_HOME: '/app/offers',
+  WALLET_CAMPAIGNS: '/app/wallet/campaigns',
 };

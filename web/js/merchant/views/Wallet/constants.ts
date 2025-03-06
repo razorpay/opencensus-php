@@ -8,6 +8,7 @@ export const walletPaths = {
   payments: '/wallet/payments',
   loads: '/wallet/loads',
   reports: '/wallet/reports',
+  campaigns: '/wallet/campaigns',
 };
 
 export const WALLET_BASE_PATH = 'wallet/proxy/issuing';

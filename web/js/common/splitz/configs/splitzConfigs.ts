@@ -1063,6 +1063,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'wallet_campaigns',
+          experimentId: {
+            beta: 'PoOmXHoxFLiyES',
+            production: 'PoOqqreZomtVM3',
+          },
+          defaultVariant: {
+            name: 'variant',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

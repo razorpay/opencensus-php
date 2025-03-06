@@ -143,6 +143,7 @@ class ApiRequestAny
         'admin_dashboard/feedback',
         'admin_dashboard/tags',
         'dashboard/blocks',
+        'engage'
     ];
 
     /**
