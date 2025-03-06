@@ -141,11 +141,23 @@ class LeafListItem extends React.Component {
           screen: 'Settings',
         });
       })
-      .then(() => {
-        this.props.showNotification({
-          type: 'success',
-          message: `${instrument.name} requested successfully`,
-        });
+      .then(async () => {
+        try {
+          /** refetching instrument status for latest data
+           *  with web-scrapper other instruments will also get updated for collect_info
+           *  hence fetching again
+           **/
+          await this.props.fetchMerchantInstruments();
+          this.props.showNotification({
+            type: 'success',
+            message: `${instrument.name} requested successfully`,
+          });
+        } catch (error) {
+          this.props.showNotification({
+            type: 'error',
+            message: 'Failed to fetch latest instrument statuses.',
+          });
+        }
         this.props.history.replace('/');
         this.props.clearIntermediateInstrument();
         this.props.clearLeafInstrument();
@@ -223,9 +235,7 @@ class LeafListItem extends React.Component {
             instrumentSlug={instrument?.slug}
             numberOfDays={instrumentsTat && instrumentsTat[requestSlug]}
             onRequestAbort={() => this.handleOnCancelRequest(instrument, leafInstrument)}
-            onRequest={() => {
-              this.createRequestAction(instrument, leafInstrument, requestSlug);
-            }}
+            onRequest={() => this.createRequestAction(instrument, leafInstrument, requestSlug)}
           />
         ),
         hideActions: true,
