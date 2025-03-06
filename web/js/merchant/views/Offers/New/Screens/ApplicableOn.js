@@ -193,6 +193,7 @@ class ApplicableOn extends React.Component {
     if (isUPI && ALL_PAT_SELECTED) {
       valuesPAT = PAYER_ACCOUNT_TYPES_DISPLAY.map(({ name }) => name);
     }
+    const is10DigitBinExperimentEnabled = getIs10DigitBinExperimentEnabled(splitz);
     const isGranularOffer =
       selectedInstruments.length === 1 && isGranularPSPOfferEnabled(selectedInstruments[0], type);
 
@@ -459,13 +460,15 @@ class ApplicableOn extends React.Component {
               labelPosition="left"
               name="iins"
               placeholder={
-                getIs10DigitBinExperimentEnabled(splitz)
-                  ? '6-10 digit IINs for cards. Separated by comma if more than one'
+                is10DigitBinExperimentEnabled
+                  ? '6-9 digit IINs for cards'
                   : '6 digit IINs for cards. Separated by comma if more than one'
               }
               helpText={
                 <p>
-                  {'Note: Bin based offers on Amex saved card will not work post tokenisation.'}
+                  {is10DigitBinExperimentEnabled
+                    ? 'Note: Offers will not apply after tokenization for Amex cards or for cards with 8+ digit BINs if the network BIN is less than 8 digits'
+                    : 'Note: Bin based offers on Amex saved card will not work post tokenisation.'}
                 </p>
               }
               validationState="none"
