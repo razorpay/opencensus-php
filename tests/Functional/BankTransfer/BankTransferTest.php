@@ -12,9 +12,11 @@ use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Terminal\Type;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
@@ -26,6 +28,8 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\BankTransfer\Status as S;
+use \RZP\Tests\Traits\MocksSplitz;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -47,6 +51,7 @@ class BankTransferTest extends TestCase
     use AttemptReconcileTrait;
     use ReconTrait;
     use WorkflowTrait;
+    use MocksSplitz;
 
     protected $virtualAccountId;
 
@@ -3858,6 +3863,466 @@ class BankTransferTest extends TestCase
         $resp = $this->makeRequestAndGetContent($request);
         $this->assertEquals($resp['status'], 'failed');
         $this->assertEquals($resp['failure_count'],1);
+
+    }
+
+    protected function enableSplitzExperiment($experimentName, $id, $variantName = 'enable', $requestData = null): void
+    {
+        $input = [
+            "id" => $id,
+            'experiment_name' => $experimentName
+        ];
+
+        if ($requestData != null) {
+            $input['request_data'] = json_encode($requestData);
+        }
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function createCollectXVirtualAccount(
+        $mode = 'test',
+        $merchantID = '10000000000000',
+        $receivers = ['bank_account'],
+        $gateway = 'rbl')
+    {
+        // enabling collectx feature for the merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        (new AdminService())->setConfigKeys([ConfigKey::COLLECTX_SERIES_PREFIX => [
+            $merchantID => 'COLLECTX'
+        ]]);
+
+        // creating banking balance entity with type direct
+        $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => $merchantID,
+                'balance'          => 0,
+                'account_type'     => 'direct',
+                'account_number'   => '1234567890',
+            ]);
+
+        // adding minimum fee credit balance for collectx payment check
+        $this->fixtures->create('credits', ['merchant_id' => $merchantID, 'value' => 500 , 'type' => 'fee']);
+
+        // creating terminal for the merchant
+        if (in_array('bank_account', $receivers)) {
+            $bankTransferTerminalAttributes = [
+                'id' => '10000000000001',
+                'gateway' => "bt_" . $gateway,
+                'merchant_id' => $merchantID,
+                'gateway_merchant_id' => 'COLLECTX',
+                'bank_transfer' => 1,
+                'enabled' => 1,
+                'type' => [
+                    Type::NON_RECURRING => '1',
+                    Type::NUMERIC_ACCOUNT => '1',
+                    Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                ],
+            ];
+
+            $this->fixtures->on('test')->create('terminal:bank_account_terminal', $bankTransferTerminalAttributes);
+        }
+
+        if (in_array('vpa', $receivers))
+        {
+            $upiTerminalAttributes = [
+                'id'                            => '10000000000002',
+                'gateway'                       => "upi_".$gateway,
+                'merchant_id'                   => $merchantID,
+                'gateway_merchant_id'           => 'CXTEST.',
+                'upi'                           => 1,
+                'virtual_upi_handle'            => $gateway."ltd",
+                'enabled'                       => 1,
+                'type'                          => [
+                    Type::NON_RECURRING                 => '1',
+                    Type::NUMERIC_ACCOUNT               => '1',
+                    Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                ],
+            ];
+
+            // creating virtual_vpa_prefix entity for vpa type VA use case
+            $this->fixtures->create('virtual_vpa_prefix', [
+                'merchant_id'   => $merchantID,
+                'prefix'        => 'cxtest.',
+                'terminal_id'   => '10000000000002']);
+
+            $this->fixtures->on('test')->create('terminal:bank_account_terminal', $upiTerminalAttributes);
+        }
+
+        $request = [
+            'url'     => '/virtual_accounts',
+            'method'  => 'post',
+            'content' => [
+                'receivers' => [
+                    'types' => $receivers
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    public function  testManualProcessSmartCollectRBLEntityUsingPayload()
+    {
+        $this->addPermissionToBaAdmin('payout_manual_action');
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $merchantID = '10000000000000';
+
+        $va = $this->createCollectXVirtualAccount(merchantID: $merchantID, gateway: 'rbl');
+
+        $beneAccountNo = $va['receivers'][0]['account_number'];
+
+        $this->ba->adminAuth('test');
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "Processing failed BankTransfer",
+                'action' => 'manual_smart_collect_entity_creation',
+                'bulk_input' => [
+                    [
+                        'gateway' => 'rbl',
+                        'request_payload' => [
+                            'ServiceName' => 'VirtualAccount',
+                            'Action' => 'VirtualAccountTransaction',
+                            'Data' =>  [
+                                [
+                                    'messageType'               => 'N',
+                                    'amount'                    => '2',
+                                    'UTRNumber'                 => 'CMS480098890',
+                                    'senderIFSC'                => 'ICIC0000104',
+                                    'senderAccountNumber'       => '9876543210123456789',
+                                    'senderAccountType'         => 'Current Account',
+                                    'senderName'                => 'CREDIT CARD OPERATIONS',
+                                    'beneficiaryAccountType'    => 'Current Account',
+                                    'beneficiaryAccountNumber'  => $beneAccountNo,
+                                    'creditDate'                => '13-10-2016 1929',
+                                    'creditAccountNumber'       => '1234567890',
+                                    'corporateCode'             => 'CAFLT',
+                                    'clientCodeMaster'          => '02405',
+                                    'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('Success', $response['success_response'][0]['Status']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], 'CMS480098890');
+        $this->assertEquals(200, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('NEFT', $bankTransfer['mode']);
+        $this->assertTrue($bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals('9876543210123456789', $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+
+    }
+
+    public function  testManualProcessSmartCollectAxisEntityUsingPayload()
+    {
+        $this->addPermissionToBaAdmin('payout_manual_action');
+        $this->app['config']->set('gateway.mock_bt_axis', true);
+
+        $merchantID = '10000000000000';
+
+        $va = $this->createCollectXVirtualAccount(merchantID: $merchantID, gateway: 'axis');
+
+        $beneAccountNo = $va['receivers'][0]['account_number'];
+
+        $this->ba->adminAuth('test');
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_AXIS_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "Processing failed BankTransfer",
+                'action' => 'manual_smart_collect_entity_creation',
+                'bulk_input' => [
+                    [
+                        'gateway' => 'axis',
+                        'request_payload' => [
+                            'UTR'         => 'RAZP00010742429600013',
+                            'Bene_acc_no' =>  $beneAccountNo,
+                            'Req_type'    => 'notification',
+                            'Req_dt_time' => date("Y-m-d H:i:s"),
+                            'Txn_amnt'    => '2.00',
+                            'Corp_code'   => '9845',
+                            'Pmode'       => 'NEFT',
+                            'Sndr_acnt'   => '910910910910910',
+                            'Sndr_nm'     => 'ABC Pvt Ltd',
+                            'Sndr_ifsc'   => 'HDFC0000522',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('Success', $response['success_response'][0]['message']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], 'RAZP00010742429600013');
+        $this->assertEquals(200, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('NEFT', $bankTransfer['mode']);
+        $this->assertTrue($bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals('910910910910910', $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_axis', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+
+    }
+
+    public function  testManualProcessSmartCollectYBLEntityUsingPayload()
+    {
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $merchantID = '10000000000000';
+
+        $va = $this->createCollectXVirtualAccount(merchantID: $merchantID, gateway: 'yesbank');
+
+        $beneAccountNo = $va['receivers'][0]['account_number'];
+
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "Processing failed BankTransfer",
+                'action' => 'manual_smart_collect_entity_creation',
+                'bulk_input' => [
+                    [
+                        'gateway' => 'yesbank',
+                        'request_payload' => [
+                            "validate" => [
+                                'attempt_no'            => 1,
+                                'bene_account_ifsc'     => 'YESB0CMSNOC',
+                                'bene_account_no'       => $beneAccountNo,
+                                'bene_full_name'        => 'RZPX Pvt Ltd',
+                                'customer_code'         => 'RZPAYX',
+                                'rmtr_account_ifsc'     => 'UTIB0001082',
+                                'rmtr_account_no'       => '910910910910910',
+                                'rmtr_account_type'     => '10',
+                                'rmtr_full_name'        => 'UJJWAL ANAND',
+                                'rmtr_to_bene_note'     => 'Transfer Note',
+                                'transfer_amt'          => 7,
+                                'transfer_ccy'          => 'INR',
+                                'transfer_timestamp'     => '2024-07-08 17:30:00',
+                                'transfer_type'         => 'IMPS',
+                                'transfer_unique_no'    => '420702039708',
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('pass', $response['success_response'][0]['validateResponse']['decision']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['utr'], '420702039708');
+        $this->assertEquals(700, $bankTransfer['amount']);
+        $this->assertEquals('processed', $bankTransfer['status']);
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertTrue($bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals('910910910910910', $payerBankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(700, $payment['amount']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+
+    }
+
+    public function testManualProcessSmartCollectRBLEntityUsingBtrId()
+    {
+        $this->addPermissionToBaAdmin('payout_manual_action');
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $merchantID = '10000000000000';
+
+        $va = $this->createCollectXVirtualAccount(merchantID: $merchantID, gateway: 'rbl');
+
+        $beneAccountNo = $va['receivers'][0]['account_number'];
+
+        $this->ba->adminAuth('test');
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "Processing failed BankTransfer",
+                'action' => 'manual_smart_collect_entity_creation',
+                'bulk_input' => [
+                    [
+                        'gateway' => 'rbl',
+                        'request_payload' => [
+                            'ServiceName' => 'VirtualAccount',
+                            'Action' => 'VirtualAccountTransaction',
+                            'Data' =>  [
+                                [
+                                    'messageType'               => 'N',
+                                    'amount'                    => '2',
+                                    'UTRNumber'                 => 'CMS480098890',
+                                    'senderIFSC'                => 'ICIC0000104',
+                                    'senderAccountNumber'       => '9876543210123456789',
+                                    'senderAccountType'         => 'Current Account',
+                                    'senderName'                => 'CREDIT CARD OPERATIONS',
+                                    'beneficiaryAccountType'    => 'Current Account',
+                                    'beneficiaryAccountNumber'  => $beneAccountNo,
+                                    'creditDate'                => '13-10-2016 1929',
+                                    'creditAccountNumber'       => '1234567890',
+                                    'corporateCode'             => 'CAFLT',
+                                    'clientCodeMaster'          => '02405',
+                                    'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('Success', $response['success_response'][0]['Status']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertNotNull($bankTransferRequest['payee_account']);
+        $parts = explode("_", $bankTransferRequest['id']);
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "Processing failed BankTransfer",
+                'action' => 'manual_smart_collect_entity_creation',
+                'bulk_input' => [
+                    [
+                        'gateway' => 'rbl',
+                        'bank_transfer_request_id' => $parts[1],
+                    ]
+                ]
+            ]
+        ];
+
+        $btrResponse = $this->makeRequestAndGetContent($request);
+        // will be getting Failure due to BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK.
+        $this->assertEquals('Failure.', $btrResponse['success_response'][0]['Status']);
 
     }
 

@@ -29,9 +29,15 @@ use RZP\Base\RuntimeManager;
 class BankTransferController extends Controller
 {
 
-    public function processBankTransfer()
+    public function processBankTransfer($bankTransferRequestPayload = null)
     {
         $input = Request::all();
+
+        if($bankTransferRequestPayload !== null)
+        {
+            // For manual entity creation, sending the bank webhook payload
+            $input = $bankTransferRequestPayload;
+        }
 
         $this->trace->info(TraceCode::BANK_TRANSFER_YES_BANK_VA_INPUT, [
             Entity::INPUT           => $input,
@@ -297,12 +303,18 @@ class BankTransferController extends Controller
         return $this->service()->processIdfcBankTransfer($request);
     }
 
-    public function processRblBankTransfer($validateReqToken = true)
+    public function processRblBankTransfer($validateReqToken = true, $bankTransferRequestPayload = null)
     {
         // hardcoding this for now. We will fix this later.
         $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
 
         $input = Request::all();
+
+        if($bankTransferRequestPayload !== null)
+        {
+            // For manual entity creation, sending the bank webhook payload
+            $input = $bankTransferRequestPayload;
+        }
 
         $this->trace->info(TraceCode::RBL_VA_CALLBACK, $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::RBL));
 
@@ -327,11 +339,25 @@ class BankTransferController extends Controller
 
             if ($variantFlag === 'on')
             {
-                $this->service()->processBankTransferInScService($inputList['input'], $provider, Request::all());
+                if($bankTransferRequestPayload !== null)
+                {
+                    $this->service()->processBankTransferInScService($inputList['input'], $provider, $bankTransferRequestPayload);
+                }
+                else
+                {
+                    $this->service()->processBankTransferInScService($inputList['input'], $provider, Request::all());
+                }
             }
             else
             {
-                $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+                if($bankTransferRequestPayload !== null)
+                {
+                    $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, $bankTransferRequestPayload);
+                }
+                else
+                {
+                    $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+                }
 
                 if (array_key_exists("isCollectXResponse", $response) === true && $response['valid'] === false)
                 {
@@ -383,11 +409,17 @@ class BankTransferController extends Controller
         return ApiResponse::json(['Status' => 'Success']);
     }
 
-    public function processAxisBankTransfer($validateReqToken = true)
+    public function processAxisBankTransfer($validateReqToken = true, $bankTransferRequestPayload = null)
     {
         $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
 
         $input = Request::all();
+
+        if($bankTransferRequestPayload !== null)
+        {
+            // For manual entity creation, sending the bank webhook payload
+            $input = $bankTransferRequestPayload;
+        }
 
         $this->trace->info(TraceCode::AXIS_VA_CALLBACK,
             $this->service()->removeSenderSensitiveInfoFromLogging($input, Provider::AXIS));
@@ -417,11 +449,25 @@ class BankTransferController extends Controller
 
             if ($variantFlag === 'on')
             {
-                $this->service()->processBankTransferInScService($inputList['input'], $provider, Request::all());
+                if($bankTransferRequestPayload !== null)
+                {
+                    $this->service()->processBankTransferInScService($inputList['input'], $provider, $bankTransferRequestPayload);
+                }
+                else
+                {
+                    $this->service()->processBankTransferInScService($inputList['input'], $provider, Request::all());
+                }
             }
             else
             {
-                $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+                if($bankTransferRequestPayload !== null)
+                {
+                    $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, $bankTransferRequestPayload);
+                }
+                else
+                {
+                    $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+                }
 
                 if (array_key_exists("isCollectXResponse", $response) === true && $response['valid'] === false)
                 {
@@ -1396,5 +1442,80 @@ class BankTransferController extends Controller
         $data = $this->service()->fetchMerchantIntegrationByParams($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function manualProcessBankTransferRequest($input)
+    {
+        $gateway = $input['gateway'];
+
+        $requestPayload = $input['request_payload'] ?? null;
+
+        if(isset($input['bank_transfer_request_id']))
+        {
+
+            $bankTransferRequestEntity = $this->repo->bank_transfer_request->findOrFailPublic($input['bank_transfer_request_id']);
+
+            if($bankTransferRequestEntity === null)
+            {
+                throw new BadRequestValidationFailureException(
+                    ErrorCode::BANK_TRANSFER_REQUEST_NOT_FOUND,
+                    null,
+                    $input
+                );
+            }
+
+            $bankTransferRequestEntity = $bankTransferRequestEntity->toArray();
+
+            $requestPayload = json_decode($bankTransferRequestEntity['request_payload'], true);
+        }
+
+        if($requestPayload === null)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BANK_TRANSFER_REQUEST_NOT_FOUND,
+                null,
+                $input
+            );
+        }
+
+        try
+        {
+            switch ($gateway) {
+                case Provider::YESBANK:
+
+                    $resp = $this->processBankTransfer($requestPayload);
+
+                    return $resp->getData(true);
+
+                case Provider::RBL:
+
+                    $resp = $this->processRblBankTransfer(false, $requestPayload);
+
+                    return $resp->getData(true);
+
+                case Provider::AXIS:
+
+                    $resp = $this->processAxisBankTransfer(false, $requestPayload);
+
+                    return $resp->getData(true);
+
+                default:
+
+                    throw new BadRequestValidationFailureException(ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+                        null,
+                        $input
+                    );
+            }
+        }
+        catch (\Exception $e) {
+
+            $this->trace->traceException($e);
+
+            throw new BadRequestValidationFailureException(
+                message: $e->getMessage() ? $e->getMessage() : ErrorCode::MANUAL_SMART_COLLECT_ENTITY_CREATION_FAILED,
+                field :null,
+                data: $input
+            );
+        }
     }
 }

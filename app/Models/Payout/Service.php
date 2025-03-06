@@ -75,6 +75,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\PayoutsDetails as PayoutDetails;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
+use RZP\Http\Controllers\BankTransferController;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
@@ -6904,6 +6905,15 @@ class Service extends Base\Service
                         if($res)
                             array_push($successResponse, $res);
                     }, $bulk_input);
+                    break;
+
+                case 'manual_smart_collect_entity_creation':
+                    $processFunction(function($input) use (&$successResponse) {
+                       $res = (new BankTransferController())->manualProcessBankTransferRequest($input);
+                       if($res)
+                           array_push($successResponse, $res);
+                    },$bulk_input);
+
                     break;
 
                 default:

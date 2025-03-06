@@ -176,7 +176,8 @@ class Validator extends Base\Validator
         'process_bank_transfer',
         'redis_get',
         'redis_set',
-        'generate_merchant_invoice'
+        'generate_merchant_invoice',
+        'manual_smart_collect_entity_creation'
     ];
 
     const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
@@ -192,6 +193,8 @@ class Validator extends Base\Validator
     const REDIS_SET = 'redis_set';
 
     const GENERATE_MERCHANT_INVOICE = 'generate_merchant_invoice';
+
+    const MANUAL_SMART_COLLECT_ENTITY_CREATION = 'manual_smart_collect_entity_creation';
 
     const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
@@ -753,6 +756,12 @@ class Validator extends Base\Validator
         'month' => 'required|integer',
         'year' => 'required|integer',
         'merchant_ids' => 'required|array',
+    ];
+
+    protected static $manualSmartCollectEntityCreationRules = [
+        'gateway' => 'required|string',
+        'bank_transfer_request_id' => 'sometimes|string',
+        'request_payload' => 'sometimes|array'
     ];
 
     protected function validateSourceAndDestination($input)
@@ -2406,6 +2415,13 @@ class Validator extends Base\Validator
 
                 foreach ($bulkInput as $input) {
                     $this->setStrictFalse()->validateInput(self::GENERATE_MERCHANT_INVOICE,$input);
+                }
+                break;
+
+            case 'manual_smart_collect_entity_creation':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::MANUAL_SMART_COLLECT_ENTITY_CREATION,$input);
                 }
                 break;
 
