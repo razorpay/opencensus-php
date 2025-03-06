@@ -5610,7 +5610,6 @@ class ActivationTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user['id']);
         $response = $this->startTest();
         $this->assertNotEmpty($response['token']);
-
     }
 
 
@@ -5673,6 +5672,70 @@ class ActivationTest extends OAuthTestCase
         $response = $this->startTest();
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
         $this->assertNull($user->getEmail());
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testMerchantActivationOtpSendBySalesAgent()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => '10000000000000:10000000000001:verify_email:MOCK_TOKEN1234',
+        ];
+
+        $this->app['raven']->method('generateOtp')->with([
+            'receiver'   => 'hello123@c.com',
+            'context'    => '10000000000000:10000000000001:verify_email:MOCK_TOKEN1234',
+            'source'     => 'api',
+            'expires_at' => 20
+        ])->willReturn($smsPayload);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'id'                => '10000000000001',
+            'contact_mobile'    => '8888888888',
+            'email'          => null,
+        ], 'razorpay_sales');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'activation_status' => 'activated'
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated' => true,
+            'business_banking' => false,
+            'email' => null,
+            'signup_source' => 'primary'
+        ]);
+
+        $this->fixtures->create('user_device_detail', [
+            'user_id' => UserFixture::MERCHANT_USER_ID,
+            'merchant_id' => '10000000000000',
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user['id']);
+
+        $response = $this->startTest();
+
         $this->assertNotEmpty($response['token']);
     }
 

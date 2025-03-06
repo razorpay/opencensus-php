@@ -514,7 +514,7 @@ class UserRolesScope
             'merchant_activation_business_categories_v2'    => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_gst_details'               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_save'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-            'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::RAZORPAY_SALES],
             'merchant_coupons_apply'                        => [Role::OWNER, Role::ADMIN],
             'merchant_checkout_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::ADMIN_READONLY],
             'merchant_checkout_details_save'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
