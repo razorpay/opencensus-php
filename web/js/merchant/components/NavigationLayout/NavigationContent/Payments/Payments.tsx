@@ -1,5 +1,6 @@
 const Payments = (props) => {
-  return props.children;
+  if (props.children) return props.children;
+  return null;
 };
 
 export default Payments;
