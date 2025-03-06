@@ -114,7 +114,15 @@ export const Slab = {
 
 export const ETD = {
   title: 'Estimated Delivery',
-  value: (item: ShippingMethod) => item?.etd || '-',
+  value: (item: ShippingMethod) => {
+    if (item.estimated_delivery_details) {
+      const { min_timeframe, max_timeframe, unit } = item.estimated_delivery_details;
+
+      return `${min_timeframe} - ${max_timeframe} ${unit}`;
+    }
+
+    return item?.etd || '-';
+  },
 };
 
 export const actions = ({

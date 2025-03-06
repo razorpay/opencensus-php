@@ -20,6 +20,12 @@ export interface Zone {
 
 export interface ShippingMethod {
   name: string;
+  estimated_delivery_details: {
+    max_timeframe: number;
+    min_timeframe: number;
+    unit: string;
+  } | null;
+  etd: string;
   [key: string]: any;
 }
 
