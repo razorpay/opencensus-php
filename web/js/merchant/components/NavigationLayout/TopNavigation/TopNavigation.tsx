@@ -151,12 +151,6 @@ const TopNavigation = ({
       };
     }
 
-    if (matchPath({ path: '/company-registration/*', exact: false }, currentPath)) {
-      return {
-        productAlias: 'company_registration_top_navigation_item',
-        path: productConfigMap['company_registration_top_navigation_item'].defaultPath,
-      };
-    }
     // Check Payments via regex-based route matching
     if (isPaymentsPath(currentPath)) {
       return {

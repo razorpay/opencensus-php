@@ -6,13 +6,6 @@ export const productConfigMap = {
     description: 'Offer seamless payments on your app, website or in-store.',
     imageSrc: require('./assets/payments_card.png'),
   },
-  company_registration_top_navigation_item: {
-    defaultPath: '/company-registration',
-    productAlias: 'company_registration_top_navigation_item',
-    title: 'Company Registration',
-    description: "India's most comprehensive company registration",
-    imageSrc: require('merchant/views/CompanyRegistration/assets/RizeincorpConnDash.png'),
-  },
   banking_top_navigation_item: {
     defaultPath: '/banking',
     productAlias: 'banking_top_navigation_item',
