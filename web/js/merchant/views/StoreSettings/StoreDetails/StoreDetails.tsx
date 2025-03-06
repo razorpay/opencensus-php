@@ -13,9 +13,6 @@ import {
   EditIcon,
   useToast,
   Indicator,
-  Text,
-  Link,
-  RefreshIcon,
 } from '@razorpay/blade/components';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -23,6 +20,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { REACT_QUERY_CACHE_KEYS } from 'common/constant';
 import { graphqlRequest, graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import Breadcrumbs from 'merchant/views/BillMeSettings/common/components/Breadcrumbs';
+import RetryOnError from 'merchant/views/BillMeSettings/common/components/RetryOnError';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 import DeleteStoreModal from 'merchant/views/StoreSettings/StoreDetails/components/DeleteStoreModal';
 import DigitalBillingInfo from 'merchant/views/StoreSettings/StoreDetails/components/DigitalBillingInfo';
 import StoreOverview from 'merchant/views/StoreSettings/StoreDetails/components/StoreOverview';
@@ -42,10 +41,12 @@ const StoreDetails = (): React.ReactElement => {
     data: storeInfoResponse,
     isFetching,
     isError: isErrorInFetchingStoreInfo,
+    error: storeInfoError,
     refetch,
   } = useQuery({
     refetchOnWindowFocus: false,
     queryKey: [REACT_QUERY_CACHE_KEYS.STORE_INFO, storeId],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: STORE_BY_ID,
@@ -68,11 +69,14 @@ const StoreDetails = (): React.ReactElement => {
       setShouldShowDeleteModal(false);
       navigate('/store-settings/stores-list');
     },
-    onError: () => {
+    onError: (error) => {
+      const isStoreDeleteAccessDenied = verifyGqlErrorResponse(error);
       show({
         type: 'informational',
         color: 'negative',
-        content: 'Something went wrong. Please try again!',
+        content: isStoreDeleteAccessDenied
+          ? 'Access Denied to delete Store'
+          : 'Something went wrong. Please try again!',
       });
     },
   });
@@ -88,21 +92,12 @@ const StoreDetails = (): React.ReactElement => {
   }
 
   if (isErrorInFetchingStoreInfo) {
+    const isStoreInfoAccessDenied = verifyGqlErrorResponse(storeInfoError);
     return (
-      <Box display="flex" alignItems="center" justifyContent="center" height="100%" gap="spacing.3">
-        <Text size="medium" color="interactive.text.negative.normal">
-          Error in fetching store info
-        </Text>
-        <Link
-          size="medium"
-          variant="button"
-          icon={RefreshIcon}
-          iconPosition="right"
-          onClick={() => refetch()}
-        >
-          Retry
-        </Link>
-      </Box>
+      <RetryOnError
+        errorText="Error in fetching store info"
+        retryFn={!isStoreInfoAccessDenied ? refetch : undefined}
+      />
     );
   }
 

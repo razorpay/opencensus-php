@@ -9,11 +9,13 @@ import {
   TextInput,
   Divider,
   Spinner,
+  useToast,
 } from '@razorpay/blade/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import isEmpty from 'lodash/isEmpty';
 
 import { graphqlRequest } from '@federated/apps/shell/graphql';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 import StoreFilter from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreFilter';
 import { storeGroupInitialState } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal/constants';
 import useStoreGroupCreateMutation from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal/hooks/useStoreGroupCreateMutation';
@@ -47,6 +49,7 @@ const StoreGroupModal = ({
 
   const queryClient = useQueryClient();
   const { storesFilterPayload } = useStoresTablePayloadStore();
+  const toast = useToast();
 
   const {
     modalStatus,
@@ -63,11 +66,23 @@ const StoreGroupModal = ({
   } = useQuery<StoreGroupResponse>({
     enabled: false,
     queryKey: ['store_group_info'],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: STORE_GROUP_DATA_QUERY,
         variables: { id: selectedStoreGroupInfo?.id },
       }),
+    onError: (error) => {
+      const isStoreGroupAccessDenied = verifyGqlErrorResponse(error);
+      toast.show({
+        type: 'informational',
+        color: 'negative',
+        content: isStoreGroupAccessDenied
+          ? 'Access denied to view Store Group'
+          : 'Error in fetching Store Group info',
+      });
+      updateModalStatus(null);
+    },
   });
 
   useEffect(() => {

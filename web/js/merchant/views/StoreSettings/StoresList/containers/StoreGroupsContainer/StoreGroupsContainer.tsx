@@ -16,6 +16,8 @@ import {
 import { DEFAULT_STORE_GROUPS } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/constants';
 import { STORES_DATA_QUERY } from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer/queries';
 import { useStoresTablePayloadStore } from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer/stores/storesTablePayloadStore';
+import RetryOnError from 'merchant/views/BillMeSettings/common/components/RetryOnError';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 
 import type {
   StoreGroupsDataResponse,
@@ -48,6 +50,7 @@ const StoreGroupsContainer = ({
     useQuery<StoresDataResponse>({
       refetchOnWindowFocus: false,
       queryKey: [REACT_QUERY_CACHE_KEYS.DELETED_STORES_DATA],
+      retry: false,
       queryFn: () =>
         graphqlRequest({
           document: STORES_DATA_QUERY,
@@ -64,9 +67,12 @@ const StoreGroupsContainer = ({
     data: storeGroupsResponse,
     isFetching,
     refetch,
+    isError,
+    error: storeGroupsListError,
   } = useQuery<StoreGroupsDataResponse>({
     enabled: true,
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: ['store_groups_list_data'],
     queryFn: () =>
       graphqlRequest({
@@ -93,7 +99,7 @@ const StoreGroupsContainer = ({
           name,
           description,
           isActive,
-          storesCount: stores.length,
+          storesCount: stores?.length,
         };
       });
       updateStoreGroupsList(updatedStoreGroupsData, storeGroupsResponse?.storeGroups?.total || 0);
@@ -128,6 +134,16 @@ const StoreGroupsContainer = ({
     </Box>
   );
 
+  if (isError) {
+    const isStoreGroupsAccessDenied = verifyGqlErrorResponse(storeGroupsListError);
+    return (
+      <RetryOnError
+        errorText="Error in fetching Store Groups list"
+        retryFn={!isStoreGroupsAccessDenied ? refetch : undefined}
+      />
+    );
+  }
+
   return (
     <>
       <Text weight="medium" size="medium">
@@ -150,11 +166,9 @@ const StoreGroupsContainer = ({
           Add New Group
         </Button>
       </Box>
-      <StoreGroupModal
-        showModal={modalStatus === StoreGroupModalStatus.CREATE}
-        title="Add New Group"
-        submitBtnText="Add"
-      />
+      {modalStatus === StoreGroupModalStatus.CREATE && (
+        <StoreGroupModal showModal title="Add New Group" submitBtnText="Add" />
+      )}
       {isDeletedStoresListFetching ? (
         renderLoader('Store Groups list loading')
       ) : (

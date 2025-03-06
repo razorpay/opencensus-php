@@ -10,6 +10,8 @@ import { UPDATE_TERMINAL_MUTATION } from 'merchant/views/BillMeSettings/BrandsAn
 import { TERMINALS_TABLE_DATA_QUERY } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/queries';
 import { useTerminalsTablePayloadStore } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/stores/terminalsTablePayloadStore';
 import { transformFilterPayload } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/utils';
+import RetryOnError from 'merchant/views/BillMeSettings/common/components/RetryOnError';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 
 import type { TerminalsResponse } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/TerminalsTableContainer/types';
 
@@ -29,9 +31,12 @@ const TerminalsTableContainer = (): React.ReactElement => {
     data: terminalsResponse,
     isFetching: isTerminalsListLoading,
     refetch,
+    isError,
+    error: terminalsListError,
   } = useQuery<TerminalsResponse>({
     enabled: true,
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: [
       'terminals_table_data',
       {
@@ -84,6 +89,16 @@ const TerminalsTableContainer = (): React.ReactElement => {
     // if offset is not 0, reset the offset to fetch the search results from the first page
     !terminalsFilterPayload.offset ? refetch() : setTerminalsFilterOffset(0);
   };
+
+  if (isError && !isTerminalsListLoading) {
+    const isTerminalsAccessDenied = verifyGqlErrorResponse(terminalsListError);
+    return (
+      <RetryOnError
+        errorText="Error in fetching Terminals list"
+        retryFn={!isTerminalsAccessDenied ? refetch : undefined}
+      />
+    );
+  }
 
   return (
     <Box>

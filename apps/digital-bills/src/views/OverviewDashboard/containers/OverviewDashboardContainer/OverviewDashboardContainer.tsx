@@ -31,6 +31,7 @@ import SummaryCard from '@apps/digital-bills/src/views/OverviewDashboard/contain
 import LinkCard from '@apps/digital-bills/src/views/OverviewDashboard/containers/OverviewDashboardContainer/components/LinkCard';
 import TransactionCard from '@apps/digital-bills/src/views/OverviewDashboard/containers/OverviewDashboardContainer/components/TransactionCard';
 import TransactionDetails from '@apps/digital-bills/src/views/OverviewDashboard/containers/OverviewDashboardContainer/components/TransactionDetails';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 import type { StoresDataResponse } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/types';
 
@@ -42,9 +43,11 @@ const OverviewDashboardContainer = (): React.ReactElement => {
     isFetching: isSalesInfoLoading,
     isError: isErrorInSalesInfo,
     refetch: refetchSalesInfo,
+    error: salesInfoError,
   } = useQuery<BillSalesStatsResponse>({
     queryKey: ['bill_sales_stats'],
     refetchOnWindowFocus: false,
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BILL_SALES_STATS_QUERY,
@@ -60,9 +63,11 @@ const OverviewDashboardContainer = (): React.ReactElement => {
     isFetching: isTransactionsInfoLoading,
     isError: isErrorInTransactionsInfo,
     refetch: refetchTransactionsInfo,
+    error: transactionsInfoError,
   } = useQuery<BillTransactionStatsResponse>({
     queryKey: ['bill_transaction_stats'],
     refetchOnWindowFocus: false,
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BILL_TRANSACTION_STATS_QUERY,
@@ -78,9 +83,11 @@ const OverviewDashboardContainer = (): React.ReactElement => {
     isFetching: isWalletBalanceLoading,
     isError: isErrorInWalletBalance,
     refetch: refetchWalletBalance,
+    error: walletBalanceError,
   } = useQuery<BillWalletBalanceResponse>({
     queryKey: ['bill_wallet_balance'],
     refetchOnWindowFocus: false,
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BILL_WALLET_BALANCE_QUERY,
@@ -92,9 +99,11 @@ const OverviewDashboardContainer = (): React.ReactElement => {
     isFetching: isStoresInfoLoading,
     isError: isErrorInStoresInfo,
     refetch: refetchStoresInfo,
+    error: storesInfoError,
   } = useQuery<StoresDataResponse>({
     queryKey: ['stores_data'],
     refetchOnWindowFocus: false,
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: STORES_DATA_QUERY,
@@ -132,6 +141,16 @@ const OverviewDashboardContainer = (): React.ReactElement => {
     },
   ] as const;
 
+  const isSalesInfoAccessDenied = verifyGqlErrorResponse(salesInfoError);
+  const isTransactionsInfoAccessDenied = verifyGqlErrorResponse(transactionsInfoError);
+  const isWalletBalanceAccessDenied = verifyGqlErrorResponse(walletBalanceError);
+  const isStoresInfoAccessDenied = verifyGqlErrorResponse(storesInfoError);
+
+  const refetchTransactionsInfoHandler = !isTransactionsInfoAccessDenied
+    ? refetchTransactionsInfo
+    : undefined;
+  const refetchSalesInfoHandler = !isSalesInfoAccessDenied ? refetchSalesInfo : undefined;
+
   return (
     <Box alignItems="stretch" display="flex" flexWrap="wrap" gap="spacing.5" flexDirection="column">
       <Heading size="2xlarge" marginBottom="spacing.4">
@@ -156,7 +175,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
               showCurrency
               isLoading={isWalletBalanceLoading}
               hasError={isErrorInWalletBalance}
-              retryFn={refetchWalletBalance}
+              retryFn={!isWalletBalanceAccessDenied ? refetchWalletBalance : undefined}
             />
             <SummaryCard
               heroImg={TreesSavedIcon}
@@ -165,7 +184,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
               amount={billTransactionsInfo?.treesSaved}
               isLoading={isTransactionsInfoLoading}
               hasError={isErrorInTransactionsInfo}
-              retryFn={refetchTransactionsInfo}
+              retryFn={refetchTransactionsInfoHandler}
             />
             <SummaryCard
               heroImg={ActiveStoresIcon}
@@ -173,7 +192,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
               amount={storesInfo?.total}
               isLoading={isStoresInfoLoading}
               hasError={isErrorInStoresInfo}
-              retryFn={refetchStoresInfo}
+              retryFn={!isStoresInfoAccessDenied ? refetchStoresInfo : undefined}
             />
           </Box>
         </InfoContainer>
@@ -193,14 +212,14 @@ const OverviewDashboardContainer = (): React.ReactElement => {
                   amount={billSalesInfo?.totalSales || 0}
                   isLoading={isSalesInfoLoading}
                   hasError={isErrorInSalesInfo}
-                  retryFn={refetchSalesInfo}
+                  retryFn={refetchSalesInfoHandler}
                 />
                 <TransactionCard
                   title="Average Sales"
                   amount={billSalesInfo?.avgSales || 0}
                   isLoading={isSalesInfoLoading}
                   hasError={isErrorInSalesInfo}
-                  retryFn={refetchSalesInfo}
+                  retryFn={refetchSalesInfoHandler}
                 />
                 <TransactionDetails
                   flex="3"
@@ -213,7 +232,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
                   }))}
                   isLoading={isTransactionsInfoLoading}
                   hasError={isErrorInTransactionsInfo}
-                  retryFn={refetchTransactionsInfo}
+                  retryFn={refetchTransactionsInfoHandler}
                 />
               </Box>
               <Box paddingTop="spacing.5" textAlign="right">

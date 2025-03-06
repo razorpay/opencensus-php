@@ -37,6 +37,7 @@ import type {
   StoreSearchColumnType,
   BrandsDataResponse,
 } from '@apps/digital-bills/src/common/components/StoreFilterModal/types';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 type StoreFilterProps = {
   onSelectStores: (stores: StoresType) => void;
@@ -58,26 +59,21 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
   const storesListRef = useRef(null);
   const isOnScreen = useIntersectionObserver(storesListRef);
 
-  const {
-    data: statesAndCitiesResponse,
-    isFetching: isStatesAndCitiesFetching,
-    isError: isErrorInFetchingStatesAndCities,
-  } = useQuery<StoresStatesAndCitiesDataResponse>({
-    refetchOnWindowFocus: false,
-    queryKey: ['stores_states_and_cities_data'],
-    queryFn: () =>
-      graphqlRequest({
-        document: STORES_STATES_AND_CITIES_QUERY,
-      }),
-  });
+  const { data: statesAndCitiesResponse, isFetching: isStatesAndCitiesFetching } =
+    useQuery<StoresStatesAndCitiesDataResponse>({
+      refetchOnWindowFocus: false,
+      queryKey: ['stores_states_and_cities_data'],
+      retry: false,
+      queryFn: () =>
+        graphqlRequest({
+          document: STORES_STATES_AND_CITIES_QUERY,
+        }),
+    });
 
-  const {
-    data: brandsResponse,
-    isFetching: isBrandsFetching,
-    isError: isErrorInFetchingBrands,
-  } = useQuery<BrandsDataResponse>({
+  const { data: brandsResponse, isFetching: isBrandsFetching } = useQuery<BrandsDataResponse>({
     refetchOnWindowFocus: false,
     queryKey: ['brands_data'],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BRANDS_LIST_DATA_QUERY,
@@ -120,8 +116,10 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
     isFetching: isStoresFetching,
     refetch,
     isError: isErrorInFetchingStoresList,
+    error: storesListError,
   } = useQuery<StoresDataResponse>({
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: [
       'stores_list_data',
       {
@@ -189,6 +187,8 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
       })) || [],
   });
 
+  const isStoresListAccessDenied = verifyGqlErrorResponse(storesListError);
+
   const renderLoader = (accessibilityLabel = '') => (
     <Box display="flex" justifyContent="center" height="100%">
       <Spinner accessibilityLabel={accessibilityLabel} />
@@ -197,15 +197,20 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
 
   const renderInfo = (message: string) => {
     return (
-      <Text weight="semibold" color="surface.text.gray.muted" textAlign="center">
-        {message}
-      </Text>
+      <Box marginTop="spacing.6">
+        <Text weight="semibold" color="feedback.text.negative.intense" textAlign="center">
+          {message}
+        </Text>
+      </Box>
     );
   };
 
   const renderStores = () => {
     if (shouldTriggerRefetch && isStoresFetching) {
       return renderLoader('Stores list loading');
+    }
+    if (isStoresListAccessDenied) {
+      return renderInfo('Access denied to fetch stores');
     }
     if (isErrorInFetchingStoresList) {
       return renderInfo('Error in fetching stores. Please try again later.');
@@ -245,9 +250,6 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
   const renderFilter = () => {
     if (isStatesAndCitiesFetching || isBrandsFetching) {
       return renderLoader('Store filters loading');
-    }
-    if (isErrorInFetchingStatesAndCities || isErrorInFetchingBrands) {
-      return renderInfo('Error in fetching filters. Please try again later.');
     }
     return leftSlots.slot.map((slot) => (
       <MultiSelectSlot

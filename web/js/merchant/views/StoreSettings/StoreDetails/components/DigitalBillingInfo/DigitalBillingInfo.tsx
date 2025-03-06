@@ -12,13 +12,13 @@ import {
   Text,
   InfoIcon,
   Spinner,
-  Link,
-  RefreshIcon,
 } from '@razorpay/blade/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { REACT_QUERY_CACHE_KEYS } from 'common/constant';
 import { graphqlRequest } from '@federated/apps/shell/graphql';
+import RetryOnError from 'merchant/views/BillMeSettings/common/components/RetryOnError';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 import { Store } from 'merchant/views/StoreSettings/types';
 import { TERMINAL_BY_STORE_ID } from 'merchant/views/StoreSettings/StoreDetails/queries';
 import SectionContainer from 'merchant/views/StoreSettings/StoreDetails/components/SectionContainer';
@@ -36,10 +36,12 @@ const DigitalBillingInfo = ({ fetchedStoreInfo }: DigitalBillingInfoProps): Reac
     data: storeTerminalsInfo,
     isFetching: isTerminalsLoading,
     isError: isErrorInFetchingStoreTerminals,
+    error: storeTerminalsError,
     refetch,
   } = useQuery<TerminalsResponse>({
     enabled: !fetchedStoreInfo?.dates?.deletedAt,
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: [REACT_QUERY_CACHE_KEYS.STORE_TERMINALS, fetchedStoreInfo?.id],
     queryFn: async () =>
       graphqlRequest({
@@ -67,27 +69,12 @@ const DigitalBillingInfo = ({ fetchedStoreInfo }: DigitalBillingInfoProps): Reac
       );
     }
     if (isErrorInFetchingStoreTerminals) {
+      const isTerminalsAccessDenied = verifyGqlErrorResponse(storeTerminalsError);
       return (
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          height="100%"
-          gap="spacing.3"
-        >
-          <Text size="medium" color="interactive.text.negative.normal">
-            Error in fetching store terminals
-          </Text>
-          <Link
-            size="medium"
-            variant="button"
-            icon={RefreshIcon}
-            iconPosition="right"
-            onClick={() => refetch()}
-          >
-            Retry
-          </Link>
-        </Box>
+        <RetryOnError
+          errorText="Error in fetching store terminals"
+          retryFn={!isTerminalsAccessDenied ? refetch : undefined}
+        />
       );
     }
     if (!fetchedStoreInfo?.dates?.deletedAt) {

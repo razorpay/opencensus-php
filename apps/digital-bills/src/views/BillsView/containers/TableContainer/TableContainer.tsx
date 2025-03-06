@@ -22,32 +22,25 @@ import type {
 } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/types';
 
 const TableContainer = () => {
-  const {
-    data: storeGroupsResponse,
-    refetch: refetchStoreGroups,
-    isFetching: isStoreGroupsFetching,
-    isError: isErrorInFetchingStoreGroups,
-  } = useQuery<StoreGroupsDataResponse>({
-    refetchOnWindowFocus: false,
-    queryKey: ['store_groups_list'],
-    queryFn: () =>
-      graphqlRequest({
-        document: STORE_GROUP_DATA_QUERY,
-        variables: {
-          limit: 25,
-          offset: 0,
-        },
-      }),
-  });
+  const { data: storeGroupsResponse, isFetching: isStoreGroupsFetching } =
+    useQuery<StoreGroupsDataResponse>({
+      refetchOnWindowFocus: false,
+      queryKey: ['store_groups_list'],
+      retry: false,
+      queryFn: () =>
+        graphqlRequest({
+          document: STORE_GROUP_DATA_QUERY,
+          variables: {
+            limit: 25,
+            offset: 0,
+          },
+        }),
+    });
 
-  const {
-    data: storesResponse,
-    refetch: refetchStores,
-    isFetching: isStoresFetching,
-    isError: isErrorInFetchingStores,
-  } = useQuery<StoresDataResponse>({
+  const { data: storesResponse, isFetching: isStoresFetching } = useQuery<StoresDataResponse>({
     refetchOnWindowFocus: false,
     queryKey: ['stores_table_data'],
+    retry: false,
     queryFn: () => {
       const variables = {
         offset: 0,
@@ -94,8 +87,6 @@ const TableContainer = () => {
                   storesResponse={storesResponse}
                   storeGroupsResponse={storeGroupsResponse}
                   isStoresInfoLoading={isStoreGroupsFetching || isStoresFetching}
-                  hasErrorInStoresInfo={isErrorInFetchingStoreGroups || isErrorInFetchingStores}
-                  retryFn={isErrorInFetchingStoreGroups ? refetchStoreGroups : refetchStores}
                 />
               </ErrorBoundary>
             </TabPanel>
@@ -109,8 +100,6 @@ const TableContainer = () => {
                   storesResponse={storesResponse}
                   storeGroupsResponse={storeGroupsResponse}
                   isStoresInfoLoading={isStoreGroupsFetching || isStoresFetching}
-                  hasErrorInStoresInfo={isErrorInFetchingStoreGroups || isErrorInFetchingStores}
-                  retryFn={isErrorInFetchingStoreGroups ? refetchStoreGroups : refetchStores}
                 />
               </ErrorBoundary>
             </TabPanel>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { DEFAULT_STORE_GROUPS } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/constants';
 import { useStoreGroupsStore } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/stores/storeGroupsStore';
@@ -8,7 +9,19 @@ import {
   STORES_TABLE_STORE_MOCK,
   STORE_GROUPS_STORE_MOCK,
 } from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer/__tests__/mocks';
-import { screen, render, userEvent } from 'test-utils';
+import { screen, render, userEvent, act } from 'test-utils';
+
+jest.mock('@tanstack/react-query', () => {
+  const original = jest.requireActual('@tanstack/react-query');
+
+  return {
+    ...original,
+    useQuery: jest.fn().mockReturnValue({
+      data: {},
+      isFetching: false,
+    }),
+  };
+});
 
 // Mock 'useStoreGroupsStore' Zustand store
 jest.mock('../../StoreGroupsContainer/stores/storeGroupsStore', () => ({
@@ -24,6 +37,11 @@ const App = ({ props }) => <StoresTableContainer {...props} />;
 
 describe('StoresTableContainer', () => {
   test("should render loader when 'isStoreGroupsActive' prop is false", () => {
+    (useQuery as jest.Mock).mockReturnValueOnce({
+      data: {},
+      isFetching: true,
+    });
+
     (useStoresTablePayloadStore as unknown as jest.Mock).mockReturnValue(STORES_TABLE_STORE_MOCK);
     (useStoreGroupsStore as unknown as jest.Mock).mockReturnValue(STORE_GROUPS_STORE_MOCK);
 
@@ -33,6 +51,11 @@ describe('StoresTableContainer', () => {
 
   test("should render 'StoresTableContainer' component as expected", async () => {
     const updateModalStatus = jest.fn();
+
+    (useQuery as jest.Mock).mockReturnValueOnce({
+      data: {},
+      isFetching: false,
+    });
 
     const setStoresFilterSearchTerm = jest.fn();
     (useStoresTablePayloadStore as unknown as jest.Mock).mockReturnValue({
@@ -58,13 +81,17 @@ describe('StoresTableContainer', () => {
     // Edit Group Button
     const editGroupBtn = screen.getByRole('button', { name: 'Edit Group' });
     expect(editGroupBtn).toBeInTheDocument();
-    await userEvent.click(editGroupBtn);
+    await act(async () => {
+      await userEvent.click(editGroupBtn);
+    });
     expect(updateModalStatus).toHaveBeenLastCalledWith('update');
 
     // Delete Group Button
     const deleteGroupBtn = screen.getByRole('button', { name: 'Delete Group' });
     expect(deleteGroupBtn).toBeInTheDocument();
-    await userEvent.click(deleteGroupBtn);
+    await act(async () => {
+      await userEvent.click(deleteGroupBtn);
+    });
     expect(updateModalStatus).toHaveBeenLastCalledWith('delete');
 
     // StoresSearchComponent
@@ -78,7 +105,9 @@ describe('StoresTableContainer', () => {
 
     // Search field
     const searchField = screen.getByPlaceholderText('Search');
-    await userEvent.type(searchField, '12');
+    await act(async () => {
+      await userEvent.type(searchField, '12');
+    });
     expect(setStoresFilterSearchTerm).toHaveBeenCalledTimes(2);
   });
 
@@ -134,8 +163,10 @@ describe('StoresTableContainer', () => {
 
     // Search field
     const searchField = screen.getByPlaceholderText('Search');
-    await userEvent.type(searchField, '12');
-    await userEvent.type(searchField, '{enter}');
+    await act(async () => {
+      await userEvent.type(searchField, '12');
+      await userEvent.type(searchField, '{enter}');
+    });
     expect(setStoresFilterSearchTerm).toHaveBeenCalledTimes(2);
     expect(setStoresFilterOffset).toHaveBeenLastCalledWith(0);
   });

@@ -16,21 +16,18 @@ import { useStoreTablePayloadStore } from '@apps/digital-bills/src/views/BillsVi
 import { useBillsTablePayloadStore } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/stores/billsTablePayloadStore';
 import { STORES_AGGREGATION_DATA_QUERY } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/queries';
 import { transformFilterPayload } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/utils';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 type StoreTableContainerProps = {
   storeGroupsResponse: StoreGroupsDataResponse | undefined;
   storesResponse: StoresDataResponse | undefined;
   isStoresInfoLoading?: boolean;
-  hasErrorInStoresInfo?: boolean;
-  retryFn?: () => void;
 };
 
 const StoreTableContainer = ({
   storeGroupsResponse,
   storesResponse,
   isStoresInfoLoading = false,
-  hasErrorInStoresInfo = false,
-  retryFn,
 }: StoreTableContainerProps): React.ReactElement => {
   const {
     storeFilterPayload,
@@ -52,9 +49,11 @@ const StoreTableContainer = ({
     data: storeAggregationResponse,
     isError: isErrorInStorewiseAggregation,
     isFetching,
+    error: storeWiseAggregationError,
     refetch,
   } = useQuery<StoreAggregationDataResponse>({
     queryKey: ['store_table_data', storeFilterPayload.offset, filtersResetAt],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: STORES_AGGREGATION_DATA_QUERY,
@@ -81,9 +80,8 @@ const StoreTableContainer = ({
     }
   };
 
-  if (hasErrorInStoresInfo) {
-    return <RetryOnError errorText="Error in fetching stores information" retryFn={retryFn} />;
-  }
+  const isStoreWiseAggregationAccessDenied = verifyGqlErrorResponse(storeWiseAggregationError);
+
   if (isStoresInfoLoading) {
     return (
       <Box display="flex" justifyContent="center" height="100%">
@@ -135,11 +133,11 @@ const StoreTableContainer = ({
         resetStoreFilter={resetStoreFilter}
         fetchFilteredStoreData={applyFilters}
       />
-      {isErrorInStorewiseAggregation ? (
+      {isErrorInStorewiseAggregation && !isFetching ? (
         <Box marginTop="spacing.9">
           <RetryOnError
             errorText="Error in fetching Store wise aggregation information"
-            retryFn={refetch}
+            retryFn={!isStoreWiseAggregationAccessDenied ? refetch : undefined}
           />
         </Box>
       ) : (

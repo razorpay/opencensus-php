@@ -35,6 +35,7 @@ import {
   SalesResponse,
   TransactionsResponse,
 } from '@apps/digital-bills/src/views/BillsView/containers/BillsOverviewContainer/types';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 const pageBreadCrumbs: BreadCrumbType[] = [{ label: 'BillMe' }, { label: 'Bills View' }];
 
@@ -66,9 +67,11 @@ const BillsOverviewContainer = (): React.ReactElement => {
     isFetching: isSalesDataFetching,
     isError: isErrorInSalesInfo,
     refetch: refetchSalesInfo,
+    error: salesAggregationError,
   } = useQuery<SalesResponse>({
     queryKey: ['sales_overview_data', overviewTimeRange],
     refetchOnWindowFocus: false,
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: SALES_OVERVIEW_QUERY,
@@ -81,8 +84,10 @@ const BillsOverviewContainer = (): React.ReactElement => {
     isFetching: isTransactionDataFetching,
     isError: isErrorInTransactionsInfo,
     refetch: refetchTransactionsInfo,
+    error: transactionsAggregationError,
   } = useQuery<TransactionsResponse>({
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: ['transactions_overview_data', overviewTimeRange],
     queryFn: () =>
       graphqlRequest({
@@ -135,6 +140,15 @@ const BillsOverviewContainer = (): React.ReactElement => {
   const digitalPrintedTransactions =
     transactionsData?.billTransactionStats?.transactionSummary?.DIGITAL_PRINT ?? 0;
 
+  const isSalesAggregationAccessDenied = verifyGqlErrorResponse(salesAggregationError);
+  const isTransactionsAggregationAccessDenied = verifyGqlErrorResponse(
+    transactionsAggregationError,
+  );
+
+  const refetchSalesAggregationHandler = !isSalesAggregationAccessDenied
+    ? refetchSalesInfo
+    : undefined;
+
   return (
     <Card backgroundColor="surface.background.gray.moderate">
       <CardBody>
@@ -161,7 +175,7 @@ const BillsOverviewContainer = (): React.ReactElement => {
                   setSelectedOverviewCategory={() => setSelectedOverviewCategory(TOTAL_SALES)}
                   expandGraph={expandGraph}
                   hasError={isErrorInSalesInfo}
-                  retryFn={refetchSalesInfo}
+                  retryFn={refetchSalesAggregationHandler}
                 />
               </Box>
               <Box flex={1}>
@@ -173,7 +187,7 @@ const BillsOverviewContainer = (): React.ReactElement => {
                   setSelectedOverviewCategory={() => setSelectedOverviewCategory(AVERAGE_SALES)}
                   expandGraph={expandGraph}
                   hasError={isErrorInSalesInfo}
-                  retryFn={refetchSalesInfo}
+                  retryFn={refetchSalesAggregationHandler}
                 />
               </Box>
             </Box>
@@ -194,7 +208,9 @@ const BillsOverviewContainer = (): React.ReactElement => {
                 setSelectedOverviewCategory={setSelectedOverviewCategory}
                 expandGraph={expandGraph}
                 hasError={isErrorInTransactionsInfo}
-                retryFn={refetchTransactionsInfo}
+                retryFn={
+                  !isTransactionsAggregationAccessDenied ? refetchTransactionsInfo : undefined
+                }
               />
             </Box>
           </Box>

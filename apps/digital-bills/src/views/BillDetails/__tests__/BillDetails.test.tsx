@@ -39,6 +39,7 @@ describe('BillDetails', () => {
       isLoading: false,
       isError: true,
       data: { billById: {} },
+      refetch: jest.fn(),
     });
     const { getByText } = renderWithWrappers(<BillDetails />);
     expect(getByText('Error in fetching Bill info')).toBeInTheDocument();

@@ -24,6 +24,7 @@ import {
   ONBOARDING_STATUS,
   STORE_COUNT_OPTIONS_MAP,
 } from '@apps/digital-bills/src/views/Onboarding/constants';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 type FeaturesProps = {
   isInWaitlist: boolean;
@@ -55,11 +56,14 @@ const Features = ({ isInWaitlist, updateActiveScreen }: FeaturesProps) => {
       updateOnboardingStatus(ONBOARDING_STATUS.PENDING);
       setIsModalOpen(false);
     },
-    onError: () => {
+    onError: (error) => {
+      const isJoinWaitlistAccessDenied = verifyGqlErrorResponse(error);
       show({
         type: 'informational',
         color: 'negative',
-        content: 'Something went wrong. Please try again!',
+        content: isJoinWaitlistAccessDenied
+          ? 'Access denied'
+          : 'Something went wrong. Please try again!',
       });
     },
   });

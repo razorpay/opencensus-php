@@ -16,6 +16,7 @@ import { StoreGroupModalStatus } from 'merchant/views/StoreSettings/StoresList/c
 import { DELETE_STORE_GROUP_MUTATION } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/mutations';
 import { useStoreGroupsStore } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/stores/storeGroupsStore';
 import { useStoresTablePayloadStore } from 'merchant/views/StoreSettings/StoresList/containers/StoresTableContainer/stores/storesTablePayloadStore';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 
 const DeleteModal = (): React.ReactElement => {
   const toast = useToast();
@@ -41,12 +42,15 @@ const DeleteModal = (): React.ReactElement => {
       });
       return response;
     },
-    onSettled: (response) => {
-      if (!response?.storeGroupDelete?.success) {
+    onSettled: (_, error) => {
+      if (error) {
+        const isStoreGroupDeleteAccessDenied = verifyGqlErrorResponse(error);
         return toast.show({
           type: 'informational',
           color: 'negative',
-          content: 'Something went wrong!',
+          content: isStoreGroupDeleteAccessDenied
+            ? 'Access denied to delete Store Group'
+            : 'Error in deleting Store Group',
         });
       }
       toast.show({

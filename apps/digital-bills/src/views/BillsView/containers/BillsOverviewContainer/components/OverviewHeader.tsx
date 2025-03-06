@@ -44,6 +44,7 @@ const OverviewHeader = ({ overviewTimeRange, setOverviewTimeRange }: OverviewHea
       </Box>
       <Box flex={2}>
         <DatePicker
+          allowSingleDateInRange
           // @ts-expect-error
           label={{
             start: 'Duration',

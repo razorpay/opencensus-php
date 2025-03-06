@@ -18,6 +18,6 @@ describe('RetryOnError', () => {
 
   test('should render RetryOnError with default props', () => {
     const { getByText } = renderWithWrappers(<RetryOnError errorText="" />);
-    expect(getByText('Error')).toBeInTheDocument();
+    expect(getByText('Access Denied')).toBeInTheDocument();
   });
 });

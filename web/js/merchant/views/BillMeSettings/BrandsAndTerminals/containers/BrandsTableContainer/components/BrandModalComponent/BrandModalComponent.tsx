@@ -25,6 +25,7 @@ import {
   INIT_BRAND_PAYLOAD,
 } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/constants';
 import { BRAND_BY_ID_DATA_QUERY } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/queries';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 
 import type {
   Brand,
@@ -99,6 +100,7 @@ const BrandModalComponent = ({
   } = useQuery<BrandByIdResponse>({
     enabled: false,
     queryKey: ['brand_info', selectedBrandId],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BRAND_BY_ID_DATA_QUERY,
@@ -107,13 +109,16 @@ const BrandModalComponent = ({
     onSuccess: (brandInfoResponse) => {
       fetchAndUpdateBrandPayload(brandInfoResponse?.storeBrandById || {});
     },
-    onError: () => {
-      onCloseModal();
+    onError: (error) => {
+      const isBrandInfoAccessDenied = verifyGqlErrorResponse(error);
       toast.show({
         type: 'informational',
         color: 'negative',
-        content: 'Error in fetching Brand information!',
+        content: isBrandInfoAccessDenied
+          ? 'Access denied to view brand info'
+          : 'Error in fetching Brand information!',
       });
+      onCloseModal();
     },
   });
 
@@ -127,7 +132,11 @@ const BrandModalComponent = ({
     }
   }, [operationType, selectedBrandId]);
 
-  const { getLogoPreSignedUrl } = useBrandPreSignedUrlMutation();
+  const preSignedUrlErrorCallBack = () => {
+    isBrandLogoUploadingRef.current = false;
+  };
+
+  const { getLogoPreSignedUrl } = useBrandPreSignedUrlMutation(preSignedUrlErrorCallBack);
 
   const updateBrandPayload = async <K extends keyof BrandPayloadType>(
     key: K,
@@ -141,7 +150,7 @@ const BrandModalComponent = ({
           (value as BladeFile)?.name,
         );
         const presignedUrl = storeBrandLogoPreSignedUrl?.preSignedUrlInfo?.presignedUrl;
-        if (storeBrandLogoPreSignedUrl.success) {
+        if (storeBrandLogoPreSignedUrl?.success) {
           try {
             // Upload the file to the S3 bucket with the presigned URL
             const response = await fetch(presignedUrl, {

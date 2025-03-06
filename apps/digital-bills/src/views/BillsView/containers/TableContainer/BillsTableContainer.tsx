@@ -17,21 +17,18 @@ import type {
   StoreGroupsDataResponse,
   StoresDataResponse,
 } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/types';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 type BillsTableContainerProps = {
   storeGroupsResponse: StoreGroupsDataResponse | undefined;
   storesResponse: StoresDataResponse | undefined;
   isStoresInfoLoading?: boolean;
-  hasErrorInStoresInfo?: boolean;
-  retryFn?: () => void;
 };
 
 const BillsTableContainer = ({
   storeGroupsResponse,
   storesResponse,
   isStoresInfoLoading = false,
-  hasErrorInStoresInfo = false,
-  retryFn,
 }: BillsTableContainerProps): React.ReactElement => {
   const [isEditColumnOpen, setIsEditColumnOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -56,10 +53,12 @@ const BillsTableContainer = ({
     data: billsResponse,
     isError: isErrorInBillsInfo,
     isFetching,
+    error: billsListError,
     refetch,
   } = useQuery<BillsDataResponse>({
     refetchOnWindowFocus: false,
     queryKey: ['bills_table_data', { offset: billsFilterPayload.offset, filtersResetAt }],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BILLS_TABLE_DATA_QUERY,
@@ -83,9 +82,8 @@ const BillsTableContainer = ({
     }
   };
 
-  if (hasErrorInStoresInfo) {
-    return <RetryOnError errorText="Error in fetching stores information" retryFn={retryFn} />;
-  }
+  const isBillsListAccessDenied = verifyGqlErrorResponse(billsListError);
+
   if (isStoresInfoLoading) {
     return (
       <Box display="flex" justifyContent="center" height="100%">
@@ -117,9 +115,12 @@ const BillsTableContainer = ({
         resetBillsFilter={resetBillsFilter}
         fetchFilteredBillsData={applyFilters}
       />
-      {isErrorInBillsInfo ? (
+      {isErrorInBillsInfo && !isFetching ? (
         <Box marginTop="spacing.9">
-          <RetryOnError errorText="Error in fetching Bills information" retryFn={refetch} />
+          <RetryOnError
+            errorText="Error in fetching Bills information"
+            retryFn={!isBillsListAccessDenied ? refetch : undefined}
+          />
         </Box>
       ) : (
         <BillsTableComponent

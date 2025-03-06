@@ -22,7 +22,7 @@ const RetryOnError = ({ errorText, retryFn, justifyContent = 'center' }: RetryOn
   };
 
   return (
-    <Box display="flex" justifyContent={justifyContent} gap="spacing.3">
+    <Box display="flex" justifyContent={justifyContent} gap="spacing.3" marginY="spacing.8">
       <Text size="medium" color="interactive.text.negative.normal">
         {getErrorText()}
       </Text>

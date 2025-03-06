@@ -180,6 +180,7 @@ const StoreSearchComponent = ({
             </Box>
             <Box flex={1}>
               <DatePicker
+                allowSingleDateInRange
                 /* @ts-expect-error:next-line */
                 label={{
                   start: 'Duration',

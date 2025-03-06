@@ -61,6 +61,7 @@ describe('App', () => {
     (useQuery as jest.Mock).mockReturnValue({
       ...QUERY_RESPONSE,
       isError: true,
+      refetch: jest.fn(),
     });
     const { getByText } = renderWithWrappers(<App />);
     await waitFor(() =>

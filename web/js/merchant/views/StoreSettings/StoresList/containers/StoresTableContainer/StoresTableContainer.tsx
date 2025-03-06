@@ -3,6 +3,8 @@ import { Box, Heading, Button, EditIcon, TrashIcon } from '@razorpay/blade/compo
 import { useQuery } from '@tanstack/react-query';
 
 import { graphqlRequest } from '@federated/apps/shell/graphql';
+import RetryOnError from 'merchant/views/BillMeSettings/common/components/RetryOnError';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 import { StoreGroupModalStatus } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/constants';
 import DeleteModal from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/DeleteModal';
 import StoreGroupModal from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal';
@@ -33,9 +35,12 @@ const StoresTableContainer = (): React.ReactElement => {
     data: storesResponse,
     isFetching,
     refetch,
+    isError: isErrorInStoresData,
+    error: storesDataError,
   } = useQuery<StoresDataResponse>({
     enabled: true,
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: [
       'stores_table_data',
       {
@@ -81,6 +86,32 @@ const StoresTableContainer = (): React.ReactElement => {
     !storesFilterPayload.offset ? refetch() : setStoresFilterOffset(0);
   };
 
+  const renderStoresTableContent = () => {
+    if (isErrorInStoresData && !isFetching) {
+      const isStoresListAccessDenied = verifyGqlErrorResponse(storesDataError);
+      return (
+        <RetryOnError
+          errorText="Error in fetching Stores list"
+          retryFn={!isStoresListAccessDenied ? refetch : undefined}
+        />
+      );
+    }
+    return (
+      <StoresTableComponent
+        tableProps={{
+          storesData,
+          totalItemCount,
+          isRefreshing: isFetching,
+          defaultPageSize: storesFilterPayload.limit,
+          changePage: setStoresFilterOffset,
+          changePageSize: setStoresFilterLimit,
+          currentPage: storesFilterPayload.offset / storesFilterPayload.limit,
+        }}
+        showCreateStoreButton={selectedStoreGroupInfo?.id === 'allStores'}
+      />
+    );
+  };
+
   return (
     <>
       <Box
@@ -115,11 +146,9 @@ const StoresTableContainer = (): React.ReactElement => {
           )}
       </Box>
       <DeleteModal />
-      <StoreGroupModal
-        showModal={modalStatus === StoreGroupModalStatus.UPDATE}
-        title="Edit Group"
-        submitBtnText="Save"
-      />
+      {modalStatus === StoreGroupModalStatus.UPDATE && (
+        <StoreGroupModal showModal title="Edit Group" submitBtnText="Save" />
+      )}
       <StoresSearchComponent
         storeTypeProps={{
           selectedStoreType: storesFilterPayload.storeType,
@@ -143,18 +172,7 @@ const StoresTableContainer = (): React.ReactElement => {
         }}
         fetchFilteredStoresData={applyFilters}
       />
-      <StoresTableComponent
-        tableProps={{
-          storesData,
-          totalItemCount,
-          isRefreshing: isFetching,
-          defaultPageSize: storesFilterPayload.limit,
-          changePage: setStoresFilterOffset,
-          changePageSize: setStoresFilterLimit,
-          currentPage: storesFilterPayload.offset / storesFilterPayload.limit,
-        }}
-        showCreateStoreButton={selectedStoreGroupInfo?.id === 'allStores'}
-      />
+      {renderStoresTableContent()}
     </>
   );
 };

@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { zIndicesMap, REACT_QUERY_CACHE_KEYS } from 'common/constant';
 import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { useIntersectionObserver } from 'merchant/hooks/useIntersectionObserver';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 import {
   STORES_LIST_DATA_QUERY,
   STORES_STATES_AND_CITIES_QUERY,
@@ -65,9 +66,11 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
     data: statesAndCitiesResponse,
     isFetching: isStatesAndCitiesFetching,
     isError: isErrorInFetchingStatesAndCities,
+    error: statesAndCitiesError,
   } = useQuery<StoresStatesAndCitiesDataResponse>({
     refetchOnWindowFocus: false,
     queryKey: [REACT_QUERY_CACHE_KEYS.STORES_STATES_AND_CITIES_DATA],
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: STORES_STATES_AND_CITIES_QUERY,
@@ -107,8 +110,10 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
     isFetching: isStoresFetching,
     refetch,
     isError: isErrorInFetchingStoresList,
+    error: storesListError,
   } = useQuery<StoresDataResponse>({
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: [
       REACT_QUERY_CACHE_KEYS.STORES_LIST_DATA,
       {
@@ -134,12 +139,6 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
       });
     },
     onSuccess: handleStoresResponse,
-    onError: () =>
-      toast.show({
-        type: 'informational',
-        color: 'negative',
-        content: STORES_FETCH_ERROR_MESSAGE,
-      }),
   });
 
   const totalItemsCount = storesResponse?.stores?.total ?? 0;
@@ -163,17 +162,26 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
     cities: statesAndCitiesResponse?.storesStatesAndCitiesByMerchantId?.cities || [],
   });
 
+  const isStatesAndCitiesAccessDenied = verifyGqlErrorResponse(statesAndCitiesError);
+  const isStoresListAccessDenied = verifyGqlErrorResponse(storesListError);
+
   const renderLoader = (accessibilityLabel = '') => (
     <Box display="flex" justifyContent="center" height="100%">
       <Spinner accessibilityLabel={accessibilityLabel} />
     </Box>
   );
 
-  const renderInfo = (message: string) => {
+  const renderInfo = (message: string, showAsError = false) => {
     return (
-      <Text weight="semibold" color="surface.text.gray.muted" textAlign="center">
-        {message}
-      </Text>
+      <Box marginY="spacing.6">
+        <Text
+          weight="semibold"
+          color={showAsError ? 'feedback.text.negative.intense' : 'surface.text.gray.muted'}
+          textAlign="center"
+        >
+          {message}
+        </Text>
+      </Box>
     );
   };
 
@@ -182,7 +190,8 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
       return renderLoader(STORES_LIST_LOADER);
     }
     if (isErrorInFetchingStoresList) {
-      return renderInfo(STORES_FETCH_ERROR_MESSAGE);
+      const errorMessage = isStoresListAccessDenied ? 'Access Denied' : STORES_FETCH_ERROR_MESSAGE;
+      return renderInfo(errorMessage, true);
     }
 
     return (
@@ -217,7 +226,10 @@ const StoreFilter = ({ onSelectStores, selectedStores }: StoreFilterProps): Reac
 
   const renderStatesAndCitiesFilter = () => {
     if (isErrorInFetchingStatesAndCities) {
-      return renderInfo(STORES_STATES_CITIES_ERROR_MESSAGE);
+      const errorMessage = isStatesAndCitiesAccessDenied
+        ? 'Access Denied'
+        : STORES_STATES_CITIES_ERROR_MESSAGE;
+      return renderInfo(errorMessage, true);
     }
     if (isStatesAndCitiesFetching) {
       return renderLoader(STORES_STATES_CITIES_LOADER);

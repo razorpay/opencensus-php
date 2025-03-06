@@ -185,6 +185,7 @@ const BillsSearchComponent = ({
             </Box>
             <Box flex={2}>
               <DatePicker
+                allowSingleDateInRange
                 /* @ts-expect-error:next-line */
                 label={{
                   start: 'Duration',

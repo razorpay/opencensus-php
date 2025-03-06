@@ -21,6 +21,7 @@ import { BILL_BY_ID_DATA_QUERY } from '@apps/digital-bills/src/views/BillDetails
 import { BillByIdResponse } from '@apps/digital-bills/src/views/BillDetails/types';
 import RetryOnError from '@apps/digital-bills/src/common/components/RetryOnError';
 import { ERROR_PAGE_DESCRIPTION } from '@apps/digital-bills/src/utils/constants';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 const BillDetails = (): React.ReactElement => {
   const params = useParams();
@@ -37,16 +38,20 @@ const BillDetails = (): React.ReactElement => {
     data: billResponse,
     isFetching: isBillInfoLoading,
     isError: isErrorInBillDetails,
+    error: billError,
     refetch,
   } = useQuery<BillByIdResponse>({
     queryKey: ['bill_by_id', id],
     refetchOnWindowFocus: false,
+    retry: false,
     queryFn: () =>
       graphqlRequest({
         document: BILL_BY_ID_DATA_QUERY,
         variables: { id },
       }),
   });
+
+  const isBillViewAccessDenied = verifyGqlErrorResponse(billError);
 
   const { mutate: billDeleteMutate, isLoading: isBillDeleteLoading } = useMutation({
     mutationFn: () =>
@@ -69,11 +74,14 @@ const BillDetails = (): React.ReactElement => {
         queryKey: ['bills_table_data', billsFilterPayload.offset, filtersResetAt],
       });
     },
-    onError: () => {
+    onError: (error) => {
+      const isBillDeleteAccessDenied = verifyGqlErrorResponse(error);
       show({
         type: 'informational',
         color: 'negative',
-        content: 'Something went wrong while deleting the bill!',
+        content: isBillDeleteAccessDenied
+          ? 'Access denied to delete bill'
+          : 'Something went wrong while deleting the bill!',
       });
     },
   });
@@ -100,11 +108,14 @@ const BillDetails = (): React.ReactElement => {
         },
       });
     },
-    onError: () => {
+    onError: (error) => {
+      const isBillResendAccessDenied = verifyGqlErrorResponse(error);
       show({
         type: 'informational',
         color: 'negative',
-        content: 'Something went wrong while resending the bill!',
+        content: isBillResendAccessDenied
+          ? 'Access denied to resend bill'
+          : 'Something went wrong while resending the bill!',
       });
     },
   });
@@ -120,7 +131,10 @@ const BillDetails = (): React.ReactElement => {
   if (isErrorInBillDetails || !billResponse)
     return (
       <Box marginTop="spacing.9">
-        <RetryOnError errorText="Error in fetching Bill info" retryFn={refetch} />
+        <RetryOnError
+          errorText="Error in fetching Bill info"
+          retryFn={!isBillViewAccessDenied ? refetch : undefined}
+        />
       </Box>
     );
 

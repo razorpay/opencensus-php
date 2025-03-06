@@ -30,6 +30,7 @@ import CellComponentMapper from '@apps/digital-bills/src/views/BillsView/contain
 import DeleteModal from '@apps/digital-bills/src/views/BillDetails/containers/BillDetailContainer/components/DeleteModal';
 
 import type { BillsTableComponentProps } from '@apps/digital-bills/src/views/BillsView/containers/TableContainer/components/BillsTableComponent/types';
+import { verifyGqlErrorResponse } from '@apps/digital-bills/src/utils/helpers/verifyGqlErrorResponse';
 
 const BillsTableComponent = ({
   editColumnModalProps: { isEditColumnOpen, dismissEditColumn, openEditColumn },
@@ -70,11 +71,14 @@ const BillsTableComponent = ({
       });
       dismissDeleteModal();
     },
-    onError: () => {
+    onError: (error) => {
+      const isBulkDeleteAccessDenied = verifyGqlErrorResponse(error);
       show({
         type: 'informational',
         color: 'negative',
-        content: 'Something went wrong while deleting the bill!',
+        content: isBulkDeleteAccessDenied
+          ? 'Access denied to bulk delete bills'
+          : 'Something went wrong while deleting the bills!',
       });
     },
   });

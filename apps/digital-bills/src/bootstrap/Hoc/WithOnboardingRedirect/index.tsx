@@ -26,6 +26,7 @@ const WithOnboardingRedirect = (WrappedComponent: React.FC) => {
       enabled: getMode(window.rzp_user?.id) === 'test',
       queryKey: ['digitalBillingOnboardingStatus'],
       refetchOnWindowFocus: false,
+      retry: false,
       queryFn: () =>
         graphqlRequest({
           document: GET_ONBOARDING_STATUS_QUERY,

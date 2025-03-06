@@ -8,6 +8,8 @@ import BrandsTableComponent from 'merchant/views/BillMeSettings/BrandsAndTermina
 import { BRAND_OPERATION_TYPE } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/constants';
 import { BRANDS_TABLE_DATA_QUERY } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/queries';
 import { useBrandsTablePayloadStore } from 'merchant/views/BillMeSettings/BrandsAndTerminals/containers/BrandsTableContainer/stores/brandsTablePayloadStore';
+import RetryOnError from 'merchant/views/BillMeSettings/common/components/RetryOnError';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 
 import type {
   BrandsResponse,
@@ -38,9 +40,12 @@ const BrandsTableContainer = (): React.ReactElement => {
   const {
     data: brandsResponse,
     isFetching,
+    isError,
+    error: brandsError,
     refetch,
   } = useQuery<BrandsResponse>({
     enabled: true,
+    retry: false,
     refetchOnWindowFocus: false,
     queryKey: [
       'brands_table_data',
@@ -76,6 +81,16 @@ const BrandsTableContainer = (): React.ReactElement => {
       setBrandsFilterOffset(0);
     }
   };
+
+  if (isError && !isFetching) {
+    const isBrandsAccessDenied = verifyGqlErrorResponse(brandsError);
+    return (
+      <RetryOnError
+        errorText="Error in fetching Brands list"
+        retryFn={!isBrandsAccessDenied ? refetch : undefined}
+      />
+    );
+  }
 
   return (
     <>

@@ -12,7 +12,6 @@ import {
   StepItem,
   StepItemIcon,
   useToast,
-  Spinner,
   Modal,
   ModalBody,
   ModalFooter,
@@ -43,6 +42,7 @@ import useStoreByIdQuery from './hooks/useStoreByIdQuery';
 import useStoreTerminalQuery from './hooks/useStoreTerminalQuery';
 import DeleteTerminalModal from './components/DeleteTerminalModal';
 import useStoreTerminalDeleteMutation from './hooks/useStoreTerminalDeleteMutation';
+import { verifyGqlErrorResponse } from 'merchant/views/BillMeSettings/common/utils';
 
 const StoreCreateOrEdit = () => {
   const navigate = useNavigate();
@@ -131,11 +131,14 @@ const StoreCreateOrEdit = () => {
           content: data?.storeTerminalsStatusBulkUpdate?.message,
         });
       },
-      onError: () => {
+      onError: (error) => {
+        const isTerminalsUpdateAccessDenied = verifyGqlErrorResponse(error);
         toast.show({
           type: 'informational',
           color: 'negative',
-          content: "Failed to update linked product's terminals status",
+          content: isTerminalsUpdateAccessDenied
+            ? "Access denied to update linked product's terminal status"
+            : "Failed to update linked product's terminals status",
         });
       },
     });
@@ -299,7 +302,17 @@ const StoreCreateOrEdit = () => {
           deleteStoreTerminal(
             { id: deleteTerminalModal.terminalId },
             {
-              onSuccess: (data) => {
+              onSettled: (data, error) => {
+                if (error) {
+                  const isTerminalDeleteAccessDenied = verifyGqlErrorResponse(error);
+                  return toast.show({
+                    type: 'informational',
+                    color: 'negative',
+                    content: isTerminalDeleteAccessDenied
+                      ? 'Access denied to delete Store terminal'
+                      : 'Failed to delete Store terminal',
+                  });
+                }
                 if (!data?.storeTerminalDelete?.success) {
                   toast.show({
                     type: 'informational',

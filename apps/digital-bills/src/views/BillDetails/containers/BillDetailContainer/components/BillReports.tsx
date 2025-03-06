@@ -23,8 +23,8 @@ const BillReports = (props: BillReportsProp): React.ReactElement => {
     () =>
       Object.entries<ChannelReport[]>(deliveryReport).reduce(
         (acc, [key, value]) => {
-          acc[key] = [...value].sort(
-            (reportA, reportB) => moment(reportB.createdAt).diff(moment(reportA.createdAt)), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+          acc[key] = [...value].sort((reportA, reportB) =>
+            moment(reportB.createdAt).diff(moment(reportA.createdAt)),
           );
           return acc;
         },

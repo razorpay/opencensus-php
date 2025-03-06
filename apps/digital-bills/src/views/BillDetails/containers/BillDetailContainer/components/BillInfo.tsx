@@ -124,11 +124,9 @@ const BillInfo = (props: BillInfoProps): React.ReactElement => {
       <Text weight="semibold">{billId}</Text>
       {/* Bill Date row */}
       <Text>Date:</Text>
-      {/* nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232 */}
-      <Text weight="semibold">{moment(timestamp).format('MM/DD/YYYY')}</Text>
+      <Text weight="semibold">{moment(timestamp).format('DD/MM/YYYY')}</Text>
       {/* Bill Time row */}
       <Text>Time:</Text>
-      {/* nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232 */}
       <Text weight="semibold">{moment(timestamp).format('h:mm A')}</Text>
     </Box>
   );
