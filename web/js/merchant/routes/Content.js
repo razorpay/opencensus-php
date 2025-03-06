@@ -2596,7 +2596,9 @@ class Content extends Component {
           <Route
             path="store-settings/*"
             element={
-              <RouteGuard additionalCondition={() => isBillMeMerchant({ abExperiments })}>
+              <RouteGuard
+                additionalCondition={() => mode === 'live' && isBillMeMerchant({ abExperiments })}
+              >
                 <StoreSettings />
               </RouteGuard>
             }

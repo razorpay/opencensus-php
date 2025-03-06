@@ -69,7 +69,7 @@ const BrandModalComponent = ({
           if (contentDisposition) {
             const matches = contentDisposition.match(/filename="?([^";]+)"?/);
             if (matches && matches[1]) {
-              filename = decodeURIComponent(matches[1])?.split('_')[1];
+              filename = decodeURIComponent(matches[1])?.split(/_(.*)/)[1];
             }
           }
           const blob = await response.blob();

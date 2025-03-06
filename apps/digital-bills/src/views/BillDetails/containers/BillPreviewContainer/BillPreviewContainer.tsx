@@ -12,15 +12,19 @@ const Iframe = styled.iframe`
 
 type BillPreviewContainerProps = {
   id: string | null;
+  signedToken: string | undefined;
 };
 
-const BillPreviewContainer = ({ id }: BillPreviewContainerProps): React.ReactElement => {
+const BillPreviewContainer = ({
+  id,
+  signedToken,
+}: BillPreviewContainerProps): React.ReactElement => {
   return (
     <Card height="100%" backgroundColor="surface.background.gray.moderate">
       <CardBody height="100%">
         <Box display="flex" gap="spacing.4" flexDirection="column" height="100%">
           <Text weight="semibold">Bill Preview</Text>
-          <Iframe id="billme-bill-preview" src={`${getBillUrl(id)}`} />
+          <Iframe id="billme-bill-preview" src={`${getBillUrl({ id, signedToken })}`} />
         </Box>
       </CardBody>
     </Card>

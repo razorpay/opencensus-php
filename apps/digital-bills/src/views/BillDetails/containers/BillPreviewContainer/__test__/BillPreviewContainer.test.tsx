@@ -5,7 +5,9 @@ import BillPreviewContainer from '@apps/digital-bills/src/views/BillDetails/cont
 
 describe('BillPreviewContainer', () => {
   test('should render the BillPreviewContainer component', () => {
-    const { getByText } = renderWithWrappers(<BillPreviewContainer id="1234" />);
+    const { getByText } = renderWithWrappers(
+      <BillPreviewContainer id="1234" signedToken="test-signed-token" />,
+    );
     expect(getByText('Bill Preview')).toBeInTheDocument();
   });
 });

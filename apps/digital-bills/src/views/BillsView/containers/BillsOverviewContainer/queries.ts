@@ -1,8 +1,8 @@
 import { gql } from 'graphql-tag';
 
 export const SALES_OVERVIEW_QUERY = gql`
-  query billSalesStats($fromDate: DateTime!, $toDate: DateTime!) {
-    billSalesStats(fromDate: $fromDate, toDate: $toDate) {
+  query billSalesStats($fromDate: DateTime!, $toDate: DateTime!, $dataLevel: QueryDataLevelEnum) {
+    billSalesStats(fromDate: $fromDate, toDate: $toDate, dataLevel: $dataLevel) {
       avgSales
       movie {
         avgSales
@@ -25,8 +25,12 @@ export const SALES_OVERVIEW_QUERY = gql`
 `;
 
 export const TRANSACTIONS_OVERVIEW_QUERY = gql`
-  query billTransactionStats($fromDate: DateTime!, $toDate: DateTime!) {
-    billTransactionStats(fromDate: $fromDate, toDate: $toDate) {
+  query billTransactionStats(
+    $fromDate: DateTime!
+    $toDate: DateTime!
+    $dataLevel: QueryDataLevelEnum
+  ) {
+    billTransactionStats(fromDate: $fromDate, toDate: $toDate, dataLevel: $dataLevel) {
       totalTransactions
       transactionSummary {
         DIGITAL

@@ -8,6 +8,7 @@ import WalletBalanceIcon from '@apps/digital-bills/src/assets/icons/wallet.svg';
 import TreesSavedIcon from '@apps/digital-bills/src/assets/icons/trees-saved.svg';
 import ActiveStoresIcon from '@apps/digital-bills/src/assets/icons/active-stores.svg';
 import {
+  DATA_LEVEL_FOR_AGGREGATIONS_INFO,
   DIGITAL,
   DIGITAL_PRINT,
   DurationRange,
@@ -54,6 +55,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
         variables: {
           fromDate: pastDate(DurationRange.Last90Days),
           toDate: currDate(),
+          dataLevel: DATA_LEVEL_FOR_AGGREGATIONS_INFO,
         },
       }),
   });
@@ -74,6 +76,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
         variables: {
           fromDate: pastDate(DurationRange.Last90Days),
           toDate: currDate(),
+          dataLevel: DATA_LEVEL_FOR_AGGREGATIONS_INFO,
         },
       }),
   });

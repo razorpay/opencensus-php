@@ -118,6 +118,7 @@ export type Bill = {
   visits?: BillVisit[];
   platform: Platform;
   legacyEntityId: string;
+  signedToken?: string;
 };
 
 export type PageLimitType = 10 | 25 | 50;

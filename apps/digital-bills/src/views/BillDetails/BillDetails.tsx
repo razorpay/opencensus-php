@@ -139,7 +139,17 @@ const BillDetails = (): React.ReactElement => {
     );
 
   const {
-    billById: { user, brand, visits, transactionType, dates, store, invoice, deliveryReport },
+    billById: {
+      user,
+      brand,
+      visits,
+      transactionType,
+      dates,
+      store,
+      invoice,
+      deliveryReport,
+      signedToken,
+    },
   } = billResponse;
 
   return (
@@ -194,7 +204,7 @@ const BillDetails = (): React.ReactElement => {
           />
         </Box>
         <Box flex={1} minWidth={{ base: '300px', s: '350px' }} minHeight="60vh">
-          <BillPreviewContainer id={legacyEntityId} />
+          <BillPreviewContainer id={legacyEntityId} signedToken={signedToken} />
         </Box>
       </Box>
     </Fragment>

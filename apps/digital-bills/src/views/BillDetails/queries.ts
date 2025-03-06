@@ -101,6 +101,7 @@ export const BILL_BY_ID_DATA_QUERY = gql`
         whatsapp
         email
       }
+      signedToken
     }
   }
 `;

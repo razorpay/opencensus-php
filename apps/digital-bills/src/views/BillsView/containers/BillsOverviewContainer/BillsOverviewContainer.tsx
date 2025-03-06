@@ -26,6 +26,7 @@ import {
   AVERAGE_SALES,
   TOTAL_TRANSACTIONS,
   DurationRange,
+  DATA_LEVEL_FOR_AGGREGATIONS_INFO,
 } from '@apps/digital-bills/src/utils/constants';
 import { calculatePercentage } from '@apps/digital-bills/src/utils/helpers/calculatePercentage';
 import { currDate, pastDate } from '@apps/digital-bills/src/utils/helpers/getDateRangeFromInterval';
@@ -75,7 +76,7 @@ const BillsOverviewContainer = (): React.ReactElement => {
     queryFn: () =>
       graphqlRequest({
         document: SALES_OVERVIEW_QUERY,
-        variables: overviewTimeRange,
+        variables: { ...overviewTimeRange, dataLevel: DATA_LEVEL_FOR_AGGREGATIONS_INFO },
       }),
   });
 
@@ -92,7 +93,7 @@ const BillsOverviewContainer = (): React.ReactElement => {
     queryFn: () =>
       graphqlRequest({
         document: TRANSACTIONS_OVERVIEW_QUERY,
-        variables: overviewTimeRange,
+        variables: { ...overviewTimeRange, dataLevel: DATA_LEVEL_FOR_AGGREGATIONS_INFO },
       }),
   });
 

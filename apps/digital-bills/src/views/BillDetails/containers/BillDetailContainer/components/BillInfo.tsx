@@ -75,7 +75,7 @@ const BillInfo = (props: BillInfoProps): React.ReactElement => {
       <Text>Bill Link:</Text>
       <Box display="flex" gap="spacing.3" alignItems="center">
         <Link
-          href={`${legacyEntityId ? getBillUrl(legacyEntityId) : '#'}`}
+          href={`${legacyEntityId ? getBillUrl({ id: legacyEntityId }) : '#'}`}
           target="_blank"
           icon={BillIcon}
           variant="anchor"
@@ -87,7 +87,7 @@ const BillInfo = (props: BillInfoProps): React.ReactElement => {
           icon={CopyIcon}
           onClick={(): void => {
             navigator.clipboard
-              .writeText(`${legacyEntityId ? getBillUrl(legacyEntityId) : '#'}`)
+              .writeText(`${legacyEntityId ? getBillUrl({ id: legacyEntityId }) : '#'}`)
               .then(() => {
                 show({
                   type: 'informational',

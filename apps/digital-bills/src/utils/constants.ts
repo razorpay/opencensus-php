@@ -149,5 +149,5 @@ export const zIndicesMap = {
 };
 
 export const ERROR_PAGE_DESCRIPTION = 'We are facing some issues. Please try again later.';
-
 export const MAX_DATE_FOR_DATE_PICKER = new Date();
+export const DATA_LEVEL_FOR_AGGREGATIONS_INFO = 'detailed';
