@@ -86,10 +86,12 @@ const BaseHTML = ({
                 fontSize: '120px',
                 fontWeight: 'bold',
                 color: '#333',
+                marginBottom: '30px',
               }}
             >
               {abstractedCode || statusCode}
             </h1>
+
             <p
               style={{
                 fontSize: '20px',
@@ -110,19 +112,18 @@ const BaseHTML = ({
             >
               {helpText}
             </small>
+            <br />
+            <br />
+            <small
+              style={{
+                fontSize: '14px',
+                color: '#666',
+                fontWeight: 'bold',
+              }}
+            >
+              Error Code: {traceId}
+            </small>
           </div>
-          <small
-            style={{
-              fontSize: '10px',
-              color: '#666',
-              position: 'fixed',
-              right: 10,
-              bottom: 10,
-              fontWeight: 'bold',
-            }}
-          >
-            {traceId}
-          </small>
         </div>
       </body>
     </html>

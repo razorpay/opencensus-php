@@ -45,7 +45,7 @@ export const BANK_DETAILS_URL = process.env['BANK_DETAILS_URL'];
 export const APP_NAME = process.env['APP_NAME'];
 export const LUMBERJACK_METRICS_API_URL = process.env['LUMBERJACK_METRICS_API_URL'];
 export const RZP_WEBSITE_URL = process.env['RZP_WEBSITE_URL'];
-export const INSTANCE_TYPE = process.env['INSTANCE_TYPE'];
+export const INSTANCE_TYPE = process.env['INSTANCE_TYPE'] as string;
 export const PUBLIC_API_URL = process.env['PUBLIC_API_URL'];
 
 /**

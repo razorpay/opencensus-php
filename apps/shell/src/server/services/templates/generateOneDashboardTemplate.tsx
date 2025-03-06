@@ -17,7 +17,6 @@ import {
   generateReactQueryScriptElement,
   generateRzpBEControllerScripts,
   generateRzpUserScriptElement,
-  generateServiceWorkerScript,
   generateAnalyticsScriptElement,
   generateEnvironmentKeysGetterScriptElement,
   generateSignUpRedirectScript,
@@ -144,7 +143,6 @@ export const generateOneDashboardTemplate = async (
 
   if (IS_PRODUCTION) {
     [
-      generateServiceWorkerScript(),
       generateHotjarScript(),
       generateBladeCoverageScriptElement(),
     ].forEach((script) => scriptTags.push(script));

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Prometheus, { Counter, Histogram } from 'prom-client';
 import { SHELL_SERVER_ROUTES } from '../../configs';
 import { PROM_HISTOGRAM_API_TIME_IN_SEC_BUCKETS } from './utils';
+import {INSTANCE_TYPE} from "@apps/shell/src/env";
 
 /**
  * Parameter interface for creating a Prometheus histogram.
@@ -107,7 +108,7 @@ export const measureRequestDurationsMiddleware = () => {
   const httpRequestDurationHistogram = createHistogram({
     metricName: 'http_request_duration_seconds',
     metricDesc: 'HTTP request duration in seconds',
-    possibleLabels: ['method', 'route_key', 'status'],
+    possibleLabels: ['method', 'route_key', 'status', 'deployment_type'],
     buckets: PROM_HISTOGRAM_API_TIME_IN_SEC_BUCKETS,
   });
 
@@ -115,7 +116,7 @@ export const measureRequestDurationsMiddleware = () => {
   const httpRequestCounter = createCounter({
     metricName: 'http_requests_total',
     metricDesc: 'Total number of HTTP requests received',
-    possibleLabels: ['method', 'route_key', 'status'],
+    possibleLabels: ['method', 'route_key', 'status', 'deployment_type'],
   });
 
   function getMatchingRouteKey(req: Request): string | null {
@@ -145,11 +146,11 @@ export const measureRequestDurationsMiddleware = () => {
       if (matchedKey) {
         // Record request duration
         httpRequestDurationHistogram
-          .labels(req.method, matchedKey, `${res.statusCode}`)
+          .labels(req.method, matchedKey, `${res.statusCode}`, INSTANCE_TYPE)
           .observe(durationSeconds);
 
         // Increment the request counter for RPS metrics
-        httpRequestCounter.labels(req.method, matchedKey, `${res.statusCode}`).inc();
+        httpRequestCounter.labels(req.method, matchedKey, `${res.statusCode}`, INSTANCE_TYPE).inc();
       }
     });
 

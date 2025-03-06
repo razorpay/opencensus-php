@@ -13,7 +13,6 @@ import {
   generateInterfaceInitializerScript,
   generateRzpBEControllerScripts,
   generateRzpUserScriptElement,
-  generateServiceWorkerScript,
   generateAnalyticsScriptElement,
   generateEnvironmentKeysGetterScriptElement,
   generateSignUpRedirectScript,
@@ -79,7 +78,6 @@ export const generateMerchantTemplate = async (
 
   if (IS_PRODUCTION) {
     [
-      generateServiceWorkerScript(),
       generateHotjarScript(),
       generateBladeCoverageScriptElement(),
     ].forEach((script) => scriptTags.push(script));

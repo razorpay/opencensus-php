@@ -11,6 +11,7 @@ import { URL } from 'url';
 import { SHELL_EXTERNAL_API_ROUTES } from '../../configs';
 import prom from '@apps/shell/src/server/services/promMetrics';
 import { PROM_HISTOGRAM_API_TIME_IN_SEC_BUCKETS } from '../promMetrics/utils';
+import { INSTANCE_TYPE } from '@apps/shell/src/env';
 
 /**
  * Reverses the SHELL_EXTERNAL_API_ROUTES for quick lookup.
@@ -24,7 +25,7 @@ const REVERSED_API_ROUTE_MAP: Record<string, keyof typeof SHELL_EXTERNAL_API_ROU
 /**
  * Metric labels for Prometheus.
  */
-const metricLabels = ['method', 'api_route', 'status'];
+const metricLabels = ['method', 'api_route', 'status', 'deployment_type'];
 
 /**
  * Prometheus metric: [TTFB] Time to receive response headers.
@@ -35,7 +36,6 @@ const shellFetchResponseTimeHistogram = prom.createHistogram({
   possibleLabels: metricLabels,
   buckets: PROM_HISTOGRAM_API_TIME_IN_SEC_BUCKETS,
 });
-
 
 /**
  * Prometheus metric: Total time to consume response body.
@@ -62,7 +62,7 @@ const shellFetchCallCounter = prom.createCounter({
 const shellFetchErrorCounter = prom.createCounter({
   metricName: 'api_error_total',
   metricDesc: 'Total external API call errors',
-  possibleLabels: [...metricLabels.slice(0, 2), 'error_type'],
+  possibleLabels: [...metricLabels.slice(0, 2), 'error_type', 'deployment_type'],
 });
 
 /**
@@ -71,7 +71,7 @@ const shellFetchErrorCounter = prom.createCounter({
 const shellFetchRequestSizeHistogram = prom.createHistogram({
   metricName: 'api_request_size_bytes',
   metricDesc: 'Request body sizes for external API calls',
-  possibleLabels: metricLabels.slice(0, 2),
+  possibleLabels: [...metricLabels.slice(0, 2), 'deployment_type'],
   buckets: [100, 1024, 10240, 102400, 1048576],
 });
 
@@ -101,7 +101,7 @@ async function trackBodyConsumption<T>(
     // Measure total time from context.startTime until body is fully consumed
     const totalDuration = process.hrtime(context.startTime);
     shellFetchTotalTimeHistogram
-      .labels(context.method, context.apiRouteKey, context.status)
+      .labels(context.method, context.apiRouteKey, context.status, INSTANCE_TYPE)
       .observe(totalDuration[0] + totalDuration[1] / 1e9);
 
     return result;
@@ -117,16 +117,15 @@ async function trackBodyConsumption<T>(
         ? 'network'
         : 'unknown';
 
-    shellFetchErrorCounter.labels(context.method, context.apiRouteKey, errorType).inc();
+    shellFetchErrorCounter.labels(context.method, context.apiRouteKey, errorType, INSTANCE_TYPE).inc();
 
     shellFetchTotalTimeHistogram
-      .labels(context.method, context.apiRouteKey, context.status)
+      .labels(context.method, context.apiRouteKey, context.status, INSTANCE_TYPE)
       .observe(totalDuration[0] + totalDuration[1] / 1e9);
 
     throw error;
   }
 }
-
 
 /**
  * `shellFetch`: Monitors external API calls using Prometheus metrics.
@@ -160,7 +159,7 @@ export async function shellFetch(url: string, options: RequestInit = {}): Promis
         : options.body instanceof Buffer
         ? options.body.length
         : 0;
-    shellFetchRequestSizeHistogram.labels(method, apiRouteKey).observe(size);
+    shellFetchRequestSizeHistogram.labels(method, apiRouteKey, INSTANCE_TYPE).observe(size);
   }
 
   try {
@@ -170,10 +169,10 @@ export async function shellFetch(url: string, options: RequestInit = {}): Promis
     // Track response header timing
     const headerDuration = process.hrtime(startTime);
     shellFetchResponseTimeHistogram
-      .labels(method, apiRouteKey, status)
+      .labels(method, apiRouteKey, status, INSTANCE_TYPE)
       .observe(headerDuration[0] + headerDuration[1] / 1e9);
 
-    shellFetchCallCounter.labels(method, apiRouteKey, status).inc();
+    shellFetchCallCounter.labels(method, apiRouteKey, status, INSTANCE_TYPE).inc();
 
     const metricContext: MetricContext = { method, apiRouteKey, status, startTime };
 
@@ -205,7 +204,7 @@ export async function shellFetch(url: string, options: RequestInit = {}): Promis
         ? 'network'
         : 'unknown';
 
-    shellFetchErrorCounter.labels(method, apiRouteKey, errorType).inc();
+    shellFetchErrorCounter.labels(method, apiRouteKey, errorType, INSTANCE_TYPE).inc();
 
     shellFetchResponseTimeHistogram
       .labels(method, apiRouteKey, 'error')

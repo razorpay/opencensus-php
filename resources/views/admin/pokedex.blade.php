@@ -19,13 +19,6 @@
       display: none;
     }
   </style>
-  <link rel="preload" href="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/shell/shell.remoteEntry.js" as="script">
-  <link rel="preload"
-    href="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/payments-dashboard/payments_dashboard.remoteEntry.js"
-    as="script">
-  <link rel="preload"
-    href="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/pokedex-dashboard/pokedex_dashboard.remoteEntry.js"
-    as="script">
   <script>
     window.rzpAnalytics = function () { }
     var merchantId = location.pathname.match(/[^\/]+(?=\/*$)/)[0];

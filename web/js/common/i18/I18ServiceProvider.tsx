@@ -10,11 +10,9 @@ export const I18ServiceContext = createContext({} as I18ContextStateType);
 export const I18ServiceProvider = ({ children }) => {
   const user = useStore((state) => state.session.user);
 
-  const {
-    abExperiments: { config_based_tags },
-  } = useSplitzService();
+  const { abExperiments } = useSplitzService();
 
-  const isConfigTagExperimentEnabled = config_based_tags?.variables?.result === 'on';
+  const isConfigTagExperimentEnabled = abExperiments?.config_based_tags?.variables?.result === 'on';
 
   const isConfigTagEnabled = useMemo(() => {
     return (path: ConfigTagType): boolean => {

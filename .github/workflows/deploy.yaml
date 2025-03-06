@@ -21,7 +21,7 @@ env:
 jobs:
   dashboard-deploy:
     name: Deploy - Dashboard (${{ github.event.deployment.payload.deploymentModule }}, ${{github.event.deployment.environment}})
-    runs-on: [self-hosted]
+    runs-on: [non-api-premium, cache-2]
     timeout-minutes: 30
     if: ${{ github.event.deployment.environment && github.event.deployment.payload.deploymentModule }}
     permissions:
