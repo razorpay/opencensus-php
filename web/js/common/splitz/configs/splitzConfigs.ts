@@ -422,6 +422,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'rtux_homepage_partner',
+        experimentId: {
+          beta: 'Q39j4rOAw0rZmQ',
+          production: 'Q39lJ02S0XF1ZX',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'rtux_top_insights_details_cta',
         experimentId: {
           beta: 'PesKDFb25KJNeW',

@@ -16,14 +16,13 @@ export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabl
   const isInternalTesting = isInternalTestingEnabled(abExperiments);
   if (isInternalTesting) return true;
 
-  const isActivated = user?.isAccepted;
-  // enabled for activated user and rzp org and non-partner accounts
+  const isEligibleForRTUX = user?.isAccepted && user.isCountryIndia && user.isOrgRZP;
+
+  if (!isEligibleForRTUX) return false;
+
+  if (user.isPartner()) return isExperimentEnabled(abExperiments.rtux_homepage_partner);
 
   return (
-    isActivated &&
-    user.isCountryIndia &&
-    user.isOrgRZP &&
-    !user.isPartner() &&
     !checkIfPosSalesAgent({ user, abExperiments })?.isPosSalesAgent &&
     isExperimentEnabled(abExperiments.rtux_homepage)
   );
