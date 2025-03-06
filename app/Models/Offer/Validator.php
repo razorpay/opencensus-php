@@ -642,13 +642,13 @@ class Validator extends Base\Validator
 
         $invalidIin = array_first($iins, function ($iin)
         {
-            return strlen($iin) < 6 or strlen($iin) > 10;
+            return strlen($iin) < 6 or strlen($iin) > 9;
         });
 
         if (empty($invalidIin) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid IIN : All IINs should have 6-10 digits');
+                'Invalid IIN : All IINs should have 6-9 digits');
         }
     }
 

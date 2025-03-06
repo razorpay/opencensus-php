@@ -1465,7 +1465,7 @@ class Core extends Base\Core
         if ($payment->isMethodCardOrEmi() === true)
         {
 
-            $iin = $this->fetchIinForPayment($offer, $payment, $input , $isDummyPayment);
+            $iin = $this->fetchIinForPayment($payment, $input , $isDummyPayment);
 
 
             if ($isDummyPayment === true)
@@ -1542,31 +1542,27 @@ class Core extends Base\Core
         }
     }
 
-    public function extractCardIinForSavedCard($payment, $input)
+    public function extractCardIinForSavedCard($payment)
     {
-        $iin = "";
 
-        if (empty($input['token']) === false)
+        // search for card data if already saved card
+        $token        = $payment->getGlobalOrLocalTokenEntity();
+        $networkCard = $token->card;
+
+        if ((empty($networkCard) === false) and
+            ($networkCard->isNetworkTokenisedCard() === true))
         {
-            // search for card data if already saved card
-            $token        = $payment->getGlobalOrLocalTokenEntity();
-            $network_card = $token->card;
-
-            if ((empty($network_card) === false) and
-                ($network_card->isNetworkTokenisedCard() === true))
-            {
-                $iin = Card\IIN\IIN::getTransactingIinforRange($network_card->getTokenIin()) ?? substr($network_card->getTokenIin(), 0, 6);
-            }
-            else
-            {
-                $iin = $network_card->getIin();
-            }
+            $iin = Card\IIN\IIN::getTransactingIinforRange($networkCard->getTokenIin()) ?? substr($networkCard->getTokenIin(), 0, 6);
+        }
+        else
+        {
+            $iin = $networkCard->getIin();
         }
 
         return $iin;
     }
 
-    public function fetchIinForPayment($offer, $payment, $input, $isDummyPayment)
+    public function fetchIinForPayment($payment, $input, $isDummyPayment)
     {
         $iin = $this->fetchCardIIN($payment);
 
@@ -1582,23 +1578,42 @@ class Core extends Base\Core
 
             if ($shouldFetchIinFromBinService === true)
             {
-                if ($offer->isCardSaved() === false)
+                if (empty($input['token']) === false)
                 {
-                    $iinEntity = $this->repo->iin->find($input['card']['number']);
-
-                    $iin = $iinEntity->getIin();
-
-                    $this->trace->info(TraceCode::OE_IIN_FETCHED_FROM_BIN_SERVICE_UNSAVED_CARD, [
-                        'iin' => $iin,
-                    ]);
-                }
-                else
-                {
-                    $iin = $this->extractCardIinForSavedCard($payment, $input);
+                    $iin = $this->extractCardIinForSavedCard($payment);
 
                     $this->trace->info(TraceCode::OE_IIN_FETCHED_FROM_BIN_SERVICE_SAVED_CARD, [
                         'iin' => $iin,
                     ]);
+                }
+                else if (empty($input['card']['number']) === false)
+                {
+
+                    $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
+
+                    $trimmed_number = str_replace('-', '', $trimmed_number);
+
+                    if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true)
+                    {
+                        $iin_token = substr($trimmed_number, 0, 9);
+
+                        $iin = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? substr($iin_token,0,6);
+
+                        $iin = substr($trimmed_number, 0, 9);
+
+                        $this->trace->info(TraceCode::SENDING_IIN_TO_OE_THIRD_PARTY_TOKENIZATION, [
+                            'iin' => $iin,
+                        ]);
+                    }
+                    else
+                    {
+                        $iin = substr($trimmed_number, 0, 9);
+
+                        $this->trace->info(TraceCode::SENDING_IIN_TO_OE_AS_CARD_NUMBER, [
+                            'iin' => $iin,
+                        ]);
+                    }
+
                 }
 
                 return $iin;

@@ -248,7 +248,7 @@ class Service extends Base\Service
             $cardNumber = $input["card"]["number"];
         }
 
-        $iin = substr($cardNumber, 0, 10);
+        $iin = substr($cardNumber, 0, 9);
 
         $iinEntity = $this->repo->iin->find($iin);
 
@@ -258,6 +258,16 @@ class Service extends Base\Service
         }
 
         $payment = Payment\Service::getNewInstance()->getDummyPayment($orderEntity, $iinEntity);
+
+        $this->trace->info(TraceCode::IIN_RECEIVED_FROM_BIN, [
+            'iin' => $payment->card->getIin(),
+        ]);
+
+        $payment->card->setAttribute(Card\Entity::IIN, $iin);
+
+        $this->trace->info(TraceCode::IIN_AFTER_OVERWRITTING_PAYMENT_CARD_ENTITY, [
+            'iin' => $payment->card->getIin(),
+        ]);
 
         $verbose = $this->isVerboseLogEnabled();
 
