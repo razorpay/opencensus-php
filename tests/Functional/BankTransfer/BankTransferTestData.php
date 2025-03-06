@@ -3316,6 +3316,29 @@ return [
         ]
     ],
 
+    'testBankTransferIblMerchantNotFound' => [
+        'request' => [
+            'url'     => '/ecollect/validate/ibl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IBL_SECRET',
+            ],
+            'content' => [
+                "data" => 'eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2R0NNIn0.V-rTAvkRDJhEjxQrA6Vhmja9OZsX8Vus8mQGMuZmm4IAYe-o8JH7fg.STmRcdmJj0YJL7CL.p86dZA0FWWpc02COwbZtTtmDm3LhgMH9xfzHkFACSCjQ35yh_uT6REAPl_rZJZ1e0B-i3O-kLPNuurhhryo_pseByMe_A5VheZLr_lnbxW3fXQDfulNxw-6ihUEDcafQExGh58hd4xAlxfraCc2614vuru27SuWk4y8r9eGeS3MdvdF3Wv-QKDKzX8nvAa34ov3ZM52gbhaFQpFOsFpmpS_cdfuTYe-nFEgxg7DkaKkDjGRIjZEoMcqnm6QK81TmwnX5kP0hc1ZAR6FXycA7bYCN9_hPAWMfROvcwkB6rJsYbobJbHzbNoSQLDzjMNZbKsE2BfOqwaiD5OuEK9t6qKQim8cRa0ZgVLMVa2quCNNU9Jl8QjBGIIBuB4UWCEvtV7EoMexFB95RuK7MzO7ctB2_fPQ.ddN_xTiBYtEUU-8BEhRs7g'
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'Stts_flg'   => 'F',
+                'Err_cd'     => '007',
+                'message'    => 'BAD_REQUEST_MERCHANT_NOT_FOUND',
+                'Identifier' => 'XYZ',
+            ],
+            'status_code'  =>  400,
+        ]
+    ],
+
     'testEcollectAxisCollectxBatchCreate' => [
         'request' => [
             'url' => '/ecollect/validate/file/axis',

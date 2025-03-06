@@ -539,7 +539,7 @@ class BankTransferController extends Controller
         {
             $this->trace->traceException($e);
 
-            if($e->getMessage() === ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE) {
+            if($e->getMessage() === ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND) {
 
                 return ApiResponse::json([
                     'Stts_flg'   => 'F',

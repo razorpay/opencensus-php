@@ -4019,9 +4019,9 @@ class Gateway extends Base\Gateway
 
         parent::action($input, Action::PRE_PROCESS);
 
-        $url = $this->getUrlForMozartRequest($input, 'payments');
+        $url = $this->getUrlForMozartRequest($input, 'payments', $this->app['rzp.mode']);
 
-        $request = $this->getAuthenticatedMozartRequestArray($url, $input);
+        $request = $this->getAuthenticatedMozartRequestArray($url, $input, $this->app['rzp.mode']);
 
         $this->trace->info(
             TraceCode::MOZART_SERVICE_REQUEST_BT_IBL,

@@ -470,6 +470,7 @@ class ErrorCode
     const LEDGER_MERCHANT_BALANCE_GET_ERROR                                         = 'LEDGER_MERCHANT_BALANCE_GET_ERROR';
     const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                      = 'BAD_REQUEST_INPUT_VALIDATION_FAILURE';
     const BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK                              = 'BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK';
+    const BAD_REQUEST_DUPLICATE_UTR                                                 = 'BAD_REQUEST_DUPILCATE_UTR';
     const COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST                                    = 'COLLECTX_UNKNOWN_BANK_TRANSFER_REQUEST';
     const COLLECTX_UNKNOWN_UPI_TRANSFER_REQUEST                                     = 'COLLECTX_UNKNOWN_UPI_TRANSFER_REQUEST';
     const COLLECTX_DUPLICATE_UPI_TRANSFER_REQUEST                                   = 'COLLECTX_DUPLICATE_UPI_TRANSFER_REQUEST';

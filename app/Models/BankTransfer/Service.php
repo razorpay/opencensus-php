@@ -245,19 +245,7 @@ class Service extends Base\Service
         // Indusind Will handle Refund themselves
         if ($provider === Provider::INDUSIND)
         {
-            $valid  = $this->checkIfVirtualAccountIsPresent($input);
-
-            $this->trace->error(TraceCode::VIRTUAL_ACCOUNT_UNAVAILABLE, [
-                'input' => $input
-            ]);
-
-            if ($valid === false) {
-                throw new Exception\BadRequestValidationFailureException(
-                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE,
-                    $input
-                );
-            }
-
+            $this->processIblValidationRequest($input);
         }
 
 
@@ -382,6 +370,51 @@ class Service extends Base\Service
 
         return true;
     }
+
+    protected function processIblValidationRequest(array $input): void
+    {
+        $accountNumber = $input["payee_account"];
+        $ifsc = $input["payee_ifsc"];
+
+        $z5Code = substr($accountNumber, 0, 6); // Extract Z+5 code
+
+        // Validate if the merchant exists in Terminal entity using Z+5 code
+        $merchant = $this->repo->terminal->findMerchantIdByGatewayMerchantID($z5Code);
+
+        if ($merchant === null) {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND,
+                $input
+            );
+        }
+
+        if (!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true) {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+        }
+
+        (new Validator)->validateInput('validateDuplicateReq', array(Entity::AMOUNT => $input[Entity::AMOUNT],
+            Entity::REQ_UTR => $input[Entity::REQ_UTR],
+            Entity::PAYEE_ACCOUNT => $input[Entity::PAYEE_ACCOUNT]));
+
+
+        $duplicateBankTransfer = $this->repo->bank_transfer->findByUtrAndPayeeAccountAndAmount($input[Entity::REQ_UTR],
+            $input[Entity::PAYEE_ACCOUNT],
+            $input[Entity::AMOUNT] * 100);
+
+
+        if ($duplicateBankTransfer !== null) {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK, $input);
+
+            }
+
+        $duplicateUtr = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR], true);
+
+        if ($duplicateUtr !== null) {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_DUPLICATE_UTR, $input);
+        }
+
+    }
+
 
     protected function checkForCollectXValidateRequestForUPI(array $input): bool
     {
@@ -1325,9 +1358,6 @@ class Service extends Base\Service
             ($routeName === 'bank_transfer_process_axis') or
             ($routeName === 'bank_transfer_process_axis_test') or
             ($routeName === 'bank_transfer_process_axis_internal') or
-            ($routeName === 'bank_transfer_process_ibl') or
-            ($routeName === 'bank_transfer_process_ibl_test') or
-            ($routeName === 'bank_transfer_process_ibl_internal') or
             ($routeName === 'bank_transfer_validate_idfc') or
             ($routeName === 'bank_transfer_process_idfc') or
             ($routeName === 'bank_transfer_validate_idfc_test') or
@@ -1359,9 +1389,6 @@ class Service extends Base\Service
                 if (($routeName === 'bank_transfer_process_axis') or
                     ($routeName === 'bank_transfer_process_axis_test') or
                     ($routeName === 'bank_transfer_process_axis_internal') or
-                    ($routeName === 'bank_transfer_process_ibl') or
-                    ($routeName === 'bank_transfer_process_ibl_test') or
-                    ($routeName === 'bank_transfer_process_ibl_internal') or
                     ($routeName === 'bank_transfer_validate_idfc') or
                     ($routeName === 'bank_transfer_process_idfc') or
                     ($routeName === 'bank_transfer_validate_idfc_test') or
