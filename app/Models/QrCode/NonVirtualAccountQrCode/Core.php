@@ -382,7 +382,8 @@ class Core extends QrCode\Core
                 $isBqrEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::BHARAT_QR);
             }
 
-            if ($isBqrEnabled === false)
+            if (($isBqrEnabled === false) and
+                ($input[Entity::REQUEST_SOURCE] !== RequestSource::EZETAP))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
             }

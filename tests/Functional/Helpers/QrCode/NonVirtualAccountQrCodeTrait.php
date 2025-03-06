@@ -6,9 +6,11 @@ use DB;
 use Mail;
 use Queue;
 use Mockery;
+use Lib\CRC16;
 use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Models\QrCode\Type;
+use RZP\Models\BharatQr\Tags;
 use RZP\Services\RazorXClient;
 use RZP\Services\SplitzService;
 use RZP\Models\Payment\Gateway;
@@ -1531,4 +1533,48 @@ trait NonVirtualAccountQrCodeTrait
             ],
         ];
     }
+
+    public function assertBqrString($qrCode, $response, $isMultipleUse = false)
+    {
+        $qrString = $this->buildBqrString($qrCode, $isMultipleUse);
+
+        // Append CRC Checksum
+        $qrString .= Tags::CRC . '04';
+        $crc = (new CRC16)->calculateCrc($qrString);
+        $qrString .= $crc;
+
+        $this->assertEquals($qrString, $response);
+    }
+
+    private function buildBqrString($qrCode, $isMultipleUse)
+    {
+        $qrString = "0002010102";
+
+        // Amount check
+        $qrString .= empty($qrCode->getAmount()) ? '11' : '12';
+
+        $qrString .= "0827ABCD0000000000000000000000026350010A0000005240117razorpay@hdfcbank";
+
+        // Multiple vs Single Use
+        $qrId = $qrCode->getId();
+        $qrString .= $isMultipleUse ? "27350010A000000524STQ{$qrId}qrv2" : "27320010A000000524{$qrId}qrv2";
+
+        $qrString .= "520453995303356";
+
+        // Amount inclusion
+        $qrString .= empty($qrCode->getAmount()) ? "5802IN59" : "54041.005802IN59";
+
+        // Merchant Name
+        $qrString .= $this->formatMerchantName($qrCode->merchant->name);
+
+        // Final QR Data
+        return $qrString . "6009BANGALORE610656003062220518{$qrId}qrv2";
+    }
+
+    private function formatMerchantName($merchantName)
+    {
+        $length = strlen($merchantName);
+        return ($length < 10 ? "0{$length}" : $length) . $merchantName;
+    }
+
 }

@@ -851,7 +851,7 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertTrue($response['success']);
     }
 
-    public function testCreateQrCodeForSingleStackMerchant()
+    public function testCreateBqrCodeForSingleStackMerchant()
     {
         $this->setMockSplitzTreatment();
 
@@ -860,10 +860,11 @@ class UpiMindgateQRCodeTest extends TestCase
         $qrCode = $this->createQrForSingleStack([
             'content' => [
                 'usage' => 'multiple_use',
-                'type'  => 'upi_qr',
-                'vpa'   => 'razorpay@hdfcbank'
+                'type'  => 'bharat_qr',
+                'vpa'   => 'razorpay@hdfcbank',
+                'request_source' => 'ezetap'
             ],
-            'url'     => '/payments/singlestack/qr_codes'
+            'url'     => '/payments/singlestack/qr_codes',
         ]);
 
         $this->assertEquals('LiveAccountMer', $qrCode['merchant_id']);
@@ -874,7 +875,9 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertNotNull($qrCodeEntity->getQrString());
         $this->assertEquals('LiveAccountMer', $qrCodeEntity->getMerchantId());
         $this->assertStringContainsString('razorpay@hdfcbank', $qrCodeEntity->getQrString());
+        $this->assertStringContainsString($qrCodeEntity->getId(), 'STQ'.$qrCodeEntity->getQrString().'qrv2');
         $this->assertEquals(false, $qrCodeEntity->hasFixedAmount());
-        $this->assertEquals('upi_qr', $qrCodeEntity->getProvider());
+        $this->assertEquals('bharat_qr', $qrCodeEntity->getProvider());
+        $this->assertBqrString($qrCodeEntity, $qrCodeEntity->getQrString(),true);
     }
 }

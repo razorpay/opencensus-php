@@ -250,8 +250,10 @@ class Service extends QrCode\Service
 
             $input[Entity::MERCHANT_ID] = $terminal->getMerchantId();
             $this->setMerchantContextForQrCreate($input);
+            unset($input[Entity::MERCHANT_ID]);
 
             $qrCreateReq = $this->getInputForPartnerSqrCreate($input);
+            $qrCreateReq = array_merge($qrCreateReq, $input);
 
             (new Validator)->validateQrOnDedicatedTerminal($qrCreateReq);
 
