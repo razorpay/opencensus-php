@@ -11,8 +11,11 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Order as Order;
 use RZP\Models\Payment as Payment;
+use RZP\Models\NetbankingConfig\Service;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
+use RZP\Models\NetbankingConfig\Constants;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Card\IIN\Repository as IINRepo;
@@ -285,11 +288,33 @@ class Validator extends Base\Validator
 
             if (isset($config['capture_options']['automatic_expiry_period']) === true)
             {
-                if ((($config['capture_options']['automatic_expiry_period'] >= 12) and
-                        ($config['capture_options']['automatic_expiry_period'] <= 7200)) === false)
+                $merchant = $input['config']["merchant"];
+
+                if($merchant != null){
+                    $merchantData = [Constants::MERCHANT_ID => $merchant->getId()];
+
+                    $netBankingConfig = (new Service)->fetchNetbankingConfigs($merchantData);
+                }
+
+                $autoExpiryPeriod = $config['capture_options']['automatic_expiry_period'];
+
+                $minValue = ($merchant == null or $merchant->isFeatureEnabled(Feature::ALLOW_EXTENDED_EXPIRY) === false) ? 12 : 1;
+
+                $maxValue = ($merchant == null or $merchant->isFeatureEnabled(Feature::ALLOW_EXTENDED_EXPIRY) === false) ? 7200 : (($netBankingConfig["auto_refund_offset"] > 0) ? $netBankingConfig["auto_refund_offset"] : 86400);
+
+                if ((($autoExpiryPeriod >= $minValue) and
+                        ($autoExpiryPeriod <= $maxValue)) === false)
                 {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Config Automatic duration should in between 12 minutes and 5 days');
+                    if($merchant == null or $merchant->isFeatureEnabled(Feature::ALLOW_EXTENDED_EXPIRY) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Config Automatic duration should in between 12 minutes and 5 days');
+                    }
+                    else
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'automatic expiry is invalid');
+                    }
                 }
             }
 

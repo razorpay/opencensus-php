@@ -67,6 +67,7 @@ class Constants
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
+    const ALLOW_EXTENDED_EXPIRY           = 'allow_extended_expiry';
     const DISABLE_FREE_CREDIT_REG         = 'disable_free_credit_reg';
     const DISABLE_FREE_CREDIT_UNREG       = 'disable_free_credit_unreg';
     const EXPOSE_EXTRA_ATTRIBUTES         = 'expose_extra_attributes';
@@ -3368,7 +3369,7 @@ class Constants
         self::ALLOW_PARTIAL_CAPTURE => true,
         self::ENABLE_IMPORT_FLOW           => true,
         self::HIDE_RX_PAYROLL_PAYOUTS   => true,
-        
+
     ];
 
     // Entity type constants
