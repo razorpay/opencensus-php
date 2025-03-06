@@ -8,6 +8,7 @@ export interface BaseConfigType {
   consumer?: string;
   report_type?: string;
   template?: {
+    fields_map?: Record<string, string[]>;
     referred_accounts?: string;
     file_meta?: {
       header?: boolean;
@@ -44,5 +45,15 @@ export interface BaseConfigType {
     selects?: string[];
     order_by?: string[];
     joinConds?: string[];
+  };
+}
+
+export interface ReportingConfigs {
+  status_code: number;
+  success: boolean;
+  data: {
+    count: number;
+    entity: string;
+    items: BaseConfigType[];
   };
 }

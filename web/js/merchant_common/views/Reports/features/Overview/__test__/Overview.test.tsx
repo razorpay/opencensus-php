@@ -3,7 +3,10 @@ import * as overviewApi from 'merchant_common/views/Reports/api/overview';
 import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { render, screen, userEvent, waitFor } from 'test-utils';
 import { OverView } from 'merchant_common/views/Reports/features/Overview';
-import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
+import {
+  mockConfigs,
+  mockCustomConfigs,
+} from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
 import { withRouter } from 'common/deprecated/withRouter';
 import { getOverViewStateWith } from './fixtures';
 import { sortCardsByReportType } from 'merchant_common/views/Reports/utils/commonUtils';
@@ -12,8 +15,13 @@ import {
   REPORT_OVERVIEW_LOADING_SKELETONS_COUNT,
   REPORT_TEST_DASHBOARD,
 } from 'merchant_common/views/Reports/constants';
+import { useCreateConfigModal } from 'merchant_common/views/Reports/components/ReportModal/components/CreateConfigModel/store/createConfigModalStore';
 
 const sortedConfigs = sortCardsByReportType(mockConfigs);
+const sortedCustomConfigs = sortCardsByReportType(mockCustomConfigs);
+
+const standardConfigs = mockConfigs;
+const userConfigs = mockCustomConfigs;
 
 const getRecentConfigsSpy = jest.spyOn(overviewApi, 'getRecentConfigs');
 getRecentConfigsSpy.mockResolvedValue({
@@ -33,6 +41,13 @@ const initialState = {
     },
   },
 };
+
+jest.mock(
+  'merchant_common/views/Reports/components/ReportModal/components/CreateConfigModel/store/createConfigModalStore',
+  () => ({
+    useCreateConfigModal: jest.fn(),
+  }),
+);
 
 describe('Overview Section', () => {
   const App = withRouter((props) => {
@@ -62,17 +77,6 @@ describe('Overview Section', () => {
     expect(filterDropdown).toBeInTheDocument();
   });
 
-  test('should call fetchRecentConfigs only when user select recents from dropdown, multiple calls possible', async () => {
-    render(<OverviewSection />, {
-      initialState,
-    });
-    await handleFilterDropdownSelectionMock('Recents');
-    await handleFilterDropdownSelectionMock('Report Type');
-    await handleFilterDropdownSelectionMock('All Reports');
-    await handleFilterDropdownSelectionMock('Recents');
-    await waitFor(() => expect(getRecentConfigsSpy).toHaveBeenCalledTimes(2));
-  });
-
   test('should render all the configs if allConfigs data is loaded in redux state', async () => {
     const reportsCoreState = getOverViewStateWith({
       allConfigs: {
@@ -81,19 +85,19 @@ describe('Overview Section', () => {
         data: mockConfigs,
       },
     });
+
     render(<OverviewSection />, {
       initialState: {
         ...initialState,
         ...reportsCoreState,
       },
     });
-    await handleFilterDropdownSelectionMock('All Reports');
-    const refConfigsContainer = screen.getByLabelText('All Configs Container');
-    expect(refConfigsContainer).toBeInTheDocument();
-    expect(refConfigsContainer.childNodes.length).toEqual(mockConfigs.length);
+    const button = screen.getByRole('button', { name: /Create Custom Report/i });
+    expect(button).toBeEnabled();
   });
 
-  test('should render configs wrt its report type if user selects report type in filter dropdown', async () => {
+  test('should render configs wrt its report type if user selects Standard Reports in filter dropdown', async () => {
+    (useCreateConfigModal as unknown as jest.Mock).mockReturnValue(standardConfigs);
     const reportsCoreState = getOverViewStateWith({
       allConfigs: {
         loading: false,
@@ -107,11 +111,10 @@ describe('Overview Section', () => {
         ...reportsCoreState,
       },
     });
-    await handleFilterDropdownSelectionMock('Report Type');
-
+    await handleFilterDropdownSelectionMock('Standard Reports');
     sortedConfigs.forEach(([type, configs]) => {
       const refTypeConfigsContainer = screen.getByLabelText(
-        `Configs Ordered By ${type.toUpperCase()}`,
+        `Standard Configs Ordered By ${type.toUpperCase()}`,
       );
       expect(refTypeConfigsContainer).toBeInTheDocument();
       expect(refTypeConfigsContainer.childNodes.length).toEqual(
@@ -120,21 +123,30 @@ describe('Overview Section', () => {
     });
   });
 
-  test('should render recent configs when api is resolved', async () => {
-    render(<OverviewSection />, {
-      initialState,
+  test('should render configs wrt its report type if user selects Custom Reports in filter dropdown', async () => {
+    (useCreateConfigModal as unknown as jest.Mock).mockReturnValue(userConfigs);
+    const reportsCoreState = getOverViewStateWith({
+      allConfigs: {
+        loading: false,
+        error: false,
+        data: mockCustomConfigs,
+      },
     });
-    await handleFilterDropdownSelectionMock('Recents');
-    await expect(getRecentConfigsSpy).toHaveBeenCalled();
-    expect(screen.getByLabelText('Recently Used Configs Container')).toBeInTheDocument();
-  });
-
-  test('should render loading skeletons when getRecentsConfig api returns rejection', async () => {
     render(<OverviewSection />, {
-      initialState,
+      initialState: {
+        ...initialState,
+        ...reportsCoreState,
+      },
     });
-    getRecentConfigsSpy.mockReset().mockImplementation(() => new Promise((_, rej) => rej()));
-    await handleFilterDropdownSelectionMock('Recents');
-    checkLoadingState();
+    await handleFilterDropdownSelectionMock('Custom Reports');
+    sortedCustomConfigs.forEach(([type, configs]) => {
+      const refTypeConfigsContainer = screen.getByLabelText(
+        `Custom Configs Ordered By ${type.toUpperCase()}`,
+      );
+      expect(refTypeConfigsContainer).toBeInTheDocument();
+      expect(refTypeConfigsContainer.childNodes.length).toEqual(
+        (configs as BaseConfigType[]).length,
+      );
+    });
   });
 });

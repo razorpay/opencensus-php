@@ -10,6 +10,7 @@ export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
       Reports_Schedules,
       LA_Reports_Revamp,
       Data_Sync_Advertisement_Banner_Experiment,
+      create_custom_report,
     },
   } = useSplitzService();
 
@@ -22,5 +23,6 @@ export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
     isOverviewRecentsFilterEnabled: Reports_Revamp_Recents?.variables?.result === 'on',
     isDataSyncAdvertisementBannerEnabled:
       Data_Sync_Advertisement_Banner_Experiment?.variables?.result === 'on',
+    isReportsSelfServeEnabled: create_custom_report?.variables?.result === 'on',
   };
 };

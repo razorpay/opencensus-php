@@ -958,6 +958,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'create_custom_report',
+          experimentId: {
+            beta: 'PgvryOORBW4DoI',
+            production: 'PoqVFVzN69dLCj',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'Reports_Schedules',
           experimentId: {
             beta: 'LpcUyqou4GEsNz',

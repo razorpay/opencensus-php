@@ -1,6 +1,7 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { ReportingConfigs } from '../types/config';
 
-export const getConfigs = (headers?) => {
+export const getConfigs = (headers?): Promise<ReportingConfigs> => {
   return merchantFetch({
     url: 'reporting/configs',
     headers,

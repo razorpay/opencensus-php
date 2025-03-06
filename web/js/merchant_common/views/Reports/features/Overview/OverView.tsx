@@ -8,8 +8,12 @@ import {
   ActionList,
   Divider,
   Text,
+  Link,
+  PlusIcon,
+  Box,
 } from 'merchant_common/views/Reports/components';
 
+import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { OverviewCard as Card } from 'merchant_common/views/Reports/features/Overview/components/Card/OverviewCard';
 import { CardSkeleton } from 'merchant_common/views/Reports/features/Overview/components/Card/Skeleton';
@@ -27,6 +31,14 @@ import {
 } from './styled';
 import { REPORT_OVERVIEW_LOADING_SKELETONS_COUNT } from 'merchant_common/views/Reports/constants';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
+import { CreateConfigModel } from 'merchant_common/views/Reports/components/ReportModal/components/CreateConfigModel/CreateConfigModel';
+import {
+  maxCustomReportLimitReached,
+  customReportsLimit,
+  adminGeneratedReportIds,
+  deviceRestrictionMessages,
+} from 'merchant_common/views/Reports/components/ReportModal/components/CreateConfigModel/utils/constants';
+import { useCreateConfigModal } from '../../components/ReportModal/components/CreateConfigModel/store/createConfigModalStore';
 
 export const OverviewSection = ({
   allReportConfigs,
@@ -40,19 +52,38 @@ export const OverviewSection = ({
   showNotification,
   dashboardType,
 }: OverViewPropsType): JSX.Element => {
-  const { isOverviewRecentsFilterEnabled } = useReportsSplitzExperiments();
-
+  const { isOverviewRecentsFilterEnabled, isReportsSelfServeEnabled } =
+    useReportsSplitzExperiments();
   const overviewFilterDropdownOptions = useMemo(
-    () => overviewConfigFilterOptions(isOverviewRecentsFilterEnabled),
+    () => overviewConfigFilterOptions(isOverviewRecentsFilterEnabled, isReportsSelfServeEnabled),
     [isOverviewRecentsFilterEnabled],
   );
   const [filter, setFilter] = useState(overviewFilterDropdownOptions[0].value);
   const { theme } = useTheme();
-
   const cardsSortedByReportType: any = useMemo(
     () => sortCardsByReportType(allReportConfigs),
     [allReportConfigs],
   );
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const standardConfigs = useCreateConfigModal((state) => state.standardConfigs);
+  const userConfigs = useCreateConfigModal((state) => state.userConfigs);
+  const { isDesktop } = useBladeBreakpoints();
+
+  const handleMaxReportLimit = () => {
+    if (!isDesktop) {
+      showNotification({
+        type: 'error',
+        message: deviceRestrictionMessages.Custom,
+      });
+    } else if (userConfigs.length >= customReportsLimit) {
+      showNotification({
+        type: 'error',
+        message: maxCustomReportLimitReached,
+      });
+    } else {
+      setIsOpen((open) => !open);
+    }
+  };
 
   const handleFilterDropdownSelection = async ({ label, value }) => {
     trackOverviewSection({
@@ -63,15 +94,15 @@ export const OverviewSection = ({
       },
       dashboardType,
     });
-
     setFilter(value);
+
     if (value === 'recents') {
       try {
         handleOverviewLoading({
           key: 'recentConfigs',
           state: true,
         });
-        const a = await getRecentConfigs(headers);
+        const a: any = await getRecentConfigs(headers);
         if (a?.data?.items) {
           fetchRecentlyUsedConfigsSuccess({ configs: parseConfigs(a.data.items) });
         } else {
@@ -160,6 +191,121 @@ export const OverviewSection = ({
             ) : null}
           </>
         );
+      case filter === 'custom_reports' && isAllConfigLoaded:
+        return (
+          <>
+            {sortCardsByReportType(userConfigs)?.map(([type, configs], index) => {
+              return (
+                <ReportTypeWrapper key={type} index={index} theme={theme} data-lol="true">
+                  <ReportTypeHeader theme={theme} index={index}>
+                    <Text weight="semibold" size="large" color="surface.text.gray.normal">
+                      {type.toUpperCase()}
+                    </Text>
+                  </ReportTypeHeader>
+                  <CardsWrapper
+                    aria-label={`Custom Configs Ordered By ${type.toUpperCase()}`}
+                    theme={theme}
+                  >
+                    {configs.map((config) => {
+                      return (
+                        <Card
+                          data={config}
+                          key={config.id}
+                          linkBasePath={basePath}
+                          isCustomConfig={true}
+                        />
+                      );
+                    })}
+                  </CardsWrapper>
+                </ReportTypeWrapper>
+              );
+            })}
+          </>
+        );
+      case filter === 'standard_reports' && isAllConfigLoaded:
+        return (
+          <>
+            {sortCardsByReportType(standardConfigs)?.map(([type, configs], index) => {
+              return (
+                <ReportTypeWrapper key={type} index={index} theme={theme}>
+                  <ReportTypeHeader theme={theme} index={index}>
+                    <Text weight="semibold" size="large" color="surface.text.gray.normal">
+                      {type.toUpperCase()}
+                    </Text>
+                  </ReportTypeHeader>
+                  <CardsWrapper
+                    aria-label={`Standard Configs Ordered By ${type.toUpperCase()}`}
+                    theme={theme}
+                  >
+                    {configs.map((config) => {
+                      return <Card data={config} key={config.id} linkBasePath={basePath} />;
+                    })}
+                  </CardsWrapper>
+                </ReportTypeWrapper>
+              );
+            })}
+            {parsedAdditionalConfigs.length ? (
+              <ReportTypeWrapper theme={theme}>
+                <ReportTypeHeader theme={theme}>
+                  <Text weight="semibold" size="large" color="surface.text.gray.normal">
+                    OTHER REPORTS
+                  </Text>
+                </ReportTypeHeader>
+                <CardsWrapper aria-label="Other Reports" theme={theme}>
+                  {parsedAdditionalConfigs.map((config) => {
+                    return <Card data={config} key={config.id} linkBasePath={basePath} />;
+                  })}
+                </CardsWrapper>
+              </ReportTypeWrapper>
+            ) : null}
+          </>
+        );
+      case filter === 'show_all_reports' && isAllConfigLoaded:
+        return (
+          <>
+            {cardsSortedByReportType?.map(([type, configs], index) => {
+              return (
+                <ReportTypeWrapper key={type} index={index} theme={theme}>
+                  <ReportTypeHeader theme={theme} index={index}>
+                    <Text weight="semibold" size="large" color="surface.text.gray.normal">
+                      {type.toUpperCase()}
+                    </Text>
+                  </ReportTypeHeader>
+                  <CardsWrapper
+                    aria-label={`Standard Configs Ordered By ${type.toUpperCase()}`}
+                    theme={theme}
+                  >
+                    {configs.map((config) => {
+                      const isCustomConfig = !adminGeneratedReportIds.includes(config.consumer);
+                      return (
+                        <Card
+                          data={config}
+                          key={config.id}
+                          linkBasePath={basePath}
+                          isCustomConfig={isCustomConfig}
+                        />
+                      );
+                    })}
+                  </CardsWrapper>
+                </ReportTypeWrapper>
+              );
+            })}
+            {parsedAdditionalConfigs.length ? (
+              <ReportTypeWrapper theme={theme}>
+                <ReportTypeHeader theme={theme}>
+                  <Text weight="semibold" size="large" color="surface.text.gray.normal">
+                    OTHER REPORTS
+                  </Text>
+                </ReportTypeHeader>
+                <CardsWrapper aria-label="Other Reports" theme={theme}>
+                  {parsedAdditionalConfigs.map((config) => {
+                    return <Card data={config} key={config.id} linkBasePath={basePath} />;
+                  })}
+                </CardsWrapper>
+              </ReportTypeWrapper>
+            ) : null}
+          </>
+        );
       default:
         return (
           <CardsWrapper aria-label="Configs Loading Skeleton Container" theme={theme}>
@@ -216,9 +362,32 @@ export const OverviewSection = ({
             </DropdownOverlay>
           </Dropdown>
         </DropdownWrapper>
+
+        {isReportsSelfServeEnabled ? (
+          <Box
+            display="flex"
+            justifyContent="flex-end"
+            width="100%"
+            marginTop="30px"
+            marginRight="30px"
+          >
+            <Link
+              isDisabled={!isAllConfigLoaded}
+              icon={PlusIcon}
+              size="large"
+              variant="button"
+              onClick={() => {
+                handleMaxReportLimit();
+              }}
+            >
+              Create Custom Report
+            </Link>
+          </Box>
+        ) : null}
       </AccessabilityToolbar>
       <Divider />
       <CardContainer theme={theme}>{renderOverviewCards()}</CardContainer>
+      <CreateConfigModel isOpen={isOpen} setIsOpen={setIsOpen} />
     </>
   );
 };

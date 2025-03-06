@@ -118,3 +118,24 @@ export const mockConfigs = [
     updated_at: 1538574478,
   },
 ];
+
+export const mockCustomConfigs = [
+  {
+    consumer: 'consumerId',
+    id: 'config_Lolf5Tf9e7hy4i',
+    name: 'Bulk Payment Page Payments Report',
+    type: 'batch_pages',
+  },
+  {
+    id: 'config_xLTz2xSyPrbhyJ',
+    consumer: 'consumerId',
+    type: 'settlements',
+    name: 'Settlements',
+  },
+  {
+    id: 'config_ufkWO5A0Q98NRG',
+    consumer: 'consumerId',
+    type: 'payments',
+    name: 'Payments',
+  },
+];

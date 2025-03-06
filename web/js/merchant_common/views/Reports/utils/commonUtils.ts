@@ -48,7 +48,6 @@ export const sortCardsByReportType = (configs): Array<[string, BaseConfigType[]]
 // for emails selection dropdown
 export const getAvailableEmails = (user: User, additional?: string[]): string[] => {
   if (!user) return [];
-
   const { email, contact_email, transaction_report_email } = user;
 
   const availableEmails = uniqViaLodash([
@@ -93,27 +92,36 @@ export const getMerchantAccounts = (
 };
 
 export const parseReqDataFromConfigs = (configs): BaseConfigType[] => {
-  return configs.map(({ name, description, id, type, template, ...otherProps }) => {
-    const config = {
-      name,
-      description,
-      id,
-      type,
-      template: {
-        referred_accounts: template?.referred_accounts,
-        external_platform: template?.external_platform,
-      },
-      type_title: otherProps?.type_title,
-      emails: otherProps?.emails ?? [],
-    };
+  return configs.map(
+    ({ consumer, created_by, name, description, id, type, template, ...otherProps }) => {
+      const config = {
+        name,
+        description,
+        id,
+        type,
 
-    if (name === BATCH_PAYMENT_PAGE_PAYMENT_REPORT || name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT) {
-      config.type_title = TYPE_TITLE_BATCH_PAGES;
-      config.type = CONFIG_TYPE_BATCH_PAGES;
-    }
+        template: {
+          referred_accounts: template?.referred_accounts,
+          external_platform: template?.external_platform,
+        },
 
-    return config;
-  });
+        type_title: otherProps?.type_title,
+        emails: otherProps?.emails ?? [],
+        consumer,
+        created_by,
+      };
+
+      if (
+        name === BATCH_PAYMENT_PAGE_PAYMENT_REPORT ||
+        name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT
+      ) {
+        config.type_title = TYPE_TITLE_BATCH_PAGES;
+        config.type = CONFIG_TYPE_BATCH_PAGES;
+      }
+
+      return config;
+    },
+  );
 };
 
 export const getAvailableFormats = (user?: User): Format[] => {
