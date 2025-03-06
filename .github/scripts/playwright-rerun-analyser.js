@@ -39,7 +39,7 @@ const processLastRunFile = async (
   localPath,
   project,
   fullRerunProjects,
-  failedRerunProjects
+  failedRerunProjects,
 ) => {
   try {
     const lastRunData = await fetchJson(s3Url);
@@ -69,7 +69,7 @@ const updateEnvironmentVariables = (fullRerunProjects, failedRerunProjects) => {
 
   // Persist environment variables for GitHub Actions
   if (ENV.GITHUB_ENV) {
-    const envUpdates = 
+    const envUpdates =
       `FILTERED_PROJECTS_FOR_FULL_RERUN=${fullRerun}\n` +
       `FILTERED_PROJECTS_FOR_FAILED_RERUN=${failedRerun}\n`;
     appendFileSync(ENV.GITHUB_ENV, envUpdates);
@@ -81,7 +81,12 @@ const updateEnvironmentVariables = (fullRerunProjects, failedRerunProjects) => {
     // First CLI argument: Comma-separated project names
     const targetProjects = process.argv.slice(2)[0].trim().split(',');
     // Second CLI argument: Comma-separated project root paths
-    const targetProjectRoots = process.argv.slice(2)[1].trim().split(',');
+    const targetProjectRoots = process.argv
+      .slice(2)[1]
+      .trim()
+      .split(',')
+      // Override behavior for newauth-dashboard (Its a mandatory run, handled separately)
+      .filter((dir) => dir != 'web/js/newAuth');
     const runAttempt = parseInt(ENV.GITHUB_RUN_ATTEMPT || '1', 10);
 
     // If it's the first run, skip reading .last-run.json and do a full rerun of all projects
@@ -110,16 +115,10 @@ const updateEnvironmentVariables = (fullRerunProjects, failedRerunProjects) => {
       }/${project}/playwright-analysis/${runAttempt - 1}/run-files/.last-run.json`;
       const localPath = path.join(
         targetProjectRoots[index],
-        '.playwright-analysis/run-files/.last-run.json'
+        '.playwright-analysis/run-files/.last-run.json',
       );
 
-      return processLastRunFile(
-        s3Url,
-        localPath,
-        project,
-        fullRerunProjects,
-        failedRerunProjects
-      );
+      return processLastRunFile(s3Url, localPath, project, fullRerunProjects, failedRerunProjects);
     });
 
     await Promise.all(promises);

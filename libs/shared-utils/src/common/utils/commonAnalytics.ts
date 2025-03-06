@@ -12,7 +12,7 @@ import { DASHBOARD_ROUTES } from '../constants';
 
 type DASHBOARD_ROUTES_KEY_TYPE = keyof typeof DASHBOARD_ROUTES;
 
-// Define the type for the Lumberjack event tracking properties
+// Define the type for the Lumberjack event tracking properties.
 interface LumberjackEventProps {
   eventName: string;
   properties?: Record<string, unknown>;
