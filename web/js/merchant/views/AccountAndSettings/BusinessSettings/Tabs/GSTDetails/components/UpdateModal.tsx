@@ -90,11 +90,12 @@ const UpdateModal = ({
         GSTNumberSelected: selectedGSTIn,
       },
     });
-    const formData = new FormData();
-    formData.append('gstin', selectedGSTIn as string);
-    formData.append('version', 'v2');
+    const data = {
+      gstin: selectedGSTIn as string,
+      version: 'v2',
+    };
     try {
-      const response = await submitGSTDetails({ formData });
+      const response = await submitGSTDetails(data);
       if (response?.data?.sync_flow) {
         fetchGST();
         setAlertStatus({ type: AlertType.SUCCESS, gstIN: response.data.gstin });
