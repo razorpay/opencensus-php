@@ -6617,15 +6617,6 @@ class Core extends Base\Core
 
             $response['isTransacted'] = $mtuTransacted;
 
-            $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::MTU_COUPON_CODE);
-
-            if ($isMtuCouponExperimentEnabled === true)
-            {
-                $response['showMtuPopup'] = $this->isEligibleForMtuPopup($merchant, $mtuTransacted);
-            }
-
             if ((new Merchant\Website\Service())->isMerchantTncApplicable($merchant) === true)
             {
                 $response['merchant_tnc'] = (new Merchant\Website\Core)->getWebsiteDetails($merchantDetails->merchantWebsite);

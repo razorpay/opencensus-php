@@ -136,17 +136,6 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 
         $finalMidList = [];
 
-        foreach ($merchantIdList as $merchantId)
-        {
-            $isMtuCouponExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
-                                                                                           RazorxTreatment::MTU_COUPON_CODE);
-
-            if ($isMtuCouponExperimentEnabled === true)
-            {
-                array_push($finalMidList, $merchantId);
-            }
-        }
-
         $data['merchantIds'] = $finalMidList;
 
         return CollectorDto::create($data);

@@ -753,8 +753,6 @@ final class RazorxTreatment
     //Experiment to disable card flow for sihub post tokenization deadline
     const SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION = 'sihub_disable_card_flow_post_tokenization';
 
-    const TRIGGER_NEW_ONBOARDING_ESCALATION_FLOW = 'trigger_new_onboarding_escalation_flow';
-
     //Experiment used to control whether routes specified in $bankingDisabledRoutes should block banking requests or not
     const BLOCK_BANKING_REQUESTS = 'block_banking_requests';
 
