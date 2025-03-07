@@ -12899,6 +12899,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_RESULT = 'ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_RESULT';
     const MII_FETCH_FAILED                                  = "MII_FETCH_FAILED";
 
+    // Device Service
+    const DEVICE_SERVICE_REQUEST                        = 'DEVICE_SERVICE_REQUEST';
+    const DEVICE_SERVICE_ERROR                          = "DEVICE_SERVICE_ERROR";
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

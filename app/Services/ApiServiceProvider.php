@@ -64,6 +64,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Services\UpiPayment;
+use RZP\Services\Device;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
@@ -943,6 +944,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerCredcaseService();
 
         $this->registerCMSService();
+
+        $this->app->singleton('pos.deviceservice', function($app)
+        {
+
+            $ezetapDeviceMock = $app['config']->get('applications.ezetap-api.mock');
+
+            if ($ezetapDeviceMock === true)
+            {
+                return new Device\Mock\ApiMock($app);
+            }
+
+            return new Device\Api($app);
+        });
     }
 
     protected function registerCacheManager()

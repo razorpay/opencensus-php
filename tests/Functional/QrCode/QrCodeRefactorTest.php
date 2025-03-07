@@ -10,6 +10,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Services\TerminalsService;
+use RZP\Services\Device as PosDevice;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -3316,6 +3317,123 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals('testvpa1@rxairtel', $intentParam['pa']);
         $this->assertEquals('bankTr', $intentParam['tr']);
         $this->assertEquals('bankTr', $qrCodeEntity['reference']);
+    }
+
+    public function testCreateQrPaymentViaRefactorFlowForStaticQrWithStoreId()
+    {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'multiple_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'request_source' => 'ezetap',
+                'device_id'     => '12345Test',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->mockMozartResponse(
+            count: $count,
+            res  : [
+                'success' => true,
+                'error'   => null,
+                'data'    => [
+                    '_raw' => 'RandomRawData',
+                    'upi'      => [
+                        'vpa'                => 'payervpa@upi',
+                        'merchant_reference' => $qrCode->getId() . 'qrv2',
+                        'npci_reference_id'  => 'RndmNpciRefId',
+                        'gateway_timestamp'  => 1722114963,
+                    ],
+                    'payment'  => [
+                        'currency' => 'INR',
+                        'amount_authorized'  => 100,
+                        'payer_account_type' => 'bank_account',
+                    ],
+                    'terminal' => [
+                        'gateway'             => 'upi_yesbank',
+                        'gateway_merchant_id' => 'RndmYesbnkGtwyMrchtId',
+                        'vpa'                 => 'randomvpa@yesbank',
+                    ],
+                ],
+            ]
+        );
+
+        $this->ba->directAuth();
+
+        $response = $this->makeRequestAndGetContent(
+            [
+                'method' => 'POST',
+                'url' => '/callback/upi_yesbank',
+                'content' => [
+                    'data' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                ]
+            ]
+        );
+
+        $this->assertEquals('SUCCESS', $response['status']);
+        $this->assertNull($response['error_message']);
+
+        $qrpRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $qrCode = $this->getDbEntity('qr_code', ['id' => $qrCode->getId()], 'live');
+        $upi = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertEquals(1, $qrpRequest->isCreated());
+        $this->assertEquals(1, $qrpRequest->expected);
+        $this->assertEquals($qrCode->getId(), $qrpRequest->getQrCodeId());
+        $this->assertEquals('RndmNpciRefId', $qrpRequest->getTransactionReference());
+        $this->assertEmpty($qrpRequest->getFailureReason());
+
+        $this->assertTrue($qrPayment->expected);
+        $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
+        $this->assertEquals('RndmNpciRefId', $qrPayment->getProviderReferenceId());
+        $this->assertEquals('upi_yesbank', $qrPayment->getGateway());
+        $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
+        $this->assertEquals(100, $qrPayment->getAmount());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
+        $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
+        $this->assertNotNull($qrPayment->getTransactionTime());
+
+        $this->assertEquals('RndmNpciRefId', $payment->getReference16());
+        $this->assertEquals('qr_code', $payment->getReceiverType());
+        $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('payervpa@upi', $payment->getVpa());
+        $this->assertEquals('upi_yesbank', $payment->getGateway());
+        $this->assertEquals('101YesDedTrmnl', $payment->getTerminalId());
+        $this->assertEquals('in_person', $payment->getReference13());
+        $this->assertEquals('bank_account', $payment->getReference2());
+        $this->assertEquals(100, $payment->getAmount());
+
+        $this->assertEquals('upi_yesbank', $upi->getGateway());
+        $this->assertEquals($payment->getId(), $upi->getPaymentId());
+        $this->assertEquals('authorize', $upi->getAction());
+        $this->assertEquals('pay', $upi->getType());
+        $this->assertEquals(100, $upi->getAmount());
+        $this->assertEquals('payervpa@upi', $upi->getVpa());
+        $this->assertEquals($qrCode->getId() . 'qrv2', $upi->getMerchantReference());
+        $this->assertEquals('RndmNpciRefId', $upi->getNpciReferenceId());
+        $this->assertEquals('mozart', $upi->getAttribute('acquirer'));
+
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertEquals(100, $qrCode->getAttribute('payments_amount_received'));
+        $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
+        $this->assertEquals($payment->getStoreId(), $qrCode->getAttribute('store_id'));
     }
 
 }

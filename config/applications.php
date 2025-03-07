@@ -572,6 +572,8 @@ return [
     'ezetap-api' => [
         'key'       => 'ezetap-api',
         'secret'    =>  env('EZETAP_API_SECRET'),
+        'url' =>  env('EZETAP_API_URL'),
+        'mock'      => env('EZETAP_DEVICE_SERVICE_MOCK', false),
     ],
     'pcp_service' => [
         'secret'    =>  env('PCP_SERVICE_SECRET'),

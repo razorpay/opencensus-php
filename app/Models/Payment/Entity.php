@@ -427,6 +427,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DeviceId          = 'device_id';
     const InternalStatus     = 'internal_status';
 
+    const STORE_ID          = 'store_id';
+
     const REFUND_UNEXPECTED_PAYMENT = 'refund_unexpected_payment';
 
     protected $fillable = [
@@ -463,6 +465,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD_ID,
         self::REWARD,
         self::DeviceId,
+        self::STORE_ID, // Added here to support store management feature for pos.
         self::SOURCE_CHANNEL,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
     ];
@@ -472,6 +475,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ID,
         self::PUBLIC_ID,
         self::DeviceId,
+        self::STORE_ID,
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
@@ -631,7 +635,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPI_METADATA,
         self::REWARD,
         self::REWARD_ID,
-        self::AMOUNT_CAPTURED
+        self::AMOUNT_CAPTURED,
     ];
 
     protected $webhook = [
@@ -2418,6 +2422,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getDeviceId()
     {
         return $this->getAttribute(self::DeviceId);
+    }
+
+    public function getStoreId()
+    {
+        return $this->getAttribute(self::STORE_ID);
     }
 
     public function getAuthenticatedAt()

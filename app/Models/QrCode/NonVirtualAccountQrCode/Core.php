@@ -58,11 +58,19 @@ class Core extends QrCode\Core
     public function buildQrCode(array $input, $order = null)
     {
         $qrCode = (new Entity())->build($input);
-
         if ($qrCode->getProvider() === Provider::BHARAT_QR and
             $qrCode->getRequestSource() !== RequestSource::EZETAP)
         {
                 throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
+        }
+
+        if ($qrCode->getDeviceId() !== null)
+        {
+            $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($qrCode->getDeviceId());
+
+            if (empty($deviceEntity['storeId']) === false) {
+                $qrCode->setStoreId($deviceEntity['storeId']);
+            }
         }
 
         $this->checkFeatureEnabled($input);
@@ -475,9 +483,16 @@ class Core extends QrCode\Core
     public function setDeviceIdForQr($qrCode, $device_id)
     {
         $qrCode->updateDeviceId($device_id);
+        if (empty($device_id) === false)
+        {
+            $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($device_id);
+
+            if (empty($deviceEntity['storeId']) === false){
+                $qrCode->setStoreId($deviceEntity['storeId']);
+            }
+        }
 
         $this->repo->saveOrFail($qrCode);
-
         return $qrCode;
     }
 
