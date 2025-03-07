@@ -57,9 +57,9 @@ export const DataSyncAdvertisementBanner = () => {
       >
         <Box display="flex" alignItems="center">
           <Box marginRight="spacing.6">
-            {!isMobile && (
+            {matchedBreakpoint == 'l' || matchedBreakpoint == 'xl' ? (
               <img style={{ maxWidth: '200px' }} src={datasyncicon} alt="Razorpay DataSync" />
-            )}
+            ) : null}
           </Box>
 
           <Box>
@@ -74,7 +74,7 @@ export const DataSyncAdvertisementBanner = () => {
               </Heading>
             </Heading>
 
-            {matchedBreakpoint === 'xl' && (
+            {matchedBreakpoint === 'xl' ? (
               <Text
                 variant="body"
                 size="medium"
@@ -85,7 +85,7 @@ export const DataSyncAdvertisementBanner = () => {
                 Streamline your data management with real-time reporting straight to your data
                 warehouse.
               </Text>
-            )}
+            ) : null}
           </Box>
         </Box>
 
