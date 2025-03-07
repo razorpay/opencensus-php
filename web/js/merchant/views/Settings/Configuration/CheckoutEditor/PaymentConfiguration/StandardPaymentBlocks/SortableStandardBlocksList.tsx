@@ -164,7 +164,7 @@ export function SortableStandardBlocksList({
 
   function updateSortableList(blocks: SortableListItemData<StandardPaymentBlock>[]) {
     const updatedStandardBlocksSequence = blocks.map((block) => block.item.slug);
-    const oldStandardBlocksSequence = allBlocks.map((block) => block.slug);
+    const oldStandardBlocksSequence = blocks.map((block) => block.item.slug);
     const visibleBlocksSequence = blocks
       .filter((block) => block.item.isVisible)
       .map((block) => block.item.slug);

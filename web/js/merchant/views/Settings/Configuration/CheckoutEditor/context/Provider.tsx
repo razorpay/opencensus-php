@@ -388,7 +388,7 @@ const CheckoutEditorProvider = ({
     if (merchantCheckoutPaymentConfigs) {
       if (merchantCheckoutPaymentConfigs.loading) {
         setIsLoading(true);
-      } else {
+      } else if (merchantCheckoutPaymentConfigs?.data) {
         const razorpayConfig = !selectedPaymentConfig
           ? {
               ...DEFAULT_PAYMENT_CONFIG,

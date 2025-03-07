@@ -231,7 +231,7 @@ export const hasValuesChanged = (
   if (
     hasPaymentConfigChanged(
       values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG],
-      merchantCheckoutSelectedPaymentConfig ?? {},
+      merchantCheckoutSelectedPaymentConfig,
     )
   ) {
     return {
@@ -243,8 +243,11 @@ export const hasValuesChanged = (
 
 function hasPaymentConfigChanged(
   newConfig: MerchantCheckoutPaymentConfig,
-  oldConfig: MerchantCheckoutPaymentConfig,
+  oldConfig: MerchantCheckoutPaymentConfig | undefined,
 ) {
+  if (!oldConfig) {
+    return false
+  }
   if (isEqual(newConfig, oldConfig)) {
     return false;
   }
@@ -575,7 +578,7 @@ export const createPayloadToSaveConfig = (
   }
 
   if (
-    !isEqual(
+    merchantCheckoutSelectedPaymentConfig && !isEqual(
       values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG],
       merchantCheckoutSelectedPaymentConfig,
     )
