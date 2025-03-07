@@ -5133,13 +5133,6 @@ GROUP BY
 
             $this->trace->histogram(Metric::TIDB_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME, $tidbQueryDuration);
 
-            $this->trace->info(TraceCode::TIDB_QUERY_DURATION,
-                [
-                    'time_taken_tidb' => $tidbQueryDuration,
-                    'result_query' => $result,
-                ]
-            );
-
             if (empty($result) === true)
             {
                 return false;

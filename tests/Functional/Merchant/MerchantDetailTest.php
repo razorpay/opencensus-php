@@ -10051,11 +10051,6 @@ Team Razorpay',
             ->will($this->returnCallback(
                 function ($mid, $feature, $mode) use ($value)
                 {
-                    if ($feature === RazorxTreatment::GSTIN_SYNC)
-                    {
-                        return $value;
-                    }
-
                     if ($feature === RazorxTreatment::BVS_IN_SYNC)
                     {
                         return $value;
