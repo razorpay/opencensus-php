@@ -32,6 +32,21 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->ba->adminAuth();
     }
 
+    private function mockSplitzExperimentUploadMiq($variant = 'false')
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variant,
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+    }
+
     public function testValidateFileEntryMerchantUploadMIQSuccess()
     {
         $entries = $this->getDefaultFileEntries();
@@ -136,6 +151,8 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
+
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $response = $this->startTest();
@@ -170,6 +187,8 @@ class MerchantUploadMiqBatchTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $this->mockSplitzExperimentUploadMiq();
+
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['response']['content'] =
             [
@@ -199,6 +218,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = '';
 
@@ -223,6 +243,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_NB_FEE_BEARER] = 'Customer';
 
@@ -245,6 +266,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_NB_FEE_TYPE] = 'NA';
 
@@ -270,6 +292,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $response = $this->startTest();
@@ -547,6 +570,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'U67190TN2014PTC096979';
 
@@ -585,6 +609,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'llp';
@@ -611,6 +636,7 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
@@ -684,6 +710,7 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
@@ -738,6 +765,7 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
@@ -983,6 +1011,8 @@ class MerchantUploadMiqBatchTest extends TestCase
         ]);
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
+
+        $this->mockSplitzExperimentUploadMiq();
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
