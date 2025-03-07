@@ -7,6 +7,20 @@ import {
   getCredentials,
 } from '@libs/shared-qsuite/playwright';
 
+playwrightTest.beforeEach(async ({ context, page }) => {
+  await context.addCookies([
+    {
+      name: 'skip_usl_redirection',
+      value: 'true',
+      domain: '.razorpay.in',
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+    },
+  ]);
+  await page.goto(routes.SIGN_IN_PATH);
+});
 playwrightTest.describe.parallel('Dashboard login flow @flow=MY-auth @country=MY', () => {
   // testing for multiple credentials using email login
   const { curlecCred } = getCredentials();
@@ -15,8 +29,6 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=MY-auth @country=MY
     playwrightTest.skip(
       `should login with curlec email in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
-        await page.goto(routes.SIGN_IN_PATH);
-
         // applying login form with email and password
         await loginByEmail({
           page,

@@ -30,75 +30,78 @@ const constants = {
   UNIFIED_SIGNUP_REDIRECTION_URL: `${UNIFIED_ONBOARDING_BASE_URL}/auth/?redirecturl=https%3A%2F%2Fsme-dashboard.dev.razorpay.in&auth_intent=signup`,
 };
 
-playwrightTest.describe.parallel(
-  'Dashboard Redirection flow @flow=auth',
-  () => {
-    playwrightTest(
-      'should redirect the user to easy dashboard on clicking signup',
-      async ({ page }) => {
-        await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
-        const signUpButton = page.getByRole('button', { name: 'Sign Up' });
-        await signUpButton.waitFor({ state: 'visible' });
-        await signUpButton.click();
+playwrightTest.beforeEach(async ({ context, page }) => {
+  await context.addCookies([
+    {
+      name: 'skip_usl_redirection',
+      value: 'true',
+      domain: '.razorpay.in',
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+    },
+  ]);
+  await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
+});
+playwrightTest.describe.parallel('Dashboard Redirection flow @flow=auth', () => {
+  playwrightTest(
+    'should redirect the user to easy dashboard on clicking signup',
+    async ({ page }) => {
+      const signUpButton = page.getByRole('button', { name: 'Sign Up' });
+      await signUpButton.waitFor({ state: 'visible' });
+      await signUpButton.click();
 
-        const promises = [
-          expect(page).toHaveURL(constants.UNIFIED_SIGNUP_REDIRECTION_URL, { timeout: 10000 }),
-          expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL, { timeout: 10000 }),
-        ];
+      const promises = [
+        expect(page).toHaveURL(constants.UNIFIED_SIGNUP_REDIRECTION_URL, { timeout: 10000 }),
+        expect(page).toHaveURL(constants.SIGNUP_REDIRECTION_URL, { timeout: 10000 }),
+      ];
 
-        const results = await Promise.allSettled(promises);
+      const results = await Promise.allSettled(promises);
 
-        const fulfilledResults = results.filter((result) => result.status === 'fulfilled');
+      const fulfilledResults = results.filter((result) => result.status === 'fulfilled');
 
-        if (fulfilledResults.length > 0) {
-          console.log('one of the two redirection passed');
-        } else {
-          console.error(results);
-          throw new Error('Redirection failed');
-        }
-      },
-    );
+      if (fulfilledResults.length > 0) {
+        console.log('one of the two redirection passed');
+      } else {
+        console.error(results);
+        throw new Error('Redirection failed');
+      }
+    },
+  );
 
-    playwrightTest.skip(
-      'should redirect the user to easy dashboard if user has initiated signup on easy',
-      async ({ page }) => {
-        await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
-        const redirectionRequest = page.waitForResponse('/app/dashboard');
-        await loginByEmail({ page, cred: constants.EASY_ONBOARDING });
-        const signInResponse = await redirectionRequest;
-        const setCookieHeaderValue = await signInResponse.headerValue('set-cookie');
-        // redirection to easy dashboard should have merchant id and user id
-        expect(setCookieHeaderValue).toContain(
-          `rzp_merchant_id=${constants.EASY_ONBOARDING.merchantId}`,
-        );
-        expect(setCookieHeaderValue).toContain(
-          `rzp_user_id=${constants.EASY_ONBOARDING.rzpUserId}`,
-        );
-        await page.waitForURL(EASY_ONBOARDING_WEBSITE, { waitUntil: 'load' });
-        await expect(page).toHaveURL(EASY_ONBOARDING_WEBSITE);
-      },
-    );
+  playwrightTest.skip(
+    'should redirect the user to easy dashboard if user has initiated signup on easy',
+    async ({ page }) => {
+      const redirectionRequest = page.waitForResponse('/app/dashboard');
+      await loginByEmail({ page, cred: constants.EASY_ONBOARDING });
+      const signInResponse = await redirectionRequest;
+      const setCookieHeaderValue = await signInResponse.headerValue('set-cookie');
+      // redirection to easy dashboard should have merchant id and user id
+      expect(setCookieHeaderValue).toContain(
+        `rzp_merchant_id=${constants.EASY_ONBOARDING.merchantId}`,
+      );
+      expect(setCookieHeaderValue).toContain(`rzp_user_id=${constants.EASY_ONBOARDING.rzpUserId}`);
+      await page.waitForURL(EASY_ONBOARDING_WEBSITE, { waitUntil: 'load' });
+      await expect(page).toHaveURL(EASY_ONBOARDING_WEBSITE);
+    },
+  );
 
-    playwrightTest.skip(
-      "should redirect the FTUX user to easy dashboard's FTUX experience on logging in",
-      async ({ page }) => {
-        await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
+  playwrightTest.skip(
+    "should redirect the FTUX user to easy dashboard's FTUX experience on logging in",
+    async ({ page }) => {
+      await loginByEmail({ page, cred: constants.EASY_ONBOARDING_FTUX });
+      await expect(page).toHaveURL(constants.FTUX_REDIRECTION_URL);
+      await page.waitForURL(constants.FTUX_REDIRECTION_URL, { waitUntil: 'load' });
+    },
+  );
 
-        await loginByEmail({ page, cred: constants.EASY_ONBOARDING_FTUX });
-        await expect(page).toHaveURL(constants.FTUX_REDIRECTION_URL);
-        await page.waitForURL(constants.FTUX_REDIRECTION_URL, { waitUntil: 'load' });
-      },
-    );
-
-    playwrightTest(
-      "should redirect the P2PM onboarding user to easy dashboard's P2PM experience on logging in",
-      async ({ page }) => {
-        await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
-
-        await loginByEmail({ page, cred: constants.EASY_ONBOARDING_P2PM });
-        await expect(page).toHaveURL(constants.P2PM_REDIRECTION_URL);
-        await page.waitForURL(constants.P2PM_REDIRECTION_URL, { waitUntil: 'load' });
-      },
-    );
-  },
-);
+  playwrightTest(
+    "should redirect the P2PM onboarding user to easy dashboard's P2PM experience on logging in",
+    async ({ page }) => {
+      await loginByEmail({ page, cred: constants.EASY_ONBOARDING_P2PM });
+      await expect(page).toHaveURL(constants.P2PM_REDIRECTION_URL);
+      await page.waitForURL(constants.P2PM_REDIRECTION_URL, { waitUntil: 'load' });
+    },
+  );
+});

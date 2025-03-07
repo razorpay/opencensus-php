@@ -26,6 +26,7 @@ class EncryptCookies extends BaseEncrypter
         'rzp_user_id',
         'rzp_ab_uuid',
         'rzp_usr_session',
+        'skip_usl_redirection',
         Constants::RZP_ACCESS_TOKEN, // received from Edge
         Constants::RZP_REFRESH_TOKEN,
         Constants::RZP_USER_MERCHANT_REGION,

@@ -13,6 +13,22 @@ import {
   expect,
 } from '@libs/shared-qsuite/playwright';
 
+playwrightTest.beforeEach(async ({ context, page }) => {
+  await context.addCookies([
+    {
+      name: 'skip_usl_redirection',
+      value: 'true',
+      domain: '.razorpay.in',
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+    },
+  ]);
+  await hideSearchFTUXBannerByLocalStorage({ page });
+  await page.goto(routes.SIGN_IN_PATH);
+  await expect(page).toHaveTitle(/Razorpay Dashboard/);
+});
 playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=others', () => {
   const { emailCred, activatedNotIe, mobileCred, posCredentials } = getCredentials();
   // testing for multiple credentials using email login
@@ -20,10 +36,6 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=other
     playwrightTest(
       `should login with email in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
-        await hideSearchFTUXBannerByLocalStorage({ page });
-        await page.goto(routes.SIGN_IN_PATH);
-        await expect(page).toHaveTitle(/Razorpay Dashboard/);
-
         // applying login form with email and password
         await loginByEmail({
           page,
@@ -61,10 +73,6 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=other
     playwrightTest(
       `should login with mobile in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
-        await hideSearchFTUXBannerByLocalStorage({ page });
-        await page.goto(routes.SIGN_IN_PATH);
-        await expect(page).toHaveTitle(/Razorpay Dashboard/);
-
         // applying login form with mobile and otp
         await loginByMobile({
           page,
@@ -94,10 +102,6 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=other
     playwrightTest(
       `should login with email in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
-        await hideSearchFTUXBannerByLocalStorage({ page });
-        await page.goto(routes.SIGN_IN_PATH);
-        await expect(page).toHaveTitle(/Razorpay Dashboard/);
-
         // applying login form with email and password
         await loginByEmail({
           page,
@@ -133,10 +137,6 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=other
     playwrightTest(
       `should login with email in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
-        await hideSearchFTUXBannerByLocalStorage({ page });
-        await page.goto(routes.SIGN_IN_PATH);
-        await expect(page).toHaveTitle(/Razorpay Dashboard/);
-
         // applying login form with email and password
         await loginByEmail({
           page,
