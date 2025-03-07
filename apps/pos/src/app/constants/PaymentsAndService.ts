@@ -14,9 +14,6 @@ export const DirectModelFormKeys: (keyof DirectModelForm)[] = [
   PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD,
   PaymentMethodsFieldKeyNames.BRAND_EMI_CC_RATE_FIELD,
   PaymentMethodsFieldKeyNames.BRAND_EMI_DC_RATE_FIELD,
-  PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD,
-  PaymentMethodsFieldKeyNames.EMI_PLUS_CC_RATE_FIELD,
-  PaymentMethodsFieldKeyNames.EMI_PLUS_DC_RATE_FIELD,
 ];
 
 export const AggregatorModelFormKeys: (keyof AggregatorModelForm)[] = [
@@ -32,7 +29,6 @@ export const CheckboxEnabledFormKeys = [
   PaymentMethodsFieldKeyNames.VAS_CC_EMI_RATE_ENABLED_FIELD,
   PaymentMethodsFieldKeyNames.VAS_DC_EMI_RATE_ENABLED_FIELD,
   PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD,
-  PaymentMethodsFieldKeyNames.EMI_PLUS_RATE_ENABLED_FIELD,
 ];
 
 export const CHARGES_REGEX = /^\d{1,2}(\.\d+)?$/;
