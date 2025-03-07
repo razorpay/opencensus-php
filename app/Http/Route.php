@@ -18815,7 +18815,15 @@ class Route
             'setl_fetch_multiple_proxy',
             'merchant_analytics',
             'feature_add',
-            'upi_terminal_onboarding_bulk'
+            'upi_terminal_onboarding_bulk',
+            'feature_delete_internal',
+            'merchant_put_payment_methods',
+            'merchant_fetch_bank_account_internal',
+            'merchant_bank_account_update',
+            'setl_schedule_get_ids',
+            'setl_merchant_config_update',
+            'setl_merchant_config_get_internal',
+            'setl_schedule_create'
         ],
 
         'route' => [
