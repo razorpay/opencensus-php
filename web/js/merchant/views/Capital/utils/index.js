@@ -291,16 +291,6 @@ export const canViewLOCEMIProduct = (user) => {
   );
 };
 
-export const canViewLoans = (user) => {
-  return (
-    user.isOrgRZP &&
-    isRegionIN(user) &&
-    user.isAllowedView('cash_advance') &&
-    !canViewCashAdvanceProduct(user) &&
-    !canViewLOCEMIProduct(user)
-  );
-};
-
 export function getCashOnCardRenderDateKey() {
   const user = store.getState().session.user.id;
   return `${CASH_ON_CARD_RENDER_DATE_KEY}--${user}`;

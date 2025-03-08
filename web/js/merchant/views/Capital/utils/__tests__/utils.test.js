@@ -5,7 +5,6 @@ import {
   canViewLOCEMIProduct,
   isLOCEMIProduct,
   isCashAdvanceProductActive,
-  canViewLoans,
 } from 'merchant/views/Capital/utils/index';
 
 const getUserInstance = ({
@@ -105,37 +104,5 @@ describe('capital/utils', () => {
     expect(canViewLOCEMIProduct(user)).toBe(false);
     user.features = [{ feature: 'loc' }];
     expect(canViewLOCEMIProduct(user)).toBe(false);
-  });
-
-  describe('canViewLoans', () => {
-    it('should hava access for rzp org, IN region, admin role and non active loc merchants', () => {
-      const { user } = getUserInstance();
-      expect(canViewLoans(user)).toBe(true);
-      // should not have access
-      user.features = [{ feature: 'loc' }, { feature: 'withdraw_loc' }];
-      expect(canViewLoans(user)).toBe(false);
-      user.features = [{ feature: 'loc_emi' }, { feature: 'withdraw_loc' }];
-      expect(canViewLoans(user)).toBe(false);
-    });
-    it('should have access for non active loc merchants', () => {
-      const { user } = getUserInstance({ features: [{ feature: 'loc' }] });
-      expect(canViewLoans(user)).toBe(true);
-      user.features = [{ feature: 'loc_emi' }];
-      expect(canViewLoans(user)).toBe(true);
-      user.features = [{ feature: 'withdraw_loc' }];
-      expect(canViewLoans(user)).toBe(true);
-    });
-    it('should not have access for finance role', () => {
-      const { user } = getUserInstance({ role: 'finance' });
-      expect(canViewLoans(user)).toBe(false);
-    });
-    it('should not have access for non rzp org', () => {
-      const { user } = getUserInstance({ custom_code: 'curlec' });
-      expect(canViewLoans(user)).toBe(false);
-    });
-    it('should not have access for non IN region', () => {
-      const { user } = getUserInstance({ country_code: 'SG' });
-      expect(canViewLoans(user)).toBe(false);
-    });
   });
 });

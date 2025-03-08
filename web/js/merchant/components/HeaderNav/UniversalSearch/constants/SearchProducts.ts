@@ -62,7 +62,6 @@ const {
   x_banking,
   x_corporate_cards,
   line_of_credit,
-  capital_loans,
   settlements,
   payment_links,
   affordability,
@@ -1252,15 +1251,6 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     icon: line_of_credit.icon,
     additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
       line_of_credit.additionalCondition(user),
-    apiCondition: false,
-  },
-  {
-    title: SEARCH_PRODUCTS_TITLES.capital_loans,
-    url: SEARCH_PRODUCTS_URL.capital_loans,
-    tags: [{ value: 'Business' }, { value: 'Loan' }, { value: 'Credit' }],
-    icon: capital_loans.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      capital_loans.additionalCondition(user),
     apiCondition: false,
   },
   {

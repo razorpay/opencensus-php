@@ -16,11 +16,7 @@ import {
 import ShowWhen from 'merchant/components/ShowWhen';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
-import {
-  canViewCashAdvanceProduct,
-  canViewLOCEMIProduct,
-  canViewLoans,
-} from 'merchant/views/Capital/utils';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 import MainNavLink from 'merchant_common/components/MainNavLink';
@@ -433,14 +429,6 @@ function MerchantNavLinks(props) {
           to="/capital/non-fldg-loans/"
           additionalCondition={(currentUser) => currentUser.isNonFldgLoansEnabled}
           isNew={false}
-        />
-
-        <MainNavLink
-          label="Loans"
-          icon="i i-rupee text-warm"
-          to="/capital/loans"
-          isNew={!isRecommendProduct}
-          additionalCondition={canViewLoans}
         />
 
         <MainNavLink

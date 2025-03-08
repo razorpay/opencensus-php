@@ -52,11 +52,7 @@ import {
 import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
-import {
-  canViewCashAdvanceProduct,
-  canViewLOCEMIProduct,
-  canViewLoans,
-} from 'merchant/views/Capital/utils';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 
@@ -323,11 +319,6 @@ export const PRODUCTS_DATA = {
     bladeIcon: RupeeIcon,
     icon: 'i-rupee',
     additionalCondition: canViewLOCEMIProduct,
-  },
-  capital_loans: {
-    bladeIcon: RupeeIcon,
-    icon: 'i-rupee',
-    additionalCondition: canViewLoans,
   },
   invoices: {
     bladeIcon: FileTextIcon,

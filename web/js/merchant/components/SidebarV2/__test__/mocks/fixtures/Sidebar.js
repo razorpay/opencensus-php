@@ -181,12 +181,6 @@ export const navigationApi = {
           tags: [],
         },
         {
-          title: 'Loans',
-          product_id: 'capital_loans',
-          category: 'popular',
-          tags: [],
-        },
-        {
           title: 'Cash Advance',
           product_id: 'cash_advance',
           category: 'popular',

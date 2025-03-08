@@ -34,11 +34,7 @@ import {
   shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { isDisputesRevampV2Enabled } from 'merchant/views/Transactions/v2/Disputes/utils';
-import {
-  canViewCashAdvanceProduct,
-  canViewLOCEMIProduct,
-  canViewLoans,
-} from 'merchant/views/Capital/utils';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { openSlider } from 'merchant_common/reducers/slider';
 import qs from 'query-string';
 import React, { Component, Suspense } from 'react';
@@ -451,10 +447,6 @@ const PaypalOnboardRedirect = lazy(() =>
   import(
     /* webpackChunkName: "PaypalOnboardRedirect" */ 'merchant/views/Settings/Configuration/PaypalOnboardRedirect'
   ),
-);
-
-const CapitalLoans = lazy(() =>
-  import(/* webpackChunkName: "CapitalLoansV2" */ 'merchant/views/Capital/Loans/LoansV2'),
 );
 
 const NonFldgLoans = lazy(() =>
@@ -873,7 +865,7 @@ class Content extends Component {
     const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
 
     return (
-      <Suspense fallback={<DashboardLoader loaderType="wrt-product"/>}>
+      <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
         <Routes location={this.baseLocation}>
           <Route path="*" element={<HandleIndex isConnectedNavigation={isConnectedNavigation} />} />
           <Route
@@ -2112,10 +2104,7 @@ class Content extends Component {
               <Route
                 path=":section/*"
                 element={
-                  <RouteGuard
-                    defaultPath="/capital/loans"
-                    additionalCondition={canViewCashAdvanceProduct}
-                  >
+                  <RouteGuard defaultPath="/" additionalCondition={canViewCashAdvanceProduct}>
                     <CashAdvanceRedirectToX />
                   </RouteGuard>
                 }
@@ -2124,7 +2113,7 @@ class Content extends Component {
                 index
                 element={
                   <RouteGuard
-                    defaultPath="/capital/loans"
+                    defaultPath="/"
                     additionalCondition={(user) =>
                       canViewCashAdvanceProduct(user) || canViewLOCEMIProduct(user)
                     }
@@ -2135,24 +2124,14 @@ class Content extends Component {
               />
             </Route>
             <Route>
-              <Route path="loans/*">
-                <Route
-                  index
-                  element={
-                    <RouteGuard additionalCondition={canViewLoans}>
-                      <CapitalLoans />
-                    </RouteGuard>
-                  }
-                />
-                <Route
-                  path=":section/*"
-                  element={
-                    <RouteGuard>
-                      <LoansCollections />
-                    </RouteGuard>
-                  }
-                />
-              </Route>
+              <Route
+                path="loans/:section/*"
+                element={
+                  <RouteGuard>
+                    <LoansCollections />
+                  </RouteGuard>
+                }
+              />
             </Route>
 
             <Route
@@ -2754,7 +2733,7 @@ class Content extends Component {
         }
       >
         <ErrorBoundary resetOnProps>
-          <Suspense fallback={<DashboardLoader loaderType="wrt-product"/>}>
+          <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
             {BaseView}
             {DetailView}
             {ModalFormView}

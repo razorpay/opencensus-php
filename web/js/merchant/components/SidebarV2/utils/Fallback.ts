@@ -151,12 +151,6 @@ export const FALLBACK_PRODUCTS = [
         tags: [],
       },
       {
-        title: SIDEEBAR_PRODUCTS_TITLES.capital_loans,
-        product_id: 'capital_loans',
-        category: 'popular',
-        tags: [],
-      },
-      {
         title: SIDEEBAR_PRODUCTS_TITLES.cash_advance,
         product_id: 'cash_advance',
         category: 'popular',

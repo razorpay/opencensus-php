@@ -31,7 +31,6 @@ export const ROUTE_REG = {
   line_of_credit: /^\/capital\/line-of-credit/,
   working_capital_loans: /^\/capital\/non-fldg-loans/,
   x_corporate_cards: /^\/capital\/corporate-cards/,
-  capital_loans: /^\/capital\/loans/,
   affordability: /^\/affordability(\/(widget))?/,
   developers: /^\/developers(\/(api|webhooks))?/,
   wallet: /^\/(wallet)/,
@@ -80,7 +79,6 @@ export const BASE_ROUTES = {
   payment_links: '/paymentlinks',
   cash_advance: '/capital/cash-advance',
   line_of_credit: '/capital/line-of-credit',
-  capital_loans: '/capital/loans',
   invoices: '/invoices',
   app_store: '/app-store',
   subscription_buttons: '/subscription_buttons',
@@ -104,7 +102,6 @@ export const BASE_ROUTES = {
   assisted_financing: '/assisted-financing',
   insight_x: '/insight-x',
 };
-
 
 export const initializeRoutes = (location, user) => {
   const pathname = location.pathname;
