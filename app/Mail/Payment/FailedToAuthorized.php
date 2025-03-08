@@ -4,6 +4,8 @@ namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\EmailHelper;
+use RZP\Trace\TraceCode;
 
 class FailedToAuthorized extends Base
 {
@@ -70,12 +72,28 @@ class FailedToAuthorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $merchantID = $this->data['merchant']['id'];
+
+        if($this->view == 'emails.mjml.customer.payment')
+        {
+            return ($this->isSendingPaymentServiceMailsSupported($merchantID,$this->view));
+        }
         return true;
     }
 
     protected function getParamsForStork(): array
     {
         $data = $this->data;
+
+        if($this->view == 'emails.mjml.customer.payment')
+        {
+            return [
+                'template_name' => $this->view,
+                'template_namespace' => 'payments_payment_links',
+                'org_id' => $data['org']['id'],
+                'params' => $data
+            ];
+        }
 
         $storkParams = [
             'template_namespace'                => 'payments_core',
@@ -161,6 +179,40 @@ class FailedToAuthorized extends Base
         }
 
         return $storkParams;
+    }
+
+    public function isSendingPaymentServiceMailsSupported($merchantId,$view) : bool {
+
+        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_FAILED;
+
+        $experimentId = 'app.send_payment_link_emails_via_stork_failed';
+
+        try
+        {
+            $app = \App::getFacadeRoot();
+
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException($e, null, TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_EXCEPTION);
+        }
+
+        return false;
     }
 
 }

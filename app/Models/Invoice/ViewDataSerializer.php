@@ -159,7 +159,8 @@ class ViewDataSerializer extends Base\Core
         }
 
         return [
-            'branding'  => $branding
+            'branding'  => $branding,
+            'id' => $this->merchant->getOrgId()
         ];
     }
 

@@ -1337,6 +1337,12 @@ return array(
 
     'send_payment_link_emails_via_stork' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK'),
 
+    'send_payment_link_emails_via_stork_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_ISSUED'),
+
+    'send_payment_link_emails_via_stork_failed'  => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_FAILED'),
+
+    'send_payment_link_emails_via_stork_captured'  => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_CAPTURED'),
+
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 
     'api_migration_v3' => env('API_MIGRATION_V3'),
