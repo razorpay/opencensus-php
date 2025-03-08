@@ -803,6 +803,45 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountWithActivationDetailWithSalesTeamAsMMHunting' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'merchant_poc_name' => 'Test Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'initial_cheque_value' => 100,
+                    'account_type' => 'insignia',
+                    'merchant_city' => 'Bangalore',
+                    'comment' => 'abc',
+                    'is_documents_walkthrough_complete' => true,
+                    'merchant_region' => 'South',
+                    'expected_monthly_gmv' => 10000,
+                    'average_monthly_balance' => 0,
+                    'business_category' => 'partnership',
+                    'sales_team' => 'mm_hunting',
+                    'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                    'sales_poc_phone_number' => '1234554321'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithActivationDetailWithBusinessTypeAsOnePersonCompanies' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',
