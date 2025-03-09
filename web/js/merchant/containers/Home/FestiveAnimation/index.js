@@ -39,7 +39,7 @@ const setViewConfig = ({ userId }) => {
 const FestiveAnimationWrapper = ({ isMobile, user }) => {
   const { isShowFestiveAnimation, handleFestiveAnimeAction } = useApp();
   const {
-    abExperiments: { Festive_Anime },
+    abExperiments: { Festive_Anime } = {},
   } = useSplitzService();
   const isFestiveAnimeExperimentEnabled = isExperimentEnabled(Festive_Anime);
 
