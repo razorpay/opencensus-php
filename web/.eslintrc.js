@@ -186,6 +186,26 @@ module.exports = {
               },
             ],
           },
+          {
+            basePath: './js/',
+            zones: [
+              {
+                target: './',
+                from: 'ag-grid-react',
+                message: 'These components are restricted to reports. Please avoid using it.',
+              },
+            ],
+          },
+          {
+            basePath: './js/',
+            zones: [
+              {
+                target: './',
+                from: 'ag-grid-community',
+                message: 'These components are restricted to reports. Please avoid using it.',
+              },
+            ],
+          },
         ],
       },
       extends: [
@@ -205,7 +225,7 @@ module.exports = {
     },
     // Allowing custom components to be used in reports dir
     {
-      files: ['./js/merchant_common/views/Reports/**', ''],
+      files: ['./js/merchant_common/views/Reports/**', './js/merchant/views/Reconciliations/SplitScreen/DataGrid.tsx', ''],
       rules: {
         'import/no-restricted-paths': 'off',
       },

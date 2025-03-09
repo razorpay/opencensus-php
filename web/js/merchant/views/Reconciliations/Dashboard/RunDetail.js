@@ -29,7 +29,6 @@ import {
 import moment from 'moment';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { COMMON_Z_INDEX } from 'common/constant';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
@@ -40,6 +39,7 @@ import {
   DashboardTabs,
   ProcessTabs,
   RULE_ID,
+  RECON_DASHBOARD_BASEURL,
 } from 'merchant/views/Reconciliations/Dashboard/constants';
 import {
   BladeDropdownWrapper,
@@ -187,15 +187,15 @@ export default function RunDetail() {
     }
   };
 
-  const handleRunChange = (event) => {
+  const handleRunListChange = (event) => {
     const currentValue = event.values[0];
     if (currentValue) {
       setRunChangeCounter((prevCount) => prevCount + 1);
       setSelectedRunId(currentValue);
       navigate(
         activeProcessId
-          ? `/reconciliations/dashboard/${DashboardTabs.PROCESSES}/${activeProcessId}/${ProcessTabs.RUNS}/${currentValue}`
-          : `/reconciliations/dashboard/${DashboardTabs.RUNS}/${currentValue}`,
+          ? `${RECON_DASHBOARD_BASEURL}/${DashboardTabs.PROCESSES}/${activeProcessId}/${ProcessTabs.RUNS}/${currentValue}`
+          : `${RECON_DASHBOARD_BASEURL}/${DashboardTabs.RUNS}/${currentValue}`,
       );
     }
   };
@@ -255,7 +255,7 @@ export default function RunDetail() {
           <Divider orientation="vertical" marginX="spacing.6" />
           <BladeDropdownWrapper>
             <Dropdown value={fileWorkflowId} marginRight="spacing.4">
-              <SelectInput value={selectdRunId} prefix="Run: " onChange={handleRunChange} />
+              <SelectInput value={selectdRunId} prefix="Run: " onChange={handleRunListChange} />
               <DropdownOverlay>
                 <ActionList>
                   {Array.isArray(runsList) &&

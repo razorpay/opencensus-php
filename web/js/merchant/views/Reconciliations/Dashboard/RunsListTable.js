@@ -23,7 +23,7 @@ import {
 } from '@razorpay/blade/components';
 import ReconciledIcon from 'assets/reconciliations/reconciled.svg';
 import moment from 'moment';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import { useSplitzService } from 'common/splitz';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
@@ -32,6 +32,7 @@ import {
   DashboardTabs,
   ProcessTabs,
   FILE_WORKFLOW_KEY,
+  RECON_DASHBOARD_BASEURL,
 } from 'merchant/views/Reconciliations/Dashboard/constants';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { checkAllowedMerchantToDeleteReconRun } from 'merchant/views/Reconciliations/utils';
@@ -51,6 +52,7 @@ const RunsListTable = ({
   const { abExperiments } = useSplitzService();
   const navigate = useNavigate();
   const { processId } = useParams();
+  const location = useLocation();
 
   const isAllowedToDeleteReconRun = checkAllowedMerchantToDeleteReconRun({ abExperiments });
 
@@ -92,8 +94,19 @@ const RunsListTable = ({
     });
     navigate(
       processId
-        ? `/reconciliations/dashboard/${DashboardTabs.PROCESSES}/${processId}/${ProcessTabs.RUNS}/${runId}`
-        : `/reconciliations/dashboard/${DashboardTabs.RUNS}/${runId}`,
+        ? `${RECON_DASHBOARD_BASEURL}/${DashboardTabs.PROCESSES}/${processId}/${ProcessTabs.RUNS}/${runId}`
+        : `${RECON_DASHBOARD_BASEURL}/${DashboardTabs.RUNS}/${runId}`,
+    );
+  };
+
+  const goSplitScreen = ({ runId }) => {
+    analyticsTrackWithUserInfo({
+      screen: ReconScreens.GlobalRunListing,
+      objectName: 'recon split screen',
+      actionName: 'click',
+    });
+    navigate(
+      `${RECON_DASHBOARD_BASEURL}/${DashboardTabs.PROCESSES}/${processId}/${ProcessTabs.SPLIT}/${runId}`,
     );
   };
 
@@ -143,16 +156,14 @@ const RunsListTable = ({
                       ) : null}
                     </TableCell>
                     <TableCell>
-                      <Box display="flex" gap="spacing.6" alignItems="center">
-                        <BladeLink
-                          onClick={() => downloadReport(item?.id)}
-                          alignItems="center"
-                          icon={DownloadIcon}
-                          isDisabled={!isComplete}
-                        >
-                          Download Report
-                        </BladeLink>
-                      </Box>
+                      <BladeLink
+                        onClick={() => downloadReport(item?.id)}
+                        alignItems="center"
+                        icon={DownloadIcon}
+                        isDisabled={!isComplete}
+                      >
+                        Download Report
+                      </BladeLink>
                     </TableCell>
                     <TableCell>
                       <BladeLink onClick={() => goToRunDetailsPage({ runId: item.id })}>

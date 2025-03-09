@@ -15,4 +15,14 @@ const checkAllowedMerchantToDeleteReconRun = (splitz) => {
   return abExperiments?.allow_merchant_to_delete_recon_run?.variables?.turned === 'on';
 };
 
-export { checkReconSaasEnabled, checkCustomReportingEnabled, checkAllowedMerchantToDeleteReconRun };
+const checkSplitScreenEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { enable_split_screen: undefined } };
+  return abExperiments?.enable_split_screen?.variables?.turned === 'on';
+};
+
+export {
+  checkReconSaasEnabled,
+  checkCustomReportingEnabled,
+  checkAllowedMerchantToDeleteReconRun,
+  checkSplitScreenEnabled,
+};

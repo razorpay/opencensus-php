@@ -662,22 +662,6 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
-        uniqueHashKey: 'enable_custom_reporting',
-        experimentId: {
-          beta: 'P6R9W5TW65FnG4',
-          production: 'P4V6IAJs154hVG',
-        },
-        defaultVariant: {
-          name: 'variables',
-          variables: [
-            {
-              key: 'turned',
-              value: 'off',
-            },
-          ],
-        },
-      },
-      {
         uniqueHashKey: 'nocode_monetization',
         experimentId: {
           beta: 'OemGz3a8jmYDvi',
@@ -2700,6 +2684,43 @@ export const splitzConfig: SplitzInitConfig = {
               {
                 key: 'message',
                 value: '',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: ['/reconciliations/dashboard'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'enable_split_screen',
+          experimentId: {
+            beta: 'Piw3ovA7R2C7J2',
+            production: 'Pk51jeYVkVocAH',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'turned',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'enable_custom_reporting',
+          experimentId: {
+            beta: 'P6R9W5TW65FnG4',
+            production: 'P4V6IAJs154hVG',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'turned',
+                value: 'off',
               },
             ],
           },

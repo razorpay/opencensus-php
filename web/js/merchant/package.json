@@ -29,6 +29,8 @@
     "@types/yup": "0.29.10",
     "@typescript-eslint/eslint-plugin": "5.55.0",
     "@zip.js/zip.js": "2.7.41",
+    "ag-grid-community": "33.0.3",
+    "ag-grid-react": "33.0.3",
     "axios": "0.21.1",
     "bezier-easing": "2.1.0",
     "canvas-confetti": "1.4.0",

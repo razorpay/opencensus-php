@@ -16,19 +16,23 @@ import {
 } from '@razorpay/blade/components';
 import { useNavigate, useParams, useMatch } from 'react-router-dom';
 
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ReconScreens } from 'merchant/views/Reconciliations/const';
 import { useCalendarRange } from 'merchant/views/Reconciliations/hooks';
+import { checkSplitScreenEnabled } from 'merchant/views/Reconciliations/utils';
 
 import ProcessCharts from './ProcessCharts';
 import ProcessOverview from './ProcessOverview';
 import ProcessTransactions from './ProcessTransactions';
 import ProcessRunsList from './RunsList';
 import { TabItemRouterLink } from './TabItemRouterLink';
-import { ProcessTabs } from './constants';
+import { ProcessTabs, RECON_PROCESS_BASEURL } from './constants';
 
 const ProcessStats = () => {
+  const { abExperiments } = useSplitzService();
+
   const [processesActiveTab, setProcessesActiveTab] = useState(ProcessTabs.OVERVIEW);
   const [stats, setStats] = useState({});
   const [activeProcess, setActiveProcess] = useState({});
@@ -36,8 +40,10 @@ const ProcessStats = () => {
   const [error, setError] = useState(false);
 
   const navigate = useNavigate();
-  const processesMatch = useMatch('/reconciliations/dashboard/processes/:processId/*');
+  const processesMatch = useMatch(`${RECON_PROCESS_BASEURL}/:processId/*`);
   const { processId: activeProcessId } = useParams();
+
+  const enableSplitScreen = checkSplitScreenEnabled({ abExperiments });
 
   const triggerRun = () => {
     analyticsTrackWithUserInfo({
@@ -133,6 +139,9 @@ const ProcessStats = () => {
         case ProcessTabs.TRANSACTIONS:
           activeTab = ProcessTabs.TRANSACTIONS;
           break;
+        case ProcessTabs.SPLIT:
+          activeTab = ProcessTabs.SPLIT;
+          break;
         default:
           break;
       }
@@ -197,22 +206,32 @@ const ProcessStats = () => {
             <TabList>
               <TabItemRouterLink
                 value={ProcessTabs.OVERVIEW}
-                to={`/reconciliations/dashboard/processes/${activeProcessId}/${ProcessTabs.OVERVIEW}`}
+                to={`${RECON_PROCESS_BASEURL}/${activeProcessId}/${ProcessTabs.OVERVIEW}`}
               >
                 Overview
               </TabItemRouterLink>
-              <TabItemRouterLink
-                value={ProcessTabs.RUNS}
-                to={`/reconciliations/dashboard/processes/${activeProcessId}/${ProcessTabs.RUNS}`}
-              >
-                Runs
-              </TabItemRouterLink>
+              {!enableSplitScreen ? (
+                <TabItemRouterLink
+                  value={ProcessTabs.RUNS}
+                  to={`${RECON_PROCESS_BASEURL}/${activeProcessId}/${ProcessTabs.RUNS}`}
+                >
+                  Runs
+                </TabItemRouterLink>
+              ) : null}
               <TabItemRouterLink
                 value={ProcessTabs.TRANSACTIONS}
-                to={`/reconciliations/dashboard/processes/${activeProcessId}/${ProcessTabs.TRANSACTIONS}`}
+                to={`${RECON_PROCESS_BASEURL}/${activeProcessId}/${ProcessTabs.TRANSACTIONS}`}
               >
                 Transactions
               </TabItemRouterLink>
+              {enableSplitScreen ? (
+                <TabItemRouterLink
+                  value={ProcessTabs.SPLIT}
+                  to={`${RECON_PROCESS_BASEURL}/${activeProcessId}/${ProcessTabs.SPLIT}`}
+                >
+                  Split Screen
+                </TabItemRouterLink>
+              ) : null}
             </TabList>
             <TabPanel value={ProcessTabs.OVERVIEW}>
               <ProcessOverview
@@ -223,12 +242,19 @@ const ProcessStats = () => {
                 error={error}
               />
             </TabPanel>
-            <TabPanel value={ProcessTabs.RUNS}>
-              <ProcessRunsList activeProcess={activeProcess} />
-            </TabPanel>
+            {!enableSplitScreen ? (
+              <TabPanel value={ProcessTabs.RUNS}>
+                <ProcessRunsList activeProcess={activeProcess} />
+              </TabPanel>
+            ) : null}
             <TabPanel value={ProcessTabs.TRANSACTIONS}>
               <ProcessTransactions activeProcess={activeProcess} />
             </TabPanel>
+            {enableSplitScreen ? (
+              <TabPanel value={ProcessTabs.SPLIT}>
+                <ProcessRunsList activeProcess={activeProcess} />
+              </TabPanel>
+            ) : null}
           </Tabs>
         </CardBody>
       </Card>

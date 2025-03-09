@@ -608,6 +608,9 @@ const EditReport = lazy(() =>
     /* webpackChunkName: "EditReport" */ 'merchant/views/Reconciliations/Dashboard/EditReport'
   ),
 );
+const SplitScreen = lazy(() =>
+  import(/* webpackChunkName: "SplitScreen" */ 'merchant/views/Reconciliations/SplitScreen/index'),
+);
 
 const InsightX = lazy(() => import(/* webpackChunkName: "InsightX" */ 'merchant/views/InsightX'));
 
@@ -2464,6 +2467,14 @@ class Content extends Component {
               element={
                 <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
                   <ReconRunDetail />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="dashboard/processes/:processId/split-screen/:runId"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <SplitScreen />
                 </RouteGuard>
               }
             />

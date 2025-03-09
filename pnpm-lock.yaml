@@ -1651,7 +1651,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -1736,6 +1736,12 @@ importers:
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
+      ag-grid-community:
+        specifier: 33.0.3
+        version: 33.0.3
+      ag-grid-react:
+        specifier: 33.0.3
+        version: 33.0.3(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       axios:
         specifier: 0.21.1
         version: 0.21.1
@@ -2099,7 +2105,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -2523,7 +2529,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -2947,7 +2953,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -3371,7 +3377,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -3795,7 +3801,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -4219,7 +4225,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -4643,7 +4649,7 @@ importers:
         version: 24.0.0(stylelint@14.0.0)
       stylelint-stylus:
         specifier: 0.16.1
-        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0)
+        version: 0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0)
       stylus:
         specifier: 0.54.7
         version: 0.54.7
@@ -10120,6 +10126,18 @@ packages:
   adm-zip@0.5.16:
     resolution: {integrity: sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ==}
     engines: {node: '>=12.0'}
+
+  ag-charts-types@11.0.3:
+    resolution: {integrity: sha512-q7O2viQXPyO014QVH7KjFCUmQ/NvMBx9ReZtramQ44u+/aAa0ttLi/coK+V0Hse4/MG1eB/2XhgymdooQ0Kalg==}
+
+  ag-grid-community@33.0.3:
+    resolution: {integrity: sha512-HZeVmVieZ5Gm9j09Itecqm+OIX8X6cU4TJToUbsXv3DxdO9SK5/s8aAJAwBHtNRXOhHrhqQYwrY2yc3OtzWwcQ==}
+
+  ag-grid-react@33.0.3:
+    resolution: {integrity: sha512-6IcraSVqsUG/hzTeZ0D0dtddAcZKcWdN75ek/O+lCA6r22abJPe33nHBYVezkTV8k6D3JhA24mlTwduzn0GZLQ==}
+    peerDependencies:
+      react: 17.0.2
+      react-dom: 17.0.2
 
   agent-base@5.1.1:
     resolution: {integrity: sha512-TMeqbNl2fMW0nMjTEPOwe3J/PRFP4vqeoNuQMG0HlMrtm5QxKqdvAkZ1pRBQ/ulIyDD5Yq0nJ7YbdD8ey0TO3g==}
@@ -32762,6 +32780,19 @@ snapshots:
 
   adm-zip@0.5.16: {}
 
+  ag-charts-types@11.0.3: {}
+
+  ag-grid-community@33.0.3:
+    dependencies:
+      ag-charts-types: 11.0.3
+
+  ag-grid-react@33.0.3(react-dom@17.0.2(react@17.0.2))(react@17.0.2):
+    dependencies:
+      ag-grid-community: 33.0.3
+      prop-types: 15.8.1
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+
   agent-base@5.1.1: {}
 
   agent-base@6.0.2:
@@ -47701,7 +47732,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  stylelint-stylus@0.16.1(postcss-syntax@0.36.2(postcss-html@1.6.0)(postcss@8.4.38))(stylelint@14.0.0):
+  stylelint-stylus@0.16.1(postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39))(stylelint@14.0.0):
     dependencies:
       html-tags: 3.3.1
       lodash: 4.17.21

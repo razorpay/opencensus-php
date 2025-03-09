@@ -7,6 +7,7 @@ export const ProcessTabs = {
   OVERVIEW: 'overview',
   RUNS: 'runs',
   TRANSACTIONS: 'transactions',
+  SPLIT: 'split-screen',
 };
 
 export const DashboardTabs = {
@@ -26,5 +27,9 @@ export const RECON_DASHBOARD_BASEURL = `/reconciliations/dashboard`;
 export const RECON_REPORTING_LIST_BASEURL = `/reconciliations/dashboard/reports`;
 
 export const RECON_CREATE_REPORT_URL = `/reconciliations/reports`;
+
+export const RECON_PROCESS_BASEURL = `/reconciliations/dashboard/processes`;
+
+export const RECON_API_BASE_URL = `recon-saas`;
 
 export const MAX_COLUMN_LIMIT = 60;
