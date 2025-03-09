@@ -583,7 +583,7 @@ class Service extends Base\Service
 
             if (!$isPayoutsToPhoneNumberEnabled) {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_LINKED_NUMBER_PAYOUT_NOT_ALLOWED,
+                    ErrorCode::BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED,
                     null);
             }
             (new Validator)->validateMobileNumberPayout($input);

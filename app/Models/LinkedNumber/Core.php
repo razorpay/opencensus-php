@@ -36,7 +36,7 @@ class Core extends Base\Core
     {
         $mappedVpa = $this->mappedVpaFetchClient->fetchMappedVpaViaMicroservice($linkedNumber);
 
-        if (empty($mappedVpa) || !isset($mappedVpa[FundAccount\Entity::VPA]) || empty($mappedVpa[FundAccount\Entity::VPA])) {
+        if (empty($mappedVpa) || empty($mappedVpa[FundAccount\Entity::VPA]) || empty($mappedVpa[FundAccount\Entity::CUSTOMER_NAME])) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
 
             throw new Exception\BadRequestException(

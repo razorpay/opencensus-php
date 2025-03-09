@@ -251,7 +251,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN                      = 'Payment failed';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER                            = 'Invalid UPI Number. Please enter a valid UPI Number';
-    const BAD_REQUEST_LINKED_NUMBER_INVALID                                     = 'Invalid Linked Number. Please enter a valid Linked Number';
+    const BAD_REQUEST_MOBILE_NUMBER_INVALID                                     = 'Mobile number should be 10 digit long';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';
     const BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED                             = 'Card used while setting UPI PIN has expired. Please use another debit card to reset UPI PIN or use another bank account for payment';
@@ -1747,10 +1747,10 @@ class PublicErrorDescription
     const BAD_REQUEST_EMPTY_ROW_UPLOADED                                            = 'Empty row uploaded';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_TDS                        = 'Payout with TDS not supported via private auth';
 
-    const BAD_REQUEST_MODE_NOT_ALLOWED_FOR_LINKED_NUMBER                            = 'This mode is not allowed for Linked number Payouts';
-    const BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT                                     = 'Linked number is not present';
+    const BAD_REQUEST_MODE_NOT_ALLOWED_FOR_MOBILE_NUMBER                            = 'This mode is not allowed for Mobile number Payouts';
+    const BAD_REQUEST_MOBILE_NUMBER_NOT_PRESENT                                     = 'Mobile number is not present';
     const BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT                               = 'Account Holder name is not present';
-    const BAD_REQUEST_LINKED_NUMBER_PAYOUT_NOT_ALLOWED                              = 'Payouts using Linked numbers are not allowed.';
+    const BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED                              = 'Payouts using Mobile numbers are not allowed.';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS                = 'Payout with attachments not supported via private auth';
     const BAD_REQUEST_INVALID_TAX_PAYMENT_ID                                        = 'Invalid tax_payment_id';
     const SERVER_ERROR_GET_ATTACHMENTS_FAILURE                                      = 'Failed to get attachments for the payouts';

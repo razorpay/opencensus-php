@@ -1808,9 +1808,9 @@ class Validator extends Base\Validator
         $mobileNumber = $mobileNumberData[FundAccount\Entity::NUMBER] ?? null;
         $accountHolderName = $mobileNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
 
-        $this->validateRequiredField($mobileNumber, ErrorCode::BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT);
+        $this->validateRequiredField($mobileNumber, ErrorCode::BAD_REQUEST_MOBILE_NUMBER_NOT_PRESENT);
         $this->validateRequiredField($accountHolderName, ErrorCode::BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT);
-        $this->validateLinkedNumberFormat($mobileNumber);
+        $this->validateMobileNumberFormat($mobileNumber);
         $this->validateAllowedMode($mode, $allowedModes);
     }
 
@@ -1821,17 +1821,17 @@ class Validator extends Base\Validator
         }
     }
 
-    private function validateLinkedNumberFormat(string $linkedNumber): void
+    private function validateMobileNumberFormat(string $mobileNumber): void
     {
-        if (!preg_match('/^\d{8,10}$/', $linkedNumber)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LINKED_NUMBER_INVALID, null);
+        if (!preg_match('/^\d{10}$/', $mobileNumber)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_NUMBER_INVALID, FundAccount\Entity::NUMBER);
         }
     }
 
     private function validateAllowedMode(string $mode, array $allowedModes): void
     {
         if (!in_array($mode, $allowedModes, true)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MODE_NOT_ALLOWED_FOR_LINKED_NUMBER, null);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MODE_NOT_ALLOWED_FOR_MOBILE_NUMBER, null);
         }
     }
 
