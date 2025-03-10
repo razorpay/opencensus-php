@@ -1237,11 +1237,7 @@ class Service extends Base\Service
                 ->diff($existingFeatureNames)
                 ->map(function ($featureName) use ($featureNames, $toOrgId) {
                     return [
-                        'id' => Str::random(14),
-                        'entity_type'   => 'org',
-                        'entity_id'     => $toOrgId,
                         'name'          => $featureName,
-                        "created_at" => Carbon::now()->getTimestamp(),
                     ];
                 })
                 ->toArray();
@@ -1251,10 +1247,7 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_FEATURES);
             }
 
-//            $colors = ["hide_rzpbrand_on_checkout"];
-//            $colors = ["show_custom_dcc_disc"];
-            $colors = ["custom_checkout_logo"];
-//            $colors = ["bank_admin_adfs_login","vas_org_identifier","org_custom_branding","custom_onboarding_emails","white_labelled_pb"];
+            $colors = $insertFeaturesData;
 
             $enableFeatures = [
                 "names" => $colors,
