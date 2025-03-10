@@ -1404,7 +1404,7 @@ class Service extends Base\Service
 
         $data = $error = null;
 
-        $merchantId = $merchantRole = $merchantName = $merchantLogo = null;
+        $merchantId = $merchantRole = $merchantName = $merchantLogo = $currentMerchantPartnerType = null;
 
         if ($user === null)
         {
@@ -1417,6 +1417,16 @@ class Service extends Base\Service
         }
 
         $currentMerchant = $user->currentMerchant();
+    
+        $this->trace->info(
+            TraceCode::GET_USER_SESSION_DATA,
+            [
+                'is_merchant_empty'  => empty($currentMerchant),
+                'user_id'            => $user->id,
+            ]
+        );
+    
+        $userCreatedAt = $user?->created_at ?? null;
 
         if (empty($currentMerchant) === false)
         {
@@ -1427,6 +1437,8 @@ class Service extends Base\Service
             $merchantName = $currentMerchant->name;
 
             $merchantLogo = $currentMerchant->logo_url;
+    
+            $currentMerchantPartnerType = $currentMerchant?->partner_type ?? null;
         }
 
         // Create and cache a random token tying the user to the request
@@ -1445,17 +1457,21 @@ class Service extends Base\Service
         $this->cache->put($cacheKey, $data, 60);
 
         $response = [
-            'token'         => $token,
-            'email'         => $user->email,
-            'name'          => $user->name,
-            'merchant_id'   => $merchantId,
-            'role'          => $merchantRole,
-            'merchant_name' => $merchantName,
-            'logo'          => $merchantLogo,
-            'user_id'       => $user->id,
-
+            'token'                         => $token,
+            'email'                         => $user->email,
+            'name'                          => $user->name,
+            'merchant_id'                   => $merchantId,
+            'role'                          => $merchantRole,
+            'merchant_name'                 => $merchantName,
+            'logo'                          => $merchantLogo,
+            'user_id'                       => $user->id,
+            'user_created_at'               => $userCreatedAt,
+            'current_merchant_partner_type' => $currentMerchantPartnerType,
+            'is_oauth_request'              => app('request.ctx')->isOauthRequest() === true,
+            'two_fa_verified'               => Session::get(UserConstants::TWO_FA_VERIFIED, false),
+            'oauth_login'                   => Session::get(UserConstants::OAUTH_LOGIN, false),
+            'disable_auto_merchant_login'   => Session::get(UserConstants::DISABLE_AUTO_MERCHANT_LOGIN, false),
             'admin_logged_in_as_merchant'   => (new Admin\Service)->isAdminLoggedIn(),
-            'disable_auto_merchant_login'   => Session::get(Constants::DISABLE_AUTO_MERCHANT_LOGIN, false),
         ];
 
         $oauthAction = $this->getUserOauthAction($merchantId, $queryParams);
