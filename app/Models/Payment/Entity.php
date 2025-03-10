@@ -2110,12 +2110,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // tokens service.
     public function setTokenRelations()
     {
-        $this->ignoredRelations = [self::ORDER, self::LOCAL_TOKEN];
+        $this->ignoredRelations = [self::ORDER, ConstantsEntity::CUSTOMER, 'globalCustomer', self::LOCAL_TOKEN];
     }
 
     public function removeGlobalTokenRelations()
     {
-        $this->ignoredRelations = [self::ORDER, self::GLOBAL_TOKEN];
+        $this->ignoredRelations = [self::ORDER, ConstantsEntity::CUSTOMER, 'globalCustomer', self::GLOBAL_TOKEN];
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
