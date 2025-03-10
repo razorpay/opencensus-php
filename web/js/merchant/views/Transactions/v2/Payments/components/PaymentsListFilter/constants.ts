@@ -44,6 +44,7 @@ export const paymentMethodOptionsMap = {
   cardless_emi: 'Cardless EMI',
   nach: 'eNach',
   paynow: 'Paynow',
+  gift_cards: 'Gift Cards',
 };
 export const paymentMethodSectionOptions = generateOptions(paymentMethodOptionsMap);
 export const paymentMethodSectionName = 'Payment method';

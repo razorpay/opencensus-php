@@ -36,7 +36,7 @@ describe('ExtraFiltersModal', () => {
     expect(dropdownTrigger).toBeInTheDocument();
     await userEvent.click(dropdownTrigger);
 
-    const cardOption = screen.getByRole('option', { name: 'Card' });
+    const cardOption = screen.getByRole('option', { name: 'Card', exact: true });
     expect(cardOption).toBeInTheDocument();
     await userEvent.click(cardOption);
 
