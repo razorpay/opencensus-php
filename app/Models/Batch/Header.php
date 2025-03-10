@@ -2035,6 +2035,13 @@ class Header
     const IDFC_ECOLLECT_AMOUNT = 'txnAmount';
     const IDFC_ECOLLECT_TRANSACTION_DATE = 'Trn TimeStamp';
     const IDFC_ECOLLECT_MODE = 'product Code';
+    const IDFC_ECOLLECT_BANK_CODE = 'bankCode';
+    const IDFC_ECOLLECT_INSTRUMENT_TYPE = 'instrumentType';
+    const IDFC_ECOLLECT_CONTACT_NUMBER = 'Contact No';
+    const IDFC_ECOLLECT_EMAIL = 'Email';
+    const IDFC_ECOLLECT_STATUS = 'status';
+    const IDFC_ECOLLECT_TXN_DATE = 'txnDate';
+    const IDFC_ECOLLECT_CLIENT_CODE = 'CLIENT_CODE';
 
     const HDFC_MECODE = "MECODE";
     const HDFC_TID = "TID";
@@ -5774,7 +5781,13 @@ class Header
                 self::IDFC_ECOLLECT_AMOUNT,
                 self::IDFC_ECOLLECT_TRANSACTION_DATE,
                 self::IDFC_ECOLLECT_MODE,
-                self::STATUS,
+                self::IDFC_ECOLLECT_BANK_CODE,
+                self::IDFC_ECOLLECT_INSTRUMENT_TYPE,
+                self::IDFC_ECOLLECT_CONTACT_NUMBER,
+                self::IDFC_ECOLLECT_EMAIL,
+                self::IDFC_ECOLLECT_STATUS,
+                self::IDFC_ECOLLECT_TXN_DATE,
+                self::IDFC_ECOLLECT_CLIENT_CODE,
             ],
             self::OUTPUT => [
                 self::IDFC_ECOLLECT_UTR_NUMBER,
@@ -5785,6 +5798,13 @@ class Header
                 self::IDFC_ECOLLECT_AMOUNT,
                 self::IDFC_ECOLLECT_TRANSACTION_DATE,
                 self::IDFC_ECOLLECT_MODE,
+                self::IDFC_ECOLLECT_BANK_CODE,
+                self::IDFC_ECOLLECT_INSTRUMENT_TYPE,
+                self::IDFC_ECOLLECT_CONTACT_NUMBER,
+                self::IDFC_ECOLLECT_EMAIL,
+                self::IDFC_ECOLLECT_STATUS,
+                self::IDFC_ECOLLECT_TXN_DATE,
+                self::IDFC_ECOLLECT_CLIENT_CODE,
                 self::STATUS,
             ],
         ],

@@ -2316,21 +2316,23 @@ return [
         ],
     ],
 
-    'ecollectidfcBatchData' => [
+    'ecollectIdfcBatchData' => [
         [
-            'BANKCODE'              => '751',
+            'bankCode'              => '751',
             'VAN'                   => '3141412932249569',
-            'productCode'           => 'IIMPS',
+            'product Code'           => 'IIMPS',
+            'instrumentType'        => 'IMPS',
             'remitterAccountNumber' => '923020021413403',
-            'remitterIfscCode'      => '',
+            'remitterIfscCode'      => null,
             'remitterName'          => 'TUNECLINICALAESTHE',
-            'Contact No'            => '',
-            'Email'                 => '',
-            'STATUS'                => 'Success',
+            'Contact No'            => null,
+            'Email'                 => null,
+            'status'                => 'Success',
             'txnAmount'             => '1001',
             'txnDate'               => '05-FEB-2025',
             'txnRefNumber'          => '503618787655',
-            'Trn TimeStamp'         => '05-FEB-2025 18:21:01'
+            'Trn TimeStamp'         => '05-FEB-2025 18:21:01',
+            'CLIENT_CODE'           => 'RZPX'
         ]
     ],
 
