@@ -1504,6 +1504,14 @@ class OffersEngine extends Base\Core
             ];
         }
 
+        if (($this->isDummyPayment === true) and
+            (isset($fact[Constants::SUBSCRIPTION_FACT]) === false))
+        {
+            $fact[Constants::SUBSCRIPTION_FACT] = [
+                SubscriptionOfferEntity::NO_OF_CYCLES => 1,
+            ];
+        }
+
         return $fact;
     }
 
