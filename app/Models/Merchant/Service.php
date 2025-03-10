@@ -973,6 +973,11 @@ class Service extends Base\Service
 
         $submerchantInput = $this->extractSubmerchantInput($input);
 
+        if (isset($input[BatchHeader::ACCOUNT_CODE]) && !empty($input[BatchHeader::ACCOUNT_CODE])) {
+            $submerchantInput[Entity::ACCOUNT_CODE] = $input[BatchHeader::ACCOUNT_CODE];
+        }
+
+
         $mutexKey = sprintf(self::LINKED_ACCOUNT_CREATE, strtolower($submerchantInput[Entity::EMAIL]));
 
         [$linkedAccount, $accountStatus] = $this->mutex->acquireAndReleaseStrict(
@@ -10928,7 +10933,6 @@ class Service extends Base\Service
             Entity::EMAIL                   => $input[BatchHeader::ACCOUNT_EMAIL],
             Entity::DASHBOARD_ACCESS        => (bool) $input[BatchHeader::DASHBOARD_ACCESS],
             Entity::ALLOW_REVERSALS         => (bool) $input[BatchHeader::CUSTOMER_REFUNDS],
-            Entity::ACCOUNT_CODE            => $input[BatchHeader::ACCOUNT_CODE] ?? '',
         ];
     }
 
