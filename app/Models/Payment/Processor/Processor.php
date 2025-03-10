@@ -1900,8 +1900,11 @@ class Processor
                     return false;
                 }
 
-                $offerExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_NON_CARD_OFFER_PAYMENTS_TO_REARCH_CPS, $this->mode);
-                if ($offerExpResult !== 'on')
+                $experimentName = 'app.non_card_offer_payments_via_pg_router';
+                $offerExpResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$experimentName);
+
+                if ($offerExpResult !== 'enable' or ((empty($input[Payment\Entity::METHOD]) === false) and
+                    ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD)))
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "non_card_offer_payment_blocked",

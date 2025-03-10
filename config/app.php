@@ -1321,6 +1321,8 @@ return array(
 
     'saved_card_token_payments_via_pg_router' => env('SAVED_CARD_TOKEN_PAYMENTS_VIA_PG_ROUTER'),
 
+    'non_card_offer_payments_via_pg_router' => env('NON_CARD_OFFER_PAYMENTS_VIA_PG_ROUTER'),
+
     'fetch_cryptogram_via_cps' => env('FETCH_CRYPTOGRAM_VIA_CPS'),
 
     'mc_scof_payments_via_cps'=> env('MC_SCOF_PAYMENTS_VIA_CPS'),
