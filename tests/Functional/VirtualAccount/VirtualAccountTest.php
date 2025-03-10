@@ -5448,6 +5448,13 @@ class VirtualAccountTest extends TestCase
               ->withAnyArgs()
               ->andReturn($store);
 
+        \Cache::shouldReceive('remember')
+            ->withAnyArgs()
+            ->andReturnUsing(function ($key, $ttl, $callback) {
+                return $callback();
+            });
+
+
         $response = $this->createVirtualAccount();
 
         $expectedResponse = $this->testData[__FUNCTION__];

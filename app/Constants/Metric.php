@@ -342,13 +342,16 @@ class Metric
     const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
     const CREDCASE_READ_RESPONSE_MATCH = 'credcase_read_response_match';
     const KEY_API_DB_RESPONSE_COUNT = 'keys_api_db_response_count';
+    const KEY_API_DB_RETRIEVAL_COUNT = 'keys_api_db_retrieval_count';
     const CREDCASE_KEY_READ_ROUTE_COUNT = 'credcase_key_read_count';
     const CREDCASE_FIND_KEY_READ_ROUTE_COUNT = 'credcase_find_key_read_count';
+    const CREDCASE_FIND_KEY_MATCH = 'credcase_find_key_match';
 
-    const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
+    const CREDCASE_FIND_V2_REQUEST_FAILED_COUNT = 'credcase_find_v2_request_failed_count';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
 
     const CMS_REQUEST_DURATION_MS = 'cms_request_duration_ms.histogram';
+    const PASSPORT_PRESENT_AND_SECRETS_FETCH_COUNT = "passport_present_and_secrets_fetch_count";
 
     const SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE = 'subscriptions_payment_notify_failure';
 

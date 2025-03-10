@@ -81,7 +81,8 @@ return [
         'password'           => env('CREDCASE_PASSWORD'),
         'read_key_splitz'    => env('CREDCASE_READ_KEY_SPLITZ', ''),
         'admin_read_key_splitz' => env('CREDCASE_ADMIN_READ_KEY_SPLITZ', ''),
-        'find_key_splitz'     => env('CREDCASE_FIND_KEY_SPLITZ','')
+        'find_key_splitz'     => env('CREDCASE_FIND_KEY_SPLITZ',''),
+        'find_key_splitz_v2'  => env('CREDCASE_FIND_KEY_SPLITZ_V2', '')
     ],
 
     // Ref \RZP\Services\CredcaseSigner.php.
