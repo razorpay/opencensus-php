@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Config;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Emi;
@@ -1986,6 +1987,11 @@ class Core extends Base\Core
         }
 
         if($merchant->isFeatureEnabled(FeatureConstants::OPTIMIZER_ONLY_MERCHANT) === true)
+        {
+            return false;
+        }
+
+        if (Environment::isEnvironmentQA($this->app['env']) || Environment::isEnvironmentItf($this->app['env']))
         {
             return false;
         }
