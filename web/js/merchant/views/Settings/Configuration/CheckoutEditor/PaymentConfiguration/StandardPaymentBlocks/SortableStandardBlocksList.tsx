@@ -216,8 +216,8 @@ export function SortableStandardBlocksList({
                     isRazorpayConfig
                       ? 'surface.text.gray.subtle'
                       : isVisible
-                      ? 'interactive.text.positive.normal'
-                      : 'surface.text.gray.muted'
+                        ? 'interactive.text.positive.normal'
+                        : 'surface.text.gray.muted'
                   }
                 >
                   {description}

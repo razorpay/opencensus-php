@@ -589,7 +589,7 @@ export const createPayloadToSaveConfig = (
       (Array.isArray(paymentConfig.checkout_config?.display?.blocks) ||
         isEmpty(paymentConfig.checkout_config?.display?.blocks))
     ) {
-      // convert empty array to empty object due to api restrictions
+      // delete key as empty obj is not allowed due to api restrictions
       delete paymentConfig.checkout_config?.display?.blocks;
     }
     payload.merchantCheckoutPaymentConfig = {
