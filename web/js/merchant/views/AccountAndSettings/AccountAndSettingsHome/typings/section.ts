@@ -64,6 +64,7 @@ export enum NotificationSettingsFields {
 
 export enum CheckoutSettingsFields {
   BRANDING = 'branding',
+  BILLING_LABEL = 'billing_label',
   FLASH_CHECKOUT = 'flash_checkout',
   SKIP_MANDATE_SUMMARY_PAGE = 'skip_mandate_summary_page',
   TRUSTED_BADGE = 'trusted_badge',
@@ -150,6 +151,7 @@ export const NotificationSettingsTitles: Record<NotificationSettingsFields, stri
 
 export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
   [CheckoutSettingsFields.BRANDING]: 'Branding',
+  [CheckoutSettingsFields.BILLING_LABEL]: 'Billing label',
   [CheckoutSettingsFields.FLASH_CHECKOUT]: 'Flash checkout',
   [CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE]: 'Mandate summary page',
   [CheckoutSettingsFields.TRUSTED_BADGE]: 'Trusted badge',

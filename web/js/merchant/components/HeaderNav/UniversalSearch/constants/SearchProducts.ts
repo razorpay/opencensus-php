@@ -859,7 +859,29 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
   {
     title: SEARCH_PRODUCTS_TITLES.branding,
     url: SEARCH_PRODUCTS_URL.BRANDING,
-    tags: [{ value: 'Theme' }, { value: 'Color' }, { value: 'Logo' }, { value: 'brand name' }],
+    tags: [
+      { value: 'Theme' },
+      { value: 'Color' },
+      { value: 'Logo' },
+      { value: 'brand name' },
+      { value: 'billing label' },
+    ],
+    group: ['in: Account & Settings'],
+    icon: AccountNSettingsIcons.checkout_settings,
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      !isCheckoutV2SettingsAllowed(extraConfig, user) && isConfigurationViewAllowed(user),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.billing_label,
+    url: SEARCH_PRODUCTS_URL.CHECKOUT_STYLING,
+    tags: [
+      { value: 'billing label' },
+      { value: 'brand name' },
+      { value: 'Theme' },
+      { value: 'Color' },
+      { value: 'Logo' },
+    ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
     additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
@@ -874,6 +896,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'Color' },
       { value: 'Logo' },
       { value: 'brand name' },
+      { value: 'billing label' },
       { value: 'razorpay trusted badge' },
       { value: 'sidebar graphic' },
       { value: 'checkout font' },
