@@ -90,15 +90,6 @@ export class ShellRedirectionService {
   }
 
   private async getRedirectUrlBasedOnUserPersona(): Promise<string | null> {
-    const queryParams = this.request.query;
-
-    if (this.isDashboardHomepageRedirectionEnabledtoUSL()) {
-      let redirectPath = process.env[AppConstants.UNIFIED_SIGNUP_REDIRECT_PATH] || '';
-
-      redirectPath = this.appendAllQueryParams(queryParams, redirectPath);
-
-      return redirectPath;
-    }
 
     if (this.isRedirectionApplicable()) {
       let redirectionURL = process.env[AppConstants.EASY_DASHBOARD_URL] || '';
@@ -193,53 +184,6 @@ export class ShellRedirectionService {
         input[key as keyof typeof input] !== undefined &&
         input[key as keyof typeof input] !== '',
     );
-  }
-
-  private isDashboardHomepageRedirectionEnabledtoUSL(): boolean {
-    const expDta =
-      this.data?.splitz_experiments_v2[AppConstants.DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED] || {};
-
-    if (expDta.variables?.result !== 'on' || Boolean(this.data?.user?.user)) {
-      return false;
-    }
-
-    const path = this.request.path;
-
-    if (!['', '/', '/app/dashboard'].includes(path)) {
-      return false;
-    }
-
-    const query = this.request.query;
-
-    //Redirection for billme and payroll is excluded
-    return !(
-      this.hasBillmeOrPayroll(query, path) || !this.isRedirectionApplicableToUnifiedLogin(query)
-    );
-  }
-
-  private hasBillmeOrPayroll(query: any, path: string): boolean {
-    for (const queryParamKey in query) {
-      if (
-        typeof query[queryParamKey] === 'string' &&
-        /\b(billme|payroll)\b/.test(query[queryParamKey] as string)
-      ) {
-        return true;
-      }
-    }
-
-    if (/\b(billme|payroll)\b/.test(path)) {
-      return true;
-    }
-
-    this.request.shellLogger.info({
-      moduleName: '@shellRedirectionService',
-      message: 'USL_REDIRECTION',
-      context: {
-        isBillmeOrPayrollURL: false,
-      },
-    });
-
-    return false;
   }
 
   private isRedirectionApplicableToUnifiedLogin(queryParams: any): boolean {

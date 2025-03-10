@@ -4100,28 +4100,6 @@ class Service extends Base\Service
 
     public function getRedirectionUrl($details, $org, $data)
     {
-        $currentRouteName = \Route::currentRouteName();
-
-        if ($this->isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org) === true) {
-
-            $requestUrl = request()->fullUrl();
-
-            $redirectPath = \Config::get('app.razorpay_accounts_login_url');
-
-            $redirectPath = $redirectPath . '&redirecturl=' . urlencode($requestUrl);
-
-            $this->trace->info(TraceCode::USL_REDIRECTION, [
-                'redirection_url' => $redirectPath,
-                'cookie_set'      => false,
-                'condition'       => 'GUEST_LOGIN',
-                'user'            => $data['user'] ?? null,
-                'api_host'        => $data['api_host'] ?? null,
-                'session_id'      => $data['session_id'] ?? null,
-            ]);
-
-            return redirect($redirectPath);
-        }
-
         if ($this->isRedirectionApplicable($details) === true)
         {
             $ttl = 12 * 60;
@@ -4640,48 +4618,71 @@ class Service extends Base\Service
 
     public function isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org): bool {
 
-        $uuid = $this->getUUID();
+        try {
 
-        // This is added only in E2Es
-        if (Cookie::has('skip_usl_redirection')) {
+            $uuid = $this->getUUID();
+
+            // This is added only in E2Es
+            if (Cookie::has('skip_usl_redirection')) {
+                return false;
+            }
+
+            //This experiment is for redirection of dashbaord homepage to USL
+            $dashboardRedirectionExpId = \Config::get('splitz.experiments')[Constants::DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED];
+
+            $experimentData = (new SplitzService())->getVariantBulk($uuid, [$dashboardRedirectionExpId], [], "splitz/bulkEvaluate");
+
+            $this->trace->info(TraceCode::USL_REDIRECTION, [
+                'experimentId'              => $dashboardRedirectionExpId,
+                'currentRouteName'          => $currentRouteName,
+                'isMerchantAuthenticated'   => $data['isAuthenticated'],
+            ]);
+
+            if (($experimentData[$dashboardRedirectionExpId]['variables']['result'] ?? null) != 'on'
+                or $data['isAuthenticated'] === true ) {
+                return false;
+            }
+
+            if ( empty($currentRouteName) ||
+                !(
+                    $currentRouteName === "dashboard" ||
+                    $currentRouteName === "dashboard_app" ||
+                    $currentRouteName === "shell_redirect"
+                )
+            ) {
+                return false;
+            }
+
+            $queryParams = Request::query();
+
+            if ($this->isRedirectionApplicableToUnifiedLogin($org, $queryParams) === false) {
+                return false;
+            }
+
+            //Redirection for billme and payroll is excluded
+            if ($this->hasBillmeOrPayroll() === true) {
+                $this->trace->info(TraceCode::USL_REDIRECTION, [
+                    'isBillmeOrpayroll'              => true,
+                ]);
+                return false;
+            }
+
+            return true;
+
+        } catch (\Throwable $e) {
+
+            $this->metrics->count(MetricConstants::USL_REDIRECTION_EXCEPTION, \App\Http\Controllers\EVENT_TRIGGER_COUNT);
+
+            $this->trace->error(TraceCode::USL_REDIRECTION_EXCEPTION, [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return false;
+
         }
 
-        //This experiment is for redirection of dashbaord homepage to USL
-        $dashboardRedirectionExpId = \Config::get('splitz.experiments')[Constants::DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED];
 
-        $experimentData = (new SplitzService())->getVariantBulk($uuid, [$dashboardRedirectionExpId], [], "splitz/bulkEvaluate");
-
-        $this->trace->info(TraceCode::USL_REDIRECTION, [
-            'experimentId'              => $dashboardRedirectionExpId,
-            'currentRouteName'          => $currentRouteName,
-            'isMerchantAuthenticated'   => $data['isAuthenticated'],
-        ]);
-
-        if (($experimentData[$dashboardRedirectionExpId]['variables']['result'] ?? null) != 'on'
-            or $data['isAuthenticated'] === true ) {
-            return false;
-        }
-
-        if ( empty($currentRouteName) ||
-            !(
-                $currentRouteName === "dashboard" ||
-                $currentRouteName === "dashboard_app" ||
-                $currentRouteName === "shell_redirect"
-            )
-        ) {
-            return false;
-        }
-
-        $queryParams = Request::query();
-        $requestPath = \Request::path();
-
-        //Redirection for billme and payroll is excluded
-        if ($this->hasBillmeOrPayroll($queryParams, $requestPath) === true or $this->isRedirectionApplicableToUnifiedLogin($org, $queryParams) === false) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -4708,23 +4709,15 @@ class Service extends Base\Service
         return $uuid;
     }
 
-    private function hasBillmeOrPayroll($queryParam, $path): bool {
+    private function hasBillmeOrPayroll(): bool {
 
-        foreach ($queryParam as $queryParamKey => $queryParamValue) {
-            if (preg_match('/\b(billme|payroll)\b/', $queryParamValue) === 1) {
-                return true;
-            }
-        }
+        $requestUrl = request()->fullUrl();
 
-        if (preg_match('/\b(billme|payroll)\b/', $path) === 1) {
-            return true;
-        }
+        // Decode URL properly and normalize whitespace
+        $decodedUrl = rawurldecode($requestUrl); // Use rawurldecode instead of urldecode
+        $normalizedUrl = strtolower(trim($decodedUrl));
 
-        $this->trace->info(TraceCode::USL_REDIRECTION, [
-            'isBillmeOrPayrollURL'  => false,
-        ]);
-
-        return false;
+        return preg_match('/\bbillme|payroll\b/i', $normalizedUrl);
     }
 
     private function canCookieSetForEasyOnboardingPostL1Submit($details): bool
@@ -4897,6 +4890,7 @@ class Service extends Base\Service
             UserConstants::DASHBOARD_PREFIX . $devServe . UserConstants::DASHBOARD_SUFFIX_INT_DEV,
             UserConstants::DASHBOARD_DEV,
             UserConstants::DASHBOARD_INT_DEV,
+            UserConstants::DASHBOARD_CANARY,
             UserConstants::DASHBOARD_PROD,
             UserConstants::CURLEC_PROD,
             UserConstants::CURLEC_COM

@@ -181,4 +181,6 @@ class Constants
   const USER_AUTHENTICATED                = 'user_authenticated';
 
   const METRIC_USER_LANDING_PAGE_REQUESTS = 'user_landing_page_requests';
+
+  const USL_REDIRECTION_EXCEPTION = 'USL_REDIRECTION_EXCEPTION';
 }

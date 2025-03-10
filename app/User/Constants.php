@@ -69,6 +69,8 @@ class Constants
 
     const CURLEC_COM = 'curlec.com';
 
+    const DASHBOARD_CANARY = 'dashboard-canary.razorpay.com';
+
     const CURLEC_DEV = 'dashboard-curlec.dev.razorpay.in';
     const DISABLE_AUTO_MERCHANT_LOGIN = 'DISABLE_AUTO_MERCHANT_LOGIN';
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';

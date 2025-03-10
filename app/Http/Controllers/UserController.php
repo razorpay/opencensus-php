@@ -339,13 +339,14 @@ class UserController extends Controller
 
         if ($this->userService->isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org) === true) {
 
-            $requestUrl = request()->fullUrl();
+            $requestUrl = $this->transformUrl(request()->fullUrl());
 
             $redirectPath = \Config::get('app.razorpay_accounts_login_url');
 
             $redirectPath = $redirectPath . '&redirecturl=' . urlencode($requestUrl);
 
             $this->trace->info(TraceCode::USL_REDIRECTION, [
+                'request_url' => $requestUrl,
                 'redirection_url' => $redirectPath,
                 'cookie_set'      => false,
                 'condition'       => 'GUEST_LOGIN',
@@ -2528,4 +2529,24 @@ class UserController extends Controller
 
         return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
+
+    private function transformUrl($currentUrl) {
+
+        $parsedUrl = parse_url($currentUrl);
+
+        $baseHost = $parsedUrl['host'] ?? '';
+
+        // Extract query parameters
+        parse_str($parsedUrl['query'] ?? '', $queryParams);
+
+        // Check if the URL contains only the 'next' query parameter
+        if (count($queryParams) === 1 && isset($queryParams['next'])) {
+            $redirectUrl = 'https://' . $baseHost . urldecode($queryParams['next']);
+        } else {
+            $redirectUrl = $currentUrl; // Keep original URL if condition isn't met
+        }
+
+        return $redirectUrl;
+    }
+
 }
