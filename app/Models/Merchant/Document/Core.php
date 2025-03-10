@@ -211,7 +211,7 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
-        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true)
+        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true || $this->shouldRouteToDocumentUploadV2($merchant))
         {
             $input['merchant_id'] = $merchant->getId();
             $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_UPLOAD_V2, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
@@ -873,5 +873,20 @@ class Core extends Base\Core
         }
 
         return $validateLock;
+    }
+    
+    public function shouldRouteToDocumentUploadV2(Merchant\Entity $merchant) : bool {
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.migrate_mkyc_to_document_upload_v2')
+            ],
+            DetailConstants::ENABLE
+        );
+        $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
+        
+        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
+        
+        return ($isExperimentEnabled and $isMkycMerchant);
     }
 }

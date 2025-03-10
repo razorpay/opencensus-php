@@ -1062,6 +1062,8 @@ return array(
     'pgos_l2_submit' => env('PGOS_L2_SUBMIT'),
 
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
+    
+    'migrate_mkyc_to_document_upload_v2' => env('MIGRATE_MKYC_TO_DOCUMENT_UPLOAD_V2'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
 
