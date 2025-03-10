@@ -611,6 +611,13 @@ class Gateway extends Base\Gateway
                     'vpa'               => 'testuser@razorpay',
                 ],
             ];
+
+            if (isset($input['upi_mandate']['frequency'], $input['payment']['recurring_type']) &&
+                $input['upi_mandate']['frequency'] === 'one_time' &&
+                $input['payment']['recurring_type'] === 'initial')
+            {
+                $acquirerData['upi']['internal_status'] = 'authenticate_initiated';
+            }
         }
 
         if (($this->isSecondRecurringPaymentRequest($input) === true) and
