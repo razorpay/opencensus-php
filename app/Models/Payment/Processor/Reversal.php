@@ -161,7 +161,18 @@ trait Reversal
 
         $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
 
-        $transferPayment->decrementAmountTransferred($amount);
+        if ($transferPayment->isExternal())
+        {
+            $amountTransferred = $transferPayment->getAmountTransferred();
+
+            $transferPayment->setAmountTransferred($amountTransferred - $amount);
+
+            $this->repo->transfer_payment->saveOrFail($transferPayment);
+        }
+        else
+        {
+            $transferPayment->decrementAmountTransferred($amount);
+        }
     }
 
     /**

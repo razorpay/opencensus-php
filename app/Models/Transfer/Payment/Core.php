@@ -3,13 +3,24 @@
 namespace RZP\Models\Transfer\Payment;
 
 use RZP\Models\Base;
+use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
     public function createOrFetch($payment, $saveEntity=true)
     {
-        $transferPayments = $this->repo->transfer_payment->getTransferPayment($payment->getId());
+        $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled(
+            $payment->getId(), $payment->merchant->getId());
+
+        if ($isAmountTransferredExpEnabled)
+        {
+            $transferPayments = $this->repo->transfer_payment->getTransferPaymentIncludingExternal($payment->getId());
+        }
+        else
+        {
+            $transferPayments = $this->repo->transfer_payment->getTransferPayment($payment->getId());
+        }
 
         if  ($transferPayments->count() > 0)
         {

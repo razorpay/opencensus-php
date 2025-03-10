@@ -2804,7 +2804,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isTransferred()
     {
         $isTransferred = false;
-        $transferPayments = (new Transfer\Payment\Repository())->getTransferPayment($this->getId());
+
+        if ((new Transfer\Service())->isAmountTransferredRearchExpEnabled($this->getId(), $this->getMerchantId()))
+        {
+            $transferPayments = (new Transfer\Payment\Repository())->getTransferPaymentIncludingExternal($this->getId());
+        }
+        else
+        {
+            $transferPayments = (new Transfer\Payment\Repository())->getTransferPayment($this->getId());
+        }
 
         $newAmountTransferred = 0;
         if ($transferPayments->count() > 0  === true)

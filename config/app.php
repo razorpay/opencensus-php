@@ -1157,6 +1157,8 @@ return array(
 
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
+    'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
+
     'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
 
     'enable_transfer_sync_processing_via_api_exp_id' => env('ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_ID'),

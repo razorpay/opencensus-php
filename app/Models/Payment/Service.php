@@ -1789,7 +1789,96 @@ class Service extends Base\Service
             $this->auth->setMerchant($this->merchant);
         }
 
-        if (($isRouteAppAuth == false) and (new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input))
+        $shouldProcessViaApi = false;
+        $shouldProcessViaRoute = false;
+
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        // exp check
+        $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled($id, $this->merchant->getId());
+        if ($isAmountTransferredExpEnabled === true)
+        {
+            // fetch transfer payment from api
+            $transferPayments = $this->repo->transfer_payment->getTransferPaymentIncludingExternal($payment->getId());
+
+            // transfer payment logic
+            if ($transferPayments->count() > 0)
+            {
+                if ($transferPayments[0]->isExternal() === true)
+                {
+                    $shouldProcessViaRoute = true;
+                }
+                else
+                {
+                    $shouldProcessViaApi = true;
+                }
+            }
+            else if ($payment->isTransferredInOldFlow() === true)
+            {
+                $shouldProcessViaApi = true;
+            }
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_ROUTING_RESULT,
+                [
+                    'transferPaymentCount'         => $transferPayments->count(),
+                    'transferPaymentIsExternal'    => $transferPayments[0]?->isExternal(),
+                    'paymentTransferredInOldFlow'  => $payment->isTransferredInOldFlow(),
+                    'shouldProcessViaRoute'        => $shouldProcessViaRoute,
+                    'shouldProcessViaApi'          => $shouldProcessViaApi,
+                ]
+            );
+
+            // if both are false check for order transfers
+            if ($shouldProcessViaRoute === false && $shouldProcessViaApi === false && $payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                // fetch transfers by order_id from api
+                $apiTransfers = $this->repo->transfer
+                    ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $order->getId(), $this->merchant);
+
+                // Should process via api if any order transfer is present on api
+                if ((empty($apiTransfers) === false) && (count($apiTransfers) > 0))
+                {
+                    $shouldProcessViaApi = true;
+                }
+                else
+                {
+                    // fetch transfers by order_id from route
+                    $resp = $this->app['route']->fetchTransfersBySourceId($payment->getMerchantId(), $order->getId(), 1);
+
+                    // Should process via Route if any order transfer is present on Route
+                    if ((empty($resp) === false) && $resp["count"] > 0)
+                    {
+                        $shouldProcessViaRoute = true;
+                    }
+                }
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_ROUTING_RESULT,
+                    [
+                        'apiOrderTransfersCount'       => count($apiTransfers) ?? 0,
+                        'routeOrderTransfersCount'     => $resp["count"] ?? 0,
+                        'shouldProcessViaRoute'        => $shouldProcessViaRoute,
+                        'shouldProcessViaApi'          => $shouldProcessViaApi,
+                    ]
+                );
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_ROUTING_RESULT,
+            [
+                'shouldProcessViaRoute'      => $shouldProcessViaRoute,
+                'shouldProcessViaApi'        => $shouldProcessViaApi,
+            ]
+        );
+
+        // exp check
+        $isExpEnabled = (new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input);
+
+        if (!$isRouteAppAuth && !$shouldProcessViaApi && ($shouldProcessViaRoute || $isExpEnabled))
         {
             $resp = $this->app['route']->createPaymentTransfer($id, $input);
 

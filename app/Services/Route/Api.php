@@ -8,6 +8,7 @@ use Razorpay\Edge\Passport\Passport;
 use RZP\Exception;
 use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
+use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Payment;
@@ -220,5 +221,83 @@ class Api extends Base
         {
             $this->setCustomHeaders([RequestHeader::X_TRANSFER_IDEMPOTENCY => $idemptencyHeader]);
         }
+    }
+
+    /**
+     * To fetch a transfer payment entity by ID from Route microservice
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchTransferPaymentByPaymentId(string $paymentId): ?Transfer\Payment\Entity
+    {
+        $response = $this->fetchTransferPaymentByPaymentIdInternalRequest($paymentId);
+
+        $transferPayment = (new Transfer\Payment\Entity)->forceFill($response);
+
+        $transferPayment->setExternal(true);
+
+        return $transferPayment;
+    }
+
+    protected function fetchTransferPaymentByPaymentIdInternalRequest(string $paymentId): array
+    {
+        $endpoint = sprintf(Constant::TRANSFER_PAYMENT_FETCH_ENDPOINT, $paymentId);
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        return $response['source_payment'];
+    }
+
+    /**
+     * To save the API schema transfer_payment in Route microservice
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function saveApiTransferPayment(string $paymentId, array $input) : array
+    {
+        $endpoint = sprintf(Constant::SAVE_API_TRANSFER_PAYMENT_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
+    /**
+     * To fetch a transfer by ID from Route microservice
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchTransfersBySourceId(string $merchantId, string $sourceId, int $count=0, int $skip=0) : PublicCollection
+    {
+        $response = $this->fetchTransfersBySourceIdInternalRequest($merchantId, $sourceId, $count, $skip);
+
+        $transfersCollection = new PublicCollection();
+
+        foreach ($response['items'] as $item)
+        {
+            $transfer = $this->forceFillTransferFromResponse($item);
+
+            $transfer = $this->loadRelatedEntity($transfer);
+
+            $transfersCollection->add($transfer);
+        }
+
+        return $transfersCollection;
+    }
+
+    protected function fetchTransfersBySourceIdInternalRequest(string $merchantId, string $sourceId, int $count, int $skip) : array
+    {
+        $queryParams = http_build_query
+        ([
+            'merchant_id' => $merchantId,
+            'source_id' => $sourceId,
+            'count' => $count,
+            'skip' => $skip
+        ]);
+
+        $endpoint = Constant::TRANSFER_FETCH_MULTIPLE_INTERNAL_ENDPOINT . '?' . $queryParams;
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        return $response;
     }
 }

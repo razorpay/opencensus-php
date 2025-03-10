@@ -1694,6 +1694,7 @@ class Entity
         self::TOKEN      => 'tokens',
         self::TRANSFER   => 'route',
         self::PAYMENT_METHOD_TRANSFER   => 'route',
+        self::TRANSFER_PAYMENT => 'route',
         self::CARD_MANDATE => 'card.payments',
     ];
 
@@ -1706,6 +1707,7 @@ class Entity
         self::TOKEN    => Models\Admin\ConfigKey::TOKENS_SERVICE_ENABLED,
         self::TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
         self::PAYMENT_METHOD_TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
+        self::TRANSFER_PAYMENT => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
     ];
 
     public static $archivalFallbackConfigKey = [

@@ -240,6 +240,15 @@ class Core extends Base\Core
 
         $this->addAccountFromAccountCodeIfApplicable($input);
 
+        $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled(
+            $payment->getId(), $this->merchant->getId());
+
+        if ($isAmountTransferredExpEnabled)
+        {
+            // create transfer payment during creation itself
+            $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+        }
+
         $orderTransfers =new Base\PublicCollection();
 
         if ($payment->hasOrder() === true)
@@ -1290,16 +1299,38 @@ class Core extends Base\Core
 
     public function getForPayment(string $paymentId, array $status = [])
     {
-        return $this->repo
-                    ->transfer
-                    ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $paymentId, $this->merchant, $status);
+        $merchantId = $this->merchant->getMerchantId() ?? '';
+
+        if ((new Service())->isRouteTidbFetchExpEnabled($merchantId))
+        {
+            return $this->repo
+                ->transfer
+                ->fetchBySourceTypeAndIdAndMerchantWithExternal(Constants\Entity::PAYMENT, $paymentId, $this->merchant, $status);
+        }
+        else
+        {
+            return $this->repo
+                ->transfer
+                ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $paymentId, $this->merchant, $status);
+        }
     }
 
     public function getForOrder(string $orderId, array $status = [])
     {
-        return $this->repo
-                    ->transfer
-                    ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $orderId, $this->merchant, $status);
+        $merchantId = $this->merchant->getMerchantId() ?? '';
+
+        if ((new Service())->isRouteTidbFetchExpEnabled($merchantId))
+        {
+            return $this->repo
+                ->transfer
+                ->fetchBySourceTypeAndIdAndMerchantWithExternal(Constants\Entity::ORDER, $orderId, $this->merchant, $status);
+        }
+        else
+        {
+            return $this->repo
+                ->transfer
+                ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $orderId, $this->merchant, $status);
+        }
     }
 
     public function createTransactionForTransfer($transfer, $txnId = null)

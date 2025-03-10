@@ -5,43 +5,44 @@ namespace RZP\Jobs\Transfers;
 use App;
 use RZP\Constants\Metric;
 use RZP\Jobs\Job;
-use RZP\Models\Payment\Entity;
+use RZP\Models\Transfer\Payment\Entity;
 use RZP\Trace\TraceCode;
 
 
-class PaymentUpdate extends Job
+class TransferPaymentUpdate extends Job
 {
     const RETRY_INTERVAL    = 30;
     const MAX_RETRY_ATTEMPT = 15;
 
     protected $input;
 
-    protected $payment;
+    protected $transferPayment;
 
 
-    public function __construct(Entity $payment)
+    public function __construct(Entity $transferPayment)
     {
         parent::__construct();
 
-        $this->payment = $payment;
+        $this->transferPayment = $transferPayment;
     }
 
     public function handle()
     {
         parent::handle();
 
-        if ($this->payment->isExternal() === false)
+        if ($this->transferPayment->isExternal() === false)
         {
             return;
         }
 
-        $params = $this->repoManager->payment_method_transfer->getUpdatableLinkedAccountPaymentFields($this->payment);
+        $params = $this->repoManager->transfer_payment->getUpdatableTransferPaymentFields($this->transferPayment);
 
         $this->trace->info(
-            TraceCode::SAVE_PAYMENT_VIA_ROUTE_SERVICE,
+            TraceCode::SAVE_TRANSFER_PAYMENT_VIA_ROUTE_SERVICE,
             [
-                'payment_id' => $this->payment->getId(),
-                'params'     => $params,
+                'transfer_payment_id' => $this->transferPayment->getId(),
+                'payment_id'          => $this->transferPayment->getPaymentId(),
+                'params'              => $params,
             ]
         );
 
@@ -49,21 +50,22 @@ class PaymentUpdate extends Job
         {
             $startTime = millitime();
 
-            app('route')->saveApiPayment($this->payment->getId(), $params);
+            app('route')->saveApiTransferPayment($this->transferPayment->getPaymentId(), $params);
 
-            $this->traceSuccessMetrics('paymentUpdateJob', millitime()-$startTime);
+            $this->traceSuccessMetrics('transferPaymentUpdateJob', millitime()-$startTime);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException(
                 $ex,
                 500,
-                TraceCode::SAVE_PAYMENT_VIA_ROUTE_SERVICE_FAILURE,
+                TraceCode::SAVE_TRANSFER_PAYMENT_VIA_ROUTE_SERVICE_FAILURE,
                 [
-                    'id' => $this->payment->getId()
+                    'id'         => $this->transferPayment->getId(),
+                    'payment_id' => $this->transferPayment->getPaymentId(),
                 ]);
 
-            $this->traceFailureMetrics('paymentUpdateJob', millitime()-$startTime);
+            $this->traceFailureMetrics('transferPaymentUpdateJob', millitime()-$startTime);
 
             $this->checkRetry();
         }
@@ -73,11 +75,11 @@ class PaymentUpdate extends Job
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_FAILURE, [
+        $trace->count(Metric::EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_FAILURE, [
             'caller'      => $functionName,
         ]);
 
-        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_FAILURE_TIME_TAKEN,
+        $trace->histogram(Metric::EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_FAILURE_TIME_TAKEN,
             millitime() - $startTime,
             [
                 'caller'  => $functionName
@@ -88,11 +90,11 @@ class PaymentUpdate extends Job
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_SUCCESS, [
+        $trace->count(Metric::EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_SUCCESS, [
             'caller'      => $functionName,
         ]);
 
-        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_SUCCESS_TIME_TAKEN,
+        $trace->histogram(Metric::EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_SUCCESS_TIME_TAKEN,
             millitime() - $startTime,
             [
                 'caller'  => $functionName
