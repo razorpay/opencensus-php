@@ -6,11 +6,8 @@ export const scrollbar = ({ theme }: { theme: Theme }): FlattenSimpleInterpolati
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  background-image: linear-gradient(to right, #fff, #fff), linear-gradient(to right, #fff, #fff),
-    linear-gradient(to right, #0000001a, #fff0), linear-gradient(to left, #0000001a, #fff0);
   background-position: left center, right center, left center, right center;
   background-repeat: no-repeat;
-  background-color: #fff;
   background-size: 20px 100%, 20px 100%, 10px 100%, 10px 100%;
   background-attachment: local, local, scroll, scroll;
   &::-webkit-scrollbar {
