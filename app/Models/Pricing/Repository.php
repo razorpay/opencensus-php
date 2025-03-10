@@ -1499,6 +1499,24 @@ class Repository extends Base\Repository
         return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
     }
 
+    /**
+     * This function hard deletes a pricing rule!!
+     * Use with extreme caution!!
+     * @param string $planId
+     * @param string $ruleId
+     *
+     * @return mixed
+     */
+    public function hardDeletePlanRule(string $planId, string $ruleId)
+    {
+        $rule = $this->newQuery()
+                     ->planId($planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFailPublic();
+
+        return $this->forceDelete($rule);
+    }
+
     public function getPricingFromPricingIdLegacy($pricingRuleId, $withTrashed = false)
     {
         $idColumn = $this->dbColumn(Entity::ID);

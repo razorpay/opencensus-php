@@ -544,7 +544,7 @@ class Service extends Base\Service
                     // the route is being used by terminalsService also for paypal onboarding pricing update, we don't send subtype from there
                     $methodSubtype = isset($item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE]) ? $item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE] : null;
                     /** @var Pricing\Entity $existingRule */
-                    $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParams(
+                    $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParamsLegacy(
                         $planId,
                         $item[Entity::PRODUCT],
                         $item[Pricing\Entity::FEATURE],
@@ -611,7 +611,7 @@ class Service extends Base\Service
                             }
                             $planId = $plan->getId();
 
-                            $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParams(
+                            $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParamsLegacy(
                                 $planId,
                                 $item[Entity::PRODUCT],
                                 $item[Pricing\Entity::FEATURE],
@@ -1468,6 +1468,78 @@ class Service extends Base\Service
         ];
 
         return $this->app->charge_collections->sendRequest($endPoint, Requests::POST, [], $headers );
+    }
+
+    /**
+     * @param string $planId
+     *
+     * @return string[]
+     * @throws \Throwable
+     */
+    public function hardDeletePlan(string $planId): array
+    {
+        $this->trace->info(TraceCode::PRICING_PLAN_DELETE_REQUEST, [Entity::PLAN_ID => $planId]);
+
+        (new Validator())->validateInput('validateHardDeletePlanRequest', ['plan_id' => $planId]);
+
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($planId)
+        {
+            $pricingRules = $this->repo->pricing->getPlanLegacy($planId, skipOrgCheck: true);
+            if (($pricingRules->count()) === 0)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+
+            foreach ($pricingRules as $pricingRule)
+            {
+                $this->repo->pricing->hardDeletePlanRule($planId, $pricingRule->getId());
+            }
+
+        });
+
+        $this->trace->info(TraceCode::PRICING_PLAN_DELETE_RESPONSE, [Entity::PLAN_ID => $planId]);
+
+        return ['plan_id' => $planId];
+
+    }
+
+    /**
+     * @param string $planId
+     * @param array  $input
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function hardRefreshPlan(string $planId, array $input): array
+    {
+        $this->trace->info(TraceCode::PRICING_PLAN_REFRESH_REQUEST, [Entity::PLAN_ID => $planId, 'input' => $input]);
+
+        (new Validator())->validateInput('validateHardRefreshPlanRequest', $input);
+
+        $response = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($planId, $input)
+        {
+            $pricingRules = $this->repo->pricing->getPlanLegacy($planId, skipOrgCheck: true);
+            if (($pricingRules->count()) === 0)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+
+            foreach ($pricingRules as $pricingRule)
+            {
+                $this->repo->pricing->hardDeletePlanRule($planId, $pricingRule->getId());
+            }
+
+            return Pricing\Entity::withoutTimestamps(function() use ($input)
+            {
+                return $this->createPlanLegacy($input['plan'], orgID: $input['plan']['org_id']);
+            });
+
+        });
+
+        $this->trace->info(TraceCode::PRICING_PLAN_REFRESH_RESPONSE, [Entity::PLAN_ID => $planId, 'response' => $response]);
+
+        return $response;
+
     }
 
     /**

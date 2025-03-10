@@ -3235,6 +3235,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ERROR_INVALID_ARGUMENT                                = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                                       = 'MISC_TRACE_CODE';
     const QR_CODE_REQUEST_VPA_TERMINAL                          = 'QR_CODE_REQUEST_VPA_TERMINAL';
+
+    const PRICING_PLAN_DELETE_REQUEST                           = 'PRICING_PLAN_DELETE_REQUEST';
+    const PRICING_PLAN_DELETE_RESPONSE                          = 'PRICING_PLAN_DELETE_RESPONSE';
+    const PRICING_PLAN_REFRESH_REQUEST                          = 'PRICING_PLAN_REFRESH_REQUEST';
+    const PRICING_PLAN_REFRESH_RESPONSE                         = 'PRICING_PLAN_REFRESH_RESPONSE';
+
     const QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE            = 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE';
     const QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED              = 'QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED';
     const QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE               = 'QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE';

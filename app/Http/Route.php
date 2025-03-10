@@ -1050,6 +1050,8 @@ class Route
         'buy_pricing_delete_plan_rule_force'       => ['delete',   'buy_pricing/{planId}/rule/{ruleId}/force',       'PricingController@deleteBuyPlanGroupedRuleForce'                   ],
         'pricing_update_plan_rule'                 => ['patch',    'pricing/{planId}/rule/{ruleId}',                 'PricingController@updatePlanRule'                                  ],
         'buy_pricing_update_plan_rule'             => ['patch',    'buy_pricing/{planId}/rule/{ruleId}',             'PricingController@updateBuyPricingPlanRule'                        ],
+        'pricing_hard_delete_plan'                 => ['delete',   'pricing/{planId}/force',                         'PricingController@hardDeletePlan'                                  ],
+        'pricing_hard_refresh_plan'                => ['post',     'pricing/{planId}/force/refresh',                 'PricingController@hardRefreshPlan'                                 ],
 
         //pricing-sdk related routes
         'pricing_get_vas_price'                   =>  ['get',     'pricing/vas/fetch',                              'PricingController@calculateVASPrice'                               ],
@@ -5824,6 +5826,9 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'pricing_hard_delete_plan',
+        'pricing_hard_refresh_plan',
+        'pricing_create_plan',
         'internal_order_payments',
         'merchant_info_fetch',
         'internal_fd_fetch_ticket',
@@ -18603,6 +18608,9 @@ class Route
             'payout_create_on_internal_contact',
             'fund_account_create_internal',
             'contact_create_internal',
+            'pricing_hard_delete_plan',
+            'pricing_hard_refresh_plan',
+            'pricing_create_plan',
         ],
 
         'affordability' => [

@@ -211,7 +211,7 @@ class PricingController extends Controller
     public function updateOrgPricing(string $id)
     {
         $input = Request::all();
-        
+
         $passport = $this->ba->getPassport();
 
         $adminId = $passport['consumer']['id'];
@@ -272,5 +272,23 @@ class PricingController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function hardDeletePlan(string $planId)
+    {
+        $data = $this->service()->hardDeletePlan($planId);
+
+        return ApiResponse::json($data);
+    }
+
+
+    public function hardRefreshPlan(string $planId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->hardRefreshPlan($planId, $input);
+
+        return ApiResponse::json($data);
+    }
+
 
 }
