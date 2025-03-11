@@ -34,7 +34,8 @@ function WithdrawButton({ title, type, credits, submitHandler }: WithdrawButtonP
 
   const isPrefundWithdrawalEnabled = isExperimentEnabled(pre_fund_withdrawal);
 
-  const showWithdrawButton = isPrefundWithdrawalEnabled && user.isPgLegderReverseShadowEnabled;
+  const showWithdrawButton =
+    isPrefundWithdrawalEnabled && user.isPgLegderReverseShadowEnabled && user.isCountryIndia;
   return (
     <>
       {showWithdrawButton ? (
