@@ -528,9 +528,9 @@ export class ShellRedirectionService {
   private async switchToPosSalesAgent(details: any): Promise<boolean> {
     try {
       // Get the first merchant with the role of partner agent
-      const partnerAgentMerchant = details?.merchants?.find?.(
-        (merchant: any) => merchant.role === AppConstants.PARTNER_AGENT_ROLE,
-      );
+        const partnerAgentMerchant = Object.values(details.merchants || {}).find(
+            (merchant: any) => merchant.role === AppConstants.PARTNER_AGENT_ROLE,
+        );
 
       if (partnerAgentMerchant?.id) {
         await switchCurrentMerchant(
