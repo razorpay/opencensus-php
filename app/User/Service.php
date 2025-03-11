@@ -1266,7 +1266,7 @@ class Service extends Base\Service
     {
         list($error) = $this->checkAccessOfUserOnMerchant($merchantId);
 
-        if (empty($error) === true)
+        if (empty($error) === true || empty($merchantId) === false)
         {
             // revoke user token on edge using jti
             $data = $this->reissueTokenOnEdge($merchantId, $user);

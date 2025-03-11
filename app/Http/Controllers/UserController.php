@@ -1599,11 +1599,24 @@ class UserController extends Controller
 
         list($error, $data, $httpCode) = (new User\Service)->createMerchant($input);
 
+        if (empty($error) === false)
+        {
+            $timeTaken = microtime(true) - $timeStarted;
+
+            $this->traceDuration($timeTaken, TraceCode::USER_CREATE_MERCHANT);
+
+            return AppResponse::jsonResponse($error, $data, $httpCode);
+        }
+
+        $user = Auth::user();
+
+        $switchError = (new User\Service)->switchCurrentMerchantForUser(array_get($data, 'id'), $user);
+
         $timeTaken = microtime(true) - $timeStarted;
 
         $this->traceDuration($timeTaken, TraceCode::USER_CREATE_MERCHANT);
 
-        return AppResponse::jsonResponse($error, $data, $httpCode);
+        return AppResponse::jsonResponse($switchError, $data, $httpCode);
     }
 
     /**
