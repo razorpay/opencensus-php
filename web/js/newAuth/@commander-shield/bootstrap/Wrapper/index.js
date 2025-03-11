@@ -32,14 +32,21 @@ const Container = styled(View)`
   }
 `;
 
-const Wrapper = ({ theme, children }) => {
+const RouterValidator = ({ children, disableRouter }) => {
+  if (disableRouter) {
+    return <>{children}</>;
+  }
+  return <Router>{children}</Router>;
+};
+
+const Wrapper = ({ theme, children, disableRouter }) => {
   return (
     <CommanderShieldThemeWrapper>
       <ThemeProvider theme={theme}>
         <ReCaptchaV3Provider reCaptchaKey={__ENV__.v3Captcha.key}>
           <GlobalStyles />
           <ErrorBoundary>
-            <Router>
+            <RouterValidator disableRouter={disableRouter}>
               <Size height="100%">
                 <Flex flexDirection="column">
                   <Container>
@@ -47,7 +54,7 @@ const Wrapper = ({ theme, children }) => {
                       <SnackbarProvider>
                         <Flex flexGrow={1}>
                           <Routes>
-                            <Route path="/" element={<>{children}</>} />
+                            <Route path="*" element={<>{children}</>} />
                           </Routes>
                         </Flex>
                       </SnackbarProvider>
@@ -55,7 +62,7 @@ const Wrapper = ({ theme, children }) => {
                   </Container>
                 </Flex>
               </Size>
-            </Router>
+            </RouterValidator>
           </ErrorBoundary>
         </ReCaptchaV3Provider>
       </ThemeProvider>

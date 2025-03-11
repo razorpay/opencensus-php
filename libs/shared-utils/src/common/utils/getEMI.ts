@@ -18,6 +18,7 @@ export const getEMI = (principle: number, length: number, rate: number): number 
   rate /= 1200;
 
   const multiplier = (1 + rate) ** length;
-
-  return Math.floor((principle * rate * multiplier) / (multiplier - 1));
+  
+  // @ts-ignore
+  return parseInt((principle * rate * multiplier) / (multiplier - 1), 10);
 };

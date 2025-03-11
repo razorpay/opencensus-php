@@ -17,6 +17,7 @@ import { PASSWORD_ERROR_TEXT } from '../../shared/constants';
 import LinkButton from '../../shared/LinkButton';
 import Button from '../../shared/Button';
 import captureException, { sentryFlows } from '../../shared/captureException';
+import {useLocation} from "react-router-dom";
 
 const ERROR_TEXT = 'Something went wrong!';
 const CONFIRM_PASSWORD_ERROR = 'Passwords do not match!';
@@ -27,7 +28,8 @@ const FormView = styled(View)`
   border-radius: 4px;
 `;
 
-const ResetPassword = ({ logo = '', location = {} }) => {
+const ResetPassword = ({ logo = '' }) => {
+  const location = useLocation();
   const snackbar = useSnackbar();
   const [redirecting, setRedirecting] = useState(false);
   const [showSigninButton, setShowSigninButton] = useState(false);

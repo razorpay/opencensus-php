@@ -10,11 +10,17 @@ import { formatNumberByParts, CurrencyCodeType } from "@razorpay/i18nify-js/curr
  * @returns {string} The formatted currency amount.
  */
 export const formatCurrencyWithAmount = (currency: CurrencyCodeType, amount: number): string => {
-  const formatted = formatNumberByParts(amount, { currency: currency ?? 'INR' });
-  let formattedStr = formatted?.integer + '';
+ let formatted: any;
+  try {
+    formatted = formatNumberByParts(amount, { currency: currency ?? 'INR' });
+  } catch {
+    // fallback to INR if invalid currency is used
+    formatted = formatNumberByParts(amount, { currency: 'INR' });
+  }
+  let formattedStr = String(formatted?.integer);
 
-  if (formatted?.decimal && formatted?.fraction) {
-    formattedStr += formatted?.decimal + formatted?.fraction;
+  if (formatted?.decimal + formatted?.fraction) {
+    formattedStr += formatted.decimal + formatted.fraction;
   }
 
   return formattedStr;

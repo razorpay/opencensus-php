@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { createGlobalStyle } from 'styled-components';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { lightTheme } from '@razorpay/blade-old/src/tokens/theme';
 import SnackbarProvider from '../../shared/Snackbar/SnackbarProvider';
 import ResetPassword from '../../screens/ResetPassword';
@@ -28,14 +28,12 @@ const ResetPasswordWrapper = ({ theme, orgData, ...props }) => {
   return (
     <Wrapper theme={customTheme}>
       <ErrorBoundary>
-        <Router>
-          <SnackbarProvider>
-            <GlobalStyles />
-            <Routes>
-              <Route path="/" element={<ResetPassword {...props} />} />
-            </Routes>
-          </SnackbarProvider>
-        </Router>
+        <SnackbarProvider>
+          <GlobalStyles />
+          <Routes>
+            <Route path="*" element={<ResetPassword {...props} />} />
+          </Routes>
+        </SnackbarProvider>
       </ErrorBoundary>
     </Wrapper>
   );

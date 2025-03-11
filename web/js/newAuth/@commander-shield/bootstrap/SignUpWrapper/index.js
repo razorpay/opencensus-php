@@ -8,7 +8,7 @@ import SignUp from './SignUp';
 
 const SignUpWrapper = (props) => {
   return (
-    <Wrapper theme={lightTheme}>
+    <Wrapper theme={lightTheme} disableRouter>
       <InitWrapper
         lumberjackAppName="dashboard-signup"
         route={SIGNUP}

@@ -60,7 +60,6 @@
 <!-- if logged in and not on website -->
 @if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete and (app('request')->input('auth_source') !== 'website' and app('request')->input('auth_source') !== 'website_homepage'))
   <!-- Preconnect to required domains  -->
-  <link rel="preload" href="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/payments-dashboard/payments-dashboard.entry.js" as="script">
   <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
   <link rel="dns-prefetch" href="https://maxcdn.bootstrapcdn.com">
   <link rel="dns-prefetch" href="https://o515678.ingest.sentry.io">
