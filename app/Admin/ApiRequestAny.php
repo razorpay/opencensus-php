@@ -128,6 +128,7 @@ class ApiRequestAny
         'gcoms',
         'payments_cross_border',
         'terminals/proxy/qc',
+        'collect_info_admin/website_details/scraper',
         'magic/analytics/reports',
         'vendor_experience',
         'charge-collections',

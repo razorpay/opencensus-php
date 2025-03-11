@@ -416,6 +416,7 @@ class LeafListItem extends React.Component {
       this.handleCreateRequest();
     }
   };
+  
   handleRequest = () => {
     const { instrument } = this.props;
 
