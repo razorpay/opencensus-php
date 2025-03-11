@@ -28,6 +28,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
@@ -280,6 +281,15 @@ class GatewayController extends Controller
         {
             if ($this->shouldPreProcessThroughUpiPaymentService($gatewayDriver) === true)
             {
+                $routeName = $this->app['api.route']->getCurrentRouteName();
+
+                if(($gatewayDriver === Gateway::UPI_AXIS or $gatewayDriver === Gateway::UPI_MINDGATE) and
+                    ($routeName === 'gateway_payment_callback_recurring') and
+                    (Environment::isTestingEnvironment($this->app['env']) === false))
+                {
+                    $input = Request::getContent();
+                }
+
                 try
                 {
                     return $this->app['upi.payments']->preProcessServerCallback($input, $gatewayDriver);
@@ -2095,10 +2105,10 @@ class GatewayController extends Controller
     protected function shouldPreProcessUpiRecurringThroughUpiPaymentService($gateway, $mode)
     {
         try {
-
+            $feature = 'upi_autopay_rearch_' . $gateway . '_pre_process';
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.upi_autopay_rearch_pre_process'),
+                'experiment_id' => $this->app['config']->get('app.'.$feature),
                 'request_data'  => json_encode(['gateway' => $gateway]),
             ];
             $response = $this->app['splitzService']->evaluateRequest($properties);

@@ -662,6 +662,12 @@ return array(
 
     'upi_autopay_rearch_upi_rzpapb_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_RZPAPB_V1_EXP_ID'),
 
+    'upi_autopay_rearch_upi_icici_pre_process' => env('UPI_AUTOPAY_REARCH_UPI_ICICI_PRE_PROCESS'),
+
+    'upi_autopay_rearch_upi_axis_pre_process' => env('UPI_AUTOPAY_REARCH_UPI_AXIS_PRE_PROCESS'),
+
+    'upi_autopay_rearch_upi_mindgate_pre_process' => env('UPI_AUTOPAY_REARCH_UPI_MINDGATE_PRE_PROCESS'),
+
     'upi_autopay_rearch_upi_mindgate_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_MINDGATE_V1_EXP_ID'),
 
     'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),

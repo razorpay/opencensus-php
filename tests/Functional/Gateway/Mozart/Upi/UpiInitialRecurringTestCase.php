@@ -57,7 +57,6 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $this->gateway = 'upi_mozart';
 
-        $this->setMockGatewayTrue();
     }
 
     public function testRecurringMandateCreate($encrypted=false, $tpv=false, $bankAccount=[])

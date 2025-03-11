@@ -2067,6 +2067,13 @@ class Gateway extends Base\Gateway
         {
             return $response['transactionId'];
         }
+
+        if((isset($response['success']) === true) and
+            (isset($response['data']['upi']['merchant_reference']) === true) and
+            ($response['data']['upi']['merchant_reference'] !== null))
+        {
+            return $response['data']['upi']['merchant_reference'];
+        }
     }
 
     protected function getRedactedData($data)

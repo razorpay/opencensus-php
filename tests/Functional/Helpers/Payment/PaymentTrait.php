@@ -2193,7 +2193,10 @@ trait PaymentTrait
                 if ($input['experiment_id'] === 'PLCa20SI9HGtQt' or
                     $input['experiment_id'] === 'PDANy0UHIO3yOJ' or
                     $input['experiment_id'] === 'PMncVHaTfAX8VI' or
+                    $input['experiment_id'] === 'PzYf6q6QKwtbMJ' or
+                    $input['experiment_id'] === 'Q1Trht67TpISXj' or
                     $input['experiment_id'] === 'PSIW9jjGHde6az'
+
                 )
                 {
                     return [
