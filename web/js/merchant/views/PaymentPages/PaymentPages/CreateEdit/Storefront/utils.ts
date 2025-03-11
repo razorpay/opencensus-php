@@ -4,6 +4,7 @@ import { ICategories } from 'merchant/reducers/paymentPages/types';
 import { formatTextAmountField } from 'merchant/views/PaymentPages/common/Products/utils';
 import { FlipOptions, ICheckbox, IHostedPagesProduct, PixelCrop } from './types';
 import ProductPlaceholderImage from 'assets/payment_pages/product-image-placeholder.png';
+import { SOCIAL_HANDLES } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 // export const _product: IHostedPagesProduct = {
 //   id: 'ppi_KBkFIK490VlplY',
@@ -229,4 +230,9 @@ export const getCroppedImg = async (
       resolve(new File([blob], 'cropped.jpeg', { type: 'image/jpeg' }));
     }, 'image/jpeg');
   });
+};
+
+export const getSocialHandleSrc = (name) => {
+  const handle = SOCIAL_HANDLES.find((handle) => handle.name === name);
+  return handle ? handle.src : '';
 };

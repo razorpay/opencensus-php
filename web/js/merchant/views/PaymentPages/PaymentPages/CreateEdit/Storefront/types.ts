@@ -201,7 +201,6 @@ export interface SocialHandleModalProps {
 export interface ModalFooterButtonsProps {
   onCancel: () => void;
   onSave: () => void;
-  inputVal: string;
   isSaveDisabled?: boolean;
 }
 

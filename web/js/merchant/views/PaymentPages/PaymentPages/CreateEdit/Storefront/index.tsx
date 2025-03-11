@@ -182,7 +182,7 @@ const StoreFront = ({
     });
   };
 
-  const handleSocialMediaClick = (val: boolean) => {
+  const handleAddSocialMediaClick = (val: boolean) => {
     setOpenSocialMediaDrawer(val);
   };
 
@@ -882,10 +882,10 @@ const StoreFront = ({
 
                           {isSocialHandlesEnabled && (
                             <AddSocialMediaDetails
-                              handleClick={handleSocialMediaClick}
+                              handleAddSocialMediaClick={handleAddSocialMediaClick}
                               openSocialMediaDrawer={openSocialMediaDrawer}
                               showSocialMedialAlert={showAlert.showSocialHandleAlert}
-                              setShowSocialMedialAlert={setShowAlert}
+                              setShowSocialMediaAlert={setShowAlert}
                               storefrontId={id}
                             />
                           )}
@@ -905,10 +905,10 @@ const StoreFront = ({
                           <SuspenseWithLoader>
                             <Box marginTop="32px" marginBottom="spacing.8">
                               <AddSocialMediaDetails
-                                handleClick={handleSocialMediaClick}
+                                handleAddSocialMediaClick={handleAddSocialMediaClick}
                                 openSocialMediaDrawer={openSocialMediaDrawer}
                                 showSocialMedialAlert={showAlert.showSocialHandleAlert}
-                                setShowSocialMedialAlert={setShowAlert}
+                                setShowSocialMediaAlert={setShowAlert}
                                 storefrontId={id}
                               />
                             </Box>

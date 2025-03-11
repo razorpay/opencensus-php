@@ -20,12 +20,12 @@ interface IRightChildrenProps {
 }
 
 interface IAddSocialMedialDetailsProps {
-  handleClick: (val: boolean) => void;
+  handleAddSocialMediaClick: (val: boolean) => void;
   openSocialMediaDrawer?: boolean;
   storefront: PaymentPagesStorefrontType;
   editStorefront: (name: string, value: unknown) => void;
   showSocialMedialAlert: boolean;
-  setShowSocialMedialAlert: React.Dispatch<React.SetStateAction<AlertState>>;
+  setShowSocialMediaAlert: React.Dispatch<React.SetStateAction<AlertState>>;
   isMobile: boolean;
   storefrontId: string;
 }
@@ -70,12 +70,14 @@ const SocialSwitch: React.FC<SocialSwitchProps> = ({ isChecked, onSwitchChange }
 };
 
 const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
-  handleClick,
+  handleAddSocialMediaClick,
   openSocialMediaDrawer,
   storefront,
   editStorefront,
   isMobile,
   storefrontId,
+  showSocialMedialAlert,
+  setShowSocialMediaAlert,
 }) => {
   const handleSocialHandlesSetting = (val: boolean) => {
     editStorefront('settings', {
@@ -91,19 +93,36 @@ const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
     handleSocialHandlesSetting(isChecked);
   };
 
+  const handleAlertPrimaryClick = () => {
+    setShowSocialMediaAlert((prev) => ({
+      ...prev,
+      showSocialHandleAlert: false,
+    }));
+    handleSocialHandlesSetting(true);
+    handleAddSocialMediaClick(true);
+  };
+
+  const handleAlertSecondaryClick = () => {
+    setShowSocialMediaAlert((prev) => ({
+      ...prev,
+      showSocialHandleAlert: false,
+    }));
+    handleSocialHandlesSetting(false);
+  };
+
   return (
     <>
       {openSocialMediaDrawer ? (
         <SuspenseWithLoader>
           <AddSocialHandleDrawer
-            handleClose={() => handleClick(false)}
+            handleClose={() => handleAddSocialMediaClick(false)}
             storefrontId={storefrontId}
           />
         </SuspenseWithLoader>
       ) : (
         <LineItems
           title="Add social handles"
-          rightChildren={<RightChildren handleClick={handleClick} />}
+          rightChildren={<RightChildren handleClick={handleAddSocialMediaClick} />}
           extraItems={
             <SocialSwitch
               isChecked={storefront?.entity?.settings?.base_config?.social_handles_enabled ?? false}
@@ -112,6 +131,29 @@ const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
           }
           isDetailsFilled={storefront?.entity?.social_handles?.length > 0}
           isMobile={isMobile}
+        />
+      )}
+      {showSocialMedialAlert && (
+        <Alert
+          title="Missing social handles"
+          description="Your store is being published without social handles. To proceed, either add a social handle or disable the social handles option."
+          marginTop="spacing.4"
+          position="absolute"
+          top="62px"
+          right={isMobile ? 'spacing.5' : '60px'}
+          left={isMobile ? 'spacing.4' : 'none'}
+          actions={{
+            primary: { onClick: handleAlertPrimaryClick, text: 'Upload Social Handles' },
+            secondary: { onClick: handleAlertSecondaryClick, text: 'Disable Social Handles' },
+          }}
+          color="notice"
+          emphasis="intense"
+          onDismiss={() =>
+            setShowSocialMediaAlert((prev) => ({
+              ...prev,
+              showSocialHandleAlert: false,
+            }))
+          }
         />
       )}
     </>
