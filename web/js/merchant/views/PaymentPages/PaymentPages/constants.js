@@ -30,58 +30,69 @@ export const MAX_BANNERS_ALLOWED = 5;
 export const MAX_ENABLED_BANNERS = 3;
 export const MAX_SOCIAL_HANDLE_ALLOWED = 4;
 
+export const PLATFORM_NAMES = {
+  INSTAGRAM: 'instagram',
+  FACEBOOK: 'facebook',
+  GOOGLE: 'google',
+  YOUTUBE: 'youTube',
+  X: 'twitter',
+  LINKEDIN: 'linkedIn',
+  PINTEREST: 'pinterest',
+  CUSTOM: 'custom',
+};
+
 export const SOCIAL_HANDLES = [
   {
-    name: 'instagram',
+    name: PLATFORM_NAMES.INSTAGRAM,
     label: 'Instagram',
     src: 'https://cdn.razorpay.com/static/assets/storefront/instagram.png',
     inputLabel: 'Add your instagram profile link',
     inputPlaceholder: 'https://www.instagram.com/rsubhojit/',
   },
   {
-    name: 'facebook',
+    name: PLATFORM_NAMES.FACEBOOK,
     label: 'Facebook',
     src: 'https://cdn.razorpay.com/static/assets/storefront/facebook.png',
     inputLabel: 'Add your facebook profile link',
     inputPlaceholder: 'https://www.facebook.com/rsubhojit/',
   },
   {
-    name: 'google',
+    name: PLATFORM_NAMES.GOOGLE,
     label: 'Google',
     src: 'https://cdn.razorpay.com/static/assets/storefront/google.png',
     inputLabel: 'Add your google business link',
     inputPlaceholder: 'https://www.google.com/rsubhojit/',
   },
   {
-    name: 'youTube',
+    name: PLATFORM_NAMES.YOUTUBE,
     label: 'YouTube',
     src: 'https://cdn.razorpay.com/static/assets/storefront/youtube.png',
     inputLabel: 'Add your youtube profile link',
     inputPlaceholder: 'https://www.youtube.com/rsubhojit/',
   },
   {
-    name: 'twitter',
+    name: PLATFORM_NAMES.X,
     label: 'X (Formerly Twitter)',
     src: 'https://cdn.razorpay.com/static/assets/storefront/x.png',
     inputLabel: 'Add your X (Formerly Twitter) profile link',
     inputPlaceholder: 'https://www.x.com/rsubhojit/',
   },
   {
-    name: 'linkedIn',
+    name: PLATFORM_NAMES.LINKEDIN,
     label: 'LinkedIn',
     src: 'https://cdn.razorpay.com/static/assets/storefront/linkedin.png',
     inputLabel: 'Add your linkedIn profile link',
     inputPlaceholder: 'https://www.linkedIn.com/rsubhojit/',
   },
   {
-    name: 'pinterest',
+    name: PLATFORM_NAMES.PINTEREST,
     label: 'Pinterest',
     src: 'https://cdn.razorpay.com/static/assets/storefront/pinterest.png',
     inputLabel: 'Add your pinterest profile link',
     inputPlaceholder: 'https://www.pinterest.com/rsubhojit/',
   },
   {
-    name: 'custom',
+    name: PLATFORM_NAMES.CUSTOM,
     label: 'Custom',
     src: 'https://cdn.razorpay.com/static/assets/storefront/custom.png',
     inputLabel: 'Add your custom profile link',

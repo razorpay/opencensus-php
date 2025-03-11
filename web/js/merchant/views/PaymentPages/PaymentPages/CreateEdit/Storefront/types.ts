@@ -8,6 +8,7 @@ import {
   SocialMediaHandles,
 } from 'merchant/reducers/paymentPages/types';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { BladeFileList } from '@razorpay/blade/components';
 
 export type TripleState = -1 | 0 | 1;
 
@@ -189,34 +190,79 @@ export interface SocialHandle {
 }
 
 export interface SocialHandleModalProps {
-  onSave: () => void;
+  saveSocialHandle: () => void;
   storefront?: PaymentPagesStorefrontType;
   inputVal: string;
   selectedHandle: SocialHandle | null;
-  setSelectedHandle: React.Dispatch<React.SetStateAction<SocialHandle | null>>;
-  handleInputChange: (e: any) => void;
-  onCancel: () => void;
+  updateInputValue: (e: any) => void;
+  cancelSocialHandleOperation: () => void;
+  selectSocialHandle: (handle: SocialHandle) => void;
+  uploadedFile: File | null;
+  setUploadedFile: React.Dispatch<React.SetStateAction<File | null>>;
+  isSaving: boolean;
+  uploadedLogo: string;
+  setUploadedLogo: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export interface ModalFooterButtonsProps {
   onCancel: () => void;
   onSave: () => void;
   isSaveDisabled?: boolean;
+  isSaving?: boolean;
 }
 
 export interface ISingleSocialHandleProps {
   id: string;
   platform: string;
   logo_url: string;
-  handleDelete: (val: string) => void;
-  handleEdit: (val: string) => void;
-  isMobile: boolean;
+  showDeleteConfirmation: (val: string) => void;
+  editSocialHandle: (val: string) => void;
 }
 
 export interface SocialHandleListProps {
   reorderSocialHandle: (payload: any) => void;
   isMobile: boolean;
   socialHandleList: SocialMediaHandles;
-  handleEditClick: (handle: string) => void;
-  handleDeleteClick: (handle: string) => void;
+  editSocialHandle: (handle: string) => void;
+  showDeleteConfirmation: (handle: string) => void;
+}
+
+export interface SocialHandleDrawerProps {
+  handleClose: () => void;
+  isMobile: boolean;
+  addSocialHandle: (payload: SocialMediaHandle) => void;
+  storefront: PaymentPagesStorefrontType;
+  storefrontId: string;
+  reorderSocialHandle: (payload: any) => void;
+  updateSocialHandle: (payload: SocialMediaHandle) => void;
+  deleteSocialHandle: (payload: { platform: string }) => void;
+}
+
+export interface SocialHandleDrawerViewProps {
+  isMobile: boolean;
+  handleClose: () => void;
+  showSelectModal: boolean;
+  isEditing: boolean;
+  selectedPlatform: string;
+  inputVal: string;
+  selectedHandle: SocialHandle | null;
+  openDeleteModal: boolean;
+  socialHandles: SocialMediaHandles;
+  hasReachedHandleLimit: boolean;
+  updateInputValue: (e: any) => void;
+  setSelectedHandle: React.Dispatch<React.SetStateAction<SocialHandle | null>>;
+  saveSocialHandle: () => void;
+  cancelSocialHandleOperation: () => void;
+  editSocialHandle: (platform: string) => void;
+  showDeleteConfirmation: (platform: string) => void;
+  confirmDeleteSocialHandle: () => void;
+  cancelDeleteSocialHandle: () => void;
+  openSocialHandleSelector: () => void;
+  reorderSocialHandle: (payload: any) => void;
+  selectSocialHandle: (handle: SocialHandle) => void;
+  uploadedFile: File | null;
+  setUploadedFile: React.Dispatch<React.SetStateAction<File | null>>;
+  isSaving: boolean;
+  uploadedLogo: string;
+  setUploadedLogo: React.Dispatch<React.SetStateAction<string>>;
 }

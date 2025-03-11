@@ -4,14 +4,14 @@ import { bindActionCreators } from 'redux';
 
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import { Alert, Box, Button, ChevronRightIcon, Switch, Text } from '@razorpay/blade/components';
-import LineItems from './LineItems';
 import {
   editStorefront,
   PaymentPagesStorefrontType,
 } from 'merchant/reducers/paymentPages/storefront';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { AlertState } from './types';
+import { AlertState } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/types';
+import LineItems from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/LineItems';
 
 const UploadBannerDrawer = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1UploadBanner' */ './UploadBannerDrawer'),

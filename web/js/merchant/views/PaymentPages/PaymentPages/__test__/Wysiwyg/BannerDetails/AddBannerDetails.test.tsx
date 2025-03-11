@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent } from 'test-utils';
 import * as storefrontReducers from 'merchant/reducers/paymentPages/storefront';
-import AddBannerDetails from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/AddBannerDetails';
 import { storefrontData } from './mockData';
+import AddBannerDetails from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BannerDetails/AddBannerDetails';
 
 describe('AddBannerDetails Component', () => {
   const editStorefront = jest.spyOn(storefrontReducers, 'editStorefront');

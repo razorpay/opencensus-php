@@ -17,43 +17,29 @@ import {
   TextInput,
   ModalFooter,
   BottomSheetFooter,
+  FileUpload,
 } from '@razorpay/blade/components';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
-import {
-  addSocialHandle,
-  deleteSocialHandle,
-  reorderSocialHandle,
-  updatedSocialHandle,
-} from 'merchant/reducers/paymentPages/storefront';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import LineItems from './LineItems';
 import SocialHandleList from './SocialHandleList';
+import { SOCIAL_HANDLES } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import {
-  MAX_SOCIAL_HANDLE_ALLOWED,
-  SOCIAL_HANDLES,
-} from 'merchant/views/PaymentPages/PaymentPages/constants';
-import { SocialMediaHandle, SocialMediaHandles } from 'merchant/reducers/paymentPages/types';
-import {
-  ModalFooterButtonsProps,
+  SocialHandleDrawerViewProps,
   SocialHandle,
-  SocialHandleDrawerProps,
   SocialHandleModalProps,
-} from './types';
+  ModalFooterButtonsProps,
+} from '../types';
+import LineItems from '../LineItems';
+import UploadCustomLogo from './UploadCustomLogo';
 import { zIndicesMap } from '@libs/web-nexus/common/constant';
 
-const getNextPosition = (socialHandles: SocialMediaHandles): number => {
-  if (socialHandles.length === 0) return 0;
-  return Math.max(...socialHandles.map((handle) => handle?.position ?? 0)) + 1;
-};
-
 const ModalFooterButtons = memo(
-  ({ onCancel, onSave, isSaveDisabled = false }: ModalFooterButtonsProps) => {
+  ({ onCancel, onSave, isSaveDisabled = false, isSaving = false }: ModalFooterButtonsProps) => {
     return (
       <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
         <Button variant="tertiary" onClick={onCancel}>
           Cancel
         </Button>
-        <Button isDisabled={isSaveDisabled} variant="primary" onClick={onSave}>
+        <Button isDisabled={isSaveDisabled} variant="primary" onClick={onSave} isLoading={isSaving}>
           Confirm
         </Button>
       </Box>
@@ -119,48 +105,61 @@ const SocialHandleItemMobile = memo(
 const RenderSelectSocialHandlesDesktop = memo(
   ({
     inputVal,
-    onSave,
+    saveSocialHandle,
     selectedHandle,
-    setSelectedHandle,
-    handleInputChange,
-    onCancel,
+    selectSocialHandle,
+    updateInputValue,
+    cancelSocialHandleOperation,
+    uploadedFile,
+    setUploadedFile,
+    isSaving,
+    uploadedLogo,
+    setUploadedLogo,
   }: SocialHandleModalProps) => {
-    const handleSelect = useCallback(
-      (handle: SocialHandle) => {
-        setSelectedHandle(handle);
-      },
-      [setSelectedHandle],
-    );
-
     return (
-      <Modal isOpen={true} onDismiss={onCancel} size="medium">
+      <Modal isOpen={true} onDismiss={cancelSocialHandleOperation} size="medium">
         <ModalHeader
           title={selectedHandle ? selectedHandle.inputLabel : 'Select a social account'}
         />
         <ModalBody>
           {selectedHandle ? (
-            <TextInput
-              label=""
-              placeholder={selectedHandle.inputPlaceholder}
-              type="text"
-              onChange={handleInputChange}
-              value={inputVal}
-              name={selectedHandle.name}
-            />
+            <Box display="flex" gap="spacing.5" flexDirection="column">
+              {selectedHandle.name === 'custom' && (
+                <UploadCustomLogo
+                  uploadedFile={uploadedFile}
+                  setUploadedFile={setUploadedFile}
+                  uploadedLogo={uploadedLogo}
+                  setUploadedLogo={setUploadedLogo}
+                />
+              )}
+              <TextInput
+                label={selectedHandle.name === 'custom' ? 'Add a link' : ''}
+                placeholder={selectedHandle.inputPlaceholder}
+                type="text"
+                onChange={updateInputValue}
+                value={inputVal}
+                name={selectedHandle.name}
+              />
+            </Box>
           ) : (
             <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="spacing.7">
               {SOCIAL_HANDLES.map((item) => (
-                <SocialHandleItem key={item.name} item={item} onSelect={handleSelect} />
+                <SocialHandleItem
+                  key={item.name}
+                  item={item}
+                  onSelect={(item) => selectSocialHandle(item)}
+                />
               ))}
             </Box>
           )}
         </ModalBody>
+
         {selectedHandle && (
           <ModalFooter>
             <ModalFooterButtons
-              onCancel={onCancel}
-              onSave={onSave}
-              isSaveDisabled={!inputVal?.length}
+              onCancel={cancelSocialHandleOperation}
+              onSave={saveSocialHandle}
+              isSaving={isSaving}
             />
           </ModalFooter>
         )}
@@ -169,116 +168,37 @@ const RenderSelectSocialHandlesDesktop = memo(
   },
 );
 
-const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
-  handleClose,
+const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
   isMobile,
-  addSocialHandle,
-  storefront,
+  handleClose,
+  showSelectModal,
+  inputVal,
+  selectedHandle,
+  openDeleteModal,
+  socialHandles,
+  hasReachedHandleLimit,
+  updateInputValue,
+  saveSocialHandle,
+  cancelDeleteSocialHandle,
+  editSocialHandle,
+  showDeleteConfirmation,
+  confirmDeleteSocialHandle,
+  cancelSocialHandleOperation,
+  openSocialHandleSelector,
   reorderSocialHandle,
-  updateSocialHandle,
-  deleteSocialHandle,
+  selectSocialHandle,
+  uploadedFile,
+  setUploadedFile,
+  isSaving,
+  uploadedLogo,
+  setUploadedLogo,
 }) => {
-  const [showSelectModal, setShowSelectModal] = useState<boolean>(false);
-  const [inputVal, setInputVal] = useState<string>('');
-  const [selectedHandle, setSelectedHandle] = useState<SocialHandle | null>(null);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('');
-
-  const socialHandles = storefront?.entity?.social_handles || [];
-  const hasReachedHandleLimit = socialHandles.length >= MAX_SOCIAL_HANDLE_ALLOWED;
-
-  useEffect(() => {
-    if (!selectedHandle) return;
-    const profile = socialHandles.find((profile) => profile?.platform === selectedHandle.name);
-    setInputVal(profile?.profile_url ?? '');
-  }, [selectedHandle, socialHandles]);
-
-  const handleInputChange = (e: any) => {
-    setInputVal(e.value);
-  };
-
-  const handleSelect = (handle: SocialHandle) => {
-    setSelectedHandle(handle);
-  };
-
-  const onSave = useCallback(() => {
-    if (!selectedHandle) return;
-
-    const platform = selectedHandle.name;
-    const payload: SocialMediaHandle = { platform, profile_url: inputVal };
-    const isUpdating = isEditing || socialHandles.some((profile) => profile.platform === platform);
-
-    if (isUpdating) {
-      updateSocialHandle(payload);
-      showNotification({
-        type: 'success',
-        message: `${platform.toUpperCase()} handle has been updated to your storefront`,
-      });
-    } else {
-      const position = getNextPosition(socialHandles);
-      addSocialHandle({ ...payload, position });
-      showNotification({
-        type: 'success',
-        message: `${platform.toUpperCase()} handle has been added to your storefront`,
-      });
-    }
-
-    setSelectedHandle(null);
-    setShowSelectModal(false);
-    setIsEditing(false);
-  }, [selectedHandle, inputVal, isEditing, socialHandles, updateSocialHandle, addSocialHandle]);
-
-  const onCancel = useCallback(() => {
-    if (isEditing) {
-      setSelectedHandle(null);
-      setShowSelectModal(false);
-      setIsEditing(false);
-    } else {
-      selectedHandle ? setSelectedHandle(null) : setShowSelectModal(false);
-    }
-  }, [isEditing, selectedHandle]);
-
-  const handleEditClick = (platform: string) => {
-    setIsEditing(true);
-    const handle = SOCIAL_HANDLES.find((handle) => handle.name === platform);
-    if (handle) {
-      setShowSelectModal(true);
-      setSelectedHandle(handle);
-    }
-  };
-
-  const handleDeleteClick = (platform: string) => {
-    setSelectedPlatform(platform);
-    setOpenDeleteModal(true);
-  };
-
-  const handleConfirmDelete = () => {
-    setOpenDeleteModal(false);
-    deleteSocialHandle({ platform: selectedPlatform });
-  };
-
-  const handleConfirmCancel = () => {
-    setOpenDeleteModal(false);
-  };
-
-  const handleSelectModalOpen = useCallback(() => {
-    if (hasReachedHandleLimit) {
-      showNotification({
-        type: 'error',
-        message: "You've reached the handles limit. Delete existing handles to add new ones.",
-      });
-      return;
-    }
-    setShowSelectModal(true);
-  }, [hasReachedHandleLimit]);
-
   return (
     <>
       {isMobile ? (
         <BottomSheet
           isOpen={true}
-          onDismiss={selectedHandle || showSelectModal ? onCancel : handleClose}
+          onDismiss={selectedHandle || showSelectModal ? cancelSocialHandleOperation : handleClose}
           zIndex={zIndicesMap.modal}
           snapPoints={[0.9, 0.9, 0.9]}
         >
@@ -292,7 +212,7 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
                   label=""
                   placeholder={selectedHandle.inputPlaceholder}
                   type="text"
-                  onChange={handleInputChange}
+                  onChange={updateInputValue}
                   value={inputVal}
                   name={selectedHandle.name}
                 />
@@ -300,7 +220,11 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
             ) : showSelectModal ? (
               <>
                 {SOCIAL_HANDLES.map((item) => (
-                  <SocialHandleItemMobile key={item.name} item={item} onSelect={handleSelect} />
+                  <SocialHandleItemMobile
+                    key={item.name}
+                    item={item}
+                    onSelect={selectSocialHandle}
+                  />
                 ))}
               </>
             ) : (
@@ -324,7 +248,7 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
                         color="primary"
                         size="xsmall"
                         icon={ChevronRightIcon}
-                        onClick={handleSelectModalOpen}
+                        onClick={openSocialHandleSelector}
                       />
                     }
                   />
@@ -334,8 +258,8 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
                     isMobile={isMobile}
                     reorderSocialHandle={reorderSocialHandle}
                     socialHandleList={socialHandles}
-                    handleEditClick={handleEditClick}
-                    handleDeleteClick={handleDeleteClick}
+                    editSocialHandle={editSocialHandle}
+                    showDeleteConfirmation={showDeleteConfirmation}
                   />
                 )}
               </>
@@ -344,8 +268,9 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
           <BottomSheetFooter>
             {selectedHandle && (
               <ModalFooterButtons
-                onCancel={onCancel}
-                onSave={onSave}
+                isSaving={isSaving}
+                onCancel={cancelSocialHandleOperation}
+                onSave={saveSocialHandle}
                 isSaveDisabled={!inputVal?.length}
               />
             )}
@@ -395,7 +320,7 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
                   color="primary"
                   size="xsmall"
                   icon={ChevronRightIcon}
-                  onClick={handleSelectModalOpen}
+                  onClick={openSocialHandleSelector}
                 />
               }
             />
@@ -405,29 +330,33 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
               isMobile={isMobile}
               reorderSocialHandle={reorderSocialHandle}
               socialHandleList={socialHandles}
-              handleEditClick={handleEditClick}
-              handleDeleteClick={handleDeleteClick}
+              editSocialHandle={editSocialHandle}
+              showDeleteConfirmation={showDeleteConfirmation}
             />
           )}
           {showSelectModal && (
             <RenderSelectSocialHandlesDesktop
               inputVal={inputVal}
-              onSave={onSave}
+              saveSocialHandle={saveSocialHandle}
               selectedHandle={selectedHandle}
-              setSelectedHandle={setSelectedHandle}
-              handleInputChange={handleInputChange}
-              onCancel={onCancel}
+              selectSocialHandle={selectSocialHandle}
+              updateInputValue={updateInputValue}
+              cancelSocialHandleOperation={cancelSocialHandleOperation}
+              uploadedFile={uploadedFile}
+              setUploadedFile={setUploadedFile}
+              isSaving={isSaving}
+              uploadedLogo={uploadedLogo}
+              setUploadedLogo={setUploadedLogo}
             />
           )}
         </PaymentPagesDrawer>
       )}
 
-      {/* Delete confirmation modal */}
       {openDeleteModal &&
         (isMobile ? (
           <BottomSheet
             isOpen={true}
-            onDismiss={handleConfirmCancel}
+            onDismiss={cancelDeleteSocialHandle}
             zIndex={zIndicesMap.modal}
             snapPoints={[0.9, 0.9, 0.9]}
           >
@@ -436,17 +365,32 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
               subtitle="Please confirm if you would like to proceed with deleting the social handle."
             />
             <BottomSheetFooter>
-              <ModalFooterButtons onCancel={handleConfirmCancel} onSave={handleConfirmDelete} />
+              <Box
+                display="flex"
+                gap="spacing.3"
+                justifyContent="flex-end"
+                width="100%"
+                flexDirection="column"
+              >
+                <Button variant="tertiary" onClick={cancelDeleteSocialHandle}>
+                  Cancel
+                </Button>
+                <Button onClick={confirmDeleteSocialHandle}>Confirm</Button>
+              </Box>
+              <ModalFooterButtons
+                onCancel={cancelDeleteSocialHandle}
+                onSave={confirmDeleteSocialHandle}
+              />
             </BottomSheetFooter>
           </BottomSheet>
         ) : (
-          <Modal isOpen={true} onDismiss={handleConfirmCancel} size="small">
+          <Modal isOpen={true} onDismiss={cancelDeleteSocialHandle} size="small">
             <ModalHeader
               title="You want to remove social handle?"
               subtitle="Your added handle will be deleted."
             />
             <ModalFooter>
-              <ModalFooterButtons onCancel={handleConfirmCancel} onSave={handleConfirmDelete} />
+              <ModalFooterButtons onCancel={cancelDeleteSocialHandle} onSave={confirmDeleteSocialHandle} />
             </ModalFooter>
           </Modal>
         ))}
@@ -454,16 +398,4 @@ const SocialHandleDrawer: React.FC<SocialHandleDrawerProps> = ({
   );
 };
 
-const mapStateToProps = (state: any) => ({
-  storefront: state.paymentPageStorefront,
-  isMobile: state.app.isMobileResolution,
-});
-
-const mapDispatchToProps = (dispatch: any) => ({
-  addSocialHandle: bindActionCreators(addSocialHandle, dispatch),
-  reorderSocialHandle: bindActionCreators(reorderSocialHandle, dispatch),
-  updateSocialHandle: bindActionCreators(updatedSocialHandle, dispatch),
-  deleteSocialHandle: bindActionCreators(deleteSocialHandle, dispatch),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(SocialHandleDrawer);
+export default SocialHandleDrawerView;

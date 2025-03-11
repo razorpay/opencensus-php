@@ -20,7 +20,7 @@ import {
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
-import LineItems from './LineItems';
+import LineItems from '../LineItems';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { toBase64 } from 'merchant/views/Capital/utils';
@@ -32,14 +32,17 @@ import {
 import lazy from 'merchant/routes/LazyLoader';
 import { IBannerImage, CropDimensions } from 'merchant/reducers/paymentPages/types';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { MAX_BANNERS_ALLOWED, MAX_ENABLED_BANNERS } from '../../constants';
+import {
+  MAX_BANNERS_ALLOWED,
+  MAX_ENABLED_BANNERS,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const BannerList = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1BannerList' */ './BannerList'),
 );
 
 const ImageCropper = lazy(
-  () => import(/* webpackChunkName: 'StorefrontV1ImageCropper' */ './ImageCropper'),
+  () => import(/* webpackChunkName: 'StorefrontV1ImageCropper' */ './BannerCropper'),
 );
 
 const FILE_SIZE_LIMIT_MB = 2;

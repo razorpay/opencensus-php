@@ -2,8 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, fireEvent } from 'test-utils';
-import { editStorefront } from 'merchant/reducers/paymentPages/storefront';
-import BusinessDetailsMobile from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BusinessDetailsMobile';
+import BusinessDetailsMobile from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BuisnessDetails/BusinessDetailsMobile';
 
 jest.mock('merchant/reducers/paymentPages/storefront', () => ({
   editStorefront: jest.fn(),

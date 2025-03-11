@@ -1,5 +1,4 @@
 import React from 'react';
-import LineItems from './LineItems';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { ChevronRightIcon, Button, Box, Text, Switch, Alert } from '@razorpay/blade/components';
@@ -9,10 +8,11 @@ import {
 } from 'merchant/reducers/paymentPages/storefront';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { AlertState } from './types';
+import LineItems from '../LineItems';
+import { AlertState } from '../types';
 
-const AddSocialHandleDrawer = lazy(
-  () => import(/* webpackChunkName: 'AddSocialHandleDrawer' */ './AddSocialHandleDrawer'),
+const SocialHandleDrawerContainer = lazy(
+  () => import(/* webpackChunkName: 'SocialHandleDrawerContainer' */ './SocialHandleDrawerContainer'),
 );
 
 interface IRightChildrenProps {
@@ -114,8 +114,8 @@ const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
     <>
       {openSocialMediaDrawer ? (
         <SuspenseWithLoader>
-          <AddSocialHandleDrawer
-            handleClose={() => handleAddSocialMediaClick(false)}
+          <SocialHandleDrawerContainer
+            handleClose={() =>  handleAddSocialMediaClick(false)}
             storefrontId={storefrontId}
           />
         </SuspenseWithLoader>

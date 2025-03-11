@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from 'test-utils';
-import BannersList from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BannerList';
 import { bannerData } from './mockData';
+import BannersList from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BannerDetails/BannerList';
 
 describe('Upload Banner Drawer', () => {
   const handleReorder = jest.fn();

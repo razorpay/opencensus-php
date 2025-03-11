@@ -232,6 +232,80 @@ export const getCroppedImg = async (
   });
 };
 
+const FILE_SIZE_LIMIT_MB = 1;
+
+export const validateFile = (file: File | null): Promise<string | null> => {
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve('No file selected.');
+      return;
+    }
+
+    const sizeInMB = file.size / 1024 / 1024;
+    if (sizeInMB > FILE_SIZE_LIMIT_MB) {
+      resolve(`File size exceeds ${FILE_SIZE_LIMIT_MB}MB limit.`);
+      return;
+    }
+
+    const fileType = file.type;
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(fileType)) {
+      resolve('Invalid file format. Only JPEG, JPG, and PNG files are allowed.');
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      if (img.width !== img.height) {
+        resolve(
+          `Image must have a 1:1 aspect ratio. Current dimensions: ${img.width}x${img.height}px.`,
+        );
+      } else {
+        resolve(null);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve('Failed to load image for validation. The file may be corrupted.');
+    };
+
+    img.src = objectUrl;
+  });
+};
+
+
+export const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error('No file provided'));
+      return;
+    }
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      resolve(base64String);
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+export const capitalizeWord = (str: string): string => {
+  if (!str) return str;
+  return str
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export const getSocialHandleSrc = (name) => {
   const handle = SOCIAL_HANDLES.find((handle) => handle.name === name);
   return handle ? handle.src : '';

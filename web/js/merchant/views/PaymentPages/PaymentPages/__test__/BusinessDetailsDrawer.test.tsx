@@ -2,7 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, fireEvent } from 'test-utils';
-import BusinessDetailsDrawer from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BusinessDetailsDrawer';
+import BusinessDetailsDrawer from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BuisnessDetails/BusinessDetailsDrawer';
 
 const mockEditStorefront = jest.fn();
 const mockHandleClose = jest.fn();

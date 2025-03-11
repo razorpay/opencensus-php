@@ -14,8 +14,12 @@ import {
   BottomSheetFooter,
   BottomSheetHeader,
 } from '@razorpay/blade/components';
-import { CropWrapper, DragWrapperDesktop, DragWrapperMobile } from './styled';
-import { getCroppedImg } from './utils';
+import {
+  CropWrapper,
+  DragWrapperDesktop,
+  DragWrapperMobile,
+} from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/styled';
+import { getCroppedImg } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/utils';
 import Loader from 'common/ui/Loader';
 import { IBannerImage } from 'merchant/reducers/paymentPages/types';
 

@@ -83,21 +83,26 @@ import SelectProductDrawer from './SelectProductDrawer';
 import MobileActionButtons from './MobileActionButtons';
 import { PRODUCT_MESSAGES } from 'merchant/views/PaymentPages/common/Products/constants';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
-import ChromeSearchBar from './ChromeSearchBar';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ChromeSearchBar from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BuisnessDetails/ChromeSearchBar';
 
 const AddBuisnessDetails = lazy(
-  () => import(/* webpackChunkName: 'AddBuisnessDetails' */ './AddBuisnessDetails'),
+  () =>
+    import(
+      /* webpackChunkName: 'AddBuisnessDetails' */ './BuisnessDetails/AddBuisnessDetails'),
 );
 
 const AddBannerDetails = lazy(
-  () => import(/* webpackChunkName: 'AddBannerDetails' */ './AddBannerDetails'),
+  () =>
+    import(/* webpackChunkName: 'AddBannerDetails' */ './BannerDetails/AddBannerDetails'),
 );
 
 const AddSocialMediaDetails = lazy(
-  () => import(/* webpackChunkName: 'AddSocialMediaDetails' */ './AddSocialMediaDetails'),
+  () =>
+    import(
+      /* webpackChunkName: 'AddSocialMediaDetails' */ './SocialHandleDetails/AddSocialMediaDetails'),
 );
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();

@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen } from 'test-utils';
-import ChromeSearchBar from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/ChromeSearchBar';
+import ChromeSearchBar from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BuisnessDetails/ChromeSearchBar';
 
 describe('ChromeSearchBar', () => {
   test('renders correctly in desktop preview mode', () => {

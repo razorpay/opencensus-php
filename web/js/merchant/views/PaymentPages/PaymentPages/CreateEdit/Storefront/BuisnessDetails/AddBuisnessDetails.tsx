@@ -1,9 +1,9 @@
 import React from 'react';
-import LineItems from './LineItems';
 import { Button, ChevronRightIcon, Text } from '@razorpay/blade/components';
 import BusinessDetailsDrawer from './BusinessDetailsDrawer';
 import { connect } from 'react-redux';
 import { PaymentPagesStorefrontType } from 'merchant/reducers/paymentPages/storefront';
+import LineItems from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/LineItems';
 
 interface IAddBusinessDetailsProps {
   handleClick: (val: boolean) => void;
@@ -45,16 +45,6 @@ const AddBuisnessDetails: React.FC<IAddBusinessDetailsProps> = ({
       ) : (
         <LineItems
           title="Add business details"
-          subTitle={
-            <Text
-              color="interactive.text.notice.normal"
-              variant="body"
-              size="small"
-              weight="regular"
-            >
-              Mandatory information
-            </Text>
-          }
           rightChildren={<RightChildren handleClick={handleClick} />}
           isMobile={isMobile}
           isDetailsFilled={Boolean(isDetailsFilled)}
