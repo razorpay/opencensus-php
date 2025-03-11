@@ -49,11 +49,19 @@ const getDefaultMethodAndOption = (): DefaultMethodAndOption => {
 
 export const getDefaultCountryCodeValue = (): string => {
   const user = getUser();
-  const { country_code } = qs.parse(location.search);
+  const url = new URL(window.location.href);
   let defaultCountryCodeValue = getDialCodeByCountryCode(user.merchant.country_code);
-  if (country_code) {
-    defaultCountryCodeValue = `+${(country_code as string).trim()}`;
+
+  // Extract query parameters
+  const params = new URLSearchParams(url.search);
+  const encodedCountryCode = params.get('country_code');
+
+  // Decode and set the country code
+  if (encodedCountryCode) {
+    const decodedCode = decodeURIComponent(encodedCountryCode).trim();
+    return decodedCode.startsWith('+') ? decodedCode : `+${decodedCode}`;
   }
+
   return defaultCountryCodeValue;
 };
 
