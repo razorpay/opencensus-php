@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, AlertCircleIcon, Box, Spinner } from '@razorpay/blade/components';
+import { Alert, AlertCircleIcon, Box, Spinner, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import styled, { css, keyframes } from 'styled-components';
 
@@ -23,6 +23,7 @@ import {
   PRE_ENABLE_VIEWS,
   getSamedayTimeline,
   SAMEDAY_MODAL_LOCATIONS,
+  DEFAULT_PRICE,
 } from './constants';
 import { enableAutomaticSettlements, setEnableEsPartialAutomaticDate } from './utils';
 
@@ -428,24 +429,68 @@ function PreEnable({
   const onMouseLeave = () => setHovered(false);
 
   const getBottomHeading = () => {
-    if (isFullOndemandSettlementEnabled && !isPricingValid) return null;
-
     switch (view) {
       case PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS: {
         return (
-          <>
-            How Same-day Settlements <br />
-            work
-          </>
+          <Box textAlign="center">
+            <Text
+              size="small"
+              weight="semibold"
+              color="surface.text.gray.subtle"
+              marginTop="spacing.2"
+            >
+              How Same-day Settlements work
+            </Text>
+            {!isPricingValid && (
+              <Text
+                size="small"
+                weight="regular"
+                color="surface.text.gray.normal"
+                variant="body"
+                marginTop="spacing.2"
+                marginBottom="spacing.5"
+              >
+                {`Access your funds faster at a ${DEFAULT_PRICE}% fee per transaction`}
+              </Text>
+            )}
+          </Box>
         );
       }
 
       case PRE_ENABLE_VIEWS.INSTANT_SETTLEMENTS: {
-        return (
-          <>
-            Enjoy additional benefits on <br />
-            Instant Settlements
-          </>
+        return isPricingValid ? (
+          <Box textAlign="center">
+            <Text
+              size="small"
+              weight="semibold"
+              color="surface.text.gray.subtle"
+              marginTop="spacing.2"
+            >
+              Enjoy additional benefits on <br />
+              Instant Settlements
+            </Text>
+          </Box>
+        ) : (
+          <Box textAlign="center">
+            <Text
+              size="small"
+              weight="semibold"
+              color="surface.text.gray.subtle"
+              marginTop="spacing.2"
+            >
+              How Same-day Settlements work
+            </Text>
+            <Text
+              size="small"
+              weight="regular"
+              color="surface.text.gray.normal"
+              variant="body"
+              marginTop="spacing.2"
+              marginBottom="spacing.5"
+            >
+              {`Access your funds faster at a ${DEFAULT_PRICE}% fee per transaction`}
+            </Text>
+          </Box>
         );
       }
 
@@ -485,6 +530,7 @@ function PreEnable({
       case PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS: {
         return (
           <>
+            {getBottomHeading()}
             {getIndicators()}
             <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
               <SamedayWorksContainer>
@@ -525,36 +571,42 @@ function PreEnable({
       }
 
       case PRE_ENABLE_VIEWS.INSTANT_SETTLEMENTS: {
-        if (!isPricingValid) return null;
         return (
           <>
-            {getIndicators()}
-            <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-              <InstantSettlementsBenefits>
-                <BigDiscount>-{discountPercent}%</BigDiscount>
-                <InstantSettlementsTitle>
-                  discount on Instant Settlements fees, forever!
-                </InstantSettlementsTitle>
+            {getBottomHeading()}
+            {isPricingValid ? (
+              <>
+                {getIndicators()}
+                <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+                  <InstantSettlementsBenefits>
+                    <BigDiscount>-{discountPercent}%</BigDiscount>
+                    <InstantSettlementsTitle>
+                      discount on Instant Settlements fees, forever!
+                    </InstantSettlementsTitle>
 
-                <InstantSettlementsFeeContainer>
-                  <InstantSettlementsCurrentFeeContainer>
-                    <InstantSettlementsCurrentFee>{currentPrice}%</InstantSettlementsCurrentFee>
-                    <StrikeThrough />
-                  </InstantSettlementsCurrentFeeContainer>
-                  <i className="i i-arrow-forward" />
-                  <InstantSettlementsOfferFee>{newPrice}%</InstantSettlementsOfferFee>
-                  <InstantSettlementsOfferFeeLabel>/ settlement</InstantSettlementsOfferFeeLabel>
-                </InstantSettlementsFeeContainer>
+                    <InstantSettlementsFeeContainer>
+                      <InstantSettlementsCurrentFeeContainer>
+                        <InstantSettlementsCurrentFee>{currentPrice}%</InstantSettlementsCurrentFee>
+                        <StrikeThrough />
+                      </InstantSettlementsCurrentFeeContainer>
+                      <i className="i i-arrow-forward" />
+                      <InstantSettlementsOfferFee>{newPrice}%</InstantSettlementsOfferFee>
+                      <InstantSettlementsOfferFeeLabel>
+                        / settlement
+                      </InstantSettlementsOfferFeeLabel>
+                    </InstantSettlementsFeeContainer>
 
-                <InstantSettlementsLabel>
-                  The discounted pricing for Instant Settlements will be effective once you enable
-                  Same-day Settlements
-                </InstantSettlementsLabel>
-              </InstantSettlementsBenefits>
-            </div>
-            <FeeInfo>
-              Same reduced fee of <span>{newPrice}%</span> per settlement
-            </FeeInfo>
+                    <InstantSettlementsLabel>
+                      The discounted pricing for Instant Settlements will be effective once you
+                      enable Same-day Settlements
+                    </InstantSettlementsLabel>
+                  </InstantSettlementsBenefits>
+                </div>
+                <FeeInfo>
+                  Same reduced fee of <span>{newPrice}%</span> per settlement
+                </FeeInfo>
+              </>
+            ) : null}
           </>
         );
       }
@@ -573,7 +625,7 @@ function PreEnable({
         showTimings
       />
 
-      <BottomSection heading={!isPricingLoading ? getBottomHeading() : null}>
+      <BottomSection>
         {isPricingLoading ? (
           <Box marginY="spacing.11" display="flex" justifyContent="center">
             <Spinner size="large" />
