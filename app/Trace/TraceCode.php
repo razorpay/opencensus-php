@@ -4542,6 +4542,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_AGENT_CREATED_TICKET_FILTER                         = 'GET_AGENT_CREATED_TICKET_FILTER';
     const FRESHDESK_GET_AGENTS_REQUEST                          = 'FRESHDESK_GET_AGENTS_REQUEST';
     const FRESHDESK_GET_AGENTS_RESPONSE                         = 'FRESHDESK_GET_AGENTS_RESPONSE';
+    const REWRITE_AGENTS_RESPONSE_FUNC_RESP                     = 'REWRITE_AGENTS_RESPONSE_FUNC_RESP';
 
     const FRESHDESK_MISSING_ATTRIBUTES                          = 'FRESHDESK_MISSING_ATTRIBUTES';
 
@@ -7980,6 +7981,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRESHDESK_SUPPORT_OTP_EMAIL_FAILED                    = 'FRESHDESK_SUPPORT_OTP_EMAIL_FAILED';
     const FRESHDESK_SUPPORT_OTP_SMS_FAILED                      = 'FRESHDESK_SUPPORT_OTP_SMS_FAILED';
     const SUPPORT_NOTIFICATION_ELIGIBILITY                      = 'SUPPORT_NOTIFICATION_ELIGIBILITY';
+    const GET_AGENTS_ERROR_RESPONSE                             = "GET_AGENTS_ERROR_RESPONSE";
 
     const TRACE_DB_MIGRATION_METRIC                             = 'TRACE_DB_MIGRATION_METRIC';
     const TRACE_DUAL_WRITE_USAGE_METRIC                         = 'TRACE_DUAL_WRITE_USAGE_METRIC';

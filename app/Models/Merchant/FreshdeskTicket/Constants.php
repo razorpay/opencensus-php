@@ -314,6 +314,7 @@ class Constants
     ];
 
     const ERROR_TOO_MANY_REQUESTS_TO_FRESHDESK_SERVICE = "Too many requests to Freshdesk Service";
+    const ERROR_FRESHDESK_PAGE_NOT_FOUND = "Freshdesk page not found";
 
     const RAZORPAY_ONE_MERCHANTS = array(
         "GmFC3z7gCW6UAz",

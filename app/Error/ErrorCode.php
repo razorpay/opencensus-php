@@ -2483,6 +2483,8 @@ class ErrorCode
     const BAD_REQUEST_FRESHDESK_AGENT_NOT_FOUND                                     = 'BAD_REQUEST_FRESHDESK_AGENT_NOT_FOUND';
     const BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED                                 = 'BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED';
 
+    const BAD_REQUEST_ERROR_FROM_FRESHDESK_SERVICE                                  = 'BAD_REQUEST_ERROR_FROM_FRESHDESK_SERVICE';
+
     const SERVER_ERROR_FRESHCHAT_INTEGRATION_ERROR                                  = 'SERVER_ERROR_FRESHCHAT_INTEGRATION_ERROR';
     const BAD_REQUEST_FRESHCHAT_ERROR                                               = 'BAD_REQUEST_FRESHCHAT_ERROR';
 

@@ -18437,7 +18437,8 @@ class Route
             'terminal_fetch_by_id_internal',
             'internal_merchant_workflow_details_fetch',
             'setl_amount',
-            'setl_merchant_dashboard_config_get'
+            'setl_merchant_dashboard_config_get',
+            'feature_get_multiple_internal'
         ],
 
         'cmma' => [

@@ -52,6 +52,10 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_GET_AGENTS_FILTER = 'RZP_GET_AGENTS_FILTER';
 
+    const RZP_GET_AGENTS_ERROR_404 = 'RZP_GET_AGENTS_ERROR_404';
+
+    const RZP_GET_AGENTS_ERROR = 'RZP_GET_AGENTS_ERROR';
+
     const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET                = 'rzp_fetch_ticket_filter_agent_created_ticket';
     const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT = 'rzp_fetch_ticket_filter_agent_created_ticket_wrong_merchant';
     const RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET      = 'rzp_fetch_ticket_filter_paginated_agent_created_ticket';
@@ -984,7 +988,7 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
-    public function testGetAgentsFilterInternalAuth()
+    public function testGetAgentsFilterInternalAuthSuccess()
     {
         $this->ba->cmmaAppAuth();
 
@@ -992,6 +996,30 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents?email=vinita.nirmal%40razorpay.com', 'GET', 'rzpind',
                                                                $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
+    public function testGetAgentsFilterInternalAuthFailed404()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_GET_AGENTS_ERROR_404);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents?email=vinita.nirmal%40razorpay.com', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
+    public function testGetAgentsFilterInternalAuthFailed()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_GET_AGENTS_ERROR);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents?email=vinita.nirmal%40razorpay.com', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->startTest();
     }
@@ -2641,6 +2669,32 @@ class FreshdeskTicketV2Test extends TestCase
 
                                ]],
 
+            ];
+        }
+        else if ($key === self::RZP_GET_AGENTS_ERROR)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                        'errors' => [
+                            'description' => 'Too many requests to Freshdesk Service',
+                            'code'        => 'BAD_REQUEST_ERROR',
+                        ],
+                ],
+                'status_code'   => 429,
+            ];
+        }
+        else if ($key === self::RZP_GET_AGENTS_ERROR_404)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'errors' => [
+                        'description' => 'Freshdesk page not found',
+                        'code'        => 'BAD_REQUEST_ERROR',
+                    ],
+                ],
+                'status_code'   => 404,
             ];
         }
         else if ($key === self::RZP_FETCH_OPEN_TICKETS)
