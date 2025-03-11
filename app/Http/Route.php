@@ -3716,6 +3716,7 @@ class Route
         'calculate_commission'                     => ['post',    'internal/calculate_commission',                       'CommissionController@calculateCommission'                      ],
         'internal_create_and_capture_commission'   => ['post',    'internal/create_and_capture_commission',              'CommissionController@createAndCaptureFromPRTS'                 ],
         'internal_capture_commission'              => ['post',    'internal/capture_commission',                         'CommissionController@captureFromPRTS'                          ],
+        'internal_clear_unsettled_txns'            => ['post',    'internal/commissions/transactions/clear',  'CommissionController@clearUnsettledTxn'],
 
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -5144,7 +5145,6 @@ class Route
         // internal API for business website update
         'internal_post_website_update'  => ['post', 'internal/website/update/merchants/{id}', 'MerchantController@internalUpdateWebsite'],
         'expire_keys'                   => ['post', 'keys/expire', 'KeyController@expireKeys'],
-
     ];
 
     public static $public = [
@@ -6997,7 +6997,9 @@ class Route
         'merchant_international_enablement_draft_internal',
         'merchant_fetch_bank_account_internal',
         'merchant_integration_get_by_param',
-        'create_sqr_for_single_stack'
+        'create_sqr_for_single_stack',
+
+        'internal_clear_unsettled_txns',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18134,7 +18136,8 @@ class Route
             'internal_create_and_capture_commission',
             'internal_capture_commission',
             'internal_process_commissions_invoice',
-            'payment_fetch_by_id_internal'
+            'payment_fetch_by_id_internal',
+            'internal_clear_unsettled_txns'
         ],
 
         'offers_engine' => [

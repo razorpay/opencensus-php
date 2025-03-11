@@ -291,4 +291,9 @@ class Service extends Base\Service
 
         return $this->core()->captureFromPRTS($input);
     }
+
+    public function clearUnsettledTxn(array $input)
+    {
+        return $this->core()->clearUnsettledTxn($input);
+    }
 }

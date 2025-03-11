@@ -12929,6 +12929,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DEVICE_SERVICE_REQUEST                        = 'DEVICE_SERVICE_REQUEST';
     const DEVICE_SERVICE_ERROR                          = "DEVICE_SERVICE_ERROR";
 
+    const COMMISSION_TRANSACTION_RELEASE_SUCCESS = 'COMMISSION_TRANSACTION_RELEASE_SUCCESS';
+    const COMMISSION_TRANSACTION_RELEASE_FAILED = 'COMMISSION_TRANSACTION_RELEASE_FAILED';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
