@@ -167,7 +167,7 @@
     "nx": "20.0.0",
     "ora": "^8.0.1",
     "prettier": "^2.6.2",
-    "rollup": "^4.14.0",
+    "rollup": "4.34.6",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-typescript2": "^0.36.0",
     "size-limit": "^8.1.0",
@@ -207,7 +207,7 @@
         "dependsOn": [
           "newauth-dashboard:test:e2e:auth"
         ],
-        "options":{
+        "options": {
           "command": "echo Authenticated States Saved!"
         }
       },
