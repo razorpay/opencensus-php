@@ -1883,4 +1883,6 @@ class PublicErrorDescription
     const BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Close is currently blocked for RBL Merchants";
 
     const GATEWAY_VA_DEACTIVATION_FAILURE = "Gateway Failure in closing virtual account";
+
+    const BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS = 'Refund is currently blocked for Smart Collect 2.0 payments';
 }

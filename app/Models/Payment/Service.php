@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use Monolog\Logger;
 use RZP\Constants\Metric as Metrics;
 use RZP\Jobs\OrderPaymentsParity;
 use RZP\Models\Admin;
@@ -335,6 +336,8 @@ class Service extends Base\Service
                 'input'      => $input
             ]);
 
+        $this->blockIfCollectxPayment($id);
+
         // commented for now, will be enabled during further ramp-up
         // $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -431,6 +434,26 @@ class Service extends Base\Service
         );
 
         return $data;
+    }
+
+    /**
+     * @throws BadRequestException|Throwable
+     */
+    public function blockIfCollectxPayment($paymentId): void
+    {
+        $payment = $this->repo->payment->findByPublicId($paymentId);
+
+        if ($payment[Entity::REFERENCE14] === Constant::COLLECTX)
+        {
+            $this->trace->info(
+                TraceCode::COLLECTX_PAYMENT_REFUND_CURRENTLY_BLOCKED, [
+                    'payment_id' => $paymentId
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS,
+                data: ['payment_id' => $paymentId]);
+        }
     }
 
     public function verify($id, $isBarricade = false)
