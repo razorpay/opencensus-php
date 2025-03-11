@@ -129,7 +129,13 @@ export function initSentry(appName) {
             return null;
           }
 
-          if (hint?.originalException?.code === 'UNKNOWN_ERROR_CODE') {
+          const error = hint?.originalException;
+          if (error?.code === 'UNKNOWN_ERROR_CODE') {
+            return null;
+          }
+
+          const ignoredErrors = ['Illegal invocation'];
+          if (error?.message && ignoredErrors.some((err) => error.message.includes(err))) {
             return null;
           }
 
