@@ -44,7 +44,7 @@ describe('QR Codes', () => {
     expect(screen.getByRole('link', { name: 'here' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute(
       'href',
-      '/app/payments-and-refunds-settings/capture-refund-settings',
+      '/app/payments-and-refunds-settings/fee-bearer',
     );
   });
 });

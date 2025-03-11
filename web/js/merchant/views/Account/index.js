@@ -22,6 +22,7 @@ const {
   TRUSTED_BADGE,
   MANAGE_TEAM_DETAILS,
   PRICING_PLANS,
+  CREDITS,
 } = ROUTES_INFO;
 
 const MyAccount = (props) => {
@@ -61,6 +62,8 @@ const MyAccount = (props) => {
         return <Navigate to={MANAGE_TEAM_DETAILS} replace />;
       case '/pricing-plans':
         return <Navigate to={PRICING_PLANS} replace />;
+      case '/addfunds':
+        return <Navigate to={CREDITS} replace />;
       default:
         return <Navigate to={ACCOUNT_AND_SETTINGS} replace />;
     }

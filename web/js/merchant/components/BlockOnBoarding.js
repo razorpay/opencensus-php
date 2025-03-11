@@ -28,7 +28,7 @@ export const BlockCustomerFeeBearerOnboarding = ({ feature }) => (
         This product is not supported for merchants accepting payments as per the convenience fee
         model. If you wish to enable this product click{' '}
         <Link
-          href={`/app${ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS}`}
+          href={`/app${ROUTES_INFO.FEE_BEARER}`}
           size="large"
           htmlTitle="open capture and refund settings"
         >

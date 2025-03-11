@@ -451,17 +451,17 @@ export function getWebsiteWorkflowStatus({
     [WebsiteUpdateAutomationStatus.IN_PROGRESS].includes(current_status)
   ) {
     status = Status.BvsInProgress;
+  } else if (
+    current_status === WebsiteUpdateAutomationStatus.WEBSITE_UPDATE_FAILED ||
+    current_status === WebsiteUpdateAutomationStatus.WORKFLOW_CREATION_FAILED
+  ) {
+    status = Status.WebsiteUpdateFailed;
   } else if (ocr_automated_check_enable || hasReviewStatus || hasCustomerRespondedStatus) {
     status = Status.WorkflowInReview;
   } else if (hasAwaitingCustomerResponseStatus) {
     status = Status.WorkflowNeedsClarification;
   } else if (hasRejectedStatus) {
     status = Status.Rejected;
-  } else if (
-    current_status === WebsiteUpdateAutomationStatus.WEBSITE_UPDATE_FAILED ||
-    current_status === WebsiteUpdateAutomationStatus.WORKFLOW_CREATION_FAILED
-  ) {
-    status = Status.WebsiteUpdateFailed;
   }
 
   return {
