@@ -411,7 +411,7 @@ class HeaderNav extends Component {
           </Suspense>
         ) : null}
 
-        {user.isMccNcRequired ? (
+        {user.isBddNcRequired ? (
           <Suspense fallback={null}>
             <NCModal
               activationState="needs_clarification_with_payment_disabled"

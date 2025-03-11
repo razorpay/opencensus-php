@@ -513,6 +513,7 @@ type RazorpayUserType = {
   };
 
   rekyc_status: string;
+  bdd_verification_status: string;
   manual_rekyc: {
     status: {
       created_at: string;
