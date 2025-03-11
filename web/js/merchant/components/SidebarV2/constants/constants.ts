@@ -64,6 +64,7 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   accountsettings: 'Account & Settings',
   internationalPaymentsBtn: 'International Payments',
   customers: 'Customers',
+  company_registration: 'Register Company',
   offers: 'Offers',
   api_keys: 'API Keys and Plugins',
   developers: 'Developers',

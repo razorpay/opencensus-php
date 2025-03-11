@@ -113,4 +113,6 @@ export type ProductAlias =
   | 'banking_top_navigation_item'
   | 'payroll_top_navigation_item'
   | 'billme_top_navigation_item'
-  | 'rize_top_navigation_item';
+  | 'rize_top_navigation_item'
+  | 'partners_top_navigation_item'
+  | 'company_registration_top_navigation_item';

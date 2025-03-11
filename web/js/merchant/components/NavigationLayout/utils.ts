@@ -19,6 +19,7 @@ import {
   BankIcon,
   AwardIcon,
   ArrowUpRightIcon,
+  CompanyRegistrationIcon,
 } from '@razorpay/blade/components';
 import { Component, ListItem } from './typings/component';
 import { isExperimentEnabled } from 'common/splitz/utils';
@@ -80,6 +81,7 @@ export const productIconsMap = {
   BankIcon,
   AwardIcon,
   ArrowUpRightIcon,
+  CompanyRegistrationIcon,
 };
 
 export const determineNavigationType = (components: Component[]) => {

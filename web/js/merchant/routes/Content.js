@@ -63,6 +63,7 @@ import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
+import { BUSSINESS_TYPE } from 'merchant/views/CompanyRegistration/constant';
 import { DashboardLoader } from '@libs/shared-ui';
 import { compose } from 'redux';
 
@@ -333,6 +334,9 @@ const Stores = lazy(() => import(/* webpackChunkName: "Stores" */ 'merchant/view
 
 const Customers = lazy(() =>
   import(/* webpackChunkName: "Customers" */ 'merchant/views/Customers/List'),
+);
+const CompanyRegistration = lazy(() =>
+  import(/* webpackChunkName: "CompanyRegistration" */ 'merchant/views/CompanyRegistration/index'),
 );
 const Marketplace = lazy(() =>
   import(/* webpackChunkName: "Marketplace" */ 'merchant/views/Marketplace/Index'),
@@ -1702,7 +1706,19 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-
+          <Route
+            path="company-registration/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.business_type == BUSSINESS_TYPE.UNREGISTERED_TYPES
+                }
+              >
+                {/* Only Show the Tab to not registered users */}
+                <CompanyRegistration />
+              </RouteGuard>
+            }
+          />
           <Route
             path="customers/*"
             element={

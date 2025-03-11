@@ -62,6 +62,7 @@ export const BASE_ROUTES = {
   checkout_rewards: '/checkout-rewards',
   offers: '/offers',
   customers: '/customers',
+  company_registration: '/company-registration',
   optimizer: '/optimizer',
   bbps: '/bbps',
   magic_checkout: '/magic',

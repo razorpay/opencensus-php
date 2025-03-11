@@ -34,6 +34,7 @@ import {
   TrendingUpIcon,
   WalletIcon,
   ZapIcon,
+  BuildingIcon,
   LayoutIcon,
   SparklesIcon,
   MagicKonnectIcon,
@@ -179,6 +180,11 @@ export const PRODUCTS_DATA = {
     icon: 'i-offer',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('offers') && !isConfigTagEnabled('offers.offers'),
+  },
+  company_registration: {
+    bladeIcon: BuildingIcon,
+    icon: 'i-building',
+    additionalCondition: (user: any): boolean => user.business_type == '11', // Only Show the Tab to not registered users
   },
   customers: {
     bladeIcon: UsersIcon,
@@ -510,6 +516,11 @@ export const COMMON_PRODUCTS: Array<ProductTypeProp> = [
 ];
 
 export const CUSTOMERS_PRODUCTS = [
+  {
+    title: SIDEEBAR_PRODUCTS_TITLES.company_registration,
+    product_id: 'company_registration',
+    tags: ['New'],
+  },
   {
     title: SIDEEBAR_PRODUCTS_TITLES.customers,
     product_id: 'customers',
