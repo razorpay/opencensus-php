@@ -3204,6 +3204,7 @@ class Route
         'scrooge_refunds_download_gateway_report'    => ['post',     'scrooge/refunds/download-gateway-report',             'ScroogeController@downloadGatewayReportsFile'               ],
         'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change',      'ScroogeController@bulkStatusUpdate'                         ],
         'scrooge_refunds_to_failed_state'            => ['post',     'scrooge/refunds/reverse_failed',                      'ScroogeController@reverseFailedRefunds'                     ],
+        'scrooge_refunds_bulk_omni_refund_create'    => ['post',     'scrooge/refunds/bulk-omni-refund-create',             'ScroogeController@bulkOmniRefundCreate'                     ],
 
         // Scrooge retry routes
         'scrooge_refunds_retry_with_verify'           => ['post',     'scrooge/refunds/retry/with_verify',                  'ScroogeController@retryRefundsWithVerify'                   ],
@@ -5461,6 +5462,7 @@ class Route
         'payment_otp_submit_private',
         'payment_otp_resend_private',
         'payment_refund',
+        'scrooge_refunds_bulk_omni_refund_create',
         'payment_capture',
         'release_submerchant_payment',
         'payment_fetch_transfers',
@@ -9032,6 +9034,7 @@ class Route
         'scrooge_set_instant_refund_mode_config',
         'scrooge_expire_instant_refund_mode_config',
         'scrooge_fetch_instant_refund_mode_config',
+        'scrooge_refunds_bulk_omni_refund_create',
 
         'scrooge_refund_create',
         'scrooge_refund_create_bulk',
@@ -10230,6 +10233,7 @@ class Route
         'payment_authorize_refund'                 => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
         'payment_fetch_refunds'                    => Permission::VIEW_REFUND_PAYMENTS,
         'payment_refund'                           => Permission::EDIT_PAYMENT_REFUND,
+        'scrooge_refunds_bulk_omni_refund_create'  => Permission::EDIT_PAYMENT_REFUND,
         'payment_capture'                          => Permission::EDIT_PAYMENT_CAPTURE,
         'gateway_create_rule'                      => Permission::CREATE_GATEWAY_RULE,
         'gateway_update_rule'                      => Permission::EDIT_GATEWAY_RULE,
@@ -16141,6 +16145,7 @@ class Route
             'scrooge_refunds_retry_without_verify',
             'scrooge_refunds_update',
             'scrooge_refunds_update_multiple',
+            'scrooge_refunds_bulk_omni_refund_create',
             'scrooge_refunds_bulk_verify',
             'scrooge_reports_get_multiple',
             'scrooge_set_instant_refund_mode_config',

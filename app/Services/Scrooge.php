@@ -88,7 +88,8 @@ class Scrooge
         'refund_internal_fetch'                => 'internal/fetch',
         // Currently only table `gateway_keys` is supported for bulk entities
         'bulk_gateway_keys'                    => 'entities/gateway_keys',
-        'verify_refunds'                       => 'bulk_verify'
+        'verify_refunds'                       => 'bulk_verify',
+        'bulk_omni_refund_create'              => 'bulk-omni-refund-create'
     ];
 
     // Headers
@@ -233,6 +234,15 @@ class Scrooge
         $this->enablePassport();
 
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    public function bulkOmniRefundCreate(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_omni_refund_create'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
