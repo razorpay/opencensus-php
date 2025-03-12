@@ -52,8 +52,6 @@ environment/.env.vault.j2                                                @razorp
 web/js/merchant/containers/Home/RTUX/index.tsx                           @razorpay/ssab-fe
 
 # Monitoring the folders until old cold is removed
-web/js/merchant/views/Transactions                                       @abhieshekumar @Satvik1911
-web/js/merchant/views/Settlements                                        @abhieshekumar @Satvik1911
 web/js/merchant/reducers/submerchant.js                                  @1995navinkumar @shashi-vc
 web/js/newAuth/signup/components/PartnerSignup                           @1995navinkumar @shashi-vc
 web/js/merchant/views/Marketplace/Transfers                              @1995navinkumar @shashi-vc
