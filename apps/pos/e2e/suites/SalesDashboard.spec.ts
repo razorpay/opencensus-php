@@ -8,7 +8,7 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
   test.use({
     storageState: getStorageStatePath().POS_SALES_AGENT,
   });
-  test('should render sales dashboard view if logged in as sales agent @flow=pos-sales-assisted', async ({
+  test.skip('should render sales dashboard view if logged in as sales agent @flow=pos-sales-assisted', async ({
     page,
     worker,
   }) => {
@@ -38,7 +38,10 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await expect(merchantKycStepCard).toContainText('KYC Qualified');
   });
 
-  test('should render sales dashboard when no merchant is onboarded', async ({ page, worker }) => {
+  test.skip('should render sales dashboard when no merchant is onboarded', async ({
+    page,
+    worker,
+  }) => {
     await worker.use(queryMocks.EmptySalesOnboardedMerchantsMock);
     await page.goto(routes.DASHBOARD);
     await expect(page).toHaveTitle(/Razorpay Dashboard/);

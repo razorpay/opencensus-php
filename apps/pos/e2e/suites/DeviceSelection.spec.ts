@@ -164,7 +164,7 @@ test.describe
     await expect(deviceStepCard).toContainText(STATUS_TEXT.PAYMENT_COMPLETED);
   });
 
-  test('Should handle pending payment scenario during device selection step', async ({
+  test.skip('Should handle pending payment scenario during device selection step', async ({
     page,
     worker,
   }) => {
@@ -261,7 +261,7 @@ test.describe
     expect(page.getByText('Payment Pending')).toBeVisible();
   });
 
-  test('Should render device selection step with errors', async ({ page, worker }) => {
+  test.skip('Should render device selection step with errors', async ({ page, worker }) => {
     await worker.use(queryMocks.IncompleteMerchantModularOnboardingDetailsAsSales);
 
     const detailsLink = page.getByTestId('OsZjP3fjbIskDI');

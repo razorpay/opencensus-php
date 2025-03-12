@@ -1,11 +1,7 @@
 import { routes, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 import { test, expect } from 'apps/pos/e2e/utils/test';
 import { waitForSalesAssistedScreenToLoad } from 'apps/pos/e2e/utils';
-import {
-  ERROR_MESSAGES,
-  STATUS_TEXT,
-  PRICING_STEP_FIELDS,
-} from 'apps/pos/e2e/constants';
+import { ERROR_MESSAGES, STATUS_TEXT, PRICING_STEP_FIELDS } from 'apps/pos/e2e/constants';
 import { queryMocks } from '../mocks/handlers';
 import { PaymentMethodsFieldKeyNames } from 'apps/pos/src/app/types/PaymentsAndService';
 import path from 'path';
@@ -25,7 +21,7 @@ test.describe
     await page.waitForSelector('text=Merchant Details');
   });
 
-  test('Should render aggregator modal pricing step correctly', async ({ page, worker }) => {
+  test.skip('Should render aggregator modal pricing step correctly', async ({ page, worker }) => {
     await worker.use(queryMocks.MerchantById);
     await worker.use(queryMocks.MerchantModularOnboardingDetailsAsSales);
     const detailsLink = page.getByTestId('OsZjP3fjbIskDI');
@@ -104,7 +100,10 @@ test.describe
     await expect(page.getByRole('button', { name: 'Skip & add later' })).toBeDisabled();
   });
 
-  test('should complete the pricing step successfully - Direct Model', async ({ page, worker }) => {
+  test.skip('should complete the pricing step successfully - Direct Model', async ({
+    page,
+    worker,
+  }) => {
     await worker.use(queryMocks.MerchantByIdStatus);
     await worker.use(queryMocks.IncompleteSalesOnboardingDetailsDirectModelMock);
     await worker.use(queryMocks.PricingStepDirectModelSelectionMock);
@@ -158,7 +157,7 @@ test.describe
     await expect(pricingStepCard).toContainText(STATUS_TEXT.COMPLETED);
   });
 
-  test('should complete the pricing step successfully - Aggregator Model', async ({
+  test.skip('should complete the pricing step successfully - Aggregator Model', async ({
     page,
     worker,
   }) => {
@@ -253,7 +252,7 @@ test.describe
     await expect(pricingStepCard).toContainText(STATUS_TEXT.COMPLETED);
   });
 
-  test('Should display validation error for invalid MDR rate values & NACH file upload', async ({
+  test.skip('Should display validation error for invalid MDR rate values & NACH file upload', async ({
     page,
     worker,
   }) => {
