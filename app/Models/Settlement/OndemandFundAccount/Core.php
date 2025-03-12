@@ -27,7 +27,7 @@ class Core extends Base\Core
 
     const ACCOUNT_TYPE = 'bank_account';
 
-    public function addOndemandFundAccountForMerchant($merchantId)
+    public function addOndemandFundAccountForMerchant($merchantId, $bankAccount = null)
     {
         $this->trace->info(TraceCode::CREATE_SETTLEMENT_ONDEMAND_FUND_ACCOUNT, [
             'merchant_id'   => $merchantId,
@@ -79,7 +79,7 @@ class Core extends Base\Core
             });
         }
 
-        $data = $this->getBankAccountDetails($merchantId);
+        $data = $this->getBankAccountDetails($merchantId, $bankAccount);
 
         $fundAccountId = $razorpayXClientService->createFundAccount($fundAccount[OndemandFundAccount\Entity::CONTACT_ID], $data)['id'];
 
@@ -100,9 +100,14 @@ class Core extends Base\Core
         });
     }
 
-    public function getBankAccountDetails($merchantId)
+    public function getBankAccountDetails($merchantId, $bankAccount = null)
     {
-        $accountDetails = (new Merchant\Service)->getBankAccount($merchantId);
+        if (empty($bankAccount) === true) {
+            $accountDetails = (new Merchant\Service)->getBankAccount($merchantId);
+        }
+        else {
+            $accountDetails = $bankAccount->toArray();
+        }
 
         $beneficiaryName = trim(str_limit(preg_replace('/[^a-zA-Z0-9 ]+/',
                                                   '',

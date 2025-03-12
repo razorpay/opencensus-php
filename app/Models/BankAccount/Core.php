@@ -357,7 +357,7 @@ class Core extends Base\Core
 
             if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === true)
             {
-                (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountUpdateJob($merchantId);
+                (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountUpdateJob($merchantId, $bankAccount);
             }
         }
     }

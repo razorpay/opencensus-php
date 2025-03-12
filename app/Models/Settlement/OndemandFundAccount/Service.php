@@ -25,7 +25,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId)
+    public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId, $bankAccount = null)
     {
         $this->core()->invalidateFundAccount($merchantId);
 
@@ -35,9 +35,9 @@ class Service extends Base\Service
             return;
         }
 
-        CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
+        CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId, $bankAccount);
 
-        CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
+        CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId, $bankAccount);
     }
 
     public function dispatchSettlementOndemandFundAccountCreateJob($merchantId)
@@ -53,8 +53,8 @@ class Service extends Base\Service
         CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
     }
 
-    public function addOndemandFundAccountForMerchant($merchantId)
+    public function addOndemandFundAccountForMerchant($merchantId, $bankAccount = null)
     {
-        return $this->core()->addOndemandFundAccountForMerchant($merchantId);
+        return $this->core()->addOndemandFundAccountForMerchant($merchantId, $bankAccount);
     }
 }
