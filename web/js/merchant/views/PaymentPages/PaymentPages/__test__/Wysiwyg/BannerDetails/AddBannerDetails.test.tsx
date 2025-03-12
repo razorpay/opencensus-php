@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from 'test-utils';
 import * as storefrontReducers from 'merchant/reducers/paymentPages/storefront';
-import { storefrontData } from './mockData';
+import { storefrontData } from 'merchant/views/PaymentPages/PaymentPages/__test__/mocks/mockData';
 import AddBannerDetails from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BannerDetails/AddBannerDetails';
 
 describe('AddBannerDetails Component', () => {

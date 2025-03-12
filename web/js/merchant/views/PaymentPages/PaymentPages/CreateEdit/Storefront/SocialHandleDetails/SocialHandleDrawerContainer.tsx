@@ -1,12 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {
-  addSocialHandle,
-  deleteSocialHandle,
-  reorderSocialHandle,
-  updatedSocialHandle,
-} from 'merchant/reducers/paymentPages/storefront';
+import { addSocialHandle, updatedSocialHandle } from 'merchant/reducers/paymentPages/storefront';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { SocialMediaHandle, SocialMediaHandles } from 'merchant/reducers/paymentPages/types';
 import { uploadImageInDescription as uploadSocialHandleLogo } from 'merchant/views/PaymentPages/PaymentPages/model';
@@ -18,13 +13,14 @@ import {
 import { SocialHandle, SocialHandleDrawerProps } from '../types';
 import SocialHandleDrawerView from './SocialHandleDrawerView';
 import { toTitleCase } from '@libs/shared-utils';
+import { validateHandle } from '../utils';
 
 /**
  * Calculates the next position value for a new social media handle.
- * 
+ *
  * @param socialHandles - Array of social media handle objects
  * @returns The next available position value (maximum existing position + 1)
- * 
+ *
  * Logic:
  * - If the array is empty, returns 0 as the starting position
  * - For non-empty arrays, finds the maximum position across all handles
@@ -38,45 +34,19 @@ const calculateNextPosition = (socialHandles: SocialMediaHandles): number => {
 
 const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
   handleClose,
-  isMobile,
   addSocialHandle,
   storefront,
-  reorderSocialHandle,
   updateSocialHandle,
-  deleteSocialHandle,
 }) => {
   const [showSelectModal, setShowSelectModal] = useState<boolean>(false);
-  const [inputVal, setInputVal] = useState<string>('');
   const [selectedHandle, setSelectedHandle] = useState<SocialHandle | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [uploadedLogo, setUploadedLogo] = useState<string>('');
 
   const socialHandles = storefront?.entity?.social_handles || [];
   const hasReachedHandleLimit = socialHandles.length >= MAX_SOCIAL_HANDLE_ALLOWED;
 
-  useEffect(() => {
-    if (!selectedHandle) return;
-
-    const profile = socialHandles.find((profile) => profile.platform === selectedHandle.name);
-    setInputVal(profile?.profile_url ?? '');
-    if (profile?.logo_url && profile?.platform === PLATFORM_NAMES.CUSTOM) {
-      setUploadedLogo(profile.logo_url);
-    }
-  }, [selectedHandle, socialHandles]);
-
-  const updateInputValue = (e: any) => {
-    setInputVal(e.value);
-  };
-
-  const selectSocialHandle = (handle: SocialHandle) => {
-    setSelectedHandle(handle);
-  };
-
-  const uploadCustomLogo = async () => {
+  const uploadCustomLogo = async (uploadedFile) => {
     if (!uploadedFile) return null;
 
     try {
@@ -98,44 +68,59 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
     }
   };
 
-  const saveSocialHandle = useCallback(async () => {
-    try {
-      setIsSaving(true);
-      if (!selectedHandle) return;
+  const saveSocialHandle = useCallback(
+    async (inputVal, uploadedFile) => {
+      try {
+        setIsSaving(true);
+        if (!selectedHandle) return;
+        const platform = selectedHandle.name;
 
-      const platform = selectedHandle.name;
-      const logo_url = platform === PLATFORM_NAMES.CUSTOM ? await uploadCustomLogo() : selectedHandle.src;
-      const payload: SocialMediaHandle = { platform, profile_url: inputVal, logo_url };
-      const isUpdating =
-        isEditing || socialHandles.some((profile) => profile.platform === platform);
+        const isValid = validateHandle(platform, inputVal);
+        if (!isValid) {
+          showNotification({
+            type: 'error',
+            message: `The provided ${platform} handle is not valid. Please follow the correct format.`,
+          });
+          return;
+        }
 
-      if (isUpdating) {
-        updateSocialHandle(payload);
+        const logo_url =
+          platform === PLATFORM_NAMES.CUSTOM
+            ? await uploadCustomLogo(uploadedFile)
+            : selectedHandle.src;
+        const payload: SocialMediaHandle = { platform, profile_url: inputVal, logo_url };
+        const isUpdating =
+          isEditing || socialHandles.some((profile) => profile.platform === platform);
+
+        if (isUpdating) {
+          updateSocialHandle(payload);
+          showNotification({
+            type: 'success',
+            message: `${toTitleCase(platform)} handle has been updated to your storefront`,
+          });
+        } else {
+          const position = calculateNextPosition(socialHandles);
+          addSocialHandle({ ...payload, position });
+          showNotification({
+            type: 'success',
+            message: `${toTitleCase(platform)} handle has been added to your storefront`,
+          });
+        }
+
+        setSelectedHandle(null);
+        setShowSelectModal(false);
+        setIsEditing(false);
+      } catch (error) {
         showNotification({
-          type: 'success',
-          message: `${toTitleCase(platform)} handle has been updated to your storefront`,
+          type: 'error',
+          message: 'An error occurred while saving your social media handle. Please try again.',
         });
-      } else {
-        const position = calculateNextPosition(socialHandles);
-        addSocialHandle({ ...payload, position });
-        showNotification({
-          type: 'success',
-          message: `${toTitleCase(platform)} handle has been added to your storefront`,
-        });
+      } finally {
+        setIsSaving(false);
       }
-
-      setSelectedHandle(null);
-      setShowSelectModal(false);
-      setIsEditing(false);
-    } catch (error) {
-      showNotification({
-        type: 'error',
-        message: 'An error occurred while saving your social media handle. Please try again.',
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  }, [selectedHandle, inputVal, isEditing, socialHandles, updateSocialHandle, addSocialHandle]);
+    },
+    [selectedHandle, isEditing, socialHandles, updateSocialHandle, addSocialHandle],
+  );
 
   const cancelSocialHandleOperation = useCallback(() => {
     if (isEditing) {
@@ -156,20 +141,6 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
     }
   };
 
-  const showDeleteConfirmation = (platform: string) => {
-    setSelectedPlatform(platform);
-    setOpenDeleteModal(true);
-  };
-
-  const confirmDeleteSocialHandle = () => {
-    setOpenDeleteModal(false);
-    deleteSocialHandle({ platform: selectedPlatform });
-  };
-
-  const cancelDeleteSocialHandle = () => {
-    setOpenDeleteModal(false);
-  };
-
   const openSocialHandleSelector = useCallback(() => {
     if (hasReachedHandleLimit) {
       showNotification({
@@ -183,32 +154,15 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
 
   return (
     <SocialHandleDrawerView
-      isMobile={isMobile}
       handleClose={handleClose}
       showSelectModal={showSelectModal}
-      inputVal={inputVal}
       selectedHandle={selectedHandle}
-      isEditing={isEditing}
-      openDeleteModal={openDeleteModal}
-      selectedPlatform={selectedPlatform}
-      socialHandles={socialHandles}
-      hasReachedHandleLimit={hasReachedHandleLimit}
-      updateInputValue={updateInputValue}
       setSelectedHandle={setSelectedHandle}
       saveSocialHandle={saveSocialHandle}
       cancelSocialHandleOperation={cancelSocialHandleOperation}
       editSocialHandle={editSocialHandle}
-      showDeleteConfirmation={showDeleteConfirmation}
-      confirmDeleteSocialHandle={confirmDeleteSocialHandle}
-      cancelDeleteSocialHandle={cancelDeleteSocialHandle}
       openSocialHandleSelector={openSocialHandleSelector}
-      reorderSocialHandle={reorderSocialHandle}
-      selectSocialHandle={selectSocialHandle}
-      uploadedFile={uploadedFile}
-      setUploadedFile={setUploadedFile}
       isSaving={isSaving}
-      uploadedLogo={uploadedLogo}
-      setUploadedLogo={setUploadedLogo}
     />
   );
 };
@@ -220,9 +174,7 @@ const mapStateToProps = (state: any) => ({
 
 const mapDispatchToProps = (dispatch: any) => ({
   addSocialHandle: bindActionCreators(addSocialHandle, dispatch),
-  reorderSocialHandle: bindActionCreators(reorderSocialHandle, dispatch),
   updateSocialHandle: bindActionCreators(updatedSocialHandle, dispatch),
-  deleteSocialHandle: bindActionCreators(deleteSocialHandle, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SocialHandleDrawerContainer);

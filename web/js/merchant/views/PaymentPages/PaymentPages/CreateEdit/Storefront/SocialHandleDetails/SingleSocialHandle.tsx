@@ -32,6 +32,7 @@ const SingleSocialHandle: React.ComponentType<SingleSocialHandleProps> = Sortabl
         alignItems="center"
         width="100%"
         marginBottom="spacing.4"
+        testID={`single-social-handle-${platform}`}
       >
         <Box display="flex" gap="spacing.4" alignItems="center">
           <DragHandle />
@@ -40,14 +41,14 @@ const SingleSocialHandle: React.ComponentType<SingleSocialHandleProps> = Sortabl
         <Box display="flex" gap="spacing.7" alignItems="center">
           <IconButton
             onClick={() => editSocialHandle(platform)}
-            accessibilityLabel={`edit-icon-${platform}`}
+            accessibilityLabel={`edit icon ${platform}`}
             size="large"
             emphasis="intense"
             icon={EditInlineIcon}
           />
           <IconButton
             onClick={() => showDeleteConfirmation(platform)}
-            accessibilityLabel={`delete-icon-${platform}`}
+            accessibilityLabel={`delete icon ${platform}`}
             size="large"
             emphasis="intense"
             icon={TrashIcon}

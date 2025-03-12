@@ -64,6 +64,8 @@ import {
 import { AlertState, IHostedPagesMerchant, IStorefrontProps, TripleState } from './types';
 import {
   convertToHostedPagesProduct,
+  getIframeBannerData,
+  getIframeSocialHandle,
   getStorefrontHostedPagesFormat,
   sampleProduct,
 } from './utils';
@@ -302,19 +304,10 @@ const StoreFront = ({
     }
   }, [storefront.entity.products, isSampleProduct, storefront.allCategories.data]);
 
-  const getCroppedSrc = (bannerImages: IBannerImage[]) => {
-    return bannerImages
-      .sort((a, b) => a.position - b.position)
-      .filter((image) => image.enabled)
-      .map((image) => ({
-        id: image.id || image.position.toString(),
-        url: image.cropped,
-      }));
-  };
-
   useEffect(() => {
     if (isIframeLoadedRef) {
-      const banner_images = getCroppedSrc(storefront.entity.banner_images);
+      const banner_images = getIframeBannerData(storefront.entity?.banner_images);
+      const social_handles = getIframeSocialHandle(storefront.entity?.social_handles);
       emitIframeEvent(
         iframeRef,
         onStorefrontDetailsChange({
@@ -327,11 +320,14 @@ const StoreFront = ({
           store: {
             title: storefront.entity.title,
             banner_images,
+            social_handles,
             terms: storefront.entity?.terms,
             settings: {
               base_config: {
                 banner_feature_enabled:
                   storefront.entity.settings?.base_config?.banner_feature_enabled,
+                social_handles_enabled:
+                  storefront.entity.settings?.base_config?.social_handles_enabled,
               },
             },
           },
@@ -345,6 +341,7 @@ const StoreFront = ({
     storefront.entity.banner_images,
     storefront.entity.settings?.base_config?.banner_feature_enabled,
     storefront.entity?.terms,
+    storefront.entity?.social_handles,
   ]);
 
   function getSupportDetails(): Promise<{

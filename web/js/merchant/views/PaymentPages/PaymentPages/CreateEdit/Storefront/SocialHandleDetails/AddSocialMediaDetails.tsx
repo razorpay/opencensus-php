@@ -62,7 +62,7 @@ const SocialSwitch: React.FC<SocialSwitchProps> = ({ isChecked, onSwitchChange }
 
       <Switch
         isChecked={isChecked}
-        accessibilityLabel="storefront-social-switch"
+        accessibilityLabel="storefront social switch"
         onChange={({ isChecked }) => onSwitchChange(isChecked)}
       />
     </Box>
@@ -89,7 +89,7 @@ const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
     });
   };
 
-  const handleBannerSwitchChange = (isChecked: boolean) => {
+  const handleSocialSwitchToggle = (isChecked: boolean) => {
     handleSocialHandlesSetting(isChecked);
   };
 
@@ -126,7 +126,7 @@ const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
           extraItems={
             <SocialSwitch
               isChecked={storefront?.entity?.settings?.base_config?.social_handles_enabled ?? false}
-              onSwitchChange={handleBannerSwitchChange}
+              onSwitchChange={handleSocialSwitchToggle}
             />
           }
           isDetailsFilled={storefront?.entity?.social_handles?.length > 0}

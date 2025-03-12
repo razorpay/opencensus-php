@@ -196,14 +196,23 @@ export interface SocialHandleModalProps {
   selectedHandle: SocialHandle | null;
   updateInputValue: (e: any) => void;
   cancelSocialHandleOperation: () => void;
-  selectSocialHandle: (handle: SocialHandle) => void;
   uploadedFile: File | null;
   setUploadedFile: React.Dispatch<React.SetStateAction<File | null>>;
   isSaving: boolean;
   uploadedLogo: string;
   setUploadedLogo: React.Dispatch<React.SetStateAction<string>>;
+  isSaveDisabled: boolean;
+  setSelectedHandle: React.Dispatch<React.SetStateAction<SocialHandle | null>>;
 }
 
+export interface AddDetailsFooterButtonsProps {
+  onCancel: () => void;
+  onSave: (inputVal?: string,uploadedFile?: File | null) => void;
+  inputVal?: string;
+  isSaveDisabled?: boolean;
+  isSaving?: boolean;
+  uploadedFile?: File | null;
+}
 export interface ModalFooterButtonsProps {
   onCancel: () => void;
   onSave: () => void;
@@ -239,30 +248,28 @@ export interface SocialHandleDrawerProps {
 }
 
 export interface SocialHandleDrawerViewProps {
+  storefront: PaymentPagesStorefrontType;
   isMobile: boolean;
   handleClose: () => void;
   showSelectModal: boolean;
-  isEditing: boolean;
-  selectedPlatform: string;
-  inputVal: string;
   selectedHandle: SocialHandle | null;
-  openDeleteModal: boolean;
-  socialHandles: SocialMediaHandles;
-  hasReachedHandleLimit: boolean;
-  updateInputValue: (e: any) => void;
   setSelectedHandle: React.Dispatch<React.SetStateAction<SocialHandle | null>>;
   saveSocialHandle: () => void;
   cancelSocialHandleOperation: () => void;
   editSocialHandle: (platform: string) => void;
-  showDeleteConfirmation: (platform: string) => void;
-  confirmDeleteSocialHandle: () => void;
-  cancelDeleteSocialHandle: () => void;
   openSocialHandleSelector: () => void;
   reorderSocialHandle: (payload: any) => void;
-  selectSocialHandle: (handle: SocialHandle) => void;
+  isSaving: boolean;
+  deleteSocialHandle: (payload: { platform: string }) => void;
+}
+
+export interface AddDetailsContentProps {
+  selectedHandle: SocialHandle;
   uploadedFile: File | null;
   setUploadedFile: React.Dispatch<React.SetStateAction<File | null>>;
-  isSaving: boolean;
   uploadedLogo: string;
   setUploadedLogo: React.Dispatch<React.SetStateAction<string>>;
+  inputVal: string;
+  handleInputChange: (e: any) => void;
+  isMobile: boolean;
 }

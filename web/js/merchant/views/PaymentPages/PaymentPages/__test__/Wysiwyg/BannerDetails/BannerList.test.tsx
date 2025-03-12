@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from 'test-utils';
-import { bannerData } from './mockData';
+import { bannerData } from 'merchant/views/PaymentPages/PaymentPages/__test__/mocks/mockData';
 import BannersList from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BannerDetails/BannerList';
 
 describe('Upload Banner Drawer', () => {

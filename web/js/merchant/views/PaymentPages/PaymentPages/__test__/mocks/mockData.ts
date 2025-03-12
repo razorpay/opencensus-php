@@ -17,6 +17,7 @@ export const storefrontData = {
         banner_feature_enabled: true,
       },
     },
+    social_handle: [],
     slug: '',
   },
   allCategories: {

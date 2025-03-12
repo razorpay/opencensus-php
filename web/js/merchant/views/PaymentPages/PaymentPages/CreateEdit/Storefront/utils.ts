@@ -1,10 +1,14 @@
 import { IPaymentPagesProduct } from 'merchant/reducers/paymentPages/storefront';
 import { convertUnitsBasedOnStatus } from 'merchant/reducers/paymentPages/transformer';
-import { ICategories } from 'merchant/reducers/paymentPages/types';
+import {
+  IBannerImage,
+  ICategories,
+  SocialMediaHandles,
+} from 'merchant/reducers/paymentPages/types';
 import { formatTextAmountField } from 'merchant/views/PaymentPages/common/Products/utils';
 import { FlipOptions, ICheckbox, IHostedPagesProduct, PixelCrop } from './types';
 import ProductPlaceholderImage from 'assets/payment_pages/product-image-placeholder.png';
-import { SOCIAL_HANDLES } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { SOCIAL_PATTERNS } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 // export const _product: IHostedPagesProduct = {
 //   id: 'ppi_KBkFIK490VlplY',
@@ -277,7 +281,6 @@ export const validateFile = (file: File | null): Promise<string | null> => {
   });
 };
 
-
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -306,7 +309,41 @@ export const capitalizeWord = (str: string): string => {
     .join(' ');
 };
 
-export const getSocialHandleSrc = (name) => {
-  const handle = SOCIAL_HANDLES.find((handle) => handle.name === name);
-  return handle ? handle.src : '';
+export const getIframeBannerData = (bannerImages: IBannerImage[]) => {
+  if (!bannerImages) return [];
+  return bannerImages
+    .sort((a, b) => a.position - b.position)
+    .filter((image) => image.enabled)
+    .map((image) => ({
+      id: image.id || image.position.toString(),
+      url: image.cropped,
+    }));
+};
+
+export const getIframeSocialHandle = (socialHandles: SocialMediaHandles) => {
+  if (!socialHandles) return [];
+  return socialHandles
+    .sort((a, b) => {
+      const posA = a.position ?? Number.MAX_SAFE_INTEGER;
+      const posB = b.position ?? Number.MAX_SAFE_INTEGER;
+      return posA - posB;
+    })
+    .map((handle) => ({
+      platform: handle.platform,
+      profile_url: handle.profile_url,
+      logo_url: handle.logo_url,
+    }));
+};
+
+export const validateHandle = (platform, inputVal) => {
+  const regexPattern = SOCIAL_PATTERNS[platform];
+  if (!regexPattern) {
+    return true;
+  }
+
+  if (Array.isArray(regexPattern)) {
+    return regexPattern.some((regex) => regex.test(inputVal));
+  }
+
+  return regexPattern.test(inputVal);
 };

@@ -100,7 +100,7 @@ const UploadCustomLogo: React.FC<UploadCustomLogoProps> = ({
             <IconButton
               icon={() => <TrashIcon size="large" color="interactive.icon.gray.muted" />}
               onClick={handleRemove}
-              accessibilityLabel="delete-logo"
+              accessibilityLabel="delete logo"
             />
           </Box>
 
