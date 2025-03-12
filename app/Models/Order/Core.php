@@ -963,8 +963,7 @@ class Core extends Base\Core
             $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $merchant);
 
             if (($token !== null) and
-                ($token->getMethod() === 'card') and
-                (strtolower($this->app->razorx->getTreatment($merchant->getMerchantId(), RazorxTreatment::CARD_RECURRING_ENABLE_PDN_DECOUPLING, $this->mode ?? 'live')) === 'on'))
+                ($token->getMethod() === 'card'))
             {
                 $cardMandateNotificationCore = (new CardMandate\CardMandateNotification\Core);
                 $cardMandateNotificationCore->validateCardMandateNotificationData($input, $merchant, $token);

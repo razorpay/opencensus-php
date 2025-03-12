@@ -19,6 +19,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
@@ -1413,15 +1414,7 @@ class Entity extends Base\PublicEntity
                     'token_iin' => $cardTokenIin,
                 ]);
 
-                // to be ramped up 100% post 30th Sept (or tokenisation deadline)
-                $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-                                                        Merchant\RazorxTreatment::RECURRING_TOKENISATION_NOT_USING_ACTUAL_CARD_IIN,
-                                                        $app['rzp.mode'] ?? 'live');
-
-                if (strtolower($variant) === 'on')
-                {
-                    return null;
-                }
+                return null;
             }
         }
 
@@ -1497,7 +1490,7 @@ class Entity extends Base\PublicEntity
             $isRecurringEnabled = $iin->isCardMandateApplicable($merchant, $hasSubscription);
 
             if ($isRecurringEnabled === true && $iin->getNetwork() === Network::getFullName(Network::RUPAY)) {
-                return $this->IsMerchantEnabledForRupaySI($merchant->getId(), $iin->getIin());
+                return $this->IsMerchantEnabledForRupaySI($iin->getIin());
             }
 
             return $isRecurringEnabled;
@@ -1507,28 +1500,35 @@ class Entity extends Base\PublicEntity
     }
 
     //Will remove this experiment after ramp-up
-    protected function IsMerchantEnabledForRupaySI(string $mid, string $iin): bool
+    protected function IsMerchantEnabledForRupaySI(string $iin): bool
     {
         $app = \App::getFacadeRoot();
 
-        $variant = $app['razorx']->getTreatment($mid,
-            Merchant\RazorxTreatment::RECURRING_THROUGH_RUPAY_CARD_MID,
-            $app['rzp.mode']);
+        $experimentId = $app['config']->get('app.recurring_through_rupay_card_iin');
 
-        if ($variant != 'on')
-        {
-            return false;
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $experimentId,
+            'request_data'  => json_encode(
+                [
+                    'iin' => $iin,
+                ]),
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        if (strtolower($variant) === 'enable'){
+            return true;
         }
 
-        $variant = $app['razorx']->getTreatment($iin,
-            Merchant\RazorxTreatment::RECURRING_THROUGH_RUPAY_CARD_IIN,
-            $app['rzp.mode']);
-
-        if (strtolower($variant) !== 'on') {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     public function isBlocked()

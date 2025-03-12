@@ -105,16 +105,7 @@ class Sbi extends Base
 
     public function shouldSendToBatchService(): bool
     {
-        $key = Carbon::now()->getTimestamp();
-
-        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_EMANDATE_DEBIT_SBI_MIGRATION;
-
-        $variant = $this->app->razorx->getTreatment($key,
-            $razorxTreatment,
-            $this->mode
-        );
-
-        return (strtolower($variant) === 'on');
+        return true;
     }
 
     protected function getBankStatus($status): string

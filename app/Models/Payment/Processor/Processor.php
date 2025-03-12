@@ -7117,43 +7117,7 @@ class Processor
 
     protected function fetchEmandateConfigs(Token\Entity $token, Merchant\Entity $merchant)
     {
-        // razorx for ach debit returns flow
-        $achVariant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            RazorxTreatment::EMANDATE_ENABLE_ACH_DEBIT_RETURNS_FLOW,
-            $this->mode
-        );
-
-        $this->trace->info(TraceCode::EMANDATE_RAZORX_ACH_VARIANT, [
-            "variant" => $achVariant,
-            "key"     => $merchant->getId(),
-            "step"    => "payment_initiation"
-        ]);
-
-        if(strtolower($achVariant) === 'on')
-        {
-            return $this->achReturnInitiationFlow($token, $merchant);
-        }
-
-        // razorx for nr flow
-        $nrVariant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            RazorxTreatment::EMANDATE_ENABLE_NR_DEBIT_FLOW,
-            $this->mode
-        );
-
-        $this->trace->info(TraceCode::EMANDATE_RAZORX_NR_VARIANT, [
-            "variant" => $nrVariant,
-            "key"     => $merchant->getId(),
-            "step"    => "payment_initiation"
-        ]);
-
-        if(strtolower($nrVariant) === 'on')
-        {
-            return $this->nrInitiationFlow($token, $merchant);
-        }
-
-        return [];
+        return $this->achReturnInitiationFlow($token, $merchant);
     }
 
     protected function achReturnInitiationFlow(Token\Entity $token, Merchant\Entity $merchant)
@@ -12759,32 +12723,18 @@ class Processor
 
             } elseif ($payment->getMethod() === Constants::CARD)
             {
-                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_CARD_RECURRING,
-                    $this->app['rzp.mode']);
+                $defaultCardAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO;
 
-                if (strtolower($variant) === 'on')
-                {
-                    $defaultCardAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO;
-
-                    if ($autoTimeoutDuration < $defaultCardAutoCaptureExpiry) $autoTimeoutDuration = $defaultCardAutoCaptureExpiry;
-                    if ($manualTimeoutDuration < $defaultCardAutoCaptureExpiry) $manualTimeoutDuration = $defaultCardAutoCaptureExpiry;
-                }
+                if ($autoTimeoutDuration < $defaultCardAutoCaptureExpiry) $autoTimeoutDuration = $defaultCardAutoCaptureExpiry;
+                if ($manualTimeoutDuration < $defaultCardAutoCaptureExpiry) $manualTimeoutDuration = $defaultCardAutoCaptureExpiry;
             }
             elseif (($payment->getMethod() === Constants::EMANDATE) and
                     (PaymentGateway::isSupportedEmandateDirectIntegrationGateway($payment->getGateway()) === true))
             {
-                $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-                    Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_EMANDATE,
-                    $this->app['rzp.mode']);
+                $defaultEmandateCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_EMANDATE_DEBIT_PAYMENTS;
 
-                if (strtolower($variant) === 'on')
-                {
-                    $defaultEmandateCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_EMANDATE_DEBIT_PAYMENTS;
-
-                    if ($autoTimeoutDuration < $defaultEmandateCaptureExpiry) $autoTimeoutDuration = $defaultEmandateCaptureExpiry;
-                    if ($manualTimeoutDuration < $defaultEmandateCaptureExpiry) $manualTimeoutDuration = $defaultEmandateCaptureExpiry;
-                }
+                if ($autoTimeoutDuration < $defaultEmandateCaptureExpiry) $autoTimeoutDuration = $defaultEmandateCaptureExpiry;
+                if ($manualTimeoutDuration < $defaultEmandateCaptureExpiry) $manualTimeoutDuration = $defaultEmandateCaptureExpiry;
             }
 
             $this->trace->info(

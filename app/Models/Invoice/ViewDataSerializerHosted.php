@@ -493,13 +493,8 @@ class ViewDataSerializerHosted extends Base\Core
 
         if($this->invoice->isTypeOfSubscriptionRegistration())
         {
-            $billingLabelVariant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::SHOW_BILLING_LABEL_OVER_MERCHANT_LABEL_FOR_RECURRING,
-                $this->mode
-            );
-
-            $billingLabel = strtolower($billingLabelVariant) === 'on' ? $this->merchant->getBillingLabel() : $this->invoice->getMerchantLabel();
+            // Razorx was enabled for only one merchant and is now deprecated, so it is hardcoded
+            $billingLabel = $this->merchant->getId() === 'Js53r971nmyaHe' ? $this->merchant->getBillingLabel() : $this->invoice->getMerchantLabel();
         }
         else
         {

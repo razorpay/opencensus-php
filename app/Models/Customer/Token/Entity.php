@@ -1450,37 +1450,6 @@ class Entity extends Base\PublicEntity
             unset($publicArray[self::SOURCE]);
         }
 
-        if ($this->isNachToken() === true and (new Merchant\Core)->isRazorxExperimentEnable(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK
-            ))
-        {
-            $app = App::getFacadeRoot();
-
-            $subscriptionRegistration = $app['repo']->subscription_registration
-                ->findByTokenIdAndMerchant($this->getId(), $this->merchant->getId());
-
-            if ($subscriptionRegistration !== null) {
-                $invoice = $app['repo']->invoice
-                    ->findByMerchantAndTokenRegistration($this->merchant, $subscriptionRegistration);
-
-                $publicArray = $subscriptionRegistration
-                    ->toArrayTokenFieldsNach($invoice, $publicArray);
-
-                $paperMandateUpload =
-                    $app['repo']->paper_mandate_upload
-                        ->findLatestByMandateId($subscriptionRegistration->paperMandate->getId())->first();
-
-                if ($paperMandateUpload !== null) {
-                    $singedFormUrl = (new FileUploader($subscriptionRegistration->paperMandate))
-                        ->getSignedShortUrl($paperMandateUpload[PaperMandateUploadEntity::ENHANCED_FILE_ID]);
-
-                    $publicArray[SubscriptionRegistrationEntity::NACH]
-                    [SubscriptionRegistrationEntity::SIGNED_FORM] = $singedFormUrl;
-                }
-            }
-        }
-
         return $publicArray;
     }
 

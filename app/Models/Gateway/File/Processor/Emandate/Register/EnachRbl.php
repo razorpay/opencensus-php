@@ -69,20 +69,7 @@ class EnachRbl extends Base
 
         try
         {
-            $variant = $this->app['razorx']->getTreatment(
-                "EMANDATE_RBL_REGISTER", self::EMANDATE_QUERY_OPTIMIZATION,
-                $this->mode
-            );
-
-            if($variant === 'on')
-            {
-                $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnachOptimised($begin, $end);
-
-            }
-            else
-            {
-                $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
-            }
+            $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnachOptimised($begin, $end);
         }
         catch (ServerErrorException $e)
         {

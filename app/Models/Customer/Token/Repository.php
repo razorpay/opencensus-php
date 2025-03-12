@@ -393,16 +393,7 @@ class Repository extends Base\Repository
     {
         try
         {
-            $variant = $this->app['razorx']->getTreatment(
-                $from,
-                Merchant\RazorxTreatment::FETCH_PENDING_EMANDATE_REGISTRATION_FROM_WDA,
-                $this->app['rzp.mode']
-            );
-
-            if($variant === 'on')
-            {
-                return $this->fetchPendingEmandateRegistrationFromWDA($gateway, $from, $to);
-            }
+            return $this->fetchPendingEmandateRegistrationFromWDA($gateway, $from, $to);
         }
         catch(\Throwable $ex)
         {

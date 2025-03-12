@@ -91,18 +91,7 @@ class EnachRbl extends Base
 
     public function shouldSendToBatchService(): bool
     {
-        $key = Carbon::now()->getTimestamp();
-
-        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_EMANDATE_DEBIT_ENACH_RBL_MIGRATION;
-
-        $variant = $this->app->razorx->getTreatment($key,
-            $razorxTreatment,
-            $this->mode
-        );
-
-        $result = (strtolower($variant) === 'on');
-
-        return $result;
+        return true;
     }
     
     protected function shouldBlockOrResetToken()

@@ -1217,6 +1217,10 @@ return array(
 
     'migrate_nach_icic_batch_service_experiment' => env('MIGRATE_NACH_ICICI_BATCH_SERVICE_EXP_ID'),
 
+    'recurring_tokenisation_unhappy_flow_handling' => env('RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING'),
+
+    'emandate_citi_sdn_identification' => env('EMANDATE_CITI_SDN_IDENTIFICATION'),
+
     'hdfc_ecms_fund_trans_experiment_id' => env('HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID'),
 
     'enable_rearch_card_recurring_flow' => env('ENABLE_REARCH_CARD_RECURRING_FLOW'),
@@ -1224,6 +1228,10 @@ return array(
     'enable_rearch_card_recurring_initial_flow' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW'),
 
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
+
+    'recurring_through_rupay_card_iin' => env('RECURRING_THROUGH_RUPAY_CARD_IIN_EXP_ID'),
+
+    'emandate_async_payment_with_async_balance' => env('EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BALANCE_EXP_ID'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 

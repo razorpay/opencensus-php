@@ -245,44 +245,7 @@ class Base extends BaseProcessor
         
         if($payment->isFailed() !== true)
         {
-            
-            // razorx for ach debit returns flow
-            $achVariant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                RazorxTreatment::EMANDATE_ENABLE_ACH_DEBIT_RETURNS_FLOW,
-                $this->mode
-            );
-            
-            $this->trace->info(TraceCode::EMANDATE_RAZORX_ACH_VARIANT, [
-                "variant" => $achVariant,
-                "key"     => $merchant->getId(),
-                "step"    => "payment_processing"
-            ]);
-            
-            if(strtolower($achVariant) === 'on')
-            {
-                return $processor->achReturnProcessingFlow($payment, $errorCode);
-            }
-            
-            // razorx for nr flow
-            $nrVariant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                RazorxTreatment::EMANDATE_ENABLE_NR_DEBIT_FLOW,
-                $this->mode
-            );
-            
-            $this->trace->info(TraceCode::EMANDATE_RAZORX_NR_VARIANT, [
-                "variant" => $nrVariant,
-                "key" => $merchant->getId(),
-                "step"    => "payment_processing"
-            ]);
-            
-            if (strtolower($nrVariant) === 'on')
-            {
-                $nrErrorCode = $this->getNRErrorCode($content);
-                
-                return $processor->emandateNRProcessingFlow($payment, $nrErrorCode);
-            }
+            return $processor->achReturnProcessingFlow($payment, $errorCode);
         }
         
         return "";

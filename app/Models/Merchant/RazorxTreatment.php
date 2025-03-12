@@ -624,9 +624,6 @@ final class RazorxTreatment
     // Experiment to accept new axis UMRN in mandate migration
     const ACCEPT_NEW_AXIS_UMRN_MANDATE_MIGRATION = 'accept_new_axis_umrn_mandate_migration';
 
-    // Experiment to toggle unhappy flow handling for tokenisation failure in recurring
-    const RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING = 'recurring_tokenisation_unhappy_flow_handling';
-
     // Experiment to toggle tokenisation for recurring tokens
     const RECURRING_TOKENISATION = 'recurring_tokenisation';
 
@@ -638,15 +635,6 @@ final class RazorxTreatment
 
     // Experiment to control recurring auto payment process through actual card number/tokenised card number for tokenised cards
     const RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD = 'recurring_subsequent_through_tokenised_card';
-
-    /** Experiment to enable recurring transaction for Rupay Cards Merchant Level Control*/
-    const RECURRING_THROUGH_RUPAY_CARD_MID = 'recurring_through_rupay_card_mid';
-
-    /** Experiment to enable recurring transaction for Rupay Cards IIN Level Control*/
-    const RECURRING_THROUGH_RUPAY_CARD_IIN = 'recurring_through_rupay_card_iin';
-
-    /** Experiment to enable PDN decoupling for card recurring*/
-    const CARD_RECURRING_ENABLE_PDN_DECOUPLING = 'card_recurring_enable_pdn_decoupling';
 
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';

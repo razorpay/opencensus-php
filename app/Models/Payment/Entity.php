@@ -6923,13 +6923,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             if ($this->isCardMandateRecurringInitialPayment() === true) {
                 $app = \App::getFacadeRoot();
 
-                $key = Carbon::now()->getTimestamp();
+                $experimentId = $app['config']->get('app.recurring_tokenisation_unhappy_flow_handling');
 
-                $variant = $app['razorx']->getTreatment($key,
-                    RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
-                    $app['rzp.mode']);
+                $properties = [
+                    'experiment_id' => $experimentId,
+                ];
 
-                return (strtolower($variant) === 'on');
+                $response = $app['splitzService']->evaluateRequest($properties);
+
+                $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                    'properties' => $properties,
+                    'response' => $response,
+                ]);
+
+                $variant = $response['response']['variant']['name'] ?? '';
+
+                return $variant === 'enable';
             }
         }
         catch (\Exception $e)

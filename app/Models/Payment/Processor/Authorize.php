@@ -9755,29 +9755,6 @@ trait Authorize
                 return;
             }
 
-            if (($payment->isRecurring() === true) and
-                ($token->getMethod() === Method::CARD) and
-                ($token->card->isRzpSavedCard() === true))
-            {
-                $variant = $this->app->razorx->getTreatment($token->merchant->getId(),
-                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                    $this->mode);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    return;
-                }
-
-                $variant = $this->app->razorx->getTreatment($token->card->getIin(),
-                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                    $this->mode);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    return;
-                }
-            }
-
             if ($core->checkIfTokenisationApplicable($token) === false)
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [

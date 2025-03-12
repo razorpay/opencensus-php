@@ -1153,10 +1153,7 @@ class CardMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
-        $this->setMockRazorxTreatment(['recurring_through_rupay_card_mid' => 'on',
-            'recurring_tokenisation' => 'on',
-            'recurring_through_rupay_card_iin' => 'on'
-            ]);
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $this->mockRegisterMandate();
 
@@ -1185,10 +1182,7 @@ class CardMandateTest extends TestCase
 
         $paymentInp['order_id'] = $order->getPublicId();
 
-        $this->setMockRazorxTreatment(['recurring_through_rupay_card_mid' => 'on',
-            'recurring_through_rupay_card_iin' => 'on',
-            'recurring_tokenisation' => 'on'
-        ]);
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $request = [
             'method'  => 'POST',
@@ -2774,8 +2768,7 @@ class CardMandateTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal($this->mandateHqTerminal['id']);
 
-        $this->setMockRazorxTreatment(['recurring_through_rupay_card_mid' => 'on',
-            'recurring_through_rupay_card_iin' => 'on']);
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
         $this->mockCps(null, 'entity_fetch');
 
