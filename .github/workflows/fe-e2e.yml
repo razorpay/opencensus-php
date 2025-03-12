@@ -1,4 +1,3 @@
-
 name: E2Es
 
 on:
@@ -70,9 +69,9 @@ jobs:
           else
             PROJECTS_WITH_NEWAUTH="newauth-dashboard"
           fi
-      
+
           echo "playwright_configured_affected_apps_with_newauth_comma_sep=$PROJECTS_WITH_NEWAUTH" >> $GITHUB_OUTPUT
-      
+
       - name: Get Project Dirs Map
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         id: get-project-dirs
@@ -108,7 +107,7 @@ jobs:
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         run: |
           COMMIT_SHA="${{ github.sha }}"
-          COMMIT_LABEL="e2e${COMMIT_SHA:0:8}"
+          COMMIT_LABEL="e2e-dash-${COMMIT_SHA:0:8}"
           TIMESTAMP=$(date +%s)
           ASSIGNED_ARGO_WORKFLOW_NAME="dashboard-cis-${COMMIT_LABEL}-t${TIMESTAMP}"
 
@@ -213,7 +212,7 @@ jobs:
         run: |
           echo "Cleaning up installed binaries..."
           rm -rf ./playwright-browsers
-        
+
       - name: Determine Final Status
         id: determine-test-status
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
