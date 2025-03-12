@@ -94,7 +94,7 @@ export const DASHBOARD_FEDERATED_MODULE_CONFIGS: Record<
   [DASHBOARD_FEDERATED_MODULES.POS]: {
     appDirFromRoot: 'apps/pos',
     devStartCommand: 'pnpm nx start',
-    devServerPort: 9000,
+    devServerPort: 9001,
     buildType: DASHBOARD_APP_BUNDLE_TYPE.BROWSER,
     ...generateBaseMfeBaseMeta({
       moduleType: DASHBOARD_FEDERATED_MODULE_TYPE.APP,
