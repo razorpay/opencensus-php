@@ -188,6 +188,11 @@ class SbiNce extends Base
         {
             try
             {
+                if ($emiPayment->terminal->isOptimizer())
+                {
+                    continue;
+                }
+
                 $emiPlan = $emiPayment->emiPlan;
 
                 $gateway = $emiPayment->terminal->getGateway();
