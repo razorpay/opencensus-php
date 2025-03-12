@@ -4,6 +4,7 @@ import {
   expect,
   getStorageStatePath,
   playwrightEnvs,
+  selectDateRange,
 } from '@libs/shared-qsuite/playwright';
 
 const ELEMENT_CONFIG = {
@@ -59,6 +60,29 @@ async function visitSettlementsPage({ page }) {
   return response;
 }
 
+async function getSettlementEntityDetails(element, regex) {
+  const entityItem = await element.locator(ELEMENT_CONFIG.SETTLEMENTS_TABLE);
+  const entityId = await entityItem.getByText(regex).innerText();
+  const detailsCta = await entityItem.getByRole('button', { name: 'Details' });
+  await expect(detailsCta).toBeVisible();
+  await detailsCta.click();
+
+  return { entityId };
+}
+
+async function getSettlementRecord(page, response) {
+  const body = await response.json();
+  const entry = body?.data?.items?.find((s) => s.status === 'processed');
+  if (!entry) {
+    throw new Error('Got Invalid API response, required for this test');
+  }
+
+  const { id: settlementId, utr } = entry;
+  const settlementRecord = await searchSettlementById(page, { settlementId });
+
+  return { settlementRecord, utr };
+}
+
 // roast test settlemetsTest
 test.describe('Test Settlements view when no settlments are present @flow=settlements @suite=payments-automation @suite=payments-canary @project=payments @project=payments-roast', () => {
   test.use({
@@ -108,25 +132,28 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(page.getByText(settlementId)).toBeVisible();
   });
 
-  test.skip('should search settlements by UTR, status and settlement id @priority=normal', async ({
-    page,
-  }) => {
+  test('should search settlements by utr and settlement id @priority=P0', async ({ page }) => {
     const response = await visitSettlementsPage({ page });
-
-    // Extract the response JSON
-    const settlementsApiData = await response.json();
-    const settlementItem = settlementsApiData?.data?.items?.find((s) => s.status === 'processed');
-    if (!settlementItem) {
-      throw new Error('Got Invalid API response, required for this test');
-    }
-    const { id: settlementId, utr } = settlementItem;
-
-    const settlementRecord = await searchSettlementById(page, { settlementId });
+    const { settlementRecord, utr } = await getSettlementRecord(page, response);
 
     await page.locator('input[name="utr"]').fill(utr);
     await page.getByRole('button', { name: 'Search' }).dblclick();
     await expect(settlementRecord.getByRole('button', { name: utr, exact: false })).toBeVisible();
     await expect(settlementRecord.getByText('Processed')).toBeVisible();
+  });
+
+  test('should search settlements date @priority=P0', async ({ page }) => {
+    const response = await visitSettlementsPage({ page });
+    const { settlementRecord, utr } = await getSettlementRecord(page, response);
+
+    // open react-dates date range picker
+    await page.locator('[data-testid="date-range-presets"]').click();
+    await page.locator('.PowerSelect__Menu >> text=Custom Range').click();
+    await page.locator('.DateRangePickerInput').click();
+
+    await selectDateRange(page, { from: '2020-06-17', to: '2020-06-19' });
+    await page.getByRole('button', { name: 'Search' }).dblclick();
+    await expect(settlementRecord.getByRole('button', { name: utr, exact: false })).toBeVisible();
   });
 
   test('should reset settlements seach on click of clear @priority=normal', async ({ page }) => {
@@ -227,7 +254,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(page.getByText('Money deposited in bank account')).toBeVisible();
   });
 
-  test('should show gross entities for settlement @priority=normal', async ({ page }) => {
+  test('should show gross entities for settlement @priority=P0', async ({ page }) => {
     await visitSettlementsPage({ page });
 
     const GrossEntitiesSettlements = {
@@ -244,12 +271,22 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
 
     const grossSettlementsTab = await page.getByTestId('settlements-gross-entities');
     await expect(grossSettlementsTab).toBeVisible();
-    await expect(grossSettlementsTab.getByText('Gross Settlements', { exact: true })).toBeVisible();
+    await expect(
+      grossSettlementsTab.locator(
+        '[data-testid="settlements-gross-header"] >> text=Gross Settlements',
+      ),
+    ).toBeVisible();
 
     const paymentsTab = grossSettlementsTab.getByText('Payment', { exact: true });
     await expect(paymentsTab).toBeVisible();
     await expect(grossSettlementsTab.getByRole('cell', { name: 'Payment ID' })).toBeVisible();
 
+    const { entityId: paymentId } = await getSettlementEntityDetails(grossSettlementsTab, /pay_*/);
+    await expect(page.url()).toContain(`/payments/${paymentId}`);
+    await page.getByRole('button', { name: 'Go Back' }).click();
+
+    // wait for table to render, fix for flaky tab switch
+    await expect(grossSettlementsTab.getByRole('cell', { name: 'Payment ID' })).toBeVisible();
     const adjustmentsTab = grossSettlementsTab.getByText('Adjustment', { exact: true });
     await expect(adjustmentsTab).toBeVisible();
     // switch to adjusment tab
@@ -258,7 +295,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(grossSettlementsTab.getByRole('cell', { name: 'Adjustment ID' })).toBeVisible();
   });
 
-  test('should show deduction entities for settlement @priority=normal', async ({ page }) => {
+  test('should show deduction entities for settlement @priority=P0', async ({ page }) => {
     await visitSettlementsPage({ page });
 
     const DeductionsEntitiesSettlements = {
@@ -275,10 +312,30 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
 
     const deductionsSettlementsTab = await page.getByTestId('settlements-deductions-entities');
     await expect(deductionsSettlementsTab).toBeVisible();
-    await expect(deductionsSettlementsTab.getByText('Deductions', { exact: true })).toBeVisible();
+    await expect(
+      deductionsSettlementsTab.locator(
+        '[data-testid="settlements-deductions-header"] >> text=Deductions',
+      ),
+    ).toBeVisible();
 
     const refundsTab = deductionsSettlementsTab.getByText('Refund', { exact: true });
     await expect(refundsTab).toBeVisible();
     await expect(deductionsSettlementsTab.getByRole('cell', { name: 'Refund ID' })).toBeVisible();
+
+    const { entityId: refundId } = await getSettlementEntityDetails(
+      deductionsSettlementsTab,
+      /rfnd_*/,
+    );
+    await expect(page.url()).toContain(`/refunds/${refundId}`);
+  });
+
+  test('should be able to click ondemand settlement tab @priority=P0', async ({ page }) => {
+    await page.goto(routes.SETTLEMENTS);
+
+    const onDemandSettlementsTab = await page.getByRole('link', { name: 'Ondemand Settlements' });
+    await onDemandSettlementsTab.click();
+
+    // name includes alt text for left icon
+    await expect(page.getByRole('button', { name: 'Settle NowSettle Now' })).toBeVisible();
   });
 });

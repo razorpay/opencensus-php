@@ -55,7 +55,10 @@ const DeductionsEntities = (props) => {
   if (activeTab) {
     return (
       <StyledEntityContainer data-testid="settlements-deductions-entities">
-        <SectionHeader enableBorderBottomRadius={!isOpen}>
+        <SectionHeader
+          enableBorderBottomRadius={!isOpen}
+          data-testid="settlements-deductions-header"
+        >
           <Text weight="semibold" size="large" color="surface.text.gray.normal">
             Deductions
           </Text>

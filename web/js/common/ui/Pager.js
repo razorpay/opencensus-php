@@ -52,6 +52,7 @@ export default class Pager extends Component {
               className="btn btn-default btn-sm i"
               disabled={prevDisabled}
               onClick={this.onPrev}
+              data-testid="prev-page-btn"
             >
               <i className="i i-chevron-left" />
             </button>
@@ -60,6 +61,7 @@ export default class Pager extends Component {
               className="btn btn-default btn-sm i"
               disabled={nextDisabled || !hasMoreData}
               onClick={this.onNext}
+              data-testid="next-page-btn"
             >
               <i className="i i-chevron-right" />
             </button>

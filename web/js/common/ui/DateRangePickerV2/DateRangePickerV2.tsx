@@ -140,7 +140,7 @@ const DateRangePickerV2 = ({
       <div className="icon-container pull-left">
         {icon ? icon : <i className="i i-date-range" />}
       </div>
-      <div className="presets-container pull-left">
+      <div className="presets-container pull-left" data-testid="date-range-presets">
         {presets.length > 0 && (
           <ErrorBoundary resetOnProps rank={Ranks.P2}>
             <PowerSelect

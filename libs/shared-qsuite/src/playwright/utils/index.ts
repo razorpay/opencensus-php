@@ -203,6 +203,61 @@ export const waitForLoader = async ({
   await expect(page.locator(selector)).not.toBeVisible();
 };
 
+/**
+ * Selects a date range on a calendar using react-dates.
+ *
+ * @param page The Playwright Page object.
+ * @param options An object containing the start and end dates of the range.
+ * @param options.from The start date in the format 'YYYY-MM-DD'.
+ * @param options.to The end date in the format 'YYYY-MM-DD'.
+ *
+ * @example
+ * ```
+ * await selectDateRange(page, { from: '2020-06-17', to: '2020-06-19' });
+ * ```
+ */
+export async function selectDateRange(page: Page, options: { from: string; to: string }) {
+  const { from, to } = options;
+
+  async function selectDate(page: Page, date: string) {
+    const [year, month, day] = date.split('-').map(Number);
+    let foundIndex = -1;
+
+    while (true) {
+      const displayedMonths = (await page
+        .locator('.CalendarMonth[data-visible="true"] .CalendarMonth_caption')
+        .evaluateAll((elements) => elements.map((el) => el.textContent))) as string[];
+
+      foundIndex = displayedMonths.findIndex((text) =>
+        text.includes(
+          `${new Date(year, month - 1).toLocaleString('en-US', { month: 'long' })} ${year}`,
+        ),
+      );
+      if (foundIndex !== -1) break;
+
+      if (
+        new Date(displayedMonths[0]).getFullYear() > year ||
+        (new Date(displayedMonths[0]).getFullYear() === year &&
+          new Date(displayedMonths[0]).getMonth() + 1 > month)
+      ) {
+        await page.click('div[aria-label="Move backward to switch to the previous month."]');
+      } else {
+        await page.click('div[aria-label="Move forward to switch to the next month."]');
+      }
+    }
+
+    const monthContainers = page.locator('.CalendarMonth[data-visible="true"]').nth(foundIndex);
+    const dayElement = monthContainers
+      .locator(`.CalendarDay`)
+      .filter({ hasText: String(day) })
+      .first();
+    await dayElement.click();
+  }
+
+  await selectDate(page, from);
+  await selectDate(page, to);
+}
+
 // ================================
 //  Utils for Success Rate
 // ================================

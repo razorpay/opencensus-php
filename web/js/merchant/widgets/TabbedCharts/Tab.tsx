@@ -29,7 +29,12 @@ const Tab: React.FC<TabProps> = ({ tabData, date, analyticsProperties }) => {
     });
 
   return (
-    <Box position="relative" marginX="spacing.7" height="360px">
+    <Box
+      position="relative"
+      marginX="spacing.7"
+      height="360px"
+      testID={`chartjs-wrapper-${tabData.id}`}
+    >
       <LineChart chartData={chartData} unit={date} />
       {actionData ? (
         <Link

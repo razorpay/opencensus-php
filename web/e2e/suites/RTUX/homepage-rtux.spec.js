@@ -46,7 +46,7 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
     }
   });
 
-  test('should show payments overview', async ({ page }) => {
+  test('should show payments overview @priority=P0', async ({ page }) => {
     const components = await getRTUXResponse({ page });
 
     const paymentsOverviewApiRes = getWidgetResponse(components, 'tabbed_chart');
@@ -57,6 +57,9 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
       const tab = page.getByTestId(`tab-${id}`);
       await expect(tab.getByText(title).first()).toBeVisible();
       await tab.click();
+
+      // check if chart is rendered
+      expect(page.locator(`[data-testid="chartjs-wrapper-${id}"] canvas`)).toBeVisible();
     }
     await assertAPICallForDataRefresh({ page, title });
   });
@@ -77,19 +80,35 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
     await assertAPICallForDataRefresh({ page, title });
   });
 
-  test('should show products recommendation @priority=normal', async ({ page }) => {
+  test('should show products recommendation @priority=P1', async ({ page }) => {
     const components = await getRTUXResponse({ page });
 
     const productRecommendationApiRes = getWidgetResponse(components, 'carousal_card');
     const { components: prodRecommendationCards, title } = productRecommendationApiRes;
     await expect(page.getByRole('heading', { name: title })).toBeVisible();
 
-    for (const { title, description } of prodRecommendationCards) {
+    for (const { title, description, actions } of prodRecommendationCards) {
       const cardTitle = page
         .locator(`[data-testid="product-card-widget"] >> text=${title}`)
         .first();
       await expect(cardTitle).toBeVisible();
       await expect(page.getByText(description).first()).toBeVisible();
+
+      const actionCtaProps = actions[0];
+
+      if (actionCtaProps) {
+        await cardTitle.hover();
+        const actionElement = page.getByRole('link', { name: actionCtaProps.title });
+        await expect(actionElement).toBeVisible();
+
+        if (/^http/i.test(actionCtaProps.action)) {
+          const popupPromise = page.waitForEvent('popup');
+          await actionElement.click();
+          const popup = await popupPromise;
+          await expect(popup.url()).toContain(actionCtaProps.action);
+          await popup.close();
+        }
+      }
     }
   });
 });
@@ -153,6 +172,41 @@ test.describe.parallel('RTUX - Header Nav @flow=rtux @project=payments', () => {
       await expect(userProfileCTA).toBeVisible();
       await userProfileCTA.click();
       await expect(page.getByRole('menuitem', { name: 'Log out' })).toBeVisible();
+    });
+
+    test('should toggle live and test mode @priority=P0', async ({ page }) => {
+      async function getModeDetails(toggler) {
+        const current = await toggler.innerText();
+        return { current, next: current === 'Live Mode' ? 'Test Mode' : 'Live Mode' };
+      }
+
+      async function switchMode() {
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            const toggler = await page.locator('a.switch-modes-toggle');
+            expect(toggler).toBeVisible();
+            const { next } = await getModeDetails(toggler);
+
+            await toggler.click();
+            const option = await page.locator(`li[data-test="${next}"]`);
+            await expect(option).toBeVisible();
+            await option.click();
+
+            const { current } = await getModeDetails(toggler);
+            await expect(current).toBe(next);
+            break;
+          } catch {
+            retries -= 1;
+            if (retries === 0) {
+              throw new Error('Failed to switch mode');
+            }
+          }
+        }
+      }
+
+      await switchMode();
+      await switchMode();
     });
   });
 });

@@ -54,7 +54,7 @@ const GrossSettlementsEntities = (props) => {
   if (activeTab) {
     return (
       <StyledEntityContainer data-testid="settlements-gross-entities">
-        <SectionHeader enableBorderBottomRadius={!isOpen}>
+        <SectionHeader enableBorderBottomRadius={!isOpen} data-testid="settlements-gross-header">
           <Text weight="semibold" size="large" color="surface.text.gray.normal">
             Gross Settlements
           </Text>
