@@ -18,6 +18,8 @@ class Repository extends BaseRepository
 
     public function getTransferPaymentIncludingExternal($paymentID)
     {
+        $this->entityName = $this->entity;
+
         $transferPayments = $this->getTransferPayment($paymentID);
 
         if ($transferPayments->count() === 0)

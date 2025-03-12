@@ -28,7 +28,6 @@ trait ExternalTransferPaymentRepo
 
     protected function fetchExternalTransferPaymentByPaymentId($paymentId)
     {
-
         $class = EntityConstants::getExternalRepoSingleton($this->entityName);
 
         $startTime = millitime();

@@ -92,6 +92,8 @@ class Repository extends Base\Repository
 
         $apiTransfers = $query->get();
 
+        $this->entityName = $this->entity;
+
         if ($this->validateIfExternalFetchIsEnabledForTransfer()
             && (new Route\Config())->isExternalQueryEnabled(__FUNCTION__))
         {
