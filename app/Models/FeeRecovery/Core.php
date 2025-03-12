@@ -601,7 +601,11 @@ class Core extends Base\Core
 
         // TODO : Add a limit to make sure that these fetch statements don't choke the network
 
-        $properties = ['id' => $balanceId, 'experiment_id' => 'fee_recovery_datalake_migration'];
+        $properties = [
+            'id' => $balanceId,
+            'experiment_id' => 'fee_recovery_datalake_migration',
+            'request_data'  => json_encode(['balance_id' => $balanceId]),
+        ];
 
         $expResult = $this->isSplitzExperimentEnable($properties, 'enabled');
 
