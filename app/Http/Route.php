@@ -18355,7 +18355,8 @@ class Route
             'order_fetch_by_id',
             'payment_create_upi_unexpected',
             'order_payments',
-            'payment_otp_submit_private'
+            'payment_otp_submit_private',
+            'payment_otp_resend_private'
         ],
 
         'freshdesk_webhook' => [
@@ -21551,7 +21552,8 @@ class Route
         'order_fetch_by_id',
         'order_payments',
         'internal_order_payments',
-        'payment_otp_submit_private'
+        'payment_otp_submit_private',
+        'payment_otp_resend_private'
     ];
 
 
