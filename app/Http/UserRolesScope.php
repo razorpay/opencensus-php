@@ -385,6 +385,7 @@ class UserRolesScope
 
             'payment_page_update'                      => array_merge(Role::WRITER_ROLES, [Role::PARTNER]),
             'payment_page_notify'                      => Role::WRITER_ROLES,
+            'payment_page_notify_nca'                  => Role::WRITER_ROLES,
             'payment_page_deactivate'                  => array_merge(Role::WRITER_ROLES, [Role::PARTNER]),
             'payment_page_activate'                    => array_merge(Role::WRITER_ROLES, [Role::PARTNER]),
             'payment_page_slug_exists'                 => Role::WRITER_ROLES,

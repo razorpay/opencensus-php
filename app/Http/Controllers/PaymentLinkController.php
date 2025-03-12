@@ -58,6 +58,12 @@ class PaymentLinkController extends Controller
         {
             $this->service()->sendNotification($id, $this->input);
         });
+       return ApiResponse::json([]);
+    }
+
+    public function sendNotificationNCA(string $id)
+    {
+        $this->service()->sendNotificationNCA($id, $this->input);
         return ApiResponse::json([]);
     }
 

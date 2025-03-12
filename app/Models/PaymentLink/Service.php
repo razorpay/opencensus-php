@@ -180,6 +180,12 @@ class Service extends Base\Service
 
     }
 
+    public function sendNotificationNCA(string $id, array $input, $merchant = null)
+    {
+        $merchant = $this->merchant ?? $merchant;
+        $this->core->sendNotificationNCA($input);
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      */

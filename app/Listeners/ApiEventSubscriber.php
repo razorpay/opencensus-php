@@ -816,7 +816,7 @@ class ApiEventSubscriber extends Base\Core
             return true;
         }
 
-        if ($productType === ProductType::PAYMENT_PAGE) {
+        if (PaymentLink\Entity::IsNCADecompProduct($productType)) {
             return $this->shouldSendPPCallbackToNoCodeAppsService($payment->getMerchantId());
         }
 

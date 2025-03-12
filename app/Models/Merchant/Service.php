@@ -2688,6 +2688,19 @@ class Service extends Base\Service
 
                 $response['support_mobile'] = $supportDetails[Merchant\Email\Entity::PHONE];
             }
+
+            $merchantDetails = $this->merchant->merchantDetail ?? null;
+
+            $merchantTncDetails = $merchantDetails?->merchantWebsite;
+
+            $merchantTncLink = $merchantTncDetails === null ? null :
+                (new Website\Core)->getMerchantTncLink($this->merchant, $merchantTncDetails['id']);
+
+            $response['tnc_link'] = $merchantTncLink;
+
+            $response['payment_apps_logo_url'] = $this->merchant->org->getPaymentAppLogo();
+
+            $response['checkout_logo_url'] = $this->merchant->org->getCheckoutLogo();
         }
 
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);

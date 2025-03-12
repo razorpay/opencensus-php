@@ -1040,6 +1040,16 @@ class Core extends Base\Core
     }
 
     /**
+     * Sends email/sms notifications to a customer, called from NCA payment page notify api
+     *
+     * @param  array  $input
+     */
+    public function sendNotificationNCA(array $input)
+    {
+        (new Notifier)->notifyByEmailAndSmsNCA($input);
+    }
+
+    /**
      * Validates if new payment initiation should be allowed or not.
      * Note : Only quantity validations are done here because it is being called early in the flow of
      * create payment

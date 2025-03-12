@@ -1627,6 +1627,7 @@ class Route
         'payment_page_create'                      => ['post',     'payment_pages',                                  'PaymentLinkController@create'                                      ],
         'payment_page_update'                      => ['patch',    'payment_pages/{id}',                             'PaymentLinkController@update'                                      ],
         'payment_page_notify'                      => ['post',     'payment_pages/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
+        'payment_page_notify_nca'                  => ['post',     'payment_pages/{id}/notify_nca',                  'PaymentLinkController@sendNotificationNCA'                            ],
         'payment_page_notify_all'                  => ['post',     'payment_pages/{id}/fetch_notify_details',        'PaymentLinkController@sendNotificationToAllRecords'                ],
         'payment_page_expire_cron'                 => ['post',     'payment_pages/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
         'payment_page_deactivate'                  => ['patch',    'payment_pages/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
@@ -7537,6 +7538,7 @@ class Route
         'payment_page_cds_fetch_plan',
         'payment_page_update',
         'payment_page_notify',
+        'payment_page_notify_nca',
         'payment_page_deactivate',
         'payment_page_activate',
         'payment_page_slug_exists',
@@ -17649,6 +17651,7 @@ class Route
             'payment_page_save_receipt_for_payment',
             'fetch_order_line_items',
             'fetch_product_details_for_order',
+            'payment_page_notify_nca'
         ],
 
         'ucs' => [
