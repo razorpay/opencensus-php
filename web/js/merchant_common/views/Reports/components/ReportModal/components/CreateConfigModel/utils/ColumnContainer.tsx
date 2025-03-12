@@ -8,7 +8,7 @@ export const ColumnContainer = ({ children, title }: { title: string; children: 
   const totalCount = Object.values(selectedColumns).reduce((acc, curr) => acc + curr.length, 0);
 
   return (
-    <Box padding="spacing.6">
+    <Box padding="spacing.4">
       <Box display="flex" flexDirection="row" gap="spacing.2">
         <Text variant="body" size="small" weight="semibold" color="surface.text.gray.muted">
           {title}
@@ -19,7 +19,7 @@ export const ColumnContainer = ({ children, title }: { title: string; children: 
           </Badge>
         )}
       </Box>
-      <Box padding="spacing.3">{children}</Box>
+      <Box padding={['spacing.3', 'spacing.2']}>{children}</Box>
     </Box>
   );
 };

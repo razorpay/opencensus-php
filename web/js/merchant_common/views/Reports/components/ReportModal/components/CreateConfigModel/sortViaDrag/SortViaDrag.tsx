@@ -45,11 +45,7 @@ const SortableItem = SortableElement<{ children: JSX.Element }>(({ children }): 
 
 // Sortable container that wraps the entire list
 const SortableList = SortableContainer<{ children: JSX.Element[] }>(({ children }): JSX.Element => {
-  return (
-    <Box position="relative" maxHeight="330px">
-      {children}
-    </Box>
-  );
+  return <Box position="relative">{children}</Box>;
 });
 
 export const SortViaDrag = <T,>({

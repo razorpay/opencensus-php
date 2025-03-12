@@ -17,41 +17,35 @@ export const ColumnSelected = (): JSX.Element => {
   const hasSelectedColumns = Object.keys(selectedColumns).length > 0;
 
   return (
-    <>
-      <ColumnContainer title="SELECTED COLUMNS">
+    <ColumnContainer title="SELECTED COLUMNS">
+      <Box marginTop="spacing.2">
         {hasSelectedColumns ? (
           <SortViaDrag<TableNode<string>>
             items={displayColumns}
             onChange={setRearrangeColumns}
             renderCustomComponent={(item) => {
               return (
-                <Box
-                  padding="spacing.4"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  zIndex={zIndicesMap.drawer}
-                >
-                  <Box display="flex" alignItems="center">
-                    <DragHandle>
-                      <ListIcon
-                        size="small"
-                        marginRight="spacing.4"
-                        color="interactive.icon.gray.muted"
-                      />
-                    </DragHandle>
+                <Box display="flex" justifyContent="space-between" zIndex={zIndicesMap.drawer}>
+                  <Box display="flex" gap="spacing.3" padding="spacing.3">
+                    <Box maxWidth="spacing.4">
+                      <DragHandle>
+                        <ListIcon size="small" color="interactive.icon.gray.muted" />
+                      </DragHandle>
+                    </Box>
                     <Box draggable>
-                      <Text testID={item.value} size="small">
+                      <Text testID={item.value} size="small" wordBreak="break-all">
                         {item.value}
                       </Text>
                     </Box>
                   </Box>
-                  <IconButton
-                    size="small"
-                    icon={CloseIcon}
-                    accessibilityLabel={item.value}
-                    onClick={() => deleteSelectedColumn(item.id, item.value)}
-                  />
+                  <Box maxWidth="spacing.3" padding="spacing.4">
+                    <IconButton
+                      size="small"
+                      icon={CloseIcon}
+                      accessibilityLabel={item.value}
+                      onClick={() => deleteSelectedColumn(item.id, item.value)}
+                    />
+                  </Box>
                 </Box>
               );
             }}
@@ -63,7 +57,7 @@ export const ColumnSelected = (): JSX.Element => {
             </Text>
           </Box>
         )}
-      </ColumnContainer>
-    </>
+      </Box>
+    </ColumnContainer>
   );
 };
