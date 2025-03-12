@@ -3446,20 +3446,77 @@ class Core extends Base\Core
     public function getGrievanceEntityDetails(string $id)
     {
         $id = Entity::stripDefaultSign($id);
+    
+        try {
+            $paymentPage = $this->repo->payment_link->findOrFailPublic($id);
+            $merchant = $paymentPage->merchant;
+    
+            return [
+                'entity' => 'payment_page',
+                'entity_id' => $paymentPage->getPublicId(),
+                'merchant_id' => $paymentPage->merchant->getId(),
+                'merchant_label' => $merchant->getBillingLabel(),
+                'merchant_logo' => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+                'subject' => $paymentPage->getTitle(),
+            ];
+        } catch (\Exception $e) {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_NOT_FOUND, [
+                'error' => $e->getMessage(),
+                'id' => $id
+            ]);
+    
+            try {
+                $pageDetails = $this->fetchExternalNCAPaymentPageDetails($id);
+                
+                $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [
+                    'id' => $id,
+                    'response' => $pageDetails
+                ]);
+    
+                if (empty($pageDetails)) {
+                    $this->trace->info(TraceCode::PAYMENT_PAGE_NOT_FOUND, [
+                        'id' => $id,
+                        'message' => 'Payment page does not exist in NoCodeApp service'
+                    ]);
+                    throw new BadRequestValidationFailureException(
+                        'Payment page does not exist.'
+                    );
+                }
+    
+                $merchantDetails = $this->repo->merchant->findOrFail($pageDetails['data']['merchant_id']);
+    
+                return [
+                    'entity' => 'payment_page',
+                    'entity_id' => $pageDetails['data']['id'],
+                    'merchant_id' => $pageDetails['data']['merchant_id'],
+                    'merchant_label' => $merchantDetails->getBillingLabel() ?? '',
+                    'merchant_logo' => $merchantDetails->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE) ?? '',
+                    'subject' => $pageDetails['data']['title'] ?? '',
+                ];
+            } catch (\Exception $ex) {
+                $this->trace->info(TraceCode::GREVIENCE_FAILURE_WHILE_GETTING_PAYMENT_PAGE_DETAILS, [
+                    'error' => $ex->getMessage(),
+                    'id' => $id
+                ]);
+    
+                throw new BadRequestValidationFailureException(
+                    'Payment page does not exist.'
+                );
+            }
+        }
+    }    
 
-        $paymentPage = $this->repo->payment_link->findOrFailPublic($id);
-
-        $merchant = $paymentPage->merchant;
-
-        return [
-            'entity'         => 'payment_page',
-            'entity_id'      => $paymentPage->getPublicId(),
-            'merchant_id'    => $paymentPage->merchant->getId(),
-            'merchant_label' => $merchant->getBillingLabel(),
-            'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
-            'subject'        => $paymentPage->getTitle(),
-        ];
+    public function fetchExternalNCAPaymentPageDetails(string $pageId)
+    {
+        $ncaService = new NoCodeAppsService($this->app);
+        
+        $res = $ncaService->fetchPageDetails($pageId);
+        
+        $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [$res]);
+        
+        return $res;
     }
+    
 
     protected function eventPaymentPagePaid(Entity $paymentPage, Payment\Entity $payment)
     {
