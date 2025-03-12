@@ -362,11 +362,12 @@ class Core extends Base\Core
     protected function updateSequenceNumberOrUsedCount($notification)
     {
         $this->upiMandate = $this->repo->upi_mandate->findByTokenId($notification['token_id']);
-
-        $newSequenceNo = $this->upiMandate->getSequenceNumberAttribute();
+        
         $usedCount = $this->upiMandate->getUsedCount();
 
         $this->upiMandate->incrementUsedCount();
+
+        $newSequenceNo = $this->upiMandate->getSequenceNumberAttribute();
 
         $this->repo->upi_mandate->saveOrFail($this->upiMandate);
 
