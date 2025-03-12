@@ -274,7 +274,12 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
           </NavContent>
         </Navigation>
       </SidebarContainer>
-      {shouldShowMobileOverlay && <SidebarBackgroundOverlay onClick={toggleMobileMenu} />}
+      {shouldShowMobileOverlay && (
+        <SidebarBackgroundOverlay
+          onClick={toggleMobileMenu}
+          data-testid="sidebar-background-overlay"
+        />
+      )}
       <AcceptPaymentsModal
         isKLA={user.has_key_access}
         shouldShow={props.showAcceptPayments}

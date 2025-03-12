@@ -248,6 +248,7 @@ export const routes: Record<string, string> = {
   GST_DETAILS: '/app/business-settings/gst',
   SMS_NOTIFICATIONS: '/app/notification-settings/sms',
   API_KEYS: '/app/website-app-settings/api-keys',
+  API_KEYS_AND_PLUGINS: '/app/api-keys',
   WEBHOOKS: '/app/website-app-settings/webhooks',
   CUSTOMERS: '/app/customers',
   CUSTOMER_SUPPORT_DETAILS: '/app/business-settings/customer-support',
@@ -301,5 +302,10 @@ export const routes: Record<string, string> = {
   SMART_COLLECT: '/app/smartcollect/virtualaccounts',
   NEW_REGISTRATION_LINKS: '/app/registration_links/new',
   OFFERS_HOME: '/app/offers',
+  REPORTS: '/app/reports',
+  PAYMENT_HANDLE: '/app/payment-handle',
+  X_BANKING: '/app/razorpayx',
+  LOANS: '/app/capital/loans',
   WALLET_CAMPAIGNS: '/app/wallet/campaigns',
+  ACTIVATION_DETAILS: 'business-settings/account-activation-details',
 };

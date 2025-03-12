@@ -176,23 +176,31 @@ const CopyIconWrapper = styled.span(
 `,
 );
 
-export const CopyButton = ({ onClick }: { onClick: () => void }): JSX.Element => (
+export const CopyButton = ({
+  onClick,
+  label = 'Copy refund id',
+}: {
+  onClick: () => void;
+  label?: string;
+}): JSX.Element => (
   <CopyIconWrapper>
-    <IconButton icon={CopyIcon} accessibilityLabel="Copy refund id" onClick={onClick} />
+    <IconButton icon={CopyIcon} accessibilityLabel={label} onClick={onClick} />
   </CopyIconWrapper>
 );
 
 export const CopyWrapper = ({
   children,
   onClick,
+  label,
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  label?: string;
 }): JSX.Element => (
   <Box display="inline-flex" alignItems="center" gap="spacing.2">
     {children}
     <CustomClipboard>
-      <CopyButton onClick={onClick} />
+      <CopyButton onClick={onClick} label={label} />
     </CustomClipboard>
   </Box>
 );

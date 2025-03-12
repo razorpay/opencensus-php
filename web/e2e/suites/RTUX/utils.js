@@ -1,4 +1,4 @@
-import { expect } from '@libs/shared-qsuite/playwright';
+import { expect, routes } from '@libs/shared-qsuite/playwright';
 
 const UCS_DATA_API_URL = '**/ucs/**/GetComponentData';
 
@@ -47,3 +47,80 @@ export async function assertAPICallForDataRefresh({ page, title }) {
   const last30daysOption = page.getByRole('option', { name: 'Last 30 days' });
   await Promise.all([page.waitForResponse(UCS_DATA_API_URL), last30daysOption.click()]);
 }
+
+export const NAVITEMS = {
+  PRIMARY: [
+    {
+      name: 'Transactions',
+      href: routes.TRANSACTIONS_PAYMENTS,
+    },
+    {
+      name: 'Settlements',
+      href: routes.SETTLEMENTS,
+    },
+    {
+      name: 'Reconciliation',
+      href: `${routes.RECON_DASHBOARD}/processes`,
+    },
+    {
+      name: 'Reports',
+      href: routes.REPORTS,
+    },
+    {
+      name: 'Account & Settings',
+      href: routes.ACCOUNT_SETTINGS,
+    },
+  ],
+  PAYMENT_PRODUCTS: [
+    {
+      name: 'Payment Links',
+      href: routes.PAYMENT_LINKS,
+    },
+    {
+      name: 'Payment Pages',
+      href: routes.PAYMENT_PAGES,
+    },
+    {
+      name: 'Razorpay.me Link',
+      href: routes.PAYMENT_HANDLE,
+    },
+  ],
+  EXPANDED_PAYMENT_PRODUCTS: [
+    {
+      name: 'Invoices',
+      href: routes.INVOICES,
+    },
+    {
+      name: 'Subscriptions',
+      href: routes.SUBSCRIPTIONS,
+    },
+    {
+      name: 'Smart Collect',
+      href: routes.SMART_COLLECT,
+    },
+  ],
+  BANKING_PRODUCTS: [
+    {
+      name: 'X Banking',
+      href: routes.X_BANKING,
+    },
+  ],
+  CONSUMER_PRODUCTS: [
+    {
+      name: 'Customers',
+      href: routes.CUSTOMERS,
+    },
+    {
+      name: 'Offers',
+      href: routes.OFFERS_HOME,
+    },
+    {
+      name: 'API Keys and Plugins',
+      href: routes.API_KEYS_AND_PLUGINS,
+    },
+    {
+      name: 'Apps & Deals',
+      href: routes.APP_STORE,
+    },
+  ],
+};

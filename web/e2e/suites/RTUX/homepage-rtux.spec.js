@@ -1,13 +1,13 @@
 import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
-import { assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from './utils';
+import { NAVITEMS, assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from './utils';
 
 test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments', () => {
   test.use({
     storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
   });
 
-  test.skip('should show merchant overview @priority=normal', async ({ page }) => {
+  test('should show merchant overview @priority=normal', async ({ page }) => {
     const components = await getRTUXResponse({ page });
 
     await expect(page.getByTestId('merchant-overview')).toBeVisible();
@@ -172,6 +172,98 @@ test.describe.parallel('RTUX - Header Nav @flow=rtux @project=payments', () => {
       await expect(userProfileCTA).toBeVisible();
       await userProfileCTA.click();
       await expect(page.getByRole('menuitem', { name: 'Log out' })).toBeVisible();
+    });
+
+    test('should show name of merchant and mid and should copy mid @priority=normal', async ({
+      page,
+    }) => {
+      const userProfileCTA = await page.getByTestId('profile-dropdown');
+      await expect(userProfileCTA).toBeVisible();
+      await userProfileCTA.click();
+      await expect(
+        page.getByText('Axis Test', {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByText('ABC PVT LTD', {
+          exact: true,
+        }),
+      ).toBeVisible();
+      const mid = 'DriCegiYYteBDE';
+      await expect(
+        page.getByText(mid, {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await page.getByLabel('copy merchant id').click();
+      const copiedText = await page.evaluate(() => {
+        return navigator.clipboard.readText();
+      });
+      await expect(copiedText).toContain(mid);
+    });
+
+    test('should show all sections of side navbar @priority=normal', async ({ page }) => {
+      await expect(
+        page
+          .getByRole('link', { name: 'Home', exact: true })
+          .or(page.getByRole('link', { name: 'Selected background Home', exact: true })),
+      ).toBeVisible();
+
+      for (const { name, href } of NAVITEMS.PRIMARY) {
+        const navItem = await page.getByRole('link', { name, exact: true });
+        await expect(navItem).toBeVisible();
+        await expect(navItem).toHaveAttribute('href', href);
+      }
+      await expect(page.getByText('PAYMENT PRODUCTS')).toBeVisible();
+      for (const { name, href } of NAVITEMS.PAYMENT_PRODUCTS) {
+        const navItem = await page.getByRole('link', { name, exact: true });
+        await expect(navItem).toBeVisible();
+        await expect(navItem).toHaveAttribute('href', href);
+      }
+
+      await expect(page.getByText('BANKING PRODUCTS')).toBeVisible();
+      for (const { name, href } of NAVITEMS.BANKING_PRODUCTS) {
+        const navItem = await page.getByRole('link', { name, exact: true });
+        await expect(navItem).toBeVisible();
+        await expect(navItem).toHaveAttribute('href', href);
+      }
+
+      for (const { name, href } of NAVITEMS.CONSUMER_PRODUCTS) {
+        const navItem = await page.getByRole('link', { name, exact: true });
+        await expect(navItem).toBeVisible();
+        await expect(navItem).toHaveAttribute('href', href);
+      }
+    });
+
+    test('show all cta should be visible which will expand list to show other items @priority=normal', async ({
+      page,
+    }) => {
+      const showAllCTA = await page.getByText('Show all', {
+        exact: false,
+      });
+      await expect(showAllCTA).toBeVisible();
+      await showAllCTA.click();
+      for (const { name, href } of NAVITEMS.EXPANDED_PAYMENT_PRODUCTS) {
+        const navItem = await page.getByRole('link', { name, exact: true });
+        await expect(navItem).toBeVisible();
+        await expect(navItem).toHaveAttribute('href', href);
+      }
+      const showLessCTA = await page.getByText('Show less', {
+        exact: false,
+      });
+      await expect(showLessCTA).toBeVisible();
+      await showLessCTA.click();
+
+      await expect(showAllCTA).toBeVisible();
+      await expect(showLessCTA).not.toBeVisible();
+
+      for (const { name } of NAVITEMS.EXPANDED_PAYMENT_PRODUCTS) {
+        const navItem = await page.getByRole('link', { name, exact: true });
+        await expect(navItem).not.toBeVisible({
+          visible: false,
+        });
+      }
     });
 
     test('should toggle live and test mode @priority=P0', async ({ page }) => {

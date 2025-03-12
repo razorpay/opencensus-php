@@ -31,7 +31,7 @@ test.describe
     await expect(websiteUrlField).toBeVisible();
   });
 
-  test.skip('should edit support details @priority=normal', async ({ page }) => {
+  test('should edit support details @priority=normal', async ({ page }) => {
     await page.goto(routes.CUSTOMER_SUPPORT_DETAILS);
 
     // edit website url of customer support details

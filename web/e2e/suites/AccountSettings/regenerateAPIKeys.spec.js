@@ -22,7 +22,7 @@ test.describe('Test Regenerate API Keys @flow=account-settings @project=payments
   test.use({
     storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
-  test.skip('should regenerate API Keys @priority=critical', async ({ page }) => {
+  test('should regenerate API Keys @priority=critical', async ({ page }) => {
     // go to the api keys and settings tab
     await page.goto(ELEMENT_CONSTANTS.API_KEYS_SETTINGS_URL);
 

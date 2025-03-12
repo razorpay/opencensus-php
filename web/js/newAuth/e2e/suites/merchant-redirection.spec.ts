@@ -44,7 +44,7 @@ playwrightTest.beforeEach(async ({ context, page }) => {
   ]);
   await page.goto(routes.SIGN_IN_PATH, { useOriginal: true });
 });
-playwrightTest.describe.parallel('Dashboard Redirection flow @flow=auth', () => {
+playwrightTest.describe.parallel('Dashboard Redirection flow flow=auth', () => {
   playwrightTest(
     'should redirect the user to easy dashboard on clicking signup',
     async ({ page }) => {
@@ -70,7 +70,7 @@ playwrightTest.describe.parallel('Dashboard Redirection flow @flow=auth', () => 
     },
   );
 
-  playwrightTest.skip(
+  playwrightTest(
     'should redirect the user to easy dashboard if user has initiated signup on easy',
     async ({ page }) => {
       const redirectionRequest = page.waitForResponse('/app/dashboard');
@@ -82,12 +82,12 @@ playwrightTest.describe.parallel('Dashboard Redirection flow @flow=auth', () => 
         `rzp_merchant_id=${constants.EASY_ONBOARDING.merchantId}`,
       );
       expect(setCookieHeaderValue).toContain(`rzp_user_id=${constants.EASY_ONBOARDING.rzpUserId}`);
-      await page.waitForURL(EASY_ONBOARDING_WEBSITE, { waitUntil: 'load' });
-      await expect(page).toHaveURL(EASY_ONBOARDING_WEBSITE);
+      await page.waitForURL(`${EASY_ONBOARDING_WEBSITE}onboarding`, { waitUntil: 'load' });
+      await expect(page).toHaveURL(`${EASY_ONBOARDING_WEBSITE}onboarding`);
     },
   );
 
-  playwrightTest.skip(
+  playwrightTest(
     "should redirect the FTUX user to easy dashboard's FTUX experience on logging in",
     async ({ page }) => {
       await loginByEmail({ page, cred: constants.EASY_ONBOARDING_FTUX });

@@ -209,7 +209,7 @@ const ProfileDropdownV2: React.FC<{
                 </Tooltip>
               )}
             </Box>
-            <CopyWrapper onClick={handleMIDClick}>
+            <CopyWrapper onClick={handleMIDClick} label="copy merchant id">
               <Text weight="semibold">MID:</Text>
               <Text>{merchantId}</Text>
             </CopyWrapper>

@@ -204,7 +204,13 @@ class HeaderNav extends Component {
               {isMobile ? (
                 <div className="pull-left navbar-toggle-container">
                   {isRTUXHomepage ? (
-                    <Box display="flex" alignItems="center" justifyContent="center" height="60px">
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="60px"
+                      testID="header-menu-icon"
+                    >
                       <MenuIcon
                         size="medium"
                         onClick={this.onToggleAppMenu}
