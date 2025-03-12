@@ -1204,7 +1204,8 @@ class Service extends Base\Service
 
         if ($fee !== 0 and $currency != DisputeConstants::CURRENCY_INR)
         {
-            $fee = (new Currency\Core)->getRates($currency) * $fee;
+            $rates = (new Currency\Core)->getRates($currency);
+            $fee = $rates[$currency] * $fee;
         }
 
         return $merchantBalance >= $disputeBaseAmount + $fee;

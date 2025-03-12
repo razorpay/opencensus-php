@@ -792,6 +792,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEDUCTION_SOURCE_TYPE);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function isChildDispute(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);

@@ -100,6 +100,8 @@ Razorpay';
 
     const DISPUTE_CONTEST_BY_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
 
+    const ARB_PRE_ARB_FEE_ADJUSTMENT_EXPERIMENT = 'app.arb_pre_arb_fee_adjustment_experiment_id';
+
     // Network
     public const MASTERCARD = 'MasterCard';
     public const VISA = 'Visa';

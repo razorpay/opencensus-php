@@ -950,7 +950,9 @@ return array(
     'magic_preferences_routing_to_checkout_service_exp_id' => env('MAGIC_PREFERENCES_ROUTING_TO_CHECKOUT_SERVICE_EXP_ID'),
 
     'dispute_merchant_emails_initiate_experiment_id' => env('DISPUTE_MERCHANT_EMAILS_INITIATE_EXPERIMENT_ID'),
-
+    
+    'arb_pre_arb_fee_adjustment_experiment_id' => env('ARB_PRE_ARB_FEE_ADJUSTMENT_EXP_ID'),
+    
     'url_mismatch_reply_on_ticket_experiment_id' => env('URL_MISMATCH_REPLY_ON_TICKET_EXPERIMENT_ID'),
 
     'transaction_isolation_for_order_experiment_id' => env('TRANSACTION_ISOLATION_FOR_ORDER_EXP_ID'),

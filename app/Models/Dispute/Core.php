@@ -203,26 +203,28 @@ class Core extends Base\Core
                     if ($dispute->getDeductAtOnset() === true && $reverseShadowResp === null)
                     {
                         $this->createNegativeAdjustmentAndUpdateDispute($dispute, 0, false);
+                        $expEnable = $this->isSplitzExperimentEnable($dispute->getMerchantId(), DisputeConstants::ARB_PRE_ARB_FEE_ADJUSTMENT_EXPERIMENT, DisputeConstants::VARIANT_ENABLE);
+                        if ($expEnable === true){
+                            $disputePhase = $dispute->getPhase();
 
-                        $disputePhase = $dispute->getPhase();
-
-                        if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
-                        {
-                            $network = $this->getNetwork($payment);
-
-                            $feeResult = $this->getFeeDetails($disputePhase, $network);
-
-                            $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
-
-                            $currency = $feeResult[DisputeConstants::CURRENCY];
-
-                            if ($fee !== 0)
+                            if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
                             {
-                                [$feeAmount, $merchantCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+                                $network = $this->getNetwork($payment);
 
-                                $feeNegativeAdjustmentId = $this->createNegativeAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $merchantCurrency, true);
+                                $feeResult = $this->getFeeDetails($disputePhase, $network);
 
-                                $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID] = $feeNegativeAdjustmentId;
+                                $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+
+                                $currency = $feeResult[DisputeConstants::CURRENCY];
+
+                                if ($fee !== 0)
+                                {
+                                    [$feeAmount, $merchantCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+
+                                    $feeNegativeAdjustmentId = $this->createNegativeAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $merchantCurrency, true);
+
+                                    $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID] = $feeNegativeAdjustmentId;
+                                }
                             }
                         }
                     }
@@ -710,7 +712,17 @@ class Core extends Base\Core
                         }
                         return false;
                     })->first();
+                    if ($adjustment === null){
+                        $this->trace->info(
+                            TraceCode::ADJUSTMENT_NOT_FOUND_FOR_FEE,
+                            [
+                                'dispute_id' => $dispute->getId(),
+                                'disputePhase'      => $disputePhase,
 
+                            ]
+                        );
+                        return;
+                    }
                     $this->trace->info(
                         TraceCode::FETCH_DISPUTE_POSITIVE_FEE_ADJUSTMENT,
                         [
@@ -801,26 +813,29 @@ class Core extends Base\Core
             $this->createNegativeAdjustmentAndUpdateDispute($dispute, $acceptedDisputeAmount);
 
             $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+            $expEnable = $this->isSplitzExperimentEnable($payment->getMerchantId(), DisputeConstants::ARB_PRE_ARB_FEE_ADJUSTMENT_EXPERIMENT, DisputeConstants::VARIANT_ENABLE);
+            if ($expEnable === true){
 
-            $disputePhase = $dispute->getPhase();
+                $disputePhase = $dispute->getPhase();
 
-            if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
-            {
-                $network = $this->getNetwork($payment);
-
-                $feeResult = $this->getFeeDetails($disputePhase, $network);
-
-                $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
-
-                $currency = $feeResult[DisputeConstants::CURRENCY];
-
-                if ($fee !== 0)
+                if ($disputePhase === Phase::PRE_ARBITRATION || $disputePhase === Phase::ARBITRATION)
                 {
-                    [$feeAmount, $merchantCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+                    $network = $this->getNetwork($payment);
 
-                    $feeNegativeAdjustmentId = $this->createNegativeAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $merchantCurrency, true);
+                    $feeResult = $this->getFeeDetails($disputePhase, $network);
 
-                    $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID] = $feeNegativeAdjustmentId;
+                    $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+
+                    $currency = $feeResult[DisputeConstants::CURRENCY];
+
+                    if ($fee !== 0)
+                    {
+                        [$feeAmount, $merchantCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
+
+                        $feeNegativeAdjustmentId = $this->createNegativeAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $merchantCurrency, true);
+
+                        $input[DisputeConstants::FEE_NEGATIVE_ADJUSTMENT_ID] = $feeNegativeAdjustmentId;
+                    }
                 }
             }
         }
