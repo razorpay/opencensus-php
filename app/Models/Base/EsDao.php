@@ -167,6 +167,38 @@ class EsDao
         return $this->es->updateHeimdall($params);
     }
 
+    public function updateActionPayload($indexName, $typeName, $documentId, $payload)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'id'    => $documentId,
+            'body' => [
+                'doc' => [
+                    'payload' => $payload, // directly set the payload to the HashMap
+                ],
+            ],
+        ];
+
+        return $this->es->updateHeimdall($params);
+    }
+
+    public function updateActionDiff($indexName, $typeName, $documentId, $diff)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'id'    => $documentId,
+            'body' => [
+                'doc' => [
+                    'diff' => $diff,
+                ],
+            ],
+        ];
+
+        return $this->es->updateHeimdall($params);
+    }
+
     public function getDocumentByFields($indexName, $typeName, $terms)
     {
         $matchParamsForQuery = [];

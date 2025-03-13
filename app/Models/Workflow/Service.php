@@ -38,6 +38,16 @@ class Service extends Base\Service
             $workflow->toArrayPublic());
     }
 
+
+    public function createWorkflowAction(array $input)
+    {
+        $this->trace->info(TraceCode::RAISE_WORKFLOW_REQUEST, $input);
+
+        (new Validator())->validateInput('initiate_workflow', $input);
+
+        return $this->core()->createWorkflowAction($input);
+    }
+
     public function fetch(string $orgId, string $id)
     {
         $workflow = $this->repo->workflow

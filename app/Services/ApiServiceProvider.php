@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Services\WorkflowGuard;
 use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
@@ -522,6 +523,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('MerchantOnboardingProxyController', function ($app)
         {
             return new MerchantOnboardingProxyController();
+        });
+
+        $this->app->singleton('WorkflowGuardService', function ($app)
+        {
+            return new WorkflowGuard\Service();
         });
 
         $this->app->singleton('NeedsClarificationProxyController', function ($app)

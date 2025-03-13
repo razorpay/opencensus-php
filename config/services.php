@@ -133,6 +133,13 @@ return [
         'password'      => env('PGOS_SERVICE_PASSWORD')
     ],
 
+    'workflow_guard' => [
+        'mock'          => env('WORKFLOW_GUARD_SERVICE_MOCK', true),
+        'url'           => env('WORKFLOW_GUARD_SERVICE_HOST'),
+        'user'          => env('WORKFLOW_GUARD_SERVICE_USER'),
+        'password'      => env('WORKFLOW_GUARD_SERVICE_PASSWORD')
+    ],
+
     'merchants_risk' => [
         // Api url for merchant risks service.
         'url'                => env('MERCHANT_RISKS_URL'),

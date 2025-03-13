@@ -48,6 +48,10 @@ class Entity extends Base\Entity
     const OWNER                 = 'owner';
     const ASSIGNED_AT           = 'assigned_at';
 
+    const OPERATION_TYPE = 'operation_type';
+    const CANARY_PERCENTAGE = 'canary_percentage';
+    const CANARY_ENABLED    = 'canary_enabled';
+
     // Relations
     const WORKFLOW      = 'workflow';
     const STATE_CHANGER = 'state_changer';
@@ -76,6 +80,9 @@ class Entity extends Base\Entity
         self::STATE_CHANGER_TYPE,
         self::STATE_CHANGER_ROLE_ID,
         self::ASSIGNED_AT,
+        self::OPERATION_TYPE,
+        self::CANARY_PERCENTAGE,
+        self::CANARY_ENABLED,
     ];
 
     protected $visible = [
@@ -107,6 +114,9 @@ class Entity extends Base\Entity
         self::OWNER_ID,
         self::OWNER,
         self::ASSIGNED_AT,
+        self::OPERATION_TYPE,
+        self::CANARY_PERCENTAGE,
+        self::CANARY_ENABLED,
     ];
 
     protected $publicSetters = [
@@ -149,6 +159,9 @@ class Entity extends Base\Entity
         self::TAGGED,
         self::OWNER,
         self::ASSIGNED_AT,
+        self::OPERATION_TYPE,
+        self::CANARY_PERCENTAGE,
+        self::CANARY_ENABLED,
     ];
 
     protected $defaults = [
@@ -292,9 +305,24 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::MAKER_TYPE);
     }
 
+    public function getOperationType()
+    {
+        return $this->getAttribute(self::OPERATION_TYPE);
+    }
+
     public function getUpdatedAt()
     {
         return $this->getAttribute(self::UPDATED_AT);
+    }
+
+    public function isCanaryEnabled()
+    {
+        return $this->getAttribute(self::CANARY_ENABLED) ?? false;
+    }
+
+    public function getCanaryPercentage()
+    {
+        return $this->getAttribute(self::CANARY_PERCENTAGE) ?? 0;
     }
 
     public function isOpen()

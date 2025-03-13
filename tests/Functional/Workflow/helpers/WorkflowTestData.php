@@ -15,6 +15,7 @@ return [
             'content' => [
                 'name' => 'Test workflow',
             ],
+            'convertContentToString' => false,
         ],
         'response' => [
             'content' => [
@@ -24,7 +25,9 @@ return [
                         'op_type' => 'or',
                         'level'   => 1
                     ]
-                ]
+                ],
+                'canary_percentage' => 2,
+                'canary_enabled'    => true,
             ]
         ],
     ],
@@ -149,10 +152,13 @@ return [
             'content' => [
                 'name' => 'editing workflow',
             ],
+            'convertContentToString' => false,
         ],
         'response' => [
             'content' => [
                 'name' => 'editing workflow',
+                'canary_percentage' => 5,
+                'canary_enabled'   => true,
             ],
         ],
     ],

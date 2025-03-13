@@ -12,6 +12,7 @@ use RZP\Models\State;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -132,6 +133,8 @@ class Core extends Base\Core
 
         $params[Entity::MAKER_ID] = $input[Entity::MAKER_ID] ?: null;
 
+        $params[Entity::OPERATION_TYPE] = $input[Entity::OPERATION_TYPE] ?: 'SINGLE';
+
         return $params;
     }
 
@@ -189,6 +192,7 @@ class Core extends Base\Core
             Entity::PERMISSION_ID   => Permission\Entity::$strip($input[Entity::PERMISSION_ID]),
             Entity::ENTITY_ID       => $input[Entity::ENTITY_ID],
             Entity::ENTITY_NAME     => $input[Entity::ENTITY_NAME],
+            Entity::OPERATION_TYPE  => $input[Entity::OPERATION_TYPE] ?? OperationType::SINGLE,
         ];
 
         return $params;
@@ -255,16 +259,57 @@ class Core extends Base\Core
         {
             $differInput = $params[Entity::DIFFER] ?? null;
 
+            if ($params[Entity::OPERATION_TYPE] === OperationType::BULK)
+            {
+                $actions = (new Core)->fetchOpenActionOnEntityOperation($params[Entity::ENTITY_ID], $params[Entity::ENTITY_NAME],
+                    $params[Entity::DIFFER][Differ\Entity::PERMISSION]);
+
+                $actions = $actions->toArray();
+
+                // If there are any action in progress
+                if (empty($actions) === false)
+                {
+                    $oldAction= $actions[0];
+
+                    $approvalCount = $this->repo->action_checker->fetchCountByActionId($oldAction->getId());
+
+                    if($oldAction->getApproved() === true || $approvalCount > 0)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_APPROVAL_IN_PROGRESS, null, [
+                            'current_approval_count' => $approvalCount,
+                            'is_approved'            => $oldAction->getApproved(),
+                        ]);
+                    }
+                    if (($retry === false) and (empty($differInput) === false))
+                    {
+                        unset($differInput[Entity::ORG_ID]);
+                        $differEntity = new Differ\Entity($differInput);
+                        // Create the diff for the entity
+                        (new Differ\Core)->updatePayloadAndDiffInEs($oldAction['id'], $differEntity);
+                    }
+
+                    return $oldAction;
+                }
+            }
+
             $tags = $params[Entity::TAGS] ?? [];
 
             unset($params[Entity::TAGS]);
             unset($params[Entity::DIFFER]);
 
-            $action->build($params);
+            $this->trace->info(TraceCode::RAISE_WORKFLOW_REQUEST, $params);
+
+            $this->app['config']['workflow_guard.current_workflow_id'] = $params[Entity::WORKFLOW_ID];
 
             $workflow = $this->repo->workflow->findOrFailPublic($params[Entity::WORKFLOW_ID]);
 
             $permission = $this->repo->permission->findOrFailPublic($params[Entity::PERMISSION_ID]);
+
+            $params[Entity::CANARY_PERCENTAGE]    = $workflow->getCanaryPercentage();
+
+            $params[Entity::CANARY_ENABLED]       = $workflow->isCanaryEnabled();
+
+            $action->build($params);
 
             $org = $this->repo->org->findOrFailPublic($params[Entity::ORG_ID]);
 
@@ -278,7 +323,7 @@ class Core extends Base\Core
 
             $action->tag($tags);
 
-            $this->repo->saveOrFail($action);
+            $this->repo->workflow_action->saveOrFail($action);
 
             $this->createInitialStateForAction($action, $maker);
 
@@ -288,6 +333,7 @@ class Core extends Base\Core
                 // Create the diff for the entity
                 (new Differ\Core)->create($action, $differInput);
             }
+            return $action;
         });
 
         return $action;
@@ -395,17 +441,23 @@ class Core extends Base\Core
         //
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($action, $checkerEntity)
         {
+            $state = State\Name::APPROVED;
+
+            if($action->isCanaryEnabled())
+            {
+                $state = State\Name::APPROVED_FOR_CANARY;
+            }
             $data = [
                 Entity::APPROVED => true,
-                Entity::STATE    => State\Name::APPROVED,
+                Entity::STATE    => $state,
             ];
 
             $action->edit($data);
 
-            $this->repo->saveOrFail($action);
+            $this->repo->workflow_action->saveOrFail($action);
 
             $stateData = [
-                State\Entity::NAME      => State\Name::APPROVED,
+                State\Entity::NAME      => $state,
             ];
 
             (new State\Core)->createForMakerAndEntity($stateData, $checkerEntity, $action);
@@ -539,7 +591,7 @@ class Core extends Base\Core
         {
             $action->setCurrentLevel($nextLevelStep->getLevel());
 
-            $this->repo->saveOrFail($action);
+            $this->repo->workflow_action->saveOrFail($action);
         }
     }
 
@@ -618,9 +670,23 @@ class Core extends Base\Core
             }
         }
 
-        $this->repo->saveOrFail($action);
+        $this->app['config']['workflow_guard.current_workflow_id'] = $action->getWorkflowId();
+
+        $this->repo->workflow_action->saveOrFail($action);
+
+        $this->postProcessCanaryChanges($action, $input);
 
         return $action;
+    }
+
+    private function postProcessCanaryChanges(Entity $action, array $input): void
+    {
+        if(isset($input[Entity::CANARY_PERCENTAGE]) && $action->getApproved())
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $this->executeAction($action, $admin);
+        }
     }
 
     public function close(Entity $action, $maker, $autoclose = false)
@@ -903,85 +969,88 @@ class Core extends Base\Core
 
     public function executeAction($action, PublicEntity $checkerEntity, Role\Entity $role = null)
     {
+        list($event, $wfgExecution, $state) = $this->getWorkflowExecutionEvent($action);
+
         list($stateCore, $differCore) = [
             new State\Core,
             new Differ\Core,
         ];
 
-        $diff = (new Differ\Service)->fetchRequest($action->getId());
-
-        $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
-
-        $payload = $diff[Differ\Entity::PAYLOAD];
-
-        $controller = $diff[Differ\Entity::CONTROLLER];
-
-        $functionName = $diff[Differ\Entity::FUNCTION_NAME];
-
-        $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
-
-        $permissionName = $action->permission->getName();
-
-
-        $payload = $this->performMultipleWorkflowChanges($payload, $permissionName);
-
-        /*
-          * Decrypt the keys like password replaying the request
-          *
-          * Encryption place : app/Services/Workflow/Service.php encryptFields
-         */
-        $payload = (new Helper())->decryptSensitiveFieldsBeforeReplayingRequest($payload);
-
-        // Replace the current request's payload with the
-        // actual maker request payload.
-        Request::replace($payload);
-
-        // Create controller object
-        $controller = App::make($controller);
-
-        // Auth details have to be initialized before
-        // the actual code (Controller@action) runs.
-        $this->initAuthDetails($authDetails);
-
-        $state = State\Name::EXECUTED;
-
-        //
-        // Should the original request be replayed?
-        // If yes, the original payload is passed to the controller action
-        //
-        $replayOriginalRequest = true;
-
-        //
-        // In some circumstances (like create_payout), we have custom logic on how to process
-        // workflow action execution, instead of simply replaying the original request.
-        //
-        if ($permissionName === Permission\Name::CREATE_PAYOUT)
+        if($wfgExecution === false)
         {
-            $replayOriginalRequest = false;
-        }
+            $diff = (new Differ\Service)->fetchRequest($action->getId());
 
-        if ($replayOriginalRequest === true)
-        {
-            // Not using App::call here because in Laravel6 this internally
-            // matches function param names as well
-            // calling resolveMethodDependencies so that all method dependencies
-            // can be resolved.
-            // Eg: postCreateCreditsLog(Credits\Service $service, $id)
-            // In above case the 1st param will be resolved automatically
+            $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
 
-            $routeParams = Route::current()->resolveMethodDependencies(
-                array_values($routeParams), new ReflectionMethod($controller, $functionName)
-            );
+            $payload = $diff[Differ\Entity::PAYLOAD];
 
-            $internalResponse = $controller->$functionName(...array_values($routeParams));
+            $controller = $diff[Differ\Entity::CONTROLLER];
+
+            $functionName = $diff[Differ\Entity::FUNCTION_NAME];
+
+            $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
+
+            $permissionName = $action->permission->getName();
+
+
+            $payload = $this->performMultipleWorkflowChanges($payload, $permissionName);
+
+            /*
+              * Decrypt the keys like password replaying the request
+              *
+              * Encryption place : app/Services/Workflow/Service.php encryptFields
+             */
+            $payload = (new Helper())->decryptSensitiveFieldsBeforeReplayingRequest($payload);
+
+            // Replace the current request's payload with the
+            // actual maker request payload.
+            Request::replace($payload);
+
+            // Create controller object
+            $controller = App::make($controller);
+
+            // Auth details have to be initialized before
+            // the actual code (Controller@action) runs.
+            $this->initAuthDetails($authDetails);
 
             //
-            // consider all non 2xx as failures
+            // Should the original request be replayed?
+            // If yes, the original payload is passed to the controller action
             //
-            if (($internalResponse->getStatusCode() < 200) and
-                ($internalResponse->getStatusCode() >= 300))
+            $replayOriginalRequest = true;
+
+            //
+            // In some circumstances (like create_payout), we have custom logic on how to process
+            // workflow action execution, instead of simply replaying the original request.
+            //
+            if ($permissionName === Permission\Name::CREATE_PAYOUT)
             {
-                $state = State\Name::FAILED;
+                $replayOriginalRequest = false;
+            }
+
+            if ($replayOriginalRequest === true)
+            {
+                // Not using App::call here because in Laravel6 this internally
+                // matches function param names as well
+                // calling resolveMethodDependencies so that all method dependencies
+                // can be resolved.
+                // Eg: postCreateCreditsLog(Credits\Service $service, $id)
+                // In above case the 1st param will be resolved automatically
+
+                $routeParams = Route::current()->resolveMethodDependencies(
+                    array_values($routeParams), new ReflectionMethod($controller, $functionName)
+                );
+
+                $internalResponse = $controller->$functionName(...array_values($routeParams));
+
+                //
+                // consider all non 2xx as failures
+                //
+                if (($internalResponse->getStatusCode() < 200) and
+                    ($internalResponse->getStatusCode() >= 300))
+                {
+                    $state = State\Name::FAILED;
+                }
             }
         }
 
@@ -991,12 +1060,21 @@ class Core extends Base\Core
         \Database\DefaultConnection::set(Mode::LIVE);
 
         // Update states
+        if($this->canUpdateState($action->getState(), $state))
+        {
+            $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
-        $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
+            $stateCore->changeActionState($action, $state, $checkerEntity);
 
-        $stateCore->changeActionState($action, $state, $checkerEntity);
+            $differCore->updateStateInEs($action->getId(), $state);
+        }
 
-        $differCore->updateStateInEs($action->getId(), $state);
+        if($wfgExecution === true)
+        {
+            $topic = env('WORKFLOW_ACTION_EXECUTION_TOPIC', Constants::WORKFLOW_ACTION_EXECUTION_TOPIC);
+
+            (new KafkaProducer($topic, stringify($event)))->Produce();
+        }
 
         return ['success' => true];
     }
@@ -1321,5 +1399,57 @@ class Core extends Base\Core
         ];
 
         (new DashboardNotificationHandler($args))->send();
+    }
+
+    private function getWorkflowExecutionEvent(Entity $action): array
+    {
+        $event = [];
+
+        $wfgExecution = false;
+
+        $state = State\Name::EXECUTED;
+
+        if($action->isCanaryEnabled() === true)
+        {
+            $wfgExecution = true;
+
+            if($action->getCanaryPercentage() === 100)
+            {
+                $event = [
+                    'workflow_action_id' => $action->getId(),
+                    'action'             => 'COMPLETE_CANARY',
+                ];
+            }
+            else if($action->getCanaryPercentage() === 0)
+            {
+                $event = [
+                    'workflow_action_id' => $action->getId(),
+                    'action'             => 'TERMINATE_CANARY',
+                ];
+                $state = State\Name::TERMINATED;
+            }
+            else
+            {
+                $event = [
+                    'workflow_action_id' => $action->getId(),
+                    'action'             => 'INITIATE_CANARY',
+                ];
+                $state = State\Name::APPROVED_FOR_CANARY;
+            }
+        }
+        else if($action->getOperationType() == OperationType::BULK)
+        {
+            $wfgExecution = true;
+            $event = [
+                'workflow_action_id' => $action->getId(),
+                'action'             => 'EXECUTE_BULK',
+            ];
+        }
+        return [$event, $wfgExecution, $state];
+    }
+
+    public function canUpdateState(string $currentState, string $updatedState): bool
+    {
+        return $currentState !== $updatedState;
     }
 }

@@ -1928,6 +1928,7 @@ class ErrorCode
     // Workflow Related ErrorCodes
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
+    const BAD_REQUEST_WORKFLOW_ACTION_APPROVAL_IN_PROGRESS                         = 'BAD_REQUEST_WORKFLOW_ACTION_APPROVAL_IN_PROGRESS';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                          = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';

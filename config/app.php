@@ -465,6 +465,8 @@ return array(
 
     'apply_mutex_on_pgos_dual_write_experiment_id' => env('APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID'),
 
+    'workflow_wfg_proxying_experiment_id' => env('WORKFLOW_WFG_PROXYING_EXPERIMENT_ID'),
+
     'gift_cards_payments_via_pg_router_experiment_id' => env('GIFT_CARDS_PAYMENTS_VIA_PG_ROUTER_EXPERIMENT_ID'),
 
     'apply_mutex_on_merchant_entities_update_experiment_id' => env('APPLY_MUTEX_ON_MERCHANT_ENTITIES_UPDATE_EXPERIMENT_ID'),

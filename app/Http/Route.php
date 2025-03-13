@@ -2155,6 +2155,7 @@ class Route
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
+        'workflow_action_create'                   => ['post',     'w-actions',                                      'WorkflowController@createWorkflowAction'                               ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
         'workflow_get_multiple'                    => ['get',      'workflows',                                      'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                          => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
@@ -5839,6 +5840,7 @@ class Route
         'internal_workflow_observer_data_update',
         'get_permissions_admin',
         'fetch_offer_create_info',
+        'workflow_action_create',
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
@@ -18154,6 +18156,7 @@ class Route
 
         'terminals_service' => [
             'merchant_info_fetch',
+            'workflow_action_create',
             'merchant_update_miq',
             'pricing_update_miq',
             'terminal_sync_internal',

@@ -15,6 +15,7 @@ class Constants
     const MERCHANT_DETAIL = 'merchant_detail';
 
     const NEEDS_WORKFLOW_CLARIFICATION_COMMENT_KEY = 'need_clarification_comment : ';
+    const WORKFLOW_ACTION_EXECUTION_TOPIC = 'workflow-action-execution-events';
 
     const ONBOARDING_WORKFLOWS = [
         Permission\Name::NEEDS_CLARIFICATION_RESPONDED,
