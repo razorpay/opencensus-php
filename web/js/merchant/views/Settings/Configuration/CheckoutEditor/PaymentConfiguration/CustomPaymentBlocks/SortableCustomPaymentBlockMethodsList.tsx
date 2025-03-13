@@ -7,13 +7,7 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/index';
 
 import { getSingleInstrumentBlockDetails } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/AddSingleInstrument/helpers';
-import CardConfigurationModal from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CardConfiguration/CardConfigurationModal';
 import { CustomPaymentBlockMethod } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CustomPaymentBlocks/CustomPaymentBlockForm';
-import EmiConfigurationModal from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/EmiConfiguration/EmiConfigurationModal';
-import NetBankingConfigurationModal from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/NetBankingConfiguration/NetBankingConfigurationModal';
-import PayLaterConfigurationModal from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/PayLaterConfiguration/PayLaterConfigurationModal';
-import UpiConfigurationModal from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/UpiConfiguration/UpiConfigurationModal';
-import WalletConfigurationModal from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/WalletConfiguration/WalletConfigurationModal';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
 import {
   SortableList,
@@ -33,13 +27,14 @@ export function SortableCustomPaymentBlockMethodsList({
   blockKey,
   list,
   onUpdateSortList,
+  handleOpenModal,
 }: {
   blockKey: string;
   list: SortableListItemData<CustomPaymentBlockMethod>[];
   onUpdateSortList: (updatedSequence: string[]) => void;
+  handleOpenModal: (slug: string) => void;
 }) {
   const blocks = list;
-  const [openMethod, setOpenMethod] = React.useState('');
   const {
     values,
     handleSelectedConfigChange,
@@ -197,36 +192,6 @@ export function SortableCustomPaymentBlockMethodsList({
     });
   }
 
-  function openModal(slug: string) {
-    switch (slug) {
-      case 'upi':
-        setOpenMethod('upi');
-        break;
-      case 'netbanking':
-        setOpenMethod('netbanking');
-        break;
-      case 'wallet':
-        setOpenMethod('wallet');
-        break;
-      case 'emi':
-        setOpenMethod('emi');
-        break;
-      case 'paylater':
-        setOpenMethod('paylater');
-        break;
-      case 'card':
-        setOpenMethod('card');
-        break;
-      default:
-        setOpenMethod('');
-        closeModal();
-    }
-  }
-
-  function closeModal() {
-    setOpenMethod('');
-  }
-
   function handleCustomBlockMethodClick(block) {
     const oldBlock = selectedConfig.checkout_config?.display?.blocks?.[blockKey] ?? {
       name: '',
@@ -234,7 +199,7 @@ export function SortableCustomPaymentBlockMethodsList({
     };
     const { slug, isSingleInstrument } = block;
     if (!isSingleInstrument) {
-      openModal(slug);
+      handleOpenModal(slug);
     }
     handleSelectedPaymentOptionChange({
       name: oldBlock.name,
@@ -278,103 +243,64 @@ export function SortableCustomPaymentBlockMethodsList({
     _track.customPaymentBlockSingleInstrumentRemoved(singleMatchingInstrument);
   }
   return (
-    <>
-      <SortableList list={list} listUpdater={updateSortableList}>
-        {blocks.map((listItem) => {
-          const { item: block, id } = listItem;
-          const { isVisible, description, slug, name, isSingleInstrument } = block;
-          return (
-            <SortableListItem showDragHandle={true} key={id} id={id}>
-              <ListItemCard
-                onItemClick={() => handleCustomBlockMethodClick(block)}
-                isHoverable={true}
-                id={id}
-                isDraggable={isVisible}
-                showDragIcon={true}
-                accessibilityLabel={slug}
-                backgroundColor="surface.background.gray.moderate"
-                Title={
-                  <Text size="medium" weight="medium" color="surface.text.gray.normal">
-                    {name}
-                  </Text>
-                }
-                Description={
-                  <Text
-                    size="small"
-                    weight="regular"
-                    color={
-                      isVisible ? 'interactive.text.positive.normal' : 'surface.text.gray.muted'
-                    }
-                  >
-                    {description}
-                  </Text>
-                }
-                RightComponent={
-                  <StyledButton>
-                    {isSingleInstrument ? (
-                      <IconButton
-                        icon={TrashIcon}
-                        accessibilityLabel="delete single instrument"
-                        onClick={() => removeSingleInstrument(slug)}
-                      />
-                    ) : (
-                      <Switch
-                        accessibilityLabel={`toggle-${slug}`}
-                        size="small"
-                        value={slug}
-                        isChecked={isVisible}
-                        onChange={(value) => {
-                          handleCustomBlockMethodVisibilityChange(slug, value.isChecked);
-                        }}
-                      />
-                    )}
-                  </StyledButton>
-                }
-              />
-            </SortableListItem>
-          );
-        })}
-      </SortableList>
-      <CardConfigurationModal
-        isOpen={openMethod === 'card'}
-        onClose={() => {
-          closeModal();
-        }}
-        blockName={blockKey}
-      />
-      <UpiConfigurationModal
-        isOpen={openMethod === 'upi'}
-        onClose={() => {
-          closeModal();
-        }}
-        blockName={blockKey}
-      />
-      <EmiConfigurationModal
-        isOpen={openMethod === 'emi'}
-        onClose={() => {
-          closeModal();
-        }}
-        blockName={blockKey}
-      />
-      <NetBankingConfigurationModal
-        isOpen={openMethod === 'netbanking'}
-        onClose={() => {
-          closeModal();
-        }}
-        blockName={blockKey}
-      />
-      <PayLaterConfigurationModal
-        isOpen={openMethod === 'paylater'}
-        onClose={() => {
-          closeModal();
-        }}
-        blockName={blockKey}
-      />
-      <WalletConfigurationModal
-        isOpen={openMethod === 'wallet'}
-        onClose={closeModal}
-        blockName={blockKey}
-      />
-    </>
+    <SortableList list={list} listUpdater={updateSortableList}>
+      {blocks.map((listItem) => {
+        const { item: block, id } = listItem;
+        const { isVisible, description, slug, name, isSingleInstrument } = block;
+        return (
+          <SortableListItem showDragHandle={true} key={id} id={id}>
+            <ListItemCard
+              onItemClick={() => handleCustomBlockMethodClick(block)}
+              isHoverable={true}
+              id={id}
+              isDraggable={isVisible}
+              showDragIcon={true}
+              accessibilityLabel={slug}
+              backgroundColor="surface.background.gray.moderate"
+              Title={
+                <Text size="medium" weight="medium" color="surface.text.gray.normal">
+                  {name}
+                </Text>
+              }
+              Description={
+                <Text
+                  size="small"
+                  weight="regular"
+                  color={
+                    isVisible ? 'interactive.text.positive.normal' : 'surface.text.gray.muted'
+                  }
+                >
+                  {description}
+                </Text>
+              }
+              RightComponent={
+                <StyledButton>
+                  {isSingleInstrument ? (
+                    <IconButton
+                      icon={TrashIcon}
+                      accessibilityLabel="delete single instrument"
+                      onClick={() => removeSingleInstrument(slug)}
+                    />
+                  ) : (
+                    <Switch
+                      accessibilityLabel={`toggle-${slug}`}
+                      size="small"
+                      value={slug}
+                      isChecked={isVisible}
+                      onChange={(value) => {
+                        handleCustomBlockMethodVisibilityChange(slug, value.isChecked);
+                        if (value.isChecked) {
+                          handleCustomBlockMethodClick(block);
+                        }
+                      }}
+                    />
+                  )}
+                </StyledButton>
+              }
+            />
+          </SortableListItem>
+        );
+      })}
+    </SortableList>
   );
 }

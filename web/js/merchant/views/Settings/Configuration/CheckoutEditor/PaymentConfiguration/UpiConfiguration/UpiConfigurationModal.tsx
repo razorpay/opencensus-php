@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
   ArrowRightIcon,
@@ -45,9 +45,15 @@ export default function UpiConfigurationModal({
         ? ['qr', 'intent', 'collect']
         : initialObject.flows,
   };
+  const [prevUpiConfig, setPrevUpiConfig] = useState(initialFinalCardConfigurationObj);
   const [upiFeatureEnabledList, setUpiFeatureEnabledList] = React.useState(
     initialFinalCardConfigurationObj,
   );
+
+  if (!isEqual(prevUpiConfig, initialFinalCardConfigurationObj)) {
+    setUpiFeatureEnabledList(initialFinalCardConfigurationObj);
+    setPrevUpiConfig(initialFinalCardConfigurationObj);
+  }
 
   // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {

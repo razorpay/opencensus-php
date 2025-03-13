@@ -16,13 +16,14 @@ export default function CardType({
       paddingX="spacing.4"
       borderRadius="large"
     >
-      <Text weight="semibold" size="large">
+      <Text weight="medium" size="large">
         Card Type
       </Text>
       <Link
         href="https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards"
         icon={ArrowRightIcon}
         iconPosition="right"
+        size='small'
       >
         See documentation
       </Link>

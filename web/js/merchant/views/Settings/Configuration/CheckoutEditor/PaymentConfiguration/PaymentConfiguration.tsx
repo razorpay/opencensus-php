@@ -7,11 +7,14 @@ import {
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/index';
 
-import ConfigurationHeading from './ConfigurationHeading';
 import ConfigurationList from './ConfigurationList';
 import _track from './track';
 
-export function PaymentConfiguration() {
+export function PaymentConfiguration({
+  parentRef
+}: {
+  parentRef: React.RefObject<HTMLDivElement>;
+}) {
   const { values, handlePaymentConfigScreenChange } = useCheckoutEditor();
   const selectedConfig = values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG];
   const paymentConfigScreen = values[CHECKOUT_EDITOR_FIELDS.PAYMENT_CONFIG_SCREEN];
@@ -28,15 +31,19 @@ export function PaymentConfiguration() {
     _track.paymentConfigVisited();
   }, []);
 
-  return (
-    <>
-      <ConfigurationHeading />
+  useEffect(() => {
+    // have to reset scroll since browser retains scroll position in 
+    // ConfigurationDetails and ConfigurationList components
+    if (parentRef?.current) {
+      parentRef.current.scrollTo(0, 0);
+    }
+  }, [paymentConfigScreen]);
 
-      {paymentConfigScreen === PAYMENT_CONFIG_SCREEN.CONFIG_DETAILS && selectedConfig ? (
-        <ConfigurationDetails hideConfigDetails={handleHideConfigDetails} />
-      ) : (
-        <ConfigurationList showConfigDetails={handleShowConfigDetails} />
-      )}
-    </>
+  return (
+    paymentConfigScreen === PAYMENT_CONFIG_SCREEN.CONFIG_DETAILS && selectedConfig ? (
+      <ConfigurationDetails hideConfigDetails={handleHideConfigDetails} />
+    ) : (
+      <ConfigurationList showConfigDetails={handleShowConfigDetails} />
+    )
   );
 }

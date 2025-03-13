@@ -27,7 +27,7 @@ export const FrameContainer = styled.div<{
   margin-top: ${(props) => (props.isDesktopPreview ? '20px' : '42px')};
   width: 100%;
   transform-origin: ${(props) =>
-    props.zoomMethodsScreen ? (props.isDesktopPreview ? '70% 80%' : '50% 45%') : 'center'};
+    props.zoomMethodsScreen ? (props.isDesktopPreview ? '70% 60%' : '50% 45%') : 'center'};
   transform: ${(props) => (props.zoomMethodsScreen ? 'scale(1.4)' : 'scale(1)')};
   transition: transform 0.5s ease-in-out, transform-origin 0.5s ease-in-out;
 `;

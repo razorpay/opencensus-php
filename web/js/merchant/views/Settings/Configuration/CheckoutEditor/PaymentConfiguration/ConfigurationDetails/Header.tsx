@@ -15,6 +15,10 @@ import {
   Text,
   Button,
   useToast,
+  Card,
+  CardBody,
+  Code,
+  CopyIcon
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -51,7 +55,7 @@ function CopyConfigIDPopOver({ configID, docLink }: { configID: string; docLink:
 
   const Content = ({ configID, docLink }: { configID: string; docLink: string }) => (
     <Box display="flex" flexDirection="column" gap="spacing.5">
-      <Text size="medium" weight="regular">
+      <Text size="medium" weight="regular" color="surface.text.gray.subtle">
         Share the Configuration ID with your developer to integrate this setup. You can also define
         conditions for displaying this configuration to a particular set of customers by using the
         Configuration ID.
@@ -74,7 +78,14 @@ function CopyConfigIDPopOver({ configID, docLink }: { configID: string; docLink:
       title="Configuration ID"
     >
       <PopoverInteractiveWrapper>
-        <Badge color="neutral">{configID}</Badge>
+        <Card padding="spacing.0" elevation="none" backgroundColor="surface.background.gray.moderate">
+          <CardBody>
+            <Box display="flex" alignItems="center" paddingY="spacing.1" paddingRight="spacing.2" width="100%">
+              <Code color="surface.text.gray.normal" size="medium" isHighlighted={false} weight="bold">{configID}</Code>
+              <CopyIcon color="interactive.icon.gray.subtle" size="small" />
+            </Box>
+          </CardBody>
+        </Card>
       </PopoverInteractiveWrapper>
     </Popover>
   );
@@ -143,13 +154,19 @@ function Header({ org, hideConfigDetails }: HeaderProps) {
   }
 
   return (
-    <Box>
+    <Box
+      position="sticky"
+      top="spacing.0"
+      zIndex="5"
+      backgroundColor="surface.background.gray.intense"
+      padding="spacing.2"
+      paddingBottom="spacing.3"
+      borderBottomColor="surface.border.gray.muted"
+    >
       <Box
         display="flex"
-        paddingBottom="spacing.3"
         gap="spacing.3"
         alignItems="center"
-        borderBottomColor="surface.border.gray.muted"
       >
         <IconButton
           accessibilityLabel="go back"
@@ -169,7 +186,7 @@ function Header({ org, hideConfigDetails }: HeaderProps) {
         </Box>
 
         {!isRazorpayConfig && (
-          <Box display="flex" gap="spacing.5">
+          <Box display="flex" gap="spacing.5" alignItems="center">
             {!isNewConfig && (
               <CopyConfigIDPopOver
                 configID={selectedConfig.config_id ?? ''}

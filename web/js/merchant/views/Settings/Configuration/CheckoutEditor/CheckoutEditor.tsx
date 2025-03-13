@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Box } from '@razorpay/blade/components';
 import {
   AccountConfig,
@@ -209,6 +209,8 @@ const CheckoutEditor = ({
     fetchConfig();
   }, [fetchConfig]);
 
+  const editorScreenRef = useRef<HTMLDivElement>(null);
+
   const handleUpdateFeatures = (payload: unknown) => updateFeatures(payload, user.current);
 
   const Features = ({
@@ -325,7 +327,9 @@ const CheckoutEditor = ({
             flexDirection="column"
             gap="spacing.4"
             padding="spacing.3"
+            paddingTop="spacing.0"
             overflowY="auto"
+            ref={editorScreenRef}
           >
             {showFeatures && (
               <Features
@@ -334,7 +338,7 @@ const CheckoutEditor = ({
               />
             )}
             {showStyling && <CheckoutStyles trustedBadge={trustedBadge} />}
-            {showPaymentConfiguration && <PaymentConfiguration />}
+            {showPaymentConfiguration && <PaymentConfiguration parentRef={editorScreenRef} />}
             {!suggestion && <Suggestion />}
             <ConfigFooter />
           </Box>

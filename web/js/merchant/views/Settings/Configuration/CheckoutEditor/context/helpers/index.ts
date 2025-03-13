@@ -311,7 +311,7 @@ function hasHiddenBlocksChanged(
   const newHiddenBlocksCopy = [...newHiddenBlocks];
 
   for (const block of oldHiddenBlocks) {
-    const matchIndex = newHiddenBlocksCopy.findIndex((newBlock) => isEqual(newBlock, block));
+    const matchIndex = newHiddenBlocksCopy.findIndex((newBlock) => block?.method === newBlock?.method);
     if (matchIndex === -1) {
       return true;
     }

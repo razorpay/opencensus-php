@@ -79,7 +79,14 @@ export default function EmiConfigurationModal({
         ? cardType.map((type) => type.title)
         : initialState.types,
   };
+  const [prevEmiConfig, setPrevEmiConfig] = useState(initialFinalCardConfigurationObj);
   const [activeEMI, setActiveEMI] = useState(initialFinalCardConfigurationObj);
+
+  if (!isEqual(prevEmiConfig, initialFinalCardConfigurationObj)) {
+    setActiveEMI(initialFinalCardConfigurationObj);
+    setPrevEmiConfig(initialFinalCardConfigurationObj);
+  }
+  
   const initialObjects = currentConfig.filter((item) => item.method === 'cardless_emi');
   const isInitialConfigExistsCardless =
     currentConfig.filter((item) => item.method === 'cardless_emi').length > 0;
@@ -102,9 +109,16 @@ export default function EmiConfigurationModal({
         : initialObject.providers,
   };
 
+  const [prevCardlessEmiConfig, setPrevCardlessEmiConfig] = useState(initialFinalCardConfigurationObCardless);
+
   const [activeCardLessEmi, setActiveCardLessEmi] = useState(
     initialFinalCardConfigurationObCardless,
   );
+
+  if (!isEqual(prevCardlessEmiConfig, initialFinalCardConfigurationObCardless)) {
+    setActiveCardLessEmi(initialFinalCardConfigurationObCardless);
+    setPrevCardlessEmiConfig(initialFinalCardConfigurationObCardless);
+  }
   const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
 
   // @HarshLileshShah remove this useEffect that you have added

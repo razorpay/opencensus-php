@@ -67,7 +67,12 @@ export default function NetBankingConfigurationModal({
         : initialObject.banks,
   };
   const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
+  const [prevNetbankingConfig, setPrevNetbankingConfig] = useState(initialFinalCardConfigurationObj);
   const [activeBanks, setActiveBanks] = useState(initialFinalCardConfigurationObj);
+  if (!isEqual(prevNetbankingConfig, initialFinalCardConfigurationObj)) {
+    setActiveBanks(initialFinalCardConfigurationObj);
+    setPrevNetbankingConfig(initialFinalCardConfigurationObj);
+  }
   const [filteredBanks, setFilteredBanks] = useState(banks);
   const [searchFilter, setSearchFilter] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState<string>('');

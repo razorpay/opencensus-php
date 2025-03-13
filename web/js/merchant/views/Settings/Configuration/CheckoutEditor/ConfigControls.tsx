@@ -58,7 +58,7 @@ const ConfigControls = () => {
             orientation="horizontal"
             width="100%"
           />
-          <Box display="flex" gap="spacing.5" padding="spacing.3">
+          <Box display="flex" gap="spacing.5">
             <Button
               variant="tertiary"
               isDisabled={!isValueModified || isSaving}

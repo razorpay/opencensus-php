@@ -56,8 +56,14 @@ export default function PayLaterConfigurationModal({
         ? providers.map((provider) => provider.code)
         : initialObject.wallets,
   };
+  const [prevPaylaterConfig, setPrevPaylaterConfig] = useState(initialFinalCardConfigurationObj);
   const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
   const [activeBanks, setActiveBanks] = useState(initialFinalCardConfigurationObj);
+
+  if (!isEqual(prevPaylaterConfig, initialFinalCardConfigurationObj)) {
+    setPrevPaylaterConfig(initialFinalCardConfigurationObj);
+    setActiveBanks(initialFinalCardConfigurationObj)
+  }
 
   // @HarshLileshShah remove this useEffect that you have added
   useEffect(() => {

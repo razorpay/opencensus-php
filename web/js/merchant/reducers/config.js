@@ -810,7 +810,7 @@ const initialState = {
   },
   checkoutPaymentConfigs: {
     loading: true,
-    data: {},
+    data: null,
     error: null,
   },
 };

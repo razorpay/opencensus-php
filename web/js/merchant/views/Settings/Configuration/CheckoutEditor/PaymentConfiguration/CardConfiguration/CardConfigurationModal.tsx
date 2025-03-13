@@ -77,9 +77,18 @@ export default function CardConfigurationModal({
         ? cardType.map((type) => type.title)
         : initialObject.types,
   };
+
+  const [prevCardConfig, setPrevCardConfig] = useState(initialFinalCardConfigurationObj);
+
   const [finalCardConfigurationObj, setFinalCardConfigurationObj] = useState(
     initialFinalCardConfigurationObj,
   );
+
+  if (!isEqual(initialFinalCardConfigurationObj, prevCardConfig)) {
+    setPrevCardConfig(initialFinalCardConfigurationObj);
+    setFinalCardConfigurationObj(initialFinalCardConfigurationObj);
+  }
+  
 
   const close = () => {
     onClose();
@@ -90,7 +99,7 @@ export default function CardConfigurationModal({
   useEffect(() => {
     cardType.forEach((item) => {
       if (!types[item.title]) {
-        item.isDisabled = true;
+        item['isDisabled'] = true;
       }
     });
   }, [types]);

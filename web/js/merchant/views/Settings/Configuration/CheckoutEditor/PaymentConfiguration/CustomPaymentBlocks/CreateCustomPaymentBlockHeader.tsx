@@ -30,8 +30,7 @@ export default function CreateCustomPaymentBlockHeader({
             display="flex"
             alignSelf="center"
             variant="button"
-            size="small"
-            color="primary"
+            size="medium"
             iconPosition="right"
             icon={PlusIcon}
             onClick={handleCreateNewCustomBlock}

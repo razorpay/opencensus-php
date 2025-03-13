@@ -284,7 +284,7 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
           ref={customBlockBodyRef}
           height={isExpanded ? customBlockBodyRef?.current?.scrollHeight : '0'}
         >
-          <Box display="flex" flexDirection="column" gap="spacing.7" paddingX="spacing.1">
+          <Box display="flex" flexDirection="column" gap="spacing.7" paddingX="spacing.2">
             <TextInput
               label="Payment block name"
               helpText="Use 2-3 words only"
@@ -294,7 +294,7 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
                 handleBlockNameUpdate(value ?? '');
               }}
             />
-            <Box display="flex" flexDirection="column" gap="spacing.4">
+            <Box display="flex" flexDirection="column" gap="spacing.4" paddingX="spacing.2">
               <Text size="small">Add payment method or instrument</Text>
               <PointerDivWrapper
                 onClick={() => {
