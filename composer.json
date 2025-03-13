@@ -15,7 +15,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": ">=8",
+        "php": "^8.2",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "psr/cache": "^1.0 || ^2.0 || ^3.0",
         "aws/aws-sdk-php": "^3.209",
