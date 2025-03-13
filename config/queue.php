@@ -662,6 +662,11 @@ return [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_UPDATE_LIVE_QUEUE'),
     ],
 
+    'x_balance_dual_write' => [
+        'test'       => env('AWS_X_BALANCE_DUAL_WRITE_TEST_QUEUE'),
+        'live'       => env('AWS_X_BALANCE_DUAL_WRITE_LIVE_QUEUE'),
+    ],
+
     'banking_account_statement_source_linking' => [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING_LIVE_QUEUE'),
     ],

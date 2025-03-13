@@ -188,6 +188,21 @@ class Entity extends Base\PublicEntity
 
     // ============================= SETTERS ===========================
 
+    public function setBalanceId(string $string): void
+    {
+        $this->setAttribute(self::BALANCE_ID, $string);
+    }
+
+    public function setMerchantId(string $string): void
+    {
+        $this->setAttribute(self::MERCHANT_ID, $string);
+    }
+
+    public function setChannel(string $string): void
+    {
+        $this->setAttribute(self::CHANNEL, $string);
+    }
+
     public function setGatewayBalance(int $gatewayBalance)
     {
         $this->setAttribute(self::GATEWAY_BALANCE, $gatewayBalance);
@@ -233,6 +248,12 @@ class Entity extends Base\PublicEntity
     public function setAccountType(string $accountType)
     {
         $this->setAttribute(self::ACCOUNT_TYPE, $accountType);
+    }
+
+    public function setGatewayBalanceLastChangedAt($newTimeStamp)
+    {
+
+        $this->setAttribute(self::GATEWAY_BALANCE_CHANGE_AT, $newTimeStamp);
     }
 
     // ============================= END SETTERS ===========================
