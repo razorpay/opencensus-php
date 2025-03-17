@@ -118,6 +118,16 @@ class Entity extends Base\PublicEntity
 
     const INTL_BANK_TRANSFER = 'intl_bank_transfer';
 
+    // PPRO APM Wallets
+    const GOPAY         = 'gopay';
+    const ALIPAY        = 'alipay';
+    const LINKAJA       = 'linkaja';
+    const DOKU          = 'doku';
+    const OVO           = 'ovo';
+
+    const KLARNA    = 'klarna';
+    const ZIP       = 'zip';
+
     const ONLINE_CONVERSION_ENABLED = 'online_conversion_enabled';
     const CREDIT_LINE = "credit_line";
     protected $primaryKey = self::MERCHANT_ID;
@@ -176,6 +186,11 @@ class Entity extends Base\PublicEntity
         self::GRABPAY,
         self::TOUCHNGO,
         self::GIFT_CARDS,
+        self::ALIPAY,
+        self::GOPAY,
+        self::OVO,
+        self::LINKAJA,
+        self::DOKU
     ];
 
     protected $visible = [
@@ -245,6 +260,13 @@ class Entity extends Base\PublicEntity
         self::DUITNOW_PAY,
         self::RAZORPAY_GIFTCARD,
         self::IN_APP_CREDIT_LINE,
+        self::ALIPAY,
+        self::GOPAY,
+        self::OVO,
+        self::LINKAJA,
+        self::DOKU,
+        PaylaterProvider::KLARNA,
+        PaylaterProvider::ZIP
     ];
 
     protected $public = [
@@ -315,6 +337,13 @@ class Entity extends Base\PublicEntity
         self::DUITNOW_PAY,
         self::RAZORPAY_GIFTCARD,
         self::IN_APP_CREDIT_LINE,
+        self::ALIPAY,
+        self::GOPAY,
+        self::OVO,
+        self::LINKAJA,
+        self::DOKU,
+        PaylaterProvider::KLARNA,
+        PaylaterProvider::ZIP,
     ];
 
     protected $appends = [
@@ -344,6 +373,13 @@ class Entity extends Base\PublicEntity
         self::ONLINE_CONVERSION_ENABLED,
         self::DUITNOW_PAY,
         self::RAZORPAY_GIFTCARD,
+        self::ALIPAY,
+        self::GOPAY,
+        self::OVO,
+        self::LINKAJA,
+        self::DOKU,
+        PaylaterProvider::KLARNA,
+        PaylaterProvider::ZIP,
         self::IN_APP_CREDIT_LINE,
     ];
 
@@ -351,7 +387,8 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::DUITNOW_PAY,
         self::GIFT_CARDS,
-        self::CARD
+        self::CARD,
+        self::PAYLATER
     ];
 
 
@@ -467,7 +504,12 @@ class Entity extends Base\PublicEntity
         self::BOOST,
         self::GRABPAY,
         self::TOUCHNGO,
-        self::MCASH
+        self::MCASH,
+        self::ALIPAY,
+        self::GOPAY,
+        self::OVO,
+        self::LINKAJA,
+        self::DOKU
     );
 
 
@@ -482,7 +524,12 @@ class Entity extends Base\PublicEntity
         self::TOUCHNGO,
         self::GRABPAY,
         self::MCASH,
-        self::BOOST
+        self::BOOST,
+        self::ALIPAY,
+        self::GOPAY,
+        self::OVO,
+        self::LINKAJA,
+        self::DOKU
     ];
 
     protected static $aff_method_public_name_mapping = [
@@ -593,6 +640,8 @@ class Entity extends Base\PublicEntity
             PaylaterProvider::AMAZONPAY,
             Paylaterprovider::RZPXPOSTPAID,
             Paylaterprovider::ATOME,
+            PaylaterProvider::KLARNA,
+            PaylaterProvider::ZIP,
         ],
 
         self::CARD => [
@@ -986,6 +1035,33 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isAlipayEnabled(){
+        return $this->getAlipay();
+    }
+
+    public function isGopayEnabled(){
+        return $this->getGopay();
+    }
+
+    public function isDokuEnabled(){
+        return $this->getDoku();
+    }
+
+    public function isLinkajaEnabled(){
+        return $this->getLinkaja();
+    }
+
+    public function isOvoEnabled(){
+        return $this->getOvo();
+    }
+    public function isKlarnaEnabled(){
+        return !empty($this->getAttribute(self::PAYLATER_PROVIDERS)[self::KLARNA] ?? false);
+    }
+
+    public function isZipEnabled(){
+        return !empty($this->getAttribute(self::PAYLATER_PROVIDERS)[self::ZIP] ?? false);
+    }
+
     public function isEmiEnabled()
     {
         return ($this->isCreditEmiEnabled() || $this->isDebitEmiEnabled() || $this->isOfflineDebitEmiEnabled() || $this->isOfflineCreditEmiEnabled());
@@ -1351,6 +1427,48 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RAZORPAYWALLET);
     }
 
+    public function getAlipay(){
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::ALIPAY,$additional_wallets);
+    }
+
+    public function getGopay(){
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::GOPAY,$additional_wallets);
+    }
+
+    public function getDoku(){
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::DOKU,$additional_wallets);
+    }
+
+    public function getOvo(){
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::OVO,$additional_wallets);
+    }
+
+    public function getLinkaja(){
+        $additional_wallets = $this->getAttribute(self::ADDITIONAL_WALLETS);
+        return in_array(self::LINKAJA,$additional_wallets);
+    }
+
+    public function getKlarna(){
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+        if(isset($addonMethods[self::PAYLATER]) and isset($addonMethods[self::PAYLATER][self::KLARNA]))
+        {
+            return $addonMethods[self::PAYLATER][self::KLARNA];
+        }
+        return 0;
+    }
+
+    public function getZip(){
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+        if(isset($addonMethods[self::PAYLATER]) and isset($addonMethods[self::PAYLATER][self::ZIP]))
+        {
+            return $addonMethods[self::PAYLATER][self::ZIP];
+        }
+        return 0;
+    }
     public function getWallets()
     {
         $walletsStatus = array();
@@ -2223,6 +2341,41 @@ class Entity extends Base\PublicEntity
             return [];
         }
         return json_decode($this->attributes[self::ADDON_METHODS], true);
+    }
+
+    protected function getAlipayAttribute()
+    {
+        return $this->getAlipay();
+    }
+
+    protected function getGopayAttribute()
+    {
+        return $this->getGopay();
+    }
+
+    protected function getDokuAttribute()
+    {
+        return $this->getDoku();
+    }
+
+    protected function getOvoAttribute()
+    {
+        return $this->getOvo();
+    }
+
+    protected function getLinkajaAttribute()
+    {
+        return $this->getLinkaja();
+    }
+
+    protected function getKlarnaAttribute()
+    {
+        return $this->getKlarna();
+    }
+
+    protected function getZipAttribute()
+    {
+        return $this->getZip();
     }
 
     // ----------------------- Accessors End ----------------------------------------

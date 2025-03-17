@@ -4011,7 +4011,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'International pricing rule is only allowed for card method',
+                    'description' => 'International pricing rule is only allowed for card, wallet and payLater method',
                 ],
             ],
             'status_code' => 400,
@@ -5833,6 +5833,50 @@ return [
                         'amount_range_max'       => 50000,
                     ]
                 ],
+            ],
+        ],
+    ],
+    'testAddPricingPlanWalletInternationalRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'  => 'wallet',
+                'payment_network' => 'alipay',
+                'percent_rate'    => 2000,
+                'international'   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'wallet',
+                'payment_method_type' => null,
+                'payment_network'     => 'alipay',
+                'payment_issuer'      => null,
+                'percent_rate'        => 2000,
+                'international'       => true,
+            ],
+        ],
+    ],
+    'testAddPricingPlanPaylaterInternationalRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'  => 'paylater',
+                'payment_issuer' =>  'klarna',
+                'percent_rate'    => 2000,
+                'international'   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'paylater',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => 'klarna',
+                'percent_rate'        => 2000,
+                'international'       => true,
             ],
         ],
     ],

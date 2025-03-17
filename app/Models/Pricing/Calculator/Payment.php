@@ -597,6 +597,7 @@ class Payment extends Base
         $payment = $this->entity;
 
         $wallet = $payment->getWallet();
+        $international = $payment->isInternational();
 
         // Current Implementation
         // * Filter based on wallet
@@ -604,7 +605,8 @@ class Payment extends Base
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
         $filter = array(
-            [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
+            [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null],
+            [Pricing\Entity::INTERNATIONAL, $international, false,  false],
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filter);
@@ -960,9 +962,11 @@ class Payment extends Base
         $payment = $this->entity;
 
         $provider = $payment->getWallet();
+        $international = $payment->isInternational();
 
         $filters = [
             [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
+            [Pricing\Entity::INTERNATIONAL, $international, false,  false],
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters);

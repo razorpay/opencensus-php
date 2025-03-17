@@ -134,6 +134,8 @@ class Core extends Base\Core
             PaylaterProvider::ICIC => '1',
             PaylaterProvider::AMAZONPAY=>'0',
             PaylaterProvider::RZPXPOSTPAID => '0',
+            PaylaterProvider::ZIP => '0',
+            PaylaterProvider::KLARNA => '0',
         ]
 
     ];
@@ -191,6 +193,37 @@ class Core extends Base\Core
                     break;
                 }
             }
+        }
+
+        if (isset($input[Methods\Entity::PAYLATER_PROVIDERS]))
+        {
+            $pproPaylaters = [PaylaterProvider::ZIP, PaylaterProvider::KLARNA] ;
+            foreach ($pproPaylaters as $paylater)
+            {
+                if($input[Methods\Entity::PAYLATER_PROVIDERS][$paylater] === '1')
+                {
+                    $payload = [
+                        'mode' => $this->mode,
+                        'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                        'merchant_id' => $merchant->getId()
+                    ];
+                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+                    break;
+                }
+            }
+        }
+
+        if ((isset($input[Methods\Entity::ALIPAY]) && $input[Methods\Entity::ALIPAY] === 1) || (isset($input[Methods\Entity::GOPAY]) && $input[Methods\Entity::GOPAY] === 1) ||
+            (isset($input[Methods\Entity::DOKU]) && $input[Methods\Entity::DOKU] === 1) || (isset($input[Methods\Entity::OVO]) && $input[Methods\Entity::OVO] === 1) ||
+            (isset($input[Methods\Entity::LINKAJA]) && $input[Methods\Entity::LINKAJA] === 1) || (isset($input[Methods\Entity::KLARNA]) && $input[Methods\Entity::KLARNA] === 1) ||
+            (isset($input[Methods\Entity::ZIP]) && $input[Methods\Entity::ZIP] === 1))
+        {
+            $payload = [
+                'mode' => $this->mode,
+                'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                'merchant_id' => $merchant->getId()
+            ];
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
         }
 
         // Setup workflow

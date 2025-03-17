@@ -879,10 +879,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD && $input[Entity::PAYMENT_METHOD] !== Payment\Method::WALLET && $input[Entity::PAYMENT_METHOD] !== Payment\Method::PAYLATER)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'International pricing rule is only allowed for card method');
+                'International pricing rule is only allowed for card, wallet and payLater method');
         }
     }
 

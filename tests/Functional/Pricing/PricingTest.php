@@ -785,7 +785,7 @@ class PricingTest extends TestCase
 
         $this->mockChargeCollectionsGetAccessList('CREATE_MAKER');
 
-        $this->startTest();    
+        $this->startTest();
     }
 
     public function testCreateOrgPricingWithoutAccess()
@@ -3711,5 +3711,23 @@ class PricingTest extends TestCase
     {
         // assertions and test is run as per the helper file PricingData.php
         $this->startTest();
+    }
+
+    public function testAddPricingPlanWalletInternationalRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanPaylaterInternationalRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
     }
 }

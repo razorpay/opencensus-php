@@ -19,6 +19,10 @@ class PaylaterProvider
     const PAYLATER = 'paylater';
     const ATOME = 'atome';
 
+    //PPRO APM Paylater
+    const KLARNA = 'klarna';
+    const ZIP = 'zip';
+
 
     protected static $providers = [
         self::GETSIMPL,
@@ -28,7 +32,9 @@ class PaylaterProvider
         self::AMAZONPAY,
         self::RZPXPOSTPAID,
         self::ATOME,
-        self::GETSIMPLOPTIMIZER
+        self::GETSIMPLOPTIMIZER,
+        self::KLARNA,
+        self::ZIP
     ];
 
     public static $disabledInstruments = [

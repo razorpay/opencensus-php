@@ -4557,6 +4557,20 @@ class Processor
         return false;
     }
 
+    private function canRouteInternationalAPMThroughRearchFlow($input): bool
+    {
+        // wallet or provider mentioned in array => $supportedInternationalAPMForRearch, always process through optimizer service
+        if ($input[Payment\Entity::METHOD] === Payment\METHOD::WALLET || $input[Payment\Entity::METHOD] === Payment\METHOD::PAYLATER)
+        {
+            if ((isset($input[Payment\Entity::WALLET]) && in_array($input[Payment\Entity::WALLET], Wallet::$supportedInternationalAPMForRearch)) ||
+                (isset($input[Payment\Entity::PROVIDER]) && in_array($input[Payment\Entity::PROVIDER], Wallet::$supportedInternationalAPMForRearch))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function canRouteRazorpayAccountThroughRearchFlow($input): bool
     {
         // for razorpay_account payment method, always process via rearch flow except in test mode in production
@@ -4956,6 +4970,7 @@ class Processor
                 ($this->canRouteThroughUpsRearchFlow($input, $isUpiDfb) === true) or
                 ($this->canRouteFpxThroughRearchFlow($input) === true) or
                 ($this->canRouteEmandateThroughRearchFlow($input) === true) or
+                ($this->canRouteInternationalAPMThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughGiftCardsRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
