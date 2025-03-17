@@ -1517,7 +1517,8 @@ class Entity extends Base\PublicEntity
 
         $response = $app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
             'properties' => $properties,
             'response' => $response,
         ]);
