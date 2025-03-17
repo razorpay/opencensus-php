@@ -43,6 +43,7 @@ describe('SortableCustomPaymentBlockMethodsList', () => {
       },
     ],
     onUpdateSortList: jest.fn(),
+    handleOpenModal: jest.fn(),
   };
 
   const mockContextValues = {
@@ -63,6 +64,7 @@ describe('SortableCustomPaymentBlockMethodsList', () => {
     handleSelectedConfigChange: jest.fn(),
     handleSelectedPaymentOptionChange: jest.fn(),
     handlePreviewScreenChange: jest.fn(),
+    handleOpenModal: jest.fn(),
   };
 
   beforeEach(() => {
