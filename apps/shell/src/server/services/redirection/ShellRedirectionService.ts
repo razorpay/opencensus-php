@@ -93,9 +93,11 @@ export class ShellRedirectionService {
 
     if (this.isRedirectionApplicable()) {
       let redirectionURL = process.env[AppConstants.EASY_DASHBOARD_URL] || '';
+
       if (this.data?.user?.user?.signup_campaign === AppConstants.I18N_MY_SIGNUP) {
         redirectionURL = process.env[AppConstants.EASY_DASHBOARD_CURLEC_URL] || '';
       }
+
       if (this.data?.user?.user?.signup_campaign === AppConstants.SG_SIGNUP) {
         redirectionURL = process.env[AppConstants.EASY_DASHBOARD_SG_URL] || '';
       }

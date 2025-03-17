@@ -3,7 +3,7 @@
 .github/CODEOWNERS                                                       @razorpay/deploy-leads-dashboard
 
 app/Http/Kernel.php                                                      @razorpay/spine-edge
-app/Http/routes.php                                                      @razorpay/spine-edge 
+app/Http/routes.php                                                      @razorpay/spine-edge
 app/Http/Middleware                                                      @razorpay/spine-edge
 app/Http/Providers                                                       @razorpay/spine-edge
 app/Http/Session                                                         @razorpay/spine-edge
@@ -39,14 +39,14 @@ web/js/merchant/views/Transactions/v1/SuccessRate                        @akash-
 config/splitz.php                                                        @razorpay/ssab-fe
 web/js/merchant/views/Transactions/v2                                    @razorpay/ssab-fe
 web/js/merchant/views/POS                                                @razorpay/omni-acquisition-fe
-web/js/merchant/components/NavigationLayout                              @shridhar52war @vinilvasani @joel-jaimon @dhruvdutt
+web/js/merchant/components/NavigationLayout                              @shridhar52war @vinilvasani @joel-jaimon
 plugins/i18n-rules                                                       @razorpay/i18n-fe
 smart-linter.js                                                          @razorpay/i18n-fe
-apps/digital-bills                                                       @mihir-karbelkar-rp          
-apps/pos                                                                 @razorpay/omni-acquisition-fe @razorpay/partnerships-fe 
+apps/digital-bills                                                       @mihir-karbelkar-rp
+apps/pos                                                                 @razorpay/omni-acquisition-fe @razorpay/partnerships-fe
 pnpm-lock.yaml                                                           @razorpay/ssab-fe
 web/js/common/utils/posAgent.ts                                          @razorpay/omni-acquisition-fe
-environment/.env.vault.j2                                                @razorpay-sanjib @shubham25kr07 @loombarishav @dhruvdutt @rahul-rzp
+environment/.env.vault.j2                                                @razorpay-sanjib @shubham25kr07 @loombarishav @joel-jaimon @rahul-rzp
 
 # Each change to homepage needs to be reviewed by design team
 web/js/merchant/containers/Home/RTUX/index.tsx                           @razorpay/ssab-fe
@@ -57,7 +57,7 @@ web/js/newAuth/signup/components/PartnerSignup                           @1995na
 web/js/merchant/views/Marketplace/Transfers                              @1995navinkumar @shashi-vc
 web/js/merchant/views/Marketplace/PlatformFee                            @1995navinkumar @shashi-vc
 web/js/merchant/views/onboarding/mobile                                  @1995navinkumar @shashi-vc
-web/js/merchant/views/PartnerAppStore                                    @1995navinkumar @shashi-vc  
+web/js/merchant/views/PartnerAppStore                                    @1995navinkumar @shashi-vc
 web/js/merchant_common/views/Reports/redux/reducer.ts                    @1995navinkumar @shashi-vc
 web/js/merchant/views/POS/PartnerExclusiveContainer                      @1995navinkumar @shashi-vc
 
@@ -99,36 +99,36 @@ web/e2e/suites/partnerDashboard/pos/partnerAgent/clientAccounts.spec.js  @razorp
 
 
 # Platform Configs
-scripts                                                                  @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-.github                                                                  @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-libs                                                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-apps/digital-bills/webpack.config.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-apps/self-serve/webpack.config.js                                        @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-apps/pos/webpack.config.js                                               @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/merchant/webpack.config.js                                        @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/merchantLA/webpack.config.js                                      @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/merchantTnc/webpack.config.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/newAuth/webpack.config.js                                         @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/pokedex/webpack.config.js                                         @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+scripts                                                                  @razorpay/dashboard-platform-core
+.github                                                                  @razorpay/dashboard-platform-core
+libs                                                                     @razorpay/dashboard-platform-core
+apps/digital-bills/webpack.config.js                                     @razorpay/dashboard-platform-core
+apps/self-serve/webpack.config.js                                        @razorpay/dashboard-platform-core
+apps/pos/webpack.config.js                                               @razorpay/dashboard-platform-core
+web/js/merchant/webpack.config.js                                        @razorpay/dashboard-platform-core
+web/js/merchantLA/webpack.config.js                                      @razorpay/dashboard-platform-core
+web/js/merchantTnc/webpack.config.js                                     @razorpay/dashboard-platform-core
+web/js/newAuth/webpack.config.js                                         @razorpay/dashboard-platform-core
+web/js/pokedex/webpack.config.js                                         @razorpay/dashboard-platform-core
 
 # Critical Boot Configs
-web/entry                                                                @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/merchant/views/bootstrap.js                                       @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/merchantLA/views/bootstrap.js                                     @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/merchantTnc/bootstrap.js                                          @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/newAuth/bootstrap.js                                              @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-web/js/pokedex/bootstrap.js                                              @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
+web/entry                                                                @razorpay/dashboard-platform-core
+web/js/merchant/views/bootstrap.js                                       @razorpay/dashboard-platform-core
+web/js/merchantLA/views/bootstrap.js                                     @razorpay/dashboard-platform-core
+web/js/merchantTnc/bootstrap.js                                          @razorpay/dashboard-platform-core
+web/js/newAuth/bootstrap.js                                              @razorpay/dashboard-platform-core
+web/js/pokedex/bootstrap.js                                              @razorpay/dashboard-platform-core
 
 # Root Configs
-pnpm-workspace.yaml                                                      @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-package.json                                                             @joel-jaimon @dhruvdutt @rahul-rzp @abhieshekumar
-tsconfig.base.json                                                       @joel-jaimon @dhruvdutt
-nx.json                                                                  @joel-jaimon @dhruvdutt
+pnpm-workspace.yaml                                                      @razorpay/dashboard-platform-core
+package.json                                                             @razorpay/dashboard-platform-core
+tsconfig.base.json                                                       @razorpay/dashboard-platform-core
+nx.json                                                                  @razorpay/dashboard-platform-core
 
 # Shell Owners
-apps/shell                                                               @joel-jaimon @dhruvdutt
+apps/shell                                                               @razorpay/dashboard-shell
 
 # PHP Critical
-app/Http/Controllers/UserController.php                                  @joel-jaimon @dhruvdutt @razorpay-sanjib @shubham25kr07
-resources/views/merchant                                                 @joel-jaimon @dhruvdutt
-resources/views/partials                                                 @joel-jaimon @dhruvdutt
+app/Http/Controllers/UserController.php                                  @razorpay/dashboard-shell @shubham25kr07
+resources/views/merchant                                                 @razorpay/dashboard-shell
+resources/views/partials                                                 @razorpay/dashboard-shell
