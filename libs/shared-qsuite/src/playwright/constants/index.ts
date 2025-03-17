@@ -189,14 +189,12 @@ export const getPosCredentials = () => {
 };
 
 export const getMobileCredentials = () => {
-  const StorageStatePath = getStorageStatePath();
-
   return [
-    {
-      type: 'wallet-merchant.json',
-      mobile: playwrightEnvs.WALLET_ENABLED_MERCHANT_MOBILE,
-      storagePath: StorageStatePath.WALLET_MERCHANT_LOGIN_STATE,
-    },
+    // {
+    //   type: 'wallet-merchant.json',
+    //   mobile: playwrightEnvs.WALLET_ENABLED_MERCHANT_MOBILE,
+    //   storagePath: StorageStatePath.WALLET_MERCHANT_LOGIN_STATE,
+    // },
     // {
     //   type: 'pos-kyc-status-nc.json',
     //   mobile: playwrightEnvs.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,

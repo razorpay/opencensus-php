@@ -1,6 +1,7 @@
 import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
 
-test.describe('It should create and update wallet campaign ', () => {
+//TODO: Wallet merchant account is blocked on devstack, need to fix it before enabling this test. Also need to add "@project=payments" tag
+test.describe.skip('It should create and update wallet campaign ', () => {
   test.use({
     storageState: getStorageStatePath().WALLET_MERCHANT_LOGIN_STATE,
   });
