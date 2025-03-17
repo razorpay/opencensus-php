@@ -7489,11 +7489,25 @@ class Core extends Base\Core
                     $activationStatusAutomation = Status::UNDER_REVIEW;
                 }
 
+                if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and $merchantDetails->getActivationStatus() === Status::NEEDS_CLARIFICATION)
+                {
+                    $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                        'automation_activation_status'  => $activationStatusAutomation,
+                        'nc_to_ur'                      => 'true',
+                    ]);
+
+                    return Status::UNDER_REVIEW;
+                }
+
                 return $activationStatusAutomation;
             }
 
-            if ($this->blockMerchantActivations($merchantDetails->merchant) === false)
+            if ($this->blockMerchantActivations($merchantDetails->merchant) === false and $merchantDetails->getActivationStatus() != Status::NEEDS_CLARIFICATION)
             {
+                $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                    'automation_activation_exp_off'                      => 'true',
+                ]);
+
                 return Status::ACTIVATED_MCC_PENDING;
             }
 
