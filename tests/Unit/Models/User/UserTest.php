@@ -216,11 +216,42 @@ class UserTest extends TestCase
 
         $mailMock->shouldReceive('queue')->withAnyArgs()->andReturn([]);
 
+        $this->mockSplitzForUslCreateUserAndMerchantDetails();
+
+        $this->mockSalesforceRequestForUslCreateUserAndMerchantDetails();
+
         $response = $this->userService->register($content['userData']);
 
         $this->assertEquals($content['userData']['name'], $response['name']);
 
         $this->assertEquals($content['userData']['email'], $response['email']);
+    }
+
+    protected function mockSalesforceRequestForUslCreateUserAndMerchantDetails(): void
+    {
+        $this->salesforceMock = \Mockery::mock('RZP\Services\SalesForceClient', $this->app)->makePartial();
+
+        $this->salesforceMock->shouldReceive('sendUslCreateUserAndMerchantDetails')->withAnyArgs();
+
+        $this->app['salesforce'] = $this->salesforceMock;
+    }
+
+    protected function mockSplitzForUslCreateUserAndMerchantDetails(): void
+    {
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->splitzMock = \Mockery::mock('RZP\Services\SplitzService', $this->app)->makePartial();
+
+        $this->splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $this->app['splitzService'] = $this->splitzMock;
     }
 
     public function testCreate()
@@ -776,6 +807,10 @@ class UserTest extends TestCase
         $this->m2mReferralServiceMock->shouldReceive('extractFriendBuyParams')->andReturn([]);
 
         $this->m2mReferralServiceMock->shouldReceive('sendSignUpEventIfApplicable')->andReturn(true);
+
+        $this->mockSplitzForUslCreateUserAndMerchantDetails();
+
+        $this->mockSalesforceRequestForUslCreateUserAndMerchantDetails();
 
         $response = $this->userService->register($content['userData']);
 

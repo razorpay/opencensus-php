@@ -218,6 +218,21 @@ class SalesForceClient
 
     }
 
+    public function sendUslCreateUserAndMerchantDetails($data)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $this->trace->info(TraceCode::SALESFORCE_USL_CREATE_USER_AND_MERCHANT_REQUEST, [
+            'url' => $url,
+            'data' => $data
+        ]);
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_USL_CREATE_USER_AND_MERCHANT_REQUEST,
+            TraceCode::SALESFORCE_USL_CREATE_USER_AND_MERCHANT_RESPONSE,
+            TraceCode::SALESFORCE_USL_CREATE_USER_AND_MERCHANT_ERROR
+        );
+    }
+
     public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
     {
         $url = $this->generateUrlForMerchantUpsert();

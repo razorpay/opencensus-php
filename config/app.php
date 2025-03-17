@@ -543,6 +543,7 @@ return array(
 
     'product_config_issue_exp_id'                           => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
     'user_role_migration_for_x_exp_id'                      => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
+    'send_usl_salesforce_event_exp_id'                      => env('SEND_USL_SALESFORCE_EVENT_EXP_ID'),
     'partner_type_bulk_migration_exp_id'                    => env('PARTNER_TYPE_BULK_MIGRATION_EXP_ID'),
     'partner_type_switch_exp_id'                            => env('PARTNER_TYPE_SWITCH_EXP_ID'),
     'submerchant_fetch_multiple_optimisation_exp_id'        => env('SUBMERCHANT_FETCH_MULTIPLE_OPTIMISATION_EXP_ID'),

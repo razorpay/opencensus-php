@@ -260,6 +260,22 @@ class Service extends Base\Service
             $this->confirm($user[Entity::ID]);
         }
 
+        $sendUslSalesforceEvent = $this->shouldSendUslSalesforceEvent($user[Entity::ID]);
+
+        if ($sendUslSalesforceEvent === true) {
+
+            $utmParams = $this->getUtmParameters();
+
+            $salesForcePayload = [
+                'user_id' => $user[Entity::ID],
+                'email' => $user[Entity::EMAIL] ?? 'NA',
+                'contact_mobile' => $user[Entity::CONTACT_MOBILE] ?? 'NA',
+                'utm_params' => $utmParams,
+            ];
+
+            $this->app->salesforce->sendUslCreateUserAndMerchantDetails($salesForcePayload);
+        }
+
         /**
          * These two conditions are exclusive
          * One cannot accept an invitation and create a merchant account at the same time
@@ -288,6 +304,18 @@ class Service extends Base\Service
             $data = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, $sendConfirmation);
 
             $merchantId = $data['id'];
+
+            if ($sendUslSalesforceEvent === true) {
+
+                $merchantCreateSalesForcePayload = [
+                    'user_id' => $user[Entity::ID],
+                    'merchant_id' => $merchantId,
+                    'country_code' => $countryCode,
+                    'product' => $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct(),
+                ];
+
+                $this->app->salesforce->sendUslCreateUserAndMerchantDetails($merchantCreateSalesForcePayload);
+            }
 
             if (empty($signupCampaign) === false)
             {
@@ -349,6 +377,31 @@ class Service extends Base\Service
 
         }
         return $data;
+    }
+
+    public function shouldSendUslSalesforceEvent(string $user_id): bool
+    {
+        if (empty($user_id) === true)
+        {
+            return false;
+        }
+
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $user_id,
+                'experiment_id' => $this->app['config']->get('app.send_usl_salesforce_event_exp_id'),
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+            return false;
+        }
+
+        $variant = $response['response']['variant']['name'] ?? null;
+
+        return $variant === 'enable';
     }
 
     public function isMerchantAllowedForMigration(string $merchant_id): bool
@@ -886,6 +939,22 @@ class Service extends Base\Service
 
                 $user = $this->create($input, $operation);
 
+                $sendUslSalesforceEvent = $this->shouldSendUslSalesforceEvent($user[Entity::ID]);
+
+                if ($sendUslSalesforceEvent === true) {
+
+                    $utmParams = $this->getUtmParameters();
+
+                    $salesForcePayload = [
+                        'user_id' => $user[Entity::ID],
+                        'email' => $user[Entity::EMAIL] ?? 'NA',
+                        'contact_mobile' => $user[Entity::CONTACT_MOBILE] ?? 'NA',
+                        'utm_params' => $utmParams,
+                    ];
+
+                    $this->app->salesforce->sendUslCreateUserAndMerchantDetails($salesForcePayload);
+                }
+
                 $userEntity = $this->repo->user->findByPublicId($user[Entity::ID]);
 
                 $this->core->setContactMobileOrEmailVerify($input, $userEntity);
@@ -900,6 +969,18 @@ class Service extends Base\Service
                 else
                 {
                     $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
+
+                    if ($sendUslSalesforceEvent === true) {
+
+                        $merchantCreateSalesForcePayload = [
+                            'user_id' => $user[Entity::ID],
+                            'merchant_id' => $merchantData['id'],
+                            'country_code' => $countryCode,
+                            'product' => $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct(),
+                        ];
+
+                        $this->app->salesforce->sendUslCreateUserAndMerchantDetails($merchantCreateSalesForcePayload);
+                    }
 
                     $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
@@ -2459,6 +2540,20 @@ class Service extends Base\Service
 
         $merchantId = $data['id'];
 
+        $sendUslSalesforceEvent = $this->shouldSendUslSalesforceEvent($user[Entity::ID]);
+
+        if ($sendUslSalesforceEvent === true) {
+
+            $merchantCreateSalesForcePayload = [
+                'user_id' => $user[Entity::ID],
+                'merchant_id' => $merchantId,
+                'country_code' => $countryCode,
+                'product' => $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct(),
+            ];
+
+            $this->app->salesforce->sendUslCreateUserAndMerchantDetails($merchantCreateSalesForcePayload);
+        }
+
         if (empty($signupCampaign) === false)
         {
             $ddInput = [
@@ -3389,6 +3484,21 @@ class Service extends Base\Service
                 }
             }
         }
+    }
+
+    public function getUtmParameters(): array
+    {
+        $utmCookie = \Cookie::get('rzp_utm');
+        $this->trace->info(TraceCode::RZP_UTM, ['rzp_utm_cookie' => $utmCookie]);
+
+        if (empty($utmCookie)) {
+            return [];
+        }
+
+        $cookieValue = trim($utmCookie, '"');
+        $utmParams = json_decode($cookieValue, true);
+
+        return $utmParams ?: [];
     }
 
     /**
