@@ -1600,6 +1600,7 @@ return [
         'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),
         'username'  => env('UPI_PAYMENT_SERVICE_KEY'),
         'password'  => env('UPI_PAYMENT_SERVICE_SECRET'),
+        'secret'    => env('UPI_PAYMENT_SERVICE_SECRET'),
         'enabled'   => env('UPI_PAYMENT_SERVICE_ENABLED', false),
         'url'       => [
             'live' => env('UPI_PAYMENT_SERVICE_LIVE_URL'),
