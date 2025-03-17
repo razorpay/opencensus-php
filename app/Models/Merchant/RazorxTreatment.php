@@ -1113,5 +1113,6 @@ final class RazorxTreatment
         "non_rearch_recurring_alt_id_VISA_hitachi_ratn",
         "non_rearch_recurring_alt_id_MC_hitachi_ratn",
         "non_rearch_recurring_alt_id_RUPAY_paysecure_ratn",
+        "non_rearch_alt__DICL_hdfc_hdfc"
     ];
 }
