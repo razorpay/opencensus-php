@@ -210,6 +210,7 @@
             <directory>./tests/Functional/User/</directory>
             <directory>./tests/Functional/UserRole/</directory>
             <file>./tests/Unit/Models/Merchant/DualWritingTest.php</file>
+            <file>./tests/Unit/Models/Merchant/Detail/NeedsClarificationTest.php</file>
         </testsuite>
         <testsuite name="Features-4-1 Test Suite">
             <directory>./tests/Functional/Dispute/</directory>
