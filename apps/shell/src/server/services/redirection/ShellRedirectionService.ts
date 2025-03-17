@@ -123,7 +123,7 @@ export class ShellRedirectionService {
     }
 
     if (this.isPg3V1RedirectionApplicable(this.data?.user)) {
-      return process.env[AppConstants.EASY_DASHBOARD_URL] + '/pg-v3-redirect';
+      return process.env[AppConstants.EASY_DASHBOARD_URL] + '/pg3/onboarding';
     }
 
     const signupCampaign = this.data?.user?.user?.signup_campaign ?? null;
