@@ -96,6 +96,9 @@ export class ShellRedirectionService {
       if (this.data?.user?.user?.signup_campaign === AppConstants.I18N_MY_SIGNUP) {
         redirectionURL = process.env[AppConstants.EASY_DASHBOARD_CURLEC_URL] || '';
       }
+      if (this.data?.user?.user?.signup_campaign === AppConstants.SG_SIGNUP) {
+        redirectionURL = process.env[AppConstants.EASY_DASHBOARD_SG_URL] || '';
+      }
 
       this.response.cookie(AppConstants.RZP_MERCHANT_ID, this.data?.user?.id, { maxAge: ttl });
       this.response.cookie(AppConstants.RZP_USER_ID, this.data?.user?.user?.id, { maxAge: ttl });
@@ -365,7 +368,8 @@ export class ShellRedirectionService {
 
     return (
       (signupCampaign === AppConstants.I18N_MY_SIGNUP ||
-        signupCampaign === AppConstants.EASY_ONBOARDING) &&
+        signupCampaign === AppConstants.EASY_ONBOARDING ||
+        signupCampaign === AppConstants.SG_SIGNUP) &&
       !this.data?.user?.activation_form_milestone &&
       submitted === 0
     );

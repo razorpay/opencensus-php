@@ -27,6 +27,7 @@ export class AppConstants{
     static readonly DASHBOARD_PROD_HOSTNAME = 'dashboard.razorpay.com';
     static readonly EDD_PENDING = 'edd_pending';
     static readonly I18N_MY_SIGNUP = 'i18n_my_signup';
+    static readonly SG_SIGNUP = 'sg_signup';
     static readonly FTUX_SESSION = 'ftuxSession';
     static readonly VARIABLES = 'variables';
     static readonly RESULT = 'result';
@@ -35,6 +36,7 @@ export class AppConstants{
     static readonly DESTINATION = "destination";
     static readonly REDIRECT_TO = "redirect_to";
     static readonly EASY_DASHBOARD_URL = 'EASY_DASHBOARD_URL';
+    static readonly EASY_DASHBOARD_SG_URL = 'EASY_DASHBOARD_SG_URL';
     static readonly RAZORPAY_SALES_ROLE = 'razorpay_sales';
     static readonly SALES_ASSISTED_ONBOARDING_SOURCE = 'sales_assisted_onboarding';
     static readonly P2PM_ONBOARDING= 'p2pm_onboarding';

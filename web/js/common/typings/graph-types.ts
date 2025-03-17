@@ -7124,6 +7124,7 @@ export enum UserRolePaymentsEnum {
 export enum UserSignupCampaignEnum {
   EASY_ONBOARDING = 'EASY_ONBOARDING',
   I18N_MY_SIGNUP = 'I18N_MY_SIGNUP',
+  SG_SIGNUP = 'SG_SIGNUP',
   /** @deprecated use I18N_MY_SIGNUP instead, this is deprecated */
   INTERNATIONAL = 'INTERNATIONAL',
   P2PM_ONBOARDING = 'P2PM_ONBOARDING',

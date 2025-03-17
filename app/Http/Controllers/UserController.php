@@ -237,6 +237,10 @@ class UserController extends Controller
                         $redirectionURL = env('EASY_DASHBOARD_CURLEC_URL');
                     }
 
+                    if (!empty($signupCampaign) && $signupCampaign === 'sg_signup') {
+                        $redirectionURL = env('EASY_DASHBOARD_SG_URL');
+                    }
+
                     return redirect($redirectionURL)->withCookies([
                         Cookie::make('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
                         Cookie::make('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
@@ -1143,7 +1147,7 @@ class UserController extends Controller
             return true;
         }
 
-        if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding')) and
+        if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding') || ($signupCampaign === 'sg_signup')) and
             (empty($details['activation_form_milestone']) === true) and
             ($submitted == 0))
         {
