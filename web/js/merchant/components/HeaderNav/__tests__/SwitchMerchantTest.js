@@ -9,9 +9,9 @@ const props = {
   user: {
     current: {},
     merchants: [
-      { id: 1, product: 'primary', name: 'Test1' },
-      { id: 2, product: 'banking', name: 'Test2' },
-      { id: 2, product: 'primary', name: '' },
+      { id: 1, product: 'primary', name: 'Test1', billing_label: 'billing label 1' },
+      { id: 2, product: 'banking', name: 'Test2', billing_label: 'billing label 2' },
+      { id: 2, product: 'primary', name: '', billing_label: 'billing label 3' },
     ],
   },
   onSwitchMerchant: () => noop,
@@ -52,6 +52,22 @@ describe('SwitchMerchant', () => {
     const test2 = screen.queryByText('Test2');
     expect(test2).toBeNull();
     expect(screen.getByText(CREATE_MERCHANT_CTA_LABEL)).toBeVisible();
+  });
+
+  xit('should show billing label options in the dropdown if merchant feature flag "submerchant_dba_name" is enabled', () => {
+    const updatedAppProps = { ...props };
+    updatedAppProps.user.isSubMerchantDBANameEnabled = true;
+    render(<SwitchMerchant {...updatedAppProps} />);
+    fireEvent(
+      screen.getByText('Switch Merchant'),
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    const billingLabel = screen.getAllByText(/billing label 1/i);
+    expect(billingLabel[0]).toBeInTheDocument();
   });
 
   xit('should show Existing Account label for accounts with no name in the dropdown', () => {

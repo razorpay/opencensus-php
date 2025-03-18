@@ -1475,6 +1475,10 @@ export default class User {
     return this.isFeatureEnabled('loc');
   }
 
+  get isSubMerchantDBANameEnabled() {
+    return this.isFeatureEnabled('submerchant_dba_name');
+  }
+
   get isCashAdvanceStage1Enabled() {
     return this.isFeatureEnabled('loc_stage_1');
   }

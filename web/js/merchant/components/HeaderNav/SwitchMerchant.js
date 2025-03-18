@@ -53,20 +53,23 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
       options={merchants}
       className="switch-merchant"
       placeholder="Switch Merchant"
-      searchIndices={['name', 'display_name']}
+      searchIndices={['name', 'display_name', 'billing_label']}
       showClear={false}
       optionComponent={({ option }) => {
-        const { id, parent_id, display_name, name, parent_name } = option;
+        const { id, parent_id, display_name, name, parent_name, billing_label } = option;
+        const displayName = user?.isSubMerchantDBANameEnabled
+          ? billing_label
+          : display_name || name;
         return (
           <span className="help-content">
             <span className="SwitchMerchantDropdown__option">
               {id === window.rzp_user.current ? (
                 <i className="i i-check text-success pull-right" />
               ) : null}
-              {`${parent_id ? `${parent_name} - ` : ''}${display_name || name}`}
+              {`${parent_id ? `${parent_name} - ` : ''}${displayName}`}
               <Popover align="left" theme="dark" parentQuerySelector=".switch-merchant__Tether">
                 <PopoverBody>
-                  <div>{display_name || name}</div>
+                  <div>{displayName}</div>
                   <div className="text--secondary">({name})</div>
                 </PopoverBody>
               </Popover>
@@ -124,6 +127,7 @@ class SwitchMerchantTypeaheadComponent extends Component {
   }
 
   onSearch(e) {
+    const { user } = this.props;
     const searchTerm = e.target.value;
 
     if (searchTerm === this.state.searchTerm) {
@@ -131,7 +135,9 @@ class SwitchMerchantTypeaheadComponent extends Component {
     }
 
     const merchantIds = this.merchantList.filter((item) => {
-      const name = this.merchants[item].name.toLowerCase();
+      const name = user?.isSubMerchantDBANameEnabled
+        ? this.merchants[item]?.billing_label?.toLowerCase()
+        : this.merchants[item].name.toLowerCase();
 
       return name.indexOf(searchTerm.toLowerCase()) >= 0;
     });
@@ -169,7 +175,9 @@ class SwitchMerchantTypeaheadComponent extends Component {
               <li key={item} className={`${isActive ? 'active' : ''}`}>
                 <a onClick={() => onSwitchMerchant(this.merchants[item])}>
                   <i className="i i-check" />{' '}
-                  {this.merchants[item].display_name || this.merchants[item].name}
+                  {user?.isSubMerchantDBANameEnabled
+                    ? this.merchants[item].billing_label
+                    : this.merchants[item].display_name || this.merchants[item].name}
                 </a>
               </li>
             );
