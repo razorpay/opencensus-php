@@ -880,4 +880,24 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertEquals('bharat_qr', $qrCodeEntity->getProvider());
         $this->assertBqrString($qrCodeEntity, $qrCodeEntity->getQrString(),true);
     }
+
+    public function testFetchAcquirerFailedAndSuccessScenario()
+    {
+        $this->ba->appAuth();
+        $content = $this->makeRequestAndGetContent([
+            'method' => 'get',
+            'url' => '/acquirer/fetch/LiveAccountMer'
+        ]);
+
+        $this->assertEquals(true,$content['success']);
+
+        // Invalid Merhcant ID
+        $content = $this->makeRequestAndGetContent([
+            'method' => 'get',
+            'url' => '/acquirer/fetch/InvalidMerchantId'
+        ]);
+
+        $this->assertEquals(false,$content['success']);
+        $this->assertNull($content['acquirer']);
+    }
 }

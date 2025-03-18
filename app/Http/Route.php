@@ -1964,7 +1964,7 @@ class Route
         'admin_delete'                             => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
         'admin_lead_create'                        => ['post',     'admin-lead',                                     'OrganizationController@postAdminLead'                              ],
         'admin_lead_get_multiple'                  => ['get',      'admin-lead-multiple',                            'OrganizationController@getAdminLeadMultiple'                       ],
-
+        'acquirer_fetch'                           => ['get',      'acquirer/fetch/{id}',                            'OrganizationController@acquirerFetch'                                  ],
         'merchant_invitation_verify'               => ['get',      'merchant-invitation/verify/{token}',             'OrganizationController@verifyAdminLead'                            ],
 
         // Axis ORG Admin routes
@@ -7003,8 +7003,9 @@ class Route
         'merchant_fetch_bank_account_internal',
         'merchant_integration_get_by_param',
         'create_sqr_for_single_stack',
-
         'internal_clear_unsettled_txns',
+        'create_sqr_for_single_stack',
+        'acquirer_fetch'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17615,7 +17616,8 @@ class Route
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
             'create_qr_for_single_stack',
-            'create_sqr_for_single_stack'
+            'create_sqr_for_single_stack',
+            'acquirer_fetch'
         ],
 
         'billme' => [
