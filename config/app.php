@@ -1378,5 +1378,7 @@ return array(
 
     'send_payout_service_emails_via_stork_all'  => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK_ALL'),
 
-    'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT')
+    'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
+
+    'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT')
 );

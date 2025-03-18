@@ -217,15 +217,53 @@ class Base extends BaseProcessor
         if ($this->isAuthorized($content) === true)
         {
             // handle already processed
-            if ($payment->hasBeenAuthorized() === true)
+            $merchant = $payment->merchant;
+
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.emandate_pod_termination_reprocess_payment'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $varName = $response['response']['variant']['name'] ?? '';
+
+            if ($varName === 'variant_on')
             {
-                $this->trace->info(TraceCode::PAYMENT_ALREADY_AUTHORIZED, ['payment_id' => $payment->getId()]);
+                if (($payment->hasBeenAuthorized() === true) and ($payment->hasBeenCaptured() === false))
+                {
+                    $processor = new Processor($merchant);
+
+                    $processor->processCapture($payment);
+                }
+                elseif ($payment->hasBeenCaptured() === true)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_ALREADY_CAPTURED, ['payment_id' => $payment->getId()]);
+                }
+                else
+                {
+                    Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_PROCESS_AUTHORIZED_PAYMENT], function () use ($payment){
+                        $this->processAuthorizedPayment($payment);
+                    });
+                }
+
             }
             else
             {
-                Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_PROCESS_AUTHORIZED_PAYMENT], function () use ($payment){
-                    $this->processAuthorizedPayment($payment);
-                });
+                if ($payment->hasBeenAuthorized() === true)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_ALREADY_AUTHORIZED, ['payment_id' => $payment->getId()]);
+                }
+                else
+                {
+                    Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_PROCESS_AUTHORIZED_PAYMENT], function () use ($payment){
+                        $this->processAuthorizedPayment($payment);
+                    });
+                }
             }
         }
         else if ($this->isRejected($content) === true)

@@ -1686,6 +1686,11 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
+    public function processCapture(Payment\Entity $payment, array $data = []): array
+    {
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
     protected function processNachPaymentCreated(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
