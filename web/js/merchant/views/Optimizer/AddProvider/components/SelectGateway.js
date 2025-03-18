@@ -101,7 +101,13 @@ const SelectGateway = (props) => {
         onClick={() => onSelect(provider)}
       >
         <StyledLogoWrapper>
-          <StyledProviderLogo src={gatewayLogos[provider?.toLowerCase()]} alt={provider} />
+          <StyledProviderLogo
+            src={
+              providerObj?.['Gateway Name']?.meta_data?.image_url ??
+              gatewayLogos[provider?.toLowerCase()]
+            }
+            alt={provider}
+          />
         </StyledLogoWrapper>
         <Box flex="1 0 auto">
           <Text truncateAfterLines={1}>{providerObj?.['Gateway Name']?.data_value}</Text>
@@ -258,7 +264,10 @@ const SelectGateway = (props) => {
                   <Box width="32px" height="32px" marginRight="spacing.3">
                     <StyledLogoWrapper>
                       <StyledProviderLogo
-                        src={gatewayLogos?.[selectedProvider?.toLowerCase()]}
+                        src={
+                          selectedProviderDetails?.['Gateway Name']?.meta_data?.image_url ??
+                          gatewayLogos?.[selectedProvider?.toLowerCase()]
+                        }
                         alt={selectedProvider?.toLowerCase()}
                       />
                     </StyledLogoWrapper>

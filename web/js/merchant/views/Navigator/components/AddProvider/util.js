@@ -32,9 +32,14 @@ export function categorizeGateways(providersList = {}, abExperiments) {
     const paymentMethods = gateway?.['Payment Methods']?.data_value || [];
     const categorizedMethods = categorizePaymentMethods(paymentMethods);
 
-    const category = BANK_GATEWAYS.includes(gatewayKey)
+    const gatewayType = gateway?.['Gateway name']?.meta_data?.gateway_type;
+    const isBankGateway = BANK_GATEWAYS.includes(gatewayKey) || gatewayType === 'bank_gateways';
+    const isInternationalGateway =
+      INTERNATIONAL_GATEWAYS.includes(gatewayKey) || gatewayType === 'international_gateways';
+      
+    const category = isBankGateway
       ? 'bank_gateways'
-      : INTERNATIONAL_GATEWAYS.includes(gatewayKey)
+      : isInternationalGateway
       ? 'international_gateways'
       : 'aggregators';
 

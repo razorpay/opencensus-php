@@ -145,7 +145,12 @@ const Select = (props: SelectProps) => {
                           <div className="col-xs-10 p-0">
                             {option?.id != SMART_ROUTER && gateway && (
                               <div className="recommended-provider-img-block">
-                                <img src={gatewayLogos[gateway]} alt={gateway} />
+                                <img
+                                  src={
+                                    (option as MappedProiders).image_url ?? gatewayLogos[gateway]
+                                  }
+                                  alt={gateway}
+                                />
                               </div>
                             )}
                             <b className="optn-text">{option.name}</b>

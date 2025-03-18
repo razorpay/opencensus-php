@@ -267,7 +267,7 @@ class AddProvider extends React.Component {
     return uniqueName;
   }
 
-  // function to check TPV support
+  // function to check TPV support.
   checkTPVSupport(selectedProvider, providers) {
     return (
       providers?.[selectedProvider]?.hasOwnProperty('TPV') &&

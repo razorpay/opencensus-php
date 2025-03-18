@@ -1448,6 +1448,7 @@ export const createMappedProviders = (terminalProviders) => {
     id: string;
     name: string;
     value: string;
+    image_url?: string;
   }[] = [];
   terminalProviders.forEach((provider) => {
     if (RZP_GATEWAYS.includes(provider.Gateway)) {
@@ -1455,12 +1456,14 @@ export const createMappedProviders = (terminalProviders) => {
         id: provider.Gateway,
         name: provider.Provider_name,
         value: provider.Gateway,
+        image_url: provider?.Gateway_details?.image_url,
       });
     } else if (provider?.Status === 'activated') {
       mappedProviders.push({
         id: `${provider.Gateway}_${provider.Terminal_id}`,
         name: provider.Provider_name || provider.Gateway,
         value: `${provider.Gateway}_${provider.Terminal_id}`,
+        image_url: provider?.Gateway_details?.image_url,
       });
     }
   });

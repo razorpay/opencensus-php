@@ -84,6 +84,7 @@ export interface MappedProiders {
   value: string;
   disabled?: boolean;
   disabled_message?: string;
+  image_url?: string;
 }
 
 export interface Option {

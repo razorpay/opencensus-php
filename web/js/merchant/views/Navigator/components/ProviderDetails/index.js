@@ -125,7 +125,12 @@ class ProviderDetails extends Component {
                       value={() => (
                         <>
                           <div className="provider-logo-holder">
-                            <img src={gatewayLogos[provider?.Gateway?.toLowerCase()]} />
+                            <img
+                              src={
+                                provider.Gateway_details?.image_url ??
+                                gatewayLogos[provider?.Gateway?.toLowerCase()]
+                              }
+                            />
                           </div>
                           {gatewayName}
                         </>

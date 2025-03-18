@@ -20,7 +20,10 @@ export const ProviderView = ({ provider }: ProviderViewProps): JSX.Element => {
       >
         <div className="provider-img-holder">
           <img
-            src={gatewayLogos[providerDetail.Gateway.toLowerCase()]}
+            src={
+              providerDetail.Gateway_details?.image_url ??
+              gatewayLogos[providerDetail.Gateway.toLowerCase()]
+            }
             alt={`${providerDetail.Gateway}-logo`}
             data-testid="gateway-logo"
           />
