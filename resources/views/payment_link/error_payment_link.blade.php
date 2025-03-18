@@ -9,9 +9,11 @@
     <script>
       function renderApp() {
           if(window.RZP && window.RZP.hasOwnProperty("renderApp")) {
+              // <<<JSON_DATA_START>>>
               var data = {!!utf8_json_encode($data)!!};
+              // <<<JSON_DATA_END>>>
 
-              window.RZP.renderApp('app-container', data); 
+              window.RZP.renderApp('app-container', data);
           }
       }
     </script>

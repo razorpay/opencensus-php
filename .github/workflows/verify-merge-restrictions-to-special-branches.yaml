@@ -10,6 +10,7 @@ jobs:
       matrix:
         release_branch:
           - singapore_release
+          - us_release
             # Add more special branches as needed
 
       fail-fast: false

@@ -124,16 +124,13 @@ trait UpiRecurring
         $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
 
         if (empty($testCaseId) === true) {
-            $variant = $this->app['razorx']->getTreatment(
-                $payment->merchant->getId(),
-                RazorxTreatment::ALLOW_OPTIMIZER_UPI_RECURRING,
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on') {
+            $merchantID = $payment->merchant->getId();
+            $response = (new Merchant\Detail\Core())->getSplitzResponse($merchantID, 'upi_recurring_optimizer_experiment_id');
+            if (strtolower($response) !== 'enabled') {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
             }
         }
+
 
         $notifyInput = [];
 
@@ -395,7 +392,7 @@ trait UpiRecurring
         }
 
         $gateway = $tokenTerminal->getGateway();
-
+        
         $input = [
             'terminal'    => $tokenTerminal,
             'gateway'     => $gateway,

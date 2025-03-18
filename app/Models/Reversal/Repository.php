@@ -142,12 +142,7 @@ class Repository extends Base\Repository
                    AND `reversals`.`merchant_id` = ?
             LIMIT  1
          */
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-        }
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         $query = $this->newQueryWithConnection($connectionType)
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
@@ -241,12 +236,7 @@ class Repository extends Base\Repository
         $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
                      SUM(' . $payoutsFeeColumn . ') AS fee';
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
                      ->selectRaw($columns)

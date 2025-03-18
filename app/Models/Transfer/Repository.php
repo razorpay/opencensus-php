@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use DB;
 use Carbon\Carbon;
 use Neves\Events\TransactionalClosureEvent;
 use Razorpay\Trace\Logger;
@@ -18,6 +19,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Services\Route;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction\Entity as TxnEntity;
@@ -58,6 +60,7 @@ class Repository extends Base\Repository
                       ->where(Entity::SOURCE_TYPE, $sourceType)
                       ->where(Entity::SOURCE_ID, $sourceId)
                       ->merchantId($merchant->getId());
+
         if (count($status) > 0)
         {
             $query = $query->whereIn(Entity::STATUS, $status);
@@ -65,6 +68,43 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    /**
+     * Fetch all transfers including external from a merchant, done on a payment
+     *
+     * @param string          $sourceType
+     * @param string          $sourceId
+     * @param Merchant\Entity $merchant
+     * @param array           $status
+     */
+    public function fetchBySourceTypeAndIdAndMerchantWithExternal(
+        string $sourceType, string $sourceId, Merchant\Entity $merchant, array $status = [])
+    {
+        $query = $this->newQuery()
+            ->where(Entity::SOURCE_TYPE, $sourceType)
+            ->where(Entity::SOURCE_ID, $sourceId)
+            ->merchantId($merchant->getId());
+
+        if (count($status) > 0)
+        {
+            $query = $query->whereIn(Entity::STATUS, $status);
+        }
+
+        $apiTransfers = $query->get();
+
+        $this->entityName = $this->entity;
+
+        if ($this->validateIfExternalFetchIsEnabledForTransfer()
+            && (new Route\Config())->isExternalQueryEnabled(__FUNCTION__))
+        {
+            $routeTransfers = app('route')->fetchTransfersBySourceId($merchant->getId(), $sourceId);
+
+            $apiTransfers->merge($routeTransfers);
+        }
+
+        return $apiTransfers;
+    }
+
 
     /**
      * Fetch transfer using id and linked account merchant id
@@ -147,7 +187,7 @@ class Repository extends Base\Repository
      */
     public function fetchPendingTransfers(string $sourceType, array $includeMerchantIds, array $excludeMerchantIds, int $count, int $minutes)
     {
-        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection());
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
 
         // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
         // fetch transfers for all merchants excluding key merchants.
@@ -160,7 +200,8 @@ class Repository extends Base\Repository
             $query->whereNotIn(Entity::MERCHANT_ID, $excludeMerchantIds);
         }
 
-        return $query->select(Entity::SOURCE_ID)
+        return $query->from(\DB::raw('`transfers` FORCE INDEX (transfers_source_type_status_index)'))
+                     ->select(Entity::SOURCE_ID)
                      ->where(Entity::SOURCE_TYPE, $sourceType)
                      ->where(Entity::STATUS, Status::PENDING)
                      ->where(Entity::UPDATED_AT, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
@@ -170,11 +211,13 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
-    public function fetchPendingTransfersForKeyMerchants(string $sourceType, array $merchantIds, int $count, int $minutes)
+    public function fetchPendingTransfersForKeyMerchants(string $sourceType, int $count, int $minutes)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        return $this->newQueryWithConnection($connectionType)
+                    ->from(\DB::raw('`transfers` FORCE INDEX (transfers_created_at_index)'))
                     ->select(Entity::SOURCE_ID)
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->where(Entity::SOURCE_TYPE, $sourceType)
                     ->where(Entity::STATUS, Status::PENDING)
                     ->where(Entity::UPDATED_AT, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
@@ -193,16 +236,7 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
-
-        $query = $this->newQueryWithConnection($connectionType);
+        $query = $this->newQueryOnSlave();
 
         // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
         // fetch transfers for all merchants excluding key merchants.
@@ -216,11 +250,13 @@ class Repository extends Base\Repository
         }
 
         return $query
+                    ->from(\DB::raw('`transfers` FORCE INDEX (transfers_source_type_status_index)'))
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::PENDING)
                     ->where($paymentStatus, Payment\Status::CAPTURED)
+                    ->where($updatedAt, '>', Carbon::now()->subMinutes(7 * 24 * 60)->getTimestamp())
                     ->where($updatedAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
                     ->limit($count)
                     ->distinct()
@@ -228,33 +264,26 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchPendingOrderTransfersForKeyMerchants(array $merchantIds, int $count, int $minutes)
+    public function fetchPendingOrderTransfersForKeyMerchants(int $count, int $minutes)
     {
         $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
-        $merchantId     = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
         $sourceId       = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_post_payment_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType);
 
         return $query
+                    ->from(\DB::raw('`transfers` FORCE INDEX (transfers_updated_at_index)'))
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
-                    ->whereIn($merchantId, $merchantIds)
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::PENDING)
                     ->where($paymentStatus, Payment\Status::CAPTURED)
+                    ->where($updatedAt, '>', Carbon::now()->subMinutes(7 * 24 * 60)->getTimestamp())
                     ->where($updatedAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
                     ->limit($count)
                     ->distinct()
@@ -566,7 +595,7 @@ class Repository extends Base\Repository
             ->join(Table::MERCHANT, $merchantEntityId, '=', $transferMerchantId)
             ->selectRaw('COUNT(' . 'transfers.id' . ') AS count')
             ->where(Entity::SOURCE_TYPE, Constant::ORDER)
-            ->where($transferStatus, Status::PENDING)
+            ->whereIn($transferStatus, [Status::PENDING, Status::CREATED])
             ->where($paymentStatus, Payment\Status::CAPTURED)
             ->where($updatedAt, '<', Carbon::now()->subMinutes($endOffsetMins)->getTimestamp());
 

@@ -6,9 +6,12 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Exception\LogicException;
 use Illuminate\Database\Eloquent\Relations;
+use RZP\Models\Base\Traits\ExternalOwner;
 
 class Entity extends Base\PublicEntity
 {
+    use ExternalOwner;
+
     const ID           = 'id';
     const PAYMENT_ID   = 'payment_id';
     const AMOUNT       = 'amount';
@@ -103,6 +106,11 @@ class Entity extends Base\PublicEntity
     public function decrementAmountTransferred(int $amount)
     {
         $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
+    }
+
+    public function setAmountTransferred(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_TRANSFERRED, $amount);
     }
 
     public function isTransferred()

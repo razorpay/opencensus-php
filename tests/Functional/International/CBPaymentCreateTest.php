@@ -15,6 +15,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Services\PGRouter;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -919,7 +920,6 @@ class CBPaymentCreateTest extends TestCase
                 {
                     if ($feature === 's2s_card_payments_via_pg_router_v2' or
                         $feature === 'netbanking_payments_via_pg_router_disable_mid' or
-                        $feature === 'netbanking_payments_via_pg_router_create_json' or
                         $feature === 'netbanking_payments_via_pg_router')
                     {
                         return 'on';
@@ -1233,7 +1233,7 @@ class CBPaymentCreateTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $payment = $this->getDefaultUpiPaymentArray();
-        
+
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
 
         $payment['_']['library'] = 'checkoutjs';
@@ -1257,7 +1257,7 @@ class CBPaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
-       
+
         $value = self::getOrderMetaValueForLrsTravelCitiFlow();
 
         unset($value['customer_details']['identity']);
@@ -1268,7 +1268,7 @@ class CBPaymentCreateTest extends TestCase
             'value'    => $value,
             'type'     => 'cart_info',
         ]);
-        
+
         $payment['_']['library'] = 'checkoutjs';
         $payment['order_id'] = $order->getPublicId();
          $this->makeRequestAndCatchException(function () use ($payment) {
@@ -1290,7 +1290,7 @@ class CBPaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
-       
+
         $value = self::getOrderMetaValueForLrsTravelCitiFlow();
 
         $value['customer_details']['billing_address']['line1'] = null;
@@ -1332,7 +1332,7 @@ class CBPaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
-       
+
         $value = self::getOrderMetaValueForLrsTravelCitiFlow();
 
         $value['customer_details']['billing_address']['line1'] = null;
@@ -1398,6 +1398,123 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($lastPayment['notes']['invoice_number'], $paymentInvoice['receipt']);
         $this->assertNull($paymentInvoice['ref_num']);
     }
+
+    public function testCitiTravelLrsPaymentRearchForCardPositive()
+    {
+        $this->mockAllSplitzTreatment();
+
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValueForLrsTravelCitiFlow(),
+                'type'     => 'cart_info',
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['currency'] = 'INR';
+        $payment['order_id'] = $order->getPublicId();
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+        $payment['method'] = 'card';
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
+
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
+        $this->assertEquals($response['pg_router'], 'true');
+
+    }
+
+    public function testCrossBorderImportPaymentRearchForCardPositive()
+    {
+        $this->mockAllSplitzTreatment();
+
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['enable_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 1000000,
+                'currency' => 'INR',
+                'customer_id' => '100000customer',
+            ]);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'cart_info',
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['currency'] = 'INR';
+        $payment['order_id'] = $order->getPublicId();
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+        $payment['method'] = 'card';
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
+
+        $response = $this->doS2SPrivateAuthJsonPayment($payment);
+        $this->assertEquals($response['pg_router'], 'true');
+
+    }
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'variant_on',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
     public function setMockForPCBClient()
     {
         $mockResponseGetLRSQuote =[

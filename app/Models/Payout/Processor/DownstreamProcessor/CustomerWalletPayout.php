@@ -7,6 +7,7 @@ use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
@@ -32,18 +33,20 @@ class CustomerWalletPayout extends Base
 
     public function checkIfAxisMigrationIsEnabled($payout, &$channel)
     {
-        $variant = $this->app->razorx->getTreatment(
-            $payout->getMerchantId(),
-            RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT,
-            $this->mode ?? Mode::LIVE
-        );
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         $this->trace->info(TraceCode::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT, [
-            'variant' => $variant,
+            '$isExperimentEnabled' => $isExperimentEnabled,
             'mode'    => $this->mode
         ]);
 
-        if ($variant == RazorxTreatment::RAZORX_VARIANT_ON)
+        if ($isExperimentEnabled === true)
         {
             $channel = Channel::AXIS;
         }

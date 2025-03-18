@@ -293,24 +293,16 @@ class UserAccess
                    ErrorCode::BAD_REQUEST_UNAUTHORIZED);
            }
 
-            // TODO: This is added to identify impact on other clients if unauthorised requests are blocked
-            $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
-                                                   RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED,
-                                                   $this->ba->getMode());
-
             $this->trace->traceException($e,
                 Trace::INFO,
                 TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
                 [
-                    'experiment' => $variant,
                     'user_role'  => $this->ba->getUserRole(),
                 ]);
 
-            if (strtolower($variant) === 'on')
-            {
-                return ApiResponse::unauthorized(
+           return ApiResponse::unauthorized(
                     ErrorCode::BAD_REQUEST_UNAUTHORIZED);
-            }
+
         }
     }
 
@@ -384,7 +376,12 @@ class UserAccess
             return;
         }
 
-        $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($userRole);
+        $authzRoles = $this->ba->getCustomAccessRoles();
+
+        if (is_null($authzRoles))
+        {
+            $authzRoles = (new \RZP\Models\Roles\Service())->getAuthzRolesUsingExperiment($userRole);
+        }
 
         $isRoleAllowedAccess = AccessAuthorizationService::hasAccessAllowedV2($routePermission, $authzRoles);
 

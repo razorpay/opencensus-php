@@ -198,6 +198,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function crossBorderImportAppAuth($hostname = null, $mode = 'test'): void
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.cross_border_import_service')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function cardPaymentsInternalAppAuth($hostname = null, $mode = 'test'): void
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.card_payment_service')['secret'], $hostname);
@@ -1367,5 +1374,14 @@ class Authorization
         $pwd = $xperienceServiceConfig['secret'];
 
         $this->appAuth('rzp_'. $mode, $pwd);
+    }
+
+    public function paymentsBankTransferAppAuth($mode = 'test'): void
+    {
+        $bankTransferServiceConfig = \Config::get('applications.payments_bank_transfer_service');
+        $pwd = $bankTransferServiceConfig['secret'];
+
+        $this->appAuth('rzp_'. $mode, $pwd);
+        $this->proxy = true;
     }
 }

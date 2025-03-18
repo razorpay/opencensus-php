@@ -180,6 +180,12 @@ class Service extends Base\Service
 
     }
 
+    public function sendNotificationNCA(string $id, array $input, $merchant = null)
+    {
+        $merchant = $this->merchant ?? $merchant;
+        $this->core->sendNotificationNCA($input);
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      */
@@ -637,7 +643,14 @@ class Service extends Base\Service
 
         $this->trace->count(Metric::PAYMENT_PAGE_CREATE_ORDER, $paymentLink->getMetricDimensions());
 
-        return $data;
+        return $this->getResponseArrayWithDecompSpecificFields($data, $paymentLink->getViewType());
+    }
+
+    public function getResponseArrayWithDecompSpecificFields(array $response, string $viewType): array
+    {
+        $response[Entity::PAYMENT_PAGE_VIEW_TYPE] = $viewType;
+
+        return $response;
     }
 
     public function updatePaymentPageItem(string $paymentPageItemId, array $input)
@@ -652,7 +665,14 @@ class Service extends Base\Service
             return $this->core->updatePaymentPageItem($paymentPageItem, $input);
         });
 
-        return $paymentPageItem->toArrayPublic();
+        $paymentLinkId = $paymentPageItem->getPaymentLinkId();
+
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.ppi.update.get_payment_link'], function() use($paymentLinkId)
+        {
+            return $this->repo->payment_link->findByIdAndMerchant($paymentLinkId, $this->merchant);
+        });
+
+        return $this->getResponseArrayWithDecompSpecificFields($paymentPageItem->toArrayPublic(), $paymentLink->getViewType());
     }
 
     public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId, array $input)
@@ -886,9 +906,11 @@ class Service extends Base\Service
             return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        return Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
+        $response = Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
             return $this->core->setReceiptDetails($paymentLink, $input);
         });
+
+        return $this->getResponseArrayWithDecompSpecificFields($response, $paymentLink->getViewType());
     }
 
     public function getInvoiceDetails(string $paymentId)
@@ -923,27 +945,6 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => 'payment_page.payments.get.fetch_payments'], function() use($input, $merchant)
         {
-            $variant = $this->app['razorx']->getTreatment(
-                'paymentPageGetPayments',
-                'pp_payment_fetch_query_migration',
-                $this->mode ?? Mode::LIVE);
-
-            $this->trace->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
-                'variant'    => $variant,
-                'feature'    => 'pp_payment_fetch_query_migration',
-                'context_id' => 'paymentPageGetPayments',
-            ]);
-
-            if ($variant === "tidb")
-            {
-                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            }
-
-            if ($variant === "replica")
-            {
-                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::PAYMENT_FETCH_REPLICA);
-            }
-
             return $this->repo->payment->fetch($input, $merchant->getId());
         });
 

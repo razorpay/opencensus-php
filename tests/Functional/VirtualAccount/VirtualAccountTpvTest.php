@@ -2,7 +2,13 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
+use RZP\Models\Feature;
+use RZP\Models\Admin\Service;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -10,6 +16,7 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class VirtualAccountTpvTest extends TestCase
 {
+    use MocksSplitz;
     use TestsWebhookEvents;
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
@@ -28,6 +35,15 @@ class VirtualAccountTpvTest extends TestCase
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+    }
+    protected function getRblVaBankAccount()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        return $this->createVirtualAccount();
+
     }
 
     public function testCreateVirtualBankAccountWithTpv()
@@ -236,5 +252,40 @@ class VirtualAccountTpvTest extends TestCase
 
             $this->deleteTpvForVirtualAccount($response['id'], $tpvId);
         });
+    }
+    public function testPayerAdditionForRbl()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        $input = [
+            "id" => '10000000000000',
+            'experiment_name' => RazorxTreatment::COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK,
+            'request_data' => json_encode(['id'=>'10000000000000'])
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        (new Service)->setConfigKeys([ConfigKey::COLLECTX_SERIES_PREFIX => ["10000000000000" => "0001046"]]);
+
+        $virtualAccount = $this->getRblVaBankAccount();
+
+        $this->addTpvToVirtualAccount($virtualAccount['id'], __FUNCTION__);
+    }
+
+    public function testPayerAdditionForNonRbl()
+    {
+
+
+        $virtualAccount = $this->getRblVaBankAccount();
+
+        $this->addTpvToVirtualAccount($virtualAccount['id'], __FUNCTION__);
     }
 }

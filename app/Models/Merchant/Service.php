@@ -159,6 +159,8 @@ use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
@@ -595,9 +597,7 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === true)
             {
-                // - unblocking individual la creation from dashboard. Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
-
-                //$this->core()->blockLinkedAccountCreationIfApplicable($merchant);
+                $this->core()->blockLinkedAccountCreationIfApplicable($merchant);
             }
 
             $rateLimit = $this->subMOnboardingRateLimitEnabled($merchant, $isLinkedAccount, $source);
@@ -855,9 +855,8 @@ class Service extends Base\Service
                 'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
             ]
         );
-        // - unblocking batch la creation from dashboard. Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
 
-        //$this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
+        $this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
 
         $submerchantInput = $this->extractSubmerchantInput($input);
 
@@ -969,11 +968,15 @@ class Service extends Base\Service
                 'linked_account_name'   => $input[BatchHeader::ACCOUNT_NAME],
             ]
         );
-        // - unblocking batch la creation from dashboard. Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
 
-        //$this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
+        $this->core()->blockLinkedAccountCreationIfApplicable($this->merchant);
 
         $submerchantInput = $this->extractSubmerchantInput($input);
+
+        if (isset($input[BatchHeader::ACCOUNT_CODE]) && !empty($input[BatchHeader::ACCOUNT_CODE])) {
+            $submerchantInput[Entity::ACCOUNT_CODE] = $input[BatchHeader::ACCOUNT_CODE];
+        }
+
 
         $mutexKey = sprintf(self::LINKED_ACCOUNT_CREATE, strtolower($submerchantInput[Entity::EMAIL]));
 
@@ -2239,28 +2242,48 @@ class Service extends Base\Service
             DetailConstants::CREATED_AT => (new Value())->setStringValue($timestamp),
         ]);
 
-        $manualRekycList = new ListValue();
-        $statuses = $details[DetailConstants::MANUAL_REKYC][DetailConstants::STATUS];
+        $rekycStatusList = new ListValue();
+        $statuses = $details[DetailConstants::MANUAL_REKYC][DetailConstants::STATUS] ?? [];
         foreach ($statuses as $item) {
             $entry = new Struct();
             $entry->setFields([
                 DetailConstants::REKYC_STATUS => (new Value())->setStringValue($item[DetailConstants::REKYC_STATUS]),
                 DetailConstants::CREATED_AT => (new Value())->setStringValue($item[DetailConstants::CREATED_AT]),
             ]);
-            $manualRekycList->getValues()[] = (new Value())->setStructValue($entry);
+            $rekycStatusList->getValues()[] = (new Value())->setStructValue($entry);
         }
-        $manualRekycList->getValues()[] = (new Value())->setStructValue($newEntry);
 
-        $detailConstants = new Struct();
-        $detailConstants->setFields([
-            DetailConstants::MANUAL_REKYC => (new Value())->setStructValue(
-                (new Struct())->setFields([
-                    DetailConstants::STATUS => (new Value())->setListValue($manualRekycList)
-                ])
-            )
+        $rekycStatusList->getValues()[] = (new Value())->setStructValue($newEntry);
+
+        $detailsStruct = new Struct();
+
+        if ($details!=null) {
+            $detailsStruct->mergeFromJsonString(json_encode($details));
+        }
+
+        $manualRekycStruct = $detailsStruct->getFields()["manual_rekyc"] ?? null;
+        $fields = [
+            "status" => (new Value())->setListValue($rekycStatusList)
+        ];
+
+        if ($manualRekycStruct == null ) {
+            $manualRekycStruct = new Struct();
+        }else{
+            $manualRekycStruct = $manualRekycStruct->getStructValue();
+        }
+
+
+        if (isset($manualRekycStruct->getFields()["verifications"])) {
+            $fields["verifications"] = $manualRekycStruct->getFields()["verifications"];
+        }
+
+        $manualRekycStruct->setFields($fields);
+
+        $detailsStruct->setFields([
+            "manual_rekyc" => (new Value())->setStructValue($manualRekycStruct)
         ]);
 
-       return (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantId, $detailConstants, $fieldListForAsv);
+       return (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantId, $detailsStruct, $fieldListForAsv);
     }
 
     protected function invalidatePreviousRequestForEmailUpdate($merchant, $currentOwnerUser)
@@ -2665,6 +2688,19 @@ class Service extends Base\Service
 
                 $response['support_mobile'] = $supportDetails[Merchant\Email\Entity::PHONE];
             }
+
+            $merchantDetails = $this->merchant->merchantDetail ?? null;
+
+            $merchantTncDetails = $merchantDetails?->merchantWebsite;
+
+            $merchantTncLink = $merchantTncDetails === null ? null :
+                (new Website\Core)->getMerchantTncLink($this->merchant, $merchantTncDetails['id']);
+
+            $response['tnc_link'] = $merchantTncLink;
+
+            $response['payment_apps_logo_url'] = $this->merchant->org->getPaymentAppLogo();
+
+            $response['checkout_logo_url'] = $this->merchant->org->getCheckoutLogo();
         }
 
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);
@@ -2931,6 +2967,8 @@ class Service extends Base\Service
 
         $balance = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
 
+        $this->updateResponseForCLSAccountBalance($balance,$merchantId);
+
         $this->updateResponseForSharedBankingBalance($balance);
 
         $this->updateResponseForDirectBankingBalance($balance, $merchantId, $app['rzp.mode'] ?? Mode::LIVE, $cached, $input);
@@ -2956,13 +2994,13 @@ class Service extends Base\Service
         return $balance;
     }
 
-    public function fetchAccountBalancesV2(array $input)
+    public function fetchBankingAccountBalances(array $input)
     {
-        $this->merchant->getValidator()->validateInput(Validator::FETCH_ACCOUNT_BALANCES_V2, $input);
+        $this->merchant->getValidator()->validateInput(Validator::FETCH_BANKING_ACCOUNT_BALANCES, $input);
 
         $merchantId = $this->merchant->getId();
 
-        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_V2,
+        $this->trace->info(TraceCode::BANKING_BALANCE_FETCH_REQUEST,
                            [
                                'input'       => $input,
                                'merchant_id' => $merchantId,
@@ -2973,12 +3011,12 @@ class Service extends Base\Service
 
         if (isset($input['account_type']) == true)
         {
-            $input['account_type'] = array(array_pull($input, 'account_type'));
+            $input['account_type'] = array(array_flip(Constants::BALANCE_TYPE_ACCOUNT_TYPE_MAPPING)[array_pull($input, 'account_type')]);
         }
 
-        if (isset($input['bank']) == true)
+        if (isset($input['bank_code']) == true)
         {
-            $input['channel'] = array_pull($input, 'bank');
+            $input['channel'] = array_flip(Constants::BANK_CHANNEL_BANK_CODE_MAPPING)[array_pull($input, 'bank_code')];
         }
 
         $balances = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
@@ -2989,27 +3027,11 @@ class Service extends Base\Service
 
         $balances[Base\PublicCollection::ITEMS] = array_values($balances[Base\PublicCollection::ITEMS]);
 
-        foreach ($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
-        {
-            foreach ($balance as $key => $value)
-            {
-                if (in_array($key, Constants::BALANCE_FETCH_V2_RESPONSE_FIELDS) == false)
-                {
-                    unset($balance[$key]);
-                }
-                if (array_key_exists($key, Constants::BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING))
-                {
-                    $balance[Constants::BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING[$key]] = $value;
-                    unset($balance[$key]);
-                }
-            }
+        $this->mapBalanceResponseData($balances);
 
-            $balance[Balance\Entity::ENTITY]            = 'balance';
-            $balance[Balance\Entity::ACCOUNT_NUMBER]    = mask_except_last4($balance[Balance\Entity::ACCOUNT_NUMBER]);
-            $balance[Balance\Entity::AVAILABLE_BALANCE] = $balance[Balance\Entity::BALANCE];
-        }
+        $this->removeAdditionalInfoFromBankingBalanceResponse($balances);
 
-        $this->trace->info(TraceCode::BALANCE_FETCH_RESPONSE_V2,
+        $this->trace->info(TraceCode::BANKING_BALANCE_FETCH_RESPONSE,
                            [
                                'count'       => sizeof($balances[Base\PublicCollection::ITEMS]),
                                'merchant_id' => $merchantId
@@ -5732,44 +5754,13 @@ class Service extends Base\Service
         }
     }
 
-    private function isEnablementOfScheduledEsMigrated(): bool
-    {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === false)
-        {
-            return false;
-        }
-
-        $request = [
-            'experiment_id' => $this->app['config']->get('app.scheduled_es_enablement_migration_experiment_id'),
-            'request_data'  => json_encode(['merchantId' => $this->merchant->getId()]),
-        ];
-        $response = $this->app['splitzService']->evaluateRequest($request);
-
-        $variables = $response['response']['variant']['variables'] ?? [];
-        if (is_array($variables) === false)
-        {
-            return false;
-        }
-
-        foreach ($variables as $variable)
-        {
-            if (is_array($variable) === true && $variable['key'] === 'is_enabled' && $variable['value'] === 'true')
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function enableScheduledEs($skipRoleCheck = false, $notify = true): array
     {
-        if ($this->isEnablementOfScheduledEsMigrated() === true)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true)
         {
             $userRole = $this->app['basicauth']->getUserRole();
             return $this->app['capital_early_settlements']->enableScheduledEs($this->merchant->getId(), $userRole, $skipRoleCheck);
         }
-
 
         if($skipRoleCheck == false)
         {
@@ -6445,7 +6436,7 @@ class Service extends Base\Service
 
         if($product === Product::BANKING)
         {
-            $roleEntity = $this->repo->roles->fetchRole($roleId);
+            $roleEntity = (new \RZP\Models\Roles\Service())->getRoleUsingExperiment($roleId);
 
             if (empty($roleEntity) === true) {
                 throw new Exception\BadRequestValidationFailureException("Invalid Role Id",
@@ -6494,7 +6485,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $roleEntity = $this->repo->roles->fetchRole($roleId);
+        $roleEntity = (new \RZP\Models\Roles\Service())->getRoleUsingExperiment($roleId);
 
         if(empty($roleEntity) === true)
         {
@@ -7591,17 +7582,6 @@ class Service extends Base\Service
 
         $dataProcessor = new DataProcessor();
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::HARVESTER_SEGREGATE_QUERIES,
-            $this->app['basicauth']->getMode() ?? "live"
-        );
-
-        if(strcmp($variant, Constants::RAZORX_EXPERIMENT_ON) != 0) {
-            $response = $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
-
-            return $dataProcessor->processMerchantAnalyticsResponse($response);
-        }
 
         if(isset($input[Constants::AGGREGATIONS]) === false) {
             $response = $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
@@ -10492,18 +10472,6 @@ class Service extends Base\Service
         In case of Malaysia, as we do manual onboard and offline verification so these are not required
         */
         if ($merchant->getCountry() === 'MY')
-        {
-            return $partnerCommissionConfig;
-        }
-
-        $properties = [
-            'id'                   => $merchant->getId(),
-            'experiment_id'        => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
-        ];
-
-        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-
-        if($isExpEnable === false )
         {
             return $partnerCommissionConfig;
         }
@@ -14152,21 +14120,7 @@ class Service extends Base\Service
 
     protected function checkIfLinkedAccountBatchUploadNewFlowExpIsEnabled($merchant): bool
     {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::USE_NEW_FLOW_FOR_LA_BATCH_UPLOAD,
-            $this->mode
-        );
-
-        $isExperimentEnabled = ($variant === 'on');
-
-        $this->trace->info(TraceCode::LINKED_ACCOUNT_BATCH_UPLOAD_NEW_FLOW_EXP_CHECK,
-            [
-                'merchant'               => $merchant->getId(),
-                'isExperimentEnabled'    => $isExperimentEnabled,
-            ]);
-
-        return $isExperimentEnabled;
+        return true;
     }
 
     public function createMerchantMethods($merchantId)
@@ -14237,16 +14191,6 @@ class Service extends Base\Service
             );
         }
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_CREDIT_SELF_SERVE) === true) {
-            throw new Exception\LogicException(
-                "Merchant has the Self Credit Service feature disabled. Operation not allowed.",
-                ErrorCode::BAD_REQUEST_MERCHANT_HAS_CREDIT_SELF_SERVICE_ENABLED,
-                [
-                    'merchant_id' => $mid
-                ]
-            );
-        }
-
         $type = $input["type"];
 
         switch ($type) {
@@ -14294,6 +14238,52 @@ class Service extends Base\Service
         }
     }
 
+    private function updateResponseForCLSAccountBalance(&$balances,$merchantId)
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.reserve_balance_read_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $variant = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+            if (($variant === true)
+                and ($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)) {
+
+                if (!isset($balances['items']) || !is_array($balances['items'])) {
+                    return;
+                }
+
+                $ledgerService = $this->app['ledger'];
+                $ledgerOutboxCore = new LedgerOutboxCore();
+                $accountBalanceMap = $ledgerOutboxCore->getMerchantAccountBalances($ledgerService, $merchantId);
+
+                foreach ($balances['items'] as &$b) {
+                    if (isset($b[Balance\Entity::TYPE]) && $b[Balance\Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) {
+                        $b[Balance\Entity::BALANCE] = $accountBalanceMap[LedgerConstants::MERCHANT_RESERVE_BALANCE] ?? 0;
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::RESERVE_PRIMARY_BALANCE_FETCH_FAIL,
+                [
+                    'merchant_id'     => $merchantId,
+                    'error'           => $e
+                ]
+            );
+
+        }
+    }
+
     private function updateResponseForDirectBankingBalance(&$balances, $merchantId, $mode, string $cached, array $input)
     {
         foreach ($balances['items'] as &$b)
@@ -14301,13 +14291,6 @@ class Service extends Base\Service
             if (($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
                 ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::DIRECT))
             {
-                $variant = $this->app['razorx']->getTreatment($merchantId,
-                                                              Experiment::SYNC_CALL_FOR_FRESH_BALANCE, $mode);
-
-                $this->trace->info(TraceCode::SYNC_CALL_FOR_FRESH_BALANCE_VARIANT_STATUS,
-                                   [
-                                       'variant_status' => $variant,
-                                   ]);
 
                 $dimension = [
                     ConstantMetric::LABEL_RZP_INTERNAL_APP_NAME => app('request.ctx')->getInternalAppName() ?? ConstantMetric::LABEL_NONE_VALUE,
@@ -14317,7 +14300,7 @@ class Service extends Base\Service
 
                 // if cached is false and variant is on and balance last fetched is beyond recency threshold (10 sec)
                 // then only , we make sync call for balance fetch
-                if (($cached === 'false') and ($variant === 'on'))
+                if (($cached === 'false'))
                 {
                     $thresholdTimestamp = Carbon::now(Timezone::IST)->subSeconds(10)->getTimestamp();
 
@@ -14447,4 +14430,43 @@ class Service extends Base\Service
         return $response;
     }
 
+    private function mapBalanceResponseData(&$balances)
+    {
+        foreach($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
+        {
+            if(array_key_exists(Balance\Entity::CHANNEL, $balance))
+            {
+                $balance['bank_code'] = Constants::BANK_CHANNEL_BANK_CODE_MAPPING[$balance[Balance\Entity::CHANNEL]];
+                $balance['bank_name'] = Constants::BANK_CHANNEL_BANK_NAME_MAPPING[$balance[Balance\Entity::CHANNEL]];
+            }
+            if(array_key_exists(Balance\Entity::BALANCE, $balance))
+            {
+                $balance['available_amount'] = $balance[Balance\Entity::BALANCE];
+                $balance['amount'] = $balance[Balance\Entity::BALANCE];
+            }
+            if(array_key_exists(Balance\Entity::LAST_FETCHED_AT, $balance))
+            {
+                $balance['refreshed_at'] = $balance[Balance\Entity::LAST_FETCHED_AT];
+            }
+            if(array_key_exists(Balance\Entity::ACCOUNT_TYPE, $balance))
+            {
+                $balance[Balance\Entity::ACCOUNT_TYPE] = Constants::BALANCE_TYPE_ACCOUNT_TYPE_MAPPING[$balance[Balance\Entity::ACCOUNT_TYPE]];
+            }
+            $balance[Balance\Entity::ENTITY] = 'banking_balance';
+        }
+    }
+
+    private function removeAdditionalInfoFromBankingBalanceResponse(&$balances)
+    {
+        foreach($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
+        {
+            foreach($balance as $key => $value)
+            {
+                if(!in_array($key, Constants::BANKING_BALANCE_RESPONSE_KEYS))
+                {
+                    unset($balance[$key]);
+                }
+            }
+        }
+    }
 }

@@ -21,6 +21,8 @@ class RouteTeamMap
     // cmma : sop and disputes team
     const TEAM_CMMA                    = 'cmma';
     const TEAM_OMNI_ACQUISITION         = 'omni_acquisition';
+    const TEAM_PAYMENTS_BANK_TRANSFER            = 'payments-bank-transfer';
+    const TEAM_PLATFORM_EDGE                     = 'platform_edge';
 
     /**
      * @return string comma separated list of team names for the particular route
@@ -262,7 +264,6 @@ class RouteTeamMap
         'merchant_user_app_change_ftux'            => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_user_app_incr_product_session'   => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_recent_trans_with_source'        => [self::TEAM_PAYMENTS_DASHBOARD],
-        'bulk_regenerate_api_keys'                 => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_workflow_clarification'          => [self::TEAM_PAYMENTS_DASHBOARD],
         'workflow_needs_merchant_clarification'    => [self::TEAM_PAYMENTS_DASHBOARD],
 
@@ -342,7 +343,6 @@ class RouteTeamMap
         'onboarding_features_update'                      => [self::TEAM_PAYMENTS_GROWTH],
         'buy_pricing_delete_plan_rule_force'              => [self::TEAM_PAYMENTS_GROWTH],
         'buy_pricing_add_plan_rule_bulk'                  => [self::TEAM_PAYMENTS_GROWTH],
-        'merchant_create_key'                             => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_features_get_submissions'             => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_pre_signup_details'                     => [self::TEAM_PAYMENTS_GROWTH],
         'buy_pricing_get_plan'                            => [self::TEAM_PAYMENTS_GROWTH],
@@ -371,12 +371,10 @@ class RouteTeamMap
         'merchant_upload'                                 => [self::TEAM_PAYMENTS_GROWTH],
         'buy_pricing_get_terminal_plans'                  => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_details_fetch'                          => [self::TEAM_PAYMENTS_GROWTH],
-        'merchant_fetch_keys'                             => [self::TEAM_PAYMENTS_GROWTH],
         'pricing_delete_plan_rule_force'                  => [self::TEAM_PAYMENTS_GROWTH],
         'buy_pricing_add_plan_rule'                       => [self::TEAM_PAYMENTS_GROWTH],
         'pricing_get_plan'                                => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_features_fetch_details'               => [self::TEAM_PAYMENTS_GROWTH],
-        'merchant_replace_key'                            => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_archive'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_bulk_assign_reviewer'        => [self::TEAM_PAYMENTS_GROWTH],
         'proxy_merchant_get_pricing'                      => [self::TEAM_PAYMENTS_GROWTH],
@@ -569,5 +567,16 @@ class RouteTeamMap
         'merchant_vkyc_fetch_admin'                         => [self::TEAM_PAYMENTS_CROSS_BORDER],
         'merchant_edd_details_fetch_admin'                  => [self::TEAM_PAYMENTS_CROSS_BORDER],
         'merchant_edd_details_submit_admin'                 => [self::TEAM_PAYMENTS_CROSS_BORDER],
+
+
+        // Edge Owned Routes
+        'expire_keys'                                     => [self::TEAM_PLATFORM_EDGE],
+        'merchant_replace_key'                            => [self::TEAM_PLATFORM_EDGE],
+        'merchant_fetch_keys'                             => [self::TEAM_PLATFORM_EDGE],
+        'merchant_create_key'                             => [self::TEAM_PLATFORM_EDGE],
+        'merchant_create_key_with_otp'                    => [self::TEAM_PLATFORM_EDGE],
+        'merchant_replace_key_with_otp'                   => [self::TEAM_PLATFORM_EDGE],
+        'bulk_regenerate_api_keys'                        => [self::TEAM_PLATFORM_EDGE],
+
     ];
 }

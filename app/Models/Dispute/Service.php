@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Exception;
+use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger;
@@ -386,6 +387,10 @@ class Service extends Base\Service
 
         (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
 
+        $balance = (new Merchant\Service)->getPrimaryBalance();
+
+        $isBalanceSufficient = $this->isMerchantBalanceSufficient($dispute, $balance);
+
         if ($this->app['basicauth']->isExpress() === true)
         {
             $res = $dispute->toArrayAdmin();
@@ -394,13 +399,17 @@ class Service extends Base\Service
                 TraceCode::DISPUTE_FETCH_REQUEST_EXPRESS,
                 [
                     'response'  => $res,
-                ],
+                ]
             );
 
             return $res;
         }
 
-        return $dispute->toArrayPublicWithExpand();
+        $res = $dispute->toArrayPublicWithExpand();
+
+        $res['isBalanceSufficient'] = $isBalanceSufficient;
+
+        return $res;
     }
 
     public function deleteFile(string $id, string $fileId)
@@ -1162,5 +1171,43 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    private function isMerchantBalanceSufficient($dispute, $balance)
+    {
+        if ($dispute->getDeductAtOnset() === true)
+        {
+            return true;
+        }
+        $merchantBalance = $balance[Merchant\Balance\Entity::BALANCE];
+
+        $disputeBaseAmount = $dispute->getBaseAmount();
+
+        $disputePhase = $dispute->getPhase();
+
+        $fee = 0;
+
+        $currency = DisputeConstants::CURRENCY_INR;
+
+        if ($disputePhase === Phase::ARBITRATION || $disputePhase === Phase::PRE_ARBITRATION)
+        {
+            $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+            $network = $this->core()->getNetwork($payment);
+
+            $feeResult = $this->core()->getFeeDetails($disputePhase, $network);
+
+            $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+
+            $currency = $feeResult[DisputeConstants::CURRENCY];
+        }
+
+        if ($fee !== 0 and $currency != DisputeConstants::CURRENCY_INR)
+        {
+            $rates = (new Currency\Core)->getRates($currency);
+            $fee = $rates[$currency] * $fee;
+        }
+
+        return $merchantBalance >= $disputeBaseAmount + $fee;
     }
 }

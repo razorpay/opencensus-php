@@ -219,6 +219,7 @@ trait CommonGatewayTrait
         return $gatewayInput;
     }
 
+
     private function isPreProcessRampedUpFully(string $gateway): bool
     {
         $gateways = [
@@ -232,6 +233,8 @@ trait CommonGatewayTrait
             Payment\Gateway::UPI_ICICI,
             Payment\Gateway::UPI_RZPAPB,
             Payment\Gateway::UPI_RZPAXIS,
+            Payment\Gateway::UPI_JUSPAY,
+            Payment\Gateway::UPI_YESBANK,
             ];
 
         return (in_array($gateway, $gateways, true));
@@ -249,26 +252,7 @@ trait CommonGatewayTrait
             return true;
         }
 
-        $feature = 'api' . '_' . $gateway . '_' . \RZP\Gateway\Mozart\Action::PRE_PROCESS . '_' . 'v1';
-
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $requestOptions = [
-            'connect_timeout' => 1,
-            'timeout'         => 1,
-        ];
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode, 3, $requestOptions);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
-            'gateway' => $gateway,
-            'variant' => $variant,
-            'mode'    => $mode,
-            'feature' => $feature,
-        ]);
-
-        return $variant === $gateway;
+        return false;
     }
 
     /**

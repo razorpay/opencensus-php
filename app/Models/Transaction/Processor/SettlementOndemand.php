@@ -42,19 +42,6 @@ class SettlementOndemand extends Base
         }
     }
 
-    public function setFeeDefaultsForDualWrite($fees, $tax)
-    {
-        $settlementOndemandPayouts = $this->source->settlementOnDemandPayouts;
-
-        /** @var OndemandPayout\Entity $settlementOndemandPayout*/
-        foreach($settlementOndemandPayouts as $settlementOndemandPayout)
-        {
-            $this->fees += $settlementOndemandPayout->getFees();
-
-            $this->tax += $settlementOndemandPayout->getTax();
-        }
-    }
-
     public function setSourceDefaults()
     {
         $txnData = [
@@ -71,28 +58,6 @@ class SettlementOndemand extends Base
     }
 
     public function calculateFees()
-    {
-        $amount = $this->source->getAmount();
-
-        $settlementOndemandAmount = $amount - $this->fees;
-
-        if ($settlementOndemandAmount < 100)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
-                null,
-                [
-                    'amount' => $amount,
-                    'fee'    => $this->fees
-                ]);
-        }
-
-        $this->debit = $amount;
-
-        $this->txn->setAmount($settlementOndemandAmount);
-    }
-
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
     {
         $amount = $this->source->getAmount();
 

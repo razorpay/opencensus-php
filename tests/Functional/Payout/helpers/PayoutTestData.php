@@ -9730,7 +9730,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 8,
+                'count'     => 9,
                 'items'     =>  [
                     [
                         'purpose'       =>  'refund',
@@ -9762,6 +9762,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -9814,7 +9818,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 9,
+                'count'     => 10,
                 'items'     =>  [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
@@ -9851,6 +9855,10 @@ return [
                     [
                         'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9883,7 +9891,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 13,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -9932,6 +9940,10 @@ return [
                     [
                         'purpose'       => 'petty cash',
                         'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
+                        'purpose_type'  =>  'settlement',
                     ]
                 ],
             ],
@@ -9960,7 +9972,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 11,
+                'count'     => 12,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Sumit A Bonus',
@@ -10004,6 +10016,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -10092,7 +10108,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 12,
+                'count'     => 13,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -10140,6 +10156,10 @@ return [
                     ],
                     [
                         'purpose'       => 'petty cash',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'ica_transfer',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -16188,6 +16208,78 @@ return [
                     [
                         'source_id'   => '100000000000sa',
                         'source_type' => 'settlements',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testSourceCreationInCaseOfCompositePayoutCreatedByCrossBorderImportService' => [
+        'request' => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'ica_transfer',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Mehul Kaushik',
+                        'ifsc'           => 'ICIC0000104',
+                        'account_number' => '1111000011110000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 1,
+                'origin'               => 'dashboard',
+                'source_details'       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'ica_transfer',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'ica_transfer',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'ica_transfer',
                         'priority'    => 1,
                     ],
                 ],
@@ -26111,5 +26203,210 @@ return [
                 'status' => 'success'
             ]
         ]
+    ],
+    'testCreatePayoutWithLinkedNumber' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
+                        'account_holder_name' => 'Shashi Kumar'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"         => "payout",
+                "fund_account"   => [
+                    "contact"        => [
+                        'entity'  => 'contact',
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                    "entity"       => "fund_account",
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
+                        'account_holder_name' => 'Shashi Kumar'
+                    ],
+                    'vpa' => [
+                        "username" => null,
+                        "handle"   => "okaxis",
+                        "address"  => null,
+                    ],
+                ],
+                "amount"         => 2000000,
+                "currency"       => "INR",
+                "notes"          => [
+                    "abc" => "xyz",
+                ],
+                "status"         => "processing",
+                "purpose"        => "refund",
+                "mode"           => "UPI",
+                "narration"      => "Batman",
+                "batch_id"       => null,
+                "failure_reason" => null,
+                'merchant_id'    => '10000000000000'
+            ],
+        ],
+    ],
+    'testCreatePayoutWithLinkedNumberForVpaNotFound' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
+                        'account_holder_name' => 'Shashi Kumar'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No linked account details found',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+    'testCreatePayoutWithLinkedNumberForNameMismatch' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account' => [
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
+                        'account_holder_name' => 'Nawed Diwan'
+                    ],
+                    'contact'     => [
+                        'name'    => 'Shashi Kumar',
+                        'email'   => 'abc@gmail.com',
+                        'contact' => '1234567890'
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account holder name not matching with bank provided name',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+    'testGetPayoutForAPIDBFirstFlow' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+    'testGetPayoutForAPIDBFirstFlowOnLiveMode' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+    'testCreateSharedPayoutInLedgerShadowModeWithInsufficientBalanceRetry' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ],
     ],
 ];

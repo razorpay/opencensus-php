@@ -73,11 +73,11 @@ class PaymentUpdate extends Job
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE, [
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_FAILURE, [
             'caller'      => $functionName,
         ]);
 
-        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN,
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_FAILURE_TIME_TAKEN,
             millitime() - $startTime,
             [
                 'caller'  => $functionName
@@ -88,11 +88,11 @@ class PaymentUpdate extends Job
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS, [
+        $trace->count(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_SUCCESS, [
             'caller'      => $functionName,
         ]);
 
-        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN,
+        $trace->histogram(Metric::EXTERNAL_LA_PAYMENT_REPO_SAVE_SUCCESS_TIME_TAKEN,
             millitime() - $startTime,
             [
                 'caller'  => $functionName

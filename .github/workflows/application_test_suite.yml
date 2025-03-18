@@ -35,7 +35,7 @@ jobs:
         env:
           ACTIONS_STEP_DEBUG: true
       - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v3.0.0"
+        uses: "actions/cache@v4"
         with:
           path: "/github/home/.composer/cache"
           key: "api-composer-${{ hashFiles('composer.lock') }}"
@@ -175,7 +175,7 @@ jobs:
 #        env:
 #          ACTIONS_STEP_DEBUG: true
 #      - name: "Cache dependencies installed with composer"
-#        uses: "actions/cache@v3.0.0"
+#        uses: "actions/cache@v4"
 #        with:
 #          path: "/github/home/.composer/cache"
 #          key: "api-composer-${{ hashFiles('composer.lock') }}"
@@ -307,7 +307,7 @@ jobs:
 #        env:
 #          ACTIONS_STEP_DEBUG: true
 #      - name: "Cache dependencies installed with composer"
-#        uses: "actions/cache@v3.0.0"
+#        uses: "actions/cache@v4"
 #        with:
 #          path: "/github/home/.composer/cache"
 #          key: "api-composer-${{ hashFiles('composer.lock') }}"
@@ -439,7 +439,7 @@ jobs:
 #        env:
 #          ACTIONS_STEP_DEBUG: true
 #      - name: "Cache dependencies installed with composer"
-#        uses: "actions/cache@v3.0.0"
+#        uses: "actions/cache@v4"
 #        with:
 #          path: "/github/home/.composer/cache"
 #          key: "api-composer-${{ hashFiles('composer.lock') }}"

@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Services\WorkflowGuard;
 use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
@@ -64,6 +65,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Services\UpiPayment;
+use RZP\Services\Device;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
@@ -523,6 +525,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new MerchantOnboardingProxyController();
         });
 
+        $this->app->singleton('WorkflowGuardService', function ($app)
+        {
+            return new WorkflowGuard\Service();
+        });
+
         $this->app->singleton('NeedsClarificationProxyController', function ($app)
         {
             return new NeedsClarificationProxyController();
@@ -806,6 +813,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutsUpdateFailureProcessingCron();
 
+        $this->registerPayoutsDualWriteFailureProcessingCron();
+
         $this->registerUpdateFreePayout();
 
         $this->registerUpdateMerchantFeatureInPayoutService();
@@ -823,6 +832,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerPayoutServiceShieldEvaluate();
 
         $this->registerDuplicatePayoutEvaluateClient();
+
+        $this->registerMappedVpaFetchClient();
 
         $this->registerPayoutServiceWorkflow();
 
@@ -937,6 +948,21 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerCredcase();
 
         $this->registerCredcaseService();
+
+        $this->registerCMSService();
+
+        $this->app->singleton('pos.deviceservice', function($app)
+        {
+
+            $ezetapDeviceMock = $app['config']->get('applications.ezetap-api.mock');
+
+            if ($ezetapDeviceMock === true)
+            {
+                return new Device\Mock\ApiMock($app);
+            }
+
+            return new Device\Api($app);
+        });
     }
 
     protected function registerCacheManager()
@@ -2006,6 +2032,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    protected function registerMappedVpaFetchClient()
+    {
+        $this->app->singleton(PayoutService\VpaMapperFetch::MAPPED_VPA_FETCH, function($app)
+        {
+            return new PayoutService\VpaMapperFetch($app);
+        });
+    }
+
     protected function registerPayoutServiceGet()
     {
         $this->app->singleton(PayoutService\Get::PAYOUT_SERVICE_GET, function($app)
@@ -2124,6 +2158,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\PayoutsUpdateFailureProcessingCron::PAYOUTS_UPDATE_FAILURE_PROCESSING_CRON, function($app)
         {
             return new PayoutService\PayoutsUpdateFailureProcessingCron($app);
+        });
+    }
+
+    protected function registerPayoutsDualWriteFailureProcessingCron()
+    {
+        $this->app->singleton(PayoutService\PayoutsDualWriteFailureProcessingCron::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON, function($app)
+        {
+            return new PayoutService\PayoutsDualWriteFailureProcessingCron($app);
         });
     }
 
@@ -2953,6 +2995,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                 return new Mock\Route($app);
             }
             return new Route\Api($app);
+        });
+    }
+
+    protected function registerCMSService()
+    {
+        $this->app->singleton('cms', function($app)
+        {
+            return new CMS\Service($app);
         });
     }
 }

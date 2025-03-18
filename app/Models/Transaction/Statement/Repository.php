@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Statement;
 use Db;
 use Illuminate\Database\Query\JoinClause;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
@@ -67,11 +68,12 @@ class Repository extends Transaction\Repository
     public function findByPublicIdAndMerchantForBankingBalance(
         string $id,
         Merchant\Entity $merchant,
-        array $params = []): Entity
+        array $params = [],
+        $connectionType = null): Entity
     {
         Entity::verifyIdAndStripSign($id);
 
-        $statement = $this->getQueryForFindWithParams($params)
+        $statement = $this->getQueryForFindWithParams($params,$connectionType)
                           ->merchantId($merchant->getId())
                           ->findOrFailPublic($id);
 
@@ -170,11 +172,20 @@ class Repository extends Transaction\Repository
 
     protected function setBaseQueryIfApplicable(string $merchantId)
     {
-        $variant = $this->app->razorx->getTreatment($merchantId,
-                                                    Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH,
-                                                    $this->app['rzp.mode']);
+        $experimentName = Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH;
 
-        if ($variant === 'on')
+        if($this->app['rzp.mode'] === MODE::TEST)
+        {
+            $experimentName = Merchant\RazorxTreatment::IGNORE_INDEX_IN_TRANSACTIONS_FETCH_TEST;
+        }
+
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" => $experimentName,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
+
+        if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE ) === true)
         {
             $this->baseQuery = $this->setQueryToIgnoreTransactionsCreatedAtIndex();
         }
@@ -184,12 +195,7 @@ class Repository extends Transaction\Repository
     {
         if ($query == null)
         {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
-
-            if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-            {
-                $connectionType = $this->getSlaveConnection();
-            }
+            $connectionType = $this->getSlaveConnection();
 
             $query = $this->newQueryWithConnection($connectionType);
         }
@@ -204,12 +210,7 @@ class Repository extends Transaction\Repository
         if( ($balance != null and $balance->isTypeBanking())
             and (array_key_exists(self::FROM, $input) or $this->checkDefaultFilters($input)) )
         {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
-
-            if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-            {
-                $connectionType = $this->getSlaveConnection();
-            }
+            $connectionType = $this->getSlaveConnection();
 
             $this->baseQuery = $this->newQueryWithConnection($connectionType)
                 ->from(\DB::raw(Table::TRANSACTION.' USE INDEX (transactions_merchant_id_balance_id_created_at_index)'));
@@ -236,16 +237,23 @@ class Repository extends Transaction\Repository
      * @param $toDate
      * @return mixed
      */
-    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate)
+    public function getStatementsInRange($merchantId, $balanceId, $fromDate, $toDate, $useTiDB=false)
     {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->where(Entity::BALANCE_ID, $balanceId)
-                    ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->orderBy(Entity::ID, 'desc')
-                    ->with('bankingAccountStatement')
-                    ->get();
+        if($useTiDB === true)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+        return $query->merchantId($merchantId)
+                     ->where(Entity::BALANCE_ID, $balanceId)
+                     ->whereBetween(Entity::CREATED_AT, [$fromDate, $toDate])
+                     ->orderBy(Entity::CREATED_AT, 'desc')
+                     ->orderBy(Entity::ID, 'desc')
+                     ->with('bankingAccountStatement')
+                     ->get();
     }
 
     protected function addQueryParamId($query, $params)

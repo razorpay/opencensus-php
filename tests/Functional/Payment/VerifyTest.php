@@ -1463,6 +1463,140 @@ class VerifyTest extends TestCase
         $this->assertEquals('attempted', $order['status']);
     }
 
+    public function testLateAuthMerchantOrderConfigVerifyPaymentBeforeExpiryPeriodMinimum()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check','allow_extended_expiry']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'automatic',
+            "capture_options"=> [
+                "automatic_expiry_period"=> 6,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(3);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testLateAuthMerchantOrderConfigVerifyPaymentBeforeExpiryPeriodMaximum()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check','allow_extended_expiry']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'automatic',
+            "capture_options"=> [
+                "automatic_expiry_period"=> 86000,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(50);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testLateAuthMerchantOrderConfigVerifyPaymentAfterExpiryPeriodMinimum()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check','allow_extended_expiry']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'automatic',
+            "capture_options"=> [
+                "automatic_expiry_period"=> 5,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $verifyAt = Carbon::now(Timezone::IST)->addMinutes(11)->getTimestamp();
+
+        $this->fixtures->edit('payment', $payment['id'], ['verify_at' => $verifyAt]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($payment['refund_at'], Carbon::createFromTimestamp($payment['created_at'])->addMinutes(13)->getTimestamp());
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('attempted', $order['status']);
+    }
+
     public function testLateAuthGooglePayPaymentVerifyAfterTimeout()
     {
         $this->setMockGatewayTrue();

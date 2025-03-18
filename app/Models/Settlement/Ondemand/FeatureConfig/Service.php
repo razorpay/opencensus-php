@@ -43,25 +43,21 @@ class Service extends Base\Service
                     {
                         (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_INPUT, $input);
 
-                        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input)
+                        $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
+
+                        (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::PRICING_PERCENT],
+                            PricingFeature::SETTLEMENT_ONDEMAND,
+                            $input[Entity::PRICING_PERCENT_SCALE_FACTOR]);
+
+                        $input[Entity::ES_PRICING_PERCENT] = (isset($input[Entity::ES_PRICING_PERCENT]) === true) ?
+                            $input[Entity::ES_PRICING_PERCENT]: self::DEFAULT_ES_PRICING_PERCENT;
+
+                        (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT],
+                            PricingFeature::ESAUTOMATIC_RESTRICTED,
+                            $input[Entity::ES_PRICING_PERCENT_SCALE_FACTOR]);
+
+                        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $merchant)
                         {
-                            $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
-
-                            /* creates ondemand pricing and es automatic restricted rule if not present,
-                               else updates the present pricing rule with given pricing_percent */
-
-                            (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::PRICING_PERCENT],
-                                                                        PricingFeature::SETTLEMENT_ONDEMAND,
-                                                                        $input[Entity::PRICING_PERCENT_SCALE_FACTOR]);
-
-                            $input[Entity::ES_PRICING_PERCENT] = (isset($input[Entity::ES_PRICING_PERCENT]) === true) ?
-                                                                 $input[Entity::ES_PRICING_PERCENT]: self::DEFAULT_ES_PRICING_PERCENT;
-
-
-                            (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT],
-                                                                PricingFeature::ESAUTOMATIC_RESTRICTED,
-                                                                $input[Entity::ES_PRICING_PERCENT_SCALE_FACTOR]);
-
                             $flagUpdate = $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND);
 
                             if($input[Entity::FULL_ACCESS] === 'yes')
@@ -198,10 +194,10 @@ class Service extends Base\Service
         }
         catch (\Exception $e)
         {
+            $this->trace->traceException($e, Trace::DEBUG, TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_CREATE);
+
             $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input) {
-
                 $this->core()->createFeatureConfig($input);
-
             });
         }
     }

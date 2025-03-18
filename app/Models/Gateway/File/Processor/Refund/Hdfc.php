@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Hdfc extends Base
 {
@@ -20,6 +21,7 @@ class Hdfc extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_HDFC;
     const GATEWAY_CODE           = IFSC::HDFC;
     const BASE_STORAGE_DIRECTORY = 'Hdfc/Refund/Netbanking/';
+    const SETTLED_BY_RAZORPAY        = 'Razorpay';
 
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format
@@ -117,6 +119,7 @@ class Hdfc extends Base
                     RefundConstants::SCROOGE_BASE_AMOUNT => [
                         RefundConstants::SCROOGE_GT => 0,
                     ],
+                    RefundEntity::SETTLED_BY  => static::SETTLED_BY_RAZORPAY,
                 ],
             ],
             RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,

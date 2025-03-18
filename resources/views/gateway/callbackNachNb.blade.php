@@ -40,6 +40,9 @@
     <script>
         // Callback data //
       var data = {!!utf8_json_encode($data)!!}; // Callback data //
+      function razorpay_callback() {
+        return data;
+      }
       var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
 
       // ================= NPCI Feedback =========

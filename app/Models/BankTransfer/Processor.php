@@ -272,7 +272,7 @@ class Processor extends VirtualAccount\Processor
 
                 $ledgerJournalResponse = $this->processLedgerForReverseShadow($bankTransfer);
 
-                if (($ledgerJournalResponse != null)  and (!$this->isRazorxExperimentEnabled($bankTransfer->getMerchantId(),RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))) {
+                if (($ledgerJournalResponse != null)  and ($this->isLedgerReverseShadowLatestTxnBalanceExperimentEnabled($bankTransfer->getMerchantId()) === false)) {
 
                     $this->trace->info(TraceCode::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE,
                         ["merchantId" =>
@@ -392,7 +392,7 @@ class Processor extends VirtualAccount\Processor
 
     public function dispatchEventForTransactionCreatedForTxnDependentMerchants(Base\PublicEntity $bankTransfer, Transaction\Entity $transaction): void
     {
-        if ($this->isRazorxExperimentEnabled($bankTransfer->getMerchantId(),RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
+        if ($this->isLedgerReverseShadowLatestTxnBalanceExperimentEnabled($bankTransfer->getMerchantId()) === true)
         {
 
             $this->trace->info(TraceCode::TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE,
@@ -600,7 +600,7 @@ class Processor extends VirtualAccount\Processor
             if ($bankTransfer->virtualAccount->getId() === VirtualAccount\Entity::SHARED_ID_BANKING) {
                 // If the payee account is of IDFC bank VA then we need to raise the slack alert
                 if($bankTransfer[Entity::PAYEE_IFSC] == VirtualAccount\Provider::IDFC_COMMON_IFSC &&
-                    substr($bankTransfer[Entity::PAYEE_ACCOUNT], 0, 4) == VirtualAccount\Provider::IDFC_VA_PREFIX &&
+                    ( in_array(substr($bankTransfer[Entity::PAYEE_ACCOUNT], 0, 4) , VirtualAccount\Provider::IDFC_VA_PREFIX) === true) &&
                     empty($bankTransfer[Entity::PAYER_IFSC]))
                 {
                     // For such cases we need to raise a slack alert for manual refund creation.
@@ -1124,29 +1124,9 @@ class Processor extends VirtualAccount\Processor
 
         $this->setParamsToEnsurePaymentIsNotCaptured($bankTransfer);
 
-        $nonTpvRefundsViaX = $this->app['razorx']->getTreatment($actualMerchantId,
-            RazorxTreatment::NON_TPV_REFUNDS_VIA_X,
-            $this->mode,
-            3);
+        $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
 
-        $this->trace->info(
-            TraceCode::RAZORX_RESPONSE_FOR_NON_TPV_REFUND_VIA_X,
-            [
-                'razorx_response_for_non_tpv_refunds_via_x' => $nonTpvRefundsViaX,
-                'actual_merchant_id' => $actualMerchantId
-            ]
-        );
-
-        // If the refund is supposed to happen via RX entities, then we simply take that as a
-        // successful fund load on a RX common merchant and later create a payout from there.
-        // The SharedBankingVirtualAccount belongs to that common merchant.
-        if ($nonTpvRefundsViaX === "on") {
-            $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
-
-            $bankTransfer->setExpected(false);
-        } else {
-            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
-        }
+        $bankTransfer->setExpected(false);
 
         $this->merchant = $this->virtualAccount->merchant;
 
@@ -1347,14 +1327,15 @@ class Processor extends VirtualAccount\Processor
 
         return $terminal;
     }
-    protected function isRazorxExperimentEnabled($merchantId,$experiment): bool
+    protected function isLedgerReverseShadowLatestTxnBalanceExperimentEnabled($merchantId): bool
     {
-        $ledgerReverseShadowLatTxnBalance = $this->app->razorx->getTreatment(
-            $merchantId,
-            $experiment,
-            $this->mode);
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
 
-        return strtolower($ledgerReverseShadowLatTxnBalance) === 'on';
+        return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
     }
 

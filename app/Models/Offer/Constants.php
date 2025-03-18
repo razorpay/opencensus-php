@@ -31,19 +31,27 @@ final class Constants
     ];
 
     const BENEFIT_API_OFFER_MAP = [
-        self::BENEFIT_TYPE_DISCOUNT           => Constants::INSTANT_OFFER,
-        self::BENEFIT_TYPE_CASHBACK           => Constants::CASHBACK_OFFER,
-        self::BENEFIT_TYPE_VOUCHER            => Constants::CASHBACK_OFFER,
-        self::BENEFIT_TYPE_ALREADY_DISCOUNTED => Constants::ALREADY_DISCOUNTED,
+        self::BENEFIT_TYPE_DISCOUNT                     => Constants::INSTANT_OFFER,
+        self::BENEFIT_TYPE_CASHBACK                     => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_VOUCHER                      => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_MERCHANT_COUPON              => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_GIFTCARD                     => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET     => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT    => Constants::CASHBACK_OFFER,
+        self::BENEFIT_TYPE_ALREADY_DISCOUNTED           => Constants::ALREADY_DISCOUNTED,
     ];
 
     const BENEFIT_DISCOUNT_MAP = [
-        self::BENEFIT_TYPE_DISCOUNT           => 'discount',
-        self::BENEFIT_TYPE_CASHBACK           => 'cashback',
-        self::BENEFIT_TYPE_ALREADY_DISCOUNTED => 'already_discounted',
-        self::BENEFIT_TYPE_NO_COST_EMI        => 'no_cost_emi',
-        self::BENEFIT_TYPE_LOW_COST_EMI       => 'low_cost_emi',
-        self::BENEFIT_TYPE_VOUCHER            => 'vouchers',
+        self::BENEFIT_TYPE_DISCOUNT                     => 'discount',
+        self::BENEFIT_TYPE_CASHBACK                     => 'cashback',
+        self::BENEFIT_TYPE_MERCHANT_COUPON              => 'cashback',
+        self::BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT    => 'cashback',
+        self::BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET     => 'cashback',
+        self::BENEFIT_TYPE_GIFTCARD                     => 'cashback',
+        self::BENEFIT_TYPE_ALREADY_DISCOUNTED           => 'already_discounted',
+        self::BENEFIT_TYPE_NO_COST_EMI                  => 'no_cost_emi',
+        self::BENEFIT_TYPE_LOW_COST_EMI                 => 'low_cost_emi',
+        self::BENEFIT_TYPE_VOUCHER                      => 'vouchers',
     ];
 
     const METADATA = 'metadata';
@@ -76,6 +84,8 @@ final class Constants
     const ENDS_AT = 'ends_at';
     const SPEC = 'spec';
 
+    const TOTAL_USAGE = 'total_usage';
+
     const OFFER = 'offer';
 
     const OFFERS = 'offers';
@@ -100,6 +110,10 @@ final class Constants
     const BENEFIT_TYPE_LOW_COST_EMI = 'BENEFIT_TYPE_LOW_COST_EMI';
     const BENEFIT_TYPE_DISCOUNT = 'BENEFIT_TYPE_DISCOUNT';
     const BENEFIT_TYPE_CASHBACK = 'BENEFIT_TYPE_CASHBACK';
+    const BENEFIT_TYPE_GIFTCARD = 'BENEFIT_TYPE_GIFTCARD';
+    const BENEFIT_TYPE_MERCHANT_COUPON = 'BENEFIT_TYPE_MERCHANT_COUPON';
+    const BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT = 'BENEFIT_TYPE_CASHBACK_CUSTOMER_ACCOUNT';
+    const BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET = 'BENEFIT_TYPE_CASHBACK_MERCHANT_WALLET';
     const BENEFIT_TYPE_ALREADY_DISCOUNTED = 'BENEFIT_TYPE_ALREADY_DISCOUNTED';
     const BENEFIT_TYPE_VOUCHER = 'BENEFIT_TYPE_VOUCHER';
 
@@ -113,6 +127,7 @@ final class Constants
 
     const RULE_GROUPS = 'rule_groups';
     const RULES = 'rules';
+    const INCLUDES = 'includes';
 
     const STAGE_DISCOVER = 'STAGE_DISCOVER';
     const STAGE_AVAIL = 'STAGE_AVAIL';
@@ -128,7 +143,7 @@ final class Constants
     const APPLICABLE_ON = 'applicable_on';
     const WHEN = 'when_expression';
     const THEN = 'then';
-
+    const PUBLIC_OFFER = 'public_offer';
     const TENURE = 'tenure';
     const BLOCKING = 'continue_txn_on_failure';
     const OFFER_TYPE = 'offer_type';
@@ -162,9 +177,17 @@ final class Constants
 
     const OFFERS_ENGINE_VALIDATE_OFFER_EXP = 'app.offers_engine_validate_offer_exp_id';
 
+    const OE_FETCH_IIN_FROM_BIN = 'app.oe_fetch_iin_from_bin_exp_id';
+
     const OFFERS_ENGINE_REVERSE_SHADOW_EXP = 'app.offers_engine_reverse_shadow_exp_id';
 
+    const OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP = 'app.oe_enable_cache_internal_merchant_get_exp';
+
+    const API_OFFERS_REPO_FALLBACK_IGNORE_EXP = 'app.api_offers_repo_fallback_ignore_exp';
+
     const OFFER_CREATE_READS_MIGRATION_EXP = 'app.offers_engine_create_read_migration_exp_id';
+
+    const OFFER_MERCHANT_DASHBOARD_READS_MIGRATION_EXP = 'app.offers_engine_merchant_dashboard_read_migration_exp_id';
 
     const OFFERS_ENGINE_FIND_BY_PUBLIC_ID_MIGRATION_EXP = 'app.offers_engine_find_by_public_id_migration_exp_id';
 
@@ -189,6 +212,7 @@ final class Constants
     const WALLET = 'wallet';
     const PROVIDER = 'provider';
     const CARD = 'card';
+    const PAYMENT_INSTRUMENTS = 'payment_instruments';
 
     const EMI_TENURE = 'emi_tenure';
 

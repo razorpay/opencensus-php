@@ -2091,6 +2091,8 @@ class Service extends Base\Service
 
             [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId, $appName);
 
+            $query = $this->addApptypeToQueryParams($query, $input);
+
             $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_METAFIELDS_PATH . $query;
 
             return $this->app['magic_checkout_service_client']->sendRequest($path, null, Requests::GET, $headers);
@@ -2336,6 +2338,20 @@ class Service extends Base\Service
 
         return [$query, $headers];
 
+    }
+
+    // adds app_type to query params of internal mcs calls
+    public function addAppTypeToQueryParams(string $query, array $input): string
+    {
+        $apptype = $input['app_type'];
+
+        if (empty($apptype)) {
+            return $query;
+        }
+
+        $separator = str_contains($query, '?') ? '&' : '?';
+
+        return $query . $separator . "app_type={$apptype}";
     }
 
     // constructs payload for magic-checkout service

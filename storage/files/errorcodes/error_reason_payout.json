@@ -712,5 +712,17 @@
       "reason": "gateway_down",
       "description": "Payout failed as the partner bank is facing technical issues. Please retry."
     }
+  },
+
+  "BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA": {
+    "description": "Account holder name not matching with bank provided name",
+    "source": "customer",
+    "reason": "name_matching_validation_failure"
+  },
+
+  "BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND": {
+    "description": "No linked account details found",
+    "source": "customer",
+    "reason": "no_linked_account_found"
   }
 }

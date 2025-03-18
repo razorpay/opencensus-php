@@ -36,6 +36,26 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function findByEntityIdAndTypeFromSlave($entityId, $entityOfferType)
+    {
+        try
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                ->where(Entity::ENTITY_ID, '=', $entityId)
+                ->where(Entity::ENTITY_OFFER_TYPE, '=', $entityOfferType);
+
+            return $query->get();
+        }
+        catch(\Throwable $ex)
+        {
+            $query = $this->newQuery()
+                ->where(Entity::ENTITY_ID, '=', $entityId)
+                ->where(Entity::ENTITY_OFFER_TYPE, '=', $entityOfferType);
+
+            return $query->get();
+        }
+    }
+
     public function findByEntityIdAndOfferIdAndType($entityId, $offer_id)
     {
         $query = $this->newQuery()

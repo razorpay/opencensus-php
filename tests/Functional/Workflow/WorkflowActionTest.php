@@ -72,7 +72,7 @@ class WorkflowActionTest extends TestCase
      * and check weather the workflow is created.
      * already a default workflow for edit admin permission is created in fixtures.
      */
-    public function testCreateWorkflowAction()
+    public function testCreateWorkflowActionAdminUpdate()
     {
         // Editing checker admin as maker.
         $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
@@ -89,6 +89,51 @@ class WorkflowActionTest extends TestCase
         $this->testData[__FUNCTION__]['response']['entity_id'] = Org::CHECKER_ADMIN;
 
         $this->startTest();
+    }
+
+    public function testCreateWorkflowActionBulkEntityMultiInput()
+    {
+        $this->testCreateWorkflowAction(__FUNCTION__);
+    }
+
+    public function testCreateWorkflowActionBulkEntitySingleInput()
+    {
+        $this->testCreateWorkflowAction(__FUNCTION__);
+    }
+
+    public function testCreateWorkflowActionSingleEntity()
+    {
+       $this->testCreateWorkflowAction(__FUNCTION__);
+
+    }
+    private function testCreateWorkflowAction(string $testFlow): void
+    {
+        $this->ba->appAuth('rzp_test', 'randomterminalssecret');
+
+        $admin = $this->fixtures->create('admin', [
+            'id'     => 'G2e32yhstxt6fR',
+            'org_id' => '100000razorpay',
+            'email'  => 'superadmin@hdfc.com'
+        ]);
+
+        $permission = $this->getDbEntities('permission', [
+            'name' => 'edit_activate_partner',
+        ]);
+
+        $workflow = $this->fixtures->create('workflow', [
+            'name'   => 'edit_activate_partner',
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $this->config->set('heimdall.workflows.mock', false);
+
+        $workflow->permissions()->attach($permission);
+
+        $testData = $this->testData[$testFlow];
+
+        $this->app['config']['workflow_guard.mock.operation_type'] = $testData['response']['content']['data']['operation_type'];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testCreateWorkflowActionInprogress()

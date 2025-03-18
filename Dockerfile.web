@@ -1,6 +1,6 @@
-ARG API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
-ARG OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-opencensus
-ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-api-web-v3
+ARG OPENCENSUS_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-opencensus-v3
+ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v3
 
 FROM ${OPENCENSUS_IMAGE} as opencensus-ext
 FROM ${CURL_CLI_IMAGE} as curl-cli
@@ -18,7 +18,7 @@ COPY --from=curl-cli /usr/bin/curl /usr/bin/
 
 COPY composer.json composer.lock /app/
 
-RUN --mount=type=secret,id=git_token set -eu && \
+RUN --mount=type=secret,id=git_token,required=true set -eu && \
     composer --version && \
     git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" $(cat /run/secrets/git_token) && \
@@ -43,15 +43,20 @@ ADD Makefile /app
 ADD error_modules /app
 RUN echo ${CACHEBUST}
 
-RUN --mount=type=secret,id=git_token set -eux && \
+RUN --mount=type=secret,id=git_token,required=true set -eux && \
     echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
+    chmod 600 ~/.netrc && \
     make error-module-clean && \
     rm -f ~/.netrc
 
-RUN --mount=type=secret,id=git_token set -eux && \
+RUN --mount=type=secret,id=git_token,required=true set -eux && \
     echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
+    chmod 600 ~/.netrc && \
     make error-module-fetch && \
     rm -f ~/.netrc
+
+# Add TIFF Support for ImageMagick
+RUN apk add --no-cache imagemagick imagemagick-dev tiff tiff-dev libjpeg-turbo-dev
 
 EXPOSE 80
 

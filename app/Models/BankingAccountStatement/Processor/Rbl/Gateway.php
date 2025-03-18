@@ -381,13 +381,13 @@ class Gateway extends BaseProcessor
 
         // TODO: This whole thing needs to be re-looked at. How we fetch the details.
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT,
-            $this->mode
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_SPECIAL_ATTEMPT_LIMIT,
+             'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
 
-        if ($variant === 'on')
+        if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE))
         {
             $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT]);
         }

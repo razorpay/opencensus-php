@@ -26,4 +26,5 @@ class Constants
     const INTERNATIONAL_CARDS_ENABLED = 'international_cards_enabled';
     const INTERNATIONAL_ACTIVATION_FORM_INITIATED= 'international_activation_form_initiated';
     const INTERNATIONAL_ACTIVATION_FORM_COMPLETED = 'international_activation_form_completed';
+    const INTERNATIONAL_ENABLEMENT_INTERNAL_LOCK_KEY = 'international_enablement_internal_merchant_%s';
 }

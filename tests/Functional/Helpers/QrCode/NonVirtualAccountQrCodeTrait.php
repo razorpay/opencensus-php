@@ -6,9 +6,11 @@ use DB;
 use Mail;
 use Queue;
 use Mockery;
+use Lib\CRC16;
 use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Models\QrCode\Type;
+use RZP\Models\BharatQr\Tags;
 use RZP\Services\RazorXClient;
 use RZP\Services\SplitzService;
 use RZP\Models\Payment\Gateway;
@@ -61,13 +63,17 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    public function createQrForSingleStack(array $input = [], array $headers = [])
+    public function createQrForSingleStack(array $params)
     {
+        $input = $params['content'] ?? [];
+        $headers = $params['headers'] ?? [];
+        $url = $params['url'];
+
         $this->ba->appAuth();
 
         $request = [
             'method'  => 'POST',
-            'url'     => '/payments/terminal/qr_codes/device/create',
+            'url'     => $url,
             'content' => $input,
             'headers' => $headers,
         ];
@@ -1490,4 +1496,85 @@ trait NonVirtualAccountQrCodeTrait
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected  function createOrderForQrCode(array $input = [], $mode,$merchantId = '10000000000000', array $headers = [])
+    {
+        $this->ba->privateAuth();
+
+        if($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_' . $merchantId);
+        }
+
+        $defaultValues = $this->getDefaultOrderRequestArray();
+
+        $attributes = array_merge($defaultValues, $input);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/v1/orders',
+            'content' => $attributes,
+            'headers' => $headers,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+
+    }
+
+    private function getDefaultOrderRequestArray()
+    {
+        return [
+            'amount'         => 4000,
+            'currency'  => 'INR',
+            'receipt' => 'Receipt no. 1',
+            'notes' => [
+                "notes_key_1" => "Tea, Earl Grey, Hot",
+                "notes_key_2" => "Tea, Earl Grey… decaf."
+            ],
+        ];
+    }
+
+    public function assertBqrString($qrCode, $response, $isMultipleUse = false)
+    {
+        $qrString = $this->buildBqrString($qrCode, $isMultipleUse);
+
+        // Append CRC Checksum
+        $qrString .= Tags::CRC . '04';
+        $crc = (new CRC16)->calculateCrc($qrString);
+        $qrString .= $crc;
+
+        $this->assertEquals($qrString, $response);
+    }
+
+    private function buildBqrString($qrCode, $isMultipleUse)
+    {
+        $qrString = "0002010102";
+
+        // Amount check
+        $qrString .= empty($qrCode->getAmount()) ? '11' : '12';
+
+        $qrString .= "0827ABCD0000000000000000000000026350010A0000005240117razorpay@hdfcbank";
+
+        // Multiple vs Single Use
+        $qrId = $qrCode->getId();
+        $qrString .= $isMultipleUse ? "27390010A0000005240121STQ{$qrId}qrv2" : "27360010A0000005240118{$qrId}qrv2";
+
+        $qrString .= "520453995303356";
+
+        // Amount inclusion
+        $qrString .= empty($qrCode->getAmount()) ? "5802IN59" : "54041.005802IN59";
+
+        // Merchant Name
+        $qrString .= $this->formatMerchantName($qrCode->merchant->name);
+
+        // Final QR Data
+        return $qrString . "6009BANGALORE610656003062220518{$qrId}qrv2";
+    }
+
+    private function formatMerchantName($merchantName)
+    {
+        $length = strlen($merchantName);
+        return ($length < 10 ? "0{$length}" : $length) . $merchantName;
+    }
+
 }

@@ -610,6 +610,11 @@ class Core extends Base\Core
         return $balanceEntity->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
     }
 
+    public function getBalanceAmountForAxisDirectAccount(Balance\Entity $balanceEntity)
+    {
+        return $balanceEntity->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
+    }
+
     protected function autoLoadBalance(Entity $lowBalanceConfigEntity,
                                        Balance\Entity $balanceEntity,
                                        $balanceAmount,

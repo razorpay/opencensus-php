@@ -768,6 +768,7 @@ class Header
     const PARTNER_MERCHANT_ID       = 'partner_merchant_id';
     const ACCOUNT_NAME              = 'account_name';
     const IMPLICIT_PLAN_ID          = 'implicit_plan_id';
+    const ACCOUNT_CODE              = 'account_code';
     const SUBMERCHANT_TYPE          = 'submerchant_type';
     const ANNUAL_TURNOVER_MIN       = 'annual_turnover_min';
     const ANNUAL_TURNOVER_MAX       = 'annual_turnover_max';
@@ -986,7 +987,7 @@ class Header
     const TERMINAL_CREATION_GATEWAY_MERCHANT_ID2        = 'Gateway Merchant ID2';
     const TERMINAL_CREATION_GATEWAY_TERMINAL_ID         = 'Gateway Terminal ID';
     const TERMINAL_CREATION_GATEWAY_ACCESS_CODE         = 'Gateway Access Code';
-    const TERMINAL_CREATION_PLAN_NAME                   = 'Buy Pricing Plan Name';
+    const TERMINAL_CREATION_PLAN_ID                     = 'Buy Pricing Plan ID';
     const TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD   = 'Gateway Terminal Password';
     const TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2  = 'Gateway Terminal Password2';
     const TERMINAL_CREATION_GATEWAY_SECURE_SECRET       = 'Gateway Secure Secret';
@@ -1027,6 +1028,10 @@ class Header
     const TERMINAL_CREATION_STATUS               = 'Status';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Bulk Terminal Creation Headers
+    const DEVICE_TERMINAL_MAPPING_TERMINAL_ID                 = 'Terminal Id';
+    const DEVICE_TERMINAL_MAPPING_DEVICE_ID                   = 'Device Id';
+
     // Upi Onboarded Terminal edit Headers
     const UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID           =   'Terminal Id';
     const UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY               =   'Gateway';
@@ -1059,6 +1064,7 @@ class Header
 
 
     // Pricing Rules Addition Headers
+    const PRICING_RULE_PLAN_ID                  = 'plan_id';
     const PRICING_RULE_PLAN_NAME                = 'plan_name';
     const PRICING_RULE_MERCHANT_ID              = 'merchant_id';
     const PRICING_RULE_PRODUCT                  = 'product';
@@ -1082,6 +1088,7 @@ class Header
     const PRICING_RULE_MAX_FEE                  = 'max_fee';
     const PRICING_RULE_PROCURER                  = 'procurer';
     const PRICING_RULE_UPDATE                   = 'update';
+    const PRICING_RULE_FEE_BEARER               = 'fee_bearer';
 
     // Loc withdrawals
 
@@ -1167,6 +1174,7 @@ class Header
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT                   = 'max_amount_limit';
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                        = 'full_access';
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY          = 'max_limit_per_working_day';
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_BALANCE_SEPARATION_FLAG            = 'balance_separation_flag';
 
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_MERCHANT_ID        = 'merchant_id';
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_PRODUCT_NAME       = 'product_name';
@@ -2018,6 +2026,314 @@ class Header
 
     const JK_MODIFIED_QR_STRING = "Modified QR string";
 
+    // headers for IDFC fund loading
+    const IDFC_ECOLLECT_UTR_NUMBER = 'txnRefNumber';
+    const IDFC_ECOLLECT_SENDER_IFSC = 'remitterIfscCode';
+    const IDFC_ECOLLECT_SENDER_ACCOUNT_NUMBER = 'remitterAccountNumber';
+    const IDFC_ECOLLECT_SENDER_NAME = 'remitterName';
+    const IDFC_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER = 'VAN';
+    const IDFC_ECOLLECT_AMOUNT = 'txnAmount';
+    const IDFC_ECOLLECT_TRANSACTION_DATE = 'Trn TimeStamp';
+    const IDFC_ECOLLECT_MODE = 'product Code';
+    const IDFC_ECOLLECT_BANK_CODE = 'bankCode';
+    const IDFC_ECOLLECT_INSTRUMENT_TYPE = 'instrumentType';
+    const IDFC_ECOLLECT_CONTACT_NUMBER = 'Contact No';
+    const IDFC_ECOLLECT_EMAIL = 'Email';
+    const IDFC_ECOLLECT_STATUS = 'status';
+    const IDFC_ECOLLECT_TXN_DATE = 'txnDate';
+    const IDFC_ECOLLECT_CLIENT_CODE = 'CLIENT_CODE';
+
+    const HDFC_MECODE = "MECODE";
+    const HDFC_TID = "TID";
+    const HDFC_LEGAL_NAME = "LEGAL NAME";
+    const HDFC_DBA_NAME = "DBA NAME";
+    const HDFC_ADDRESS = "ADDRESS";
+    const HDFC_CITY = "CITY";
+    const HDFC_PIN = "PIN";
+    const HDFC_TEL = "TEL";
+    const HDFC_PERSON = "PERSON";
+    const HDFC_MPR = "MPR";
+    const HDFC_E_DATE = "E_DATE";
+    const HDFC_INF_RATE = "INF_RATE";
+    const HDFC_INF_AMOUNT = "INF_AMOUNT";
+    const HDFC_I_FLAG = "I_FLAG";
+    const HDFC_ACCNO = "ACCNO";
+    const HDFC_ACCOUNT_NO2 = "ACCOUNT NO2";
+    const HDFC_DISCNT = "DISCNT";
+    const HDFC_FOREIGN_FLAG = "FOREIGN_FLAG";
+    const HDFC_FOREIGN_COMM = "FOREIGN_COMM";
+    const HDFC_DCC_REIMB_PERCENT = "DCC Reimb %";
+    const HDFC_DCC_COMM_RATE = "DCC Comm Rate";
+    const HDFC_PP_RATE = "PP RATE";
+    const HDFC_DINERS_FLAG = "DINERS FLAG";
+    const HDFC_DINERS_COMM = "DINERS COMM";
+    const HDFC_DINERSCOMM_ON = "DINERSCOMM_ON";
+    const HDFC_RUPAY_FLAG = "RUPAY FLAG";
+    const HDFC_ANNUAL_TURNOVER = "ANNUAL_TURNOVER";
+    const HDFC_DD_COMM_SLB1_ABOVE2K = "DD COMM SLB1 ABOVE2K";
+    const HDFC_DD_COMM_SLB2_ABOVE2K = "DD COMM SLB2 ABOVE2K";
+    const HDFC_QR_DD_COMM_SLB1_ABOVE2K = "QR DD COMM SLB1 ABOVE2K";
+    const HDFC_QR_DD_COMM_SLB2_ABOVE2K = "QR DD COMM SLB2 ABOVE2K";
+    const HDFC_BBP_FLAG = "BBP FLAG";
+    const HDFC_CLASSIC_ONUS_RATE = "CLASSIC ONUS RATE";
+    const HDFC_PREMIUM_ONUS_RATE = "PREMIUM ONUS RATE";
+    const HDFC_RENTAL = "RENTAL";
+    const HDFC_SUBVENTION_FLAG = "SUBVENTION FLAG";
+    const HDFC_ONUS_SUBVENTION = "ONUS SUBVENTION";
+    const HDFC_OFFUS_SUBVENTION = "OFFUS SUBVENTION";
+    const HDFC_RENTALS_SUBVENTION = "RENTALS SUBVENTION ";
+    const HDFC_TRANSACTION_SUBVENTION = "TRANSACTION SUBVENTION";
+    const HDFC_AMC_FOR_N_YRS = "AMC FOR N YRS";
+    const HDFC_AMC_AMT = "AMC AMT";
+    const HDFC_INT_FEES = "INT FEES";
+    const HDFC_DINERS_COMM_SUBVENTION = "DINERS COMM SUBVENTION";
+    const HDFC_DINERS_COMM_ONUS_SUBVENTION = "DINERS COMM ONUS SUBVENTION";
+    const HDFC_DEPARTMENT_SUBVENTION = "DEPARTMENT SUBVENTION";
+    const HDFC_BRANCH_CODE_SUBVENTION = "BRANCH CODE SUBVENTION";
+    const HDFC_PLOUGH_BACK_RATE = "PLOUGH BACK RATE";
+    const HDFC_PLOUGH_BACK_FLAG = "PLOUGH BACK FLAG";
+    const HDFC_MCC = "MCC";
+    const HDFC_MERCHANT_TYPE = "MERCHANT TYPE";
+    const HDFC_BRANCH = "BRANCH";
+    const HDFC_REGION = "REGION";
+    const HDFC_UBSNO = "UBSNO";
+    const HDFC_C_CODE = "C_CODE";
+    const HDFC_PRODUCT = "PRODUCT";
+    const HDFC_MAPFLAG = "MAPFLAG";
+    const HDFC_STATUS = "STATUS";
+    const HDFC_STATUS_DATE = "STATUS_DATE";
+    const HDFC_TM_EMVFLAG = "TM_EMVFLAG";
+    const HDFC_ACTIVEDEACTIVESTATUS = "ACTIVEDEACTIVESTATUS";
+    const HDFC_DEACTIVATION_DATE = "DEACTIVATION_DATE";
+    const HDFC_REACTIVATIONSTATUS = "REACTIVATIONSTATUS";
+    const HDFC_REACTIVATION_DATE = "REACTIVATION_DATE";
+    const HDFC_FAX_SETUP_FLAG = "FAX SETUP FLAG";
+    const HDFC_CUG_FLAG = "CUG Flag";
+    const HDFC_TCOMM = "TComm";
+    const HDFC_TM_UTILFLG = "TM_UTILFLG";
+    const HDFC_ME_XTRACOM = "ME_XTRACOM";
+    const HDFC_SERVICE_TAX = "SERVICE_TAX";
+    const HDFC_ME_REFUND = "Me Refund";
+    const HDFC_DSA_CODE = "DSA Code";
+    const HDFC_LTS_CODE = "LTS Code";
+    const HDFC_LTS_DATE = "LTS Date";
+    const HDFC_SERV_TAX = "Serv Tax";
+    const HDFC_SBCESS = "SBcess";
+    const HDFC_KKCESS = "KKCess";
+    const HDFC_TXN_COMMN = "Txn Commn";
+    const HDFC_WEBSITE = "Website";
+    const HDFC_DEFERED_FLAG = "Defered Flag";
+    const HDFC_DEFERED_DAYS = "Defered Days";
+    const HDFC_DO_NOT_CALL = "Do Not Call";
+    const HDFC_TERM_CURRENCY = "TERM_CURRENCY";
+    const HDFC_PAY_CURRENCY = "PAY_CURRENCY";
+    const HDFC_SETTL_CURRENCY = "SETTL_CURRENCY";
+    const HDFC_EEFC_ACCOUNT = "EEFC_ACCOUNT";
+    const HDFC_MARKUP = "MARKUP";
+    const HDFC_USER_CODE = "User Code";
+    const HDFC_TERMINAL_CURRENCY = "TERMINAL CURRENCY";
+    const HDFC_ME_CATEGORY = "ME CATEGORY";
+    const HDFC_SERV_CHARGE_FLAG = "SERV CHARGE FLAG";
+    const HDFC_SERV_CHARGE_AMT = "SERV CHARGE AMT";
+    const HDFC_AMC = "AMC";
+    const HDFC_INSTALLATION_FEE = "INSTALLATION FEE";
+    const HDFC_STATE_NAME = "STATE NAME";
+    const HDFC_HBL_LEAD_CON_CODE = "HBL LEAD CON CODE";
+    const HDFC_HBL_LEAD_GEN_CODE = "HBL LEAD GEN CODE ";
+    const HDFC_DSA_CODE1 = "DSA CODE1";
+    const HDFC_MPR_EMAILFLAG = "MPR EMAILFLAG";
+    const HDFC_MPR_EMAILID = "MPR EMAILID";
+    const HDFC_WALMARTTID = "WALMARTTID";
+    const HDFC_COP_REIMB_FLAG = "COP REIMB FLAG";
+    const HDFC_COP_REIMB_AMOUNT = "COP REIMB AMOUNT";
+    const HDFC_COP_REIMB_PER = "COP REIMB PER";
+    const HDFC_DCC_REIMB_FLAG = "DCC REIMB FLAG";
+    const HDFC_DCC_REIMB_RATE = "DCC REIMB RATE ";
+    const HDFC_ME_PAYMENT = "ME_PAYMENT";
+    const HDFC_ME_PAYMODE = "ME_PAYMODE";
+    const HDFC_ME_MPRTYPE = "ME_MPRTYPE";
+    const HDFC_ME_MPRCAT = "ME_MPRCAT";
+    const HDFC_ME_DCMFLAG = "ME_DCMFLAG";
+    const HDFC_ME_DCMRATE = "ME_DCMRATE";
+    const HDFC_ONUS_DD_COMM_SLB1_ABOVE2K = "ONUS DD COMM SLB1 ABOVE2K";
+    const HDFC_ONUS_DD_COMM_SLB2_ABOVE2K = "ONUS DD COMM SLB2 ABOVE2K";
+    const HDFC_MP_FLAG = "MP_FLAG";
+    const HDFC_MP_TXN_AMOUNT = "MP_TXN_AMOUNT";
+    const HDFC_MP_AMOUNT1_PERCENTAGE = "MP_AMOUNT1_PERCENTAGE";
+    const HDFC_MP_AMOUNT2_PERCENTAGE = "MP_AMOUNT2_PERCENTAGE";
+    const HDFC_MP_AMOUNT_ONUS_PERCENTAGE = "MP_AMOUNT_ONUS_PERCENTAGE";
+    const HDFC_MP_FLAT_AMOUNT1 = "MP_FLAT_AMOUNT1";
+    const HDFC_MP_FLAT_AMOUNT2 = "MP_FLAT_AMOUNT2";
+    const HDFC_MP_FLAT_AMOUNT_ONUS = "MP_FLAT_AMOUNT_ONUS";
+    const HDFC_CONVENIENCE_FLAG = "CONVENIENCE_FLAG";
+    const HDFC_CONVENIENCE_RATE = "CONVENIENCE_RATE";
+    const HDFC_CONVENIENCE_FLAG1 = "CONVENIENCE_FLAG1";
+    const HDFC_COMMERCIAL_FLAG = "COMMERCIAL_FLAG";
+    const HDFC_CMRCL_ONUS_RATE = "CMRCL_ONUS_RATE";
+    const HDFC_APPLICATION_NUMBER = "APPLICATION NUMBER";
+    const HDFC_Z_CATEOGRY = "Z CATEOGRY";
+    const HDFC_TERMINAL_INDICATOR_FLAG = "TERMINAL INDICATOR FLAG";
+    const HDFC_FIXED_RATE_FLAG = "FIXED RATE FLAG";
+    const HDFC_EMI_PAYBACK_PERCENTAGE = "EMI PAYBACK %AGE";
+    const HDFC_CUSTOMIZED_MPR_TYPE = "CUSTOMIZED MPR TYPE";
+    const HDFC_MVISA_FLAG = "MVISA_FLAG";
+    const HDFC_REG_TEL1 = "REG_TEL1";
+    const HDFC_TEL2 = "TEL2";
+    const HDFC_TEL3 = "TEL3";
+    const HDFC_EMAIL_ID = "EMAIL_ID";
+    const HDFC_AMC_FEES_FOR_POS = "AMC FEES FOR POS";
+    const HDFC_AMC_DATE_FOR_POS = "AMC DATE FOR POS";
+    const HDFC_PARENT_ME_CODE = "PARENT ME CODE";
+    const HDFC_APPROVER_NAME_PAYZAP = "APPROVER_NAME_PAYZAP";
+    const HDFC_DRIVING_LICENCE_NO1_PAYZAP = "DRIVING_LICENCE_NO1_PAYZAP";
+    const HDFC_BRANCHCODE = "BRANCHCODE";
+    const HDFC_RENTAL_FREQUENCY_FLAG = "RENTAL FREQUENCY FLAG";
+    const HDFC_GSTN_UBS = "GSTN UBS";
+    const HDFC_GSTN_UBS_STATE = "GSTN UBS STATE";
+    const HDFC_GSTN_UBS_START_DATE = "GSTN UBS START DATE";
+    const HDFC_GSTN_UBS_EXPIRY_DATE = "GSTN UBS EXPIRY DATE";
+    const HDFC_GSTN_CURRAC = "GSTN CURRAC";
+    const HDFC_GSTN_CURRAC_STATE = "GSTN CURRAC STATE ";
+    const HDFC_GSTN_CURRAC_START_DATE = "GSTN CURRAC START DATE";
+    const HDFC_GSTN_CURRAC_EXPIRY_DATE = "GSTN CURRAC EXPIRY DATE";
+    const HDFC_GSTN_ACCOUNT_NO2_ACC = "GSTN ACCOUNT NO2 ACC";
+    const HDFC_GSTN_ACCOUNT_NO2_STATE = "GSTN ACCOUNT NO2  STATE";
+    const HDFC_GSTN_ACCOUNT_NO2_START_DATE = "GSTN ACCOUNT NO2 START DATE";
+    const HDFC_GSTN_ACCOUNT_NO2_EXPIRY_DATE = "GSTN ACCOUNT NO2 EXPIRY DATE";
+    const HDFC_GSTN_EEFC_ACC = "GSTN EEFC ACC";
+    const HDFC_GSTN_EEFC_STATE = "GSTN EEFC STATE";
+    const HDFC_GSTN_EEFC_START_DATE = "GSTN EEFC START DATE";
+    const HDFC_GSTN_EEFC_EXPIRY_DATE = "GSTN EEFC EXPIRY DATE";
+    const HDFC_CB_DEBIT_PER = "CB_DEBIT_PER";
+    const HDFC_CB_AMOUNT = "CB_AMOUNT";
+    const HDFC_CB_CASHBACK = "CB_CASHBACK";
+    const HDFC_EURONET_RATE = "EURONET RATE";
+    const HDFC_ARC_DATE = "ARC Date";
+    const HDFC_RBI_RATE_EXEMPT_FLAG = "RBI_RATE_EXEMPT_FLAG";
+    const HDFC_INTERCHANGE_FLAG = "INTERCHANGE_FLAG";
+    const HDFC_INTERCHANGE_PERCENT = "INTERCHANGE_PERCENT";
+    const HDFC_INTERCHANGE_FLAT_AMT = "INTERCHANGE_FLAT_AMT";
+    const HDFC_AGGREGATOR_FLAG = "AGGREGATOR_FLAG";
+    const HDFC_GAS_ID = "GAS_ID";
+    const HDFC_BQ_AGGR_FLAG = "BQ_AGGR_FLAG";
+    const HDFC_BQ_AGGR_ID = "BQ_AGGR_ID";
+    const HDFC_TM_VASPARTNER = "TM_VASPARTNER";
+    const HDFC_ACCOUNT_TYPE = "ACCOUNT_TYPE";
+    const HDFC_GENDER = "GENDER";
+    const HDFC_BBP_MDR_TYPE = "BBP MDR TYPE";
+    const HDFC_PREMIUM_ONUS_AMT = "Premium ONUS Amt";
+    const HDFC_PREMIUM_OFFUS_RATE = "Premium OFFUS Rate";
+    const HDFC_PREMIUM_OFFUS_AMT = "Premium OFFUS Amt";
+    const HDFC_CLASSIC_ONUS_AMT = "Classic ONUS Amt";
+    const HDFC_CLASSIC_OFFUS_RATE = "Classic OFFUS Rate";
+    const HDFC_CLASSIC_OFFUS_AMT = "Classic OFFUS Amt";
+    const HDFC_SUPER_PREMIUM_ONUS_RATE = "Super Premium ONUS Rate";
+    const HDFC_SUPER_PREMIUM_ONUS_AMT = "Super Premium ONUS Amt";
+    const HDFC_SUPER_PREMIUM_OFFUS_RATE = "Super Premium OFFUS Rate";
+    const HDFC_SUPER_PREMIUM_OFFUS_AMT = "Super Premium OFFUS Amt";
+    const HDFC_COMMERCIAL_MDR_TYPE = "COMMERCIAL MDR TYPE";
+    const HDFC_COMMERCIAL_ONUS_AMT = "Commercial ONUS Amt";
+    const HDFC_COMMERCIAL_OFFUS_RATE = "Commercial OFFUS Rate";
+    const HDFC_COMMERCIAL_OFFUS_AMT = "Commercial OFFUS Amt";
+    const HDFC_SETTLEMENT_SUBVENTION = "Settlement Subvention";
+    const HDFC_SETTLEMENT_SUBVENTION_AMT = "Settlement Subvention Amt";
+    const HDFC_PHYSICAL_MPR_SUBVENTION = "Physical MPR subvention";
+    const HDFC_PHYSICAL_MPR_SUBVENTION_AMT = "Physical MPR Subvention Amt";
+    const HDFC_PAGF_SUB_FOR_NEFTCHEQUE_MER = "PAGF Sub FOR NEFTCheque Mer";
+    const HDFC_PAGF_SUB_AMT_NEFTCHEQUE_MER = "PAGF Sub AMT NEFTCheque Mer";
+    const HDFC_REFUND_REQUEST_SUBVENTION = "Refund Request Subvention";
+    const HDFC_REFUND_REQUEST_SUBVENTION_AMT = "Refund Request Subvention Amt";
+    const HDFC_GOOD_FAITH_SUBVENTION = "Good Faith Subvention";
+    const HDFC_GOOD_FAITH_SUBVENTION_AMT = "Good Faith Subvention Amt";
+    const HDFC_PHY_MPR_CHARGES_ADHOC_SUB = "Phy MPR Charges (Adhoc)Sub";
+    const HDFC_PHY_MPR_CHARGES_ADHOC_SUB_AMT = "Phy MPR Charges (Adhoc)Sub Amt";
+    const HDFC_CBRR_SUBVENTION = "CBRR Subvention";
+    const HDFC_CBRR_SUBVENTION_AMT = "CBRR Subvention Amt";
+    const HDFC_LUC_SUBVENTION = "LUC Subvention";
+    const HDFC_LUC_SUBVENTION_PER = "LUC Subvention Per";
+    const HDFC_SERVICE_CHARGE_SUBVENTION = "Service Charge Subvention";
+    const HDFC_SERVICE_CHARGE_SUBVENTION_AMT = "Service Charge Subvention Amt";
+    const HDFC_MERCHANT_CARE_PROGRAM_SUB = "Merchant Care Program Sub";
+    const HDFC_MERCHANT_CARE_PROGRAM_SUB_AMT = "Merchant Care Program Sub Amt";
+    const HDFC_TATKAL_CARE_SUBVENTION = "Tatkal Care Subvention";
+    const HDFC_TATKAL_CARE_SUBVENTION_AMT = "Tatkal Care subvention Amt.";
+    const HDFC_LATE_SETTLE_SUBVENTION_FLAG = "Late Settle subvention flag";
+    const HDFC_LATE_SETTLE_SUBVENTION_PER = "Late Settle Subvention Per";
+    const HDFC_AADHAR_FLAG = "AADHAR_FLAG";
+    const HDFC_AADHAR_ONUS_COMM = "AADHAR_ONUS_COMM";
+    const HDFC_AADHAR_OFFUS_COMM = "AADHAR_OFFUS_COMM";
+    const HDFC_BIOMETRIC_RENT_FLAG = "BIOMETRIC_RENT_FLAG";
+    const HDFC_BIOMETRIC_RENT = "BIOMETRIC_RENT";
+    const HDFC_TERM_GROUP = "TERM GROUP";
+    const HDFC_FPI_V = "FPI_V";
+    const HDFC_SH_RENTAL_FRQNCY_FLAG = "SH_RENTAL_FRQNCY_FLAG";
+    const HDFC_SH_RENTAL_AMT = "SH_RENTAL_AMT";
+    const HDFC_PROMO_CODE1 = "PROMO_CODE1";
+    const HDFC_POROMO_DATE1 = "POROMO_DATE1";
+    const HDFC_TOKEN_NUMBER = "TOKEN_NUMBER";
+    const HDFC_DD_COMM_UPTO2K_RPY = "DD_COMM_UPTO2K_RPY";
+    const HDFC_DD_COMM_ABOVE2K_RPY = "DD_COMM_ABOVE2K_RPY";
+    const HDFC_QR_DD_COMM_UPTO2K_RPY = "QR_DD_COMM_UPTO2K_RPY";
+    const HDFC_QR_DD_COMM_ABOVE2K_RPY = "QR_DD_COMM_ABOVE2K_RPY";
+    const HDFC_MDR_TEMPLATE = "MDR_TEMPLATE";
+    const HDFC_DD_COMM_SLB1_UPTO2K = "DD COMM SLB1 UPTO2K";
+    const HDFC_DD_COMM_SLB2_UPTO2K = "DD COMM SLB2 UPTO2K";
+    const HDFC_QR_DD_COMM_SLB1_UPTO2K = "QR DD COMM SLB1 UPTO2K";
+    const HDFC_QR_DD_COMM_SLB2_UPTO2K = "QR DD COMM SLB2 UPTO2K";
+    const HDFC_ONUS_DD_COMM_SLB1_UPTO2K = "ONUS DD COMM SLB1 UPTO2K";
+    const HDFC_ONUS_DD_COMM_SLB2_UPTO2K = "ONUS DD COMM SLB2 UPTO2K";
+    const HDFC_DD_CAPPING_AMT_SLB1 = "DD CAPPING AMT SLB1";
+    const HDFC_DD_CAPPING_AMT_SLB2 = "DD CAPPING AMT SLB2";
+    const HDFC_BRANCH_EMP_CODE = "BRANCH_EMP_CODE";
+    const HDFC_SOURCE_CODE = "SOURCE_CODE";
+    const HDFC_ME_CRM_LEAD_NO = "ME_CRM_LEAD_NO";
+    const HDFC_BASE_TID = "BASE_TID";
+    const HDFC_POS_DATE = "POS DATE";
+    const HDFC_TERMINAL_INDICATOR = "TERMINAL INDICATOR";
+    const HDFC_DEACTIVATION_REASON_CODE = "Deactivation Reason Code";
+    const HDFC_PM_FLAG = "PM_FLAG";
+    const HDFC_PM_AMT = "PM_AMT";
+    const HDFC_PAGF_FLAG = "PAGF_FLAG";
+    const HDFC_PAGF_AMT = "PAGF_AMT";
+    const HDFC_STLC_FLAG = "STLC_FLAG";
+    const HDFC_STLC_AMT = "STLC_AMT";
+    const HDFC_RR_FLAG = "RR_FLAG";
+    const HDFC_RR_AMT = "RR_AMT";
+    const HDFC_GF_FLAG = "GF_FLAG";
+    const HDFC_GF_AMT = "GF_AMT";
+    const HDFC_CBRR_FLAG = "CBRR_FLAG";
+    const HDFC_CBRR_AMT = "CBRR_AMT";
+    const HDFC_PM_ADHOC_FLAG = "PM_ADHOC_FLAG";
+    const HDFC_PM_ADHOC_AMT = "PM_ADHOC_AMT";
+    const HDFC_LUC_FLAG = "LUC_FLAG";
+    const HDFC_SC_FLAG = "SC_FLAG";
+    const HDFC_SC_AMT = "SC_AMT";
+    const HDFC_MERCHANTCARE_FLAG = "MERCHANTCARE_FLAG";
+    const HDFC_MERCHANTCARE_AMT = "MERCHANTCARE_AMT";
+    const HDFC_TATKALCARE_FLAG = "TATKALCARE_FLAG";
+    const HDFC_TATKALCARE_AMT = "TATKALCARE_AMT";
+    const HDFC_SEZ_MERCHANT = "SEZ_MERCHANT";
+    const HDFC_SEZ_CATEGORY = "SEZ_CATEGORY";
+    const HDFC_SEZ_VALID_DATE = "SEZ_VALID_DATE";
+    const HDFC_PPR_ROLL_CHG_FLAG = "PPR_ROLL_CHG_FLAG";
+    const HDFC_PPR_ROLLCHG_SBV_FLAG = "PPR_ROLLCHG_SBV_FLAG";
+    const HDFC_PPR_ROLLCHG_SBV_PER = "PPR_ROLLCHG_SBV_PER";
+    const HDFC_MOBILE_NUMBER = "Mobile number";
+    const HDFC_ENTITY_PAN_CARD = "Entity PAN Card";
+    const HDFC_GIB_ACC_NO = "GIB_ACC_NO";
+    const HDFC_REF1 = "REF1";
+    const HDFC_GST_CONSOLIDATION_FLAG = "GST_CONSOLIDATION_FLAG";
+    const HDFC_POS_DESIGNATED_BRANCH = "POS_DESIGNATED_BRANCH";
+    const HDFC_POS_DEACTIVATION_FLAG = "POS_DEACTIVATION_FLAG";
+    const HDFC_POS_DEACTIVATION_CHARGE = "POS_DEACTIVATION_CHARGE";
+    const HDFC_VAS_PROGRAM_FLAG = "VAS_PROGRAM_FLAG";
+    const HDFC_VOLUME_RENTAL_FLAG = "VOLUME_RENTAL_FLAG";
+    const HDFC_ONLINE_REFUND_FLAG = "ONLINE_REFUND_FLAG";
+    const HDFC_UNSECURE_TRANSACTION_FLAG = "UNSECURE_TRANSACTION_FLAG";
+    const HDFC_UCIC_NAME = "UCIC_NAME";
+    const HDFC_TRANSITORY_GL_FLAG = "TRANSITORY_GL_FLAG";
+    const HDFC_EEFC_DEBIT_FLAG = "EEFC_DEBIT_FLAG";
+
 
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
@@ -2256,7 +2572,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
@@ -2296,7 +2612,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -2362,7 +2678,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
@@ -2404,7 +2720,7 @@ class Header
                 self::TERMINAL_CREATION_ENABLED,
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
-                self::TERMINAL_CREATION_PLAN_NAME,
+                self::TERMINAL_CREATION_PLAN_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -2889,6 +3205,37 @@ class Header
                 self::IFSC_CODE,
                 self::ACCOUNT_NUMBER,
                 self::BENEFICIARY_NAME,
+                self::ACCOUNT_STATUS,
+                self::ACTIVATED_AT,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+        Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE => [
+            self::INPUT => [
+                self::ACCOUNT_NAME,
+                self::ACCOUNT_EMAIL,
+                self::DASHBOARD_ACCESS,
+                self::CUSTOMER_REFUNDS,
+                self::BUSINESS_NAME,
+                self::BUSINESS_TYPE,
+                self::IFSC_CODE,
+                self::ACCOUNT_NUMBER,
+                self::BENEFICIARY_NAME,
+                self::ACCOUNT_CODE
+            ],
+            self::OUTPUT => [
+                self::ACCOUNT_NAME,
+                self::ACCOUNT_EMAIL,
+                self::ACCOUNT_ID,
+                self::DASHBOARD_ACCESS,
+                self::CUSTOMER_REFUNDS,
+                self::BUSINESS_NAME,
+                self::BUSINESS_TYPE,
+                self::IFSC_CODE,
+                self::ACCOUNT_NUMBER,
+                self::BENEFICIARY_NAME,
+                self::ACCOUNT_CODE,
                 self::ACCOUNT_STATUS,
                 self::ACTIVATED_AT,
                 self::ERROR_CODE,
@@ -4905,12 +5252,12 @@ class Header
         Type::BUY_PRICING_ASSIGN => [
             self::INPUT => [
                 self::TERMINAL_ID,
-                self::PRICING_RULE_PLAN_NAME,
+                self::PRICING_RULE_PLAN_ID,
                 self::TERMINAL_CREATION_NETWORK_CATEGORY,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
-                self::PRICING_RULE_PLAN_NAME,
+                self::PRICING_RULE_PLAN_ID,
                 self::TERMINAL_CREATION_NETWORK_CATEGORY,
             ]
         ],
@@ -5115,6 +5462,35 @@ class Header
                 self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
                 self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS,
                 self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+            ],
+        ],
+
+        Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 => [
+            self::INPUT => [
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT_SCALE_FACTOR,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT_SCALE_FACTOR,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_BALANCE_SEPARATION_FLAG,
+            ],
+            self::OUTPUT => [
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT_SCALE_FACTOR,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT_SCALE_FACTOR,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_AMOUNT_LIMIT,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MAX_LIMIT_PER_WORKING_DAY,
+                self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_BALANCE_SEPARATION_FLAG,
             ],
         ],
 
@@ -5391,6 +5767,44 @@ class Header
                 self::AXIS_ECOLLECT_BENEFICIARY_ADDRESS,
                 self::AXIS_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
                 self::AXIS_ECOLLECT_BATCH_TIME,
+                self::STATUS,
+            ],
+        ],
+
+        Type::ECOLLECT_IDFC => [
+            self::INPUT => [
+                self::IDFC_ECOLLECT_UTR_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_IFSC,
+                self::IDFC_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_NAME,
+                self::IDFC_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_AMOUNT,
+                self::IDFC_ECOLLECT_TRANSACTION_DATE,
+                self::IDFC_ECOLLECT_MODE,
+                self::IDFC_ECOLLECT_BANK_CODE,
+                self::IDFC_ECOLLECT_INSTRUMENT_TYPE,
+                self::IDFC_ECOLLECT_CONTACT_NUMBER,
+                self::IDFC_ECOLLECT_EMAIL,
+                self::IDFC_ECOLLECT_STATUS,
+                self::IDFC_ECOLLECT_TXN_DATE,
+                self::IDFC_ECOLLECT_CLIENT_CODE,
+            ],
+            self::OUTPUT => [
+                self::IDFC_ECOLLECT_UTR_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_IFSC,
+                self::IDFC_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_SENDER_NAME,
+                self::IDFC_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::IDFC_ECOLLECT_AMOUNT,
+                self::IDFC_ECOLLECT_TRANSACTION_DATE,
+                self::IDFC_ECOLLECT_MODE,
+                self::IDFC_ECOLLECT_BANK_CODE,
+                self::IDFC_ECOLLECT_INSTRUMENT_TYPE,
+                self::IDFC_ECOLLECT_CONTACT_NUMBER,
+                self::IDFC_ECOLLECT_EMAIL,
+                self::IDFC_ECOLLECT_STATUS,
+                self::IDFC_ECOLLECT_TXN_DATE,
+                self::IDFC_ECOLLECT_CLIENT_CODE,
                 self::STATUS,
             ],
         ],
@@ -6586,6 +7000,596 @@ class Header
             ]
         ],
 
+        Type::HDFC_ONBOARDING => [
+            self::INPUT => [
+                self::HDFC_MECODE,
+                self::HDFC_TID,
+                self::HDFC_LEGAL_NAME,
+                self::HDFC_DBA_NAME,
+                self::HDFC_ADDRESS,
+                self::HDFC_CITY,
+                self::HDFC_PIN,
+                self::HDFC_TEL,
+                self::HDFC_PERSON,
+                self::HDFC_MPR,
+                self::HDFC_E_DATE,
+                self::HDFC_INF_RATE,
+                self::HDFC_INF_AMOUNT,
+                self::HDFC_I_FLAG,
+                self::HDFC_ACCNO,
+                self::HDFC_ACCOUNT_NO2,
+                self::HDFC_DISCNT,
+                self::HDFC_FOREIGN_FLAG,
+                self::HDFC_FOREIGN_COMM,
+                self::HDFC_DCC_REIMB_PERCENT,
+                self::HDFC_DCC_COMM_RATE,
+                self::HDFC_PP_RATE,
+                self::HDFC_DINERS_FLAG,
+                self::HDFC_DINERS_COMM,
+                self::HDFC_DINERSCOMM_ON,
+                self::HDFC_RUPAY_FLAG,
+                self::HDFC_ANNUAL_TURNOVER,
+                self::HDFC_DD_COMM_SLB1_ABOVE2K,
+                self::HDFC_DD_COMM_SLB2_ABOVE2K,
+                self::HDFC_QR_DD_COMM_SLB1_ABOVE2K,
+                self::HDFC_QR_DD_COMM_SLB2_ABOVE2K,
+                self::HDFC_BBP_FLAG,
+                self::HDFC_CLASSIC_ONUS_RATE,
+                self::HDFC_PREMIUM_ONUS_RATE,
+                self::HDFC_RENTAL,
+                self::HDFC_SUBVENTION_FLAG,
+                self::HDFC_ONUS_SUBVENTION,
+                self::HDFC_OFFUS_SUBVENTION,
+                self::HDFC_RENTALS_SUBVENTION,
+                self::HDFC_TRANSACTION_SUBVENTION,
+                self::HDFC_AMC_FOR_N_YRS,
+                self::HDFC_AMC_AMT,
+                self::HDFC_INT_FEES,
+                self::HDFC_DINERS_COMM_SUBVENTION,
+                self::HDFC_DINERS_COMM_ONUS_SUBVENTION,
+                self::HDFC_DEPARTMENT_SUBVENTION,
+                self::HDFC_BRANCH_CODE_SUBVENTION,
+                self::HDFC_PLOUGH_BACK_RATE,
+                self::HDFC_PLOUGH_BACK_FLAG,
+                self::HDFC_MCC,
+                self::HDFC_MERCHANT_TYPE,
+                self::HDFC_BRANCH,
+                self::HDFC_REGION,
+                self::HDFC_UBSNO,
+                self::HDFC_C_CODE,
+                self::HDFC_PRODUCT,
+                self::HDFC_MAPFLAG,
+                self::HDFC_STATUS,
+                self::HDFC_STATUS_DATE,
+                self::HDFC_TM_EMVFLAG,
+                self::HDFC_ACTIVEDEACTIVESTATUS,
+                self::HDFC_DEACTIVATION_DATE,
+                self::HDFC_REACTIVATIONSTATUS,
+                self::HDFC_REACTIVATION_DATE,
+                self::HDFC_FAX_SETUP_FLAG,
+                self::HDFC_CUG_FLAG,
+                self::HDFC_TCOMM,
+                self::HDFC_TM_UTILFLG,
+                self::HDFC_ME_XTRACOM,
+                self::HDFC_SERVICE_TAX,
+                self::HDFC_ME_REFUND,
+                self::HDFC_DSA_CODE,
+                self::HDFC_LTS_CODE,
+                self::HDFC_LTS_DATE,
+                self::HDFC_SERV_TAX,
+                self::HDFC_SBCESS,
+                self::HDFC_KKCESS,
+                self::HDFC_TXN_COMMN,
+                self::HDFC_WEBSITE,
+                self::HDFC_DEFERED_FLAG,
+                self::HDFC_DEFERED_DAYS,
+                self::HDFC_DO_NOT_CALL,
+                self::HDFC_TERM_CURRENCY,
+                self::HDFC_PAY_CURRENCY,
+                self::HDFC_SETTL_CURRENCY,
+                self::HDFC_EEFC_ACCOUNT,
+                self::HDFC_MARKUP,
+                self::HDFC_USER_CODE,
+                self::HDFC_TERMINAL_CURRENCY,
+                self::HDFC_ME_CATEGORY,
+                self::HDFC_SERV_CHARGE_FLAG,
+                self::HDFC_SERV_CHARGE_AMT,
+                self::HDFC_AMC,
+                self::HDFC_INSTALLATION_FEE,
+                self::HDFC_STATE_NAME,
+                self::HDFC_HBL_LEAD_CON_CODE,
+                self::HDFC_HBL_LEAD_GEN_CODE,
+                self::HDFC_DSA_CODE1,
+                self::HDFC_MPR_EMAILFLAG,
+                self::HDFC_MPR_EMAILID,
+                self::HDFC_WALMARTTID,
+                self::HDFC_COP_REIMB_FLAG,
+                self::HDFC_COP_REIMB_AMOUNT,
+                self::HDFC_COP_REIMB_PER,
+                self::HDFC_DCC_REIMB_FLAG,
+                self::HDFC_DCC_REIMB_RATE,
+                self::HDFC_ME_PAYMENT,
+                self::HDFC_ME_PAYMODE,
+                self::HDFC_ME_MPRTYPE,
+                self::HDFC_ME_MPRCAT,
+                self::HDFC_ME_DCMFLAG,
+                self::HDFC_ME_DCMRATE,
+                self::HDFC_ONUS_DD_COMM_SLB1_ABOVE2K,
+                self::HDFC_ONUS_DD_COMM_SLB2_ABOVE2K,
+                self::HDFC_MP_FLAG,
+                self::HDFC_MP_TXN_AMOUNT,
+                self::HDFC_MP_AMOUNT1_PERCENTAGE,
+                self::HDFC_MP_AMOUNT2_PERCENTAGE,
+                self::HDFC_MP_AMOUNT_ONUS_PERCENTAGE,
+                self::HDFC_MP_FLAT_AMOUNT1,
+                self::HDFC_MP_FLAT_AMOUNT2,
+                self::HDFC_MP_FLAT_AMOUNT_ONUS,
+                self::HDFC_CONVENIENCE_FLAG,
+                self::HDFC_CONVENIENCE_RATE,
+                self::HDFC_CONVENIENCE_FLAG1,
+                self::HDFC_COMMERCIAL_FLAG,
+                self::HDFC_CMRCL_ONUS_RATE,
+                self::HDFC_APPLICATION_NUMBER,
+                self::HDFC_Z_CATEOGRY,
+                self::HDFC_TERMINAL_INDICATOR_FLAG,
+                self::HDFC_FIXED_RATE_FLAG,
+                self::HDFC_EMI_PAYBACK_PERCENTAGE,
+                self::HDFC_CUSTOMIZED_MPR_TYPE,
+                self::HDFC_MVISA_FLAG,
+                self::HDFC_REG_TEL1,
+                self::HDFC_TEL2,
+                self::HDFC_TEL3,
+                self::HDFC_EMAIL_ID,
+                self::HDFC_AMC_FEES_FOR_POS,
+                self::HDFC_AMC_DATE_FOR_POS,
+                self::HDFC_PARENT_ME_CODE,
+                self::HDFC_APPROVER_NAME_PAYZAP,
+                self::HDFC_DRIVING_LICENCE_NO1_PAYZAP,
+                self::HDFC_BRANCHCODE,
+                self::HDFC_RENTAL_FREQUENCY_FLAG,
+                self::HDFC_GSTN_UBS,
+                self::HDFC_GSTN_UBS_STATE,
+                self::HDFC_GSTN_UBS_START_DATE,
+                self::HDFC_GSTN_UBS_EXPIRY_DATE,
+                self::HDFC_GSTN_CURRAC,
+                self::HDFC_GSTN_CURRAC_STATE,
+                self::HDFC_GSTN_CURRAC_START_DATE,
+                self::HDFC_GSTN_CURRAC_EXPIRY_DATE,
+                self::HDFC_GSTN_ACCOUNT_NO2_ACC,
+                self::HDFC_GSTN_ACCOUNT_NO2_STATE,
+                self::HDFC_GSTN_ACCOUNT_NO2_START_DATE,
+                self::HDFC_GSTN_ACCOUNT_NO2_EXPIRY_DATE,
+                self::HDFC_GSTN_EEFC_ACC,
+                self::HDFC_GSTN_EEFC_STATE,
+                self::HDFC_GSTN_EEFC_START_DATE,
+                self::HDFC_GSTN_EEFC_EXPIRY_DATE,
+                self::HDFC_CB_DEBIT_PER,
+                self::HDFC_CB_AMOUNT,
+                self::HDFC_CB_CASHBACK,
+                self::HDFC_EURONET_RATE,
+                self::HDFC_ARC_DATE,
+                self::HDFC_RBI_RATE_EXEMPT_FLAG,
+                self::HDFC_INTERCHANGE_FLAG,
+                self::HDFC_INTERCHANGE_PERCENT,
+                self::HDFC_INTERCHANGE_FLAT_AMT,
+                self::HDFC_AGGREGATOR_FLAG,
+                self::HDFC_GAS_ID,
+                self::HDFC_BQ_AGGR_FLAG,
+                self::HDFC_BQ_AGGR_ID,
+                self::HDFC_TM_VASPARTNER,
+                self::HDFC_ACCOUNT_TYPE,
+                self::HDFC_GENDER,
+                self::HDFC_BBP_MDR_TYPE,
+                self::HDFC_PREMIUM_ONUS_AMT,
+                self::HDFC_PREMIUM_OFFUS_RATE,
+                self::HDFC_PREMIUM_OFFUS_AMT,
+                self::HDFC_CLASSIC_ONUS_AMT,
+                self::HDFC_CLASSIC_OFFUS_RATE,
+                self::HDFC_CLASSIC_OFFUS_AMT,
+                self::HDFC_SUPER_PREMIUM_ONUS_RATE,
+                self::HDFC_SUPER_PREMIUM_ONUS_AMT,
+                self::HDFC_SUPER_PREMIUM_OFFUS_RATE,
+                self::HDFC_SUPER_PREMIUM_OFFUS_AMT,
+                self::HDFC_COMMERCIAL_MDR_TYPE,
+                self::HDFC_COMMERCIAL_ONUS_AMT,
+                self::HDFC_COMMERCIAL_OFFUS_RATE,
+                self::HDFC_COMMERCIAL_OFFUS_AMT,
+                self::HDFC_SETTLEMENT_SUBVENTION,
+                self::HDFC_SETTLEMENT_SUBVENTION_AMT,
+                self::HDFC_PHYSICAL_MPR_SUBVENTION,
+                self::HDFC_PHYSICAL_MPR_SUBVENTION_AMT,
+                self::HDFC_PAGF_SUB_FOR_NEFTCHEQUE_MER,
+                self::HDFC_PAGF_SUB_AMT_NEFTCHEQUE_MER,
+                self::HDFC_REFUND_REQUEST_SUBVENTION,
+                self::HDFC_REFUND_REQUEST_SUBVENTION_AMT,
+                self::HDFC_GOOD_FAITH_SUBVENTION,
+                self::HDFC_GOOD_FAITH_SUBVENTION_AMT,
+                self::HDFC_PHY_MPR_CHARGES_ADHOC_SUB,
+                self::HDFC_PHY_MPR_CHARGES_ADHOC_SUB_AMT,
+                self::HDFC_CBRR_SUBVENTION,
+                self::HDFC_CBRR_SUBVENTION_AMT,
+                self::HDFC_LUC_SUBVENTION,
+                self::HDFC_LUC_SUBVENTION_PER,
+                self::HDFC_SERVICE_CHARGE_SUBVENTION,
+                self::HDFC_SERVICE_CHARGE_SUBVENTION_AMT,
+                self::HDFC_MERCHANT_CARE_PROGRAM_SUB,
+                self::HDFC_MERCHANT_CARE_PROGRAM_SUB_AMT,
+                self::HDFC_TATKAL_CARE_SUBVENTION,
+                self::HDFC_TATKAL_CARE_SUBVENTION_AMT,
+                self::HDFC_LATE_SETTLE_SUBVENTION_FLAG,
+                self::HDFC_LATE_SETTLE_SUBVENTION_PER,
+                self::HDFC_AADHAR_FLAG,
+                self::HDFC_AADHAR_ONUS_COMM,
+                self::HDFC_AADHAR_OFFUS_COMM,
+                self::HDFC_BIOMETRIC_RENT_FLAG,
+                self::HDFC_BIOMETRIC_RENT,
+                self::HDFC_TERM_GROUP,
+                self::HDFC_FPI_V,
+                self::HDFC_SH_RENTAL_FRQNCY_FLAG,
+                self::HDFC_SH_RENTAL_AMT,
+                self::HDFC_PROMO_CODE1,
+                self::HDFC_POROMO_DATE1,
+                self::HDFC_TOKEN_NUMBER,
+                self::HDFC_DD_COMM_UPTO2K_RPY,
+                self::HDFC_DD_COMM_ABOVE2K_RPY,
+                self::HDFC_QR_DD_COMM_UPTO2K_RPY,
+                self::HDFC_QR_DD_COMM_ABOVE2K_RPY,
+                self::HDFC_MDR_TEMPLATE,
+                self::HDFC_DD_COMM_SLB1_UPTO2K,
+                self::HDFC_DD_COMM_SLB2_UPTO2K,
+                self::HDFC_QR_DD_COMM_SLB1_UPTO2K,
+                self::HDFC_QR_DD_COMM_SLB2_UPTO2K,
+                self::HDFC_ONUS_DD_COMM_SLB1_UPTO2K,
+                self::HDFC_ONUS_DD_COMM_SLB2_UPTO2K,
+                self::HDFC_DD_CAPPING_AMT_SLB1,
+                self::HDFC_DD_CAPPING_AMT_SLB2,
+                self::HDFC_BRANCH_EMP_CODE,
+                self::HDFC_SOURCE_CODE,
+                self::HDFC_ME_CRM_LEAD_NO,
+                self::HDFC_BASE_TID,
+                self::HDFC_POS_DATE,
+                self::HDFC_TERMINAL_INDICATOR,
+                self::HDFC_DEACTIVATION_REASON_CODE,
+                self::HDFC_PM_FLAG,
+                self::HDFC_PM_AMT,
+                self::HDFC_PAGF_FLAG,
+                self::HDFC_PAGF_AMT,
+                self::HDFC_STLC_FLAG,
+                self::HDFC_STLC_AMT,
+                self::HDFC_RR_FLAG,
+                self::HDFC_RR_AMT,
+                self::HDFC_GF_FLAG,
+                self::HDFC_GF_AMT,
+                self::HDFC_CBRR_FLAG,
+                self::HDFC_CBRR_AMT,
+                self::HDFC_PM_ADHOC_FLAG,
+                self::HDFC_PM_ADHOC_AMT,
+                self::HDFC_LUC_FLAG,
+                self::HDFC_SC_FLAG,
+                self::HDFC_SC_AMT,
+                self::HDFC_MERCHANTCARE_FLAG,
+                self::HDFC_MERCHANTCARE_AMT,
+                self::HDFC_TATKALCARE_FLAG,
+                self::HDFC_TATKALCARE_AMT,
+                self::HDFC_SEZ_MERCHANT,
+                self::HDFC_SEZ_CATEGORY,
+                self::HDFC_SEZ_VALID_DATE,
+                self::HDFC_PPR_ROLL_CHG_FLAG,
+                self::HDFC_PPR_ROLLCHG_SBV_FLAG,
+                self::HDFC_PPR_ROLLCHG_SBV_PER,
+                self::HDFC_MOBILE_NUMBER,
+                self::HDFC_ENTITY_PAN_CARD,
+                self::HDFC_GIB_ACC_NO,
+                self::HDFC_REF1,
+                self::HDFC_GST_CONSOLIDATION_FLAG,
+                self::HDFC_POS_DESIGNATED_BRANCH,
+                self::HDFC_POS_DEACTIVATION_FLAG,
+                self::HDFC_POS_DEACTIVATION_CHARGE,
+                self::HDFC_VAS_PROGRAM_FLAG,
+                self::HDFC_VOLUME_RENTAL_FLAG,
+                self::HDFC_ONLINE_REFUND_FLAG,
+                self::HDFC_UNSECURE_TRANSACTION_FLAG,
+                self::HDFC_UCIC_NAME,
+                self::HDFC_TRANSITORY_GL_FLAG,
+                self::HDFC_EEFC_DEBIT_FLAG,
+            ],
+            self::OUTPUT => [
+                self::HDFC_MECODE,
+                self::HDFC_TID,
+                self::HDFC_LEGAL_NAME,
+                self::HDFC_DBA_NAME,
+                self::HDFC_ADDRESS,
+                self::HDFC_CITY,
+                self::HDFC_PIN,
+                self::HDFC_TEL,
+                self::HDFC_PERSON,
+                self::HDFC_MPR,
+                self::HDFC_E_DATE,
+                self::HDFC_INF_RATE,
+                self::HDFC_INF_AMOUNT,
+                self::HDFC_I_FLAG,
+                self::HDFC_ACCNO,
+                self::HDFC_ACCOUNT_NO2,
+                self::HDFC_DISCNT,
+                self::HDFC_FOREIGN_FLAG,
+                self::HDFC_FOREIGN_COMM,
+                self::HDFC_DCC_REIMB_PERCENT,
+                self::HDFC_DCC_COMM_RATE,
+                self::HDFC_PP_RATE,
+                self::HDFC_DINERS_FLAG,
+                self::HDFC_DINERS_COMM,
+                self::HDFC_DINERSCOMM_ON,
+                self::HDFC_RUPAY_FLAG,
+                self::HDFC_ANNUAL_TURNOVER,
+                self::HDFC_DD_COMM_SLB1_ABOVE2K,
+                self::HDFC_DD_COMM_SLB2_ABOVE2K,
+                self::HDFC_QR_DD_COMM_SLB1_ABOVE2K,
+                self::HDFC_QR_DD_COMM_SLB2_ABOVE2K,
+                self::HDFC_BBP_FLAG,
+                self::HDFC_CLASSIC_ONUS_RATE,
+                self::HDFC_PREMIUM_ONUS_RATE,
+                self::HDFC_RENTAL,
+                self::HDFC_SUBVENTION_FLAG,
+                self::HDFC_ONUS_SUBVENTION,
+                self::HDFC_OFFUS_SUBVENTION,
+                self::HDFC_RENTALS_SUBVENTION,
+                self::HDFC_TRANSACTION_SUBVENTION,
+                self::HDFC_AMC_FOR_N_YRS,
+                self::HDFC_AMC_AMT,
+                self::HDFC_INT_FEES,
+                self::HDFC_DINERS_COMM_SUBVENTION,
+                self::HDFC_DINERS_COMM_ONUS_SUBVENTION,
+                self::HDFC_DEPARTMENT_SUBVENTION,
+                self::HDFC_BRANCH_CODE_SUBVENTION,
+                self::HDFC_PLOUGH_BACK_RATE,
+                self::HDFC_PLOUGH_BACK_FLAG,
+                self::HDFC_MCC,
+                self::HDFC_MERCHANT_TYPE,
+                self::HDFC_BRANCH,
+                self::HDFC_REGION,
+                self::HDFC_UBSNO,
+                self::HDFC_C_CODE,
+                self::HDFC_PRODUCT,
+                self::HDFC_MAPFLAG,
+                self::HDFC_STATUS,
+                self::HDFC_STATUS_DATE,
+                self::HDFC_TM_EMVFLAG,
+                self::HDFC_ACTIVEDEACTIVESTATUS,
+                self::HDFC_DEACTIVATION_DATE,
+                self::HDFC_REACTIVATIONSTATUS,
+                self::HDFC_REACTIVATION_DATE,
+                self::HDFC_FAX_SETUP_FLAG,
+                self::HDFC_CUG_FLAG,
+                self::HDFC_TCOMM,
+                self::HDFC_TM_UTILFLG,
+                self::HDFC_ME_XTRACOM,
+                self::HDFC_SERVICE_TAX,
+                self::HDFC_ME_REFUND,
+                self::HDFC_DSA_CODE,
+                self::HDFC_LTS_CODE,
+                self::HDFC_LTS_DATE,
+                self::HDFC_SERV_TAX,
+                self::HDFC_SBCESS,
+                self::HDFC_KKCESS,
+                self::HDFC_TXN_COMMN,
+                self::HDFC_WEBSITE,
+                self::HDFC_DEFERED_FLAG,
+                self::HDFC_DEFERED_DAYS,
+                self::HDFC_DO_NOT_CALL,
+                self::HDFC_TERM_CURRENCY,
+                self::HDFC_PAY_CURRENCY,
+                self::HDFC_SETTL_CURRENCY,
+                self::HDFC_EEFC_ACCOUNT,
+                self::HDFC_MARKUP,
+                self::HDFC_USER_CODE,
+                self::HDFC_TERMINAL_CURRENCY,
+                self::HDFC_ME_CATEGORY,
+                self::HDFC_SERV_CHARGE_FLAG,
+                self::HDFC_SERV_CHARGE_AMT,
+                self::HDFC_AMC,
+                self::HDFC_INSTALLATION_FEE,
+                self::HDFC_STATE_NAME,
+                self::HDFC_HBL_LEAD_CON_CODE,
+                self::HDFC_HBL_LEAD_GEN_CODE,
+                self::HDFC_DSA_CODE1,
+                self::HDFC_MPR_EMAILFLAG,
+                self::HDFC_MPR_EMAILID,
+                self::HDFC_WALMARTTID,
+                self::HDFC_COP_REIMB_FLAG,
+                self::HDFC_COP_REIMB_AMOUNT,
+                self::HDFC_COP_REIMB_PER,
+                self::HDFC_DCC_REIMB_FLAG,
+                self::HDFC_DCC_REIMB_RATE,
+                self::HDFC_ME_PAYMENT,
+                self::HDFC_ME_PAYMODE,
+                self::HDFC_ME_MPRTYPE,
+                self::HDFC_ME_MPRCAT,
+                self::HDFC_ME_DCMFLAG,
+                self::HDFC_ME_DCMRATE,
+                self::HDFC_ONUS_DD_COMM_SLB1_ABOVE2K,
+                self::HDFC_ONUS_DD_COMM_SLB2_ABOVE2K,
+                self::HDFC_MP_FLAG,
+                self::HDFC_MP_TXN_AMOUNT,
+                self::HDFC_MP_AMOUNT1_PERCENTAGE,
+                self::HDFC_MP_AMOUNT2_PERCENTAGE,
+                self::HDFC_MP_AMOUNT_ONUS_PERCENTAGE,
+                self::HDFC_MP_FLAT_AMOUNT1,
+                self::HDFC_MP_FLAT_AMOUNT2,
+                self::HDFC_MP_FLAT_AMOUNT_ONUS,
+                self::HDFC_CONVENIENCE_FLAG,
+                self::HDFC_CONVENIENCE_RATE,
+                self::HDFC_CONVENIENCE_FLAG1,
+                self::HDFC_COMMERCIAL_FLAG,
+                self::HDFC_CMRCL_ONUS_RATE,
+                self::HDFC_APPLICATION_NUMBER,
+                self::HDFC_Z_CATEOGRY,
+                self::HDFC_TERMINAL_INDICATOR_FLAG,
+                self::HDFC_FIXED_RATE_FLAG,
+                self::HDFC_EMI_PAYBACK_PERCENTAGE,
+                self::HDFC_CUSTOMIZED_MPR_TYPE,
+                self::HDFC_MVISA_FLAG,
+                self::HDFC_REG_TEL1,
+                self::HDFC_TEL2,
+                self::HDFC_TEL3,
+                self::HDFC_EMAIL_ID,
+                self::HDFC_AMC_FEES_FOR_POS,
+                self::HDFC_AMC_DATE_FOR_POS,
+                self::HDFC_PARENT_ME_CODE,
+                self::HDFC_APPROVER_NAME_PAYZAP,
+                self::HDFC_DRIVING_LICENCE_NO1_PAYZAP,
+                self::HDFC_BRANCHCODE,
+                self::HDFC_RENTAL_FREQUENCY_FLAG,
+                self::HDFC_GSTN_UBS,
+                self::HDFC_GSTN_UBS_STATE,
+                self::HDFC_GSTN_UBS_START_DATE,
+                self::HDFC_GSTN_UBS_EXPIRY_DATE,
+                self::HDFC_GSTN_CURRAC,
+                self::HDFC_GSTN_CURRAC_STATE,
+                self::HDFC_GSTN_CURRAC_START_DATE,
+                self::HDFC_GSTN_CURRAC_EXPIRY_DATE,
+                self::HDFC_GSTN_ACCOUNT_NO2_ACC,
+                self::HDFC_GSTN_ACCOUNT_NO2_STATE,
+                self::HDFC_GSTN_ACCOUNT_NO2_START_DATE,
+                self::HDFC_GSTN_ACCOUNT_NO2_EXPIRY_DATE,
+                self::HDFC_GSTN_EEFC_ACC,
+                self::HDFC_GSTN_EEFC_STATE,
+                self::HDFC_GSTN_EEFC_START_DATE,
+                self::HDFC_GSTN_EEFC_EXPIRY_DATE,
+                self::HDFC_CB_DEBIT_PER,
+                self::HDFC_CB_AMOUNT,
+                self::HDFC_CB_CASHBACK,
+                self::HDFC_EURONET_RATE,
+                self::HDFC_ARC_DATE,
+                self::HDFC_RBI_RATE_EXEMPT_FLAG,
+                self::HDFC_INTERCHANGE_FLAG,
+                self::HDFC_INTERCHANGE_PERCENT,
+                self::HDFC_INTERCHANGE_FLAT_AMT,
+                self::HDFC_AGGREGATOR_FLAG,
+                self::HDFC_GAS_ID,
+                self::HDFC_BQ_AGGR_FLAG,
+                self::HDFC_BQ_AGGR_ID,
+                self::HDFC_TM_VASPARTNER,
+                self::HDFC_ACCOUNT_TYPE,
+                self::HDFC_GENDER,
+                self::HDFC_BBP_MDR_TYPE,
+                self::HDFC_PREMIUM_ONUS_AMT,
+                self::HDFC_PREMIUM_OFFUS_RATE,
+                self::HDFC_PREMIUM_OFFUS_AMT,
+                self::HDFC_CLASSIC_ONUS_AMT,
+                self::HDFC_CLASSIC_OFFUS_RATE,
+                self::HDFC_CLASSIC_OFFUS_AMT,
+                self::HDFC_SUPER_PREMIUM_ONUS_RATE,
+                self::HDFC_SUPER_PREMIUM_ONUS_AMT,
+                self::HDFC_SUPER_PREMIUM_OFFUS_RATE,
+                self::HDFC_SUPER_PREMIUM_OFFUS_AMT,
+                self::HDFC_COMMERCIAL_MDR_TYPE,
+                self::HDFC_COMMERCIAL_ONUS_AMT,
+                self::HDFC_COMMERCIAL_OFFUS_RATE,
+                self::HDFC_COMMERCIAL_OFFUS_AMT,
+                self::HDFC_SETTLEMENT_SUBVENTION,
+                self::HDFC_SETTLEMENT_SUBVENTION_AMT,
+                self::HDFC_PHYSICAL_MPR_SUBVENTION,
+                self::HDFC_PHYSICAL_MPR_SUBVENTION_AMT,
+                self::HDFC_PAGF_SUB_FOR_NEFTCHEQUE_MER,
+                self::HDFC_PAGF_SUB_AMT_NEFTCHEQUE_MER,
+                self::HDFC_REFUND_REQUEST_SUBVENTION,
+                self::HDFC_REFUND_REQUEST_SUBVENTION_AMT,
+                self::HDFC_GOOD_FAITH_SUBVENTION,
+                self::HDFC_GOOD_FAITH_SUBVENTION_AMT,
+                self::HDFC_PHY_MPR_CHARGES_ADHOC_SUB,
+                self::HDFC_PHY_MPR_CHARGES_ADHOC_SUB_AMT,
+                self::HDFC_CBRR_SUBVENTION,
+                self::HDFC_CBRR_SUBVENTION_AMT,
+                self::HDFC_LUC_SUBVENTION,
+                self::HDFC_LUC_SUBVENTION_PER,
+                self::HDFC_SERVICE_CHARGE_SUBVENTION,
+                self::HDFC_SERVICE_CHARGE_SUBVENTION_AMT,
+                self::HDFC_MERCHANT_CARE_PROGRAM_SUB,
+                self::HDFC_MERCHANT_CARE_PROGRAM_SUB_AMT,
+                self::HDFC_TATKAL_CARE_SUBVENTION,
+                self::HDFC_TATKAL_CARE_SUBVENTION_AMT,
+                self::HDFC_LATE_SETTLE_SUBVENTION_FLAG,
+                self::HDFC_LATE_SETTLE_SUBVENTION_PER,
+                self::HDFC_AADHAR_FLAG,
+                self::HDFC_AADHAR_ONUS_COMM,
+                self::HDFC_AADHAR_OFFUS_COMM,
+                self::HDFC_BIOMETRIC_RENT_FLAG,
+                self::HDFC_BIOMETRIC_RENT,
+                self::HDFC_TERM_GROUP,
+                self::HDFC_FPI_V,
+                self::HDFC_SH_RENTAL_FRQNCY_FLAG,
+                self::HDFC_SH_RENTAL_AMT,
+                self::HDFC_PROMO_CODE1,
+                self::HDFC_POROMO_DATE1,
+                self::HDFC_TOKEN_NUMBER,
+                self::HDFC_DD_COMM_UPTO2K_RPY,
+                self::HDFC_DD_COMM_ABOVE2K_RPY,
+                self::HDFC_QR_DD_COMM_UPTO2K_RPY,
+                self::HDFC_QR_DD_COMM_ABOVE2K_RPY,
+                self::HDFC_MDR_TEMPLATE,
+                self::HDFC_DD_COMM_SLB1_UPTO2K,
+                self::HDFC_DD_COMM_SLB2_UPTO2K,
+                self::HDFC_QR_DD_COMM_SLB1_UPTO2K,
+                self::HDFC_QR_DD_COMM_SLB2_UPTO2K,
+                self::HDFC_ONUS_DD_COMM_SLB1_UPTO2K,
+                self::HDFC_ONUS_DD_COMM_SLB2_UPTO2K,
+                self::HDFC_DD_CAPPING_AMT_SLB1,
+                self::HDFC_DD_CAPPING_AMT_SLB2,
+                self::HDFC_BRANCH_EMP_CODE,
+                self::HDFC_SOURCE_CODE,
+                self::HDFC_ME_CRM_LEAD_NO,
+                self::HDFC_BASE_TID,
+                self::HDFC_POS_DATE,
+                self::HDFC_TERMINAL_INDICATOR,
+                self::HDFC_DEACTIVATION_REASON_CODE,
+                self::HDFC_PM_FLAG,
+                self::HDFC_PM_AMT,
+                self::HDFC_PAGF_FLAG,
+                self::HDFC_PAGF_AMT,
+                self::HDFC_STLC_FLAG,
+                self::HDFC_STLC_AMT,
+                self::HDFC_RR_FLAG,
+                self::HDFC_RR_AMT,
+                self::HDFC_GF_FLAG,
+                self::HDFC_GF_AMT,
+                self::HDFC_CBRR_FLAG,
+                self::HDFC_CBRR_AMT,
+                self::HDFC_PM_ADHOC_FLAG,
+                self::HDFC_PM_ADHOC_AMT,
+                self::HDFC_LUC_FLAG,
+                self::HDFC_SC_FLAG,
+                self::HDFC_SC_AMT,
+                self::HDFC_MERCHANTCARE_FLAG,
+                self::HDFC_MERCHANTCARE_AMT,
+                self::HDFC_TATKALCARE_FLAG,
+                self::HDFC_TATKALCARE_AMT,
+                self::HDFC_SEZ_MERCHANT,
+                self::HDFC_SEZ_CATEGORY,
+                self::HDFC_SEZ_VALID_DATE,
+                self::HDFC_PPR_ROLL_CHG_FLAG,
+                self::HDFC_PPR_ROLLCHG_SBV_FLAG,
+                self::HDFC_PPR_ROLLCHG_SBV_PER,
+                self::HDFC_MOBILE_NUMBER,
+                self::HDFC_ENTITY_PAN_CARD,
+                self::HDFC_GIB_ACC_NO,
+                self::HDFC_REF1,
+                self::HDFC_GST_CONSOLIDATION_FLAG,
+                self::HDFC_POS_DESIGNATED_BRANCH,
+                self::HDFC_POS_DEACTIVATION_FLAG,
+                self::HDFC_POS_DEACTIVATION_CHARGE,
+                self::HDFC_VAS_PROGRAM_FLAG,
+                self::HDFC_VOLUME_RENTAL_FLAG,
+                self::HDFC_ONLINE_REFUND_FLAG,
+                self::HDFC_UNSECURE_TRANSACTION_FLAG,
+                self::HDFC_UCIC_NAME,
+                self::HDFC_TRANSITORY_GL_FLAG,
+                self::HDFC_EEFC_DEBIT_FLAG,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::UPDATE_ODS_MERCHANT_LIMITS => [
             self::INPUT => [
                 self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
@@ -6650,6 +7654,19 @@ class Header
                 self::E20,
                 self::E21,
             ]
+        ],
+
+        Type::DEVICE_TERMINAL_MAPPING => [
+            self::INPUT => [
+                self::DEVICE_TERMINAL_MAPPING_TERMINAL_ID,
+                self::DEVICE_TERMINAL_MAPPING_DEVICE_ID,
+            ],
+            self::OUTPUT => [
+                self::TERMINAL_ID,
+                self::DEVICE_TERMINAL_MAPPING_DEVICE_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ]
 
     ];
@@ -6812,13 +7829,17 @@ class Header
         }
 
         //
-        // For Pricing Rule batch, we want to optionally accept the PRICING_RULE_UPDATE
+        // For Pricing Rule batch, we want to optionally accept the PRICING_RULE_UPDATE and PRICING_RULE_FEE_BEARER
         // headers.
         //
-        if (($type === Type::PRICING_RULE) and
-            ((in_array(self::PRICING_RULE_UPDATE, $actualHeaders, true) === true)))
-        {
-            $expectedHeaders[] = self::PRICING_RULE_UPDATE;
+        if ($type === Type::PRICING_RULE) {
+            if (in_array(self::PRICING_RULE_UPDATE, $actualHeaders, true) === true) {
+                $expectedHeaders[] = self::PRICING_RULE_UPDATE;
+            }
+            if (in_array(self::PRICING_RULE_FEE_BEARER, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::PRICING_RULE_FEE_BEARER;
+            }
         }
 
         if ($type === Type::IIN_NPCI_RUPAY)

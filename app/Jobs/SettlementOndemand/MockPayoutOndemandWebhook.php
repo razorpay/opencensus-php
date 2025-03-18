@@ -70,8 +70,7 @@ class MockPayoutOndemandWebhook extends Job
     public function mockWebhookRequest($settlementOndemandPayout)
     {
         /** @var OndemandFundAccount\Entity $fundAccount */
-        $fundAccount = (new OndemandFundAccount\Repository)
-                        ->findByMerchantId($settlementOndemandPayout->merchant->getId());
+        $fundAccount = (new OndemandFundAccount\Core)->getFundAccountByMerchantId($settlementOndemandPayout->merchant->getId());
 
         $input = [
             'entity' => 'event',

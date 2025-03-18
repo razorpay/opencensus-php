@@ -176,7 +176,8 @@ class Validator extends Base\Validator
         'process_bank_transfer',
         'redis_get',
         'redis_set',
-        'generate_merchant_invoice'
+        'generate_merchant_invoice',
+        'manual_smart_collect_entity_creation'
     ];
 
     const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
@@ -192,6 +193,8 @@ class Validator extends Base\Validator
     const REDIS_SET = 'redis_set';
 
     const GENERATE_MERCHANT_INVOICE = 'generate_merchant_invoice';
+
+    const MANUAL_SMART_COLLECT_ENTITY_CREATION = 'manual_smart_collect_entity_creation';
 
     const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
@@ -753,6 +756,12 @@ class Validator extends Base\Validator
         'month' => 'required|integer',
         'year' => 'required|integer',
         'merchant_ids' => 'required|array',
+    ];
+
+    protected static $manualSmartCollectEntityCreationRules = [
+        'gateway' => 'required|string',
+        'bank_transfer_request_id' => 'sometimes|string',
+        'request_payload' => 'sometimes|array'
     ];
 
     protected function validateSourceAndDestination($input)
@@ -1553,7 +1562,8 @@ class Validator extends Base\Validator
         if (((new Service)->isSettlementsApp() === true) or
             ((new Service)->isXPayrollApp() === true) or
             ((new Service)->isXperienceApp() === true) or
-            ((new Service)->isScroogeApp() === true))
+            ((new Service)->isScroogeApp() === true) or
+            ((new Service)->isCrossBorderImportApp() === true))
             //  check if this is required, since we are not using composite api
         {
             return;
@@ -1722,6 +1732,7 @@ class Validator extends Base\Validator
 
                 case Settlement\Channel::AXIS :
                 case Settlement\Channel::ICICI :
+                case Settlement\Channel::IDFC :
                 case Settlement\Channel::YESBANK :
                     if ((new PayoutModeConfig\Service())->checkIfUpiDirectAccountChannelEnabledForMerchant($merchantId, $channel) === false)
                     {
@@ -1785,6 +1796,43 @@ class Validator extends Base\Validator
             $input[Entity::MODE] = PayoutMode::CARD;
         }
 
+    }
+
+    public function validateMobileNumberPayout(array &$input)
+    {
+        $allowedModes = [Entity::UPI];
+
+        $mode = strtolower($input[Entity::MODE] ?? '');
+
+        $mobileNumberData = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE] ?? [];
+        $mobileNumber = $mobileNumberData[FundAccount\Entity::NUMBER] ?? null;
+        $accountHolderName = $mobileNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
+
+        $this->validateRequiredField($mobileNumber, ErrorCode::BAD_REQUEST_MOBILE_NUMBER_NOT_PRESENT);
+        $this->validateRequiredField($accountHolderName, ErrorCode::BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT);
+        $this->validateMobileNumberFormat($mobileNumber);
+        $this->validateAllowedMode($mode, $allowedModes);
+    }
+
+    private function validateRequiredField($value, string $errorCode): void
+    {
+        if (empty($value)) {
+            throw new Exception\BadRequestException($errorCode, null);
+        }
+    }
+
+    private function validateMobileNumberFormat(string $mobileNumber): void
+    {
+        if (!preg_match('/^\d{10}$/', $mobileNumber)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_NUMBER_INVALID, FundAccount\Entity::NUMBER);
+        }
+    }
+
+    private function validateAllowedMode(string $mode, array $allowedModes): void
+    {
+        if (!in_array($mode, $allowedModes, true)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MODE_NOT_ALLOWED_FOR_MOBILE_NUMBER, null);
+        }
     }
 
     public function validateTdsDetails(array $input)
@@ -2367,6 +2415,13 @@ class Validator extends Base\Validator
 
                 foreach ($bulkInput as $input) {
                     $this->setStrictFalse()->validateInput(self::GENERATE_MERCHANT_INVOICE,$input);
+                }
+                break;
+
+            case 'manual_smart_collect_entity_creation':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::MANUAL_SMART_COLLECT_ENTITY_CREATION,$input);
                 }
                 break;
 

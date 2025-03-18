@@ -26,6 +26,7 @@ class Method
     const FPX                   = 'fpx';
     const DUITNOW_PAY           = 'duitnow_pay';
     const RAZORPAY_ACCOUNT      = 'razorpay_account';
+    const VCPP                  = 'vcpp';
     const GIFT_CARDS            = 'gift_cards';
 
     protected static $methods = [

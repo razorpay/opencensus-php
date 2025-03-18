@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -68,7 +69,7 @@ class Core extends Base\Core
 
             $input['public_key'] = $publicKey;
 
-            $orderService->checkForDefaultOffers($input);
+            $orderService->checkForDefaultOffers($input, $merchant);
 
             $input['merchant_id'] = $merchant->getId();
 
@@ -962,8 +963,7 @@ class Core extends Base\Core
             $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $merchant);
 
             if (($token !== null) and
-                ($token->getMethod() === 'card') and
-                (strtolower($this->app->razorx->getTreatment($merchant->getMerchantId(), RazorxTreatment::CARD_RECURRING_ENABLE_PDN_DECOUPLING, $this->mode ?? 'live')) === 'on'))
+                ($token->getMethod() === 'card'))
             {
                 $cardMandateNotificationCore = (new CardMandate\CardMandateNotification\Core);
                 $cardMandateNotificationCore->validateCardMandateNotificationData($input, $merchant, $token);
@@ -1223,9 +1223,43 @@ class Core extends Base\Core
 
         if (isset($input[Entity::OFFERS]) === true)
         {
+            $orderFailureResult = null;
+
             foreach (array_unique($input[Entity::OFFERS]) as $offerId)
             {
-                $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+                $offer = null;
+
+                try
+                {
+                    $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+                }
+                catch (\Exception $e)
+                {
+                    if ($orderFailureResult === null)
+                    {
+                        $orderFailureResult = $this->skipOrderOfferFailure($merchant);
+
+                        $this->trace->info(
+                            TraceCode::ORDER_OFFER_FAILURE_SKIP,
+                            [
+                                'order_id' => $order->getId(),
+                                'offer_id' => $offerId,
+                                'order_failure_experiment_result' => $orderFailureResult,
+                            ]
+                        );
+                    }
+
+                    if (!$orderFailureResult)
+                    {
+                        throw $e;
+                    }
+                }
+
+                // no need to fail the order in case offer is not valid for order
+                if ($offer === null)
+                {
+                    continue;
+                }
 
                 if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
                 {
@@ -1242,6 +1276,28 @@ class Core extends Base\Core
         return $offers;
     }
 
+    public function skipOrderOfferFailure(Merchant\Entity $merchant): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchant->getId(),
+                "experiment_id" => $this->app['config']->get('app.order_offer_failure_exp_id'),
+                "request_data" => json_encode(['merchant_id' => $merchant->getId()])
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'variant_on');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::ORDER_OFFER_FAILURE_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+        }
+        return false;
+    }
     private function saveEntityOffer($order, $offers)
     {
         $data = array();

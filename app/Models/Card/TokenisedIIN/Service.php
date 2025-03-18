@@ -10,6 +10,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Token;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Card\TokenisedIIN;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -372,18 +373,6 @@ class Service extends Base\Service
 
     public function shouldDualWriteToken(): bool
     {
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),RazorxTreatment::ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE, $this->mode);
-
-        $this->trace->info(TraceCode::BIN_SERVICE_TOKEN_DUAL_WRITE_VARIANT, [
-            'razorx_variant' => $variant,
-            'mode' => $this->mode,
-            'env' => $this->app['env'],
-        ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
         return false;
     }
 

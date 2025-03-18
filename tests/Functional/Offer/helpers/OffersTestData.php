@@ -45,6 +45,84 @@ return [
             ]
         ]
     ],
+    'testCreateMultiplePaymentMethodOffer' => [
+        'request'  => [
+            'content' => [
+                'name'           => 'Test Offer',
+                'payment_method' => 'multiple',
+                'percent_rate'   => 1000,
+                'starts_at'      => 1514764800,
+                'ends_at'        => 1546300800,
+                'display_text'   => 'Some more details',
+                'terms'          => 'Some more details',
+                'block'          => 1,
+                'type'           => 'instant',
+                'instruments'    => [
+                    [
+                        "method" => "card",
+                    ],
+                    [
+                        "method" => "netbanking",
+                    ]
+                ]
+            ],
+            'url'     => '/offers',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'active'         => true,
+                    'name'           => 'Test Offer',
+                    'payment_method' => 'multiple',
+                    'percent_rate'   => 1000,
+                    'starts_at'      => 1514764800,
+                    'ends_at'        => 1546300800,
+                    'display_text'   => 'Some more details',
+                    'terms'          => 'Some more details',
+                    'instruments'    => [
+                        [
+                            "method" => "card",
+                        ],
+                        [
+                            "method" => "netbanking",
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testCreateMultiplePaymentMethodOfferWithValidationFailure' => [
+        'request'   => [
+            'content' => [
+                'name'           => 'Test Offer',
+                'payment_method' => 'multiple',
+                'percent_rate'   => 1000,
+                'starts_at'      => 1514764800,
+                'ends_at'        => 1546300800,
+                'display_text'   => 'Some more details',
+                'terms'          => 'Some more details',
+                'block'          => 1,
+                'type'           => 'instant',
+            ],
+            'url'     => '/offers',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No payment instruments found for payment method multiple',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
 
     'testCreateOfferWithApiReadsConflictingOffers' => [
         'request' => [
@@ -3123,6 +3201,23 @@ return [
             "merchant_methods" => null,
         ]
     ]
-]
+],
+
+    'testFetchOffersWithGlobalLimitsFromOE' => [
+        'request'  => [
+            'url'    => '/offers/offer_10000000000000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'                  => 'offer_10000000000000',
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
+                'current_offer_usage' => 200
+            ]
+        ]
+    ],
 ];
 

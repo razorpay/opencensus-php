@@ -96,11 +96,12 @@ class Service extends Base\Service
         ];
     }
 
-    private function computeGatewayResponseAndTerminalForCollectX($input, $gateway)
+    public function computeGatewayResponseAndTerminalForCollectX($input, $gateway)
     {
         $transferData = $this->formatGatewayResponseDataForCollectX($input, $gateway);
 
         $gatewayResponse['upi_transfer_data'] = $transferData;
+
         $gatewayResponse['callback_data'] = $input;
 
         $this->trace->info(TraceCode::COLLECTX_GATEWAY_RESPONSE_DATA, [
@@ -112,7 +113,7 @@ class Service extends Base\Service
         return [$terminal, $gatewayResponse];
     }
 
-    private function formatGatewayResponseDataForCollectX($input, $gateway)
+    public function formatGatewayResponseDataForCollectX($input, $gateway)
     {
         // Since this route is only being used for CollectX Yesbank UPI transfer callbacks
         $transferData[Entity::PAYEE_VPA] = strtolower($input['payee_account'] . "@yesbankltd");
@@ -330,6 +331,7 @@ class Service extends Base\Service
     {
         // Prefixes are going to be 7 characters long like "RZPAYX." or "SWIGGY."
         $prefix = substr($payeeVPA, 0, 7);
+
         $prefix = strtolower($prefix);
 
         $vpaPrefixEntity = $this->repo->virtual_vpa_prefix->fetchEntityByVPAPrefix($prefix);

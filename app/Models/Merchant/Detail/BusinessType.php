@@ -128,6 +128,9 @@ class BusinessType
         self::EDUCATIONAL_INSTITUTES    => RazorxTreatment::EDUCATION_OTHERS_BUSINESS_TYPE,
         self::OTHER                     => RazorxTreatment::EDUCATION_OTHERS_BUSINESS_TYPE
     ];
+    public static $fullyRampedRazorxExp = [
+        RazorxTreatment::HUF_BUSINESS_TYPE
+    ];
 
     protected static $GreylistedInternationalActivationFlowBusinessType = [
         self::PROPRIETORSHIP,

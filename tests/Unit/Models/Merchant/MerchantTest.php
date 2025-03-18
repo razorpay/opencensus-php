@@ -12,6 +12,9 @@ use RZP\Models\Merchant\Service;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use Tests\Unit\TestCase;
+use Accounts\Account\V1\SaveRequest;
+use Accounts\Account\V1\SaveResponse;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AsvSdkAccount;
 
 class UserTest extends TestCase
 {
@@ -152,5 +155,132 @@ class UserTest extends TestCase
         $this->basicAuthMock->shouldReceive('getUser')->andReturn($this->userEntityMock);
 
         $this->basicAuthMock->shouldReceive('getMerchant')->andReturn($this->merchantEntityMock);
+    }
+
+    public function checkIfLatestStatusIsNC(SaveRequest $request ){
+        $account = $request->getAccount();
+        $additionalDetail = $account->getAdditionalDetail();
+        $details = $additionalDetail->getDetails();
+        $manualRekycStruct = $details->getFields()["manual_rekyc"]->getStructValue();
+        $statuses = $manualRekycStruct->getFields()["status"]->getListValue();
+        $entries = $statuses->getValues();
+        $latestEntry = $statuses->getValues()[$entries->count()-1];
+        $latestStatus = $latestEntry->getStructValue()->getFields()["rekyc_status"]->getStringValue();
+        return $latestStatus=== "needs_clarification";
+    }
+
+    public function testTransitionToNextRekycStatusFromURtoNC()
+    {
+        $merchantId = "10000000000000";
+        $asvSdkAccount = new AsvSdkAccount();
+
+        $mockAccountClient = $this->getMockAsvClient();
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        $response = new SaveResponse();
+        $response->setAccountId("10000000000000");
+
+        $mockAccountClient->expects($this->once())->method("Save")->with($this->callback(function($request) {
+           return $this->checkIfLatestStatusIsNC($request);
+        }))->willReturn([$response, null]);
+
+        $details = [
+            'manual_rekyc' => [
+                'status' => [
+                    [
+                        'rekyc_status' => 'under_review',
+                        'created_at' => 1622547800
+                    ]
+                ]
+            ]
+        ];
+
+        $nextStatus = 'needs_clarification';
+
+        $result = $this->merchantService->transitionToNextRekycStatus($merchantId, $details, $nextStatus);
+        $this->assertEquals($result, $merchantId);
+    }
+
+    public function testTransitionToNextRekycStatusFromEmptytoNC()
+    {
+        $merchantId = "10000000000000";
+        $asvSdkAccount = new AsvSdkAccount();
+
+        $mockAccountClient = $this->getMockAsvClient();
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        $response = new SaveResponse();
+        $response->setAccountId("10000000000000");
+
+        $mockAccountClient->expects($this->once())->method("Save")->with($this->callback(function($request) {
+            return $this->checkIfLatestStatusIsNC($request);
+        }))->willReturn([$response, null]);
+
+        $details = [];
+
+        $nextStatus = 'needs_clarification';
+
+        $result = $this->merchantService->transitionToNextRekycStatus($merchantId, $details, $nextStatus);
+        $this->assertEquals($result, $merchantId);
+    }
+
+    public function checkIfLatestStatusIsURWithVerifications(SaveRequest $request) {
+        $account = $request->getAccount();
+        $additionalDetail = $account->getAdditionalDetail();
+        $details = $additionalDetail->getDetails();
+        $manualRekycStruct = $details->getFields()["manual_rekyc"]->getStructValue();
+        $statuses = $manualRekycStruct->getFields()["status"]->getListValue();
+        $verifications = $manualRekycStruct->getFields()["verifications"]->getListValue();
+        $entries = $statuses->getValues();
+        $latestEntry = $statuses->getValues()[$entries->count()-1];
+        $latestStatus = $latestEntry->getStructValue()->getFields()["rekyc_status"]->getStringValue();
+        return $latestStatus=== "under_review" && $verifications!=null;
+    }
+    public function testTransitionToNextRekycStatusFromNCtoURWithVerifications()
+    {
+        $merchantId = "10000000000000";
+        $asvSdkAccount = new AsvSdkAccount();
+
+        $mockAccountClient = $this->getMockAsvClient();
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        $response = new SaveResponse();
+        $response->setAccountId("10000000000000");
+
+        $mockAccountClient->expects($this->once())->method("Save")->with($this->callback(function($request) {
+            return $this->checkIfLatestStatusIsURWithVerifications($request);
+        }))->willReturn([$response, null]);
+
+        $details = [
+            'manual_rekyc' => [
+                'status' => [
+                    [
+                        'rekyc_status' => 'under_review',
+                        'created_at' => 1622547800
+                    ],
+                    [
+                        'rekyc_status' => 'needs_clarification',
+                        'created_at' => 1622547800
+                    ]
+                ],
+                'verifications' => [
+                    [
+                        'id' => 1,
+                    ]
+                ]
+            ]
+        ];
+
+        $nextStatus = 'under_review';
+
+        $result = $this->merchantService->transitionToNextRekycStatus($merchantId, $details, $nextStatus);
+        $this->assertEquals($result, $merchantId);
+    }
+
+    protected function getMockAsvClient()
+    {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\AccountInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
     }
 }

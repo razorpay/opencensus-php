@@ -133,6 +133,7 @@ final class Constants
 
 
     const MERCHANT_ID                             = 'merchant_id';
+    const ACTOR_DETAILS                           = 'actor_details';
     const SUBMERCHANT_ID                          = 'submerchant_id';
     const PARTNER_ID                              = 'partner_id';
     const MARK_AS_PARTNER_IN_PROGRESS             = 'mark_as_partner_in_progress';
@@ -879,8 +880,7 @@ Razorpay';
 
     const FOH_DASHBOARD_TEMPLATE_TAG = 'mra_foh';
     const FOH_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.funds_on_hold.confirmation';
-    const FOH_EMAIL_SUBJECT          = 'Razorpay Account Review: {merchant_name} | {merchant_id} | Funds under Review';
-
+    const FOH_EMAIL_SUBJECT          = 'Razorpay Account Funds under Review: {merchant_id}';
     //Suspend Notification templates
     const SUSPEND_ACCOUNT_SMS_TEMPLATE           = 'sms.merchant_risk_actions.suspend';
     const SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.suspend';
@@ -889,7 +889,11 @@ Razorpay';
     //Disable Live Notification templates
     const DISABLE_LIVE_SMS_TEMPLATE           = 'sms.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.disable_live.confirmation';
-    const DISABLE_LIVE_EMAIL_SUBJECT          = 'Razorpay Account disabled: {merchant_name} | {merchant_id}';
+    const DISABLE_LIVE_EMAIL_SUBJECT          = 'Razorpay Account Disabled: {merchant_id}';
+
+    const SUSPEND_LIVE_EMAIL_TEMPLATE         = 'emails.merchant.risk.generic.suspend_live.confirmation';
+    const SUSPEND_LIVE_EMAIL_SUBJECT          = 'Razorpay Account Suspended: {merchant_id}';
+
     const DISABLE_LIVE_WHATSAPP_TEMPLATE_NAME = 'whatsapp.merchant_risk_actions.disable_live';
     const DISABLE_LIVE_WHATSAPP_TEMPLATE      = 'We have disabled your account as we observed suspicious account activity on your account - {merchant_id} in the name of M/s. {business_name} held with Razorpay.  Please check your registered email for an email with subject Razorpay Account disabled: {merchant_name} | {merchant_id} for more details';
     const DISABLE_LIVE_DASHBOARD_TEMPLATE_TAG = 'mra_disabled';
@@ -968,8 +972,8 @@ Razorpay';
             self::SMS_TEMPLATE              => self::SUSPEND_ACCOUNT_SMS_TEMPLATE_MOBILE_SIGNUP,
             self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP,
             self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_MOBILE_SIGNUP,
-            self::EMAIL_TEMPLATE            => self::DISABLE_LIVE_EMAIL_TEMPLATE,
-            self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
+            self::EMAIL_TEMPLATE            => self::SUSPEND_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT             => self::SUSPEND_LIVE_EMAIL_SUBJECT,
         ],
 
         Action::HOLD_FUNDS => [
@@ -1018,8 +1022,8 @@ Razorpay';
     const MERCHANT_RISK_ACTIONS_TEMPLATE_MAP = [
         Action::SUSPEND => [
             self::SMS_TEMPLATE              => self::SUSPEND_ACCOUNT_SMS_TEMPLATE,
-            self::EMAIL_TEMPLATE            => self::DISABLE_LIVE_EMAIL_TEMPLATE,
-            self::EMAIL_SUBJECT             => self::DISABLE_LIVE_EMAIL_SUBJECT,
+            self::EMAIL_TEMPLATE            => self::SUSPEND_LIVE_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT             => self::SUSPEND_LIVE_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME    => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE         => self::SUSPEND_ACCOUNT_WHATSAPP_TEMPLATE,
         ],
@@ -1097,9 +1101,17 @@ Razorpay';
         ],
     ];
 
-    const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
-    const FD_SUB_CATEGORY_DISABLE_LIVE       = 'Disable live';
-    const FD_SUB_CATEGORY_SUSPEND            = 'Suspended Merchants';
+    const FD_SUB_CATEGORY_FUNDS_ON_HOLD             =   'Funds on hold';
+    const FD_SUB_CATEGORY_DISABLE_LIVE              =   'Disable live';
+    const FD_SUB_CATEGORY_SUSPEND                   =   'Suspended Merchants';
+    const FD_RISK_WOC_CATEGORY_FOH                  =   'MRFOH -> Funds on hold';
+    const FD_RISK_WOC_CATEGORY_DISABLED             =   'MRFOH -> Disabled';
+    const FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION   =   'MRFOH -> Need clarification';
+    const FD_RISK_WOC_CATEGORY_SUSPEND              =   'MRFOH -> Suspended';
+    const FD_NEW_RISK_CATEGORY                      =   'Razorpay';
+    const FD_NEW_RISK_SUB_CATEGORY                  =   'Risk Action';
+    const FD_CF_PRODUCT                             =   'Payment Gateway';
+    const FD_CF_NEW_CATEGORY                        =   'Risk Report_Merchant';
 
 
     const FD_SUB_CATEGORY = [
@@ -1107,6 +1119,14 @@ Razorpay';
         Action::LIVE_DISABLE                    => self::FD_SUB_CATEGORY_DISABLE_LIVE,
         Action::SUSPEND                         => self::FD_SUB_CATEGORY_SUSPEND,
     ];
+
+    const FD_RISK_WOC_CATEGORY = [
+        Action::HOLD_FUNDS                      => self::FD_RISK_WOC_CATEGORY_FOH,
+        Action::LIVE_DISABLE                    => self::FD_RISK_WOC_CATEGORY_DISABLED,
+        Action::SUSPEND                         => self::FD_RISK_WOC_CATEGORY_SUSPEND,
+        Action::NEED_CLARIFICATION              => self::FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION,
+    ];
+
 
     const LINKED_ACCOUNT_PENNY_TESTING = 'linked_account_penny_testing';
 
@@ -2053,20 +2073,39 @@ Razorpay';
 
     const SET_METHOD_MUTEX_SUFFIX="SET_METHODS";
 
-    const BALANCE_FETCH_V2_RESPONSE_FIELDS = [
-        Balance\Entity::ID,
-        Balance\Entity::ENTITY,
-        Balance\Entity::BALANCE,
-        Balance\Entity::AVAILABLE_BALANCE,
+    const BANK_CHANNEL_BANK_NAME_MAPPING = [
+        'rbl' => 'RBL Bank',
+        'icici' => 'ICICI Bank',
+        'yesbank' => 'Yes Bank',
+        'axis' => 'Axis Bank',
+        'idfc' => 'IDFC First Bank',
+    ];
+
+    // If any change is made in array BANK_CHANNEL_BANK_CODE_MAPPING,
+    // also include the change in FETCH_BANKING_ACCOUNT_BALANCES validator
+
+    const BANK_CHANNEL_BANK_CODE_MAPPING =[
+        'rbl' => 'RATN',
+        'icici' => 'ICIC',
+        'yesbank' => 'YESB',
+        'axis' => 'UTIB',
+        'idfc' => 'IDFB'
+    ];
+
+    const BALANCE_TYPE_ACCOUNT_TYPE_MAPPING = [
+        'direct' => 'current_account',
+        'shared' => 'razorpayx_lite'
+    ];
+
+    const BANKING_BALANCE_RESPONSE_KEYS = [
         Balance\Entity::CURRENCY,
         Balance\Entity::ACCOUNT_NUMBER,
         Balance\Entity::ACCOUNT_TYPE,
-        Balance\Entity::CHANNEL,
-        Balance\Entity::LAST_FETCHED_AT,
-    ];
-
-    const BALANCE_FETCH_V2_RESPONSE_KEY_MAPPING = [
-        Balance\Entity::LAST_FETCHED_AT => 'last_refreshed',
-        Balance\Entity::CHANNEL         => 'bank'
+        Balance\Entity::ENTITY,
+        'bank_code',
+        'refreshed_at',
+        'bank_name',
+        'available_amount',
+        'amount'
     ];
 }

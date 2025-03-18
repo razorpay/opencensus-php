@@ -5,7 +5,9 @@ namespace RZP\Models\Admin\Admin;
 use App;
 use RZP\Diag\EventCode;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use Str;
 use Cache;
@@ -97,7 +99,16 @@ class Service extends Base\Service
 
         if (Hash::check($input['password'], $admin->getPassword()))
         {
-            if($this->featureEnabledForOrg($orgId)) {
+            // Check conditions to determine if second-factor authentication should be skipped
+            $skipSecondFactorAuth = (
+                isset($orgId, $admin) &&
+                $orgId === Constant::IDAM_AXIS_ORG &&
+                $email ===  Constant::IDAM_SUPER_ADMIN_EMAIL &&
+                $this->app['basicauth']->getInternalApp() === 'express'
+            );
+
+            //If $skipSecondFactorAuth is set to true then skip second-factor auth
+            if($this->featureEnabledForOrg($orgId) && $skipSecondFactorAuth === false) {
                 $this->core()->checkSecondFactorAuthAndSendOtp($admin);
             }
 
@@ -764,7 +775,21 @@ class Service extends Base\Service
 
     public function fetchMultiple()
     {
-        $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
+        $properties = [
+            "id" => UniqueIdEntity::generateUniqueId(),
+            "experiment_id" => $this->app['config']->get('app.splitz_role_query_slave_experiment_id'),
+        ];
+
+        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
+
+        if ($variant === true)
+        {
+            $admins = $this->repo->admin->fetchByOrgIdFromSlave($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
+        }
+        else
+        {
+            $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
+        }
 
         return $admins->toArrayPublic();
     }

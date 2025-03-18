@@ -1067,7 +1067,9 @@ class Name
     const ECOLLECT_ICICI_BATCH_UPLOAD                = 'ecollect_icici_batch_upload';
     const ECOLLECT_RBL_BATCH_UPLOAD                  = 'ecollect_rbl_batch_upload';
     const ECOLLECT_AXIS_BATCH_UPLOAD                 = 'ecollect_axis_batch_upload';
+    const ECOLLECT_AXIS_BANKING_BATCH_UPLOAD         = 'ecollect_axis_banking_batch_upload';
     const ECOLLECT_YESBANK_BATCH_UPLOAD              = 'ecollect_yesbank_batch_upload';
+    const ECOLLECT_IDFC_BATCH_UPLOAD                 = 'ecollect_idfc_batch_upload';
     const VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD          = 'virtual_bank_account_batch_upload';
 
     // Admin action permission for X Ops Team
@@ -1226,7 +1228,7 @@ class Name
     const ADMIN_ORG_REPLICATIONS   = 'admin_org_replications';
 
     const VIEW_MERCHANT_LOGIN_NON_ACTIVATED_EDIT = 'view_merchant_login_non_activated_edit';
-    
+
     const VIEW_MERCHANT_LOGIN_ACTIVATED_EDIT = 'view_merchant_login_activated_edit';
 
     // Permission to validate merchant brand dealer details

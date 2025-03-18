@@ -481,15 +481,7 @@ class Service extends Base\Service
 
             $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
 
-            // fetching by payments fetch to handle notes search.
-            if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchLinkedAccountTransfers') === true)
-            {
-                $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            }
-            else
-            {
-                $payments = $this->repo->payment->fetch($input, $merchantId);
-            }
+            $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
             $transfers = $this->createResponse($payments);
 
@@ -690,7 +682,7 @@ class Service extends Base\Service
 
         $startTime = microtime();
 
-        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($keyMerchantIds, $limit, $olderThanMinutes);
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -845,11 +837,9 @@ class Service extends Base\Service
 
         $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
 
-        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
-
         $startTime = microtime();
 
-        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $keyMerchantIds, $limit, $olderThanMinutes);
+        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -3015,4 +3005,44 @@ class Service extends Base\Service
 
         return $isCustomerWalletTransfer || $isPartnershipTransfer;
     }
+
+    public function isAmountTransferredRearchExpEnabled(string $paymentId, string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.amount_transferred_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::AMOUNT_TRANSFERRED_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.amount_transferred_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
 }

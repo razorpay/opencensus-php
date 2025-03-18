@@ -11,6 +11,9 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Models\Feature;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
@@ -60,14 +63,38 @@ abstract class Base extends BaseProcessor
 
     protected function markEntityReconciled($entity)
     {
+        $this->trace->info(TraceCode::NACH_DEBIT_RECONCILE_AT,
+        [
+            "payment_id" => $entity->getId(),
+        ]);
+
+        $time = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $data = [
+            BaseReconciliate::RECONCILED_AT => $time,
+        ];
+
+        // Transaction is not updated for CLS MIDs because transaction does not exist in api hot storage and
+        // the ART dual write updates will flow by the event streaming events to CLS Makeshift.
+        //change here hotfix : fetch txn from tiDB & check ref3 enabled
+        //adding one more check to check the merchant is CLS or not
+        $merchant = $entity->merchant;
+
+        $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($entity->getId());
+
+        if (($txn !== null && $txn->getReference3() === "enabled") || $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            (new SubReconciliate())->sendPaymentReconNFCDataToCLS($entity, $data);
+
+            return;
+        }
+
         $transaction = $entity->transaction;
 
         if ($transaction->isReconciled() === true)
         {
             return;
         }
-
-        $time = Carbon::now(Timezone::IST)->getTimestamp();
 
         $transaction->setReconciledAt($time);
 

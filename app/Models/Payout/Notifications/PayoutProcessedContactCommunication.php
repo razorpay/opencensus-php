@@ -76,26 +76,6 @@ class PayoutProcessedContactCommunication extends Base
 
     public function notify()
     {
-        //If payout source is vendor payment then do not send email
-        // TODO: Add a check for dashboard payouts and make the feature default instead of Feature Flag
-        // TODO: This is deprecated Feature flag. Will remove post testing the new flow
-        if ($this->sendNotificationUsingNewFeatureFlag() == false)
-        {
-            if ($this->payout->merchant->isFeatureEnabled(
-                    Feature\Constants::BENE_EMAIL_NOTIFICATION) === true &&
-                $this->isVendorPayment() === false)
-            {
-                $this->sendEmail();
-            }
-
-            if ($this->payout->merchant->isFeatureEnabled(
-                    Feature\Constants::BENE_SMS_NOTIFICATION) === true)
-            {
-                $this->sendSms();
-            }
-
-            return;
-        }
 
         /*
          * DISABLE_API_PAYOUT_BENE_EMAIL, DISABLE_DB_PAYOUT_BENE_EMAIL, DISABLE_DB_PAYOUT_BENE_SMS are features to signify blacklist
@@ -153,22 +133,6 @@ class PayoutProcessedContactCommunication extends Base
                 'enable_db_payout_sms'      => $enableDbPayoutBeneSms,
             ]);
 
-    }
-
-    private function sendNotificationUsingNewFeatureFlag() :bool
-    {
-        $sendNotificationUsingNewFeatureFlag = $this->app->razorx->getTreatment($this->payout->merchant->getId(),
-            RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION,
-            MODE::LIVE);
-
-        $this->trace->info(TraceCode::PAYOUT_BENE_NOTIFICATION_EXPERIMENT,
-            [
-                'merchant_id'        => $this->payout->merchant->getId(),
-                'experiment_name'    => RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION,
-                'experiment_status' => $sendNotificationUsingNewFeatureFlag,
-            ]);
-
-        return $sendNotificationUsingNewFeatureFlag === RazorxTreatment::RAZORX_VARIANT_ON;
     }
 
     protected function getSmsPayload()

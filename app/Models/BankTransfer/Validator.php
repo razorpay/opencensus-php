@@ -89,6 +89,21 @@ class Validator extends Base\Validator
         'remitterName'                      => 'nullable|string',
     ];
 
+    public static $iblRules = [
+        'UTR'                               => 'required|string',
+        'Bene_acc_no'                       => 'required|string',
+        'Req_type'                          => 'required|in:notification',
+        'Req_dt_time'                       => 'required|string',
+        'Txn_amnt'                          => 'required|string',
+        'Pmode'                             => 'required|string',
+        'Sndr_acnt'                         => 'required|string',
+        'Sndr_nm'                           => 'required|string',
+        'Sndr_ifsc'                         => 'required|string',
+        'Corp_code'                         => 'required|string',
+        'Narration'                         => 'required|string',
+        'Identifier'                        => 'required|string',
+    ];
+
     public static $iciciRules = [
         'Virtual_Account_Number_Verification_IN'                    => 'required|array',
         'Virtual_Account_Number_Verification_IN.0.client_code'      => 'required|string',
@@ -192,4 +207,11 @@ class Validator extends Base\Validator
         'merchant_id'                      => 'required|string|size:14',
         'priority'                         => 'required|string|in:P0,P1',
     ];
+
+    protected static $fetchMerchantIntegrationByParamsRules = [
+        'paramKey'                             => 'required|string|in:merchant_id,integration_entity,integration_key,reference_id',
+        'paramValue'                           => 'required|array',
+    ];
+
+
 }

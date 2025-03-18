@@ -33,6 +33,9 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_RZPAPB:
                 return $this->getAsyncCallbackResponseMandateCreateForApb($payment);
 
+            case Payment\Gateway::UPI_YESBANK:
+                return $this->getAsyncCallbackResponseMandateCreateForYesBank($payment);
+
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -56,6 +59,8 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_RZPAPB:
                 return $this->getAsyncCallbackResponseMandateCreateForApb($payment);
 
+            case Payment\Gateway::UPI_YESBANK:
+                return $this->getAsyncCallbackResponseFirstDebitForYesBank($payment);
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -96,6 +101,9 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_RZPAPB:
                 return $this->getAsyncCallbackResponsePauseForApb($mandate);
 
+            case Payment\Gateway::UPI_YESBANK:
+                return $this->getAsyncCallbackResponsePauseMandateForYesBank($mandate);
+
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -119,6 +127,9 @@ trait UpiRecurringCallbacks
             case Payment\Gateway::UPI_RZPAPB:
                 return $this->getAsyncCallbackResponseResumeForApb($mandate);
 
+            case Payment\Gateway::UPI_YESBANK:
+                return $this->getAsyncCallbackResponseResumeMandateForYesBank($mandate);
+
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
         }
@@ -141,6 +152,9 @@ trait UpiRecurringCallbacks
 
             case Payment\Gateway::UPI_RZPAPB:
                 return $this->getAsyncCallbackResponseRevokeForApb($mandate);
+
+            case Payment\Gateway::UPI_YESBANK:
+                return $this->getAsyncCallbackResponseRevokeMandateForYesBank($mandate);
 
             default:
                 throw new Exception\AssertionException('Invalid gateway for ' . __FUNCTION__ . ' ' . $gateway);
@@ -301,6 +315,73 @@ trait UpiRecurringCallbacks
         return json_encode($response);
     }
 
+    protected function getAsyncCallbackResponseMandateCreateForYesBank($payment)
+    {
+        $response = [
+            'requestInfo' => [
+                'pgMerchantId' => 'YBL000000088302',
+                'pspRefNo' => $this->getReferenceNumberForCallback($payment, 'create'),
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo' => '024009044860',
+                    'mandate' => true,
+                    'requestDate' => '07 Feb 2024 05:59 PM',
+                    'referenceNumber' => $this->getReferenceNumberForCallback($payment, 'create'),
+                    'txnId' => 'HMUO9LQS7RO0JEC165ORS4KDRUEW6GKWWW',
+                    'remarks' => 'UPI Mandate',
+                    'name' => 'CREATE Mandate test',
+                    'mandateType' => 'CREATE',
+                    'frequency' => 'MONTHLY',
+                    'amount' => '12',
+                    'startDate' => '07 Feb 2024',
+                    'endDate' => '07 Jun 2024',
+                    'UMN' => '9007343d2f2448babcabd7e080a87e0f@yesu',
+                    'payerVPA' => '7262093972.stage@rzp',
+                    'payerName' => 'Prashant',
+                    'payeeVPA' => 'insolglob@yes',
+                    'payeeName' => 'InSolutionGloabl',
+                    'status' => 'ACTIVE',
+                    'statusDesc' => 'Request Processed Successfully',
+                    'debitIfsc' => 'MGAT0560004',
+                    'debitAccount' => '001002003124',
+                    'creditIfsc' => 'MGAT0400002',
+                    'crediAccount' => '4111111111111111',
+                    'mndregrefno' => 4210001,
+                    'noOfDebit' => '5',
+                    'onBehalf_Of' => 'PAYEE',
+                    'amt_rule' => 'EXACT',
+                    'ruleType' => 'ON',
+                    'ruleValue' => 4,
+                    'has_update_authority' => 'N',
+                    'create_date_time' => '07 Feb 2024 05:59 PM',
+                    'ref_url' => 'https://www.mgs.co.in',
+                    'errCode' => '00',
+                    'respCode' => '00',
+                    'payType' => 'P2M',
+                    'show_QR' => 'N',
+                    'callback_type' => 'MANDATE_STATUS',
+                    'purpose_code' => '14',
+                    'initiationMode' => '01',
+                    'merchantType' => 'SMALL',
+                    'message' => 'APPROVED OR COMPLETED SUCCESSFULLY',
+                    'is_verified' => 'false',
+                    'blockFund' => 'N',
+                    'initiatedBy' => 'PAYEE',
+                    'nextRecurDate' => 'Mar 07, 2024 12:00:00 AM',
+                    'remRecuCount' => '1',
+                    'pauseStartDate' => ' ',
+                    'pauseEndDate' => ' ',
+                    'pydMobile' => '919999900099',
+                    'orgTxnId' => 'MGA6673417D738B49E58C9F74366C598214',
+                    'voucher_UUID' => 'insolglob@yes',
+                    'debitAccountType' => 'SAVINGS'
+                ]
+            ]
+        ];
+        return json_encode($response);
+    }
+
     protected function getAsyncCallbackResponseFirstDebitForApb($payment)
     {
         $response = [
@@ -332,6 +413,266 @@ trait UpiRecurringCallbacks
             ]
         ];
 
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseFirstDebitForYesBank($payment)
+    {
+        $response = [
+            'requestInfo' => [
+                'pgMerchantId' => 'YBL000000088302',
+                'pspRefNo' => $this->getReferenceNumberForCallback($payment, 'execte'),
+            ],
+            'mandateDtls' => [
+                [
+                    'txnId' => 'MGA2B2515B2CEF1409C84A4FD4D4EBB9DA6',
+                    'mandate' => true,
+                    'custRefNo' => '024009044860',
+                    'amount' => '27',
+                    'status' => 'SUCCESS',
+                    'statusDesc' => 'Transaction success',
+                    'payerVPA' => 'saurav2828@yesu',
+                    'payeeVPA' => 'merchant@mybank',
+                    'payerName' => 'saurav',
+                    'payeeName' => 'Merchant',
+                    'requestDate' => '28 Feb 2024 12:42 PM',
+                    'remarks' => 'UPI Mandate',
+                    'name' => 'CREATE Mandate test',
+                    'startDate' => '28 Feb 2024',
+                    'endDate' => '18 Jul 2024',
+                    'isRevokeable' => 'Y',
+                    'noOfDebit' => '5',
+                    'onBehalf_Of' => 'PAYEE',
+                    'create_date_time' => '28 Feb 2024 12:42 PM',
+                    'show_QR' => 'N',
+                    'ref_url' => 'https://www.upi.com',
+                    'callback_type' => 'MANDATE_EXCECUTION',
+                    'purpose_code' => '14',
+                    'message' => 'Recurrence Payment Success',
+                    'is_verified' => 'false',
+                    'blockFund' => 'N',
+                    'initiatedBy' => 'PAYEE',
+                    'nextRecurDate' => '27 Feb 2024',
+                    'remRecuCount' => '1',
+                    'frequency' => 'MONTHLY',
+                    'UMN' => '9007343d2f2448babcabd7e080a87e0f@yesu',
+                    'amt_rule' => 'MAX',
+                    'payType' => 'P2M',
+                    'merchantType' => 'SMALL',
+                    'pydMobile' => '919999900099',
+                    'referenceNumber' => $this->getReferenceNumberForCallback($payment, 'execte'),
+                    'debitIfsc' => 'MGAT0560004',
+                    'debitAccount' => '001002003124',
+                    'creditIfsc' => 'MGAT0400002',
+                    'crediAccount' => '4111111111111111',
+                    'orgTxnId' => 'MGA6673417D738B49E58C9F74366C598214',
+                    'refId' => 'ABCDHEJF78X616WO2FQKYG4KI16XXDBBb',
+                    'respCode' => '00',
+                    'errCode' => '00'
+                ]
+            ]
+        ];
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponsePauseMandateForYesBank($mandate)
+    {
+        $response = [
+            'requestInfo' => [
+                'pgMerchantId' => 'YBL000000088302',
+                'pspRefNo' => $mandate['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo' => '024009044860',
+                    'mandate' => true,
+                    'requestDate' => '07 Feb 2024 05:59 PM',
+                    'referenceNumber' => $mandate['id'],
+                    'txnId' => 'HMUO9LQS7RO0JEC165ORS4KDRUEW6GKWWW',
+                    'remarks' => 'UPI Mandate',
+                    'name' => 'CREATE Mandate test',
+                    'mandateType' => 'CREATE',
+                    'frequency' => 'MONTHLY',
+                    'amount' => '12',
+                    'startDate' => '07 Feb 2024',
+                    'endDate' => '07 Jun 2024',
+                    'UMN' => $mandate['umn'],
+                    'payerVPA' => '7262093972.stage@rzp',
+                    'payerName' => 'Prashant',
+                    'payeeVPA' => 'insolglob@yes',
+                    'payeeName' => 'InSolutionGloabl',
+                    'status' => 'PAUSE',
+                    'statusDesc' => 'Request Processed Successfully',
+                    'debitIfsc' => 'MGAT0560004',
+                    'debitAccount' => '001002003124',
+                    'creditIfsc' => 'MGAT0400002',
+                    'crediAccount' => '4111111111111111',
+                    'mndregrefno' => 4210001,
+                    'noOfDebit' => '5',
+                    'onBehalf_Of' => 'PAYEE',
+                    'amt_rule' => 'EXACT',
+                    'ruleType' => 'ON',
+                    'ruleValue' => 4,
+                    'has_update_authority' => 'N',
+                    'create_date_time' => '07 Feb 2024 05:59 PM',
+                    'ref_url' => 'https://www.mgs.co.in',
+                    'errCode' => '00',
+                    'respCode' => '00',
+                    'payType' => 'P2M',
+                    'show_QR' => 'N',
+                    'callback_type' => 'MANDATE_STATUS',
+                    'purpose_code' => '14',
+                    'initiationMode' => '01',
+                    'merchantType' => 'SMALL',
+                    'message' => 'APPROVED OR COMPLETED SUCCESSFULLY',
+                    'is_verified' => 'false',
+                    'blockFund' => 'N',
+                    'initiatedBy' => 'PAYEE',
+                    'nextRecurDate' => 'Mar 07, 2024 12:00:00 AM',
+                    'remRecuCount' => '1',
+                    'pauseStartDate' => ' ',
+                    'pauseEndDate' => ' ',
+                    'pydMobile' => '919999900099',
+                    'orgTxnId' => 'MGA6673417D738B49E58C9F74366C598214',
+                    'voucher_UUID' => 'insolglob@yes',
+                    'debitAccountType' => 'SAVINGS'
+                ]
+            ]
+        ];
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseResumeMandateForYesBank($mandate)
+    {
+        $response = [
+            'requestInfo' => [
+                'pgMerchantId' => 'YBL000000088302',
+                'pspRefNo' => $mandate['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo' => '024009044860',
+                    'mandate' => true,
+                    'requestDate' => '07 Feb 2024 05:59 PM',
+                    'referenceNumber' => $mandate['id'],
+                    'txnId' => 'HMUO9LQS7RO0JEC165ORS4KDRUEW6GKWWW',
+                    'remarks' => 'UPI Mandate',
+                    'name' => 'CREATE Mandate test',
+                    'mandateType' => 'CREATE',
+                    'frequency' => 'MONTHLY',
+                    'amount' => '12',
+                    'startDate' => '07 Feb 2024',
+                    'endDate' => '07 Jun 2024',
+                    'UMN' => $mandate['umn'],
+                    'payerVPA' => '7262093972.stage@rzp',
+                    'payerName' => 'Prashant',
+                    'payeeVPA' => 'insolglob@yes',
+                    'payeeName' => 'InSolutionGloabl',
+                    'status' => 'UNPAUSE',
+                    'statusDesc' => 'Request Processed Successfully',
+                    'debitIfsc' => 'MGAT0560004',
+                    'debitAccount' => '001002003124',
+                    'creditIfsc' => 'MGAT0400002',
+                    'crediAccount' => '4111111111111111',
+                    'mndregrefno' => 4210001,
+                    'noOfDebit' => '5',
+                    'onBehalf_Of' => 'PAYEE',
+                    'amt_rule' => 'EXACT',
+                    'ruleType' => 'ON',
+                    'ruleValue' => 4,
+                    'has_update_authority' => 'N',
+                    'create_date_time' => '07 Feb 2024 05:59 PM',
+                    'ref_url' => 'https://www.mgs.co.in',
+                    'errCode' => '00',
+                    'respCode' => '00',
+                    'payType' => 'P2M',
+                    'show_QR' => 'N',
+                    'callback_type' => 'MANDATE_STATUS',
+                    'purpose_code' => '14',
+                    'initiationMode' => '01',
+                    'merchantType' => 'SMALL',
+                    'message' => 'APPROVED OR COMPLETED SUCCESSFULLY',
+                    'is_verified' => 'false',
+                    'blockFund' => 'N',
+                    'initiatedBy' => 'PAYEE',
+                    'nextRecurDate' => 'Mar 07, 2024 12:00:00 AM',
+                    'remRecuCount' => '1',
+                    'pauseStartDate' => ' ',
+                    'pauseEndDate' => ' ',
+                    'pydMobile' => '919999900099',
+                    'orgTxnId' => 'MGA6673417D738B49E58C9F74366C598214',
+                    'voucher_UUID' => 'insolglob@yes',
+                    'debitAccountType' => 'SAVINGS'
+                ]
+            ]
+        ];
+        return json_encode($response);
+    }
+
+    protected function getAsyncCallbackResponseRevokeMandateForYesBank($mandate)
+    {
+        $response = [
+            'requestInfo' => [
+                'pgMerchantId' => 'YBL000000088302',
+                'pspRefNo' => $mandate['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo' => '024009044860',
+                    'mandate' => true,
+                    'requestDate' => '07 Feb 2024 05:59 PM',
+                    'referenceNumber' => $mandate['id'],
+                    'txnId' => 'HMUO9LQS7RO0JEC165ORS4KDRUEW6GKWWW',
+                    'remarks' => 'UPI Mandate',
+                    'name' => 'CREATE Mandate test',
+                    'mandateType' => 'CREATE',
+                    'frequency' => 'MONTHLY',
+                    'amount' => '12',
+                    'startDate' => '07 Feb 2024',
+                    'endDate' => '07 Jun 2024',
+                    'UMN' => $mandate['umn'],
+                    'payerVPA' => '7262093972.stage@rzp',
+                    'payerName' => 'Prashant',
+                    'payeeVPA' => 'insolglob@yes',
+                    'payeeName' => 'InSolutionGloabl',
+                    'status' => 'REVOKED',
+                    'statusDesc' => 'Request Processed Successfully',
+                    'debitIfsc' => 'MGAT0560004',
+                    'debitAccount' => '001002003124',
+                    'creditIfsc' => 'MGAT0400002',
+                    'crediAccount' => '4111111111111111',
+                    'mndregrefno' => 4210001,
+                    'noOfDebit' => '5',
+                    'onBehalf_Of' => 'PAYEE',
+                    'amt_rule' => 'EXACT',
+                    'ruleType' => 'ON',
+                    'ruleValue' => 4,
+                    'has_update_authority' => 'N',
+                    'create_date_time' => '07 Feb 2024 05:59 PM',
+                    'ref_url' => 'https://www.mgs.co.in',
+                    'errCode' => '00',
+                    'respCode' => '00',
+                    'payType' => 'P2M',
+                    'show_QR' => 'N',
+                    'callback_type' => 'MANDATE_STATUS',
+                    'purpose_code' => '14',
+                    'initiationMode' => '01',
+                    'merchantType' => 'SMALL',
+                    'message' => 'APPROVED OR COMPLETED SUCCESSFULLY',
+                    'is_verified' => 'false',
+                    'blockFund' => 'N',
+                    'initiatedBy' => 'PAYEE',
+                    'nextRecurDate' => 'Mar 07, 2024 12:00:00 AM',
+                    'remRecuCount' => '1',
+                    'pauseStartDate' => ' ',
+                    'pauseEndDate' => ' ',
+                    'pydMobile' => '919999900099',
+                    'orgTxnId' => 'MGA6673417D738B49E58C9F74366C598214',
+                    'voucher_UUID' => 'insolglob@yes',
+                    'debitAccountType' => 'SAVINGS'
+                ]
+            ]
+        ];
         return json_encode($response);
     }
 

@@ -23,6 +23,8 @@ class Entity
     const KEY                        = 'key';
     const P2P                        = 'p2p';
     const VPA                        = 'vpa';
+    const LINKED_NUMBER              = 'linked_number';
+    const MOBILE                     = 'mobile';
     const MPAN                       = 'mpan';
     const CARD                       = 'card';
     const PLAN                       = 'plan';
@@ -98,6 +100,9 @@ class Entity
     const CARD_MANDATE_NOTIFICATION  = 'card_mandate_notification';
     const PAYOUT_LINK                = 'payout_link';
     const BULK_IDEMPOTENCY_KEYS      = 'bulk_idempotency_keys';
+
+    const BANKING_ACCOUNTS            = 'banking_accounts';
+
     const PAYOUT_SOURCE              = 'payout_source';
     const SETTINGS                   = 'settings';
     const FEE_RECOVERY               = 'fee_recovery';
@@ -113,6 +118,8 @@ class Entity
     const ENTITY_OFFER               = 'entity_offer';
     const FUND_ACCOUNT               = 'fund_account';
     const SUBSCRIPTION               = 'subscription';
+
+    const VCPP                       = 'vcpp';
     const UPI_TRANSFER               = 'upi_transfer';
     const UPI_METADATA               = 'upi_metadata';
     const PAPER_MANDATE              = 'paper_mandate';
@@ -313,6 +320,7 @@ class Entity
     const PAYU                   = 'payu';
     const OPTIMIZER_RAZORPAY     = 'optimizer_razorpay';
     const BT_RBL                 = 'bt_rbl';
+    const BT_IBL                 = 'bt_ibl';
     const CASHFREE               = 'cashfree';
     const PHONEPE                = 'phonepe';
     const ZAAKPAY                = 'zaakpay';
@@ -1107,6 +1115,7 @@ class Entity
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
         self::VPA                       => \RZP\Models\Vpa::class,
+        self::LINKED_NUMBER             => \RZP\Models\LinkedNumber::class,
         self::WALLET_ACCOUNT            => \RZP\Models\WalletAccount::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
@@ -1253,6 +1262,8 @@ class Entity
 
         self::BULK_IDEMPOTENCY_KEYS => \RZP\Models\Payout\BulkIdempotencyKey::class,
 
+        self::BANKING_ACCOUNTS => \RZP\Models\Payout\BankingAccount::class,
+
         self::PAYOUTS_STATUS_DETAILS => \RZP\Models\PayoutsStatusDetails::class,
 
         self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
@@ -1392,6 +1403,7 @@ class Entity
         self::CURRENCY_CLOUD         => \RZP\Gateway\Mozart::class,
         self::UPI_RZPAPB             => \RZP\Gateway\Mozart::class,
         self::UPI_RZPAXIS            => \RZP\Gateway\Mozart::class,
+        self::BT_IBL                 => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,
@@ -1682,6 +1694,8 @@ class Entity
         self::TOKEN      => 'tokens',
         self::TRANSFER   => 'route',
         self::PAYMENT_METHOD_TRANSFER   => 'route',
+        self::TRANSFER_PAYMENT => 'route',
+        self::CARD_MANDATE => 'card.payments',
     ];
 
     protected static $externalRepoConfigKey = [
@@ -1693,6 +1707,7 @@ class Entity
         self::TOKEN    => Models\Admin\ConfigKey::TOKENS_SERVICE_ENABLED,
         self::TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
         self::PAYMENT_METHOD_TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
+        self::TRANSFER_PAYMENT => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
     ];
 
     public static $archivalFallbackConfigKey = [

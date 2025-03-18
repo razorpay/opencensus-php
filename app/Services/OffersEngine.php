@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use App;
 use Request;
+use Monolog\Logger;
 use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Error\ErrorClass;
@@ -77,6 +78,19 @@ class OffersEngine
     const OffersEngineFailed = 'v1/offers/txn/failed';
 
     const ValidateOffer = 'v1/offers/validate';
+
+    // Offers Engine Actions for Tracing
+    const CREATE_OFFER       = 'create_offer';
+    const ADMIN_CREATE_OFFER = 'admin_create_offer';
+    const UPDATE_OFFER       = 'update_offer';
+    const ADMIN_UPDATE_OFFER = 'admin_update_offer';
+    const GET_OFFER_BY_ID    = 'get_offer_by_id';
+    const ADMIN_GET_OFFERS   = 'admin_get_offers';
+    const GET_OFFERS         = 'get_offers';
+    const AVAIL_TX           = 'avail_tx';
+    const REDEEM_TXN         = 'redeem_txn';
+    const FAILED_TX          = 'failed_tx';
+    const VALIDATE_OFFER     = 'validate_offer';
 
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [
@@ -350,6 +364,12 @@ class OffersEngine
 
             $this->trace->info(TraceCode::OFFERS_ENGINE_REQUEST, $traceRequest);
         }
+
+        $this->trace->count(Metric::OFFERS_ENGINE_REQUEST_DISTRIBUTION_COUNT, [
+            'route'  => app('api.route')->getCurrentRouteName(),
+            'action' => $request['action'] ?? 'unspecified',
+            'method' => $request['method'],
+        ]);
     }
 
     public function shouldLogRequest(string $method) :bool
@@ -376,6 +396,9 @@ class OffersEngine
     protected function generateRequest(string $endpoint, string $method, array $data, int $timeout): array
     {
         $url = $this->baseUrl . $endpoint;
+
+        $action = $data["action"] ?? "unspecified";
+        unset($data["action"]);
 
         // json encode if data is must, else ignore
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
@@ -412,7 +435,8 @@ class OffersEngine
             'method'    => $method,
             'headers'   => $headers,
             'options'   => $options,
-            'content'   => $data
+            'content'   => $data,
+            'action'    => $action,
         ];
     }
 
@@ -423,6 +447,7 @@ class OffersEngine
     {
         $this->userType = 'advertiser';
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
+        $input['action'] = self::CREATE_OFFER;
         return $this->sendRequest(self::OffersEngineCreateOffer, Requests::POST, $input);
     }
 
@@ -430,6 +455,7 @@ class OffersEngine
     {
         $this->userType = 'advertiser';
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
+        $input['action'] = self::ADMIN_CREATE_OFFER;
         return $this->sendRequest(self::OffersEngineAdminCreateOffer, Requests::POST, $input);
     }
 
@@ -443,6 +469,7 @@ class OffersEngine
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         $endpoint = sprintf(self::OffersEngineUpdateOffer, $id);
 
+        $input['action'] = self::UPDATE_OFFER;
         return $this->sendRequest($endpoint, Requests::PATCH, $input);
     }
 
@@ -452,6 +479,7 @@ class OffersEngine
         $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         $endpoint = sprintf(self::OffersEngineAdminUpdateOffer, $id);
 
+        $input['action'] = self::ADMIN_UPDATE_OFFER;
         return $this->sendRequest($endpoint, Requests::PATCH, $input);
     }
 
@@ -474,7 +502,7 @@ class OffersEngine
 
         $endpoint = $endpoint . '?publisher_id=' . $this->merchantId;
 
-        $response = $this->sendRequest($endpoint, Requests::GET);
+        $response = $this->sendRequest($endpoint, Requests::GET, array('action' => self::GET_OFFER_BY_ID));
 
         if (empty($response) === false)
         {
@@ -517,7 +545,7 @@ class OffersEngine
             $endpoint .= '&offer_ids=' . 'offer_' . Offer\Entity::silentlyStripSign($id);
         }
 
-        $response = $this->sendRequest($endpoint, Requests::GET);
+        $response = $this->sendRequest($endpoint, Requests::GET, array('action' => self::ADMIN_GET_OFFERS));
 
         if (empty($response) === true)
         {
@@ -601,7 +629,7 @@ class OffersEngine
             $endpoint .= "?".http_build_query($input);
         }
 
-        $response = $this->sendRequest($endpoint, Requests::GET);
+        $response = $this->sendRequest($endpoint, Requests::GET, array('action' => self::ADMIN_GET_OFFERS));
 
         if (empty($response) === true)
         {
@@ -652,7 +680,7 @@ class OffersEngine
      * @throws ServerErrorException
      * @throws BadRequestException
      */
-    public function fetchBulk(string $merchantId, array $ids = [], array $input = [])
+    public function fetchBulk(string $merchantId, array $ids = [], array $input = [], $enableCache = false)
     {
         $this->userType = 'publisher';
 
@@ -665,10 +693,9 @@ class OffersEngine
         // set pages if no ids in input
         if (sizeof($ids) === 0)
         {
-            $input['page_size'] = 200;
-            $input['page'] = 1;
+            $input['page_size'] = $input['page_size'] ?? 200;
+            $input['page'] = $input['page'] ?? 1;
         }
-
 
         $endpoint = self::OffersEngineGetOffers;
 
@@ -685,13 +712,32 @@ class OffersEngine
             }
         }
 
-        $response = $this->sendRequest($endpoint, Requests::GET);
+        foreach ($input as $key => $value)
+        {
+            $modifiedInput[] = $key . "_" . $value;
+        }
+
+        sort($modifiedInput);
+        sort($ids);
+
+        $key = hash('sha256', $this->userType . ':' . implode(':', $modifiedInput) . ':' .
+                              implode(':', $ids) . ':' . self::OffersEngineGetOffers);
+
+        $response = $this->getCache($key, $enableCache);
+
+        // Response couldn't be found in cache or enable cache was not toggled to true.
+        if (is_null($response) === true)
+        {
+            $response = $this->sendRequest($endpoint, Requests::GET, array('action' => self::GET_OFFERS));
+
+            $this->setCache($key, $response, $enableCache);
+        }
 
         if (empty($response) === true)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY, null, [
                 'ids'         => $ids,
-                'merchant_id'  => $this->merchantId,
+                'merchant_id' => $this->merchantId,
                 'input'       => $input
             ]);
         }
@@ -724,11 +770,76 @@ class OffersEngine
         }
         return $convertedOffers;
     }
+
+    private function getCache($key, $enableCache = false)
+    {
+        $response = null;
+
+        if ($enableCache === false)
+        {
+            return null;
+        }
+
+        try
+        {
+            app('trace')->info(TraceCode::OFFERS_ENGINE_GET_OFFERS_CACHING_GET, [
+                "key"   => $key,
+                "route" => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
+            $response = app('redis')->get($key);
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException($ex, Logger::ERROR, TraceCode::OFFERS_ENGINE_CACHING_ERROR, [
+                "key"       => $key,
+                "operation" => 'get',
+                "route"     => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        if (empty($response) === false)
+        {
+            $response = json_decode($response, true);
+        }
+
+        return $response;
+    }
+
+    private function setCache($key, $data, $enableCache = false)
+    {
+        if ($enableCache === false)
+        {
+            return;
+        }
+
+        try
+        {
+            app('trace')->info(TraceCode::OFFERS_ENGINE_GET_OFFERS_CACHING_SET, [
+                "key"   => $key,
+                "route" => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
+            // Setting cache for 10 mins
+            app('redis')->set($key, json_encode($data), 'ex', 60 * 10);
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException($ex, Logger::ERROR, TraceCode::OFFERS_ENGINE_CACHING_ERROR, [
+                "key"       => $key,
+                "operation" => 'set',
+                "route"     => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+    }
+
     public function avail(string $merchantId, $input)
     {
         $this->userType = 'publisher';
 
         $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        $input['action'] = self::AVAIL_TX;
 
         return $this->sendRequest(self::OffersEngineAvail, Requests::POST, $input);
 
@@ -740,6 +851,8 @@ class OffersEngine
 
         $this->merchantId = 'rzp.merchant.' . $merchantId;
 
+        $input['action'] = self::REDEEM_TXN;
+
         return $this->sendRequest(self::OffersEngineRedeem, Requests::POST, $input);
     }
 
@@ -748,6 +861,8 @@ class OffersEngine
         $this->userType = 'publisher';
 
         $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        $input['action'] = self::FAILED_TX;
 
         return $this->sendRequest(self::OffersEngineFailed, Requests::POST, $input);
     }
@@ -766,6 +881,8 @@ class OffersEngine
         $input['publisher_id'] = $this->merchantId;
 
         $input['channel'] = Constants::CHANNEL_RZP_CHECKOUT;
+
+        $input['action'] = self::VALIDATE_OFFER;
 
         $response = $this->sendRequest(self::ValidateOffer, Requests::POST, $input, false);
 

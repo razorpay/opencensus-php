@@ -5,6 +5,7 @@ namespace RZP\Models\LedgerOutbox;
 use App;
 use Exception;
 use Carbon\Carbon;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Services\KafkaProducer;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
@@ -778,6 +779,15 @@ class Core extends Base\Core
             ]);
         }
 
+        if ($transactorEvent === LedgerConstants::LEDGER_ONDEMAND_SETTLEMENT_PROCESSED &&
+            str_contains($errorMessage, constants::INSUFFICIENT_BALANCE_FAILURE))
+        {
+            $this->repo->transaction(function () use ($transactorEvent, $transactorId) {
+                $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                $this->softDelete($transactorId, $transactorEvent);
+            });
+        }
+
         return null;
     }
 
@@ -914,19 +924,6 @@ class Core extends Base\Core
                         $this->repo->payout->updatePayout($payout->getId(), $payout->merchant->getId(), $updateData);
 
                         $this->dispatchToSettlementFromJournalIfApplicableForPayout($journal, $payout);
-
-                        $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($payout->merchant);
-
-                        if ($dualWriteRearchEnabled === true) {
-                            // dispatch for dual write job
-                            $this->pushTxnDataToKafkaForAPIDualWrite($journal, $payout->getId());
-                        } else {
-                            $txnCore = new Transaction\Core();
-                            list($txn, $feeSplit) = $txnCore->createFromPayout($payout);
-
-                            $payout->transaction()->associate($txn);
-                            $payout->save();
-                        }
                     });
                 });
         }
@@ -989,8 +986,12 @@ class Core extends Base\Core
                     return $item['id'] === $creditJournalId;
                 });
 
-                $txn = $this->transformJournalResponseToTransactionEntityBase($filteredCreditJournal);
+                $creditJournal = reset($filteredCreditJournal);
+
+                $txn = $this->transformJournalResponseToTransactionEntityBase($creditJournal);
                 $txn->accountBalance()->associate($balance);
+
+                $adjustment->setAttribute(AdjustmentEntity::TRANSACTION_ID, $creditJournalId);
 
                 $adjustment->setStatus(Status::PROCESSED);
 
@@ -1024,49 +1025,7 @@ class Core extends Base\Core
             return $txn;
         }
 
-        else if(($transactionType === Constants::TRANSFER) && ($transactorEvent === LedgerConstants::CUSTOMER_WALLET_LOADING))
-        {
-            $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
-
-            $resource = $this->getTransactionMutexresource($transfer);
-
-            $dualWriteRearchEnabled = $this->isAPILedgerDualWriteRearchSplitzEnabled($transfer->merchant);
-
-            if ($dualWriteRearchEnabled === true)
-            {
-                $this->pushTxnDataToKafkaForAPIDualWrite($journal, $transfer->getId());
-
-                return;
-            }
-            else
-            {
-                $txn = $this->mutex->acquireAndRelease(
-                    $resource,
-                    function () use ($transfer,$journal, $journalId)
-                    {
-                        return $this->repo->transaction(function () use ($transfer,$journal, $journalId) {
-                            $txnCore = new Transaction\Core();
-
-                            list($txn, $feeSplit) = $txnCore->createFromTransfer($transfer, $journalId, false);
-
-                            $transfer->transaction()->associate($txn);
-
-                            $transfer->save();
-
-                            $this->trace->info(TraceCode::CUSTOMER_TRANSFER_TRANSACTION_CREATED,
-                                [
-                                    'transaction_id' => $txn->getId(),
-                                ]);
-
-                            return $txn;
-                        });
-                    }
-                );
-
-                return $txn;
-            }
-        }
-        else if($transactionType === Constants::TRANSFER)
+        else if($transactionType === Constants::TRANSFER && ($transactorEvent !== LedgerConstants::CUSTOMER_WALLET_LOADING))
         {
             [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($journal, "merchant_balance", "merchant_balance" );
 
@@ -2252,72 +2211,4 @@ class Core extends Base\Core
 
     }
 
-    public function isAPILedgerDualWriteRearchSplitzEnabled($merchant)
-    {
-        $properties = [
-            'request_data' => json_encode(["merchant_id" => $merchant->getId()]),
-            'id' => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.api_ledger_dual_write_rearch'),
-        ];
-
-        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-    }
-
-    private function pushTxnDataToKafkaForAPIDualWrite(array $journal, $producerKey)
-    {
-        if (($this->app->runningUnitTests() === true))
-        {
-            return;
-        }
-
-        $data = [
-            'payload_api'=>[
-                'journal'=> $journal,
-            ]
-        ];
-
-        $message = [
-            LedgerConstants::KAFKA_MESSAGE_DATA       => $data,
-            LedgerConstants::KAFKA_MESSAGE_TASK_NAME  => LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS
-        ];
-
-        $topic = env('DUAL_WRITE_TRANSACTION_FOR_API_EVENTS', LedgerConstants::DUAL_WRITE_TRANSACTION_FOR_API_EVENTS);
-
-        try
-        {
-            $kafkaProducer = (new KafkaProducer($topic, stringify($message)));
-
-            $kafkaProducer->Produce();
-
-            $this->trace->info(TraceCode::KAFKA_PAYMENTS_API_TXN_PUSH_SUCCESS, [
-                LedgerConstants::PRODUCER_KEY => $producerKey,
-                LedgerConstants::TOPIC        => $topic,
-                LedgerConstants::MESSAGE      => $message
-            ]);
-
-            $this->trace->count(Metric::KAFKA_PAYMENT_API_TXN_PUSH_SUCCESS, [
-                LedgerConstants::TOPIC        => $topic,
-            ]);
-
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->count(Metric::KAFKA_PAYMENT_API_TXN_PUSH_FAILURE, [
-                LedgerConstants::TOPIC        => $topic,
-            ]);
-
-            $this->trace->traceException(
-                $ex,
-                500,
-                TraceCode::KAFKA_PAYMENT_API_TXN_PUSH_FAILURE,
-                [
-                    LedgerConstants::PRODUCER_KEY => $producerKey,
-                    LedgerConstants::TOPIC        => $topic,
-                    LedgerConstants::MESSAGE      => $message
-                ]);
-
-            throw $ex;
-        }
-
-    }
 }

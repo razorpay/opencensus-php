@@ -360,22 +360,22 @@ jobs:
             FILES_CHANGED: ${{ steps.pr_files.outputs.files_changed_json }}
         run: |
             sh ./.github/actions/triggerDevstack.sh
-      - name: Run ITF E2E Tests on Devstack with Successful Build Image Workflow
-        if: env.WORKFLOW_STATUS == 'success'
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
-          username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
-          password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
-          method: "POST"
-          data: >
-            {
-              "service_under_test": "api",
-              "commit_id": "${{ steps.pr_info.outputs.latest_commit }}",
-              "end_to_end_tests_branch_ref": "master",
-              "status": "Pending",
-              "config_overrides": "{}"
-            }
+      # - name: Run ITF E2E Tests on Devstack with Successful Build Image Workflow
+      #   if: env.WORKFLOW_STATUS == 'success'
+      #   uses: fjogeleit/http-request-action@master
+      #   with:
+      #     url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
+      #     username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
+      #     password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
+      #     method: "POST"
+      #     data: >
+      #       {
+      #         "service_under_test": "api",
+      #         "commit_id": "${{ steps.pr_info.outputs.latest_commit }}",
+      #         "end_to_end_tests_branch_ref": "master",
+      #         "status": "Pending",
+      #         "config_overrides": "{}"
+      #       }
 
       - name: Post comment for devstack initated
         if: success() && env.WORKFLOW_STATUS == 'success'

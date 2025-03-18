@@ -24,12 +24,13 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($id)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
+
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
-                    return  $query->where('payment_id', '=', $id)->get();
+
+                $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+
+                return  $query->where('payment_id', '=', $id)->get();
             });
         }
 
@@ -51,12 +52,11 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
+
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
 
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+                $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 $entity = $query->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
@@ -87,12 +87,12 @@ class Repository extends Base\Repository
         {
             $data = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
+
                 $entity = $query->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc')
@@ -126,12 +126,11 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($paymentIds, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 return $query->whereIn('payment_id', $paymentIds)
                              ->where('action', '=', $action)
@@ -201,12 +200,11 @@ class Repository extends Base\Repository
         {
             $data = $this->newQueryAndResetEntityConnection(function () use ($refundId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 $entity =  $query->where(Entity::REFUND_ID, '=', $refundId)
                                  ->first();
@@ -234,12 +232,11 @@ class Repository extends Base\Repository
         {
             $hotData = $this->newQueryAndResetEntityConnection(function () use ($refundId, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 return  $query->where(Entity::REFUND_ID, '=', $refundId)
                               ->where(Entity::ACTION, '=', $action)
@@ -268,11 +265,6 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()->where(Entity::PAYMENT_ID, '=', $paymentId);
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $query->firstOrFail();
-        }
-
         $data = $query->first();
 
         if (empty($data) === true)
@@ -280,9 +272,8 @@ class Repository extends Base\Repository
             $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
             $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-            if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-            }
+
+            $query = $query ->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
             $data = $query->where(Entity::PAYMENT_ID, '=', $paymentId)
                           ->firstOrFail();
@@ -299,17 +290,5 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::CREATED_AT, 'desc');
 
         return $query->firstOrFail();
-    }
-
-    protected function checkHarvsterQuerySplitzAndReturnConnection()
-    {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        return $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
     }
 }

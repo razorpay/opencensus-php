@@ -473,7 +473,8 @@ class OffersEngine extends Base\Core
         $availRules = $this -> getOfferAvailRules(
             $offer, $tenureDiscountMap,
             $discountType,
-            $discoverConditionString);
+            $discoverConditionString,
+            $input);
 
         $redeemRules = $this->getRedeemRules( $offer,
             $discountType,
@@ -573,7 +574,30 @@ class OffersEngine extends Base\Core
         return $discoverConditions;
     }
 
-    private function getOfferAvailRules(Entity $offer, array $tenureDiscountMap, string $benefitType, string $discoverConditionWhenString)
+    private function getMethodsFromInstruments( array $input): array
+    {
+        if (isset($input[Entity::INSTRUMENTS]) === true)
+        {
+            $methods = [];
+            foreach ($input[Entity::INSTRUMENTS] as $instrument)
+            {
+                if (empty($instrument[Constants::METHOD]) === false)
+                {
+                    $methods[] = $instrument[Constants::METHOD];
+                }
+            }
+
+            return $methods;
+        }
+
+        return [];
+    }
+
+    private function getOfferAvailRules(Entity $offer,
+                                        array $tenureDiscountMap,
+                                        string $benefitType,
+                                        string $discoverConditionWhenString,
+                                        array $input = [])
     {
 
         // avail when condition is same for all tenures in case of no_cost_emi too for rzp_offers
@@ -584,8 +608,22 @@ class OffersEngine extends Base\Core
 
         if ($offer->getPaymentMethod() !== null)
         {
-            // note - if specified, only one payment method allowed per offer in API
-            array_push($availConditionWhenArray, 'PaymentInstrument.Method == "' . $offer->getPaymentMethod() . '"');
+            if ($offer->getPaymentMethod() === Entity::MULTIPLE)
+            {
+                $methods = $this->getMethodsFromInstruments($input);
+
+                if (empty($methods) === false)
+                {
+                    array_push($availConditionWhenArray,
+                               'PaymentInstrument.Method in ["' . implode('", "', $methods) . '"]');
+                }
+            }
+            else
+            {
+                // note - if specified, only one payment method allowed per offer in API
+                array_push($availConditionWhenArray, 'PaymentInstrument.Method == "' . $offer->getPaymentMethod() . '"');
+            }
+
         }
 
         // set payment_method_type if not null (NOTE - if null it means both are allowed in case of cards)
@@ -834,7 +872,13 @@ class OffersEngine extends Base\Core
         $this->mapChannelProperties($offersEngineResponse[Constants::PUBLISH], $offer);
 
         // Map offer spec and set additional attributes
-        $response = $this->mapOfferSpecAndSetAttributes($offersEngineResponse[Constants::OFFER][Constants::SPEC], $offer);
+        $response = $this->mapOfferSpecAndSetAttributes($offersEngineResponse[Constants::OFFER][Constants::SPEC],
+                                                        $offer, $offersEngineResponse[Constants::PUBLISH]);
+
+        if (isset($offersEngineResponse[Constants::OFFER][Constants::PUBLIC_OFFER]) === true)
+        {
+            $this->mapPublicOfferAttributes($offersEngineResponse[Constants::OFFER][Constants::PUBLIC_OFFER], $offer);
+        }
 
         // not present in oe
         $offer[Entity::ERROR_MESSAGE] = Entity::DEFAULT_ERROR_MESSAGE;
@@ -881,7 +925,34 @@ class OffersEngine extends Base\Core
         $offer->setAttribute(Entity::DEFAULT_OFFER, $channelProperties[Constants::OFFER_TYPE] === Constants::OFFER_TYPE_STAGE_REGULAR ? 1 : 0);
     }
 
-    private function mapOfferSpecAndSetAttributes(array $offersEngineSpec, Entity $offer): array
+
+    private function mapPublicOfferAttributes(array $publicOffer, Entity $offer)
+    {
+        if (isset($publicOffer[Constants::RULES]) === true)
+        {
+            foreach ($publicOffer[Constants::RULES] as $rule)
+            {
+                if (isset($rule[Constants::INCLUDES]) === true)
+                {
+                    if (isset($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) === true)
+                    {
+                        if (count($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) > 1)
+                        {
+                            $offer->setAttribute(Entity::PAYMENT_METHOD, Entity::MULTIPLE);
+
+                            $offer->setInstruments($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function mapOfferSpecAndSetAttributes(
+        array  $offersEngineSpec,
+        Entity $offer,
+        array  $offersPublishResponse = []
+    ): array
     {
         $availRuleGroup = $this->fetchRuleGroupForStage($offersEngineSpec, Constants::STAGE_AVAIL );
 
@@ -896,8 +967,8 @@ class OffersEngine extends Base\Core
         // Set emi_subvention and offer_type
         $this->setEmiSubventionAndOfferType($offer, $offersEngineSpec);
 
-        // Set max_offer_usage and max_payment_count from usage_limits
-        $this->setUsageLimits($offer, $offersEngineSpec);
+        // Set max_offer_usage and max_payment_count from usage_limits and total_usage as well
+        $this->setUsageLimits($offer, $offersEngineSpec, $offersPublishResponse);
 
         $subscriptionFields = [];
         $tenureDiscountMap = [];
@@ -992,14 +1063,15 @@ class OffersEngine extends Base\Core
         }
     }
 
-    private function setUsageLimits(Entity $offer, array $offersEngineSpec)
+    private function setUsageLimits(Entity $offer, array $offersEngineSpec, array $offersPublishResponse = [])
     {
         // set max_offer_usage and max_payment_count from usage_limits
         foreach ($offersEngineSpec[Constants::USAGE_LIMITS] as $usageLimit)
         {
             if ($usageLimit[Constants::ON] === Constants::LIMIT_ON_OFFER)
             {
-                $offer->setAttribute(Entity::MAX_OFFER_USAGE, $usageLimit[Constants::MAXIMUM_VALUE]);
+                $offer->setAttribute(Entity::MAX_OFFER_USAGE, (int)$usageLimit[Constants::MAXIMUM_VALUE]);
+                $offer->setAttribute(Entity::CURRENT_OFFER_USAGE, (int)$offersPublishResponse[Constants::TOTAL_USAGE]);
             }
             else if ($usageLimit[Constants::ON] === Constants::LIMIT_ON_CARD_NUMBER)
             {
@@ -1176,7 +1248,7 @@ class OffersEngine extends Base\Core
 
     public function redeemOnOffersEngine(Payment\Entity $payment,Entity $offer): void
     {
-        if ((new Core)->shouldRouteToOffersEngine($payment->getMerchantId(), Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) === false){
+        if ((new Core)->shouldRouteToOffersEngine() === false){
             return;
         }
         $offer = $payment->getOffer();
@@ -1203,7 +1275,7 @@ class OffersEngine extends Base\Core
     }
     public function failOnOffersEngine(Payment\Entity $payment): void
     {
-        if ((new Core)->shouldRouteToOffersEngine($payment->getMerchantId(), Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP) === false){
+        if ((new Core)->shouldRouteToOffersEngine() === false){
             return;
         }
 
@@ -1316,26 +1388,12 @@ class OffersEngine extends Base\Core
         {
             $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
 
+            // adding skip_whitelisting attribute to bypass the whiteisting for dummy details
             $response = $this->app['offers_engine']->validateOffer($merchantId, [
                 'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
+                'skip_whitelisting'=> $isDummyPayment,
             ]);
-            #TODO ::OFFERS to check why this is there
-            if (isset($response['error']))
-            {
-                // if card number is necessary, rebuild the fact and call again
-                if (in_array($response['error']['internal_error_code'],
-                    [Constants::VALIDATE_CARD_NUMBER_REQUIRED_ERROR,
-                    Constants::VALIDATE_MISSING_FACT_ERROR], true) === true )
-                {
-                    $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
-
-                    $response = $this->app['offers_engine']->validateOffer($merchantId, [
-                        'offer_id' => $offer->getPublicId(),
-                        'fact' => $fact,
-                    ]);
-                }
-            }
             return $response;
         }
         catch (\Exception $exception)
@@ -1440,6 +1498,14 @@ class OffersEngine extends Base\Core
         $fact[Constants::CUSTOMER_FACT][Constants::CARD_NUMBER] = $card_number;
 
         if ($this->payment->getSubscriptionId() !== null)
+        {
+            $fact[Constants::SUBSCRIPTION_FACT] = [
+                SubscriptionOfferEntity::NO_OF_CYCLES => 1,
+            ];
+        }
+
+        if (($this->isDummyPayment === true) and
+            (isset($fact[Constants::SUBSCRIPTION_FACT]) === false))
         {
             $fact[Constants::SUBSCRIPTION_FACT] = [
                 SubscriptionOfferEntity::NO_OF_CYCLES => 1,

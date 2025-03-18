@@ -326,13 +326,15 @@ class Core extends Base\Core
             if ($this->app['env'] === Environment::TESTING)
             {
                 // razorx experiment to decide the statement fetch flow to be old or new.
-                $accStmtVariant = $this->app->razorx->getTreatment(
-                    $basDetails->merchant->getId(),
-                    Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
-                    $this->mode
-                );
+                $requestPayload = [
+                    "id" => $basDetails->merchant->getId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
+                    'request_data'  => json_encode(['id' =>$basDetails->merchant->getId()])
+                ];
 
-                if (strtolower($accStmtVariant) === "on")
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if ($isExperimentEnabled === true)
                 {
                     $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
                 }
@@ -505,8 +507,12 @@ class Core extends Base\Core
                             $merchant);
                     }
 
+                    $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+                    $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
                     //get last statement in our db
-                    $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
+                    $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber, $experimentResult);
 
                     $postedDateOfLastTransaction = isset($lastBankTxn) === true ? $lastBankTxn[Entity::POSTED_DATE] : null;
 
@@ -624,16 +630,17 @@ class Core extends Base\Core
 
         $merchantId = $basDetails->getMerchantId();
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
-            $this->mode ?? Constants\Mode::LIVE,
-            2
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
+
+        $isOptimisedInsertionEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         [$hasMore, $updateParams] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $updateParams, &$noOfStatementsInserted, $variant)
+            function () use ($channel, $accountNumber, $missingStatements, $updateParams, &$noOfStatementsInserted, $isOptimisedInsertionEnabled)
             {
                 $countOfMissingRecords = count($missingStatements);
 
@@ -695,7 +702,7 @@ class Core extends Base\Core
 
                     $this->setBasDetailsForStatementFix($accountNumber, $channel);
 
-                    if ($variant === 'on')
+                    if ($isOptimisedInsertionEnabled === true)
                     {
                         $insertedBasEntities = $this->optimiseSaveMissingAccountStatements($accountNumber, $channel, $missingStatements);
                     }
@@ -782,7 +789,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
             'merchant_id'         => $merchantId,
             'response_time'       => $insertEndTime - $insertStartTime,
-            'variant'             => $variant,
+            'isOptimisedInsertionEnabled'             => $isOptimisedInsertionEnabled,
             'statements_inserted' => $noOfStatementsInserted,
         ]);
 
@@ -890,16 +897,17 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $basDetails->getMerchantId(),
-            Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
-            $this->mode ?? Constants\Mode::LIVE,
-            2
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
+
+        $isOptimisedInsertionEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted, $variant)
+            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted, $isOptimisedInsertionEnabled)
             {
                 // setting the variable to true to customize the later flow (linking the statement to source entity)
                 $this->isStatementUnderFix = true;
@@ -908,7 +916,7 @@ class Core extends Base\Core
 
                 $this->setBasDetailsForStatementFix($accountNumber, $channel);
 
-                if ($variant === 'on')
+                if ($isOptimisedInsertionEnabled === true)
                 {
                     $insertedBasEntities = $this->optimiseSaveMissingAccountStatements($accountNumber, $channel, $missingStatements);
                 }
@@ -977,7 +985,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
             'response_time'       => $insertEndTime - $insertStartTime,
-            'variant'             => $variant,
+            'isOptimisedInsertionEnabled'             => $isOptimisedInsertionEnabled,
             'statements_inserted' => $noOfStatementsInserted,
         ]);
 
@@ -1120,8 +1128,12 @@ class Core extends Base\Core
             $insertedBasIds         = [];
             $insertedTransactionIds = [];
 
+            $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+            $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
             $lastTransaction = $this->repo->banking_account_statement
-                                               ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+                                               ->findLatestByAccountNumberAndChannel($accountNumber, $channel, $experimentResult);
 
             $postedDateOfLastTransaction = isset($lastTransaction) === true ? $lastTransaction[Entity::POSTED_DATE] : null;
 
@@ -1282,8 +1294,12 @@ class Core extends Base\Core
 
             $groupedStatementsBasedOnInsertion = [];
 
+            $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+            $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
             $lastTransaction = $this->repo->banking_account_statement
-                ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+                ->findLatestByAccountNumberAndChannel($accountNumber, $channel, $experimentResult);
 
             $postedDateOfLastTransaction = isset($lastTransaction) === true ? $lastTransaction[Entity::POSTED_DATE] : null;
 
@@ -1729,8 +1745,12 @@ class Core extends Base\Core
                     {
                         if ($channel === Channel::RBL)
                         {
+                            $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+                            $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
                             $lastBankTransaction = $this->repo->banking_account_statement
-                                ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+                                ->findLatestByAccountNumberAndChannel($accountNumber, $channel, $experimentResult);
 
                             $transactionCount = $this->repo->banking_account_statement->fetchCountOfRecordsForAGivenDayWithPostedDateRange(
                                 $accountNumber, $channel, $lastBankTransaction[Entity::TRANSACTION_DATE]);
@@ -2409,7 +2429,11 @@ class Core extends Base\Core
             $accountNumber,
             $merchant);
 
-        $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
+        $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+        $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
+        $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber, $experimentResult);
 
         $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
 
@@ -3017,9 +3041,13 @@ class Core extends Base\Core
 
     protected function saveAccountStatementV2(Base\PublicCollection $basEntities, Merchant\Entity $merchant)
     {
-        $payoutServiceTxnVariant = $this->app->razorx->getTreatment($merchant->getId(),
-                                                    Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
-                                                    $this->mode);
+        $requestPayload = [
+            "id" =>  $merchant->getId(),
+            "experiment_name" => Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
+            'request_data'  => json_encode(['id' =>  $merchant->getId()])
+        ];
+
+        $isPSTxnReconExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         /** @var Entity $basEntity */
         foreach ($basEntities as $basEntity)
@@ -3040,7 +3068,7 @@ class Core extends Base\Core
                     ($sourceEntity->isBalanceAccountTypeDirect() === true) and
                     ($sourceEntity->isOfMerchantTransaction() === true) and
                     ($sourceEntity->getStatus() === Status::PROCESSED) and
-                    !($payoutServiceTxnVariant == 'on' and
+                    !($isPSTxnReconExperimentEnabled === true and
                       $sourceEntity->getIsPayoutService() == true and
                       $basEntity->getType() == Type::DEBIT))
                 {
@@ -3051,7 +3079,7 @@ class Core extends Base\Core
                 // for statement under fix we send event to ledger after inserting all the missing statements outside the transaction
                 // For payout service payout linked with debit, we dont send event to ledger since we make a call to ps which already does this
                 if ($this->isStatementUnderFix === false and
-                    !($payoutServiceTxnVariant == 'on' and
+                    !($isPSTxnReconExperimentEnabled === true and
                       $sourceEntity->getEntityName() === Constants\Entity::PAYOUT and
                       $sourceEntity->getIsPayoutService() == true and
                       $basEntity->getType() == Type::DEBIT)
@@ -3100,7 +3128,7 @@ class Core extends Base\Core
             }
             else
             {
-                if (!($payoutServiceTxnVariant == 'on' and
+                if (!($isPSTxnReconExperimentEnabled === true and
                       $sourceEntity->getEntityName() === Constants\Entity::PAYOUT and
                       $sourceEntity->getIsPayoutService() == true and
                       $basEntity->getType() == Type::DEBIT)
@@ -3509,11 +3537,13 @@ class Core extends Base\Core
         (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
         $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
 
-        $payoutServiceTxnVariant = $this->app->razorx->getTreatment($payout->getMerchantId(),
-                                                    Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
-                                                    $this->mode);
+        $requestPayload = [
+            "id" =>  $payout->getMerchantId(),
+            "experiment_name" => Merchant\RazorxTreatment::PAYOUT_SERVICE_TXN_RECON,
+            'request_data'  => json_encode(['id' =>  $payout->getMerchantId()])
+        ];
 
-        if ($payoutServiceTxnVariant == 'on' and $payout->getIsPayoutService() == true)
+        if (((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE) === true) and $payout->getIsPayoutService() == true)
         {
             $input = [
                 Entity::BAS_ID                  => $transactionId,
@@ -4368,8 +4398,7 @@ class Core extends Base\Core
 
         foreach ($bankingAccountDetails as $bankingAccountDetail)
         {
-            if ((boolval($blacklistStatementFetch) === true) and
-                ($this->checkIfBlackListedMerchant($bankingAccountDetail->merchant->getId()) === true))
+            if ((boolval($blacklistStatementFetch) === true))
             {
                 continue;
             }
@@ -4662,22 +4691,6 @@ class Core extends Base\Core
         }
 
         return [$expectedAttempts, $allowedToFetch];
-    }
-
-    public function checkIfBlackListedMerchant($merchantId)
-    {
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::DISABLE_STATEMENT_FETCH,
-            $this->mode
-        );
-
-        if ($variant === 'on')
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function automateAccountStatementsReconByChannel(string $channel, array $input)
@@ -5150,17 +5163,7 @@ class Core extends Base\Core
             return true;
         }
 
-        /** @var BASDetails\Entity $basDetailEntity */
-        $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
-
-        // roll out via razorx.
-        $variant = $this->app->razorx->getTreatment(
-            $basDetailEntity->getMerchantId(),
-            Merchant\RazorxTreatment::BAS_FETCH_RE_ARCH,
-            $this->mode
-        );
-
-        return (strtolower($variant) == 'on');
+        return true;
     }
 
     /**
@@ -5810,18 +5813,12 @@ class Core extends Base\Core
      */
     private function fetchUnlinkedRecordsUsingOptimizedQueryIfApplicable($accountNumber, Details\Entity $basDetails, $channel, int $limit): array
     {
-        $variant = $this->app->razorx->getTreatment($accountNumber,
-                                                    Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE,
-                                                    $this->mode);
-
         $fetchUsingDefaultQuery = true;
 
         $basEntities = null;
 
         try
         {
-            if ($variant == 'on')
-            {
                 $txns = $this->repo->transaction->fetchLatestTxnForBalanceId($basDetails->getBalanceId());
 
                 if (count($txns) > 0)
@@ -5834,7 +5831,6 @@ class Core extends Base\Core
                         $fetchUsingDefaultQuery = false;
                     }
                 }
-            }
         }
         catch (\Throwable $e)
         {
@@ -5960,5 +5956,24 @@ class Core extends Base\Core
 
             $this->repo->payout->updateInPayoutServiceDB($tableName, $id, $data);
         }
+    }
+    private function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
     }
 }

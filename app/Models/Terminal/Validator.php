@@ -2704,7 +2704,7 @@ class Validator extends Base\Validator
     protected static $assignPlanRules = [
         'input'                         => 'required|array',
         'input.*.'.Entity::TERMINAL_ID  => 'required|string',
-        'input.*.'.Entity::PLAN_NAME    => 'required|string',
+        'input.*.'.Entity::PLAN_ID      => 'required|string',
         'input.*.idempotency_key'       => 'required',
     ];
 

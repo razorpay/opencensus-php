@@ -58,11 +58,19 @@ class Core extends QrCode\Core
     public function buildQrCode(array $input, $order = null)
     {
         $qrCode = (new Entity())->build($input);
-
         if ($qrCode->getProvider() === Provider::BHARAT_QR and
             $qrCode->getRequestSource() !== RequestSource::EZETAP)
         {
                 throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
+        }
+
+        if ($qrCode->getDeviceId() !== null)
+        {
+            $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($qrCode->getDeviceId());
+
+            if (empty($deviceEntity['storeId']) === false) {
+                $qrCode->setStoreId($deviceEntity['storeId']);
+            }
         }
 
         $this->checkFeatureEnabled($input);
@@ -382,7 +390,8 @@ class Core extends QrCode\Core
                 $isBqrEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::BHARAT_QR);
             }
 
-            if ($isBqrEnabled === false)
+            if (($isBqrEnabled === false) and
+                ($input[Entity::REQUEST_SOURCE] !== RequestSource::EZETAP))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
             }
@@ -474,9 +483,16 @@ class Core extends QrCode\Core
     public function setDeviceIdForQr($qrCode, $device_id)
     {
         $qrCode->updateDeviceId($device_id);
+        if (empty($device_id) === false)
+        {
+            $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($device_id);
+
+            if (empty($deviceEntity['storeId']) === false){
+                $qrCode->setStoreId($deviceEntity['storeId']);
+            }
+        }
 
         $this->repo->saveOrFail($qrCode);
-
         return $qrCode;
     }
 
@@ -608,7 +624,7 @@ class Core extends QrCode\Core
         return false;
     }
 
-    protected function validateAndFetchTerminalIfAvailable(array $input, $additionalData = null)
+    public function validateAndFetchTerminalIfAvailable(array $input, $additionalData = null)
     {
 
         if ((isset($input['vpa']) === false) or
@@ -634,9 +650,14 @@ class Core extends QrCode\Core
         $vpa = strtolower($input['vpa']);
         $gateway = $this->fetchGatewayFromVpa($vpa);
 
-        $terminalDetails = [
-            TerminalEntity::MERCHANT_ID => $this->merchant->getId(),
-        ];
+        $terminalDetails = [];
+
+        if(empty($this->merchant) === false)
+        {
+            $terminalDetails = [
+                TerminalEntity::MERCHANT_ID => $this->merchant->getId(),
+            ];
+        }
 
         if (in_array($gateway, ['upi_airtel', 'upi_icici', 'upi_mindgate']))
         {
@@ -649,7 +670,7 @@ class Core extends QrCode\Core
 
         if ($gateway === null)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
@@ -695,5 +716,37 @@ class Core extends QrCode\Core
         }
 
         return $gateway;
+    }
+
+    public function getOrderFromInput(array $input)
+    {
+        if(empty($input[Entity::ORDER_ID]) === true)
+        {
+            return null;
+        }
+
+        try
+        {
+            $order = $this->repo->order->findByPublicIdAndMerchant($input[Entity::ORDER_ID], $this->merchant);
+
+            (new Validator())->validateOrder($order,$input[Entity::REQ_AMOUNT]);
+        }
+        catch(\Throwable $e)
+        {
+            if($e->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, ['message' => "The order id provided does not exist"]);
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_INVALID_ORDER_ID,null, [], "The order id provided does not exist");
+            }
+
+            throw $e;
+
+
+        }
+
+        return $order;
+
+
     }
 }

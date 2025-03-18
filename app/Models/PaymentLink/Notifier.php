@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Mail\PaymentLink\PaymentRequest;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Models\Merchant;
 
 class Notifier extends Base\Core
 {
@@ -49,6 +50,55 @@ class Notifier extends Base\Core
     }
 
     /**
+     * Sends email and sms notifications to a customer with a payment link
+     *
+     * @param Entity $paymentLink
+     * @param array  $input
+     */
+    public function notifyByEmailAndSmsNCA(array $input)
+    {
+        $emails   = $input[Entity::EMAILS] ?? [];
+        $contacts = $input[Entity::CONTACTS] ?? [];
+
+        foreach ($emails as $email)
+        {
+            $this->notifyByEmailNCA($input, $email);
+        }
+
+        foreach ($contacts as $contact)
+        {
+            $this->notifyBySmsNCA($input, $contact, $this->merchant);
+        }
+
+    }
+
+    /**
+     * Sends email notification to a customer with a payment link
+     *
+     * @param Entity $paymentLink
+     * @param string $email
+     */
+    protected function notifyByEmailNCA(array $input, string $email)
+    {
+        $mailable = new PaymentRequest($input, $email);
+        try
+        {
+            Mail::send($mailable);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE_NCA,
+                [
+                    Entity::ID    => $input[Entity::PAYMENT_LINK][Entity::ID],
+                    Entity::EMAIL => $email,
+                ]);
+        }
+    }
+
+    /**
      * Sends email notification to a customer with a payment link
      *
      * @param Entity $paymentLink
@@ -82,6 +132,28 @@ class Notifier extends Base\Core
                 [
                     Entity::ID    => $paymentLink->getId(),
                     Entity::EMAIL => $email,
+                ]);
+        }
+    }
+
+    protected function notifyBySmsNCA(array $input, string $contact, $merchant)
+    {
+
+        $request = $this->getRavenSendPaymentLinkRequestInputNCA($input, $contact, $merchant);
+
+        try
+        {
+            $this->raven->sendSms($request, false);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                null,
+                [
+                    Entity::ID      => $input[Entity::PAYMENT_LINK][Entity::ID],
+                    Entity::CONTACT => $contact,
                 ]);
         }
     }
@@ -164,6 +236,47 @@ class Notifier extends Base\Core
 
         return $payload;
     }
+
+    protected function getRavenSendPaymentLinkRequestInputNCA(array $input, string $contact, $merchant): array
+    {
+
+        $orgId = $merchant->getOrgId();
+        $paymentPageItem = isset($input[Entity::PAYMENT_LINK][Entity::PAYMENT_PAGE_ITEMS][0]) ? $input[Entity::PAYMENT_LINK][Entity::PAYMENT_PAGE_ITEMS][0]:null;
+
+        $amount = isset($paymentPageItem["item"]) ? $paymentPageItem["item"]["amount"] : null;
+
+        $template = $this->getTemplateForSMS($amount);
+
+        $display_name = 'Razorpay';
+
+        if(ORG_ENTITY::isOrgCurlec($orgId) === true)
+        {
+            $display_name = 'Curlec by Razorpay';
+        }
+
+        $payload = [
+            'receiver' => $contact,
+            'source'   => "api.{$this->mode}.payment_link",
+            // The template for invoice & payment_link is same, we are continuing to use the same for now
+            'template' => $template,
+            'params'   => [
+                'merchant_name' => $merchant->getBillingLabel(),
+                'amount'        => amount_format_IN($amount),
+                'invoice_link'  => $input[Entity::PAYMENT_LINK]["short_url"],
+                'currency'      => $input[Entity::PAYMENT_LINK]["currency"],
+                'display_name'  => $display_name,
+            ],
+        ];
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
+        return $payload;
+    }
+
 
     protected function getTemplateForSMS($amount = null)
     {

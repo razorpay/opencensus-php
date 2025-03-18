@@ -1312,7 +1312,7 @@ return [
         ],
     ],
 
-    'testGetAgentsFilterInternalAuth' => [
+    'testGetAgentsFilterInternalAuthSuccess' => [
         'request'  => [
             'url'     => '/internal/fd/support_dashboard/agent?email=vinita.nirmal@razorpay.com&fd_instance=rzpind',
             'method'  => \Requests::GET,
@@ -1329,6 +1329,34 @@ return [
             ],
         ],
     ],
+
+
+    'testGetAgentsFilterInternalAuthFailed' => [
+        'request'  => [
+            'url'     => '/internal/fd/support_dashboard/agent?email=vinita.nirmal@razorpay.com&fd_instance=rzpind',
+            'method'  => \Requests::GET,
+        ],
+        'response' => [
+            'content' => [
+                "count" => 0,
+                "items" => []
+            ],
+        ],
+    ],
+
+    'testGetAgentsFilterInternalAuthFailed404' => [
+        'request'  => [
+            'url'     => '/internal/fd/support_dashboard/agent?email=vinita.nirmal@razorpay.com&fd_instance=rzpind',
+            'method'  => \Requests::GET,
+        ],
+        'response' => [
+            'content' => [
+                "count" => 0,
+                "items" => []
+            ],
+        ],
+    ],
+
 
     'testGetAgentDetailForTicketInternalAuth' => [
         'request'  => [

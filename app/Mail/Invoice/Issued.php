@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubRegEntity;
 use RZP\Models\SubscriptionRegistration\Method as SubRegMethod;
+use RZP\Trace\TraceCode;
 
 class Issued extends Base
 {
@@ -147,7 +148,24 @@ class Issued extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $app = \App::getFacadeRoot();
+
+        $traceData = [
+            'merchant_id' => $this->data['merchant']['id'],
+            'template_view' => $this->view,
+        ];
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_ISSUED , $traceData);
+
         $data = $this->data;
+
+        if(($this->view == "emails.invoice.customer.notification" || $this->view == "emails.mjml.customer.payment_page.payment")
+            && $data['invoice']['type'] !== 'link' )
+        {
+            $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
+
+            return ($isStorkEmailVIAEnabled);
+        }
 
         if ($data['invoice']['type'] === 'link')
         {
@@ -159,6 +177,17 @@ class Issued extends Base
 
     protected function getParamsForStork(): array
     {
+        if(($this->view == "emails.invoice.customer.notification" || $this->view == "emails.mjml.customer.payment_page.payment")
+            && $this->data['invoice']['type'] !== 'link' )
+        {
+            return [
+                'template_name' => $this->view,
+                'template_namespace' => 'payments_payment_links',
+                'org_id' => $this->data['org']['id'],
+                'params' => $this->data
+            ];
+        }
+
         $data = $this->data;
 
         $invoiceData = $data['invoice'];
@@ -234,5 +263,32 @@ class Issued extends Base
         }
 
         return $storkParams;
+    }
+
+    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
+        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_ISSUED;
+
+        $experimentId = 'app.send_payment_link_emails_via_stork_issued';
+
+        try {
+            $app = \App::getFacadeRoot();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
+            ];
+            $response = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+
+        } catch (\Exception $e) {
+            $app['trace']->traceException($e, null, $traceCode);
+        }
+        return false;
     }
 }

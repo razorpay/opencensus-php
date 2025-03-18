@@ -26,12 +26,6 @@ class ProductCharge extends Base
         $this->tax  = $this->source->getTax();
     }
 
-    public function setFeeDefaultsForDualWrite($fees, $tax)
-    {
-        $this->fees = $this->source->getAmount();
-        $this->tax  = $this->source->getTax();
-    }
-
     function updateTransaction()
     {
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
@@ -46,23 +40,6 @@ class ProductCharge extends Base
     }
 
     public function calculateFees()
-    {
-        $amount = $this->source->getAmount();
-        $isReversal = $this->source->isReversal();
-
-        if ($isReversal === false)
-        {
-            $this->debit = $amount;
-            $this->credit = 0;
-        }
-        else
-        {
-            $this->debit = 0;
-            $this->credit = $amount;
-        }
-    }
-
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
     {
         $amount = $this->source->getAmount();
         $isReversal = $this->source->isReversal();

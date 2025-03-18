@@ -12,6 +12,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Core extends Base\Core
 {
@@ -122,12 +124,33 @@ class Core extends Base\Core
 
         $this->validateAllowedPayerExists($virtualAccount, $allowedPayer);
 
+        $this->validateVANotBelongsToRbl($virtualAccount);
+
         $this->repo->transaction(function() use ($virtualAccount, $allowedPayer)
         {
             $this->addAllowedPayer($virtualAccount, $allowedPayer);
         });
 
         return $virtualAccount;
+    }
+    private function validateVANotBelongsToRbl(VirtualAccount\Entity $virtualAccount)
+    {
+        $merchantId = $virtualAccount->getMerchantId();
+
+        $properties = [
+            "id" => $merchantId,
+            "experiment_name" => RazorxTreatment::COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
+
+        $isCollectxRblMerchant = (new Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+
+        if ($this->merchant->isFeatureEnabled(Constants::COLLECTX_ENABLED) === true and
+            $isCollectxRblMerchant === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_NOT_ALLOWED_RBL);
+        }
     }
 
     private function validateAllowedPayerExists($virtualAccount, $allowedPayer)

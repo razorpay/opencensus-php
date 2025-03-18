@@ -2,16 +2,21 @@
 
 namespace RZP\Models\Workflow;
 
+use stdClass;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Role;
+use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Workflow\Action\OperationType;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Workflow\Repository as WorkflowRep;
+
 
 class Core extends Base\Core
 {
@@ -54,7 +59,9 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($workflow, $input)
         {
-            $this->repo->saveOrFail($workflow);
+            $this->app['config']['workflow_guard.current_workflow_dml_action'] = 'insert';
+
+            $this->repo->workflow->saveOrFail($workflow);
 
             $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
 
@@ -70,11 +77,71 @@ class Core extends Base\Core
         $id = $workflow->getPublicId();
         $orgId = $this->app['basicauth']->getAdminOrgId();
 
-        $workflow = $this->repo->workflow
+        $this->app['config']['workflow_guard.current_workflow_id'] = $id;
+        $this->app['config']['workflow_guard.current_workflow_dml_action'] = 'select';
+
+        $workflow = (new WorkflowRep())
                                ->findByPublicIdAndOrgIdWithRelations(
                                    $id, $orgId, ['steps', 'permissions']);
 
         return $workflow;
+    }
+
+    /**
+     * createWorkflowAction will create a workflow action with the details that are specified in the input
+     * The input would contain the permission_name, entity_type, entity_id, dirty_data, old_data and target details
+     * The target details would contain the route details with which the workflow engine needs to invoke post the workflow approval
+     * @param array $input
+     * @return mixed
+     */
+    public function createWorkflowAction(array $input)
+    {
+        $response = [
+            'success' => false,
+            'error'   => new stdClass(),
+            'data'    => new stdClass(),
+        ];
+        try
+        {
+            $operationType = $input[Constants::OPERATION_TYPE] ?? OperationType::SINGLE ;
+            $this->app['workflow']
+                ->setEntityAndId($input[Constants::ENTITY_TYPE], $input[Constants::ENTITY_ID])
+                ->setPermission($input[Constants::PERMISSION_NAME])
+                ->setTargetDetails($input[Constants::TARGET])
+                ->setOperationType($operationType)
+                ->setInput($input[Constants::PAYLOAD]);
+            $makerType = $input[Constants::MAKER_TYPE];
+            $makerId   = $input[Constants::MAKER_ID];
+            if($makerType == MakerType::ADMIN)
+            {
+                $admin = $this->repo->admin->getAdminFromId($makerId);
+                $this->app['workflow']
+                    ->setWorkflowMaker($admin)
+                    ->setWorkflowMakerType(MakerType::ADMIN);
+            }
+            if($makerType == MakerType::MERCHANT)
+            {
+                $merchant = $this->repo->merchant->getMerchant($makerId);
+                $this->app['workflow']
+                    ->setWorkflowMaker($merchant)
+                    ->setWorkflowMakerType(MakerType::MERCHANT);
+            }
+            $this->app['workflow']->handle($input[Constants::ORIGINAL_DATA], $input[Constants::DIRTY_DATA]);
+        }
+        catch (Exception\EarlyWorkflowResponse $e)
+        {
+            $response['success'] = true;
+            $workflowActionData  = json_decode($e->getMessage(), true);
+            $response['data']    = $workflowActionData;
+        }
+        catch (\Exception $e)
+        {
+            $response['error'] = [
+                'description' => $e->getMessage() ?? 'error occurred while creating workflow for the given input',
+            ];
+        }
+
+        return $response;
     }
 
     protected function createStepsForWorkflow(array $level, Entity $workflow)
@@ -138,7 +205,9 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTestAndAsv(function() use ($workflow, $input)
         {
-            $this->repo->saveOrFail($workflow);
+            $this->app['config']['workflow_guard.current_workflow_id']  = $workflow->getId();
+
+            $this->repo->workflow->saveOrFail($workflow);
 
             $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
 
@@ -195,7 +264,7 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getAdminOrgId();
 
-        $workflow = $this->repo->workflow
+        $workflow = (new WorkflowRep())
                                ->findByPublicIdAndOrgIdWithRelations(
                                    $id, $orgId, ['steps', 'permissions']);
 

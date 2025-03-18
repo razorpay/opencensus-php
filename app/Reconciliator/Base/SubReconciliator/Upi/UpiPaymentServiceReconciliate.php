@@ -91,12 +91,6 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             Constants::MODEL        => Constants::AUTHORIZE
         ];
 
-        if ($this->shouldUpdateInSync() === true)
-        {
-            $this->updateEntityOnUps($data);
-            return;
-        }
-
         // update gateway entity asynchronously
         $this->dispatchToUpsReconQueue($data);
     }

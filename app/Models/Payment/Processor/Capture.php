@@ -57,6 +57,7 @@ use RZP\Jobs\MerchantBasedBalanceUpdateV2;
 use RZP\Jobs\MerchantBasedBalanceUpdateV3;
 use RZP\Jobs\MerchantBalanceUpdateReverseShadowQueue;
 use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
+use RZP\Models\Transfer\Payment\Core as TransferPaymentCore;
 
 trait Capture
 {
@@ -619,10 +620,17 @@ trait Capture
             return;
         }
 
-        $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+        if (($payment->getOffer() !== null) and
+            ($discount->getAttribute(Entity::OFFER_ID) === $payment->getOffer()->getId()))
+        {
+            $offer = $payment->getOffer();
+        }
+        else
+        {
+            $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+        }
 
         $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
-
     }
 
     /**
@@ -2026,11 +2034,25 @@ trait Capture
 
             $orderId = $payment->getApiOrderId();
 
-            $transfersCount = Tracer::inSpan(['name' => 'order.transfer.update_status'], function() use ($orderId)
+            $transfersCount = Tracer::inSpan(['name' => 'order.transfer.update_status'], function() use ($payment, $orderId)
             {
-                return $this->repo
-                            ->transfer
-                            ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+                $count = $this->repo->transaction(function() use ($payment, $orderId)
+                {
+                    $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled(
+                        $payment->getId(), $this->merchant->getId());
+
+                    if ($isAmountTransferredExpEnabled)
+                    {
+                        // create transfer payment during order payment capture itself
+                        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+                    }
+
+                    return $this->repo
+                        ->transfer
+                        ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+                });
+
+                return $count;
             });
 
             $input = [

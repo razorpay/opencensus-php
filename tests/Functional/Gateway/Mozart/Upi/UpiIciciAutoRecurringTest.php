@@ -60,6 +60,9 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
 
         $this->mockSplitzTreatmentForAutopayPricing('variant_on');
+
+        $this->mockSplitzTreatmentForAutopayRearch('variant_off');
+
     }
 
     public function testAutoRecurringPaymentSuccess()
@@ -2295,7 +2298,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         ]);
 
         $this->assertUpiDbLastEntity('payment', [
-            'fee'        => 2832,
+            'fee'        => 1298,
         ], false);
     }
 

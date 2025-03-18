@@ -239,5 +239,39 @@ return [
             ],
             'status_code' => 400,
         ]
-    ]
+    ],
+    'testProxyAuthForBankingCACMigration' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/edge/internal/authenticate',
+            'server' => [
+                'PHP_AUTH_USER' => 'rzp_test',
+                'PHP_AUTH_PW'   => env('APP_EDGE_SECRET')
+            ],
+            'content'   => [
+                'dashboard' => [
+                    'account_id'    => EdgeAuthenticateTest::TEST_MERCHANT_ID,
+                    'key'           => 'rzp_test_' . EdgeAuthenticateTest::TEST_MERCHANT_ID,
+                    'secret'        => env('APP_DASHBOARD_SECRET'),
+                    'org_id'        => Org::RZP_ORG,
+                    'headers'       => [
+                        RequestHeader::X_REQUEST_ORIGIN     => config('applications.banking_service_url'),
+                        RequestHeader::X_DASHBOARD_USER_ID  => EdgeAuthenticateTest::TEST_USER_ID,
+                    ]
+                ],
+                'auth'                  => 'proxy',
+                'admin_token_required'  => false,
+                'apps'                  => ['dashboard', 'admin_dashboard', 'merchant_dashboard'],
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'user_id'           => EdgeAuthenticateTest::TEST_USER_ID,
+                'product'           => 'banking',
+                'is_lms'            => false,
+                'roles'             => ['owner', 'authz_role_name_1'],
+                'enforcement_roles' => ['authz_role_name_1']
+            ]
+        ]
+    ],
 ];

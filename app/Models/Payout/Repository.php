@@ -873,13 +873,13 @@ class Repository extends Base\Repository
 
         if($newAsvFlow === true)
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                 ->with(['balance'])
                 ->where($statusColumn, '=', Status::QUEUED)
                 ->where($balanceIdColumn, '=', $balanceId);
         } else
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                 ->with(['balance', 'merchant', 'merchant.org'])
                 ->where($statusColumn, '=', Status::QUEUED)
                 ->where($balanceIdColumn, '=', $balanceId);
@@ -917,7 +917,7 @@ class Repository extends Base\Repository
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->where($statusColumn, '=', Status::QUEUED)
                     ->where($balanceIdColumn, '=', $balanceId)
                     ->count();
@@ -1165,12 +1165,7 @@ class Repository extends Base\Repository
         $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
         $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
                     ->selectRaw(
@@ -1218,12 +1213,7 @@ class Repository extends Base\Repository
         $payoutsStatusColumn      = $this->dbColumn(Entity::STATUS);
         $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
                     ->selectRaw(
@@ -2918,14 +2908,7 @@ class Repository extends Base\Repository
             $payoutCreatedAt
         ];
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType)
             ->distinct()
@@ -3048,12 +3031,7 @@ class Repository extends Base\Repository
             $createdAtStart = $createdAtStart - $queryParams['buffer'];
         }
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
                     ->whereBetween(Entity::CREATED_AT, [$createdAtStart, $createdAtEnd])
@@ -3258,14 +3236,7 @@ class Repository extends Base\Repository
         $payoutStatus      = $this->repo->payout->dbColumn(Payout\Entity::STATUS);
         $payoutBalanceId   = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
 
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        $connectionType = $variant === true ? $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT): $this->getPaymentFetchReplicaConnection();
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $query = $this->newQueryWithConnection($connectionType)
             ->join(Table::BALANCE, $balanceId, '=', $payoutBalanceId)

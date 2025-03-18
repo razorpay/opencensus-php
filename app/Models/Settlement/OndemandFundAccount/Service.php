@@ -25,16 +25,27 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId)
+    public function dispatchSettlementOndemandFundAccountUpdateJob($merchantId, $bankAccount = null)
     {
-        /** @var Entity $fundAccount */
-        $fundAccount = (new Repository)->findByMerchantId($merchantId);
+        $this->core()->invalidateFundAccount($merchantId);
 
-        if (empty($fundAccount) === false)
+        if ($this->core()->isFundAccountMigrated('write') === true)
         {
-            $fundAccount->setFundAccountIdNull();
+            $this->app['capital_early_settlements']->invalidateAndCreateFundAccount($merchantId, false);
+            return;
+        }
 
-            $this->repo->saveOrFail($fundAccount);
+        CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId, $bankAccount);
+
+        CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId, $bankAccount);
+    }
+
+    public function dispatchSettlementOndemandFundAccountCreateJob($merchantId)
+    {
+        if ($this->core()->isFundAccountMigrated('write') === true)
+        {
+            $this->app['capital_early_settlements']->invalidateAndCreateFundAccount($merchantId, false);
+            return;
         }
 
         CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
@@ -42,15 +53,8 @@ class Service extends Base\Service
         CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
     }
 
-    public function dispatchSettlementOndemandFundAccountCreateJob($merchantId)
+    public function addOndemandFundAccountForMerchant($merchantId, $bankAccount = null)
     {
-        CreateSettlementOndemandFundAccount::dispatch(Mode::TEST, $merchantId);
-
-        CreateSettlementOndemandFundAccount::dispatch(Mode::LIVE, $merchantId);
-    }
-
-    public function addOndemandFundAccountForMerchant($merchantId)
-    {
-        return $this->core()->addOndemandFundAccountForMerchant($merchantId);
+        return $this->core()->addOndemandFundAccountForMerchant($merchantId, $bankAccount);
     }
 }

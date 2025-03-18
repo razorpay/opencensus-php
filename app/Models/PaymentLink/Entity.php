@@ -55,7 +55,10 @@ class Entity extends Base\PublicEntity
     const PAYMENT_PAGE_ITEM_ID = 'payment_page_item_id';
     const LINE_ITEMS           = 'line_items';
     const ORDER                = 'order';
+    const PAYMENT_LINK         = 'payment_link';
     const VIEW_TYPE            = 'view_type';
+
+    const PAYMENT_PAGE_VIEW_TYPE = 'payment_page_view_type'; // just used for decomp purposes
 
     const VIEW_TYPE_BUTTON     = 'button';
     const VIEW_TYPE_PAGE       = 'page';
@@ -306,6 +309,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::VIEW_TYPE,
         self::AMOUNT,
         self::CURRENCY,
         self::CURRENCY_SYMBOL,
@@ -395,6 +399,18 @@ class Entity extends Base\PublicEntity
     protected $embeddedRelations   = [
         self::PAYMENT_PAGE_ITEMS,
     ];
+
+    public static function IsNCADecompProduct($productType): bool {
+        return in_array(
+            $productType,
+            [
+                Order\ProductType::PAYMENT_PAGE,
+                Order\ProductType::PAYMENT_HANDLE,
+                Order\ProductType::PAYMENT_BUTTON
+            ],
+            true
+        );
+    }
 
     /**
      * @param string $id

@@ -299,6 +299,12 @@ class Handler
 
         $this->executeActions($merchantId, $escalationConfig, $escalationEntity);
 
+        $this->trace->count(Metric::ESCALATION_ATTEMPT_SUCCESS, [
+            Entity::MILESTONE       => $escalationConfig[Constants::MILESTONE],
+            Entity::THRESHOLD       => $threshold,
+            Entity::TYPE            => $type,
+        ]);
+
         $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SUCCESS, [
             'merchant_id'   => $merchantId,
             'type'          => $type,

@@ -66,10 +66,7 @@ class Service extends Base\Service
 
         (new PartnerValidator())->validateOnboardingApisAccess($partner->getId() ?? $merchant->getId(), $productName);
 
-        $isPaymentMethodConfigUpdateExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $partner->getId(),
-            Merchant\RazorxTreatment::PAYMENT_METHOD_CONFIG_UPDATE
-        );
+        $isPaymentMethodConfigUpdateExperimentEnabled = $this->isPaymentMethodConfigUpdateExpEnabled($partner->getId());
 
         \Request::instance()->request->add([Util\Constants::CONFIG_UPDATE_FLOW_ENABLED => $isPaymentMethodConfigUpdateExperimentEnabled]);
 
@@ -346,4 +343,14 @@ class Service extends Base\Service
 
         return $dimensions;
     }
+    private function isPaymentMethodConfigUpdateExpEnabled(String $partnerMerchant) : bool
+    {
+        $properties = [
+            'id'            => $partnerMerchant,
+            'experiment_id' => $this->app['config']->get('app.payment_method_config_update_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
 }

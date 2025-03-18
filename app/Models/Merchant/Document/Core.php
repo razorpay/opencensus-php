@@ -211,7 +211,7 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
-        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true)
+        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true || $this->shouldRouteToDocumentUploadV2($merchant))
         {
             $input['merchant_id'] = $merchant->getId();
             $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_UPLOAD_V2, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
@@ -662,29 +662,7 @@ class Core extends Base\Core
         // If document type belong to the category of joint validation document,
         // we need to send both documents together in one request.
         // Currently, this is hidden behind experiment.
-        $isExperimentEnabledForJointValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
-            RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
-
-        if ($isExperimentEnabledForJointValidation and Type::isJointValidationDocumentType($document->getDocumentType()) === true)
-        {
-            $this->trace->info(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
-                'performOcrWithBvs' => 'aadhaar front and back joint validation experiment.',
-                '$merchant' => $merchant->getMerchantId()
-                ]);
-            $factory = new requestDispatcher\Factory();
-
-            $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
-                $document, $merchant, $merchantDetails);
-
-            if(empty($requestDispatcher)===false)
-            {
-                $this->trace->debug(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
-                    'triggerBVSRequest' => 'request dispatcher non-empty.'
-                ]);
-                $requestDispatcher->triggerBVSRequest();
-            }
-        }
-        else if (Type::isPoaDocument($document->getDocumentType()) === true)
+        if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
             $this->performPoaOcrWithBvs($document, $merchantDetails,$merchant);
         }
@@ -833,23 +811,19 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        // or offline eligible merchant with offline not activated yet
 
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            // or offline eligible merchant with offline not activated yet
+        $service = new Merchant\Service();
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+        $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
 
-            $service = new Merchant\Service();
-            $activationStatus = $merchant->merchantDetail->getActivationStatus();
-            $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
-
-            if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
-                (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
+        if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
+            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
@@ -888,7 +862,6 @@ class Core extends Base\Core
 
                 }
             }
-        }
     }
 
 
@@ -900,5 +873,20 @@ class Core extends Base\Core
         }
 
         return $validateLock;
+    }
+    
+    public function shouldRouteToDocumentUploadV2(Merchant\Entity $merchant) : bool {
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.migrate_mkyc_to_document_upload_v2')
+            ],
+            DetailConstants::ENABLE
+        );
+        $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
+        
+        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
+        
+        return ($isExperimentEnabled and $isMkycMerchant);
     }
 }

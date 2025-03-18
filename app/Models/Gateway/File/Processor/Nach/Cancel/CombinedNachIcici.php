@@ -32,8 +32,8 @@ class CombinedNachIcici extends Base
     const FILE_TYPE = FileStore\Type::ICICI_NACH_COMBINED_CANCEL;
     const GATEWAY   = Payment\Gateway::NACH_ICICI;
     const S3_PATH   = 'icicibank/nach/input_file/';
-    const FILE_NAME = 'MMS-CANCEL-ICIC-ICIC865719-{$date}-API0{$count}-INP';
-    const ZIP_FILE  = 'MMS-CANCEL-ICIC-ICIC865719-{$date}-API000001-INP';
+    const FILE_NAME = 'MMS-CANCEL-ICIC-ICICRZ-{$date}-API0{$count}-INP';
+    const ZIP_FILE  = 'MMS-CANCEL-ICIC-ICICRZ-{$date}-API000001-INP';
     const STEP      = 'cancel';
 
     protected $fileStore = [];
@@ -75,7 +75,7 @@ class CombinedNachIcici extends Base
                 $this->mailData[$fileNameForMail]['count'] = $recordCount;
 
             }
-            
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->trace->info(
@@ -90,7 +90,7 @@ class CombinedNachIcici extends Base
         catch (\Throwable $e)
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
-            
+
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id' => $this->gatewayFile->getId(),
             ], $e);
@@ -137,7 +137,7 @@ class CombinedNachIcici extends Base
         $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 }

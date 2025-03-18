@@ -314,7 +314,7 @@ class Core extends Base\Core
 
                 $variant = $response['response']['variant']['name'] ?? '';
 
-                return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+                return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB or $gateway === Payment\Gateway::UPI_YESBANK);
 
             }
         } catch (\Throwable $e) {
@@ -362,11 +362,12 @@ class Core extends Base\Core
     protected function updateSequenceNumberOrUsedCount($notification)
     {
         $this->upiMandate = $this->repo->upi_mandate->findByTokenId($notification['token_id']);
-
-        $newSequenceNo = $this->upiMandate->getSequenceNumberAttribute();
+        
         $usedCount = $this->upiMandate->getUsedCount();
 
         $this->upiMandate->incrementUsedCount();
+
+        $newSequenceNo = $this->upiMandate->getSequenceNumberAttribute();
 
         $this->repo->upi_mandate->saveOrFail($this->upiMandate);
 

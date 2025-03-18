@@ -106,16 +106,8 @@ class UserRoleBasedResponseFilter
 
     protected function isFilterRequired($routeName, $userRole)
     {
-        $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
-                                               RazorxTreatment::RESPONSE_FIELDS_FILTERING_FOR_ROLES,
-                                               $this->ba->getMode(), 2);
+        $this->trace->info(TraceCode::FILTER_RESPONSE_BASED_ON_ROLE, ['userRole' => $userRole]);
 
-        $this->trace->info(TraceCode::FILTER_RESPONSE_BASED_ON_ROLE, ['variant' => $variant, 'userRole' => $userRole]);
-
-        if ((strtolower($variant) === 'on') === false)
-        {
-            return false;
-        }
         if (array_key_exists($routeName, self::ROUTE_FILTER_MAPPING) === false)
         {
             return false;

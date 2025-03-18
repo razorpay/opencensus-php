@@ -182,6 +182,7 @@ class Core extends Base\Core
         return $merchantIntegration;
     }
 
+
     public function getInternationalVirtualAccounts($merchantId)
     {
        try
@@ -492,5 +493,10 @@ class Core extends Base\Core
     public function getByIntegrationKey($integrationKey)
     {
         return $this->repo->merchant_international_integrations->getByIntegrationKey($integrationKey);
+    }
+
+    public function getByParamKey($paramKey, $paramValue)
+    {
+        return $this->repo->merchant_international_integrations->getByParamKey($paramKey,$paramValue);
     }
 }

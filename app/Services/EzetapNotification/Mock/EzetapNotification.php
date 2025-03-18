@@ -57,4 +57,11 @@ class EzetapNotification extends BaseEzetapNotification
         return null;
     }
 
+    public function sendDeviceNotification(Entity $event,
+       int $timeout = self::TIMEOUT,
+       int $connectTimeout = self::CONNECT_TIMEOUT)
+    {
+        $this->actualCall($event);
+    }
+
 }

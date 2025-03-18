@@ -398,20 +398,10 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         // Alt Id Card
         if ($card->getTrivia() === '2')
         {
-            // ToDo: Remove experiment post prod validation
-            $variant = $this->app->razorx->getTreatment(
-                $payment->getId(),
-                'recurring_mhq_altid_params',
-                $this->mode ?? 'live'
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                $cardData[Constants::ALTID]             = true;
-                $cardData[Constants::ALTID_PROVIDER]    = strtolower($card->getNetwork());
-                $cardData[Constants::CARD_EXPIRY_YEAR]  = substr(stringify($card->getTokenExpiryYear()), -2);
-                $cardData[Constants::CARD_EXPIRY_MONTH] = stringify($card->getTokenExpiryMonth());
-            }
+            $cardData[Constants::ALTID]             = true;
+            $cardData[Constants::ALTID_PROVIDER]    = strtolower($card->getNetwork());
+            $cardData[Constants::CARD_EXPIRY_YEAR]  = substr(stringify($card->getTokenExpiryYear()), -2);
+            $cardData[Constants::CARD_EXPIRY_MONTH] = stringify($card->getTokenExpiryMonth());
         }
 
         $merchant_category = $this->getMerchantCategory($payment);

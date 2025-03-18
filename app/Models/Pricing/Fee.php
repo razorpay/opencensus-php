@@ -16,8 +16,10 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Pricing\ChargeCollections\CCRouter;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -43,6 +45,8 @@ class Fee extends Base\Core
 
     protected $repo;
 
+    protected CCRouter $ccReadRouter;
+
     const DEFAULT_PRICING_PLAN_ID            = '1hDYlICobzOCYt';
     const EMI_SUB_PRICING_PLAN_ID            = '1EmiSubPricing';
     const DEFAULT_QR_CODE_PLAN_ID            = 'A8UwvIbaL8n4Q8';
@@ -63,11 +67,17 @@ class Fee extends Base\Core
         EntityConstants::TRANSFER
     ];
 
+    const OAUTH_CUSTOM_PRICING_FEATURE_BY_ENTITY = [
+        EntityConstants::PAYMENT => 'pp_oauth_pricing_payment', 
+        EntityConstants::TRANSFER => 'pp_oauth_pricing_transfer', 
+    ];
+
     public function __construct()
     {
         parent::__construct();
 
         $this->repo = new Pricing\Repository;
+        $this->ccReadRouter = new CCRouter(reads: true);
     }
 
     public function setMerchant(Merchant\Entity $merchant)
@@ -171,16 +181,29 @@ class Fee extends Base\Core
 
         $pricingPlanId = $this->getPricingPlanId($entity);
 
-        // Delete this after 31st Jan
-        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
-
         $merchant = $entity->merchant;
 
-        $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId, $merchant);
-
-        $pricing = $this->addFallbackPricingRules($pricing, $entity);
+        $pricing = $this->getPricingPlanForFeesCalculation($pricingPlanId, $entity, $merchant);
 
         return $calculator->calculate($pricing);
+    }
+
+    public function getPricingPlanForFeesCalculation($pricingPlanId, $entity, $merchant) {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        $legacyCallable = function () use ($pricingPlanId, $entity, $merchant) {
+            return $this->getPricingPlanForFeesCalculationLegacy($pricingPlanId, $entity, $merchant);
+        };
+        $ccRequest = [
+            'id' => $pricingPlanId,
+            'org_id' => $merchant->getOrgId(),
+            'entity_name' => $entity->getEntityName(),
+            'business_banking_enabled' => $merchant->isBusinessBankingEnabled(),
+        ];
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing:false);
+    }
+    public function getPricingPlanForFeesCalculationLegacy($pricingPlanId, $entity, $merchant) {
+        $pricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($pricingPlanId, $merchant);
+        return $this->addFallbackPricingRules($pricing, $entity);
     }
 
     public function calculateTerminalRZPFees(Payment\Entity $entity, Pricing\Plan $pricing): array
@@ -320,20 +343,20 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        $emiSubPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::EMI_SUB_PRICING_PLAN_ID);
+        $emiSubPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::EMI_SUB_PRICING_PLAN_ID);
 
         $pricingPlan = $pricingPlan->merge($emiSubPricing);
 
         if ($pricingPlan->hasMethod(Payment\Method::BANK_TRANSFER) === false)
         {
-            $bankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
+            $bankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($bankTransferPricing);
         }
 
         if ($pricingPlan->hasVpaReceiver() === false)
         {
-            $virtualUpiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_VIRTUAL_UPI_PLAN_ID);
+            $virtualUpiPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_VIRTUAL_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($virtualUpiPricing);
         }
@@ -348,34 +371,34 @@ class Fee extends Base\Core
             // 2. If we add it in the code we will have to keep validation on deletion. Because if
             //    a ops guy deletes it it will get created again.
             //
-            $qrCodePricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_QR_CODE_PLAN_ID);
+            $qrCodePricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_QR_CODE_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($qrCodePricing);
         }
 
         if ($pricingPlan->hasCreditReceiver() === false)
         {
-                $ccOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CC_ON_UPI_PLAN_ID);
+                $ccOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_CC_ON_UPI_PLAN_ID);
 
                 $pricingPlan = $pricingPlan->merge($ccOnUPIPricing);
         }
 
         if ($pricingPlan->hasWalletReceiver() === false)
         {
-            $ppiWalletOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID);
+            $ppiWalletOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_PPI_WALLET_ON_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($ppiWalletOnUPIPricing);
         }
 
         if ($pricingPlan->hasCreditLineReceiver() === false) {
-            $clOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID);
+            $clOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_CREDIT_LINE_ON_UPI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($clOnUPIPricing);
         }
 
         if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)
         {
-            $emiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_EMI_PLAN_ID);
+            $emiPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy(self::DEFAULT_EMI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($emiPricing);
         }
@@ -424,7 +447,7 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        $codPricing = $this->repo->getPricingPlanByIdWithoutOrgId($id);
+        $codPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($id);
 
         if ($codPricing === null)
         {
@@ -447,7 +470,7 @@ class Fee extends Base\Core
                 return $pricingPlan;
             }
 
-            $intlBankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId($id);
+            $intlBankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($id);
 
             if ($intlBankTransferPricing === null)
             {
@@ -469,7 +492,7 @@ class Fee extends Base\Core
         //
         if ($pricingPlan->hasBankingSharedAccountFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingSharedAccountFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountFreePayoutDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -480,7 +503,7 @@ class Fee extends Base\Core
         //
         if ($pricingPlan->hasBankingSharedAccountNonFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingSharedAccountNonFreePayouDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingSharedAccountNonFreePayoutDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -492,7 +515,7 @@ class Fee extends Base\Core
         //
         if ($pricingPlan->hasBankingDirectAccountFreePayoutRule() === false)
         {
-            $rules       = $this->repo->getBankingDirectAccountFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getBankingDirectAccountFreePayoutDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
@@ -532,7 +555,7 @@ class Fee extends Base\Core
 
         if (empty($directChannelsWithRulesAbsent) === false)
         {
-            $rules = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRules(
+            $rules = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRulesLegacy(
                 Feature::PAYOUT,
                 $merchant,
                 $directChannelsWithRulesAbsent);
@@ -554,21 +577,10 @@ class Fee extends Base\Core
 //            $pricingPlan = $pricingPlan->merge($rules);
 //        }
 
-        $variantFlag = $this->app['razorx']->getTreatment(
-            $merchant->getId(),
-            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT,
-            Mode::LIVE);
-
         //We are adding Zero Pricing Fee Recovery rule if there is no rules for RZP_FEES
-        if ($variantFlag === 'on')
-        {
-            $this->app['request']->merge(['zeroPricingForFeeRecoveryFlag' => true]);
-
-            if ($pricingPlan->hasBankingAccountRzpFeesRule() === false)
-            {
-                $rules = $this->repo->getBankingAccountRzpFeesDefaultPricingRules(Feature::PAYOUT, $merchant);
-                $pricingPlan = $pricingPlan->merge($rules);
-            }
+        if ($pricingPlan->hasBankingAccountRzpFeesRule() === false) {
+            $rules = $this->repo->getBankingAccountRzpFeesDefaultPricingRulesLegacy(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
         }
 
         return $pricingPlan;
@@ -612,49 +624,74 @@ class Fee extends Base\Core
 
     protected function getCustomPricingPlanForOauth(PublicEntity $entity)
     {
-        try
-        {
+        try {
             $entityOriginCore = new EntityOrigin\Core();
 
             $entityOrigin = $entity->entityOrigin;
 
-            if (empty($entityOrigin) === true)
-            {
+            if (empty($entityOrigin) === true) {
                 $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
             }
             if (empty($entityOrigin) === true) {
                 return null;
             }
 
-            $origin     =(new OAuthApp\Repository)->find($entityOrigin->getOriginId());
+            $origin     = (new OAuthApp\Repository)->find($entityOrigin->getOriginId());
             $originType = optional($origin)->getEntityName();
 
-            if (empty($origin) === true || ($originType !== EntityOrigin\Constants::APPLICATION))
-            {
+            if (empty($origin) === true || ($originType !== EntityOrigin\Constants::APPLICATION)) {
                 return null;
             }
 
-            $properties = [
-                'id'            => $origin->getId(),
-                'experiment_id' => app('config')->get('app.platform_partner_oauth_custom_pricing_plan')
+            $isDcsFeatureEnabled = false;
+            $dcsFeatureToCheck = self::OAUTH_CUSTOM_PRICING_FEATURE_BY_ENTITY[$entity->getEntityName()] ?? '';
+
+            $dimensions = [
+                'type' => $entity->getEntityName(),
             ];
 
-            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentVariableEnabled($properties, $entity->getEntityName());
+            $extraLogs = [
+                'originId' => $origin->getId(),
+                'dcsFeatureToCheck' => $dcsFeatureToCheck,
+            ];
 
-            if ($isExpEnabled)
-            {
+            if (!empty($dcsFeatureToCheck) and !empty($origin->getId())) {
+                $dcsStartTimeMs = round(microtime(true) * 1000);
+                $isDcsFeatureEnabled = (new PartnerService())->isFeatureEnabledForOAuthApp($dcsFeatureToCheck, $origin->getId());
+                $dcsEndTimeMs = round(microtime(true) * 1000);
+                $dcsTimeTaken = $dcsEndTimeMs - $dcsStartTimeMs;
+
+                $extraLogs['dcsTimeTaken'] = $dcsTimeTaken;
+                $dimensions['isDcsFeatureEnabled'] = $isDcsFeatureEnabled;
+
+                $this->trace->info(TraceCode::OAUTH_TRANSACTION_CUSTOM_PRICING_CHECK_FROM_DCS, [
+                    'extraLogs' => $extraLogs,
+                    'metrics' => $dimensions,
+                ]);
+            }
+
+            if ($isDcsFeatureEnabled) {
                 $application = (new ApplicationRepo())->fetchMerchantApplicationByAppIdAndType($origin->getId(), ApplicationEntity::OAUTH);
+                $dimensions['oauthAppPresent'] = !empty($application);
 
-                if (empty($application) === false)
-                {
+                if (empty($application) === false) {
                     $partnerConfig = (new PartnerCore())->fetch($origin, $entity->merchant);
+                    $dimensions['partnerConfigPresent'] = !empty($partnerConfig);
 
+                    $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH_METRICS, $dimensions);
+                    $this->trace->info(TraceCode::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH, [
+                        'extraLogs' => $extraLogs,
+                        'metrics' => $dimensions,
+                    ]);
                     return optional($partnerConfig)->getDefaultPlanId();
                 }
             }
-        }
-        catch (\Throwable $e)
-        {
+            $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH_METRICS, $dimensions);
+            $this->trace->info(TraceCode::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH, [
+                'extraLogs' => $extraLogs,
+                'metrics' => $dimensions,
+            ]);
+        } catch (\Throwable $e) {
             $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_FAILED);
             $this->trace->critical(
                 TraceCode::OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_EXCEPTION,
@@ -662,7 +699,8 @@ class Fee extends Base\Core
                     'id'      => $entity->getId(),
                     'type'    => $entity->getEntityName(),
                     'message'    => $e->getMessage(),
-                ]);
+                ]
+            );
         }
 
         return null;
@@ -696,7 +734,7 @@ class Fee extends Base\Core
         // add app specific pricing rules, if they are already not included
         if ($pricingPlan->hasAppPayoutPricingRule() === false)
         {
-            $rules       = $this->repo->getAppPayoutPricingRules(Feature::PAYOUT, $merchant);
+            $rules       = $this->repo->getAppPayoutPricingRulesLegacy(Feature::PAYOUT, $merchant);
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

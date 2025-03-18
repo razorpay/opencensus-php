@@ -20,6 +20,7 @@ use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -35,6 +36,7 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class FundAccountsTest extends TestCase
 {
+    use MocksSplitz;
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -2573,7 +2575,7 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->setMockRazorxTreatment(['payout_to_prepaid_cards' => 'on']);
+        $this->setMockSplitzTreatmnt(['payout_to_prepaid_cards' => 'enable']);
 
         $this->startTest();
 
@@ -2870,7 +2872,7 @@ class FundAccountsTest extends TestCase
 
     public function testNullSourceFundAccountCreationAndVerifyHash()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
 
         $response = $this->createValidationWithFundAccountEntity();
 
@@ -3574,7 +3576,7 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithInvalidIfscBasicValidationFailure()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3600,7 +3602,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3655,7 +3657,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3711,7 +3713,7 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithInvalidIfscForNonGrameenBankWithGrameenBankCode()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3737,7 +3739,7 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBank()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3762,7 +3764,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3820,7 +3822,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3883,7 +3885,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3946,7 +3948,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4005,7 +4007,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4067,7 +4069,7 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBankWithGrameenBankCode()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4099,7 +4101,7 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBank()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4126,7 +4128,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4186,7 +4188,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4255,7 +4257,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 

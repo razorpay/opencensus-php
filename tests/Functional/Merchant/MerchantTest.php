@@ -104,6 +104,7 @@ use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
@@ -152,6 +153,7 @@ class MerchantTest extends TestCase
     use WorkflowTrait;
     use TestsWebhookEvents;
     use EventsTrait;
+    use MocksSplitz;
     use TestsBusinessBanking;
     use CustomBrandingTrait;
     use MocksRedisTrait;
@@ -2085,7 +2087,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $merchant = $this->fixtures->merchant->edit($merchant['id'], ['country_code' => "MY"]);
         $response = (new Merchant\Activate)->updateLedger($merchant);
@@ -2151,7 +2152,6 @@ class MerchantTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -2220,8 +2220,6 @@ class MerchantTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
-
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -2305,8 +2303,6 @@ class MerchantTest extends TestCase
 
         $merchant       = $merchantDetail->merchant;
 
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
-
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
         $feature = $this->getDbEntity('feature', ["name" => 'pg_ledger_reverse_shadow', "entity_id" => '10000000000040']);
@@ -2343,8 +2339,6 @@ class MerchantTest extends TestCase
         $this->mockDCS();
 
         $merchant       = $merchantDetail->merchant;
-
-        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
 
         $response = (new Merchant\Activate)->updateLedger($merchant);
 
@@ -4810,7 +4804,6 @@ class MerchantTest extends TestCase
     {
         Config(['services.bvs.mock' => true]);
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -4959,8 +4952,6 @@ class MerchantTest extends TestCase
     public function testUpdateBankAccountPennyTestingFailWorkflowOnHoldMerchantReject()
     {
         Config(['services.bvs.mock' => true]);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $this->mockStorkForBankAccountUpdateOnHoldRejectionReason();
 
@@ -5265,8 +5256,6 @@ Team Razorpay',
         Config(['services.bvs.mock' => true]);
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
-
-        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -5715,8 +5704,6 @@ Team Razorpay',
     public function testUpdateBankAccountPennyTestingFailWorkflowReject()
     {
         Config(['services.bvs.mock' => true]);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $this->setupWorkflowForBankAccountUpdate();
 
@@ -15096,8 +15083,6 @@ Team Razorpay',
 
         Config(['services.bvs.response' => 'failure']);
 
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
@@ -15193,8 +15178,6 @@ Team Razorpay',
         Config(['services.bvs.sync.flow' => true]);
 
         Config(['services.bvs.response' => 'failure']);
-
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -18021,7 +18004,6 @@ Team Razorpay',
 
     protected function mockStorkForTransactionLimitSelfServe()
     {
-        $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -18470,7 +18452,6 @@ The same has been enabled for the account.
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate = [])
     {
-        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -19536,30 +19517,6 @@ The same has been enabled for the account.
         $this->assertEquals('shared', $response['items'][0]['account_type']);
         $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
     }
-
-    public function testGetBalancesTypeBankingCachedFalseExpOff()
-    {
-        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
-
-        $this->setUpMerchantForGetBalances();
-
-        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
-
-        $response = $this->startTest();
-
-        $this->assertEquals(2, $response['count']);
-        $this->assertEquals('banking', $response['items'][0]['type']);
-        $this->assertEquals('banking', $response['items'][1]['type']);
-        $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
-        $this->assertEquals('100abc000abc00', $response['items'][1]['id']);
-        $this->assertEquals('shared', $response['items'][0]['account_type']);
-        $this->assertEquals('direct', $response['items'][1]['account_type']);
-    }
-
     public function testGetBalancesTypeBankingCachedFalseExpOn()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
@@ -19630,29 +19587,6 @@ The same has been enabled for the account.
         $this->assertEquals('direct', $response['items'][0]['account_type']);
         $this->assertEquals(23000, $response['items'][0]['balance']);
         $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
-    }
-
-    public function testGetBalancesTypeBankingCachedFalseCABalanceIdExpOff()
-    {
-        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
-
-        $this->setUpMerchantForGetBalances();
-
-        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
-
-        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
-
-        $response = $this->startTest();
-        $this->assertEquals(100, $balance->getBalance());
-        $this->assertEquals(1, $response['count']);
-        $this->assertEquals('banking', $response['items'][0]['type']);
-        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
-        $this->assertEquals('direct', $response['items'][0]['account_type']);
-        $this->assertEquals(100, $response['items'][0]['balance']);
     }
 
     // CA balance will be returned . it is applicable when merchant's last
@@ -20282,7 +20216,7 @@ The same has been enabled for the account.
 
     public function testCreateIpConfigWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $user = $this->getDbLastEntity('user');
 
@@ -21370,7 +21304,7 @@ The same has been enabled for the account.
 
     }
 
-    public function testGetBalancesV2()
+    public function testGetBankingBalances()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21445,28 +21379,27 @@ The same has been enabled for the account.
 
         $response = $this->startTest();
 
-        $expectedResponse = [
-            [
-                "id"                => "100abc000abc01",
-                "currency"          => "INR",
-                "balance"           => 100,
-                "account_number"    => "XXXXXXXXXXXX6906",
-                "account_type"      => "direct",
-                "bank"              => 'rbl',
-                "last_refreshed"    => 1672398841,
-                "entity"            => "balance",
-                "available_balance" => 100
+            $expectedResponse = [[
+                    'currency' => 'INR',
+                    'amount' => 100,
+                    'account_number' => '2224440041626906',
+                    'account_type' => 'current_account',
+                    'entity' => 'banking_balance',
+                    'bank_code' => 'RATN',
+                    'bank_name' => 'RBL Bank',
+                    'available_amount' => 100,
+                    'refreshed_at' => 1672398841
             ],
             [
-                "id"                => "100abc000abc00",
-                "currency"          => "INR",
-                "balance"           => 0,
-                "account_number"    => "XXXXXXXXXXXX6905",
-                "account_type"      => "shared",
-                "bank"              => null,
-                "last_refreshed"    => null,
-                "entity"            => "balance",
-                "available_balance" => 0
+                'currency' => 'INR',
+                'amount' => 0,
+                'account_number' => '2224440041626905',
+                'account_type' => 'razorpayx_lite',
+                'entity' => 'banking_balance',
+                'bank_code' => null,
+                'bank_name' => null,
+                'available_amount' => 0,
+                'refreshed_at' => null,
             ]
         ];
 
@@ -21475,7 +21408,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2ForAccountTypeShared()
+    public function testGetBankingBalancesForAccountTypeShared()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21548,23 +21481,23 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?account_type=shared';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?account_type=razorpayx_lite';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
         $expectedResponse = [
             [
-                "id"                => "100abc000abc00",
-                "currency"          => "INR",
-                "balance"           => 0,
-                "account_number"    => "XXXXXXXXXXXX6905",
-                "account_type"      => "shared",
-                "bank"              => null,
-                "last_refreshed"    => null,
-                "entity"            => "balance",
-                "available_balance" => 0
+                'currency' => 'INR',
+                'amount' => 0,
+                'account_number' => '2224440041626905',
+                'account_type' => 'razorpayx_lite',
+                'entity' => 'banking_balance',
+                'bank_code' => null,
+                'bank_name' => null,
+                'available_amount' => 0,
+                'refreshed_at' => null,
             ]
         ];
 
@@ -21572,7 +21505,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2ForAccountTypeDirect()
+    public function testGetBankingBalancesForAccountTypeDirect()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21645,23 +21578,23 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?account_type=direct';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?account_type=current_account';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
         $expectedResponse = [
             [
-                "id"                => "100abc000abc01",
-                "currency"          => "INR",
-                "balance"           => 100,
-                "account_number"    => "XXXXXXXXXXXX6906",
-                "account_type"      => "direct",
-                "bank"              => 'rbl',
-                "last_refreshed"    => 1672398841,
-                "entity"            => "balance",
-                "available_balance" => 100
+                'currency' => 'INR',
+                'amount' => 100,
+                'account_number' => '2224440041626906',
+                'account_type' => 'current_account',
+                'entity' => 'banking_balance',
+                'bank_code' => 'RATN',
+                'bank_name' => 'RBL Bank',
+                'available_amount' => 100,
+                'refreshed_at' => 1672398841,
             ]
         ];
 
@@ -21669,7 +21602,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2ForBank()
+    public function testGetBalancesForBankCode()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21742,31 +21675,29 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?bank=rbl';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?bank_code=RATN';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
-        $expectedResponse = [
-            [
-                "id"                => "100abc000abc01",
-                "currency"          => "INR",
-                "balance"           => 100,
-                "account_number"    => "XXXXXXXXXXXX6906",
-                "account_type"      => "direct",
-                "bank"              => 'rbl',
-                "last_refreshed"    => 1672398841,
-                "entity"            => "balance",
-                "available_balance" => 100
-            ]
-        ];
+        $expectedResponse = [[
+            'currency' => 'INR',
+            'amount' => 100,
+            'account_number' => '2224440041626906',
+            'account_type' => 'current_account',
+            'entity' => 'banking_balance',
+            'bank_code' => 'RATN',
+            'bank_name' => 'RBL Bank',
+            'available_amount' => 100,
+            'refreshed_at' => 1672398841,
+        ]];
 
         $this->assertEquals(1, sizeof($response['items']));
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2UsingCountAndSkipFilter()
+    public function testGetBankingBalancesUsingCountAndSkipFilter()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21839,23 +21770,23 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?count=1&skip=1';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?count=1&skip=1';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
         $expectedResponse = [
             [
-                "id"                => "100abc000abc00",
-                "currency"          => "INR",
-                "balance"           => 0,
-                "account_number"    => "XXXXXXXXXXXX6905",
-                "account_type"      => "shared",
-                "bank"              => null,
-                "last_refreshed"    => null,
-                "entity"            => "balance",
-                "available_balance" => 0
+                'currency' => 'INR',
+                'amount' => 0,
+                'account_number' => '2224440041626905',
+                'account_type' => 'razorpayx_lite',
+                'entity' => 'banking_balance',
+                'bank_code' => null,
+                'bank_name' => null,
+                'available_amount' => 0,
+                'refreshed_at' => null,
             ]
         ];
 
@@ -21863,7 +21794,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2InputValidationError()
+    public function testGetBankingBalancesInputValidationError()
     {
         $this->ba->privateAuth();
 
@@ -21915,4 +21846,105 @@ The same has been enabled for the account.
         $this->assertEquals('newEmail@test.com', $updatedMerchantDetail->getContactEmail());
 
     }
+
+    public function testMerchantEmailUpdateCreateNewOwnerForMerchant()
+    {
+        Mail::fake();
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com', 'partner_type' => 'aggregator']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $appAttributes = [
+            'merchant_id' => $merchant['id'],
+            'partner_type'=> 'aggregator',
+        ];
+
+        $application = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
+
+        $token = str_random(50);
+
+        $oldOwnerUser = $this->fixtures->create('user',[
+            'email'                   => 'oldowner@gmail.com',
+            'contact_mobile'          => '8839106483',
+            'name'                    => 'ownername',
+            'contact_mobile_verified' => true,
+            'password_reset_token'    => $token,
+            'password_reset_expiry'   => Carbon::now()->timestamp + 86400,
+        ]);
+
+        // create owner role on pg
+        $this->createMerchantUserMapping($oldOwnerUser['id'], $merchant['id'], 'owner', 'test', 'primary');
+
+        $userDeviceDetail = [
+            'merchant_id' => $merchant['id'],
+            'user_id' => $oldOwnerUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ];
+        $this->fixtures->create('user_device_detail', $userDeviceDetail);
+
+        // put data in cache
+        $cacheData = [
+            'current_owner_email'    => 'oldowner@gmail.com',
+            'email'                  => 'newowner@gmail.com',
+            'merchant_id'            => $merchant['id'],
+            'reattach_current_owner' => true,
+            'set_contact_email'      => true,
+        ];
+
+        $app['cache']->put('merchant_email_update_' . $merchant['id'], $cacheData, 60*60*24);
+
+        $oldOwnerUser = $this->getDbEntityById('user', $oldOwnerUser['id']);
+
+        $testData = $this->testData['testMerchantEmailUpdateCreateNewUser'];
+
+        $testData['request']['content']['token']       = $token;
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+
+        $testData['response']['content']['logout_sessions_for_users'] = [$oldOwnerUser->getId()];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant['id']);
+
+        $user = $this->repo->user->getUserFromEmail("newowner@gmail.com");
+
+        $merchantUser = \DB::table('merchant_users')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('role','=','owner')
+            ->first();
+
+        $this->assertEquals($deviceDetail->merchant_id, $merchant['id']);
+
+        $this->assertEquals($deviceDetail->user_id, $user->id);
+
+        $this->assertEquals($merchantUser->user_id, $user->id);
+
+        $this->assertEquals($merchantUser->merchant_id, $merchant['id']);
+
+        $this->assertEquals("owner", $merchantUser->role);
+    }
+
 }

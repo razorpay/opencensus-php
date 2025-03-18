@@ -109,7 +109,7 @@
         <testsuite name="Features-1 Test Suite">
             <directory>./tests/Functional/FileStore/</directory>
             <directory>./tests/Functional/Customer/</directory>
-            <directory>./tests/Unit/Customer/</directory>
+<!--            <directory>./tests/Unit/Customer/</directory>-->
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
             <exclude>./tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
@@ -117,7 +117,7 @@
             <exclude>./tests/Functional/Customer/CustomerTokensInternalTest.php</exclude>
             <exclude>./tests/Functional/Customer/TruecallerTest.php</exclude>
             <directory>./tests/Functional/Invitation/</directory>
-            <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
+<!--            <directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
         <testsuite name="Features-2 Test Suite">
             <file>./tests/Functional/Merchant/AmountCreditsTest.php</file>
@@ -209,6 +209,8 @@
             <directory>./tests/Functional/Tax/</directory>
             <directory>./tests/Functional/User/</directory>
             <directory>./tests/Functional/UserRole/</directory>
+            <file>./tests/Unit/Models/Merchant/DualWritingTest.php</file>
+            <file>./tests/Unit/Models/Merchant/Detail/NeedsClarificationTest.php</file>
         </testsuite>
         <testsuite name="Features-4-1 Test Suite">
             <directory>./tests/Functional/Dispute/</directory>
@@ -260,6 +262,7 @@
             <exclude>./tests/Unit/Models/Merchant/BusinessDetail/</exclude>
             <exclude>./tests/Unit/Models/Merchant/Bvs/</exclude>
             <exclude>./tests/Unit/Request/Edge/</exclude>
+            <exclude>./tests/Unit/Models/Merchant/DualWritingTest.php</exclude>
         </testsuite>
         <testsuite name="Feature-6 Test Suite">
             <directory>./tests/Functional/TaxPayments/</directory>

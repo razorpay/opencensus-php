@@ -142,4 +142,13 @@ class CommissionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function clearUnsettledTxn()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->clearUnsettledTxn($input);
+
+        return ApiResponse::json($response);
+    }
 }

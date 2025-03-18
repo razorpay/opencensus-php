@@ -74,6 +74,27 @@ class FtsTest extends TestCase
         $bankingAccount->save();
     }
 
+    public function setUpForRblUpiCredsUnderMaintenanceUpdateTest()
+    {
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000000, '10000000000000',AccountType::DIRECT, Channel::RBL);
+
+        $bankingAccount    = $this->fixtures->create(
+            'banking_account',
+            [
+                'id'             => '1000000lcustba',
+                'account_type'   => AccountType::DIRECT,
+                'merchant_id'    => '10000000000000',
+                'account_number' => '2224440041626906',
+                'account_ifsc'   => 'RAZRB000000',
+                'status'         => 'under_maintenance'
+            ]);
+
+        $bankingAccount->balance()->associate($bankingBalance);
+        $bankingAccount->save();
+    }
+
     public function setUpForRblOnBasUpiCredsUpdateTest()
     {
         // Creates banking balance
@@ -313,6 +334,68 @@ class FtsTest extends TestCase
             {
                 $this->assertEquals($credentials[$bankingAccountDetail['gateway_key']],
                                     $bankingAccountDetail['gateway_value']);
+            }
+        }
+
+        $this->assertEquals('payouts.puv27-2', $vpa[0]['username']);
+        $this->assertEquals('rbl', $vpa[0]['handle']);
+        $this->assertEquals('banking_account', $vpa[0]['entity_type']);
+        $this->assertEquals('1000000lcustba', $vpa[0]['entity_id']);
+        $this->assertEquals('payouts.puv27-2@rbl', $vpa[0]['address']);
+    }
+
+    public function testGracefulUpdateOfExistingSourceAccountForUnderMaintenance()
+    {
+        $this->setUpForRblUpiCredsUnderMaintenanceUpdateTest();
+
+        $this->mockBankingAccountService();
+
+        $this->ba->adminAuth();
+
+        $this->app['rzp.mode'] = 'test';
+
+        $createAccountMock = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $this->app->instance('fts_create_account', $createAccountMock);
+
+        $createAccountMock->shouldReceive('VPAValidationBySessionTokenApi')->andReturn('true');
+
+        $splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+        $this->app->instance('splitzService', $splitzMock);
+
+        $output["response"]["variant"]["name"] = "variables";
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credentials = $request['content']['source_account']['credentials'];
+
+        $bankingAccountDetails = $this->getDbEntities('banking_account_detail',
+            ['banking_account_id' => '1000000lcustba'])->toArray();
+
+        $vpa = $this->getDbEntities('vpa',
+            ['entity_id' => '1000000lcustba', 'entity_type' => 'banking_account'])->toArray();
+
+        $this->assertCount(count($credentials), $bankingAccountDetails);
+
+        foreach($bankingAccountDetails as $bankingAccountDetail)
+        {
+            $this->assertEquals('1000000lcustba', $bankingAccountDetail['banking_account_id']);
+            if(($bankingAccountDetail['gateway_key'] === RblGatewayFields::BCAGENT_PASSWORD) or
+                ($bankingAccountDetail['gateway_key'] === RblGatewayFields::HMAC_KEY))
+            {
+                // This is because these credentials will be tokenised.
+                $this->assertNotEquals($credentials[$bankingAccountDetail['gateway_key']],
+                    $bankingAccountDetail['gateway_value']);
+            }
+            else
+            {
+                $this->assertEquals($credentials[$bankingAccountDetail['gateway_key']],
+                    $bankingAccountDetail['gateway_value']);
             }
         }
 

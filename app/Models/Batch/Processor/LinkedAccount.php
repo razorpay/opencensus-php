@@ -86,7 +86,7 @@ class LinkedAccount extends Base
             // Building input for bank core's method
             $buildInput = $this->bankAccountCore
                                ->buildBankAccountArrayFromMerchantDetail(
-                                    $account->merchantDetail,
+                                    $account,
                                     true);
             $overriddenInput = Helper::getBankAccountInput($entry);
             $input = array_merge($buildInput, $overriddenInput);

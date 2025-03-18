@@ -91,7 +91,7 @@ class RolesController extends Controller
         $response = [];
 
         $response["role_id"] = $id;
-        $response["authz_roles"] = (new RoleAccessPolicyMapService())->getAuthzRolesForRoleId($id);
+        $response["authz_roles"] = $this->service()->getAuthzRolesUsingExperiment($id);
 
         if (empty($response['authz_roles']) === true)
         {
@@ -108,6 +108,26 @@ class RolesController extends Controller
         $input = Request::all();
 
         $response = (new RoleAccessPolicyMapService())->fixRoleAccessPolicyMap($input);
+
+        return ApiResponse::json($response);
+    }
+
+    // Used to migrate data from API to Authz in case of CAC migration experiment scale up
+    public function migrateToAuthz()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->migrateToAuthz($input);
+
+        return ApiResponse::json($response);
+    }
+
+    // Used to migrate data from Authz to API in case of CAC migration experiment scale down
+    public function migrateToApi()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->migrateToApi($input);
 
         return ApiResponse::json($response);
     }

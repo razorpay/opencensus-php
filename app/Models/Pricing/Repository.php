@@ -33,7 +33,6 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'deleted';
 
-    const WITH_BUY_PRICING      = 'with_buy_pricing';
     const WITHOUT_BUY_PRICING   = 'without_buy_pricing';
     const ONLY_BUY_PRICING      = 'only_buy_pricing';
 
@@ -70,11 +69,6 @@ class Repository extends Base\Repository
     protected function newQueryWithConnection($connection)
     {
         return $this->addQueryParamBuyPricing(parent::newQueryWithConnection($connection));
-    }
-
-    public function withBuyPricing()
-    {
-        return $this->setBuyPricingEnum(self::WITH_BUY_PRICING);
     }
 
     public function withoutBuyPricing()
@@ -174,7 +168,7 @@ class Repository extends Base\Repository
             return $this->getPlanLegacy($id, $type, $fail, $public, $orgId, $skipOrgCheck);
         };
         $ccRequest = $this->transformGetPlanRequest($id, $type, $fail, $public, $orgId, $skipOrgCheck);
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable,buyPricing: ($type ==Type::BUY_PRICING || $this->buyPricingEnum != self::WITHOUT_BUY_PRICING));
         if (($ccResponse->count() === 0) and ($fail)) {
             if ($public) {
                 throw new Exception\BadRequestException(
@@ -277,7 +271,7 @@ class Repository extends Base\Repository
             'org_id' => $orgId,
             'type' => Pricing\Type::PRICING,
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: ($this->buyPricingEnum != self::WITHOUT_BUY_PRICING));
         if($ccResponse->count() == 0) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
@@ -317,7 +311,7 @@ class Repository extends Base\Repository
             'product' => Product::PRIMARY,
             'feature' => $this->featureFilterParams[0].",".$this->featureFilterParams[1],
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
         if($ccResponse->count() == 0) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);
@@ -357,7 +351,7 @@ class Repository extends Base\Repository
             'id' => $id,
             'type' => Pricing\Type::PRICING,
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing:($this->buyPricingEnum != self::WITHOUT_BUY_PRICING));
         return $ccResponse;
 
     }
@@ -401,7 +395,7 @@ class Repository extends Base\Repository
             'feature' => $feature,
             'international' => $international,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
     }
 
     public function getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgIdLegacy(string $id,
@@ -429,7 +423,7 @@ class Repository extends Base\Repository
             'product' => $product,
             'feature' => $feature,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: ($this->buyPricingEnum != self::WITHOUT_BUY_PRICING));
     }
 
     public function getPricingRulesByPlanIdProductAndFeatureWithoutOrgIdLegacy(string $id,
@@ -460,7 +454,7 @@ class Repository extends Base\Repository
         $ccRequest = [
             'id' => $pricingPlanId,
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
         if ($ccResponse instanceof Plan) {
             return array_filter($ccResponse->toArray(), function($k) {
                 return $k == 'id';
@@ -568,7 +562,7 @@ class Repository extends Base\Repository
             'org_id' => $merchant->org->getId(),
             'type' => Pricing\Type::PRICING,
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
         if ($ccResponse instanceof Plan) {
             if($ccResponse->count() == 0) {
                 throw new ModelNotFoundException("");
@@ -612,7 +606,7 @@ class Repository extends Base\Repository
             'type' => Pricing\Type::PRICING,
             'payment_method_default_fallback' => true,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING );
     }
 
     public function getInstantRefundsDefaultPricingPlanForMethodLegacy(
@@ -634,10 +628,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getBankingSharedAccountNonFreePayouDefaultPricingRules(string $feature, Merchant\Entity $merchant) {
+    public function getBankingSharedAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant) {
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $legacyCallable = function () use ($feature, $merchant) {
-            return $this->getBankingSharedAccountNonFreePayouDefaultPricingRulesLegacy($feature, $merchant);
+            return $this->getBankingSharedAccountNonFreePayoutDefaultPricingRulesLegacy($feature, $merchant);
         };
         $ccRequest = [
             'id' => Fee::DEFAULT_BANKING_PLAN_ID,
@@ -649,7 +643,7 @@ class Repository extends Base\Repository
             'app_name' => null,
             'payouts_filter' => null,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable,  buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
     }
     /**
      * @param string $feature
@@ -659,7 +653,7 @@ class Repository extends Base\Repository
      * only non app pricing rules from the default plan are fetched
      *
      */
-    public function getBankingSharedAccountNonFreePayouDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
+    public function getBankingSharedAccountNonFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
 
@@ -732,7 +726,7 @@ class Repository extends Base\Repository
             'payouts_filter' => 'null',
             'channels' => $channels,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING );
     }
 
     public function getBankingDirectAccountNonFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant, array $channels)
@@ -810,7 +804,7 @@ class Repository extends Base\Repository
             'app_name' => 'null',
             'payouts_filter' => Payout\Entity::FREE_PAYOUT,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING );
     }
 
     public function getBankingSharedAccountFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
@@ -887,7 +881,7 @@ class Repository extends Base\Repository
             'app_name' => 'null',
             'payouts_filter' => Payout\Entity::FREE_PAYOUT,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
 
     }
     public function getBankingDirectAccountFreePayoutDefaultPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
@@ -963,7 +957,7 @@ class Repository extends Base\Repository
             'app_name' => 'null',
             'payouts_filter' => Payout\Purpose::RZP_CHARGE_COLLECTIONS,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
     }
     public function getBankingAccountChargeCollectionDefaultPricingRulesLegacy(string $feature,
                                                                          Merchant\Entity $merchant)
@@ -1031,7 +1025,7 @@ class Repository extends Base\Repository
             'type' => Pricing\Type::PRICING,
             'payouts_filter' => Payout\Purpose::RZP_FEES,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
     }
 
         public function getBankingAccountRzpFeesDefaultPricingRulesLegacy(string $feature,
@@ -1105,7 +1099,7 @@ class Repository extends Base\Repository
             'org_id' => $merchant->getOrgId(),
             'type' => Pricing\Type::PRICING,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
     }
 
     public function getAppPayoutPricingRulesLegacy(string $feature, Merchant\Entity $merchant)
@@ -1186,7 +1180,7 @@ class Repository extends Base\Repository
         if (strlen($orgId) > 0) {
             $ccRequest['org_id'] = $orgId;
         }
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: ($this->buyPricingEnum != self::WITHOUT_BUY_PRICING));
         return $ccResponse;
     }
 
@@ -1240,9 +1234,6 @@ class Repository extends Base\Repository
 
     public function getPlanByName($name)
     {
-        if ($this->buyPricingEnum != self::WITHOUT_BUY_PRICING) {
-            return $this->getPlanByNameLegacy($name);
-        }
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $legacyCallable = function () use ($name) {
             return $this->getPlanByNameLegacy($name);
@@ -1254,7 +1245,7 @@ class Repository extends Base\Repository
         if (strlen($orgId) > 0) {
             $ccRequest['org_id'] = $orgId;
         }
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
         return $ccResponse;
     }
 
@@ -1279,7 +1270,7 @@ class Repository extends Base\Repository
             'plan_id' => $planId,
             'org_id' => $orgId,
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: ($this->buyPricingEnum != self::WITHOUT_BUY_PRICING));
         if (empty($ccResponse->getId())) {
             $data = array(
                 'model' => 'Pricing\Entity',
@@ -1337,8 +1328,6 @@ class Repository extends Base\Repository
     {
         switch ($this->buyPricingEnum)
         {
-            case self::WITH_BUY_PRICING :
-                return $query;
             case self::ONLY_BUY_PRICING :
                 return $query->where(Entity::TYPE, '=', Type::BUY_PRICING);
             default :
@@ -1405,7 +1394,7 @@ class Repository extends Base\Repository
         if (!empty($feeBearer)) {
             $ccRequest['fee_bearer'] = $feeBearer;
         }
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable,  buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
         if($ccResponse == null) {
             return null;
         }
@@ -1472,7 +1461,7 @@ class Repository extends Base\Repository
             'feature' => $feature,
             'payment_method' => $method,
         ];
-        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING );
         if($ccResponse == null) {
             return null;
         }
@@ -1507,7 +1496,25 @@ class Repository extends Base\Repository
             'id' => $pricingRuleId,
             'with_trashed' => $withTrashed,
         ];
-        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable);
+        return $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
+    }
+
+    /**
+     * This function hard deletes a pricing rule!!
+     * Use with extreme caution!!
+     * @param string $planId
+     * @param string $ruleId
+     *
+     * @return mixed
+     */
+    public function hardDeletePlanRule(string $planId, string $ruleId)
+    {
+        $rule = $this->newQuery()
+                     ->planId($planId)
+                     ->where(Entity::ID, '=', $ruleId)
+                     ->firstOrFailPublic();
+
+        return $this->forceDelete($rule);
     }
 
     public function getPricingFromPricingIdLegacy($pricingRuleId, $withTrashed = false)

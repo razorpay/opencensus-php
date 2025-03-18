@@ -74,12 +74,7 @@ class Repository extends Base\Repository
         $favsBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $favsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
-        $connectionType = $this->getPaymentFetchReplicaConnection();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
                     ->selectRaw(

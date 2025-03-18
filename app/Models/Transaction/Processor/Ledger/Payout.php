@@ -94,6 +94,8 @@ class Payout extends Base
         self::VA_TO_VA_PAYOUT_FAILED => 10,
     ];
 
+    const INSUFFICIENT_BALANCE_JOURNAL_CREATE_RETRY_SUFFIX = 'r1';
+
     protected $eventsWithoutFtsInfo = [self::PAYOUT_FAILED,
                                        self::PAYOUT_INITIATED,
                                        self::CHARGE_COLLECTIONS_DEBIT_FAILED,
@@ -547,7 +549,7 @@ class Payout extends Base
      * @throws BadRequestException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null, string $iKey = null)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null, string $iKey = null, int $insufficientBalanceRetries = 1)
     {
         try
         {
@@ -601,7 +603,13 @@ class Payout extends Base
 
                     $this->repo->saveOrFail($this->payout);
 
-                    return $this->createJournalEntry($payload);
+                    if($insufficientBalanceRetries > 0) {
+
+                        $insufficientBalanceRetries--;
+                        $iKey = $iKey.self::INSUFFICIENT_BALANCE_JOURNAL_CREATE_RETRY_SUFFIX;
+                        return $this->createJournalEntry($payload, $maxRetryCount, 0, null, $iKey, $insufficientBalanceRetries);
+
+                    }
                 }
 
                 throw new BadRequestException(

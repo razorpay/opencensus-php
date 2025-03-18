@@ -49,6 +49,8 @@ class Validator extends Base\Validator
         Entity::BANK_ACCOUNT                             => 'filled|associative_array|custom',
         Entity::CARD                                     => 'filled|associative_array|custom',
         Entity::WALLET_ACCOUNT                           => 'filled|associative_array|custom',
+        Entity::LINKED_NUMBER                            => 'sometimes|regex:/^\d+$/|between:8,10',
+        Entity::MOBILE                                   => 'sometimes|regex:/^\d+$/|between:8,10',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
@@ -67,7 +69,9 @@ class Validator extends Base\Validator
         Entity::CARD . '.' . Card\Entity::INTERNATIONAL  => 'sometimes:card|bool',
         Entity::CARD . '.' . Card\Entity::TRIVIA         => 'sometimes:card|string|nullable',
         Entity::BATCH_ID                                 => 'sometimes|string',
-        Entity::CONTACT_ENTITY                           => 'sometimes|Entity'
+        Entity::CONTACT_ENTITY                           => 'sometimes|Entity',
+        Entity::CUSTOMER_NAME                            => 'sometimes|string',
+        Entity::BANK_IFSC                                => 'sometimes|string',
     ];
 
     protected static $beforeCreateRules = [
@@ -94,17 +98,18 @@ class Validator extends Base\Validator
 
     protected function validateAccountAttribute($input)
     {
-        // Only one of card, vpa, bank_account or wallet_account can be present.
+        // Only one of card, vpa, bank_account, linked_number or wallet_account can be present.
 
         $correctPresence = ((isset($input[Entity::CARD]) === true) xor
                             (isset($input[Entity::VPA]) === true) xor
                             (isset($input[Entity::BANK_ACCOUNT]) === true) xor
-                            (isset($input[Entity::WALLET_ACCOUNT]) === true));
+                            (isset($input[Entity::WALLET_ACCOUNT]) === true) xor
+                            (isset($input[Entity::MOBILE]) === true && is_array($input[Entity::MOBILE]) === true)); // Mobile number can be array or string
 
         if ($correctPresence === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Only one of card, vpa, bank_account or wallet can be present',
+                'Only one of card, vpa, bank_account, mobile or wallet can be present',
                 null,
                 [
                     'input' => $input,

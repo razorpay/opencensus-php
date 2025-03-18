@@ -19,6 +19,7 @@ use RZP\Models\Settings;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
+use RZP\Services\NoCodeAppsService;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\PaymentPageItem;
@@ -679,6 +680,62 @@ class Core extends Base\Core
         $modifiedInput[Order\Entity::NOTES] = $input[Order\Entity::NOTES] ?? [];
 
         return $modifiedInput;
+    }
+    public function getGrievanceEntityDetails(string $id)
+    {
+        try {
+            $id = Entity::stripDefaultSign($id);
+    
+            $storeDetails = $this->nocodeAppsFetchStore($id);
+    
+            $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [
+                'id' => $id,
+                'response' => $storeDetails
+            ]);
+    
+            if (empty($storeDetails) || empty($storeDetails['data'])) {
+                $this->trace->info(TraceCode::STORE_NOT_FOUND, [
+                    'id' => $id,
+                    'message' => 'Store does not exist in NoCodeApp service'
+                ]);
+                throw new Exception\BadRequestValidationFailureException(
+                    'Store does not exist.',
+                    null,
+                    null
+                );
+            }
+    
+            $merchantDetails = $this->repo->merchant->findOrFail($storeDetails['data']['merchant_id']);
+    
+            return [
+                'entity'         => 'store',
+                'entity_id'      => $storeDetails['data']['id'],
+                'merchant_id'    => $storeDetails['data']['merchant_id'],
+                'merchant_label' => $merchantDetails->getBillingLabel() ?? '',
+                'merchant_logo'  => $merchantDetails->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE) ?? '',
+                'subject'        => $storeDetails['data']['title'] ?? '',
+            ];
+        } catch (\Exception $e) {
+            $this->trace->info(TraceCode::GREVIENCE_FAILURE_WHILE_GETTING_STORE_DETAILS, [
+                'error' => $e->getMessage(),
+                'id' => $id
+            ]);
+    
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to retrieve store details.'
+            );
+        }
+    }    
+
+    public function nocodeAppsFetchStore(string $storeId)
+    {
+        $ncaService = new NoCodeAppsService($this->app);
+        
+        $res = $ncaService->fetchStoreDetails($storeId);
+        
+        $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [$res]);
+        
+        return $res;
     }
 
 }

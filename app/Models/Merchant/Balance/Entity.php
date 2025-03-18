@@ -229,16 +229,7 @@ class Entity extends Base\PublicEntity
 
         if ($accountType === AccountType::SHARED)
         {
-            $exp = $app->razorx->getTreatment(
-                $this->getMerchantId(),
-                RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE,
-                $app['rzp.mode'] ?? 'live'
-            );
-
-            if ($exp === 'on')
-            {
-                $attributes[self::LAST_FETCHED_AT] = Carbon::now()->getTimestamp();
-            }
+            $attributes[self::LAST_FETCHED_AT] = Carbon::now()->getTimestamp();
 
         }
     }
@@ -775,6 +766,13 @@ class Entity extends Base\PublicEntity
     {
         $this->getSettingsAccessor()
              ->upsert(self::LAST_FETCHED_AT, Carbon::now(Timezone::IST)->getTimestamp())
+             ->save();
+    }
+
+    public function updateLastFetchedAtTo(int $lastFetchedAt)
+    {
+        $this->getSettingsAccessor()
+             ->upsert(self::LAST_FETCHED_AT, $lastFetchedAt)
              ->save();
     }
 

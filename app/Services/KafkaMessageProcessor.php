@@ -82,7 +82,7 @@ class KafkaMessageProcessor
      *
      * @return bool <TRUE/FALSE> - True - processing success, False - in case of failure
      */
-    public function process(string $topic, array $payload, string $mode = null, $refundApiLedgerDualWrite = false)
+    public function process(string $topic, array $payload, string $mode = null)
     {
         $traceTopicDetails = [
             'topicName' => $topic,
@@ -92,7 +92,7 @@ class KafkaMessageProcessor
         $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD, $traceTopicDetails);
 
         /** @var KafkaJobs\Job $job */
-        $job = $this->getJob($topic, $payload, $mode, $refundApiLedgerDualWrite);
+        $job = $this->getJob($topic, $payload, $mode);
 
         try
         {
@@ -154,7 +154,7 @@ class KafkaMessageProcessor
         }
     }
 
-    protected function getJob(string $topic, array $payload, string $mode = null, $refundApiLedgerDualWrite = false)
+    protected function getJob(string $topic, array $payload, string $mode = null)
     {
         switch ($topic)
         {
@@ -175,21 +175,6 @@ class KafkaMessageProcessor
 
             case self::API_PG_LEDGER_ACKNOWLEDGMENTS:
                 return new KafkaJobs\PGLedgerAcknowledgmentJob($payload, $mode);
-            case self::STAGE_TEST_PAYMENT_EVENTS:
-            case self::STAGE_LIVE_PAYMENT_EVENTS:
-            case self::PROD_LIVE_PAYMENT_EVENTS:
-            case self::PROD_TEST_PAYMENT_EVENTS:
-            case self::PROD_LIVE_API_LEDGER_DUAL_WRITE_EVENTS:
-            case self::PROD_TEST_API_LEDGER_DUAL_WRITE_EVENTS:
-            case self::STAGE_LIVE_API_LEDGER_DUAL_WRITE_EVENTS:
-            case self::STAGE_TEST_API_LEDGER_DUAL_WRITE_EVENTS:
-                return new KafkaJobs\PGLedgerDualWriteJob($payload, $mode);
-
-            case self::PROD_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
-            case self::PROD_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
-            case self::STAGE_LIVE_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
-            case self::STAGE_TEST_API_LEDGER_DUAL_WRITE_RETRY_EVENTS:
-                return new KafkaJobs\PGLedgerDualWriteRetryJob($payload, $mode);
 
             case self::INVALID_ADDRESS_EVENTS:
                 return new InvalidAddressConsumer($payload, $mode);
@@ -216,10 +201,6 @@ class KafkaMessageProcessor
             case self::PROD_TEST_REFUND_EVENTS:
             case self::STAGE_LIVE_REFUND_EVENTS:
             case self::STAGE_TEST_REFUND_EVENTS:
-                if ($refundApiLedgerDualWrite === true)
-                {
-                    return new KafkaJobs\PGLedgerDualWriteJob($payload, $mode);
-                }
                 return new KafkaJobs\EzetapRefundEventsJob($payload,$mode);
             case self::PARTNER_WEBHOOK_CALLBACK_EVENTS:
                 return new KafkaJobs\PartnerWebhookEventHandlerJob($payload, $mode);

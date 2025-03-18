@@ -2109,6 +2109,11 @@ class Gateway extends Base\Gateway
         if ((isset($input['gateway']['data']['version']) === true) and
             ($input['gateway']['data']['version']) === 'v2')
         {
+            if ($input['payment']['recurring'] === true)
+            {
+                return $this->processRecurringCallback($input);
+            }
+
             return $this->upiCallback($input);
         }
 

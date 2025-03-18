@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\OndemandPayout;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants\Metric;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::MODE,
         self::INITIATED_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
@@ -56,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CREATED_AT,
     ];
+
 
     protected $fillable = [
         self::MERCHANT_ID,
@@ -191,6 +194,8 @@ class Entity extends Base\PublicEntity
         Status::validateStatusUpdate($status, $currentStatus);
 
         $this->setAttribute(self::STATUS, $status);
+
+        app('trace')->count(Metric::SETTLEMENT_ONDEMAND_PAYOUT_STATUS_UPDATES, ['status' => $status, 'mode' => $this->getMode()]);
     }
 
     public function setPayoutId($payoutId)
@@ -220,6 +225,29 @@ class Entity extends Base\PublicEntity
         return [
             self::ID                    => $arr[self::ID],
             self::ENTITY                => $arr[self::ENTITY],
+//            self::MODE                  => $arr[self::MODE],
+            self::INITIATED_AT          => $arr[self::INITIATED_AT],
+            self::PROCESSED_AT          => $arr[self::PROCESSED_AT],
+            self::REVERSED_AT           => $arr[self::REVERSED_AT],
+            self::AMOUNT                => $arr[self::AMOUNT],
+            'amount_settled'            => $this->getPayoutAmount(),
+            self::FEES                  => $arr[self::FEES],
+            self::TAX                   => $arr[self::TAX],
+            self::UTR                   => $arr[self::UTR],
+            self::STATUS                => $arr[self::STATUS],
+            self::CREATED_AT            => $arr[self::CREATED_AT],
+        ];
+    }
+
+    public function toArrayPublicWithExpand()
+    {
+        $arr = parent::toArrayPublicWithExpand();
+
+        return [
+            self::ID                    => $arr[self::ID],
+            self::ENTITY                => $arr[self::ENTITY],
+            self::MODE                  => $arr[self::MODE],
+            self::FAILURE_REASON        => $arr[self::FAILURE_REASON],
             self::INITIATED_AT          => $arr[self::INITIATED_AT],
             self::PROCESSED_AT          => $arr[self::PROCESSED_AT],
             self::REVERSED_AT           => $arr[self::REVERSED_AT],

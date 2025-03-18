@@ -713,11 +713,13 @@ class Entity extends Base\PublicEntity
 
         $toType = $this->getAttribute(self::TO_TYPE);
 
-        $entity = E::getEntityClass($toType);
-
-        if ($toType === 'merchant')
+        if ($toType === 'merchant' || $toType === 'optimizer_account')
         {
             $entity = 'RZP\Models\Merchant\Account\Entity';
+        }
+        else
+        {
+            $entity = E::getEntityClass($toType);
         }
 
         $attributes[self::RECIPIENT] = $entity::getSignedId($toId);

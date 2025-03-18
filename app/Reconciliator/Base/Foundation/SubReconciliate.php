@@ -10,6 +10,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Jobs\Ledger\ReconNFCToCLS;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\OfflinePayment\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -458,6 +459,23 @@ class SubReconciliate extends Base\Core
         $this->setRowReconStatusAndError(InfoCode::RECONCILED);
     }
 
+    protected function setReconStatusAndSummary($entity)
+    {
+        if (($entity->getEntityName() !== Entity::REFUND) or
+            ($entity->isScrooge() === false))
+        {
+
+            $this->deleteCardMetaDataIfApplicable($entity);
+
+            $this->pushSuccessReconMetrics($entity);
+
+            // Increment the success count for the summary.
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entity->getKey());
+        }
+
+        $this->setRowReconStatusAndError(InfoCode::RECONCILED);
+    }
+
     public function sendPaymentReconNFCDataToCLS($payment, $data = [])
     {
         $payload = [
@@ -533,6 +551,43 @@ class SubReconciliate extends Base\Core
         ]);
 
         $this->pushReconNFCDataToKafka($kafkaPayload, $refundId);
+    }
+
+    public function sendPayoutReconNFCDataToCLS($payoutId, $data = []): void
+    {
+        $payload = [
+            "event" => [
+                "name"=> "prod_live_art_events",
+                "data" => [
+                    "dual_write_request"=> [
+                        "reconciled_at"  => $data[BaseReconciliate::RECONCILED_AT] ?? '',
+                        "reconciled_type" => $data[BaseReconciliate::RECONCILED_TYPE] ?? '',
+                        "entity_id"=> $payoutId,
+                        "entity_type"=> "payout"
+                    ]
+                ],
+                "metadata"=> [
+                    "version" => "v2"
+                ]
+            ]
+        ];
+
+        $payloadString = json_encode($payload);
+
+        $encodedPayload = base64_encode($payloadString);
+
+        $kafkaPayload = [
+            "after"=> [
+                "payload"=> $encodedPayload,
+            ],
+            "op"=> "dummy"
+        ];
+
+        $this->trace->info(TraceCode::NFC_RECON_PAYOUT_DATA, [
+            "message"      => $kafkaPayload
+        ]);
+
+        $this->pushReconNFCDataToKafka($kafkaPayload, $payoutId);
     }
 
     private function pushReconNFCDataToKafka($payload, $paymentId)
@@ -723,7 +778,10 @@ class SubReconciliate extends Base\Core
                 }
                 else
                 {
-                    $variant = $this->app['razorx']->getTreatment($entity->getId(), RazorxTreatment::DELETE_CARD_METADATA_AFTER_RECONCILIATION, $this->app['rzp.mode'] ?? 'live');
+                    $variant = '';
+                    if($this->mode == \RZP\Constants\Mode::LIVE && app()->isEnvironmentProduction()){
+                        $variant = 'on';
+                    }
                 }
 
                 $this->trace->info(

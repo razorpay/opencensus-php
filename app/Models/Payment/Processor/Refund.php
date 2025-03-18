@@ -2071,13 +2071,51 @@ trait Refund
                     $amountRefunded = $amountRefunded + $refundAmount;
                     $baseAmountRefunded = $baseAmountRefunded + $refundBaseAmount;
 
+                    if ($amountRefunded < 0 || $baseAmountRefunded < 0)
+                    {
+                        $this->trace->info(
+                            TraceCode::NEGATIVE_PAYMENT_AMOUNT_REFUNDED,
+                            [
+                                'refund_id'                    => $refundId,
+                                'payment_id'                   => $payment->getId(),
+                                'payment_amount_refunded'      => $amountRefunded,
+                                'payment_base_amount_refunded' => $baseAmountRefunded,
+                            ]);
+
+                        $this->trace->info(
+                            TraceCode::PAYMENT_STATUS,
+                            [
+                                'refund_id'                    => $refundId,
+                                'payment_id'                   => $payment->getId(),
+                                'payment_status'               => $payment->getStatus(),
+                                'payment_refund_status'        => $payment->getRefundStatus(),
+                                'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                                'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                            ]);
+
+                        return;
+                    }
+
                     $payment->setAmountRefunded($amountRefunded);
                     $payment->setBaseAmountRefunded($baseAmountRefunded);
 
                     $this->resetPaymentStatusAndRefundStatus($payment);
                 }
 
-                $this->repo->saveOrFail($payment);
+                if ($this->isNewRefundPaymentUpdateFlowEnabled($payment->getMerchantId()))
+                {
+                    $this->trace->info(
+                        TraceCode::REFUND_PAYMENT_UPDATE_NEW_FLOW,
+                        [
+                            'refund_id'                    => $refundId,
+                            'payment_id'                   => $payment->getId(),
+                        ]);
+                    $this->repo->payment->saveOrFailWithoutFetch($payment);
+                }
+                else
+                {
+                    $this->repo->saveOrFail($payment);
+                }
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -4836,6 +4874,49 @@ trait Refund
                 );
             }
         }
+    }
+
+    private function isNewRefundPaymentUpdateFlowEnabled(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.payment_update_for_refunds_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::PAYMENT_UPDATE_FOR_REFUNDS_SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_UPDATE_FOR_REFUNDS_UNRECOGNIZED_ERROR
+            );
+        }
+        return false;
     }
 
     public function reverseTransfersAndRefundPayments($payment, array & $input, array & $response)

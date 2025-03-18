@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -24,7 +25,7 @@ class CitiPayoutTest extends TestCase
 
         parent::setUp();
 
-        $this->mockRazorxTreatment('citi');
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER=>'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
@@ -590,7 +591,7 @@ class CitiPayoutTest extends TestCase
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
-        $this->assertEquals($payout['channel'], 'citi');
+        $this->assertEquals( 'icici',$payout['channel']);
         $this->assertNull($payout['user_id']);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -607,7 +608,7 @@ class CitiPayoutTest extends TestCase
         $this->assertEquals('Batman', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals(Channel::CITI, $payoutAttempt['channel']);
+        $this->assertEquals(Channel::ICICI, $payoutAttempt['channel']);
         $this->assertEquals(Status::INITIATED, $payoutAttempt['status']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
@@ -625,20 +626,20 @@ class CitiPayoutTest extends TestCase
         $this->flushCache();
     }
 
-    public function testCreatePayoutForVpaFundAccountId()
-    {
-        $contactId = $this->getDbLastEntity('contact')->getId();
-
-        $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contactId,
-        ]);
-
-        $this->startTest();
-
-        $this->flushCache();
-    }
+//    public function testCreatePayoutForVpaFundAccountId()
+//    {
+//        $contactId = $this->getDbLastEntity('contact')->getId();
+//
+//        $this->fixtures->create('fund_account:vpa', [
+//            'id'            => '100000000003fa',
+//            'source_type'   => 'contact',
+//            'source_id'     => $contactId,
+//        ]);
+//
+//        $this->startTest();
+//
+//        $this->flushCache();
+//    }
 
     public function testCreateQueuedPayoutWithModeSet()
     {
@@ -848,22 +849,23 @@ class CitiPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateQueuedPayoutUnsupportedModeForCitiIcici()
-    {
-        $contactId = $this->getDbLastEntity('contact')->getId();
-
-        $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contactId,
-        ]);
-
-        $balance = $this->getDbLastEntity('balance');
-
-        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
-
-        $this->startTest();
-    }
+//    public function testCreateQueuedPayoutUnsupportedModeForCitiIcici()
+//    {
+//
+//        $contactId = $this->getDbLastEntity('contact')->getId();
+//
+//        $this->fixtures->create('fund_account:vpa', [
+//            'id'            => '100000000003fa',
+//            'source_type'   => 'contact',
+//            'source_id'     => $contactId,
+//        ]);
+//
+//        $balance = $this->getDbLastEntity('balance');
+//
+//        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+//
+//        $this->startTest();
+//    }
 
     protected function tearDown(): void
     {

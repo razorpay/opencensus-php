@@ -253,7 +253,7 @@ trait ExternalLinkedAccountPaymentRepo
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::FETCH_PAYMENT_VIA_ROUTE_SERVICE,
+                TraceCode::FETCH_PAYMENT_VIA_ROUTE_SERVICE_FAILURE,
                 [
                     'id'         => $id,
                     'data'       => $e->getMessage(),

@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant;
+use RZP\Models\Offer\Core as OfferCore;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
@@ -33,10 +34,7 @@ trait ExternalOffersRepo
             try
             {
                 // add prefix to id
-                $offer = $this->fetchExternalEntity('offer_' . $id, $merchantId);
-
-                // fetch offer from API if it has limits
-                return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
+                return $this->fetchExternalEntity('offer_' . $id, $merchantId);
             }
             catch (\Exception $offerEngineException)
             {
@@ -69,16 +67,13 @@ trait ExternalOffersRepo
 
     public function findById($id, string $connectionType = null)
     {
-        if ($this->fetchByIdFromOE($id) === true)
+        if ($this->validateExternalFetchEnabled() === true)
         {
             try
             {
-                // add prefix to id
-                $offer = $this->fetchAdminExternalEntityById('offer_' . $id);
-
-                // fetch offer from API if it has limits
-                return $this->fetchOffersWithLimitsFromAPI([$offer])[0];
-            } catch (\Throwable $e)
+                return $this->fetchAdminExternalEntityById('offer_' . $id);
+            }
+            catch (\Throwable $e)
             {
                 $this->trace->count(
                     Metric::OFFERS_ENGINE_AGGREGATE_FETCH_BY_ID_FAIL, [
@@ -130,29 +125,33 @@ trait ExternalOffersRepo
         return $this->findByIdAndMerchantId($id, $merchant->getId(), $connectionType);
     }
 
-    public function findManyFromOE(array $offerIds, $merchantId)
+    public function findManyFromOE(array $offerIds, $merchantId, array $input = [])
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
             try
             {
-                $offers = $this->fetchExternalEntitiesBulk($merchantId, $offerIds);
+                $offers = $this->fetchExternalEntitiesBulk($merchantId, $offerIds, $input);
 
                 if (empty($offers) === true)
                 {
                     throw new Exception\ServerErrorException('No offers found in OE response', ErrorCode::SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS);
                 }
 
-                // fetch offers with limits from API db (if any)
-                $updatedOffers = $this->fetchOffersWithLimitsFromAPI($offers);
-
-                if (sizeof($offerIds) !== sizeof($updatedOffers))
+                // TODO:: Deprecate as part of offers decomp
+                if (sizeof($offerIds) !== sizeof($offers))
                 {
-                    $fallbackOffers = $this->fetchRemainingFromAPI($offerIds, $updatedOffers);
-                    $updatedOffers = array_merge($updatedOffers, $fallbackOffers);
+                    app('trace')->info(TraceCode::OFFERS_NOT_FOUND_IN_OFFERS_ENGINE, [
+                        "req_offer_ids_count"    => sizeof($offerIds),
+                        "offer_engine_ids_count" => $offers,
+                        "route"                  => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+
+                    $fallbackOffers = $this->fetchRemainingFromAPI($offerIds, $offers);
+                    $offers = array_merge($offers, $fallbackOffers);
                 }
 
-                return $updatedOffers;
+                return $offers;
 
             } catch (\Exception $exception)
             {
@@ -198,8 +197,7 @@ trait ExternalOffersRepo
                     return [];
                 }
 
-                // fetch offer from API if it has limits
-                $offer = $this->fetchOffersWithLimitsFromAPI([$responseOffer])[0];
+                $offer = $responseOffer;
 
                 // filter based on params
                 if ($fetchActive === true && !$offer[OfferEntity::ACTIVE])
@@ -251,8 +249,7 @@ trait ExternalOffersRepo
                     return null;
                 }
 
-                // fetch offers from API if it has limits
-                $offers = $this->fetchOffersWithLimitsFromAPI($responseOffers);
+                $offers = $responseOffers;
 
                 $now = Carbon::now()->getTimestamp();
 
@@ -303,8 +300,7 @@ trait ExternalOffersRepo
                     return $applicableOffers;
                 }
 
-                // fetch offers from API if it has limits
-                $offers = $this->fetchOffersWithLimitsFromAPI($responseOffers);
+                $offers = $responseOffers;
 
                 $now = Carbon::now()->getTimestamp();
                 foreach ($offers as $offer)
@@ -355,7 +351,7 @@ trait ExternalOffersRepo
         return null;
     }
 
-    private function fetchAllDefaultOffersForMerchantFromOE($merchantId)
+    private function fetchAllDefaultOffersForMerchantFromOE($merchantId, $enableCache = false)
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
@@ -365,7 +361,7 @@ trait ExternalOffersRepo
                     [
                         Constants::OFFER_TYPE => Constants::OFFER_TYPE_STAGE_REGULAR,
                         Constants::STATUS => Constants::STATUS_ACTIVE,
-                    ]
+                    ], $enableCache
                 );
 
                 if (empty($responseOffers) === true)
@@ -373,9 +369,7 @@ trait ExternalOffersRepo
                     return [];
                 }
 
-                // fetch offers from API if it has limits
-                return $this->fetchOffersWithLimitsFromAPI($responseOffers);
-
+                return $responseOffers;
 
             } catch (\Exception $exception)
             {
@@ -393,14 +387,25 @@ trait ExternalOffersRepo
 
         return [];
     }
+    private function fetchMultipleMerchantDashboardFromOE($merchantId, $input)
+    {
+        $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [], $input);
 
-    private function fetchExternalEntitiesBulk($merchantId, array $ids = [], $input = [])
+        if (empty($responseOffers) === true)
+        {
+            return [];
+        }
+
+        return $responseOffers;
+    }
+
+    private function fetchExternalEntitiesBulk($merchantId, array $ids = [], $input = [], $enableCache = false)
     {
         $class = Entity::getExternalRepoSingleton($this->entity);
 
         try
         {
-            return $class->fetchBulk($merchantId, $ids, $input);
+            return $class->fetchBulk($merchantId, $ids, $input, $enableCache);
 
         } catch (\Throwable $e) {
             $this->trace->traceException(
@@ -428,6 +433,7 @@ trait ExternalOffersRepo
 
     private function fetchAdminExternalEntityById($id, $input = [])
     {
+
         $class = Entity::getExternalRepoSingleton($this->entity);
 
         try
@@ -470,15 +476,7 @@ trait ExternalOffersRepo
     private function fetchFromOE(string $merchantId): bool
     {
         return ($this->validateExternalFetchEnabled() === true)
-        && ($this->core->shouldRouteToOffersEngine(
-            $merchantId, Constants::OFFERS_ENGINE_FETCH_EXP) === true);
-    }
-
-    private function fetchByIdFromOE(string $id): bool
-    {
-        return ($this->validateExternalFetchEnabled() === true)
-               && ($this->core->shouldRouteToOffersEngineForPayments(
-                    $id, Constants::OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP) === true);
+        && ($this->core->shouldRouteToOffersEngine() === true);
     }
 
     private function fetchRemainingFromAPI(array $offerIds, $offerEngineOffers)
@@ -505,10 +503,17 @@ trait ExternalOffersRepo
 
     }
 
+    /**
+     * @deprecated this function should not be used any more since all offer
+     * reads have been migrated to offers engine
+     */
     private function fetchOffersWithLimitsFromAPI($offers)
     {
-        $offersWithLimits = [];
-        $updatedOffers = [];
+        $offersWithLimits   = [];
+        $updatedOffers      = [];
+        $offerIdsWithLimits = [];
+
+        $fetchOffersFromApi = false;
 
         // get offers with limits if any
         foreach ($offers as $offer)
@@ -520,21 +525,39 @@ trait ExternalOffersRepo
 
             if (isset($offer[OfferEntity::MAX_OFFER_USAGE]) === true)
             {
-                $offersWithLimits[] = $offer->getId();
+                $offersWithLimits[]           = $offer;
+                $offerIdsWithLimits[]         = $offer->getId();
             }
         }
 
-        // fetch offers with usage limits from API db
-        foreach ($offersWithLimits as $offerId)
+        if (count($offersWithLimits) > 0)
         {
-            $updatedOffers[] = parent::findOrFail($offerId);
+            $fetchOffersFromApi = (bool) ConfigKey::get(ConfigKey::FETCH_OFFERS_WITH_LIMITS_FROM_API, false);
+
+            app('trace')->info(TraceCode::OFFER_WITH_GLOBAL_LIMITS_CACHE_RESULT, [
+                'cache_response' => $fetchOffersFromApi,
+                'offer_ids'      => $offerIdsWithLimits,
+                'route'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        // fetch offers with usage limits from API db
+        foreach ($offersWithLimits as $offersWithLimit)
+        {
+            if ($fetchOffersFromApi === false)
+            {
+                $updatedOffers[] = $offersWithLimit;
+                continue;
+            }
+
+            $updatedOffers[] = parent::findOrFail($offersWithLimit->getId());
         }
 
         // append remaining offers normally
         foreach ($offers as $offer)
         {
             // if offer_id is not present in array it returns false
-            if (array_search($offer->getId(), $offersWithLimits) === false)
+            if (array_search($offer->getId(), $offerIdsWithLimits) === false)
             {
                 $updatedOffers[] = $offer;
             }

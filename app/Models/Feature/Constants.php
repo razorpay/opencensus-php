@@ -67,6 +67,7 @@ class Constants
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
+    const ALLOW_EXTENDED_EXPIRY           = 'allow_extended_expiry';
     const DISABLE_FREE_CREDIT_REG         = 'disable_free_credit_reg';
     const DISABLE_FREE_CREDIT_UNREG       = 'disable_free_credit_unreg';
     const EXPOSE_EXTRA_ATTRIBUTES         = 'expose_extra_attributes';
@@ -2226,6 +2227,11 @@ class Constants
      */
     const PAYROLL_SAV = 'payroll_sav';
 
+    /**
+     * Feature flag to hide payroll payouts in payouts view
+     */
+    const HIDE_RX_PAYROLL_PAYOUTS = 'hide_rx_payroll_payouts';
+
     /*
      * Feature flag to enabled merchant on FAV Microservice
      */
@@ -3362,6 +3368,8 @@ class Constants
         self::PAYOUTS_BLOCKED_ON_LITE      => true,
         self::ALLOW_PARTIAL_CAPTURE => true,
         self::ENABLE_IMPORT_FLOW           => true,
+        self::HIDE_RX_PAYROLL_PAYOUTS   => true,
+
     ];
 
     // Entity type constants
@@ -4912,6 +4920,11 @@ class Constants
             'feature' => self::ENABLE_IMPORT_FLOW,
             'display_name' => 'Feature flag to enable import flow on merchants',
             'documentation' => 'this feature flag will be enabled for merchants outside of india'
+        ],
+        self::HIDE_RX_PAYROLL_PAYOUTS => [
+            'feature' => self::HIDE_RX_PAYROLL_PAYOUTS,
+            'display_name' => 'Feature flag to hide payroll payouts in payouts view',
+            'documentation' => ''
         ],
     ];
 

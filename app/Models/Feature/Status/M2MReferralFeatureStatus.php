@@ -32,30 +32,6 @@ class M2MReferralFeatureStatus extends BaseFeatureStatus
 
     public function getFeatureStatus(): bool
     {
-        try
-        {
-            //if experiment is enabled then only probe for gst details
-            $isRazorxExperimentEnabled = (new Core())->isRazorxExperimentEnable(
-                $this->feature->getEntityId(),
-                RazorxTreatment::SHOW_FRIENDBUY_WIDGET);
-
-            if ($isRazorxExperimentEnabled === false)
-            {
-                return false;
-            }
-
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e,
-                                         Trace::ERROR,
-                                         TraceCode::GET_M2M_REFERRALS_FEATURE_STATUS_ERROR,
-                                         [
-                                             FeatureConstants::M2M_REFERRAL => $this->feature]);
-
-            return false;
-        }
-        return true;
-
+     return false;
     }
 }

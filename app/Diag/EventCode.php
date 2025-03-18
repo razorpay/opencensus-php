@@ -1216,6 +1216,11 @@ class EventCode
         'name'    => 'external_payouts.properties'
     ];
 
+    const DUPLICATE_PAYOUT_PREVENTION_FOUND_DUPLICATE = [
+        'group'   => 'duplicate_payout_prevention',
+        'name'    => 'duplicate_payout_prevention.found_duplicate'
+    ];
+
     const PAYOUT_FETCH_REQUESTS = [
         'group'   => 'external_payouts',
         'name'    => 'external_payouts.fetch.request'

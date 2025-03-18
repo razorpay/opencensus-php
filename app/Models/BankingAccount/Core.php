@@ -2326,11 +2326,12 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);
 
-        $variant = $this->app->razorx->getTreatment($channel,
-                                                    Merchant\RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,
-                                                    $this->app['rzp.mode']);
+        $requestPayload = [
+            "id" => gen_uuid(),
+            "experiment_name" => RazorxTreatment::GATEWAY_BALANCE_FETCH_V2,
+            'request_data'  => json_encode(['id' => $channel])];
 
-        if (strtolower($variant) === 'on')
+        if ((new Merchant\Core())->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE))
         {
             return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel, $isPriorityBalanceUpdate, $blacklistedMerchantIds);
         }
@@ -2554,16 +2555,7 @@ class Core extends Base\Core
 
         if ($channel === Channel::RBL)
         {
-            $variant = $this->app->razorx->getTreatment(
-                'unique_rbl_balance_update',
-                RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE,
-                $this->mode ?? Mode::LIVE
-            );
-
-            if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
-            {
                 $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'UniqueGatewayBalanceUpdate';
-            }
         }
 
         if (class_exists($job) === true)

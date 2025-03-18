@@ -60,6 +60,8 @@ class Core extends Merchant\Core
 
         $accountCoreV1->validatePartnerAccess($partner, null, $accountType);
 
+        $accountCoreV1->blockLinkedAccountCreationIfApplicable($partner);
+
         $this->checkAndSetPhantomPrefillEnabledContextForPartner($partner, null, $accountType);
 
         $requestedProduct = ProductConstants::PRIMARY;
@@ -495,11 +497,8 @@ class Core extends Merchant\Core
     protected function executeTosAcceptanceExperiment(&$input, Merchant\Entity $partner)
     {
         $partnerId             = $partner->getId();
-        $isIgnoreTosAcceptance = $this->app->razorx->getTreatment(
-            $partner->getId(),
-            Merchant\RazorxTreatment::IGNORE_TOS_ACCEPTANCE,
-            $this->mode
-        );
+        $isIgnoreTosAcceptance = $this->isTosAcceptanceExpEnabled($partnerId);
+
 
         $input[Constants::IS_IGNORE_TOS_ACCEPTANCE] = $isIgnoreTosAcceptance;
     }
@@ -1234,5 +1233,15 @@ class Core extends Merchant\Core
                 ]);
             $this->trace->count(Metric::SUBMERCHANT_CUSTOM_TERMINAL_PROCUREMENT_FAILURE);
         }
+    }
+
+    private function isTosAcceptanceExpEnabled(String $partnerMerchantId) : bool
+    {
+        $properties = [
+            'id'            => $partnerMerchantId,
+            'experiment_id' => $this->app['config']->get('app.ignore_tos_acceptance_exp_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

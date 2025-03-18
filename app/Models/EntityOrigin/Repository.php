@@ -35,12 +35,11 @@ class Repository extends BaseRepository
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 return  $query->where(Entity::ENTITY_TYPE, $entityType)
                               ->where(Entity::ENTITY_ID, $entityId)
@@ -64,12 +63,11 @@ class Repository extends BaseRepository
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-                if ($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT){
-                    $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
-                }
+
+                $query = $query->select(DB::raw("/*+ MAX_EXECUTION_TIME(10000) */ *"));
 
                 return  $query->where(Entity::ENTITY_TYPE, $entityType)
                               ->where(Entity::ENTITY_ID, $entityId)
@@ -92,18 +90,6 @@ class Repository extends BaseRepository
                     ->where($merchantIdColumn, '=', $partnerId)
                     ->limit($limit)
                     ->get();
-    }
-
-    protected function checkHarvsterQuerySplitzAndReturnConnection()
-    {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_partnership_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        return $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
     }
 
     protected function checkFallbackRemoved()

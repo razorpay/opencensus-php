@@ -2,7 +2,9 @@
 
 namespace RZP\Listeners;
 
+use Razorpay\Trace\Logger;
 use RZP\Constants;
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
@@ -19,7 +21,6 @@ use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Terminal;
-use Razorpay\Trace\Logger;
 use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
@@ -505,37 +506,12 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            $variant = $this->app->razorx->getTreatment(
-                $payment->getMerchantId(),
-                RazorxTreatment::CARD_SUBSCRIPTIONS_INTERNATIONAL_HANDLER,
-                $this->getMode()
-            );
-
-            if(strtolower($variant) === 'on')
+            if (($payment->hasSubscription() === true) and
+                ($payment->isApiBasedEmandateAsyncPayment() === false))
             {
-                $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
-                $country = $merchant->getCountry();
-                $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
-                    and ($payment->isRecurringTypeAuto() === true));
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-                if (($payment->hasSubscription() === true) and
-                    ($payment->isApiBasedEmandateAsyncPayment() === false) and
-                    (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
-                {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-                }
-            }
-            else
-            {
-                if (($payment->hasSubscription() === true) and
-                    ($payment->isApiBasedEmandateAsyncPayment() === false))
-                {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-                }
+                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
             }
         }
         catch (\Throwable $ex)
@@ -547,6 +523,10 @@ class ApiEventSubscriber extends Base\Core
                 [
                     'payment_id' => $payment->getId(),
                 ]);
+            $this->trace->count(Metric::SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE, [
+                'payment_method'       => $payment->getMethod(),
+                'flow' => 'onPaymentAuthorized'
+            ]);
         }
 
         // Removed reportInitialPayment from here,
@@ -582,20 +562,35 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === true)
-        {
-            (new Payment\Processor\Processor($payment->merchant))->markSplitPaymentFailed($payment);
-        }
-        if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === false)
-        {
-            (new Payment\Processor\Processor($payment->merchant))->refundSplitPayments($payment);
-        }
+        try{
+            if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === true)
+            {
+                (new Payment\Processor\Processor($payment->merchant))->markSplitPaymentFailed($payment);
+            }
+            if ($payment->isSplitPayment() === true and $payment->isNewSplitPaymentFlow() === false)
+            {
+                (new Payment\Processor\Processor($payment->merchant))->refundSplitPayments($payment);
+            }
 
-        if ($payment->hasSubscription() === true)
-        {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+            if ($payment->hasSubscription() === true)
+            {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+            }
+        }
+        catch (\Throwable $ex){
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUBSCRIPTION_HANDLER_ERROR,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+            $this->trace->count(Metric::SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE, [
+                'payment_method'       => $payment->getMethod(),
+                'flow' => 'onPaymentFailed'
+            ]);
         }
 
         if ($payment->isCardMandateRecurringInitialPayment() === true)
@@ -613,7 +608,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
+        else
+        {
+            $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
+            $this->dispatchEventToEzetapDevice($DevicePayload);
+        }
     }
 
 
@@ -794,7 +797,11 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
 
         $this->dispatchPaymentCaptureEvent($payment);
-        $this->dispatchEventToEzetapNotification($payload);
+
+        if($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function isForNocodeApps(Payment\Entity $payment): bool
@@ -809,7 +816,7 @@ class ApiEventSubscriber extends Base\Core
             return true;
         }
 
-        if ($productType === ProductType::PAYMENT_PAGE) {
+        if (PaymentLink\Entity::IsNCADecompProduct($productType)) {
             return $this->shouldSendPPCallbackToNoCodeAppsService($payment->getMerchantId());
         }
 
@@ -1072,7 +1079,11 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
+
     }
 
     protected function onQrCodeCredited(Payment\Entity $payment)
@@ -1085,12 +1096,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        $this->dispatchEventToEzetapNotification($payload);
-
         $gateway=$payment->getGateway();
 
-        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true){
-            //need to add Spitz Experiment here for triggering specific to upi_jkbank gateway
+        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
+
+        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true or $qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) === true)
+        {
             $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
             $this->dispatchEventToEzetapDevice($DevicePayload);
         }
@@ -1346,7 +1360,10 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.created';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function onInPersonRefundProcessed(RefundEntity $refund)
@@ -1355,7 +1372,10 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.processed';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function onInPersonRefundFailed(RefundEntity $refund)
@@ -1364,7 +1384,10 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.failed';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        $this->dispatchEventToEzetapNotification($payload);
+        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        {
+            $this->dispatchEventToEzetapNotification($payload);
+        }
     }
 
     protected function onRefundFailed(RefundEntity $refund)
@@ -1535,14 +1558,13 @@ class ApiEventSubscriber extends Base\Core
     {
         $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER,
-            $this->mode,
-            Payout\Entity::RAZORX_RETRY_COUNT
-        );
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" => RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER,
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
 
-        if (strtolower($variant) === 'on')
+        if ((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE))
         {
             // For merchants who are onboarded to WFS, reject comment can be found by doing ->toArrayPublic on payout entity.
             $payoutArrayPublic = $payout->toArrayPublic();
@@ -1825,40 +1847,40 @@ class ApiEventSubscriber extends Base\Core
 
     public function checkIfGatewayEnabledToSendDeviceNotification(string $gateway) : bool
     {
-       try{
-               $properties = [
-                   'id'            => $gateway,
-                   'experiment_id' => $this->app->config->get('app.ezetap_device_notification_gateway_enabled'),
-                   'request_data'  => json_encode(['gateway' => $gateway]),
-               ];
-               $response   = $this->app['splitzService']->evaluateRequest($properties);
+        try{
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.ezetap_device_notification_gateway_enabled'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-               $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
-                   'experiment_id' => $properties['experiment_id'],
-                   'gateway'       => $gateway,
-                   '$response'     => $response
-               ]);
+            $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'       => $gateway,
+                '$response'     => $response
+            ]);
 
-               $experimentResult = false; // Default value
-               $variables = $response['response']['variant']['variables'] ?? [];
-               foreach ($variables as $variable) {
-                   $key = $variable['key'] ?? '';
-                   $value = $variable['value'] ?? '';
-                   if ($key === 'result' && $value === 'on') {
-                       $experimentResult = true;
-                       break;
-                   }
-               }
-               return $experimentResult;
-       }catch (\Exception $e){
-           $this->trace->traceException(
-               $e,
-               null,
-               TraceCode::SPLITZ_ERROR
-           );
-           return false;
-       }
-           return false;
+            $experimentResult = false; // Default value
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if ($key === 'result' && $value === 'on') {
+                    $experimentResult = true;
+                    break;
+                }
+            }
+            return $experimentResult;
+        }catch (\Exception $e){
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+            return false;
+        }
+        return false;
     }
 
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
@@ -2668,6 +2690,9 @@ class ApiEventSubscriber extends Base\Core
                     'token_id'     => $token->getId(),
                     'notify_event' => $notifyEvent,
                 ]);
+            $this->trace->count(Metric::TOKEN_CONFIRM_REJECT_NOTIFY_ERROR, [
+                'token_status'       => $token->getRecurringStatus()
+            ]);
         }
 
         return;

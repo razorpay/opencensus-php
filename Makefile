@@ -32,7 +32,7 @@ AT=
 
 # ERROR_MODULE repo info
 ERROR_MODULE_GIT_URL := "https://github.com/razorpay/"
-GIT_TOKEN_FROM_SECRETS := "$(cat /run/secrets/git_token)"
+GIT_TOKEN_FROM_SECRETS := "$(shell cat /run/secrets/git_token)"
 
 # Set GIT_TOKEN variable from secrets if present (defaults to env variable)
 ifneq ($(GIT_TOKEN_FROM_SECRETS),)

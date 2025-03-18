@@ -10,6 +10,8 @@ use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
 use RZP\Reconciliator\NetbankingHdfcCorp\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class HdfcCorp extends Base
 {
@@ -23,6 +25,7 @@ class HdfcCorp extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     protected $type              = Payment\Entity::BANK;
     const BASE_STORAGE_DIRECTORY = 'HDFC_Corp/Refund/Netbanking/';
+    const SETTLED_BY_RAZORPAY        = 'Razorpay';
     /**
      * @var string
      */
@@ -96,6 +99,44 @@ class HdfcCorp extends Base
 
         return $mailData;
     }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+
+     // This function is used to get the refund data from scrooge which is used to generate the refund file where this will override the function present in the base.php file
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
+                    RefundConstants::SCROOGE_METHOD     => Payment\Method::NETBANKING,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                    RefundEntity:: SETTLED_BY => static::SETTLED_BY_RAZORPAY,
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
+    }
+
 
     protected function getFileToWriteNameWithoutExt()
     {

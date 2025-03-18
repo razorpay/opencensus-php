@@ -7,6 +7,7 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
+use Request;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Services\Dcs\Features\Type;
@@ -82,6 +83,7 @@ use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Constants\Metric as ConstantMetric;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 class Core extends Base\Core
 {
@@ -670,7 +672,19 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
-        $ownerId = "1000000000";
+        $headers = Request::header();
+
+        $ownerId = '1000000000';
+
+        if(isset($headers[RequestHeader::X_AB_USER_ID][0]) === true)
+        {
+            $splitResponse = $this->getSplitzResponse($headers[RequestHeader::X_AB_USER_ID][0], 'ab_user_id_experiment');
+
+            if($splitResponse === 'enable')
+            {
+                $ownerId = $this->getStorkPayloadOwnerId($headers[RequestHeader::X_AB_USER_ID][0]);
+            }
+        }
 
         $payload = [
             'ownerId'               => $ownerId,
@@ -1696,6 +1710,15 @@ class Core extends Base\Core
         return $otp + array_only($payload, 'context') + compact('token');
     }
 
+    public function getStorkPayloadOwnerId($inputString): string
+    {
+        $inputString = str_replace('-', '', $inputString);
+
+        $encodedString = UniqueIdEntity::base62Manual(UniqueIdEntity::hexToDecimal($inputString));
+
+        return substr($encodedString, 0, 14);
+    }
+
     public function getStorkLoginSignupPayload(array $input, array $otp, Entity $user = null)
     {
         $receiver = $input[Entity::CONTACT_MOBILE];
@@ -1704,11 +1727,25 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
-        $ownerId = "1000000000";
+        $headers = Request::header();
+
+        $ownerId = '1000000000';
 
         if (is_null($user) === false)
         {
             $ownerId =$user->getId();
+        }
+        else
+        {
+            if(isset($headers[RequestHeader::X_AB_USER_ID][0]) === true)
+            {
+                $splitResponse = $this->getSplitzResponse($headers[RequestHeader::X_AB_USER_ID][0], 'ab_user_id_experiment');
+
+                if($splitResponse === 'enable')
+                {
+                    $ownerId = $this->getStorkPayloadOwnerId($headers[RequestHeader::X_AB_USER_ID][0]);
+                }
+            }
         }
 
         $payload = [
@@ -4322,9 +4359,16 @@ class Core extends Base\Core
         {
             try
             {
-                $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
+                if ($merchantEntity->checkCACMigrationExperimentEnabled())
+                {
+                    $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy([$merchant[Entity::BANKING_ROLE]], $merchant[Entity::ID], true);
+                }
+                else
+                {
+                    $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
 
-                $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+                    $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+                }
 
                 /*
                  * Currently there is no way to hide specific permissions/policies using CAC.
@@ -4955,6 +4999,14 @@ class Core extends Base\Core
                         'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
                     ],
                 ];
+
+                $splitzResponse = $this->getSplitzResponse($user->getUserId(), 'appending_userid_in_sendsms_payload');
+
+                if($splitzResponse === 'enable')
+                {
+                    $payload['stork']['owner_type'] = 'user';
+                    $payload['stork']['owner_id'] = $user->getUserId();
+                }
 
                 $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
 
@@ -6152,7 +6204,26 @@ class Core extends Base\Core
     {
         $merchantsUnique = [];
 
-        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
+        $roleIdsUnique = [];
+
+        array_walk($merchants, function ($merchant) use (&$roleIdsUnique)
+        {
+            if ($merchant[Entity::PRODUCT] === Product::BANKING)
+            {
+                $roleIdsUnique[] = $merchant[Entity::ROLE];
+            }
+        });
+
+        $roleIdsUnique = array_unique($roleIdsUnique);
+
+        $roleNamesFromAuthz = [];
+
+        if (empty($roleIdsUnique) === false)
+        {
+            $roleNamesFromAuthz = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($roleIdsUnique);
+        }
+
+        array_walk($merchants, function ($merchant) use (& $merchantsUnique, $roleNamesFromAuthz)
         {
             $id = $merchant[Entity::ID];
             $role = $merchant[Entity::ROLE];
@@ -6170,8 +6241,15 @@ class Core extends Base\Core
 
             if($merchant[Entity::PRODUCT] === Product::BANKING)
             {
-                $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] =
-                    $this->repo->roles->fetchRoleName($merchantsUnique[$id][$key]);
+                if (empty($roleNamesFromAuthz[$merchantsUnique[$id][$key]]) === false)
+                {
+                    $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] = $roleNamesFromAuthz[$merchantsUnique[$id][$key]];
+                }
+                else
+                {
+                    $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] = $this->repo->roles->fetchRoleName($merchantsUnique[$id][$key]);
+                }
+
             }
 
         });
@@ -7221,19 +7299,15 @@ class Core extends Base\Core
     //so we are only editing the record and not creating it
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Merchant\Detail\Core())->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+        $users = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($data[Entity::MERCHANT_ID]);
+        $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-        if ($splitzResult === 'variables')
-        {
-            $users = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($data[Entity::MERCHANT_ID]);
-            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
-
-            // dual write only for below merchants
-            // merchants for whom pgos is serving onboarding requests
-            // merchants who are not completely activated
-            if ($merchant->getService() === Merchant\Constants::PGOS and
-                empty($users) === false and
-                $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+        // dual write only for below merchants
+        // merchants for whom pgos is serving onboarding requests
+        // merchants who are not completely activated
+        if ($merchant->getService() === Merchant\Constants::PGOS and
+            empty($users) === false and
+            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
             {
                 $user = $this->repo->user->find($users[0]);
 
@@ -7257,7 +7331,6 @@ class Core extends Base\Core
                     $this->repo->user->saveOrFailForPGOSDualWrite($user);
                 }
             }
-        }
 
     }
 

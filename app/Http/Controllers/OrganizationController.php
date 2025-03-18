@@ -663,4 +663,13 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
     // --------------------- END Admin Org Replications ------------------------------------
+    // --------------------- EZETAP ACQUIRER -----------------------------------------------
+
+    public function acquirerFetch(string $id)
+    {
+        $data = $this->service(E::ORG)->fetchAcquirer($id);
+
+        return ApiResponse::json($data);
+    }
+    // --------------------- END EZETAP ACQUIRER -------------------------------------------
 }

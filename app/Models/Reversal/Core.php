@@ -1762,7 +1762,7 @@ class Core extends Base\Core
         }
 
         $featureChecks = (($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
-                          ($reversal->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
+            ($reversal->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
 
         if ($featureChecks === false)
         {

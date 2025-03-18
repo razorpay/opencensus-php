@@ -11,6 +11,7 @@ use Illuminate\Cache\Events\CacheHit;
 use Razorpay\Edge\Passport\OAuthClaims;
 use Illuminate\Cache\Events\CacheMissed;
 
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
@@ -412,6 +413,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
+
+        $this->app->environment() == Environment::TESTING;
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('On');

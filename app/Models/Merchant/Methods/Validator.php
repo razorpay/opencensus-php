@@ -95,6 +95,13 @@ class Validator extends Base\Validator
         Entity::ONLINE_CONVERSION_ENABLED => 'sometimes|boolean',
         Entity::DUITNOW_PAY        => 'sometimes|boolean',
         Entity::GIFT_CARDS         => 'sometimes|boolean',
+        Entity::ALIPAY              => 'sometimes|boolean',
+        Entity::GOPAY               => 'sometimes|boolean',
+        Entity::DOKU                => 'sometimes|boolean',
+        Entity::LINKAJA             => 'sometimes|boolean',
+        Entity::OVO                 => 'sometimes|boolean',
+        Entity::KLARNA              => 'sometimes|boolean',
+        Entity::ZIP                 => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

@@ -39,6 +39,9 @@ class Constants
 
     const BANKS              = 'banks';
 
+    const FUNDSOURCE_METADATA = 'fundsource_metadata';
+    const SOD = 'SOD';
+
     private static array $defaultTimeouts = [
         self::OLIVE_SDK_TIMEOUT => 30
     ];
@@ -294,4 +297,50 @@ class Constants
 
         return self::$prefetchBankListInUAT;
     }
+
+    public static function getInAppCreditFundSourceMetaData(): array
+    {
+        return self::$fundSourceMetaData;
+    }
+
+    public static array $fundSourceMetaData = [
+        [
+            "fundsource_provider_name" => "icici_bank",
+            "otp_length" => "6",
+            "iin" => "508534",
+            "logo_url" => "https://www.axisbank.com/bank_logos/ICICI_logo.png",
+            "activation_fee" => "₹500",
+            "late_fee" => "₹100+3% interest",
+            "service_charges" => [
+                [
+                    "monthly_utilised_amount" => "0-₹3000",
+                    "fee" => "nil"
+                ],
+                [
+                    "monthly_utilised_amount" => "₹3001-₹6000",
+                    "fee" => "₹75+18% GST"
+                ],
+                [
+                    "monthly_utilised_amount" => "₹6001-₹9000",
+                    "fee" => "₹150+18% GST"
+                ],
+                [
+                    "monthly_utilised_amount" => "₹9001-₹12000",
+                    "fee" => "₹225+18% GST"
+                ],
+                [
+                    "monthly_utilised_amount" => "₹12001-₹15000",
+                    "fee" => "₹300+18% GST"
+                ],
+                [
+                    "monthly_utilised_amount" => "₹15001-₹18000",
+                    "fee" => "₹375+18% GST"
+                ],
+                [
+                    "monthly_utilised_amount" => "₹18001&above",
+                    "fee" => "₹450+18% GST"
+                ]
+            ]
+        ]
+    ];
 }

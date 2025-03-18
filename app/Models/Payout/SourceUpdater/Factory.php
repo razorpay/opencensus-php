@@ -76,6 +76,12 @@ class Factory
                     array_push($subscriberList, (new PettyCashUpdater($payout, $mode)));
 
                     break;
+
+                case PayoutSourceEntity::ICA_TRANSFER:
+                    
+                    array_push($subscriberList, (new CrossBorderICATransferUpdater($payout, $mode)));
+
+                    break;
             }
         }
 

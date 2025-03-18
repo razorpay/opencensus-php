@@ -172,6 +172,16 @@ class Entity extends Base\PublicEntity
             Payment\Method::WALLET => 0
         ]
     ];
+
+    // /** The following are Merchant Category Codes (MCC) for Mutual Funds, Insurance, and Credit Card Bills.These codes are applicable to the mentioned categories, where the AFA limit for card recurring payments has been raised to ₹100,000. */
+        const EXTENDED_AFA_MERCHANTS = [
+            6211,
+            6300,
+            6529,
+            5960,
+            6012,
+            5413
+        ];
     /**
      * We use this to set the number of years after which the
      * emandate token will get expired and cannot be used
@@ -370,7 +380,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::ERROR_DESCRIPTION,
-        self::SOURCE
+        self::SOURCE,
+        self::ENTITY_ID,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -543,6 +554,24 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\CardMandate\Entity');
     }
 
+    public function getCardMandateAttribute()
+    {
+        $cardMandate = $this->getRelationValue('cardMandate');
+        if ($cardMandate !== null) {
+            return $cardMandate;
+        }
+
+        if (!empty($this->getCardMandateId()))
+        {
+            $class = \RZP\Constants\Entity::getExternalRepoSingleton(\RZP\Constants\Entity::CARD_MANDATE);
+            $entity = $class->fetch('card_mandates', $this->getCardMandateId(), []);
+            $cardMandate = new \RZP\Models\CardMandate\Entity($entity);
+            $cardMandate->setExternal(true);
+            return $cardMandate;
+        }
+        return null;
+    }
+
     public function vpa()
     {
         return $this->belongsTo('RZP\Models\PaymentsUpi\Vpa\Entity');
@@ -568,6 +597,15 @@ class Entity extends Base\PublicEntity
     public function hasCard()
     {
         return $this->isAttributeNotNull(self::CARD_ID);
+    }
+
+    public  function  setEntityId($clientReferenceId)
+    {
+        $this->attributes[self::ENTITY_ID] = $clientReferenceId;
+    }
+    public  function  setEntityType($entityType)
+    {
+        $this->attributes[self::ENTITY_TYPE] = $entityType;
     }
 
     public function hasVpa()
@@ -943,6 +981,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
+    public function setFrequency($frequency)
+    {
+        $this->setAttribute(self::FREQUENCY, $frequency);
+    }
+
     public function setStartTime($startTime)
     {
         $this->setAttribute(self::START_TIME, $startTime);
@@ -1051,6 +1094,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_TYPE] = E::SUBSCRIPTION;
     }
 
+    // Removing the entity_id since the current limit is of 14 characters long and vPan can be 36 char long.
+    // This is will break the DB save flow.
+    public function setVCPPType()
+    {
+        $this->attributes[self::ENTITY_TYPE] = E::VCPP;
+    }
+
     public function setGatewayToken2(string $gatewayToken2)
     {
         $this->attributes[self::GATEWAY_TOKEN2] = $gatewayToken2;
@@ -1067,6 +1117,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setCardMandateId($cardMandateId)
+    {
+        $this->setAttribute(self::CARD_MANDATE_ID, $cardMandateId);
+    }
+
     /**
      * Cannot use generators here because we can receive
      * null in max_amount which will get overridden
@@ -1076,7 +1131,7 @@ class Entity extends Base\PublicEntity
      *
      * @param $maxAmount
      */
-    protected function setMaxAmountAttribute($maxAmount)
+    public function setMaxAmountAttribute($maxAmount)
     {
         $authType = $this->getAuthType();
 
@@ -1282,6 +1337,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TOKEN, $token);
     }
 
+    public function setToken($token)
+    {
+        $this->setAttribute(self::TOKEN, $token);
+    }
+
+    public function setTerminalId($terminalId)
+    {
+        $this->setAttribute(self::TERMINAL_ID, $terminalId);
+    }
+
     protected function modifyIfsc(& $input)
     {
         if (isset($input[self::IFSC]) === true)
@@ -1344,7 +1409,7 @@ class Entity extends Base\PublicEntity
             if(isset($publicArray[self::SOURCE]))
                 $publicArray[self::SOURCE] = $this->getSourcePublic($publicArray[self::SOURCE]);
 
-            if($this->hasCardMandate() === true) {
+            if($this->hasCardMandate() === true && $this->cardMandate !== null) {
                 $publicArray[self::MAX_AMOUNT] = ($this->cardMandate->getMaxAmount()!==null) ? $this->cardMandate->getMaxAmount():$this->getMaxAmount();
             } else {
                 $publicArray[self::MAX_AMOUNT] = $this->getMaxAmount();
@@ -1383,37 +1448,6 @@ class Entity extends Base\PublicEntity
             }
         } else {
             unset($publicArray[self::SOURCE]);
-        }
-
-        if ($this->isNachToken() === true and (new Merchant\Core)->isRazorxExperimentEnable(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK
-            ))
-        {
-            $app = App::getFacadeRoot();
-
-            $subscriptionRegistration = $app['repo']->subscription_registration
-                ->findByTokenIdAndMerchant($this->getId(), $this->merchant->getId());
-
-            if ($subscriptionRegistration !== null) {
-                $invoice = $app['repo']->invoice
-                    ->findByMerchantAndTokenRegistration($this->merchant, $subscriptionRegistration);
-
-                $publicArray = $subscriptionRegistration
-                    ->toArrayTokenFieldsNach($invoice, $publicArray);
-
-                $paperMandateUpload =
-                    $app['repo']->paper_mandate_upload
-                        ->findLatestByMandateId($subscriptionRegistration->paperMandate->getId())->first();
-
-                if ($paperMandateUpload !== null) {
-                    $singedFormUrl = (new FileUploader($subscriptionRegistration->paperMandate))
-                        ->getSignedShortUrl($paperMandateUpload[PaperMandateUploadEntity::ENHANCED_FILE_ID]);
-
-                    $publicArray[SubscriptionRegistrationEntity::NACH]
-                    [SubscriptionRegistrationEntity::SIGNED_FORM] = $singedFormUrl;
-                }
-            }
         }
 
         return $publicArray;
@@ -1804,6 +1838,25 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
     }
 
+    public function setRecurringDetails($input)
+    {
+        $this->setRecurring(true);
+
+        $this->setCardMandateId($input['card_mandate_id']);
+
+        $this->setMaxAmountAttribute($input['max_amount']);
+
+        $this->setFrequency($input['frequency']);
+
+        if ($input['expire_at'] < $this->getExpiredAt()) {
+            $this->setExpiredAt($input['expire_at']);
+        }
+
+        $this->setToken($input['token']);
+
+        $this->setTerminalId($input['terminal_id']);
+    }
+
     public function updateOptimizerNotes($mandateID)
     {
         $notes = [
@@ -1826,7 +1879,9 @@ class Entity extends Base\PublicEntity
             $this->setRecurring($input["recurring"]);
         }
 
-        $this->setRecurringStatus(RecurringStatus::CONFIRMED);
+        $this->setStatus($input["status"]);
+
+        $this->setRecurringStatus($input["recurring_status"]);
 
         $this->setAttribute(self::TERMINAL_ID, $input["terminal_id"]);
 

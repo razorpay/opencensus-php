@@ -142,16 +142,7 @@ class Core extends Base\Core
      */
     protected function validateInsufficientBalance($payment, $moneyParams, $merchantAccountBalances, $additionalParams)
     {
-        $properties = [
-            "id" => $payment->getMerchantId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_insufficient_balance_experiment_id'),
-        ];
-
-        $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        if ($variant === true)
-        {
-            if (isset($moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]) === true)
+        if (isset($moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]) === true)
             {
                 $merchantBalance = $merchantAccountBalances[Constants::MERCHANT_BALANCE];
 
@@ -194,7 +185,6 @@ class Core extends Base\Core
                     assertTrue($merchantBalance >= $calculatedMerchantBalance);
                 }
             }
-        }
     }
 
     private function getMoneyParamsForFeeBreakupAndTax($feeSplit, $totalCommission, $totalTax)

@@ -31,7 +31,9 @@ class Validator extends QrCode\Validator
         Entity::REQUEST_SOURCE => 'required',
         Entity::VPA            => 'sometimes|nullable',
         Entity::DEVICE_ID      => 'sometimes|nullable',
+        Entity::STORE_ID       => 'sometimes|nullable|string|size:30',
         Entity::QR_STRING      => 'sometimes_if:request_source,ezetap',
+        Entity::ORDER_ID       => 'sometimes|public_id|size:20',
     ];
 
     protected static $createQrForSingleStackRules = [
@@ -137,6 +139,19 @@ class Validator extends QrCode\Validator
             (isset($input[Entity::CLOSE_BY]) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_STATIC_QR_CODE_EXPIRY_FAILURE);
+        }
+    }
+
+    public function validateOrder($order, $amount)
+    {
+        if ($order->getAmount() !== intval($amount))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+        }
+
+        if ($order->isPaid())
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }
 }

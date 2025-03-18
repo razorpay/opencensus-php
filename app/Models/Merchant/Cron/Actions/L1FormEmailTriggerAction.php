@@ -34,22 +34,11 @@ class L1FormEmailTriggerAction extends BaseAction
             {
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                $isRazorxExperimentEnabled = (new Core)->isRazorxExperimentEnable(
-                    $merchantId,
-                    RazorxTreatment::MAILMODO_L1_FORM_EMAIL_TRIGGER);
+                $result = (new Service())->triggerL1FormForMerchant($merchant);
 
-                $this->app['trace']->info(
-                    TraceCode::RAZORX_EXPERIMENT_RESULT,
-                    [RazorxTreatment::MAILMODO_L1_FORM_EMAIL_TRIGGER => $isRazorxExperimentEnabled]);
-
-                if ($isRazorxExperimentEnabled === true)
+                if ($result === true)
                 {
-                    $result = (new Service())->triggerL1FormForMerchant($merchant);
-
-                    if ($result === true)
-                    {
-                        $successCount += 1;
-                    }
+                    $successCount += 1;
                 }
 
             }

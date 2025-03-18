@@ -138,6 +138,7 @@ class Entity extends Base\PublicEntity
     const VIRTUAL_UPI_HANDLE             = 'virtual_upi_handle';
     const TOKENISATION_MASTERCARD        = 'tokenisation_mastercard';
     const RAZORPAY        = 'razorpay';
+    const OPTIMIZER_ROUTE                  = 'optimizer_route';
 
 
     //

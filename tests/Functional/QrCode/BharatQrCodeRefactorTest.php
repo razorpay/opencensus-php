@@ -326,38 +326,6 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertBqrString($qrCode, $qrCode->getQrString(),false);
     }
 
-    public function assertBqrString($qrCode, $response, $isMultipleUse = false)
-    {
-        // Common part of the QR string
-        $qrString = "0002010102120827ABCD0000000000000000000000026350010A0000005240117razorpay@hdfcbank";
-
-        // Different parts for multiple use and single use
-        if ($isMultipleUse) {
-            $qrString .= "27350010A000000524STQ" . $qrCode->getId() . "qrv2";
-        } else {
-            $qrString .= "27320010A000000524" . $qrCode->getId() . "qrv2";
-        }
-
-        $qrString .= "52045399530335654041.005802IN59";
-
-        // Adding merchant name
-        $merchantNameLength = strlen($qrCode->merchant->name);
-        if ($merchantNameLength < 10) {
-            $qrString .= "0" . $merchantNameLength . $qrCode->merchant->name;
-        } else {
-            $qrString .= $merchantNameLength . $qrCode->merchant->name;
-        }
-
-        // Append remaining part
-        $qrString .= "6009BANGALORE610656003062220518" . $qrCode->getId() . "qrv2";
-
-        $qrString .= Tags::CRC . '04';
-        $crc = (new CRC16)->calculateCrc($qrString);
-        $qrString .= $crc;
-
-        $this->assertEquals($qrString, $response);
-    }
-
     public function testCreateBqrPaymentViaRefactorFlowForHdfcMintoakMultipleUse()
     {
         $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');

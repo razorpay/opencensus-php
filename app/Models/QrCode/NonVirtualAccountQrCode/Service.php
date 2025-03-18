@@ -76,7 +76,10 @@ class Service extends QrCode\Service
             (new Validator)->validateQrOnDedicatedTerminal($input);
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
-                return (new Core)->buildQrCode($input);
+
+                $order = (new Core())->getOrderFromInput($input);
+
+                return (new Core)->buildQrCode($input,$order);
             });
 
             $this->publishQrCodeEvent($qrCode, Event::CREATED);
@@ -229,6 +232,61 @@ class Service extends QrCode\Service
         $metric->pushCreateLatencyMetrics($qrCreateReq, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
 
         return $qrCode->toArrayPublic();
+    }
+
+    public function createSqrWithVPA($input)
+    {
+        $startTimeMs = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, $input);
+
+        $errorMessage = null;
+
+        $metric = new Metric();
+
+        try
+        {
+            $terminal = (new Core())->validateAndFetchTerminalIfAvailable($input);
+
+            $input[Entity::MERCHANT_ID] = $terminal->getMerchantId();
+            $this->setMerchantContextForQrCreate($input);
+            unset($input[Entity::MERCHANT_ID]);
+
+            $qrCreateReq = $this->getInputForPartnerSqrCreate($input);
+            $qrCreateReq = array_merge($qrCreateReq, $input);
+
+            (new Validator)->validateQrOnDedicatedTerminal($qrCreateReq);
+
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($qrCreateReq) {
+                return (new Core)->buildQrCode($qrCreateReq);
+            });
+
+            $this->publishQrCodeEvent($qrCode, Event::CREATED);
+
+            $gateway = $qrCode->getGatewayFromQrString();
+
+            $qrCreateReq[Entity::GATEWAY] = $gateway;
+
+        }
+        catch (\Throwable $ex)
+        {
+            $errorMessage = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $input);
+
+            throw $ex;
+        }
+        finally
+        {
+            $metric->pushCreateMetrics($qrCreateReq, $errorMessage);
+        }
+
+        $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
+
+        $metric->pushCreateLatencyMetrics($qrCreateReq, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
+
+        return $qrCode->toArray();
+
     }
 
     protected function setMerchantContextForQrCreate($input)
@@ -1166,8 +1224,9 @@ class Service extends QrCode\Service
             return (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        if ($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) !== true
-            and $qrCode->source !== null )
+        if (($this->merchant->isFeatureEnabled(FeatureConstants::UPIQR_V1_HDFC) ===  false) and
+            ($qrCode->source !== null) and
+            ($qrCode->getRequestSource() !== RequestSource::EZETAP))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_EXISTING_QR_CODE_ID, Entity::ID, [$id]);
         }

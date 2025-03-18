@@ -479,4 +479,73 @@ class Service extends Base\Service
             ]);
         }
     }
+
+    /**
+     * @throws Exception\BadRequestException
+     * @throws \Throwable
+     */
+    public function draftInternal(array $input): array
+    {
+        $merchantId = null;
+        try {
+
+            $this->validateDraftInternalRequest($input);
+
+            $merchantId = $input["merchant_id"];
+
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            $this->app['rzp.mode'] = 'live';
+
+            unset($input['merchant_id']);
+
+            $sanitizedInput = $this->sanitizeExternalPayload($input);
+
+            $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_DATA, [
+                'merchant_id' => $merchantId,
+                'data' => $input,
+                'sanitized_input' => $sanitizedInput,
+            ]);
+
+            $input = $sanitizedInput;
+
+            $mutexKey = sprintf(Constants::INTERNATIONAL_ENABLEMENT_INTERNAL_LOCK_KEY, $merchantId);
+
+            $version = $input[Constants::VERSION];
+
+            unset($input[Constants::VERSION]);
+
+            $this->mutex->acquireAndRelease(
+                $mutexKey,
+                function () use ($input, $version) {
+                    return $this->core()->upsert($input, Detail\Constants::ACTION_DRAFT, $version);
+                });
+
+            return ['success' => true];
+        } catch (\Throwable $ex) {
+            $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_DRAFT_INTERNAL_REQUEST_FAILED, [
+                'merchant_id' => $merchantId,
+                'data' => $input,
+                'error_message' => $ex->getMessage(),
+            ]);
+            throw $ex;
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    protected function validateDraftInternalRequest(array $input)
+    {
+        if (empty($input['merchant_id']) || empty($input['version'])) {
+            $missingField = empty($input['merchant_id']) ? 'merchant_id' : 'version';
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
+                null,
+                ['missing_field' => $missingField]);
+        }
+    }
 }

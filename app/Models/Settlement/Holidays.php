@@ -785,6 +785,34 @@ class Holidays
         return false;
     }
 
+    public static function isNationalBankHoliday($date): bool
+    {
+        $nationalHolidays =  [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            4 => [
+                1 => 'Annual Bank closing',
+            ],
+            8 => [
+                15 => 'Independence Day',
+            ],
+        ];
+
+
+        $month = $date->month;
+        $day = $date->day;
+
+        if (
+            (isset($nationalHolidays[$month])) and
+            (isset($nationalHolidays[$month][$day])))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Private function to get reason for a holiday
      *

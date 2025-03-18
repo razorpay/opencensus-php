@@ -235,6 +235,9 @@ class Raven extends Base\Core
 
             case 'instant_emi_login':
                 return 'sms.capital_bnpl.instant_emi_login';
+            
+            case 'sso_login':
+                return 'sms.magic_checkout.sso_login';
 
             default:
                 return 'sms.otp';
@@ -274,6 +277,7 @@ class Raven extends Base\Core
             'save_address_v9',
             'save_card_v9',
             'instant_emi_login',
+            'sso_login',
         ]);
     }
 }

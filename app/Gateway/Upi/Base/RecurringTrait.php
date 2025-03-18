@@ -491,6 +491,39 @@ trait RecurringTrait
         return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
     }
 
+    protected function processRecurringRearchCallback(array $input, Entity $upi)
+    {
+        if(isset($input['gateway']['data']['upi_mandate']) === true)
+        {
+            $input['gateway']['data']['mandate'] = $input['gateway']['data']['upi_mandate'];
+        }
+
+        if((isset($input['gateway']['data']['upi']['merchant_reference']) === true) and
+            (str_contains($input['gateway']['data']['upi']['merchant_reference'], 'execte') === true))
+        {
+            $input['gateway']['data']['upi']['vpa'] = $input['upi']['vpa'];
+        }
+
+        if (isset($input['gateway']['error']) === true)
+        {
+            $error = $input['gateway']['error'];
+
+            $exception = new GatewayErrorException(
+                $error['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $error['gateway_error_code'] ?? null,
+                $error['gateway_error_description'] ?? null,
+                null,
+                null,
+                $this->action);
+
+            $exception->setData($this->getResponseForAutoRecurring($input, $input['gateway']['data'], $upi, $exception));
+
+            throw $exception;
+        }
+
+        return $this->getResponseForAutoRecurring($input, $input['gateway']['data'], $upi);
+    }
+
     protected function processRecurringCallback(array $input)
     {
         if (in_array($input['payment']['gateway'],self::$optimizerUpiRecurringGateway, true))
@@ -501,6 +534,11 @@ trait RecurringTrait
             $details = $this->getRecurringDetailsFromServerCallback($input['gateway']);
 
             $upi = $this->repo->findByPaymentIdAndActionOrFail($details[Entity::PAYMENT_ID], $details[Entity::ACTION]);
+        }
+
+        if(isset($input['gateway']['success']) === true)
+        {
+            return $this->processRecurringRearchCallback($input, $upi);
         }
 
         $this->setRequestDataForUpiRecurring($input, $upi);
@@ -541,7 +579,17 @@ trait RecurringTrait
 
     protected function getRecurringDetailsFromServerCallback(array $response): array
     {
-        $actualId       = $this->getActualPaymentIdFromServerCallback($response);
+        if((isset($response['success']) === true) and
+            (isset($response['data']['upi']['merchant_reference']) === true) and
+            (isset($response['data']['terminal']['gateway'])) === true
+            and ($response['data']['terminal']['gateway'] === 'upi_icici'))
+        {
+            $actualId = $response['data']['upi']['merchant_reference'];
+        }
+        else
+        {
+            $actualId = $this->getActualPaymentIdFromServerCallback($response);
+        }
 
         $paymentId      = substr($actualId, 0, 14);
         $env            = substr($actualId, 14, 1);
@@ -982,6 +1030,34 @@ trait RecurringTrait
             $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
                 'attributes'                => $attributes,
                 'payer_response_code'       => $payerResponseCodeDes,
+            ]);
+        }
+
+        if(isset($response[Entity::UPI][Entity::GATEWAY_ERROR]) === true)
+        {
+            $attributes[Entity::GATEWAY_ERROR] = $upi->getGatewayError();
+            if($attributes[Entity::GATEWAY_ERROR] === null)
+            {
+                $attributes[Entity::GATEWAY_ERROR] = [];
+            }
+
+            $attributes[Entity::GATEWAY_ERROR] = array_replace($attributes[Entity::GATEWAY_ERROR], $response[Entity::UPI][Entity::GATEWAY_ERROR]);
+
+            if ((isset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_CODE]) === true) and
+                (isset($response[Entity::UPI][Entity::GATEWAY_ERROR][Constants::PSP_STATUS_CODE]) === false))
+            {
+                unset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_CODE]);
+            }
+
+            if ((isset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_DESC]) === true) and
+                (isset($response[Entity::UPI][Entity::GATEWAY_ERROR][Constants::PSP_STATUS_DESC]) === false))
+            {
+                unset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_DESC]);
+            }
+
+            $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
+                'attributes'                => $attributes,
+                'payer_response_code'       => $response[Entity::UPI][Entity::GATEWAY_ERROR],
             ]);
         }
 

@@ -84,6 +84,7 @@ use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
 use RZP\Services\PayoutService\Base as PayoutServiceBase;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
+use RZP\Models\Payout\BankingAccount as PayoutsBankingAccount;
 use RZP\Services\PayoutService\Shield as PayoutServiceShieldEvaluate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
@@ -245,6 +246,8 @@ class Base extends BaseCore
     const PAYOUT_SOURCE           = 'payout_source';
     const PAYOUT_TYPE             = 'payout_type';
     const DUPLICATE_PAYOUT_EVALUATE_FETCH_LIMIT = 1000;
+
+    const DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE = 'duplicate_payout_evaluate_event_found_duplicate';
 
     public function __construct()
     {
@@ -579,6 +582,31 @@ class Base extends BaseCore
         $this->fireEventForPayoutStatus($payout);
 
         return $payout;
+    }
+
+    public function trackDuplicatePayoutPreventionEvent(
+        string $eventName,
+        array $properties): void
+    {
+        $eventDataGroup = null;
+
+        switch ($eventName)
+        {
+            case self::DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE:
+                $eventDataGroup = EventCode::DUPLICATE_PAYOUT_PREVENTION_FOUND_DUPLICATE;
+                break;
+        }
+
+        $this->app['diag']->trackDuplicatePayoutPreventionEvent(
+            $eventDataGroup,
+            $properties,
+        );
+
+        $this->trace->info(TraceCode::DUPLICATE_PAYOUT_EVALUATE_DATALAKE_EVENT_PUSHED,[
+            "event_name"       => $eventName,
+            "event_properties" => $properties,
+            "event_data_group" => $eventDataGroup
+        ]);
     }
 
     public function setQueuedFeeRecoveryPayoutsFlag(Entity $payout): void
@@ -2644,6 +2672,18 @@ class Base extends BaseCore
 
                 if ($foundDuplicate === true)
                 {
+                    $this->trackDuplicatePayoutPreventionEvent(
+                        self::DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE,
+                        [
+                            Payout\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                            Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                            Payout\Entity::PAYOUT_TYPE     => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
+                            Payout\Entity::PAYOUT_ID       => $this->app['request']->input('duplicate_payout_evaluate_payout_id', null),
+                            Payout\Entity::CUSTOM_INTERVAL => $this->app['request']->input('duplicate_payout_evaluate_custom_interval', null),
+                            'lag_occurred'                 => true,
+                        ]
+                    );
+
                     $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
 
                     if ($this->duplicatePayoutEvaluateTakeAction === true)
@@ -2684,6 +2724,18 @@ class Base extends BaseCore
                         Payout\Entity::PAYOUT_SOURCE => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
                         Payout\Entity::PAYOUT_TYPE   => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
                     ]);
+
+                $this->trackDuplicatePayoutPreventionEvent(
+                  self::DUPLICATE_PAYOUT_EVALUATE_EVENT_FOUND_DUPLICATE,
+                    [
+                        Payout\Entity::MERCHANT_ID     => $this->merchant->getId(),
+                        Payout\Entity::PAYOUT_SOURCE   => $this->getPayoutSourceForDuplicatePreventionEvaluate($input), // Get payout source
+                        Payout\Entity::PAYOUT_TYPE     => (isset($this->batchId) === false) ? 'single' : 'bulk', // Get payout type
+                        Payout\Entity::PAYOUT_ID       => $this->app['request']->input('duplicate_payout_evaluate_payout_id', null),
+                        Payout\Entity::CUSTOM_INTERVAL => $this->app['request']->input('duplicate_payout_evaluate_custom_interval', null),
+                        'lag_occurred'                 => false,
+                    ]
+                );
 
                 $this->app['trace']->count(\RZP\Constants\Metric::DUPLICATE_PAYOUT_EVAlUATE_FOUND_PAYOUT);
 
@@ -2835,6 +2887,10 @@ class Base extends BaseCore
 
             // Get payout id & update in exception description
             $errorDescription = PublicErrorDescription::DUPLICATE_PAYOUT_CREATION_ATTEMPT;
+
+            $this->app['request']->merge(['duplicate_payout_evaluate_payout_id' => $payout->getId()]);
+
+            $this->app['request']->merge(['duplicate_payout_evaluate_custom_interval' => $lastXDuration]);
 
             $errorDescription = str_replace(['<payout_id>', '<custom_interval>'], [$payout->getId(), $lastXDuration], $errorDescription);
 
@@ -3716,14 +3772,6 @@ class Base extends BaseCore
     {
         // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
         return false;
-
-        $mid = $this->merchant->getId();
-
-        $variant = $this->app['razorx']->getTreatment($mid,
-                                                      Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE,
-                                                      $this->app['rzp.mode'] ?? 'live');
-
-        return !($variant == 'on');
     }
 
     protected function incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts(Payout\Entity $payout)
@@ -4029,18 +4077,27 @@ class Base extends BaseCore
 
     protected function checkIfSourceMerchantEnabledForVaToVaPayouts(Payout\Entity $payout, FundAccount\Entity $fundAccount)
     {
-        $variant = $this->app['razorx']->getTreatment(
-            $payout->getMerchantId(),
-            Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS,
-            $this->mode,
-            3);
+        $experimentName =  Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS;
+
+        if($this->mode === Mode::TEST)
+        {
+            $experimentName = Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST;
+        }
+
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  $experimentName,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         $isVaToVaPayoutsAllowed = $this->merchant->isFeatureEnabled(Features::ALLOW_VA_TO_VA_PAYOUTS);
 
         // variant will be control when:
         // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
         // 2. If RazorX request fails
-        if (($variant === 'on') or
+        if (($isExperimentEnabled === true) or
             ($isVaToVaPayoutsAllowed == true))
         {
             $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_SOURCE,
@@ -4142,11 +4199,20 @@ class Base extends BaseCore
         // We shall now check if the merchant has been allowed VA to VA payouts via the experiment
         if ($blockVAToVAPayouts === true)
         {
-            $variant = $this->app['razorx']->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS,
-                $this->mode,
-                3);
+            $experimentName =  Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS;
+
+            if($this->mode === Mode::TEST)
+            {
+                $experimentName = Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST;
+            }
+
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" =>  $experimentName,
+                'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
             $isVaToVaPayoutsAllowed = $this->merchant->isFeatureEnabled(Features::ALLOW_VA_TO_VA_PAYOUTS);
 
@@ -4154,7 +4220,7 @@ class Base extends BaseCore
             // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
             // 2. If RazorX request fails
             // 3. And merchant does not have the feature to allow va to va.
-            if (($variant === 'control') and
+            if (($isExperimentEnabled === false ) and
                 ($isVaToVaPayoutsAllowed == false))
             {
                 throw new Exception\BadRequestException(
@@ -4565,13 +4631,11 @@ class Base extends BaseCore
         {
             if ( $payout->isBalanceAccountTypeDirect() === true)
             {
-                $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-                    RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
-
-                if ($variant === 'on')
+                if ((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($payout->getMerchantId(), $payout->getBalanceId()))
                 {
                     (new DualWrite\Processor)->feeRecoveryForPSCAPayout($payout);
                 }
+
                 $this->trace->info(TraceCode::PS_CA_FEE_RECOVERY_CREATION_AFTER_FTA_CREATION,
                     [
                         'merchant_id'         => $payout->getMerchantId(),
@@ -4907,87 +4971,10 @@ class Base extends BaseCore
     {
         if ($this->mode == Mode::LIVE)
         {
-            $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
-
+            $this->isPayoutServiceEnabled = (new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($this->merchant->getId(), $this->balance->getId());
 
             if ($this->isPayoutServiceEnabled === true)
             {
-                $check = [
-                    Payout\Entity::PURPOSE => $input[Payout\Entity::PURPOSE],
-                    Payout\Entity::MERCHANT_ID => $this->merchant->getId(),
-                ] ;
-
-                $payoutViaMicroservice = $this->isPayoutServiceApplicableForRzpFeesPayout($check);
-
-                if ($payoutViaMicroservice === false)
-                {
-
-                    $this->trace->info(TraceCode::PAYOUT_SERVICE_RZP_FEES_PAYOUT_VIA_API_MONOLITH,
-                        [
-                            'merchant_id' => $this->merchant->getMerchantId(),
-                            'purpose' => $input[Payout\Entity::PURPOSE]
-                        ]);
-                    return false;
-                }
-
-                if ($this->balance->getAccountType() === AccountType::DIRECT) {
-
-                    $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
-                        RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
-
-                    if ($variant != 'on') {
-                        return false;
-                    }
-                }
-
-                if ($this->balance->getAccountType() === AccountType::SHARED)
-                {
-                    if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
-                        (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
-                        (empty($this->batchId) === false))
-                    {
-                        $variant = $this->app['razorx']->getTreatment($this->merchant->getMerchantId(),
-                            RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
-
-                        $this->trace->info(TraceCode::PAYOUT_SERVICE_MIGRATED_MERCHANTS_VA_BULK_PAYOUT_VIA_API_MONOLITH,
-                            [
-                                'merchant_id' => $this->merchant->getMerchantId(),
-                                'variant' => $variant,
-                            ]);
-
-                        if ($variant === 'on')
-                        {
-                            return false;
-                        }
-                    }
-                }
-                if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
-                    (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
-                    (empty($this->batchId) === false))
-                {
-                    $this->trace->error(
-                        TraceCode::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
-                        [
-                            'merchant_id'         => $this->merchant->getMerchantId(),
-                            'payout_create_input' => $input,
-                            'batch_id'            => $this->batchId ?? "",
-                        ]);
-
-                    /** @var Route $route */
-                    $route = $this->app['api.route'];
-
-                    $routeName = $route->getCurrentRouteName();
-
-                    $this->trace->count(Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE, [
-                        RzpConstants\Metric::LABEL_ROUTE_NAME  => $routeName,
-                    ]);
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR,
-                        null,
-                        null,
-                        'batch_id, idempotency_key is/are not required and should not be sent');
-                }
 
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
@@ -5016,10 +5003,13 @@ class Base extends BaseCore
     {
         if ($check[Payout\Entity::PURPOSE] === Payout\Purpose::RZP_FEES)
         {
-            $variant = $this->app['razorx']->getTreatment($check[Payout\Entity::MERCHANT_ID ],
-                RazorxTreatment::ENABLE_CA_RZP_FEES_PAYOUT_VIA_PAYOUTS_SERVICE, Mode::LIVE);
+            $requestPayload = [
+                "id" =>  $check[Payout\Entity::MERCHANT_ID ],
+                "experiment_name" => RazorxTreatment::ENABLE_CA_RZP_FEES_PAYOUT_VIA_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $check[Payout\Entity::MERCHANT_ID ]])
+                ];
 
-            if ($variant != 'on')
+            if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) === false)
             {
                 return false;
             }
@@ -5144,15 +5134,6 @@ class Base extends BaseCore
     {
         try
         {
-            // Check if razorx enabled
-            $razorxResponse = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                                                                 Merchant\RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD,
-                                                                 RZPConstants\Mode::LIVE);
-
-            if ($razorxResponse !== 'on')
-            {
-                return [null, false];
-            }
 
             if (empty($fundAccount) === true)
             {
@@ -5462,13 +5443,12 @@ class Base extends BaseCore
     {
         try
         {
-            $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE, Mode::LIVE);
 
-            if ($variant != 'on')
+            if ( !((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($this->merchant->getId(), $this->balance->getId()) ))
             {
                 return [false, null, null, null,null];
             }
+
 
             $bankingAccount = (new BankingAccount\Service())->fetchBankingAccountForAccountNumber($input[Entity::ACCOUNT_NUMBER],
                 $this->merchant->getId());

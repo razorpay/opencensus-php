@@ -16,16 +16,21 @@ class Name
     const CLOSED               = 'closed';
     const FAILED               = 'failed';
 
+    const APPROVED_FOR_CANARY = 'approved_for_canary';
+    const TERMINATED          = 'terminated';
+
     // Action States post which we do not accept any state changes
     const CLOSED_ACTION_STATES = [
         self::REJECTED,
         self::EXECUTED,
         self::CLOSED,
+        self::TERMINATED,
     ];
 
     const OPEN_ACTION_STATES   = [
         self::OPEN,
         self::APPROVED,
+        self::APPROVED_FOR_CANARY,
     ];
 
     const VALID_ACTION_STATES = [
@@ -35,6 +40,8 @@ class Name
         self::OPEN,
         self::CLOSED,
         self::FAILED,
+        self::APPROVED_FOR_CANARY,
+        self::TERMINATED,
 
         // Activation Action States
         Status::ACTIVATED_MCC_PENDING,

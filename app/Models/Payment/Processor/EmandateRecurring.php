@@ -729,12 +729,25 @@ trait EmandateRecurring
 
     protected function isCitiSdnRazorxEnabled($merchantId): bool
     {
-        $variant = $this->app['razorx']->getTreatment(
-            $merchantId, RazorxTreatment::EMANDATE_CITI_SDN_IDENTIFICATION, $this->mode);
+        $app = \App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.emandate_citi_sdn_identification');
 
-        $this->trace->info(TraceCode::EMANDATE_CITI_SDN_RAZORX, ["variant"   => $variant]);
+        $properties = [
+            'merchant_id' => $merchantId,
+            'experiment_id' => $experimentId,
+        ];
 
-        return $variant === "on";
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+       if ($response['response']['variant']['name'] === 'disable') {
+            return false;
+        }
+        return true;
     }
 
     protected function isBeneficiaryNameMatched(string $beneficiaryName, Payment\Entity $payment): bool

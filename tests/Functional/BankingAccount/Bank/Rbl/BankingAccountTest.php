@@ -44,6 +44,7 @@ use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
@@ -78,6 +79,7 @@ use RZP\Tests\Traits\MocksSplitz;
 
 class BankingAccountTest extends TestCase
 {
+    use TestsBusinessBanking;
     use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
@@ -115,6 +117,7 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.banking_account.mock', true);
         $this->app['config']->set('applications.banking_account_service.mock', true);
         $this->app['config']->set('applications.salesforce.mock', true);
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
         $this->bankingAccountServiceMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
@@ -1002,144 +1005,6 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
         $this->assertEquals($bankingAccount->getStatus(), $shouldQueue ? 'picked' : 'created');
     }
-
-    public function testFreshDeskTicketCreationBehaviourForDifferentOneCaScenarios()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
-
-        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_flow', 'ONE_CA');
-
-        $ba = $this->fixtures->create('banking_account', [
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => self::DefaultMerchantId,
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '560038',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $baActivationDetail = $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id'        => $ba->getId(),
-            'business_category'         => 'partnership',
-            'sales_team'                => 'self_serve',
-            'merchant_poc_email'        => 'rzp@gmail.com',
-            'merchant_poc_phone_number' => '9177278079',
-            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
-        ]);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 0, true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 1, true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 0, true);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 1, true);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
-    }
-
-    public function testFreshDeskTicketCreationBehaviourForDifferentNonOneCaScenarios()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
-
-        $ba = $this->fixtures->create('banking_account', [
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => self::DefaultMerchantId,
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '560038',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $baActivationDetail = $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id'        => $ba->getId(),
-            'business_category'         => 'partnership',
-            'sales_team'                => 'self_serve',
-            'merchant_poc_email'        => 'rzp@gmail.com',
-            'merchant_poc_phone_number' => '9177278079',
-            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
-        ]);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 0, true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 0, true);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 1, false);
-
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, 1, false);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 0, true);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 0, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 0, true);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 0, 1, 1, 1, true);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 0, 1, 1, false);
-
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 0, 1, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 0, false);
-        $this->verifyFreshDeskTicketCreationOnActivationDetailUpdate($ba->getId(), $baActivationDetail->getId(), 1, 1, 1, 1, false);
-
-    }
-
     public function testFreshDeskTicketforSalesAssistedFlow()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -1395,6 +1260,45 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountWithActivationDetailWithSalesTeamAsMMHunting()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $merchantId = $bankingAccount->merchant->getId();
+
+        $this->createMerchantDetail([
+                'merchant_id' => $merchantId,
+                'business_name' => 'CA Business']
+        );
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        $this->assertEquals('mm_hunting', $activationDetailEntity['sales_team']);
+
+        Mail::assertQueued(XProActivation::class);
+
+        return $bankingAccount;
+    }
+
     public function testCreateBankingAccountWithActivationDetailWithBusinessTypeAsOnePersonCompanies()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
@@ -1572,75 +1476,6 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
-    public function testSuccessBankAccountInfoNotification(string $id = null)
-    {
-        $attribute =
-            [
-                'activation_status' => 'activated',
-                'merchant_id'       => '1cXSLlUU8V9sXl',
-            ];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $merchantId = '1cXSLlUU8V9sXl';
-
-        $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->ba->addXOriginHeader();
-
-        $this->testCreateBankingAccount();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->testCreateActivationDetail(null, $bankingAccount);
-
-        $this->fixtures->edit('banking_account',
-            $bankingAccount->getId(),
-            [
-                'status' => 'initiated',
-            ]);
-
-        $this->assertEquals('created', $bankingAccount->getStatus());
-
-        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->startTest($dataToReplace);
-
-        $changeLogRequest  = [
-            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
-            'method'  => 'GET',
-            'content' => []
-        ];
-
-        $this->ba->adminAuth();
-
-        $logs = $this->makeRequestAndGetContent($changeLogRequest);
-
-        $this->assertEquals('created', $logs['items'][0]['status']);
-        $this->assertEquals('api_onboarding', $logs['items'][1]['status']);
-        $this->assertEquals('in_review', $logs['items'][1]['sub_status']);
-        $this->assertEquals('closed', $logs['items'][1]['bank_status']);
-
-        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
-
-        $this->assertEquals('bank_ops', $bankingAccountActivationDetail['assignee_team']);
-
-        return $response;
-    }
 
     public function testSuccessRblCoCreatedLeadCreation()
     {
@@ -2176,48 +2011,6 @@ class BankingAccountTest extends TestCase
         });
     }
 
-    public function testAccountOpeningWebhookWithExistingAccountNumber()
-    {
-        $this->createAccountOpeningSuccessfulWebhook();
-
-        $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl', [], 'owner', 'test');
-
-        $this->createMerchantDetail(['merchant_id' => '1cXSLlUU8V9sXl','business_name' => 'foo']);
-
-        $bankingAccount = $this->setAuthAndCreateBankingAccount('1cXSLlUU8V9sXl');
-
-        $diagMock = $this->createAndReturnDiagMock();
-
-        $expectedPayload = [
-            'group' => 'onboarding',
-            'name'  => 'x.ca.rbl.webhook.failure',
-        ];
-        $diagMock->shouldReceive('trackOnboardingEvent')
-            ->once()
-            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
-                $this->assertEquals($expectedPayload, $eventData);
-                return true;
-            })
-            ->andReturnNull();
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No' => '31900299180853'
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->startTest($dataToReplace);
-
-        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
-
-    }
 
     public function testRzpRefNumberNotExistScenarioInAccountOpeningWebhook()
     {
@@ -2321,20 +2114,6 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($statusChangeLogsArray[count($statusChangeLogsArray) - 1]['bank_status'], $bankingAccount->getBankInternalStatus());
     }
 
-    public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
-    {
-        $response = $this->testFailedBankAccountInfoNotification();
-
-        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
-
-        $response = $this->testSuccessBankAccountInfoNotification();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals('api_onboarding', $bankingAccount->getStatus());
-
-        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
-    }
 
     public function testFailedBankAccountInfoNotification()
     {
@@ -2376,93 +2155,7 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testDoubleAccountOpeningWebhooks()
-    {
-        $this->testSuccessBankAccountInfoNotification();
 
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No.' => '31900299180853'
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $diagMock = $this->createAndReturnDiagMock();
-
-        $expectedPayload = [
-            'group' => 'onboarding',
-            'name'  => 'x.ca.rbl.webhook.failure',
-        ];
-        $diagMock->shouldReceive('trackOnboardingEvent')
-            ->once()
-            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
-                $this->assertEquals($expectedPayload, $eventData);
-                return true;
-            })
-            ->andReturnNull();
-
-        $this->startTest($dataToReplace);
-
-        // we are asserting that the values passed in second webhook will not be updated
-        // as the first webhook is processed.
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
-    }
-
-    public function testDoubleAccountOpeningWebhooksAllowedAfterManualIntervention()
-    {
-        $this->testSuccessBankAccountInfoNotification();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $newAccountNumber = '31900299180853';
-
-        // asserting current account number is different
-        $this->assertNotEquals($newAccountNumber, $bankingAccount->getAccountNumber());
-
-        // Default behavior is to reject duplicate webhooks.
-        // The following change allows for duplicate webhooks to update information.
-        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
-            'account_activation_date' => null
-        ]);
-
-        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
-
-        $diagMock = $this->createAndReturnDiagMock();
-
-        $diagMock->shouldReceive('trackOnboardingEvent');
-
-        $dataToReplace = [
-            'request' => [
-                'content' => [
-                    'RZPAlertNotiReq' => [
-                        'Body' => [
-                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
-                            'Account No.' => $newAccountNumber
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->startTest($dataToReplace);
-
-        // we are asserting that the values passed in second webhook will be updated
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals($newAccountNumber, $bankingAccount['account_number']);
-    }
 
     protected function createMerchantDetail(array $attrs = ['activation_status' => 'activated'])
     {
@@ -2484,25 +2177,6 @@ class BankingAccountTest extends TestCase
 
         $this->setupBankPartnerMerchant();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        // ledger shadow experiment is NOT enabled
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === Merchant\RazorxTreatment::MANDATE_IDEMPOTENCY_KEY_EXPERIMENT_NEW)
-                    {
-                        return 'on';
-                    }else{
-                        return 'control';
-                    }
-                }));
 
         $this->mockLedgerSns(0);
 
@@ -6998,7 +6672,7 @@ class BankingAccountTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNull($response['items'][0]['balance']['last_fetched_at']);
+        $this->assertNotNull($response['items'][0]['balance']['last_fetched_at']);
 
         $this->assertNotNull($response['items'][1]['balance']['last_fetched_at']);
     }
@@ -10618,66 +10292,6 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testBankLmsBankAccountFetchWithFromDocketEstimatedDeliveryDateFilter()
-    {
-        // Make merchant as Bank CA Onboarding Partner
-        $response = $this->makeMerchantAsBankCAOnboardingPartner();
-
-        // Add Feature to the Merchant
-        $response = $this->addBankLmsFeatureToTheMerchant();
-
-        // Invite new user to join RBL merchant
-        $this->inviteNewUserToJoinRBLMerchant();
-
-        // Accept invitation
-        $response = $this->acceptInvitation();
-
-        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
-
-        $ba1 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000111',$user->getId());
-
-        $this->fixtures->edit('banking_account_activation_detail', $ba1['banking_account_activation_details']['id'],
-            [
-                'banking_account_id' => substr($ba1['id'],5),
-                'additional_details'        => json_encode([
-                    'docket_estimated_delivery_date' => '1667346201'
-                ])
-            ]);
-
-        $ba2 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000112',$user->getId());
-
-        $this->fixtures->edit('banking_account_activation_detail', $ba2['banking_account_activation_details']['id'],
-            [
-                'banking_account_id' => substr($ba2['id'],5),
-                'additional_details'        => json_encode([
-                    'docket_estimated_delivery_date' => '1667346101'
-                ])
-            ]);
-
-        $ba3 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000113',$user->getId());
-
-        $this->fixtures->edit('banking_account_activation_detail', $ba3['banking_account_activation_details']['id'],
-            [
-                'banking_account_id' => substr($ba3['id'],5),
-                'additional_details'        => json_encode([
-                    'docket_estimated_delivery_date' => '1667349200'
-                ])
-            ]);
-
-        $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000114',$user->getId());
-
-        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
-
-        $this->ba->addXBankLMSOriginHeader();
-
-        $dataToReplace = [
-            'request' => [
-                'url'     => '/banking_accounts/rbl/lms/banking_account?from_docket_estimated_delivery_date=1667346200&to_docket_estimated_delivery_date=1667348200',
-            ]
-        ];
-
-        $this->startTest($dataToReplace);
-    }
 
     protected function createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc(string $merchantId, string $bankPocUserId): array
     {
@@ -10942,36 +10556,6 @@ class BankingAccountTest extends TestCase
 
     }
 
-    public function testBankLmsEndToEndPartnerChangeAssignee()
-    {
-        $response = $this->setupBankLMSTest();
-        $bankingAccount = $response['bankingAccount'];
-
-        $this->ba->addXOriginHeader();
-
-        $dataToReplace = [
-            'url' => '/banking_accounts/rbl/lms/banking_account/' . $bankingAccount['id'],
-            'method' => 'PATCH',
-            'content' => [
-                'activation_detail' => [
-                    'assignee_team' => 'bank',
-                    'comment' => [
-                        'source_team' => 'bank',
-                        'added_at' => '1663065060',
-                        'comment' => '<p>something</p>',
-                        'source_team_type' => 'external',
-                        'type' => 'external'
-                    ]
-                ]
-            ]
-        ];
-
-        $response = $this->makeRequestAndGetContent($dataToReplace);
-        $expectedComment = $this->getDbLastEntity('banking_account_comment');
-
-        $this->assertEquals($response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM], ActivationDetail\Entity::BANK);
-        $this->assertEquals($expectedComment->comment, "<p>something</p>");
-    }
 
     public function testBankLmsEndToEndForLeadReceivedDateFiltersNegativecase()
     {

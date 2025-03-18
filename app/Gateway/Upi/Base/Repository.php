@@ -37,7 +37,7 @@ class Repository extends Base\Repository
         {
             $entity = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                         ->where(Entity::PAYMENT_ID, '=', $paymentId)
@@ -97,7 +97,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($gatewayPaymentId,$action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where('gateway_payment_id', '=', $gatewayPaymentId)
@@ -128,7 +128,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId,$gateway,$action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
@@ -158,7 +158,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId,$actions)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
@@ -187,7 +187,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($paymentId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::PAYMENT_ID , '=', $paymentId)
@@ -215,7 +215,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($refundId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::REFUND_ID , '=', $refundId)
@@ -266,7 +266,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($merchantReference)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where('merchant_reference', '=', $merchantReference)
@@ -294,7 +294,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($merchantReference)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where('merchant_reference', '=', $merchantReference)
@@ -322,7 +322,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciTxnId)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_TXN_ID, '=', $npciTxnId)
@@ -347,7 +347,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($match,$select,$count,$filter)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->select($select)
@@ -373,7 +373,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($arn)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $arn)
@@ -404,7 +404,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
@@ -432,7 +432,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $amount, $merchantReference, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
@@ -462,7 +462,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $amount, $merchantReference, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
@@ -497,7 +497,7 @@ class Repository extends Base\Repository
         {
             $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $merchantReference, $action)
             {
-                $connectionType = $this->checkHarvsterQuerySplitzAndReturnConnection();
+                $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
                 return  $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
                     ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
@@ -509,17 +509,5 @@ class Repository extends Base\Repository
         }
 
         return $upi;
-    }
-
-    protected function checkHarvsterQuerySplitzAndReturnConnection()
-    {
-        $properties = [
-            "id" => UniqueIdEntity::generateUniqueId(),
-            "experiment_id" => $this->app['config']->get('app.splitz_harvester_query_upi_experiment_id'),
-        ];
-
-        $splitzEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-        return $splitzEnabled === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT :ConnectionType::PAYMENT_FETCH_REPLICA;
     }
 }

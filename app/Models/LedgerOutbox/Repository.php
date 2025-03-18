@@ -4,6 +4,7 @@ namespace RZP\Models\LedgerOutbox;
 
 use App;
 use DB;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
@@ -12,12 +13,14 @@ use RZP\Constants\Partitions;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\PartitionRepo;
 use RZP\Models\Ledger\ReverseShadow\Constants;
+use RZP\Models\Merchant\Acs\Traits\AsvEntityConnection;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
 {
     use PartitionRepo;
+    use AsvEntityConnection;
 
     protected $entity = 'ledger_outbox';
 
@@ -53,7 +56,7 @@ class Repository extends Base\Repository
 
     public function fetchOldOutboxEntriesForRetryByEntityType($limit, $startTimestamp, $endTimestamp, $entityType, $maxRetryCount)
     {
-        return  $this->newQuery()
+        $results =  $this->newQueryWithConnection($this->getSlaveConnection())
             ->from(\DB::raw('`ledger_outbox`'))
             ->where(Entity::ENTITY_TYPE, '=', $entityType)
             ->where(Entity::IS_DELETED, '=', false)
@@ -63,6 +66,12 @@ class Repository extends Base\Repository
             ->orderBy(Entity::CREATED_AT, 'ASC')
             ->limit($limit)
             ->get();
+
+        $oldConnection = empty($this->app['rzp.mode']) ? EnvMode::TEST : $this->app['rzp.mode'];
+
+        $this->resetConnectionOnModels($results, $oldConnection);
+
+        return $results;
     }
 
     public function fetchOutboxEntriesByPayloadName($payloadName) : PublicCollection

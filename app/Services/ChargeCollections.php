@@ -46,7 +46,7 @@ class ChargeCollections
     /**
      * @var string
      */
-    protected $requestTimeout;
+    protected $requestTimeout, $pricingReadsTimeout;
 
     // Headers
     const ACCEPT            = 'Accept';
@@ -63,6 +63,7 @@ class ChargeCollections
     const GetPricingPlanURL = 'v1/mdr/pricing/plans';
     const GetPricingRuleURL = 'v1/mdr/pricing/rule';
     const GetPricingPlansSummaryURL = 'v1/mdr/pricing/plans_summary';
+    const GetPricingPlansForFeesCalculationURL = 'v1/mdr/pricing/plans/fees_calculation';
     const CreatePricingPlanURL = 'v1/mdr/pricing';
     const UpdatePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}';
     const DeletePricingPlanRuleURL = 'v1/mdr/pricing/{plan_id}/rule/{rule_id}/force';
@@ -111,6 +112,7 @@ class ChargeCollections
         $this->secret = $this->config['charge_collections_password'][$this->mode];
 
         $this->requestTimeout = $this->config['request_timeout'];
+        $this->pricingReadsTimeout = $this->config['pricing_reads_timeout'];
 
         $this->auth = app('basicauth');
     }
@@ -132,7 +134,7 @@ class ChargeCollections
         array $headers = [],
         string $action = "")
     {
-        $request = $this->generateRequest($endpoint, $method, $data, $headers);
+        $request = $this->generateRequest($endpoint, $method, $data, $headers, $action);
 
         return $this->sendChargeCollectionsRequest($request, $endpoint, $action);
     }
@@ -420,7 +422,7 @@ class ChargeCollections
      *
      * @return array
      */
-    protected function generateRequest(string $endpoint, string $method, array $data, array $headers): array
+    protected function generateRequest(string $endpoint, string $method, array $data, array $headers, string $action = ""): array
     {
         $baseUrl = $this->baseUrl;
         $key = $this->key;
@@ -437,9 +439,14 @@ class ChargeCollections
         {
             $data = (empty($data) === false) ? json_encode($data) : null;
         }
+        $timeout = $this->requestTimeout;
+        if(in_array($action, ['getPricingPlan', 'getPricingRule', 'getPricingPlansForFeesCalculation'], true))
+        {
+            $timeout = $this->pricingReadsTimeout;
+        }
 
         $options = [
-            'timeout' => $this->requestTimeout,
+            'timeout' => $timeout,
             'auth'    => [
                 $key,
                 $secret
@@ -495,6 +502,15 @@ class ChargeCollections
     public function getPricingPlansSummary(array $input, $requestHeaders = [])
     {
         $url = self::GetPricingPlansSummaryURL;
+        return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
+    }
+
+    public function getPricingPlansForFeesCalculation(array $input, $requestHeaders = [])
+    {
+        $url = self::GetPricingPlansForFeesCalculationURL;
+        if (isset($input["id"]) && strlen($input["id"]) > 0) {
+            $url = $url .'/'. $input["id"];
+        }
         return $this->sendRequest($url, Requests::GET, $input, $requestHeaders, action:__FUNCTION__);
     }
 

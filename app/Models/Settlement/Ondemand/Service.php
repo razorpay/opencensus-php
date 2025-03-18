@@ -150,6 +150,16 @@ class Service extends Base\Service
 
                 $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
+                $isSmartSettlement = false;
+
+                if(isset($input['settlement_payout_type']) && $input['settlement_payout_type'] == Constants::SETTLEMENT_PAYOUT_TYPE_SMART && $this->app['basicauth']->isDashboardApp())
+                {
+                    $requestDetails['settlement_payout_type'] = $input['settlement_payout_type'];
+                    $isSmartSettlement = true;
+                }
+
+                (new Validator)->validateOdsAmount($amount, $isSmartSettlement, $this->merchant->getId());
+
                 //If es_on_demand_restricted feature is enabled for the merchant
                 //additional checks will be done based on config values
                 if($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
@@ -421,6 +431,11 @@ class Service extends Base\Service
 
         if (isset($settlementOndemandPayouts) === true)
         {
+            if($this->app['basicauth']->isDashboardApp()) {
+                return $settlementOndemandArray + [
+                        'ondemand_payouts'   => $settlementOndemand->settlementOndemandPayouts->toArrayPublicWithExpand(),
+                    ];
+            }
             return $settlementOndemandArray + [
                 'ondemand_payouts'   => $settlementOndemand->settlementOndemandPayouts->toArrayPublic(),
             ];
@@ -530,35 +545,11 @@ class Service extends Base\Service
 
         if($pricing === null)
         {
-            try
-            {
-                $this->core()->addDefaultPricing($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor);
-            }
-            catch(\Throwable $e)
-            {
-                throw new Exception\ServerErrorException(
-                    'Failed to create pricing rule',
-                    ErrorCode::SERVER_ERROR_PRICING_RULE_CREATION_FAILURE,
-                    null,
-                    $e
-                );
-            }
+            $this->core()->addDefaultPricing($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor);
         }
         else
         {
-            try
-            {
-                $this->core()->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor);
-            }
-            catch(\Throwable $e)
-            {
-                throw new Exception\ServerErrorException(
-                    'Failed to update pricing rule',
-                    ErrorCode::SERVER_ERROR_PRICING_RULE_UPDATION_FAILURE,
-                    null,
-                    $e
-                );
-            }
+            $this->core()->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature, $pricingPercentScaleFactor);
         }
     }
 
@@ -577,11 +568,14 @@ class Service extends Base\Service
 
         [$ondemandDisabled, $maxLimit, $availableLimit] = $this->core()->isODSCappingBreached($merchantId);
 
+        $smartSettlementConfig = $this->core()->getSmartSettlementConfig();
+
         return [
-            'blocked'           => $ondemandBlocked,
-            'disable'           => $ondemandDisabled,
-            'max_limit'         => $maxLimit,
-            'available_limit'   => $availableLimit,
+            'blocked'                 => $ondemandBlocked,
+            'disable'                 => $ondemandDisabled,
+            'max_limit'               => $maxLimit,
+            'available_limit'         => $availableLimit,
+            'smart_settlement_config' => $smartSettlementConfig,
         ];
     }
 

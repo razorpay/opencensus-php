@@ -129,7 +129,12 @@ class Service extends Base\Service
     public function isUserOrgAllowedSegregatedLoginSignup(): bool
     {
         // Org ids will be added as they adopt USL
-        $allowedOrgIds = [Org\Entity::RAZORPAY_ORG_ID];
+        $allowedOrgIds = [
+            Org\Entity::RAZORPAY_ORG_ID,
+            Org\Entity::HDFC_ORG_ID,
+            Org\Entity::AXIS_ORG_ID,
+            Org\Entity::YES_ORG_ID,
+        ];
 
         $orgId = $this->app['basicauth']->getOrgId();
 
@@ -255,6 +260,22 @@ class Service extends Base\Service
             $this->confirm($user[Entity::ID]);
         }
 
+        $sendUslSalesforceEvent = $this->shouldSendUslSalesforceEvent($user[Entity::ID]);
+
+        if ($sendUslSalesforceEvent === true) {
+
+            $utmParams = $this->getUtmParameters();
+
+            $salesForcePayload = [
+                'user_id' => $user[Entity::ID],
+                'email' => $user[Entity::EMAIL] ?? 'NA',
+                'contact_mobile' => $user[Entity::CONTACT_MOBILE] ?? 'NA',
+                'utm_params' => $utmParams,
+            ];
+
+            $this->app->salesforce->sendUslCreateUserAndMerchantDetails($salesForcePayload);
+        }
+
         /**
          * These two conditions are exclusive
          * One cannot accept an invitation and create a merchant account at the same time
@@ -284,7 +305,17 @@ class Service extends Base\Service
 
             $merchantId = $data['id'];
 
-            $easyOnboardingExperiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
+            if ($sendUslSalesforceEvent === true) {
+
+                $merchantCreateSalesForcePayload = [
+                    'user_id' => $user[Entity::ID],
+                    'merchant_id' => $merchantId,
+                    'country_code' => $countryCode,
+                    'product' => $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct(),
+                ];
+
+                $this->app->salesforce->sendUslCreateUserAndMerchantDetails($merchantCreateSalesForcePayload);
+            }
 
             if (empty($signupCampaign) === false)
             {
@@ -346,6 +377,31 @@ class Service extends Base\Service
 
         }
         return $data;
+    }
+
+    public function shouldSendUslSalesforceEvent(string $user_id): bool
+    {
+        if (empty($user_id) === true)
+        {
+            return false;
+        }
+
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $user_id,
+                'experiment_id' => $this->app['config']->get('app.send_usl_salesforce_event_exp_id'),
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+            return false;
+        }
+
+        $variant = $response['response']['variant']['name'] ?? null;
+
+        return $variant === 'enable';
     }
 
     public function isMerchantAllowedForMigration(string $merchant_id): bool
@@ -883,6 +939,22 @@ class Service extends Base\Service
 
                 $user = $this->create($input, $operation);
 
+                $sendUslSalesforceEvent = $this->shouldSendUslSalesforceEvent($user[Entity::ID]);
+
+                if ($sendUslSalesforceEvent === true) {
+
+                    $utmParams = $this->getUtmParameters();
+
+                    $salesForcePayload = [
+                        'user_id' => $user[Entity::ID],
+                        'email' => $user[Entity::EMAIL] ?? 'NA',
+                        'contact_mobile' => $user[Entity::CONTACT_MOBILE] ?? 'NA',
+                        'utm_params' => $utmParams,
+                    ];
+
+                    $this->app->salesforce->sendUslCreateUserAndMerchantDetails($salesForcePayload);
+                }
+
                 $userEntity = $this->repo->user->findByPublicId($user[Entity::ID]);
 
                 $this->core->setContactMobileOrEmailVerify($input, $userEntity);
@@ -897,6 +969,18 @@ class Service extends Base\Service
                 else
                 {
                     $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
+
+                    if ($sendUslSalesforceEvent === true) {
+
+                        $merchantCreateSalesForcePayload = [
+                            'user_id' => $user[Entity::ID],
+                            'merchant_id' => $merchantData['id'],
+                            'country_code' => $countryCode,
+                            'product' => $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct(),
+                        ];
+
+                        $this->app->salesforce->sendUslCreateUserAndMerchantDetails($merchantCreateSalesForcePayload);
+                    }
 
                     $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
@@ -975,7 +1059,7 @@ class Service extends Base\Service
     // should be stored separately. as of now, this change is enforced only for one product but other products should also adopt this approach.
     public function shouldStoreProductSpecificWorkflowType($product): bool
     {
-        return ($product === DeviceDetailConstants::PRODUCT_PG_ONBOARDING);
+        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING]);
     }
 
     public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
@@ -1144,6 +1228,10 @@ class Service extends Base\Service
                         DeviceDetail\Constants::ORG_ID          => $orgId,
                         DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
+
+                    if (empty($input[DeviceDetail\Constants::CROSS_BORDER_FLOW]) === false) {
+                        $modularPayload['field_data']['cross_border_flow'] = $input[DeviceDetail\Constants::CROSS_BORDER_FLOW];
+                    }
 
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
@@ -1416,6 +1504,10 @@ class Service extends Base\Service
                         DeviceDetail\Constants::ORG_ID          => $orgId,
                         DeviceDetail\Constants::VERSION_ID      => DeviceDetail\Constants::DEFAULT_VERSION,
                     ];
+
+                    if (empty($input[DeviceDetail\Constants::CROSS_BORDER_FLOW]) === false) {
+                        $modularPayload['field_data']['cross_border_flow'] = $input[DeviceDetail\Constants::CROSS_BORDER_FLOW];
+                    }
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
@@ -2448,6 +2540,20 @@ class Service extends Base\Service
 
         $merchantId = $data['id'];
 
+        $sendUslSalesforceEvent = $this->shouldSendUslSalesforceEvent($user[Entity::ID]);
+
+        if ($sendUslSalesforceEvent === true) {
+
+            $merchantCreateSalesForcePayload = [
+                'user_id' => $user[Entity::ID],
+                'merchant_id' => $merchantId,
+                'country_code' => $countryCode,
+                'product' => $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct(),
+            ];
+
+            $this->app->salesforce->sendUslCreateUserAndMerchantDetails($merchantCreateSalesForcePayload);
+        }
+
         if (empty($signupCampaign) === false)
         {
             $ddInput = [
@@ -2462,7 +2568,6 @@ class Service extends Base\Service
         // Start the onboarding of merchant via PGOS
         if ($user[Entity::SIGNUP_VIA_EMAIL] === 1) {
             $input[Entity::EMAIL] = $user[Entity::EMAIL];
-
             try {
                 if (empty($signupCampaign) === false)
                 {
@@ -2482,7 +2587,6 @@ class Service extends Base\Service
             $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
             $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
-
             if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
                 try {
                     $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -3380,6 +3484,21 @@ class Service extends Base\Service
                 }
             }
         }
+    }
+
+    public function getUtmParameters(): array
+    {
+        $utmCookie = \Cookie::get('rzp_utm');
+        $this->trace->info(TraceCode::RZP_UTM, ['rzp_utm_cookie' => $utmCookie]);
+
+        if (empty($utmCookie)) {
+            return [];
+        }
+
+        $cookieValue = trim($utmCookie, '"');
+        $utmParams = json_decode($cookieValue, true);
+
+        return $utmParams ?: [];
     }
 
     /**

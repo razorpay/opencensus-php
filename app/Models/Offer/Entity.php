@@ -111,6 +111,10 @@ class Entity extends Base\PublicEntity
 
     const UPI = 'upi';
 
+    const INSTRUMENTS = 'instruments';
+
+    // This denotes `multiple` payment methods for an offer entity
+    const MULTIPLE = 'multiple';
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
      * payment criteria as another offer
@@ -214,6 +218,7 @@ class Entity extends Base\PublicEntity
         self::MAX_ORDER_AMOUNT,
         self::PRODUCT_TYPE,
         self::UPI,
+        self::INSTRUMENTS,
 
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
@@ -256,7 +261,7 @@ class Entity extends Base\PublicEntity
         self::MAX_ORDER_AMOUNT,
         self::PRODUCT_TYPE,
         self::UPI,
-
+        self::INSTRUMENTS,
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
         SubscriptionOfferEntity::REDEMPTION_TYPE,
@@ -437,6 +442,12 @@ class Entity extends Base\PublicEntity
 
         return (($now >= $this->getStartsAt()) and
                 ($now <= $this->getEndsAt()));
+    }
+
+    public function isExternalOfferWithGlobalLimits(): bool
+    {
+        return (($this->getMaxOfferUsage() !== null) and
+                ($this->isExternal()));
     }
 
     public function getName()
@@ -852,6 +863,11 @@ class Entity extends Base\PublicEntity
         }, $emiDurations);
 
         $this->attributes[self::EMI_DURATIONS] = json_encode(array_unique(array_values($emiDurations)));
+    }
+
+    public function setInstruments($instruments)
+    {
+        $this->setAttribute(self::INSTRUMENTS, $instruments);
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)

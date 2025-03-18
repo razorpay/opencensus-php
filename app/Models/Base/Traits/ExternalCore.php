@@ -13,7 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 
 trait ExternalCore
 {
-    private function saveExternalEntity($entity)
+    private function saveExternalEntityCommon($entity, $fetchAfterSave  = true)
     {
         if ($entity->getEntity() === Entity::PAYMENT && $entity->hasTransfer())
         {
@@ -40,7 +40,9 @@ trait ExternalCore
 
             $entity = $class->save($entity->getEntityName(), $id, $merchantId, $entity->toArray());
 
-            $entity = $this->fetchExternalEntity($id, '', []);
+            if ($fetchAfterSave) {
+                $entity = $this->fetchExternalEntity($id, '', []);
+            }
 
             return $entity;
         }
@@ -57,5 +59,16 @@ trait ExternalCore
             throw $e;
         }
     }
+
+    private function saveExternalEntity($entity)
+    {
+        return $this->saveExternalEntityCommon($entity, true);
+    }
+
+    private function saveExternalEntityWithoutFetch($entity)
+    {
+        return $this->saveExternalEntityCommon($entity, false);
+    }
+
 }
 

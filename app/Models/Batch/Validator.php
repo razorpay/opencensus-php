@@ -1002,6 +1002,22 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $ecollectIdfcCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_idfc',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
+    protected static $ecollectAxisBankingCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_axis_banking',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $ecollectIciciCreateRules = [
         Entity::TYPE                 => 'required|in:ecollect_icici',
         Entity::NAME                 => 'filled|string|max:255',
@@ -1131,6 +1147,14 @@ class Validator extends Base\Validator
 
     protected static $linkedAccountCreateCreateRules = [
         Entity::TYPE                 => 'required|in:linked_account_create',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
+    protected static $linkedAccountCreateWithAccountCodeCreateRules = [
+        Entity::TYPE                 => 'required|in:linked_account_create_with_account_code',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
@@ -1526,7 +1550,7 @@ class Validator extends Base\Validator
          collect($input)->groupBy(Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID)
             ->map(function ($rows) use (& $failedRecords)
             {
-                if (count($rows->pluck(Batch\Header::TERMINAL_CREATION_PLAN_NAME)->unique()) > 1)
+                if (count($rows->pluck(Batch\Header::TERMINAL_CREATION_PLAN_ID)->unique()) > 1)
                 {
                     $failedRecords[] = $rows->pluck('Gateway Merchant ID')->toArray()[0];
                 }
@@ -2078,12 +2102,15 @@ class Validator extends Base\Validator
 
         $app = App::getFacadeRoot();
 
-        $variant  = $app['razorx']->getTreatment($merchant->getId(),
-                                                 Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
-                                                 Mode::LIVE,
-                                                 3);
+        $requestPayload = [
+            "id" => $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
+            'request_data'  => json_encode(['id' =>$merchant->getId()])
+        ];
 
-        if (strtolower($variant) === 'control')
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === false)
         {
             $expectedAmountType = BatchHelper::PAISE;
         }
@@ -3096,7 +3123,7 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountBatchActionAllowed(& $input, Merchant\Entity $merchant, bool $validateOtp = false)
     {
-        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
+        if((($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) || ($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE)) and
             (in_array($merchant->getCategory(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY]) === true) and
             (in_array($merchant->getCategory2(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY2]) === true) and
             (app('basicauth')->isAdminAuth() === false))
@@ -3106,9 +3133,9 @@ class Validator extends Base\Validator
             );
         }
 
-        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
-           (app('basicauth')->isProxyAuth() === true) and
-           ($validateOtp === true))
+        if((($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) || ($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE)) and
+            (app('basicauth')->isProxyAuth() === true) and
+            ($validateOtp === true))
         {
             $properties = [
                 'id'                   => $merchant->getId(),

@@ -509,6 +509,12 @@ class BasicAuth
      */
     public $is_mwi_converted_to_merchant_auth = false;
 
+    /**
+     * Used to store authz_roles for custom-access-roles for banking requests (logged-in user). PassportRoles are not
+     * used for this purpose since they can be updated from other flows as well.
+     */
+    private $customAccessRoles = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1071,7 +1077,7 @@ class BasicAuth
         $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
 
         // Sets the key instance if it exists, gets used in forming signature for payment authorize response
-        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId(), true);
         $this->authCreds->setKeyEntity($key);
 
         // Removes key_id from request if it existed with empty values
@@ -2208,7 +2214,6 @@ class BasicAuth
         return ($this->getInternalApp() === 'cross_border_import_service');
     }
 
-
     public function isWorkflowsServiceApp(): bool
     {
         return ($this->getInternalApp() === 'workflows');
@@ -3265,7 +3270,9 @@ class BasicAuth
         {
             $userRoles = [$this->userRole];
 
-            $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($this->userRole);
+            $authzRoles = (new \RZP\Models\Roles\Service())->getAuthzRolesUsingExperiment($this->userRole);
+
+            $this->setCustomAccessRoles($authzRoles);
 
             $userRoles = array_merge($userRoles, $authzRoles);
         }
@@ -3917,4 +3924,21 @@ class BasicAuth
        return  $this->passportAlterationPath;
     }
 
+    /**
+     * This function is declared as private to prevent any other flow from modifying the roles.
+     */
+    private function setCustomAccessRoles(array $roles)
+    {
+        $this->customAccessRoles = $roles;
+    }
+
+    public function getCustomAccessRoles()
+    {
+        return $this->customAccessRoles;
+    }
+
+    public function isPaymentsBankTransferApp(): bool
+    {
+        return ($this->getInternalApp() === 'payments_bank_transfer_service');
+    }
 }

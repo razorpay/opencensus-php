@@ -199,69 +199,12 @@ class Reversal extends Base
         $this->tax = 0;
     }
 
-    public function setFeeDefaultsForDualWrite($fees, $tax)
-    {
-        $this->fees = 0;
-        $this->tax  = 0;
-    }
-
-
     /**
      * {@inheritdoc}
      *
      * @see Base::calculateFees()
      */
     public function calculateFees()
-    {
-        $creditAmount = $this->source->getAmount() + $this->source->getFee();
-        $debitAmount = $this->source->entity->getAmount() + $this->source->entity->getFee();
-
-        if ($this->source->entity->transaction->isPostpaid() === true)
-        {
-            $creditAmount -= $this->source->getFee();
-            $debitAmount -= $this->source->entity->getFee();
-
-            $this->txn->setFeeModel(Merchant\FeeModel::POSTPAID);
-        }
-
-        $this->credit = $creditAmount;
-
-        // These checks are specifically used for refunds
-        if ($this->source->getEntityType() === Entity::REFUND)
-        {
-            // Checking if refund source is credits
-            if (($this->source->entity->transaction->getDebit() === 0) and
-                ($this->source->entity->transaction->getCredits() > 0))
-            {
-                $this->txn->setCredits(-1 * $this->credit);
-
-                $this->txn->setCreditType(Transaction\CreditType::REFUND);
-
-                $this->credit = 0;
-            }
-        }
-
-        if ($this->source->getFee() > 0)
-        {
-            $feeParams = [
-                Transaction\FeeBreakup\Entity::NAME       => Feature::REFUND,
-                Transaction\FeeBreakup\Entity::AMOUNT     => -1 * ($this->source->getFee() - $this->source->getTax()),
-            ];
-
-            $taxParams = [
-                Transaction\FeeBreakup\Entity::NAME       => FeeBreakupName::TAX,
-                Transaction\FeeBreakup\Entity::AMOUNT     => -1 * $this->source->getTax(),
-            ];
-
-            $fee = (new Transaction\FeeBreakup\Entity)->build($feeParams);
-            $tax = (new Transaction\FeeBreakup\Entity)->build($taxParams);
-
-            $this->feesSplit->push($fee);
-            $this->feesSplit->push($tax);
-        }
-    }
-
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
     {
         $creditAmount = $this->source->getAmount() + $this->source->getFee();
         $debitAmount = $this->source->entity->getAmount() + $this->source->entity->getFee();

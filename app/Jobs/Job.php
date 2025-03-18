@@ -321,17 +321,16 @@ class Job implements ShouldQueue
 
                 try
                 {
-                    $variant = $app->razorx->getTreatment(
-                        $this->getJobName(),
-                        RazorxTreatment::RELEASE_ALL_JOB_MUTEX_LOCKS,
-                        $this->mode ?? Mode::LIVE
-                    );
-
                     $this->trace->info(TraceCode::QUEUE_JOB_RELEASE_ALL, [
                         'job'     => $this->getJobName(),
-                        'variant' => $variant,
                         'mode'    => $this->mode
                     ]);
+
+                    $variant = 'off';
+
+                    if($this->getJobName() === 'banking_account_statement_processor'){
+                        $variant = 'on';
+                    }
 
                     $this->beforeJobKillCleanUp($variant);
                 }

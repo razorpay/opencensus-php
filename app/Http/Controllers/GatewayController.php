@@ -28,6 +28,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
@@ -280,6 +281,15 @@ class GatewayController extends Controller
         {
             if ($this->shouldPreProcessThroughUpiPaymentService($gatewayDriver) === true)
             {
+                $routeName = $this->app['api.route']->getCurrentRouteName();
+
+                if(($gatewayDriver === Gateway::UPI_AXIS or $gatewayDriver === Gateway::UPI_MINDGATE) and
+                    ($routeName === 'gateway_payment_callback_recurring') and
+                    (Environment::isTestingEnvironment($this->app['env']) === false))
+                {
+                    $input = Request::getContent();
+                }
+
                 try
                 {
                     return $this->app['upi.payments']->preProcessServerCallback($input, $gatewayDriver);
@@ -299,7 +309,6 @@ class GatewayController extends Controller
             {
                 $input = Request::getContent();
             }
-
             // pre-process callback if ups pre-processing fails
             return $gateway->preProcessServerCallback($input, $gatewayDriver);
         }
@@ -2096,10 +2105,10 @@ class GatewayController extends Controller
     protected function shouldPreProcessUpiRecurringThroughUpiPaymentService($gateway, $mode)
     {
         try {
-
+            $feature = 'upi_autopay_rearch_' . $gateway . '_pre_process';
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.upi_autopay_rearch_pre_process'),
+                'experiment_id' => $this->app['config']->get('app.'.$feature),
                 'request_data'  => json_encode(['gateway' => $gateway]),
             ];
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -2108,7 +2117,7 @@ class GatewayController extends Controller
 
             $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
 
-            return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB);
+            return ($variant === 'variant_on' or $gateway === Payment\Gateway::UPI_RZPAPB or $gateway === Payment\Gateway::UPI_YESBANK);
 
         } catch (\Throwable $e) {
 
@@ -2145,21 +2154,7 @@ class GatewayController extends Controller
             return true;
         }
 
-        $feature = 'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1';
-
-        $mode = ($mode === null) ? Mode::LIVE : $mode;
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode, 3);
-
-//        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
-//            'gateway' => $gateway,
-//            'variant' => $variant,
-//            'mode'    => $mode,
-//            'feature' => $feature,
-//        ]);
-
-        if ($variant === $gateway)
+        if ($this->app->runningUnitTests() === true)
         {
             return true;
         }
@@ -2480,7 +2475,7 @@ class GatewayController extends Controller
             return null;
         }
 
-        if ($payment->isUpi() === false)
+        if ($payment->isUpi() === false && $payment->isRoutedThroughOptimizerService() === false)
         {
             return null;
         }

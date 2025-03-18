@@ -11,6 +11,7 @@ use RZP\Models\Card;
 use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Contact;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\FundAccount;

@@ -129,6 +129,7 @@ class NoCodeAppsService {
         $body['customer_fee'] = $payment->getConvenienceFee() ?? 0;
         $body['customer_fee_gst'] = $payment->getConvenienceFeeGst() ?? 0;
         $body[Payment\Entity::FEE_BEARER] = $payment->getFeeBearer(true);
+        $body[Payment\Entity::AUTO_CAPTURED] = $payment->getAutoCaptured();
 
         return $this->sendPaymenEventToNocode($body, $payment->getMerchantId(), $this->ba->getMode(), self::SOURCE_S2S);
     }
@@ -186,13 +187,109 @@ class NoCodeAppsService {
     }
 
     /**
+     * @param string $storeId
+     * @return array
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function fetchStoreDetails(string $storeId): array
+    {
+        if ($this->mock === true) {
+            return [];
+        }
+        $storeIdWithPrefix = "st_" . $storeId;
+        $path = "stores/internal/{$storeIdWithPrefix}";
+
+        $url = $this->baseUrl . $path;
+
+        $headers = [
+            self::ACCEPT => self::CONTENT_TYPE_JSON,
+            self::CONTENT_TYPE => self::CONTENT_TYPE_JSON,
+            self::X_RAZORPAY_TASK_ID => $this->app['request']->getTaskId(),
+        ];
+
+        $requestParams = $this->getNcaRequestParams($this->app['request'], null, null, $headers);
+
+        $requestParams['url'] = $url;
+        $requestParams['method'] = 'GET';
+
+        $this->trace->info(TraceCode::NOCODE_SERVICE_REQUEST_TO_FETCH_STORE_DETAILS, ['url' => Tracing::maskUrl($url)]);
+
+        try {
+            $response = $this->makeApiCall(
+                $requestParams['url'],
+                $requestParams['headers'],
+                '',
+                $requestParams['method'],
+                $requestParams['options']
+            );
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::NOCODE_SERVICE_REQUEST_TO_FETCH_STORE_DETAILS_FAILED, [
+                'url' => Tracing::maskUrl($url),
+                'error' => $e->getMessage(),
+            ]);
+        }
+        return $response;
+    }
+
+
+    /**
+     * @param string $pageId
+     * @return array
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function fetchPageDetails(string $pageId): array
+    {
+    if ($this->mock === true)
+    {
+            return [];
+        }
+        $pageIdWithPrefix = "pl_" . $pageId;
+
+        $path = "payment_pages/internal/{$pageIdWithPrefix}";
+
+        $url = $this->baseUrl.$path;
+
+        $headers = [
+            self::ACCEPT => self::CONTENT_TYPE_JSON,
+            self::CONTENT_TYPE => self::CONTENT_TYPE_JSON,
+            self::X_RAZORPAY_TASK_ID => $this->app['request']->getTaskId(),
+        ];
+
+        $requestParams = $this->getNcaRequestParams($this->app['request'], null, null, $headers);
+
+        $requestParams['url'] = $url;
+
+        $this->trace->info(TraceCode::NOCODE_SERVICE_REQUEST_TO_FETCH_PAYMENT_PAGE_DETAILS, ['url' => Tracing::maskUrl($url)]);
+
+        try 
+        {
+            $response = $this->makeApiCall(
+                $requestParams['url'],
+                $requestParams['headers'],
+                '',
+                $requestParams['method'],
+                $requestParams['options']
+            );
+        } 
+        catch (\Throwable $e)
+         {
+            $this->trace->error(TraceCode::NOCODE_SERVICE_REQUEST_TO_FETCH_PAYMENT_PAGE_DETAILS_FAILED, [
+                'url' => Tracing::maskUrl($url),
+                'error' => $e->getMessage(),
+            ]);
+        }
+        return $response;
+    }
+
+    /**
      * @param \Illuminate\Http\Request $request
      * @param string|null              $module
      * @param string|null              $path
+     * @param array|null               $customHeaders
      *
      * @return array
      */
-    private function getNcaRequestParams(Request $request, string $module=null, string $path=null): array
+    private function getNcaRequestParams(Request $request, string $module = null, string $path = null, array $customHeaders = null): array
     {
         $path = $this->getRequestUri($module, $path);
 
@@ -200,7 +297,7 @@ class NoCodeAppsService {
 
         $urlAppend = '?';
 
-        $headers = $this->getHeaders($request);
+        $headers = $customHeaders ?? $this->getHeaders($request);
 
         if($request->getQueryString() !== null)
         {

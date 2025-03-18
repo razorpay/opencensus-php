@@ -81,6 +81,8 @@ return [
         'password'           => env('CREDCASE_PASSWORD'),
         'read_key_splitz'    => env('CREDCASE_READ_KEY_SPLITZ', ''),
         'admin_read_key_splitz' => env('CREDCASE_ADMIN_READ_KEY_SPLITZ', ''),
+        'find_key_splitz'     => env('CREDCASE_FIND_KEY_SPLITZ',''),
+        'find_key_splitz_v2'  => env('CREDCASE_FIND_KEY_SPLITZ_V2', '')
     ],
 
     // Ref \RZP\Services\CredcaseSigner.php.
@@ -129,6 +131,13 @@ return [
         'url'           => env('PGOS_SERVICE_HOST'),
         'user'          => env('PGOS_SERVICE_USER'),
         'password'      => env('PGOS_SERVICE_PASSWORD')
+    ],
+
+    'workflow_guard' => [
+        'mock'          => env('WORKFLOW_GUARD_SERVICE_MOCK', true),
+        'url'           => env('WORKFLOW_GUARD_SERVICE_HOST'),
+        'user'          => env('WORKFLOW_GUARD_SERVICE_USER'),
+        'password'      => env('WORKFLOW_GUARD_SERVICE_PASSWORD')
     ],
 
     'merchants_risk' => [

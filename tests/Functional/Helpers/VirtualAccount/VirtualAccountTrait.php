@@ -37,6 +37,7 @@ trait VirtualAccountTrait
             $defaultValues['receivers']['types'] = ['qr_code'];
         }
 
+
         if($vpa === true)
         {
             $defaultValues['receivers']['types'] = ['vpa'];

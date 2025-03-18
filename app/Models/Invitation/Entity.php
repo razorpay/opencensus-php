@@ -168,9 +168,7 @@ class Entity extends Base\PublicEntity
     {
         if($this->getAttribute(self::PRODUCT) ===  Product::BANKING)
         {
-            $app = App::getFacadeRoot();
-
-            $roleName = $app['repo']->roles->fetchRoleName($this->getAttribute(self::ROLE));
+            $roleName = (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($this->getAttribute(self::ROLE));
 
             $attributes[self::ROLE_NAME] = $roleName;
         }
@@ -195,7 +193,7 @@ class Entity extends Base\PublicEntity
 
         if($this->getAttribute(self::PRODUCT) ===  Product::BANKING)
         {
-            $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($this->getAttribute(self::ROLE));
+            $attributes[self::ROLE_NAME] = (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($this->getAttribute(self::ROLE));
         }
 
         return $attributes;

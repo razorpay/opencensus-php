@@ -41,7 +41,7 @@ class PaperNachIcici extends Base
     use FileHandler;
 
     const STEP                   = 'register';
-    const FILE_NAME              = 'MMS-CREATE-ICIC-ICIC865719-{$date}-{$code}';
+    const FILE_NAME              = 'MMS-CREATE-ICIC-ICICRZ-{$date}-{$code}';
     const EXTENSION              = FileStore\Format::ZIP;
     const FILE_TYPE              = FileStore\Type::ICICI_NACH_REGISTER;
     const GATEWAY                = Payment\Gateway::NACH_ICICI;

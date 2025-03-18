@@ -300,7 +300,6 @@ class CMSTest extends TestCase
                             'notes_key_2' => 'Tea, Earl Grey… decaf.',
                         ],
                         'gstin' => '22ABCDE1234F2Z5',
-                        "global_customer_id" => "5QVhegZI7z2qjQ"
                     ],
                     'merchantId' => 'merchant123',
                 ],
@@ -324,9 +323,7 @@ class CMSTest extends TestCase
                             ]
                     ],
                     'merchant_id'     => 'merchant123',
-                    'custom_data'     => (object)[
-                        'global_customer_id' => '5QVhegZI7z2qjQ'
-                    ],
+                    'custom_data'     => (object)[],
                 ],
             ],
             'Missing Optional Fields' => [
@@ -563,6 +560,29 @@ class CMSTest extends TestCase
 
         $this->assertEquals($mockResponse, $result);
     }
+
+    public function testTransformV1CreateOptionsToV2CreateOptionsWithIntegerContact()
+    {
+        $input = [
+            'contact' => 900000
+        ];
+
+        $merchantId = '12345';
+        $output = (new Service($this->app))->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
+        $this->assertEquals((string)$input['contact'], $output['contact']);
+    }
+
+    public function testTransformV1CreateOptionsToV2CreateOptionsWithNullContact()
+    {
+        $input = [
+            'contact' => null
+        ];
+
+        $merchantId = '12345';
+        $output = (new Service($this->app))->transformV1CreateOptionsToV2CreateOptions($input, $merchantId);
+        $this->assertNull($output['contact']);
+    }
+
     public function testCreateCustomerV2Failure()
     {
         $input = [

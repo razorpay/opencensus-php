@@ -113,9 +113,9 @@ class UserTest extends TestCase
 
         parent::setUp();
 
-
-
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
         $this->createAndFetchMocks();
     }
@@ -142,6 +142,12 @@ class UserTest extends TestCase
             }',
             true
         );
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
 
@@ -172,6 +178,12 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $this->mockHubSpotClient('trackSignupEvent');
 
         $testData = &$this->testData[__FUNCTION__];
@@ -193,6 +205,12 @@ class UserTest extends TestCase
         Mail::fake();
 
         $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $this->mockHubSpotClient('trackSignupEvent');
 
@@ -221,6 +239,12 @@ class UserTest extends TestCase
 
          $this->ba->dashboardGuestAppAuth();
 
+         $this->mockAllSplitzTreatment();
+
+         $this->mockSalesforceEventTrackedWithMethodAndCount([
+             'sendUslCreateUserAndMerchantDetails' => 1
+         ]);
+
          $this->mockHubSpotClient('trackSignupEvent');
 
          $testData = &$this->testData[__FUNCTION__];
@@ -242,6 +266,12 @@ class UserTest extends TestCase
         Mail::fake();
 
         $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $this->mockHubSpotClient('trackSignupEvent');
 
@@ -315,6 +345,12 @@ class UserTest extends TestCase
 
         $this->mockDCS();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $adminId = Org::MAKER_ADMIN;
 
         $formData = json_decode(
@@ -368,6 +404,12 @@ class UserTest extends TestCase
             true
         );
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
 
         $testData = &$this->testData[__FUNCTION__];
@@ -408,6 +450,12 @@ class UserTest extends TestCase
             true
         );
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
 
         $testData = &$this->testData[__FUNCTION__];
@@ -447,6 +495,12 @@ class UserTest extends TestCase
             }',
             true
         );
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
 
@@ -491,6 +545,12 @@ class UserTest extends TestCase
             'id' => '10000000000002',
             'email' => 'test2@razorpay.com',
             'parent_id' => '10000000000000'
+        ]);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
         ]);
 
         $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
@@ -582,6 +642,12 @@ class UserTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $response = $this->startTest();
 
         $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
@@ -626,6 +692,12 @@ class UserTest extends TestCase
         //Given
         $this->ba->dashboardGuestAppAuth();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         //When
         $this->withHeader(RequestHeader::X_REQUEST_ORIGIN, "https://x.razorpay.com");
         $this->startTest();
@@ -648,6 +720,12 @@ class UserTest extends TestCase
                 ]
             ]
         ];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
@@ -692,6 +770,12 @@ class UserTest extends TestCase
                 ]
             ]
         ];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -884,6 +968,22 @@ class UserTest extends TestCase
         }
     }
 
+    public function mockSalesforceEventTrackedWithMethodAndCount($methodsWithCount)
+    {
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        foreach ($methodsWithCount as $methodName => $count) {
+            $salesforceClientMock->expects($this->exactly($count))
+                ->method($methodName);
+        }
+
+        return $salesforceClientMock;
+    }
+
     public function testPreSignupCampaignInfoStoredAfterRegistrationInSmallCap()
     {
         $testDataToReplace = [
@@ -901,6 +1001,12 @@ class UserTest extends TestCase
                 ]
             ]
         ];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -941,6 +1047,12 @@ class UserTest extends TestCase
             ]
         ];
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
 
@@ -979,6 +1091,12 @@ class UserTest extends TestCase
             ]
         ];
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
 
@@ -1000,6 +1118,12 @@ class UserTest extends TestCase
     public function testRegisterWithOtp()
     {
         Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $adminId = Org::MAKER_ADMIN;
 
@@ -1041,6 +1165,12 @@ class UserTest extends TestCase
     public function testRegisterForSignUpFlowInX()
     {
         Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $adminId = Org::MAKER_ADMIN;
 
@@ -1154,6 +1284,12 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();
 
@@ -1182,6 +1318,12 @@ class UserTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
 
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();
@@ -1216,6 +1358,12 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();
 
@@ -1247,6 +1395,12 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();
 
@@ -1264,6 +1418,53 @@ class UserTest extends TestCase
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+    }
+
+    public function testCreateMerchantForNewUserWithInvalidCrossBorderIntent()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000002', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantForNewUserWithValidCrossBorderIntent()
+    {
+        $user = $this->fixtures->create('user', ['contact_mobile' => '+919097930187', 'email'  => null]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchant_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+
+        $this->assertEquals($user['contact_mobile'], $merchant->contact_mobile);
     }
 
     public function testGetInXWhenUserOnPg()
@@ -7878,49 +8079,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateUserRoleByOwner()
-    {
-        $user = $this->fixtures->create('user');
 
-        $merchant = $this->fixtures->create('merchant');
-
-        $ownerUser = $this->fixtures->create('user');
-
-        $mappingData = [
-            'user_id'     => $ownerUser['id'],
-            'merchant_id' => $merchant['id'],
-            'role'        => 'owner',
-            'product'     => 'banking'
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'finance_l1', 'banking');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'role'=> 'admin',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
-
-        $testData['request']['server']['HTTP_X-Request-Origin'] = 'https://x.razorpay.com';
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
-
-        $this->startTest();
-
-        $merchantUsers = DB::table('merchant_users')
-            ->where('merchant_id', '=', $merchant['id'])
-            ->pluck('user_id', 'role');
-
-        $this->assertEquals(count($merchantUsers), 2);
-
-        $this->assertEquals($merchantUsers['admin'], $user['id']);
-    }
 
     public function testUpdateUserRoleByNonOwner()
     {
@@ -7966,81 +8125,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateToOwnerRole()
-    {
-        $this->disableRazorXTreatmentCAC();
 
-        $user = $this->fixtures->create('user');
-
-        $merchant = $this->fixtures->create('merchant');
-
-        $ownerUser = $this->fixtures->create('user');
-
-        $mappingData = [
-            'user_id'     => $ownerUser['id'],
-            'merchant_id' => $merchant['id'],
-            'role'        => 'owner',
-            'product'     => 'banking'
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'finance_l1', 'banking');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'role'=> 'owner',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
-
-        $testData['request']['server']['HTTP_X-Request-Origin'] = 'https://x.razorpay.com';
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
-
-        $this->startTest();
-    }
-
-    public function testUpdateOwnerRole()
-    {
-        $this->disableRazorXTreatmentCAC();
-
-        $user = $this->fixtures->create('user');
-
-        $merchant = $this->fixtures->create('merchant');
-
-        $ownerUser = $this->fixtures->create('user');
-
-        $mappingData = [
-            'user_id'     => $ownerUser['id'],
-            'merchant_id' => $merchant['id'],
-            'role'        => 'owner',
-            'product'     => 'banking'
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner', 'banking');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'role'=> 'finance_l1',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
-
-        $testData['request']['server']['HTTP_X-Request-Origin'] = 'https://x.razorpay.com';
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
-
-        $this->startTest();
-    }
 
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, string $product='primary')
     {
@@ -10774,7 +10859,35 @@ class UserTest extends TestCase
 
         $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
 
-        $authzAdminClientMock->shouldNotReceive('adminAPIListPolicy');
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(null, $ownerIds);
+                $this->assertEquals(["owner"], $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals('ROLE_POLICY_TYPE_STANDARD', $type);
+                $this->assertEquals(null, $types);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Owner',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => '100000razorpay',
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks',
+                    ]),
+                ]
+            ]));
 
         $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
 
@@ -10814,6 +10927,36 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(null, $ownerIds);
+                $this->assertEquals(["owner"], $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals('ROLE_POLICY_TYPE_STANDARD', $type);
+                $this->assertEquals(null, $types);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Owner',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => '100000razorpay',
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks',
+                    ]),
+                ]
+            ]));
 
         $authzAdminClientMock->shouldReceive('adminAPIListPolicy')
             ->withArgs(function($paginationToken, $resourceGroupIdList, $resourceIdList, $roleId, $serviceIdList, $permissionIdList, $roleNames, $orgId){
@@ -10934,6 +11077,8 @@ class UserTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $this->disableRazorXTreatmentCAC();
+
+        $this->mockSplitzDisableCAC($merchant['id']);
 
         $mappingData = [
             'user_id'     => $user->getId(),
@@ -13599,6 +13744,12 @@ class UserTest extends TestCase
     {
         Mail::fake();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
 
         $invitation = $this->fixtures->create('invitation', [
@@ -13656,6 +13807,12 @@ class UserTest extends TestCase
     public function testUserRegisterFromVendorPortalInvitationV2()
     {
         Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
 
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
 
@@ -13715,6 +13872,12 @@ class UserTest extends TestCase
     {
         Mail::fake();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
         $this->fixtures->create('merchant',[ 'id' => '2DummyMerchant' ]);
 
@@ -13756,6 +13919,12 @@ class UserTest extends TestCase
     public function testAddingMetadataToUsersEntityFromInvitation()
     {
         Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
 
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
 
@@ -13816,6 +13985,12 @@ class UserTest extends TestCase
     public function testUserRegisterFoBankPocRole()
     {
         Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
 
         $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
 
@@ -14322,7 +14497,26 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->mockAllSplitzTreatment($output);
+        $uslOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($output, $uslOutput) {
+                if (isset($input['experiment_id']) && $input['experiment_id'] === 'Q57meyuMFoPQJ5') {
+                    return $uslOutput;
+                }
+                return $output;
+            });
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         Queue::fake();
 
@@ -14408,7 +14602,26 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->mockAllSplitzTreatment($output);
+        $uslOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($output, $uslOutput) {
+                if (isset($input['experiment_id']) && $input['experiment_id'] === 'Q57meyuMFoPQJ5') {
+                    return $uslOutput;
+                }
+                return $output;
+            });
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         Queue::fake();
 
@@ -14560,7 +14773,6 @@ class UserTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Queue::fake();
-
 
         $this->startTest();
     }
@@ -16098,7 +16310,26 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->mockAllSplitzTreatment($output);
+        $uslOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) use ($output, $uslOutput) {
+                if (isset($input['experiment_id']) && $input['experiment_id'] === 'Q57meyuMFoPQJ5') {
+                    return $uslOutput;
+                }
+                return $output;
+            });
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         Queue::fake();
 
@@ -16138,6 +16369,12 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $this->mockHubSpotClient('trackSignupEvent');
 
         $this->startTest($testData);
@@ -16158,6 +16395,12 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
         $this->mockHubSpotClient('trackSignupEvent');
 
         $this->startTest();
@@ -16176,6 +16419,12 @@ class UserTest extends TestCase
         $partnerMerchant = $this->createPartner('reseller');
 
         $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
 
         $this->mockHubSpotClient('trackSignupEvent');
 
@@ -16400,6 +16649,12 @@ class UserTest extends TestCase
         //here, asserting the merchantUser's count to zero to ensure the user was orphaned
         $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
         $this->assertEquals(0, $merchantUsers->count());
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
 
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();

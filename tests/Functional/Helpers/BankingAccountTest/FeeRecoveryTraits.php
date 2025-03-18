@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\BankingAccount;
 
 use Carbon\Carbon;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;

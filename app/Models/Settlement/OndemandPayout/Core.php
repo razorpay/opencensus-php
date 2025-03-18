@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\OndemandPayout;
 use App;
 use Carbon\Carbon;
 
+use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Pricing;
@@ -19,6 +20,7 @@ use RZP\Models\Settlement\Ondemand;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Settlement\Ondemand\Constants as OndemandConstants;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
 
 class Core extends Base\Core
@@ -32,6 +34,7 @@ class Core extends Base\Core
     ];
 
     const MAX_IMPS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT * 100;
+    const MIN_RTGS_AMOUNT = FundTransfer\Base\Initiator\NodalAccount::MIN_RTGS_AMOUNT * 100;
 
     const PREVIOUS_MAX_IMPS_AMOUNT = 200000 * 100;
 
@@ -52,52 +55,66 @@ class Core extends Base\Core
         $this->user = $this->app['basicauth']->getUser();
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function createSettlementOndemandPayout($settlementOndemand, $requestDetails)
     {
-        $mode = $this->setMode($settlementOndemand->getAmount(), $settlementOndemand->getScheduled());
+        $mode = $this->setMode($settlementOndemand->getAmount(), $settlementOndemand->getScheduled(), $requestDetails[OndemandConstants::SETTLEMENT_PAYOUT_TYPE]);
+
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_MODE_USED, [
+            'mode'       => $mode,
+        ]);
 
         return $this->createPayoutsFromOndemand($settlementOndemand, $mode, $requestDetails);
     }
 
-    public function setMode($amount, $scheduled = false)
+    /**
+     * @throws BadRequestException
+     */
+    public function setMode($amount, $scheduled = false, $settlementPayoutType = null)
     {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $isCurrentTimeOutsideBankingHours = $this->isOutsideBankingHoursUpdated($currentTime);
+
+        $time = $currentTime + self::MODE_BUFFER_TIME;
+
+        $isOutsideBankingHours = $this->isOutsideBankingHoursUpdated($time);
+
+        $isInsideRtgsHours = !$isOutsideBankingHours && !$isCurrentTimeOutsideBankingHours;
+
         if((new Ondemand\Service)->isMerchantWithXSettlementAccount($this->merchant->getId()))
         {
             return null;
         }
-        else if ($scheduled == true && $amount > self::MAX_IMPS_AMOUNT)
+
+        if ($scheduled === true && $amount > self::MAX_IMPS_AMOUNT)
         {
             return Mode::NEFT;
         }
-        else
-        {
-            //Temporary fix - always returning IMPS to use PG ICIC nodal for X merchant
-            return FundTransfer\Mode::IMPS;
+
+        if ($settlementPayoutType === OndemandConstants::SETTLEMENT_PAYOUT_TYPE_SMART) {
+
+            if (!$this->shouldEnableRtgs($this->merchant->getId()))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SMART_SETTLEMENTS_NOT_ENABLED);
+            }
+
+            if($amount < self::MIN_RTGS_AMOUNT){
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_SMART_SETTLEMENT_AMOUNT);
+            }
+
+            if(!$isInsideRtgsHours) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SMART_SETTLEMENT_WINDOW_NOT_OPEN);
+            }
+
+            return FundTransfer\Mode::RTGS;
+
         }
 
-        //For ES_AUTOMATIC Merchants IMPS mode is used always regardless of banking or non-banking hour
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === true)
-        {
-            return FundTransfer\Mode::IMPS;
-        }
-
-        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $isCurrentTimeOutsideBankingHours = $this->isOutsideBankingHours($currentTime);
-
-        $time = $currentTime + self::MODE_BUFFER_TIME;
-
-        $isOutsideBankingHours = $this->isOutsideBankingHours($time);
-
-        if (($isOutsideBankingHours === true) or
-            ($isCurrentTimeOutsideBankingHours === true))
-        {
-            return FundTransfer\Mode::IMPS;
-        }
-        else
-        {
-            return FundTransfer\Mode::NEFT;
-        }
+        //Temporary fix - always returning IMPS to use PG ICIC nodal for X merchant
+        return FundTransfer\Mode::IMPS;
     }
 
     public function isOutsideBankingHoursWithBufferTime(): bool
@@ -130,6 +147,33 @@ class Core extends Base\Core
 
         // Banking hours end time.
         $endTime = $date->hour(Constants::NEFT_CUTOFF_HOUR_MAX)->minute(Constants::NEFT_CUTOFF_MINUTE_MAX)->getTimestamp();
+
+        // Checks for non Banking hours on working days.
+        if (($time < $startTime) or
+            ($time > $endTime))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isOutsideBankingHoursUpdated($time): bool
+    {
+        $date = Carbon::createFromTimestamp($time, Timezone::IST);
+
+
+        // Checks for holidays.
+        if (Holidays::isNationalBankHoliday($date) === true)
+        {
+            return true;
+        }
+
+        // Banking hours start time.
+        $startTime = $date->hour(Constants::AXIS_RTGS_CUTOFF_HOUR_MIN)->minute(Constants::AXIS_RTGS_CUTOFF_MINUTE_MIN)->getTimestamp();
+
+        // Banking hours end time.
+        $endTime = $date->hour(Constants::AXIS_RTGS_CUTOFF_HOUR_MAX)->minute(Constants::AXIS_RTGS_CUTOFF_MINUTE_MAX)->getTimestamp();
 
         // Checks for non Banking hours on working days.
         if (($time < $startTime) or
@@ -370,6 +414,7 @@ class Core extends Base\Core
 
             case null:
             case FundTransfer\Mode::NEFT:
+            case FundTransfer\Mode::RTGS:
                 array_push($splitAmount , $totalAmountRemaining);
 
                 $totalAmountRemaining = 0;
@@ -388,7 +433,7 @@ class Core extends Base\Core
 
         $payoutAmount = $settlementOndemandPayout->getPayoutAmount();
 
-        $fundAccount = (new OndemandFundAccount\Repository)->findByMerchantId($settlementOndemandPayout->getMerchantId());
+        $fundAccount = (new OndemandFundAccount\Core)->getFundAccountByMerchantId($settlementOndemandPayout->getMerchantId());
 
         $fundAccountId = $fundAccount[OndemandFundAccount\Entity::FUND_ACCOUNT_ID];
 
@@ -446,5 +491,27 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($settlementOndemandPayout);
         }
+    }
+
+    public function shouldEnableRtgs($merchantId): bool
+    {
+        $request = ['id' => $merchantId, 'experiment_id' => $this->app['config']->get('app.enable_smart_settlement_ods_experiment_id')];
+        $response = $this->app['splitzService']->evaluateRequest($request);
+
+        $variables = $response['response']['variant']['variables'] ?? [];
+        if (is_array($variables) === false)
+        {
+            return false;
+        }
+
+        foreach ($variables as $variable)
+        {
+            if (is_array($variable) === true && $variable['key'] === 'result' && $variable['value'] === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

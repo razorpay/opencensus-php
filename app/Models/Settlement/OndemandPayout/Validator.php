@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT                  => 'required|integer',
         Entity::FEES                    => 'sometimes|integer',
         Entity::TAX                     => 'sometimes|integer',
-        Entity::MODE                    => 'sometimes|in:NEFT,IMPS|nullable',
+        Entity::MODE                    => 'sometimes|in:NEFT,IMPS,RTGS|nullable',
         Entity::SETTLEMENT_ONDEMAND_ID  => 'sometimes|alpha_num|size:14',
         Entity::STATUS                  => 'sometimes|string',
         Entity::INITIATED_AT            => 'sometimes|epoch|nullable',

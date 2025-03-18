@@ -182,6 +182,7 @@ class Validator extends Base\Validator
         'device_fingerprint'                                          => 'sometimes|array',
         'split_amount'                                               => 'sometimes|integer',
         'device_id'                                                  => 'sometimes',
+        'store_id'                                                   => 'sometimes',
         'gst_qr'                                                     => 'sometimes',
         'gift_cards'                                                 => 'sometimes_if:method,gift_cards|array'
     ];
@@ -1474,10 +1475,12 @@ class Validator extends Base\Validator
 
         $method = $input['method'];
 
+        $merchantId = $this->entity->merchant->getId();
+
         switch ($method)
         {
             case Payment\Method::EMANDATE:
-                $supported = Payment\Gateway::isSupportedEmandateBank($bank);
+                $supported = Payment\Gateway::isSupportedEmandateBank($bank, $merchantId);
                 break;
 
             case Payment\Method::UPI:

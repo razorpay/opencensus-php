@@ -327,11 +327,10 @@ class Service extends Base\Service
 
         $response[DetailConstants::RISK_DETAILS] = $additionalDetails[DetailConstants::RISK_DETAILS] ?? null;
 
-        if ($this->pgosProxyController->isIndiaPgModularMerchant($this->merchant) === true)
+        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
         {
             $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
         }
-
 
         return $response;
     }
@@ -391,6 +390,16 @@ class Service extends Base\Service
         if (isset($pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT]) === true)
         {
             $response[DetailConstants::CATEGORY_MODULE_PLACEMENT] = $pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT];
+        }
+        //adding pg_conboarding_for_ca keys from pgos
+        if (isset($pgosFetchInternalResponse[DetailConstants::PG_ONBOARDING_CA]) === true)
+        {
+            $response[DetailConstants::PG_ONBOARDING_CA] = $pgosFetchInternalResponse[DetailConstants::PG_ONBOARDING_CA];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::OFFER_PRICE_FOR_CA]) === true)
+        {
+            $response[DetailConstants::OFFER_PRICE_FOR_CA] = $pgosFetchInternalResponse[DetailConstants::OFFER_PRICE_FOR_CA];
         }
 
         // adding pg competitors keys coming from pgos
@@ -751,7 +760,7 @@ class Service extends Base\Service
             {
                 $input['merchantId'] = $merchantId;
 
-                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
+                $pgosResponse =  $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
 
                 $pgosResponse['activation_response'][DEConstants::IS_POS_DETAILS_SUBMITTED] = $isPosDetailsSubmitted;
 
@@ -2304,7 +2313,7 @@ class Service extends Base\Service
 
     public function getBusinessCategoriesVasMerchant(): array
     {
-        $businessCategoriesMap = BusinessCategoriesV2\BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
         $businessCategories    = [];
 
         foreach ($businessCategoriesMap as $businessCategory => $subCategories)
@@ -3800,6 +3809,7 @@ class Service extends Base\Service
         $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_INITIATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED;
 
         $this->trace->info($traceCode, [
+            DetailConstants::VERSION => $version,
             Entity::GSTIN => $input[Entity::GSTIN]
         ]);
 
@@ -5389,7 +5399,7 @@ class Service extends Base\Service
                                     'new_activation_status' => $newActivationStatus,
                                 ]);
 
-                                $this->core->prefillSystemUrlsInAdminWebisteDetails($merchant->merchantDetail);
+                                $this->core->prefillSystemUrlsInAdminWebsiteDetails($merchant->merchantDetail);
                             }
 
                         }
@@ -5415,6 +5425,24 @@ class Service extends Base\Service
                     if (empty($this->app['basicauth']->getMerchant()) === true)
                     {
                         $this->app['basicauth']->setMerchant($merchant);
+                    }
+
+                    $activationStatus = $input[Entity::ACTIVATION_STATUS];
+
+                    if ($activationStatus === Status::ACTIVATED)
+                    {
+                        $this->trace->info(TraceCode::PREFILLING_ADMIN_WEBSITE_DETAILS, [
+                            'merchant_id' => $merchantId,
+                            'new_activation_status' => $activationStatus,
+                        ]);
+
+                        /*
+                         *  Prefilling system urls for India PG modular merchants in admin website details as this is a
+                         *  necessary check during merchant activation in validateMerchantActivation
+                         *  https://razorpay.slack.com/archives/C043K5N223F/p1737367042676009?thread_ts=1736917359.986569&cid=C043K5N223F
+                        */
+
+                        $this->core->prefillSystemUrlsInAdminWebsiteDetails($merchant->merchantDetail);
                     }
                 }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Ondemand;
 
+use RZP\Constants\Metric;
 use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -247,6 +248,8 @@ class Entity extends Base\PublicEntity
         Status::validateStatusUpdate($status, $currentStatus);
 
         $this->setAttribute(self::STATUS, $status);
+
+        app('trace')->count(Metric::SETTLEMENT_ONDEMAND_STATUS_UPDATES, ['status' => $status]);
     }
 
     public function setScheduled($scheduled)

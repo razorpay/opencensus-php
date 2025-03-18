@@ -210,9 +210,8 @@ class ProcessingFeePlan
         CreditEmiProvider::IDFB.'v2' => [
             Type::CREDIT => [
                 self:: DEFAULT => [
-                    self::TYPE => self::COMBINATION,
-                    self::PERCENTAGE => 1,
-                    self::AMOUNT => 9900
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 24900
                 ]
             ]
         ],

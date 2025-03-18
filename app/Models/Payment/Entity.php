@@ -425,6 +425,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GatewayMerchantId = 'gateway_merchant_id';
     const GatewayTerminalId = 'gateway_terminal_id';
     const DeviceId          = 'device_id';
+    const InternalStatus     = 'internal_status';
+
+    const STORE_ID          = 'store_id';
 
     const REFUND_UNEXPECTED_PAYMENT = 'refund_unexpected_payment';
 
@@ -462,6 +465,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD_ID,
         self::REWARD,
         self::DeviceId,
+        self::STORE_ID, // Added here to support store management feature for pos.
         self::SOURCE_CHANNEL,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
     ];
@@ -471,6 +475,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ID,
         self::PUBLIC_ID,
         self::DeviceId,
+        self::STORE_ID,
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
@@ -630,7 +635,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPI_METADATA,
         self::REWARD,
         self::REWARD_ID,
-        self::AMOUNT_CAPTURED
+        self::AMOUNT_CAPTURED,
     ];
 
     protected $webhook = [
@@ -938,7 +943,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $ignoredRelations = [
         self::ORDER,
         // Required as customer entity will be created via CMS and may not be present in API DB
-        ConstantsEntity::CUSTOMER
+        ConstantsEntity::CUSTOMER,
+        'globalCustomer',
     ];
 
     protected array $sensitiveFields = [
@@ -2104,12 +2110,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // tokens service.
     public function setTokenRelations()
     {
-        $this->ignoredRelations = [self::ORDER, self::LOCAL_TOKEN];
+        $this->ignoredRelations = [self::ORDER, ConstantsEntity::CUSTOMER, 'globalCustomer', self::LOCAL_TOKEN];
     }
 
     public function removeGlobalTokenRelations()
     {
-        $this->ignoredRelations = [self::ORDER, self::GLOBAL_TOKEN];
+        $this->ignoredRelations = [self::ORDER, ConstantsEntity::CUSTOMER, 'globalCustomer', self::GLOBAL_TOKEN];
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -2408,9 +2414,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::GatewayTerminalId);
     }
 
+    public function getInternalStatus()
+    {
+        return $this->getAttribute(self::InternalStatus);
+    }
+
     public function getDeviceId()
     {
         return $this->getAttribute(self::DeviceId);
+    }
+
+    public function getStoreId()
+    {
+        return $this->getAttribute(self::STORE_ID);
     }
 
     public function getAuthenticatedAt()
@@ -2788,7 +2804,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isTransferred()
     {
         $isTransferred = false;
-        $transferPayments = (new Transfer\Payment\Repository())->getTransferPayment($this->getId());
+
+        if ((new Transfer\Service())->isAmountTransferredRearchExpEnabled($this->getId(), $this->getMerchantId()))
+        {
+            $transferPayments = (new Transfer\Payment\Repository())->getTransferPaymentIncludingExternal($this->getId());
+        }
+        else
+        {
+            $transferPayments = (new Transfer\Payment\Repository())->getTransferPayment($this->getId());
+        }
 
         $newAmountTransferred = 0;
         if ($transferPayments->count() > 0  === true)
@@ -3120,6 +3144,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isRoutedThroughPaymentsUpiPaymentService()
     {
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE);
+    }
+
+
+    public function isRoutedThroughOptimizerService()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::REARCH_OPTIMISER_PAYMENT_SERVICE);
     }
 
     public function isPushPaymentMethod()
@@ -5894,6 +5924,84 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->unsetRelation('offers');
     }
 
+    public function getOffersAttribute()
+    {
+        $offerNotFoundInOE = false;
+
+        try
+        {
+            $relationData = null;
+
+            if ($this->relationLoaded('offers') === true)
+            {
+                $relationData = $this->getRelation('offers');
+            }
+
+            if ($relationData !== null)
+            {
+                return $relationData;
+            }
+
+            $offerIds = $this->entityOffer()
+                             ->pluck(Offer\EntityOffer\Entity::OFFER_ID)
+                             ->toArray();
+
+            if (empty($offerIds) === true)
+            {
+                $emptyCollection = new Base\PublicCollection();
+
+                $this->setRelation('offers', $emptyCollection);
+
+                return $emptyCollection;
+            }
+
+            $offersEngineRepo = new Offer\Repository();
+
+            // fetches normal offers from OE and limited offers from API db.
+            // The assumption here is that payment is always associated with one offer_id
+            $offerEntity = $offersEngineRepo->findByIdAndMerchantId(
+                $offerIds[0], $this->getMerchantId(), null, true);
+
+            $offersCollection = new Base\PublicCollection();
+
+            $offersCollection->push($offerEntity);
+
+            $this->setRelation('offers', $offersCollection);
+
+            app('trace')->info(TraceCode::OFFER_FOR_PAYMENT_FOUND, [
+                'offer_id'   => optional($offerEntity)->getId(),
+                'payment_id' => $this->getId(),
+            ]);
+
+            return $offersCollection;
+        }
+        catch (\Throwable $ex)
+        {
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_EXTERNAL_OFFER_NOT_FOUND)
+            {
+                $offerNotFoundInOE = true;
+            }
+
+            app('trace')->count(
+                Offer\Metric::OFFERS_ENGINE_FETCH_OFFERS_FAIL_FOR_PAYMENTS, [
+                'route' => app('api.route')->getCurrentRouteName(),
+            ]);
+
+            app('trace')->traceException($ex, Trace::ERROR, TraceCode::PAYMENT_OFFER_NOT_FOUND, [
+                'data'                  => $ex->getMessage(),
+                'id'                    => $this->getId(),
+                'offer_not_found_in_oe' => $offerNotFoundInOE,
+            ]);
+
+            if ($offerNotFoundInOE === false)
+            {
+                throw $ex;
+            }
+        }
+
+        $this->setRelation('offers', new Base\PublicCollection());
+    }
+
     /**
      * Works cos we only associate one offer with payment
      * @return Offer\Entity
@@ -5902,8 +6010,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $offerNotFoundInOE = false;
 
-        if ((new Offer\Core())->shouldRouteToOffersEngineForPayments(
-                $this->getMerchantId(), Offer\Constants::OFFERS_ENGINE_FETCH_EXP) === true)
+        if (app()->isEnvironmentQA() === false)
         {
             if ($this->relationLoaded('offers') === true)
             {
@@ -5961,24 +6068,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
-        // Keeping fallback on API DB for now.
-        $response = $this->offers()->first();
-
-        if (($response !== null) and
-            ($offerNotFoundInOE === true))
+        if ($offerNotFoundInOE === true)
         {
-            app('trace')->count(
-                Offer\Metric::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
-                'route' => app('api.route')->getCurrentRouteName(),
-            ]);
-
-            app('trace')->info(TraceCode::OFFERS_FETCH_MISMATCH_PAYMENT_FLOW, [
-                'payment_id'   => $this->getId(),
-                'api_response' => $response,
-            ]);
+            return null;
         }
 
-        return $response;
+        // Keeping fallback on API DB for now.
+        return $this->offers()->first();
     }
 
     /**
@@ -6695,16 +6791,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isOptimizerCaptureSettingsEnabled()
     {
         if ($this->isOptimizerExternalPgPayment() === true) {
-
-            $app = \App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-                RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER,
-                $app['rzp.mode']);
-
-            if (strtolower($variant) === 'on') {
-                return true;
-            }
+            return true;
         }
         return false;
     }
@@ -6836,13 +6923,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             if ($this->isCardMandateRecurringInitialPayment() === true) {
                 $app = \App::getFacadeRoot();
 
-                $key = Carbon::now()->getTimestamp();
+                $experimentId = $app['config']->get('app.recurring_tokenisation_unhappy_flow_handling');
 
-                $variant = $app['razorx']->getTreatment($key,
-                    RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
-                    $app['rzp.mode']);
+                $properties = [
+                    'experiment_id' => $experimentId,
+                ];
 
-                return (strtolower($variant) === 'on');
+                $response = $app['splitzService']->evaluateRequest($properties);
+
+                $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                    'properties' => $properties,
+                    'response' => $response,
+                ]);
+
+                $variant = $response['response']['variant']['name'] ?? '';
+
+                return $variant === 'enable';
             }
         }
         catch (\Exception $e)
@@ -6892,23 +6988,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->getRecurringType() === RecurringType::CARD_CHANGE) and
             ($card->iinRelation !== null))
         {
-            $app = \App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-                RazorxTreatment::RECURRING_NEW_CARD_CHANGE_TOKEN,
-                $app['rzp.mode']);
-
-            $app['trace']->info(TraceCode::RECURRING_NEW_CARD_CHANGE_TOKEN_RESULT, [
-                'merchant_id'     => $this->merchant->getId(),
-                'payment_id'      => $this->getId(),
-                'subscription_id' => $this->getSubscriptionId(),
-                'variant'         => $variant,
-            ]);
-
-            if ($variant === 'on')
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -6968,6 +7048,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      * Get the collection of items as a plain array.
      * @return array
      * @throws LogicException
+     * This method has been depricated, and we have moved the logic to pg-sdk.
+     * If changing in toArrayPublic() for Payment, please make sure to connect with pg-router team
      */
     public function toArrayPublic()
     {
@@ -7207,6 +7289,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::GatewayTerminalId] = $this->getGatewayTerminalId();
             $data[self::GatewayMerchantId] = $this->getGatewayMerchantId();
             $data[self::DeviceId] = $this->getDeviceId();
+            $data[self::InternalStatus] = $this->getInternalStatus();
         }
     }
 
@@ -8083,25 +8166,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function isUpiCollectExpiryDisabled()
     {
-        $app = \App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment(
-            $app['request']->getTaskId(),
-            Merchant\RazorxTreatment::DISABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
-            $app['rzp.mode'] ?? Mode::LIVE
-        );
-
-        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_DISABLE_RAZORX_EXPERIMENT,
-            [
-                'variant'       => $variant,
-                'merchant_id'   => $this->getMerchantId(),
-            ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
         return false;
     }
 
@@ -8113,25 +8177,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function isMerchantDisabledOnCollectExpiry($merchantId)
     {
-        $app = \App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::BLOCK_MERCHANT_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
-            $app['rzp.mode'] ?? Mode::LIVE
-        );
-
-        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_RAZORX_EXPERIMENT, [
-            'payment_id'  => $this->getId(),
-            'variant'     => $variant,
-            'merchant_id' => $this->getMerchantId(),
-            ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
         return false;
     }
 
@@ -8161,23 +8206,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $whitelistedPartnerIds = explode(',', $app['config']->get('app.email_optional_partner_MIDs'));
 
-            if (in_array($partnerId, $whitelistedPartnerIds) === false)
-            {
-                return false;
-            }
+            return (in_array($partnerId, $whitelistedPartnerIds) === true);
 
-            // TODO: remove this once the feature is stable in prod for WhatsApp
-            $variant = $app['razorx']->getTreatment($partnerId,
-                                                    RazorxTreatment::ALLOW_EMAIL_OPTIONAL_FOR_PARTNER,
-                                                    $app['rzp.mode'] ?? Mode::LIVE
-            );
 
-            $app['trace']->info(TraceCode::EMAIL_OPTIONAL_FOR_PARTNER_EXP_RESULT, [
-                "partner_id" => $partnerId,
-                "variant"    => $variant,
-            ]);
-
-            return (strtolower($variant) === 'on');
         }
         catch (\Exception $e)
         {
@@ -8268,5 +8299,30 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    public function getTransferAttribute()
+    {
+        $transfer = null;
+
+        if ($this->relationLoaded('transfer') === true)
+        {
+            $transfer = $this->getRelation('transfer');
+        }
+
+        if ($transfer !== null)
+        {
+            return $transfer;
+        }
+
+        try {
+
+            $transfer = (new Transfer\Repository)->findOrFail($this->getTransferId());
+
+            $this->transfer()->associate($transfer);
+        }
+        catch ( \Throwable $e){}
+
+        return $transfer;
     }
 }

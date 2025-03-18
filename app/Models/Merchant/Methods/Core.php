@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Config;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Emi;
@@ -133,6 +134,8 @@ class Core extends Base\Core
             PaylaterProvider::ICIC => '1',
             PaylaterProvider::AMAZONPAY=>'0',
             PaylaterProvider::RZPXPOSTPAID => '0',
+            PaylaterProvider::ZIP => '0',
+            PaylaterProvider::KLARNA => '0',
         ]
 
     ];
@@ -192,6 +195,37 @@ class Core extends Base\Core
             }
         }
 
+        if (isset($input[Methods\Entity::PAYLATER_PROVIDERS]))
+        {
+            $pproPaylaters = [PaylaterProvider::ZIP, PaylaterProvider::KLARNA] ;
+            foreach ($pproPaylaters as $paylater)
+            {
+                if($input[Methods\Entity::PAYLATER_PROVIDERS][$paylater] === '1')
+                {
+                    $payload = [
+                        'mode' => $this->mode,
+                        'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                        'merchant_id' => $merchant->getId()
+                    ];
+                    CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+                    break;
+                }
+            }
+        }
+
+        if ((isset($input[Methods\Entity::ALIPAY]) && $input[Methods\Entity::ALIPAY] === 1) || (isset($input[Methods\Entity::GOPAY]) && $input[Methods\Entity::GOPAY] === 1) ||
+            (isset($input[Methods\Entity::DOKU]) && $input[Methods\Entity::DOKU] === 1) || (isset($input[Methods\Entity::OVO]) && $input[Methods\Entity::OVO] === 1) ||
+            (isset($input[Methods\Entity::LINKAJA]) && $input[Methods\Entity::LINKAJA] === 1) || (isset($input[Methods\Entity::KLARNA]) && $input[Methods\Entity::KLARNA] === 1) ||
+            (isset($input[Methods\Entity::ZIP]) && $input[Methods\Entity::ZIP] === 1))
+        {
+            $payload = [
+                'mode' => $this->mode,
+                'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                'merchant_id' => $merchant->getId()
+            ];
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+        }
+
         // Setup workflow
         $workflow = $this->app['workflow']->setOriginal(clone $methods);
 
@@ -214,7 +248,7 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForAmazonPay($mcc);
         }
 
-        if (isset($input[Entity::IN_APP]) or isset($input[Entity::IN_APP_CREDIT_CARD]))
+        if (isset($input[Entity::IN_APP]) or isset($input[Entity::IN_APP_CREDIT_CARD]) or isset($input[Entity::IN_APP_CREDIT_LINE]))
         {
             $this->handleEnableDisableForInAppPaymentMethods($methods, $input, $mcc);
         }
@@ -896,21 +930,21 @@ class Core extends Base\Core
         }
         $experimentName = $this->app['config']->get('app.bank_data_via_npci_api_experiment');
         if ($this->getSplitzResponse($merchant->getMerchantId(), $experimentName) === 'enable') {
+
+            $this->trace->info(TraceCode::BANK_DATA_VIA_NPCI_API,[
+                'merchant_id' => $merchant->getMerchantId(),
+                'experiment_name' => $experimentName,
+            ]);
+
             if ($this->isTestMode() === true) {
                 $recurringData[self::EMANDATE] = Payment\Gateway::getFilteredEmandateBanks($authTypes);
             } else {
-               if (!isset($recurringData[self::EMANDATE]) || !is_array($recurringData[self::EMANDATE])) {
-                   $recurringData[self::EMANDATE] = [];
+                if (!isset($recurringData[self::EMANDATE]) || !is_array($recurringData[self::EMANDATE])) {
+                    $recurringData[self::EMANDATE] = [];
                 }
-                // Iterate over each authType
-                foreach ($authTypes as $authType) {
-                    // Get the banks enabled for the current authType
-                    $banksForAuthType = $this->getEmandateBanksEnabledNew($merchant, $authType);
+                $banksForAuthType = $this->getEmandateBanksEnabledNew($authTypes);
 
-                    // Merge the banks for this authType into the recurringData
-                    // Merge using array_merge to avoid overwriting
-                    $recurringData[self::EMANDATE] = array_merge($recurringData[self::EMANDATE], $banksForAuthType[self::EMANDATE]);
-                }
+                $recurringData[self::EMANDATE] = $banksForAuthType[self::EMANDATE];
             }
         } else {
             foreach ($authTypes as $authType) {
@@ -1643,33 +1677,20 @@ class Core extends Base\Core
         }
     }
 
-    protected function getEmandateBanksEnabledNew(Merchant\Entity $merchant, $authType): array
+    protected function getEmandateBanksEnabledNew($authTypes): array
     {
         $recurringData[self::EMANDATE] = [];
         // Fetch all bank data from API
         $data = Payment\Gateway::fetchBankDataFromApi();
 
-        // Get the merchant's applicable emandate terminals for the specified auth type
-        $applicableEmandateTerminals = $this->repo
-                                            ->terminal
-                                            ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
+        foreach ($data as $bankCode => $bank) {
+            // Check if bank supports at least one of the given auth types
+            $matchingAuthTypes = array_intersect($authTypes, $bank['auth_types'] ?? []);
 
-        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
-
-        // Loop through each available gateway for the merchant
-        foreach ($availableGatewaysForMerchant as $gateway) {
-            // Check if the gateway has the specified auth type and retrieve the bank IFSCs for that auth type
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType])) {
-                $allowedBanksForAuthType = Payment\Gateway::$gatewaysEmandateBanksMap[$gateway][$authType];
-
-                // Loop through each bank from the API response
-                foreach ($data as $ifsc => $bank) {
-                    // Check if the bank's IFSC is allowed for the given auth type in the gateway
-                    if (in_array($ifsc, $allowedBanksForAuthType, true) && in_array($authType, $bank[self::AUTH_TYPES], true)) {
-                        // Add the bank to the recurring data array for this auth type
-                        $recurringData[self::EMANDATE][$ifsc] = $bank;
-                    }
-                }
+            if (!empty($matchingAuthTypes)) {
+                // Add bank to the response but only with the matching auth types
+                $recurringData[self::EMANDATE][$bankCode] = $bank;
+                $recurringData[self::EMANDATE][$bankCode]['auth_types'] = array_values($matchingAuthTypes); // Only include matching auth types
             }
         }
 
@@ -2003,6 +2024,11 @@ class Core extends Base\Core
             return false;
         }
 
+        if (Environment::isEnvironmentQA($this->app['env']) || Environment::isEnvironmentItf($this->app['env']))
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -2011,7 +2037,10 @@ class Core extends Base\Core
         if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID) {
             return false;
         }
-        $result = $this->app->razorx->getTreatment(DEConstants::CARD, RazorxTreatment::MERCHANT_ALT_ID_ONBOARDING, $this->mode);
+        $result = 'off';
+        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+            $result = 'on';
+        }
         if ($result === 'on') {
             $this->trace->info(TraceCode::MERCHANT_ALT_ID_ONBOARDING_ENABLED, [
                 'merchant_id' => $merchant->getId(),
@@ -2067,10 +2096,22 @@ class Core extends Base\Core
         if (isset($input[Entity::IN_APP_CREDIT_CARD]) and
             boolval($input[Entity::IN_APP_CREDIT_CARD]) === true)
         {
-            if ($this->isInAppCreditCardEnablementAllowed($methods, $input) === false)
+            if ($this->isInAppSubTypeEnablementAllowed($methods, $input) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "in_app_credit_card cannot be enabled if in_app is not being enabled and not already enabled"
+                );
+            }
+        }
+
+        // in_app_credit_line cannot be enabled if in_app is not being enabled and not already enabled
+        if (isset($input[Entity::IN_APP_CREDIT_LINE]) and
+            boolval($input[Entity::IN_APP_CREDIT_LINE]) === true)
+        {
+            if ($this->isInAppSubTypeEnablementAllowed($methods, $input) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "in_app_credit_line cannot be enabled if in_app is not being enabled and not already enabled"
                 );
             }
         }
@@ -2100,7 +2141,7 @@ class Core extends Base\Core
         return true;
     }
 
-    private function isInAppCreditCardEnablementAllowed(Entity $methods, $input): bool
+    private function isInAppSubTypeEnablementAllowed(Entity $methods, $input): bool
     {
         $isInAppAlreadyEnabled = $methods->isInAppEnabled() === true;
         $isInAppMethodChangeRequest = isset($input[Entity::IN_APP]);

@@ -20,4 +20,6 @@ final class Constant
     const REPLICATIONS_TYPE             = 'replications_type';
 
     const GOOGLE_FETCH_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token';
+    const IDAM_SUPER_ADMIN_EMAIL     = 'idam.user@axisbank.com';
+    const IDAM_AXIS_ORG              = 'org_CLTnQqDj9Si8bx';
 }

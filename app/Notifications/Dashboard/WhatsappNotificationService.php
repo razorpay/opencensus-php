@@ -25,10 +25,7 @@ class WhatsappNotificationService extends BaseNotificationService
 
         $payload = $this->getPayload();
 
-        $isWhatsappEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(),
-                                                                            RazorxTreatment::WHATSAPP_NOTIFICATIONS);
-        if ((empty($recipients) === true) or
-            ($isWhatsappEnabled === false))
+        if (empty($recipients) === true)
         {
             return;
         }

@@ -7,6 +7,8 @@ class Action
     const ARCHIVE                                 = 'archive';
     const UNARCHIVE                               = 'unarchive';
     const SUSPEND                                 = 'suspend';
+
+    const NEED_CLARIFICATION                      = 'need_clarification';
     const UNSUSPEND                               = 'unsuspend';
     const CREATED                                 = 'created';
     const ACTIVATED                               = 'activated';

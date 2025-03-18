@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Feature\Constants;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2Entity;
@@ -85,7 +86,7 @@ class Generator extends Base\Core
 
         $providerBank = $this->getProviderBank($terminal);
 
-        $bankAccountInput = $this->getBankAccountInput($accountNumber, $entity, $providerBank);
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $entity, $providerBank, $terminal);
 
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -248,14 +249,24 @@ class Generator extends Base\Core
     protected function getBankAccountInput(
         string $accountNumber,
         Base\PublicEntity $entity,
-        string $provider): array
+        string $provider,
+        Terminal\Entity $terminal = null): array
     {
         $bankAccountSeries = substr($accountNumber, 0, 4);
         if (VirtualAccount\Provider::PREFIX_PROVIDER[$bankAccountSeries] !== null) {
             $provider = VirtualAccount\Provider::PREFIX_PROVIDER[$bankAccountSeries];
         }
 
-        $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
+        if($terminal !== null and $terminal->getGateway() === Gateway::BT_IBL)
+        {
+            $bankAccountInput = [
+                Entity::IFSC_CODE => $terminal->getGatewayMerchantId2(),
+            ];
+        }
+        else
+        {
+            $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
+        }
 
         $isBalanceTypeBanking = $this->options[self::BANKING] !== null && $this->options[self::BANKING] == true;
 
@@ -306,6 +317,10 @@ class Generator extends Base\Core
      */
     public function getProviderBank(Terminal\Entity $terminal): string
     {
+        if($terminal->getGateway()=== Gateway::BT_IBL)
+        {
+            return $terminal->getGatewayAcquirer();
+        }
         return str_replace('bt_' , '' , $terminal->getGateway());
     }
 
@@ -349,6 +364,10 @@ class Generator extends Base\Core
 
     protected function getHandle(Terminal\Entity $terminal): string
     {
+        if ($terminal->getGateway() === Gateway::BT_IBL)
+        {
+            return '';
+        }
         return $terminal->getGatewayMerchantId2() ?: '';
     }
 

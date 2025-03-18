@@ -18,6 +18,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Gateway\Upi\Base as upi;
 use RZP\Models\PaymentsUpi;
+use RZP\Models\Offer\Constants as OfferConstants;
 
 class Validator extends Base\Validator
 {
@@ -64,12 +65,15 @@ class Validator extends Base\Validator
         Entity::PRODUCT_TYPE        => 'sometimes|filled|string|in:subscription',
         Entity::LOW_COST_EMI        => 'sometimes|array',
         Entity::UPI                 => 'sometimes|array',
+        Entity::INSTRUMENTS         => 'sometimes|array',
     ];
 
     protected static $adminFetchMultipleRules = [
         Entity::MERCHANT_ID => 'sometimes|unsigned_id',
         'page'              => 'required|int|min:1|max:1000',
-        'page_size'         => 'required|int|min:1|max:50'
+        'page_size'         => 'required|int|min:1|max:50',
+        'from'              => 'sometimes|epoch',
+        'to'                => 'sometimes|epoch'
     ];
 
     protected static $adminFetchRules = [
@@ -77,6 +81,12 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
         'page'              => 'required|int|in:1',
         'page_size'         => 'required|int|in:1'
+    ];
+
+    protected static $fetchMultipleRules = [
+        Entity::MERCHANT_ID => 'sometimes|unsigned_id',
+        'page'              => 'sometimes|int|min:1|max:1000',
+        'page_size'         => 'sometimes|int|min:1|max:50'
     ];
 
     protected static $createBulkRules = [
@@ -135,6 +145,7 @@ class Validator extends Base\Validator
         Entity::MAX_CASHBACK,
         Entity::ISSUER,
         Entity::UPI,
+        Entity::INSTRUMENTS,
     ];
 
     protected static $emiSubventionValidators = [
@@ -164,9 +175,9 @@ class Validator extends Base\Validator
     protected static $fetchOfferCreateInfoRules = [
         'merchant_id'               => 'required|unsigned_id',
         'offer'                     => 'required|array',
-        'offer.emi_durations'       => 'array',
-        'offer.emi_durations.*'     => 'integer',
         'offer.is_no_cost_emi'      => 'required|boolean',
+        'offer.emi_durations'       => 'required_if:offer.is_no_cost_emi,true|array',
+        'offer.emi_durations.*'     => 'sometimes|integer',
         'offer.issuer'              => 'sometimes|string',
         'offer.payment_network'     => 'sometimes|string',
         'offer.payment_method'      => 'sometimes|string',
@@ -177,8 +188,127 @@ class Validator extends Base\Validator
         upi\ProviderPsp::GOOGLE_PAY,
         upi\ProviderPsp::PHONEPE,
         upi\ProviderPsp::PAYTM,
-        upi\ProviderPsp::CRED,
+        upi\ProviderPsp::BHIM,
+        upi\ProviderPsp::WHATSAPP,
         upi\ProviderPsp::AMAZON_PAY,
+        upi\ProviderPsp::BHIM_BARODAPAY,
+        upi\ProviderPsp::IMOBILE,
+        upi\ProviderPsp::BHIM_BOI_UPI,
+        upi\ProviderPsp::CANDI_CANARA_BANK,
+        upi\ProviderPsp::NSDL_JIFFY,
+        upi\ProviderPsp::BHIM_AXISPAY,
+        upi\ProviderPsp::DAKPAY_UPI_IPBB,
+        upi\ProviderPsp::MOBIKWIK,
+        upi\ProviderPsp::DIGI_BANK,
+        upi\ProviderPsp::BHIM_DLB_UPI,
+        upi\ProviderPsp::PAYZAPP,
+        upi\ProviderPsp::BHIM_INDUSPAY,
+        upi\ProviderPsp::GROWW,
+        upi\ProviderPsp::OK_CREDIT,
+        upi\ProviderPsp::JIO,
+        upi\ProviderPsp::BHIM_SBIPAY,
+        upi\ProviderPsp::IDFC,
+        upi\ProviderPsp::TATA_NEU,
+        upi\ProviderPsp::JUPITER_MONEY,
+        upi\ProviderPsp::BHIM_PNB,
+        upi\ProviderPsp::FAM_PAY,
+        upi\ProviderPsp::FAVE,
+        upi\ProviderPsp::ZOMATO,
+        upi\ProviderPsp::HDFC,
+        upi\ProviderPsp::BAJAJ_FINSERVE,
+        upi\ProviderPsp::GO_NIYO,
+        upi\ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
+        upi\ProviderPsp::NAVI,
+        upi\ProviderPsp::SHRIRAMONE,
+        upi\ProviderPsp::GOKIWI,
+        upi\ProviderPsp::MAHAMOBILE_PLUS,
+        upi\ProviderPsp::INDIAN_OVERSEAS_BANK,
+        upi\ProviderPsp::BHIM_CENT_UPI_APP,
+        upi\ProviderPsp::FINCARE_BANK,
+        upi\ProviderPsp::INDUSIND_BANK_APP,
+        upi\ProviderPsp::SAMSUNG_PAY,
+        upi\ProviderPsp::YESPAY_NEXT,
+        upi\ProviderPsp::KOTAK_BANK_APP,
+        upi\ProviderPsp::AXIS_BANK,
+        upi\ProviderPsp::CRED,
+        upi\ProviderPsp::FREECHARGE,
+        upi\ProviderPsp::YONO_SBI,
+        upi\ProviderPsp::ADITYA_BIRLA_CAPITAL_DIGITAL,
+        upi\ProviderPsp::FI,
+        upi\ProviderPsp::CITRUS,
+        upi\ProviderPsp::TIMEPAY,
+        upi\ProviderPsp::BOB_WORLD_UPI,
+        upi\ProviderPsp::SIB_MIRROR_PLUS,
+        upi\ProviderPsp::FAMPAY,
+        upi\ProviderPsp::BHIM_CRGB_PAY,
+        upi\ProviderPsp::FAVE_MONEY,
+        upi\ProviderPsp::FREO,
+        upi\ProviderPsp::POP,
+        upi\ProviderPsp::SUPER_MONEY,
+        upi\ProviderPsp::BOI_MOBILE_OMNI_NEO_BANK,
+        upi\ProviderPsp::FLIPKART,
+        upi\ProviderPsp::ONECARD,
+        upi\ProviderPsp::RAZORPAY,
+        upi\ProviderPsp::ICICI_IMOBILE,
+        upi\ProviderPsp::SAMSUNG_WALLET,
+        upi\ProviderPsp::KOTAK_811,
+        upi\ProviderPsp::SBI_BANK,
+        upi\ProviderPsp::SBI_YONO,
+        upi\ProviderPsp::HDFC_BANK,
+        upi\ProviderPsp::AXIS_PAY,
+        upi\ProviderPsp::AXIS_MOBILE,
+        upi\ProviderPsp::SLICE,
+        upi\ProviderPsp::BOB_UPI,
+        upi\ProviderPsp::PNB_BANK,
+        upi\ProviderPsp::FED_MOBILE,
+        upi\ProviderPsp::INDIA_POST,
+        upi\ProviderPsp::MY_JIO,
+        upi\ProviderPsp::VYOM,
+        upi\ProviderPsp::SIB_MIRROR,
+        upi\ProviderPsp::OMNICARD,
+        upi\ProviderPsp::DIGIBANK,
+        upi\ProviderPsp::INDOASIS,
+        upi\ProviderPsp::AU_0101,
+        upi\ProviderPsp::SHRIRAM_ONE,
+        upi\ProviderPsp::CENT_MOBILE,
+        upi\ProviderPsp::RBL_MOBANK,
+        upi\ProviderPsp::INDUS_MOBILE,
+        upi\ProviderPsp::INDUS_INDIE,
+        upi\ProviderPsp::DIGI_KHATA,
+        upi\ProviderPsp::POP_CLUB,
+        upi\ProviderPsp::BHIM_UCO,
+        upi\ProviderPsp::YES_BANK_IRIS,
+        upi\ProviderPsp::YES_BANK,
+        upi\ProviderPsp::INTENT_SAMPLE,
+        upi\ProviderPsp::WHATSAPP_BIZ,
+        upi\ProviderPsp::ICICI_POCKET,
+        upi\ProviderPsp::UNITED_UPI,
+        upi\ProviderPsp::KVB,
+        upi\ProviderPsp::VIJAYA,
+        upi\ProviderPsp::DENA,
+        upi\ProviderPsp::JK_UPI,
+        upi\ProviderPsp::HIKE,
+        upi\ProviderPsp::ABPB,
+        upi\ProviderPsp::MICROSOFT_KAIZALA,
+        upi\ProviderPsp::FINO,
+        upi\ProviderPsp::ORIENTAL,
+        upi\ProviderPsp::LOTZA,
+        upi\ProviderPsp::INDUS_PAY,
+        upi\ProviderPsp::WIZELY,
+        upi\ProviderPsp::DCB_BANK,
+        upi\ProviderPsp::YES_MERCHANT,
+        upi\ProviderPsp::CHILLR,
+        upi\ProviderPsp::BULLET,
+        upi\ProviderPsp::MI_PAY,
+        upi\ProviderPsp::MI_PAY_2,
+        upi\ProviderPsp::ULTRACASH,
+        upi\ProviderPsp::GOIBIBO,
+        upi\ProviderPsp::DAKPAY,
+        upi\ProviderPsp::BHIM_IOB,
+        upi\ProviderPsp::BHIM_CSB,
+        upi\ProviderPsp::TVAM,
+        upi\ProviderPsp::PNB_ONE,
+        upi\ProviderPsp::FREOPAY,
         \RZP\Models\Offer\Constants::ALL,
     ];
 
@@ -290,15 +420,57 @@ class Validator extends Base\Validator
 
     protected function validatePaymentMethod(string $attribute, string $method)
     {
-        if (empty($method) === true)
+        if (empty($method) === true || $method == Entity::MULTIPLE)
         {
             return;
         }
 
-        if (in_array($method, Payment\Method::getAllPaymentMethods(), true) === false)
+        if ((in_array($method, Payment\Method::getAllPaymentMethods(), true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid payment method: $method", $attribute);
+        }
+    }
+
+    protected function validateInstruments(array $input)
+    {
+        $method      = $input[Entity::PAYMENT_METHOD] ?? null;
+        $instruments = $input[Entity::INSTRUMENTS] ?? [];
+
+        if ((empty($method) === true) or
+            ($method !== Entity::MULTIPLE))
+        {
+            return;
+        }
+
+        if (empty($instruments) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "No payment instruments found for payment method multiple");
+        }
+
+        $methods = [];
+        foreach ($input[Entity::INSTRUMENTS] as $instrument)
+        {
+            if (empty($instrument[OfferConstants::METHOD]) === false)
+            {
+                $methods[] = $instrument[OfferConstants::METHOD];
+            }
+        }
+
+        if (empty($methods) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid Payment Instruments passed");
+        }
+
+        foreach ($methods as $method)
+        {
+            if ((in_array($method, Payment\Method::getAllPaymentMethods(), true) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid payment method: $method", $method);
+            }
         }
     }
 
@@ -470,13 +642,13 @@ class Validator extends Base\Validator
 
         $invalidIin = array_first($iins, function ($iin)
         {
-            return strlen($iin) != 6;
+            return strlen($iin) < 6 or strlen($iin) > 9;
         });
 
         if (empty($invalidIin) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid IIN : All IINs should have exactly 6 digits');
+                'Invalid IIN : All IINs should have 6-9 digits');
         }
     }
 

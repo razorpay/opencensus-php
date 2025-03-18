@@ -179,12 +179,7 @@ class Payout extends Base
 
         if ($purpose === Purpose::RZP_FEES)
         {
-            $isZeroPricingEnabledForFeeRecovery = $this->app['request']->input('zeroPricingForFeeRecoveryFlag', false);
-
-            if ($isZeroPricingEnabledForFeeRecovery === true)
-            {
-                $payoutsFilter = $purpose;
-            }
+            $payoutsFilter = $purpose;
         }
 
         if ($payoutsFilter === null)

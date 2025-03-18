@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\IdempotencyKey\Metric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
+use RZP\Models\Merchant\Detail\Validator;
 use RZP\Models\User\Role;
 use RZP\Services\TerminalsService;
 use Throwable;
@@ -49,6 +50,7 @@ use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
 use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Methods\Core as MethodsCore;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
 class Activate extends Base\Core
 {
@@ -202,6 +204,8 @@ class Activate extends Base\Core
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
+        $this->activateMoneySaverAccountIfApplicable($merchant);
+
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
@@ -258,6 +262,8 @@ class Activate extends Base\Core
         $merchantDetail = $merchant->merchantDetail;
 
         $merchantCore = new Core();
+
+        (new Validator())->validateRiskTagsForPos($merchant);
 
         $merchant->releaseFunds();
 
@@ -520,6 +526,25 @@ class Activate extends Base\Core
         }
     }
 
+
+    /*
+     *  If merchant is coming from modular onboarding for international onboarding
+     *  Merchant's purpose code ,iec code will be set, so will be activating money saver account for the merchant.
+     * */
+    public function activateMoneySaverAccountIfApplicable(Entity $merchant): void
+    {
+
+        if ($merchant->hasValidPurposeCodeForGlobalBankTransfer() === false || empty($merchant->getIecCode()) === true) {
+            return;
+        }
+        $payload = [
+            'action' => CrossBorderCommonUseCases::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY,
+            'merchant_id' => $merchant->getId(),
+            'mode' =>  Mode::LIVE,
+        ];
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(5, 10));
+    }
+
     public function updateLedger(Entity $merchant)
     {
         if ($this->shouldOnboardToLedger($merchant) === true)
@@ -559,10 +584,7 @@ class Activate extends Base\Core
 
     protected function shouldOnboardToLedger(Entity $merchant): bool
     {
-        $isExperimentEnabledForLedgerPGMerchant = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::LEDGER_ONBOARDING_PG_MERCHANT);
-
-        if($isExperimentEnabledForLedgerPGMerchant === true and $merchant->getCountry() === "IN")
+        if($merchant->getCountry() === "IN")
         {
             // If merchant is not transfer parent or child merchant -> should auto onboard it
             // If merchant is transfer parent -> should auto onboard it
@@ -716,7 +738,6 @@ class Activate extends Base\Core
     {
         if($merchant->getOrgId() === OrgEntity::AXIS_ORG_ID)
         {
-            $this->sendActivationEmailForAxisOrg($merchant);
             return;
         }
 
@@ -748,45 +769,6 @@ class Activate extends Base\Core
                 Mail::queue(new AccountActivationConfirmation($merchant->getId()));
             }
         }
-    }
-
-    private function sendActivationEmailForAxisOrg($merchant)
-    {
-        $isAxisWrapperEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::AXIS_WRAPPER_ENABLED);
-
-        if($isAxisWrapperEnabled === false)
-        {
-            return;
-        }
-
-        $org = $merchant->org;
-        $dashboardUrl = $this->app['config']->get('applications.dashboard.url');
-
-        $data = [
-            DEConstants::MERCHANT             => [
-                Merchant\Entity::NAME          => $merchant->getName(),
-                Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
-                Merchant\Entity::EMAIL         => $merchant->getEmail(),
-                DEConstants::ORG               => [
-                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
-                    Merchant\Detail\Entity::BUSINESS_NAME => $org->getBusinessName()
-                ],
-                'dashboard_url'                => $dashboardUrl
-            ],
-        ];
-
-        $mail = new AxisActivation($data, $org->toArray());
-
-        Mail::queue($mail);
-
-        /*
-         * sending out password reset email to the merchants, since password was created by the system
-         */
-        $input = [
-            "email" => $merchant->getEmail()
-        ];
-        (new UserService)->postResetPassword($input);
     }
 
     /**

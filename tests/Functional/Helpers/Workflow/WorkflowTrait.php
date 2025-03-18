@@ -69,6 +69,8 @@ trait WorkflowTrait
         //only only workflow can be created for a permission.
         return [
             'name'   => 'Test workflow',
+            'canary_percentage' => 2,
+            'canary_enabled'    => true,
             'levels' => [
                 [
                     'level'   => 1,

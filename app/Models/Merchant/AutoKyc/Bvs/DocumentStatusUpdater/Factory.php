@@ -174,14 +174,8 @@ class Factory
         }
         else
         {
-            // poa should be returned even for aadhaar_back for joint validation experiment
-            $isExperimentEnabledForJointValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
-                RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
-
             if (isset($merchant_document) === false or
-                Type::isPoaDocument($merchant_document->getDocumentType()) === true or
-                ($isExperimentEnabledForJointValidation and
-                    Type::isJointValidationDocumentType($merchant_document->getDocumentType()) === true))
+                Type::isPoaDocument($merchant_document->getDocumentType()) === true)
             {
                 return new POA($merchant, $merchantDetails, $validation);
             }

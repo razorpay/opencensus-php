@@ -29,6 +29,8 @@ class Validator extends Base\Validator
         Entity::WORKFLOW_OBSERVER_DATA      => 'sometimes|array',
         Entity::AUTH_DETAILS                => 'sometimes|array',
         Action\Entity::TAGS                 => 'sometimes|array',
+        Entity::TARGET                      => 'sometimes|array',
+        Entity::OPERATION_TYPE              => 'sometimes|string',
     ];
 
     protected function validateType($attribute, $type)

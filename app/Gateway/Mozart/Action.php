@@ -66,8 +66,10 @@ class Action
     const CREATE_VIRTUAL_ACCOUNT_FOR_BANKING = 'create_virtual_account_for_banking';
 
     const CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING = 'close_virtual_account_for_banking';
-    
+
     const DEACTIVATE_VIRTUAL_ACCOUNT = 'deactivate_virtual_account';
+
+    const DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX = 'deactivate_virtual_account_collectX';
 
     const UPDATE_TOKEN          = 'update_token';
 

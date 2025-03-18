@@ -36,6 +36,11 @@ class Hsbc extends Base
 
         foreach ($data['items'] as $emiPayment)
         {
+            if ($emiPayment->terminal->isOptimizer())
+            {
+                continue;
+            }
+
             $emiPlan = $emiPayment->emiPlan;
             $merchant = $emiPayment->merchant;
             $terminal = $emiPayment->terminal;

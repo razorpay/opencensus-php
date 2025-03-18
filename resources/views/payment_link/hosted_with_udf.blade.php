@@ -35,7 +35,7 @@
         <meta name="twitter:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}" />
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
-        
+
 
         <style>
             body {
@@ -60,7 +60,9 @@
         @endif
 
         <script>
+            // <<<JSON_DATA_START>>>
             var data = {!!utf8_json_encode($data)!!};
+            // <<<JSON_DATA_END>>>
 
             var paymentPageData = data.payment_link;
             paymentPageData.description = paymentPageData.description ? JSON.parse(paymentPageData.description).value : null;
@@ -97,9 +99,9 @@
             @if($optimised_web_vitals === false)
                 <script src="{{env('AWS_CF_CDN_URL')}}/static/analytics/bundle.js" defer></script>
                 <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
-                <script 
-                    src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" 
-                    onload="renderPaymentPage()" 
+                <script
+                    src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js"
+                    onload="renderPaymentPage()"
                     defer
                     {{ $crossorigin_enabled === true ? "crossorigin" : "" }}
                 ></script>
@@ -113,9 +115,9 @@
                 <link href="https://fonts.googleapis.com/css?family=Muli:400,700&display=swap" rel="stylesheet">
                 <script src="https://cdn.razorpay.com/static/assets/quilljs/1.3.6/quill.min.js" defer ></script>
 
-                <script 
-                    src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" 
-                    onload="renderPaymentPage()" 
+                <script
+                    src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js"
+                    onload="renderPaymentPage()"
                     defer
                     {{ $crossorigin_enabled === true ? "crossorigin" : "" }}
                 ></script>

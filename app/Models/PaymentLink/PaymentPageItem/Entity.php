@@ -207,6 +207,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::QUANTITY_SOLD);
     }
 
+    public function getPaymentLinkId(): string
+    {
+        return $this->getAttribute(self::PAYMENT_LINK_ID);
+    }
+
     public function getItemId(): string
     {
         return $this->getAttribute(self::ITEM_ID);

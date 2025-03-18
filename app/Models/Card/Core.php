@@ -8,14 +8,13 @@ use Route;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Exception\BaseException;
+use RZP\Exception\RuntimeException;
+use RZP\Services\BinService;
 use RZP\Trace\Tracer;
 use RZP\Jobs\ParAsyncTokenisationJob;
-use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -24,17 +23,15 @@ use RZP\Models\Customer\Token;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundAccount;
 use RZP\Constants\HyperTrace;
-use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
-use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Models\FundAccount\Type as FundAccountType;
 
 class Core extends Base\Core
 {
     const TEMPORARY_VAULT_TOKEN_REGEX = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-'.
                                         '[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{12}4[0-9a-f]{19}$/';
-
+    const BIN_SERVICE_PRIMARY_READ_MODE = 'primary';
     protected $card = null;
 
     public function create($input, $merchant, $recurring = false, $dummyProcessing = false, $isRzpX = false)
@@ -73,7 +70,20 @@ class Core extends Base\Core
         // Unset Billing Address if present in card entity since it's not stored in card entity.
         unset($input['billing_address']);
 
+        $vcppIssuer = "";
+        $vcppNetwork = "";
+        if(isset($input['isVCPP']) === true) {
+            $vcppIssuer = $input[Card\Entity::ISSUER];
+            $vcppNetwork = $input[Card\Entity::NETWORK];
+            unset($input[Card\Entity::ISSUER], $input[Card\Entity::NETWORK], $input['isVCPP']);
+        }
+
         $card = (new Card\Entity)->build($input);
+
+        if($vcppIssuer !== "" && $vcppNetwork !== "") {
+            $card->setIssuer($vcppIssuer);
+            $card->setNetwork($vcppNetwork);
+        }
 
         $card->merchant()->associate($merchant);
 
@@ -157,11 +167,43 @@ class Core extends Base\Core
         }
     }
 
-    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null, $asyncTokenisationJobId)
+    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null, $asyncTokenisationJobId, $callback=null)
     {
+        if($asyncTokenisationJobId == "visa_vcpp_token_provision"){
+            $input['vcpp'] = [
+                [
+                    "merchantID" => $callback['merchant_gateway_id'],
+                    "referenceID" => $callback['referenceID']
+                ]
+            ];
+        }
+
+        if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate"
+            || $asyncTokenisationJobId === "hdfcPushProvIssuerTokenMigrate") {
+            $input = [
+                'asyncTokenisationJobId'           => $asyncTokenisationJobId,
+                'hdfc_push_prov'                   => true,
+                'pushProvisioningReceipt'          => $input['pushProvisioningReceipt'],
+                'merchantId'                       => $input['merchantId'],
+                'cardType'                         => $input['cardType'],
+                'clientReferenceId'                => $input['clientReferenceId'],
+                'userConsent'                      => 'Y',
+                'provider'                         => $input['provider'],
+                'vault_token'                      => $input['vault_token'],
+                'iv'                               => $input['iv'],
+                'dualTokenMapperId'                =>$input['dualTokenMapperId'],
+                'merchantKey'                      => $input['merchantKey'],
+                'rzpMerchantId'                    => $callback['rzpMerchantId'],
+            ];
+        }
         $response = $this->getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input);
 
-        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment, $asyncTokenisationJobId);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+            'message'=>'This is the response from vault',
+            'response'=>$response
+        ]);
+
+        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment, $asyncTokenisationJobId, $callback);
     }
 
     public function fetchParValue($input)
@@ -176,10 +218,68 @@ class Core extends Base\Core
         return $this->createTokenizedCardEntity($input['card'], $merchant, $response);
     }
 
-
-    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null, $asyncTokenisationJobId)
+    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null, $asyncTokenisationJobId, $callback = null)
     {
-        if($asyncTokenisationJobId === "pushtokenmigrate" ) {
+        if ($asyncTokenisationJobId === "visa_vcpp_token_provision") {
+            // Create a dummy Card here
+
+            $tokenNumber = substr($response['service_provider_tokens'][0]['provider_data']['token_number'],0,6);
+            $iinData = (new BinService())->fetchEntityByIINFromBinService($tokenNumber, self::BIN_SERVICE_PRIMARY_READ_MODE);
+
+            if($iinData==null){
+                throw new Exception\RuntimeException('Bin Mapping for the given token not present', $tokenNumber, $response);
+            }
+
+            // Bin Service Data
+            $cardInput = [
+                Card\Entity::CVV => '123',
+                Card\Entity::VAULT => Card\Vault::RZP_VAULT,
+                Card\Entity::NAME => 'Dummy Card VCPP',
+                Card\Entity::EXPIRY_MONTH => $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'],
+                Card\Entity::EXPIRY_YEAR  => $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'],
+                Card\Entity::NUMBER => $iinData['mappedIin'].'000000'.$response['service_provider_tokens'][0]['provider_data']['last4'],
+                Card\Entity::DUMMY_CARD => true,
+                Card\Entity::ISSUER => $iinData['issuer'],
+                Card\Entity::NETWORK => $iinData['network'],
+                "isVCPP" => true,
+            ];
+
+            $tokenisedCard = $this->create($cardInput, $callback['merchantPushProvisioning'], false, false);
+        }
+        else if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate" || $asyncTokenisationJobId==="hdfcPushProvIssuerTokenMigrate") {
+            // Create a dummy Card here for hdfc push prov
+
+            $merchant=[
+                'merchant_id'                  => $callback['rzpMerchantId']
+            ];
+
+            $tokenNumber = substr($response['service_provider_tokens'][0]['provider_data']['token_number'],0,6);
+
+            $iinData = (new BinService())->fetchEntityByIINFromBinService($tokenNumber, self::BIN_SERVICE_PRIMARY_READ_MODE);
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                'message'    =>'after bin service',
+                '$iinData'      =>$iinData,
+            ]);
+            if($iinData==null){
+                throw new Exception\RuntimeException('Bin Mapping for the given token not present', $tokenNumber, $response);
+            }
+
+            // Bin Service Data
+            $cardInput = [
+                Card\Entity::CVV          => '123',
+                Card\Entity::VAULT        => Card\Vault::RZP_VAULT,
+                Card\Entity::EXPIRY_MONTH => $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'],
+                Card\Entity::EXPIRY_YEAR  => $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'],
+                Card\Entity::NUMBER       => $iinData['mappedIin'].'000000'.$response['service_provider_tokens'][0]['provider_data']['last4'],
+                Card\Entity::DUMMY_CARD   => true,
+            ];
+
+            $tokenisedCard = $this->create($cardInput, $merchant,false,false);
+
+
+        }
+        else if($asyncTokenisationJobId === "pushtokenmigrate" ) {
 
             $tokenisedCard = $card;
 
@@ -190,8 +290,16 @@ class Core extends Base\Core
             $tokenisedCard->generateID();
         }
 
-
-        $tokenisedCard->setVaultToken($response['token']);
+        if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate"
+            || $asyncTokenisationJobId==="hdfcPushProvIssuerTokenMigrate")
+        {
+            $tokenisedCard->setVaultToken($input['dualTokenMapperId']);
+            $tokenisedCard->setNetwork($iinData['network']);
+            $tokenisedCard->setIssuer($iinData['issuer']);
+            $tokenisedCard->setTokenLast4($response['service_provider_tokens'][0]['provider_data']['last4']);
+        } else{
+            $tokenisedCard->setVaultToken($response['token']);
+        }
 
         $tokenisedCard->setGlobalFingerprint($response['fingerprint']);
 
@@ -219,7 +327,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($payment->card);
         }
 
-        if($providerReferenceId === null)
+        if($card!=null && $providerReferenceId === null)
         {
             $this->trace->info(TraceCode::TRACE_EMPTY_PROVIDER_REFERENCE,
                 [
@@ -259,7 +367,7 @@ class Core extends Base\Core
         }
 
         try {
-            if (isset($response['service_provider_tokens'][0]['provider_data']['token_number'])) {
+            if ($card!=null && isset($response['service_provider_tokens'][0]['provider_data']['token_number'])) {
                 $this->mapTokenAltIIN($card, $response, $tokenisedCard);
             }
         }
@@ -519,12 +627,13 @@ class Core extends Base\Core
         $cardIin        = $card->getIin();
 
         //experiment for fund account of prepaid card type creation
-        $prepaidCardVariant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
-            $this->mode,
-            FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
-        );
+        $requestPayload = [
+            "id" =>  $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
+            'request_data'  => json_encode(['id' =>  $merchant->getId()])
+        ];
+
+        $prepaidCardEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         if (($cardIssuer === Issuer::SCBL) and
             ($this->checkAllowedNetworksForSCBL($card) === false))
@@ -571,7 +680,7 @@ class Core extends Base\Core
         // If a credit card is not supported for IMPS, NEFT, we check if m2p supports it.
         // If it does, we allow FA creation.
         if (($this->checkIfVaultTokenIsNull($card, $compositePayoutSaveOrFail) === true) or
-            (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
+            (Type::isValidFundAccountCardType($cardType, $prepaidCardEnabled) === false) or
             ((in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false) and
              (empty($m2pSupportedModeConfigs) === true)))
         {
@@ -1148,6 +1257,79 @@ class Core extends Base\Core
         }
     }
 
+    public function GetRzpMerchantIdAndAsyncTokenisationJobId($input)
+    {
+
+            $gateway = "tokenization_";
+
+            $NetworkCheck = "onboard_tokenization_";
+
+            if ($input['provider'] == 'ONUS') {
+
+                $gateway .= 'hdfc';
+
+                $asyncTokenisationJobId = "hdfcPushProvIssuerTokenMigrate";
+
+            } else {
+
+                $network = $input['cardType'];
+
+                switch ($network) {
+                    case 'V':
+                        $gateway .= "visa";
+                        $NetworkCheck .= "visa";
+                        break;
+                    case 'M':
+                        $gateway .= "mastercard";
+                        $NetworkCheck .= "mastercard";
+                        break;
+                    case 'D':
+                        $gateway .= "diners";
+                        $NetworkCheck .= "diners";
+                        break;
+                    case 'R':
+                        $gateway .= "rupay";
+                        $NetworkCheck .= "rupay";
+                        break;
+                    case 'A':
+                        $gateway .= "amex";
+                        $NetworkCheck .= "amex";
+                        break;
+                    default:
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "Invalid card type: ");
+                }
+
+                $asyncTokenisationJobId = "hdfcPushProvNetworkTokenMigrate";
+            }
+
+            $terminal = $this->repo->terminal->findByGatewayMerchantId($input['merchantId'], $gateway);
+
+            $merchantId = $terminal['merchant_id'];
+
+            $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+            $this->merchant=$merchantPushProvisioning;
+
+            if (
+                $this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === false
+                || $this->merchant->isFeatureEnabled($NetworkCheck) === false
+                || $this->merchant->isFeatureEnabled(Feature\Constants::ONBOARD_TOKENIZATION_VISA) === false
+                || $this->merchant->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE) === false
+            ) {
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    "Push provisioning is not enabled for merchant"
+                );
+            }
+
+        return [$merchantPushProvisioning, $asyncTokenisationJobId];
+    }
+
+
+
     public function findAllExistingCards(Card\Entity $newCard, Merchant\Entity $merchant, $limit = 10)
     {
         $params = array(
@@ -1580,18 +1762,26 @@ class Core extends Base\Core
 
     protected function getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input)
     {
-        $iin = $this->repo->card->retrieveIinDetails($card->getIin());
+        $iin = null;
+
+        if($card!==null){
+            $iin = $this->repo->card->retrieveIinDetails($card->getIin());
+        }
 
         $iinInfo = [
-            'issuer'       => $iin->getIssuer(),
-            'network'      => $iin->getNetwork(),
-            'network_code' => $iin->getNetworkCode(),
-            'iin'          => $iin->getIin(),
-            'category'     => $iin->getCategory(),
-            'type'         => $iin->getType(),
-            'country'      => $iin->getCountry(),
-            'issuer_name'  => $iin->getIssuerName(),
+            'issuer'       => $iin?$iin->getIssuer():"",
+            'network'      => $iin?$iin->getNetwork():"",
+            'network_code' => $iin?$iin->getNetworkCode():"",
+            'iin'          => $iin?$iin->getIin():"",
+            'category'     => $iin?$iin->getCategory():"",
+            'type'         => $iin?$iin->getType():"",
+            'country'      => $iin?$iin->getCountry():"",
+            'issuer_name'  => $iin?$iin->getIssuerName():"",
         ];
+
+        if(isset($merchant->vpanEnrollmentID)) {
+            $iinInfo['network'] = "Visa";
+        }
 
         $cardVault = (new Card\CardVault);
 

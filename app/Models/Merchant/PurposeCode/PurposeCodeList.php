@@ -1498,6 +1498,7 @@ class PurposeCodeList
         self::S1007,
         self::S1008,
         self::S1009,
+        self::S1099,
         self::S1013,
         self::S1014,
         self::S1015,

@@ -46,22 +46,6 @@ class External extends Base
         }
     }
 
-    public function calculateFeesForDualWrite($fees, $tax, $feeCreditsUsed, $amountCreditsUsed, $refundCreditsUed)
-    {
-        $type = $this->source->getType();
-
-        $amount = $this->source->getBaseAmount();
-
-        if ($type === Type::CREDIT)
-        {
-            $this->credit = $amount;
-        }
-        else
-        {
-            $this->debit = $amount;
-        }
-    }
-
     public function updateTransaction()
     {
         $this->updatePostedDate();

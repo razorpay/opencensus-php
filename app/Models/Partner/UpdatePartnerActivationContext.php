@@ -57,16 +57,7 @@ class UpdatePartnerActivationContext extends Core
                 $this->merchant->merchantDetail, $partnerActivation
             );
 
-            $properties = [
-                'id'            => $this->merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
-            ];
-            $isSystemBasedNeedsClarificationEnabledForPartner = (new Merchant\Core())->isSplitzExperimentEnable(
-                $properties, 'enable', TraceCode::SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER_ERROR
-            );
-
-            if (($clarificationCore->shouldTriggerNeedsClarification($partnerActivation) === true) and
-                ($isSystemBasedNeedsClarificationEnabledForPartner === true))
+            if ($clarificationCore->shouldTriggerNeedsClarification($partnerActivation) === true)
             {
                 $kycClarificationReasons = (new Core())->composeNeedsClarificationReason($partnerActivation);
 

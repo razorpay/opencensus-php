@@ -1,4 +1,4 @@
-ARG API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker-v2
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-worker-v3
 
 FROM ${API_BASE_IMAGE}
 
@@ -10,7 +10,7 @@ WORKDIR /app
 
 COPY composer.json composer.lock /app/
 
-RUN --mount=type=secret,id=git_token set -eu && \
+RUN --mount=type=secret,id=git_token,required=true set -eu && \
     composer --version && \
     git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" $(cat /run/secrets/git_token) && \
@@ -29,17 +29,22 @@ ADD Makefile /app
 ADD error_modules /app
 RUN echo ${CACHEBUST}
 
-RUN --mount=type=secret,id=git_token set -eux && \
+RUN --mount=type=secret,id=git_token,required=true set -eux && \
     echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
+    chmod 600 ~/.netrc && \
     make error-module-clean && \
     rm -f ~/.netrc
 
-RUN --mount=type=secret,id=git_token set -eux && \
+RUN --mount=type=secret,id=git_token,required=true set -eux && \
     echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
+    chmod 600 ~/.netrc && \
     make error-module-fetch && \
     rm -f ~/.netrc
 
 RUN apk add font-noto font-noto-thai font-noto-tibetan font-ipa font-sony-misc font-jis-misc && \
     fc-cache -f
+
+# Add TIFF Support for ImageMagick
+RUN apk add --no-cache imagemagick imagemagick-dev tiff tiff-dev libjpeg-turbo-dev
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.worker.sh"]

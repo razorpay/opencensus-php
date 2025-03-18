@@ -603,6 +603,10 @@ class FreshdeskTicketClient
                 $responseBody['errors'] = Constants::ERROR_TOO_MANY_REQUESTS_TO_FRESHDESK_SERVICE;
             }
 
+            if ($statusCode === 404) {
+                $responseBody['errors'] = Constants::ERROR_FRESHDESK_PAGE_NOT_FOUND;
+            }
+
             $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ERROR_RESPONSE,
                                [
                                    'response' => $responseBody

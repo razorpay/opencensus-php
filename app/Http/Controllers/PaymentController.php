@@ -965,7 +965,7 @@ class PaymentController extends Controller
 
         $str = implode('|', $input);
 
-        $key = $this->repo->key->getFirstActiveKeyForMerchant($merchant->getId());
+        $key = $this->repo->key->getFirstActiveKeyForMerchant($merchant->getId(), true);
 
         $this->ba->authCreds->setKeyEntity($key);
 

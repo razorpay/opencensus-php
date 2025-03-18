@@ -52,7 +52,7 @@ class OrderPaymentsParity extends Job
 
         //The TPS for this route is 300, we only want 40-50 requests to be produced
         $rand = rand(1, 18000);
-        if ($rand > 100)
+        if ($rand > 500)
         {
             return;
         }
@@ -62,9 +62,9 @@ class OrderPaymentsParity extends Job
         $message = [
             "data" => [
                 "api"           => "order_payments",
-                "request_input"   => $this->requestInput,
+                "request_input" => $this->requestInput,
                 "response"      => $this->responseBody,
-                "timestamp"     => $this->timestamp
+                "timestamp"     => $this->timestamp,
             ],
         ];
 

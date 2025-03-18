@@ -2625,7 +2625,7 @@ class Service extends Base\Service
 
         $fetchInput['time_range']['to'] = Carbon::now(Timezone::IST)->endOfDay()->getTimestamp();
 
-        $fetchInput['time_range']['from'] = Carbon::now(Timezone::IST)->subDays(30)->startOfDay()->getTimestamp();
+        $fetchInput['time_range']['from'] = Carbon::now(Timezone::IST)->subMonthNoOverflow()->startOfDay()->getTimestamp();
 
         foreach ($input as $key => $val)
         {

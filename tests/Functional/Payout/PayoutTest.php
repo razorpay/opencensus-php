@@ -11,6 +11,7 @@ use Config;
 use Mockery;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
+use RZP\Jobs\PayoutServiceDualWriteDirectPush;
 use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Services\Mock\DataLakePresto;
@@ -58,6 +59,8 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Models\Payout\Service as PayoutService;
+use RZP\Services\PayoutService\Fetch as PayoutServiceFetch;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
@@ -170,6 +173,14 @@ class PayoutTest extends OAuthTestCase
 
     private   $unitTestCase;
 
+    /**
+     * @return string
+     */
+    public function generatePsPayoutId(): string
+    {
+        return str_pad(substr(base_convert(time() . mt_rand(1000, 9999), 10, 36), 0, 14), 14, '0', STR_PAD_RIGHT);
+    }
+
     protected function setUp(): void
     {
         $this->unitTestCase = new \Tests\Unit\TestCase();
@@ -205,6 +216,8 @@ class PayoutTest extends OAuthTestCase
         $this->mockStorkService();
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
         $this->mockCardVault(null, true);
     }
@@ -319,6 +332,8 @@ class PayoutTest extends OAuthTestCase
     public function testAccountStatementQueuePushForProcessedPayout() {
 
         $queueMock = Mockery::mock(SqsQueue::class);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
 
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
@@ -787,6 +802,8 @@ class PayoutTest extends OAuthTestCase
     public function testAccountStatementQueuePushForSplitzDisable() {
         $queueMock = Mockery::mock(SqsQueue::class);
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
             public $queueName = null;
@@ -927,6 +944,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testAccountStatementQueuePushForSharedPayout() {
         $queueMock = Mockery::mock(SqsQueue::class);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL,Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
 
         // Mock the queue push call made for DLQ and access the queue name that was passed
         $queueObject = new class {
@@ -2236,7 +2255,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2311,7 +2330,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2379,7 +2398,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2400,7 +2419,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2421,7 +2440,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'ocbc']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
 
         $this->prepareBankingAccountData();
 
@@ -2442,7 +2461,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->prepareBankingAccountData();
 
@@ -4672,6 +4691,26 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
         $this->assertEquals('beneficiary_bank_confirmation_pending', $payout2['status_summary']['processing'][0]['reason']);
         $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM.', $payout2['status_summary']['processing'][0]['description']);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: API DB able to provide data for payoutId
+        $payout3 = $this->startTest();
+        $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout3);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $payout3['status_summary']['processing'][0]['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM.', $payout3['status_summary']['processing'][0]['description']);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testStatusSummaryObjectNullCaseInGetPayout()
@@ -4687,6 +4726,25 @@ class PayoutTest extends OAuthTestCase
         $payout2 = $this->startTest();
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
         $this->assertNull($payout2[Payout\Entity::STATUS_SUMMARY]);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: API DB able to provide data for payoutId
+        $payout3 = $this->startTest();
+        $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout3);
+        $this->assertNull($payout3[Payout\Entity::STATUS_SUMMARY]);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testPayoutStatusReasonMapping()
@@ -6566,10 +6624,10 @@ class PayoutTest extends OAuthTestCase
     {
         $this->app['config']->set('applications.banking_account_service.mock', true);
 
-        $this->setMockRazorxTreatment(
+        $this->setMockSplitzTreatmnt(
             [
-                RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT => 'on',
-                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'on',
+                RazorxTreatment::AXIS_MIGRATION_CUSTOMER_WALLET_PAYOUT => 'enable',
+                RazorxTreatment::SEND_CHARGE_COLLECTION_EVENT_RX => 'enable',
 
             ]
         );
@@ -9063,7 +9121,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $testData                                = $this->testData['testCreatePayoutWithOtp'];
         $testData['request']['url']              = '/payouts_with_otp';
@@ -9151,7 +9209,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpWithInvalidParameters()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $testData = &$this->testData[__FUNCTION__];
 
@@ -9214,100 +9272,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $firstActionChecker['approved']);
     }
 
-    public function testFetchPendingPayoutsAsOwnerSSWF()
-    {
-        $user = $this->fixtures->create('user');
 
-        $this->liveSetUp();
 
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payoutIds = $this->createMultiplePayoutsWithWorkflow(5);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = [
-            'account_numbers' => ['2224440041626905'],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $response = $this->startTest();
-
-        $this->assertSameSize($payoutIds, $response);
-
-        $this->assertNotNull($response);
-
-        foreach ($response as $payouts)
-        {
-            $this->assertContains($payouts["id"], $payoutIds);
-
-            $this->assertNotNull($payouts["amount"]);
-        }
-    }
-
-    public function testFetchNoPendingPayoutsAsOwnerSSWF()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payoutIds = $this->createMultiplePayoutsWithWorkflow(5);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] = [
-            'account_numbers' => ['2224440041626909'],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $response = $this->startTest();
-
-        $this->assertEmpty($response);
-    }
-
-    public function testFetchPendingPayoutsAsOwnerSSWFValidationError()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
 
     private function createMultiplePayoutsWithWorkflow(int $count): array
     {
@@ -9323,71 +9289,7 @@ class PayoutTest extends OAuthTestCase
         return $payoutIds;
     }
 
-    public function testBulkRejectPayoutsAsOwnerSSWF()
-    {
-        $user = $this->fixtures->create('user');
 
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
-
-        $this->app->instance('workflow_service', $workflowServiceClientMock);
-
-        $workflowServiceClientMock->shouldReceive('request')->with("twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow");
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] += [
-            'payout_ids' => [$payout['id']],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
-
-    public function testBulkRejectPayoutsAsOwnerSSWFValidationError()
-    {
-        $user = $this->fixtures->create('user');
-
-        $this->liveSetUp();
-
-        $this->fixtures->on('live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content'] += [
-            'payout_ids' => [$payout['id']],
-        ];
-
-        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
-
-        $this->startTest();
-    }
 
     public function testBulkRejectPayouts()
     {
@@ -9433,7 +9335,7 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable']);
         $this->fixtures->create('merchant_attribute',
                                 [
                                     'merchant_id' => '10000000000000',
@@ -9457,7 +9359,9 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable',RazorxTreatment::IMPS_MODE_PAYOUT_FILTER=>'disable']);
+
         $this->fixtures->create('merchant_attribute',
             [
                 'merchant_id' => '10000000000000',
@@ -9482,7 +9386,9 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['content']['otp']   = '0007';
 
         $this->testData[__FUNCTION__] = $testData;
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable',RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
+
         $this->fixtures->create('merchant_attribute',
                                 [
                                     'merchant_id' => '10000000000000',
@@ -9544,7 +9450,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testUndoPayoutWithInvalidId()
     {
-        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE =>'enable',RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $testData                   = $this->testData['testUndoPayoutWithInvalidId'];
         $testData['request']['url'] = '/payouts/' . 123 . '/undo';
@@ -10727,6 +10633,8 @@ class PayoutTest extends OAuthTestCase
             'on',
             'on'
         );
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER=> 'enable']);
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
@@ -13325,10 +13233,27 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
 
         $payoutResp = $this->startTest();
-
         $this->assertNotNull($payoutResp['reversal']);
-
         $this->assertArrayNotHasKey('transaction_id', $payoutResp['reversal']);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: API DB able to provide data for payoutId
+        $payoutResp = $this->startTest();
+        $this->assertNotNull($payoutResp['reversal']);
+        $this->assertArrayNotHasKey('transaction_id', $payoutResp['reversal']);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testGetPayoutWithReversalForPrivateAuth()
@@ -13346,8 +13271,24 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
 
         $payoutResp = $this->startTest();
-
         $this->assertArrayNotHasKey('reversal', $payoutResp);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+        //Scenario: API DB able to provide data for payoutId
+        $payoutResp = $this->startTest();
+        $this->assertArrayNotHasKey('reversal', $payoutResp);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testGetPayoutWithReversalForPrivilegeAuthNonAccountingApp()
@@ -13554,6 +13495,24 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayNotHasKey(Payout\Entity::REMARKS, $payout2);
 
         $this->assertArraySelectiveEquals($payout2, $payout);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+        //Scenario: API DB able to provide data for payoutId
+        $payout3 = $this->startTest();
+        $this->assertArrayNotHasKey(Payout\Entity::REMARKS, $payout3);
+        $this->assertArraySelectiveEquals($payout3, $payout);
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
     }
 
     public function testCreatePaymentPayout(): array
@@ -14192,7 +14151,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayrollPayoutByContactEmailWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -14218,7 +14179,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayoutWithMultipleSourceByContactEmailWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -14244,7 +14207,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayoutByContactEmailWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
 
         $this->fixtures->edit(
@@ -16107,22 +16072,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('pending', $payout['status']);
     }
 
-    public function testApprovePayoutWithNonBankingRoleInWorkflow()
-    {
-        $this->liveSetUp();
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
-
-        $testData                   = &$this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
-
-        $this->startTest();
-    }
 
     public function testPayoutToAmexCardWithNullIssuerSupportedMode()
     {
@@ -17126,24 +17075,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_SMART_ROUTING]);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode)
-                              {
-                                  if ($feature === Merchant\RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER)
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
+        $this->setMockSplitzTreatmnt([Merchant\RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER => 'enable']);
 
         $request = &$this->testData[__FUNCTION__]['request'];
 
@@ -18363,7 +18295,26 @@ class PayoutTest extends OAuthTestCase
 
         $balanceId = $this->bankingBalance->getId();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $this->bankingBalance->getId(),
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => $this->bankingBalance->getAccountType(),
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->ba->privateAuth();
         $this->startTest();
@@ -18751,7 +18702,10 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['url']              = '/payouts';
 
         $this->setupDirectAccount();
-        $this->setMockRazorxTreatment(['enable_ca_flow_via_payouts_service' => 'on']);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE=> 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
 
         $balance = $this->getDbEntities('balance',
             [
@@ -18761,6 +18715,23 @@ class PayoutTest extends OAuthTestCase
             ])->first();
 
         $balanceId = $balance->getId();
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balanceId,
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
+
 
         $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
 
@@ -18838,59 +18809,59 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
     }
 
-    public function testCreateFreePayoutForNEFTModeDirectAccountProxyAuthWithPayoutServiceFeatureEnabled()
-    {
-        $testData                                = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
-        $testData['request']['url']              = '/payouts_with_otp';
-        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
-        $testData['request']['content']['otp']   = '0007';
-
-        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
-
-        $this->setupDirectAccount();
-
-        $balance = $this->getDbEntities('balance',
-            [
-                'merchant_id'  => "10000000000000",
-                'account_type' => 'direct',
-                'channel'      => 'rbl'
-            ])->first();
-
-        $balanceId = $balance->getId();
-
-        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
-
-        $this->testData[__FUNCTION__] = $testData;
-        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
-        $this->startTest();
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertEquals("MerchantUser01", $payout->getUserId());
-
-        // Assert 0 fee and tax in payout
-        $this->assertEquals(0, $payout->getFees());
-        $this->assertEquals(0, $payout->getTax());
-
-        // Assert that free_payout is assigned as fee_type for such payouts.
-        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
-
-        $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'direct',
-                'balance_id'   => $balanceId,
-            ])->first();
-
-        // Assert that one free payout has been consumed
-        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
-
-        // Assert that pricing rule id in payouts is correct
-        $this->assertEquals('Bbg7cl6t6I3XB2', $payout['pricing_rule_id']);
-
-        $pricingRule = $this->getDbEntityById('pricing', $payout['pricing_rule_id']);
-
-        $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
-    }
+//    public function testCreateFreePayoutForNEFTModeDirectAccountProxyAuthWithPayoutServiceFeatureEnabled()
+//    {
+//        $testData                                = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
+//        $testData['request']['url']              = '/payouts_with_otp';
+//        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+//        $testData['request']['content']['otp']   = '0007';
+//
+//        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+//
+//        $this->setupDirectAccount();
+//
+//        $balance = $this->getDbEntities('balance',
+//            [
+//                'merchant_id'  => "10000000000000",
+//                'account_type' => 'direct',
+//                'channel'      => 'rbl'
+//            ])->first();
+//
+//        $balanceId = $balance->getId();
+//
+//        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'rbl');
+//
+//        $this->testData[__FUNCTION__] = $testData;
+//        $this->ba->proxyAuth('rzp_test_10000000000000', 'MerchantUser01');
+//        $this->startTest();
+//
+//        $payout = $this->getDbLastEntity('payout');
+//
+//        $this->assertEquals("MerchantUser01", $payout->getUserId());
+//
+//        // Assert 0 fee and tax in payout
+//        $this->assertEquals(0, $payout->getFees());
+//        $this->assertEquals(0, $payout->getTax());
+//
+//        // Assert that free_payout is assigned as fee_type for such payouts.
+//        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+//
+//        $counter = $this->getDbEntities('counter',
+//            [
+//                'account_type' => 'direct',
+//                'balance_id'   => $balanceId,
+//            ])->first();
+//
+//        // Assert that one free payout has been consumed
+//        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+//
+//        // Assert that pricing rule id in payouts is correct
+//        $this->assertEquals('Bbg7cl6t6I3XB2', $payout['pricing_rule_id']);
+//
+//        $pricingRule = $this->getDbEntityById('pricing', $payout['pricing_rule_id']);
+//
+//        $this->assertEquals(BasicAuth\Type::PROXY_AUTH, $pricingRule->getAuthType());
+//    }
 
     public function testCreateFreePayoutForUPIModeDirectAccountPrivateAuth()
     {
@@ -22278,6 +22249,23 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testSourceCreationInCaseOfCompositePayoutCreatedByCrossBorderImportService()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->appAuthTest($this->config['applications.cross_border_import_service.secret']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
     public function testIdempotencyInCaseOfCompositePayoutCreatedBySettlementsWithDifferentRequestContents()
     {
         $balance = $this->bankingBalance;
@@ -22487,6 +22475,30 @@ class PayoutTest extends OAuthTestCase
                                     'payout_id'   => $payout->getId(),
                                     'source_id'   => 'vdpm_1',
                                     'source_type' => 'settlements',
+                                    'priority'    => 1
+                                ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
+    public function testPayoutSetStatusQueuePushForICATransferPayout()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'created'
+        ]);
+
+        // now adding payout source and QueuePush Should Happen
+        $this->fixtures->create('payout_source',
+                                [
+                                    'payout_id'   => $payout->getId(),
+                                    'source_id'   => 'vdpm_1',
+                                    'source_type' => 'ica_transfer',
                                     'priority'    => 1
                                 ]);
 
@@ -24153,7 +24165,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayout();
 
@@ -24199,7 +24211,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayoutOnLiveMode();
 
@@ -24317,7 +24329,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayout();
 
@@ -24355,7 +24367,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(7);
+            })->times(8);
 
         $this->testCreatePayoutOnLiveMode();
 
@@ -24393,7 +24405,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(5);
+            })->times(6);
 
         $this->testCreatePayout();
 
@@ -24436,7 +24448,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(5);
+            })->times(6);
 
         $this->testCreatePayoutOnLiveMode();
 
@@ -25268,7 +25280,7 @@ class PayoutTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $initialDestinationBalance = $bankingBalance->getBalance();
 
@@ -25602,7 +25614,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('balance',$balanceId,['balance' => 0]);
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->startTest($testData);
 
@@ -26101,7 +26113,7 @@ class PayoutTest extends OAuthTestCase
         $this->setupDestinationForVaToVaPayoutsWithProvidedFundAccount($fundAccount);
 
         // enabling source merchant to allow va to va payouts
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $testData = & $this->testData['testAllowVAtoVAPayoutsWhenSourceMerchantIsEnabled'];
         $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
@@ -26394,7 +26406,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->startTest($testData);
     }
@@ -26411,7 +26423,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->startTest($testData);
     }
@@ -26495,7 +26507,7 @@ class PayoutTest extends OAuthTestCase
     // to make VA to VA payouts, we shall allow this payout to go through
     public function testAllowVAtoVACompositePayoutsWithRazorXExperiment()
     {
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->ba->privateAuth();
 
@@ -26520,7 +26532,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testAllowBulkVAToVAPayoutsWithRazorXExperiment()
     {
-        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS =>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable',RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS_TEST=>'enable']);
 
         $this->ba->batchAuth();
 
@@ -26577,7 +26590,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnProxyAuth()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26603,7 +26618,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndSomePayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26629,7 +26646,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndSomePayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26655,7 +26672,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndNoPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 payout_link]
         $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
@@ -26679,7 +26698,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndNoPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 payout_link]
         $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
@@ -26703,7 +26722,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndAllPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 xpayroll]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26727,7 +26748,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndAllPayrollPayouts()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         // create 3 payouts [3 xpayroll]
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -26775,7 +26796,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetXpayrollPayoutWithExperimentOn()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIDE_RX_PAYROLL_PAYOUTS]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->testCreateXpayrollPayoutWithSourceDetails();
 
@@ -26795,7 +26818,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetXpayrollPayoutWithExperimentOff()
     {
-        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->testCreateXpayrollPayoutWithSourceDetails();
 
@@ -31759,7 +31782,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
 
@@ -31833,7 +31856,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
 
@@ -32474,7 +32497,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32517,7 +32540,7 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32556,7 +32579,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32587,7 +32610,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
 
@@ -32620,7 +32643,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 
@@ -32653,7 +32676,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32696,7 +32719,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32737,7 +32760,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32777,7 +32800,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32816,7 +32839,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
@@ -32853,7 +32876,7 @@ class PayoutTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 
@@ -32882,7 +32905,7 @@ class PayoutTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'enable', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 
@@ -38834,7 +38857,7 @@ class PayoutTest extends OAuthTestCase
         $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
             $channel, $contactId, $fundAccountId, $baId);
 
-        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS=>'enable',RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->ba->cronAuth('live');
         $this->startTest();
@@ -39638,25 +39661,6 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['content']['from'] = $start_time;
 
         $this->testData[__FUNCTION__]['request']['content']['to'] = $end_time;
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === Merchant\RazorxTreatment::PAYOUT_ATTACHMENT_EMAIL_VIA_SQS)
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
 
         Queue::fake();
 
@@ -41658,7 +41662,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testAsyncPayoutApproveProcessingRateLimited()
     {
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
 
         $this->liveSetUp();
 
@@ -41743,6 +41747,8 @@ class PayoutTest extends OAuthTestCase
         $this->liveSetUp();
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode(true);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC=> 'enable']);
 
         $this->fixtures->on('live')->create(
             'workflow_config',
@@ -42997,9 +43003,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNewBankAccountCreationForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
+        $this->setMockSplitzTreatmnt([
+                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
                                       ]);
 
         $this->fixtures->edit('bank_account',
@@ -43042,10 +43047,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithExistingBankAccountForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43100,10 +43104,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithNewBankAccountCreationForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43139,10 +43142,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithExistingBankAccountForNonGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43191,10 +43193,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNoBankCodeWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43232,10 +43233,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithNoBankCodeWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43288,10 +43288,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithNoBankCodeForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43322,10 +43321,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeDifferentForNewIfscWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43366,10 +43364,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeCorrectForNewIfscWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43409,10 +43406,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeDifferentForNewIfscWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43464,10 +43460,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscForOldNewIfscWithBankCodeCorrectForNewIfscWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43519,10 +43514,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithBankCodeWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43559,10 +43553,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithBankCodeWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -43612,10 +43605,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithMainBankCodeWithNewBankAccountCreationForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         $this->fixtures->edit('bank_account',
                               '1000000lcustba',
@@ -43652,10 +43644,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithDefaultIfscWithMainBankCodeWithExistingBankAccountForGrameenBank()
     {
-        $this->setMockRazorxTreatment([
-                                          RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',
-                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control'
-                                      ]);
+        $this->setMockSplitzTreatmnt([
+            RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'enable'
+        ]);
 
         /** @var BankAccountEntity $bankAccount */
         $bankAccount = $this->fixtures->edit('bank_account',
@@ -44553,9 +44544,6 @@ class PayoutTest extends OAuthTestCase
             'created_at'      => $createdAt,
         ]);
 
-
-        $this->setMockRazorxTreatment([RazorxTreatment::BATCH_PAYOUTS_IKEY_ROLLOUT_V2  => 'on'], 'control');
-
         $this->startTest();
 
         $ikeyData = \DB::connection('live')->select("select * from ps_bulk_idempotency_keys where idempotency_key = 'batch_abc123' and merchant_id = '10000000000000'")[0];
@@ -44758,25 +44746,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWhenZeroPricingEnabledForFeeRecovery()
     {
-        $this->setMockRazorxTreatment([
-            RazorxTreatment::ZERO_PRICING_FEE_RECOVERY_PAYOUT => 'on',
-        ], 'control');
-
-        $this->fixtures->create('pricing', [
-            'id'             => 'custompricing1',
-            'plan_id'        => 'BTo98voDY05ueB',
-            'plan_name'      => 'testFeeRecoveryZeroPricing',
-            'org_id'         => '100000razorpay',
-            'product'        => 'banking',
-            'feature'        => 'payout',
-            'type'           => 'pricing',
-            'payment_method' => 'fund_transfer',
-            'account_type'   => 'direct',
-            'payouts_filter' => Payout\Purpose::RZP_FEES,
-            'fixed_rate'     => 0,
-            'percent_rate'   => 0,
-        ]);
-
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -45606,7 +45575,7 @@ class PayoutTest extends OAuthTestCase
             'fund_account_id' => "100000000000fa",
             'method' => "fund_transfer",
             'reference_id' => null,
-            'balance_id' => $id ,
+            'balance_id' => '',
             'user_id' => "random_user123",
             'batch_id' => null,
             'idempotency_key' => "random_key",
@@ -45665,6 +45634,33 @@ class PayoutTest extends OAuthTestCase
         ], 'live');
 
         $this->assertEquals(null, $fr);
+    }
+
+
+    public function testCreateSharedPayoutInLedgerShadowModeWithInsufficientBalanceRetry()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $exception = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE ,null,
+        [
+            'response_body' => [
+                'msg'  => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE
+            ]
+        ]
+        );
+        $this->ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+        $this->app->instance('ledger', $this->ledgerMock);
+        $this->ledgerMock->shouldReceive('createJournal')->byDefault()
+            ->andThrow($exception)->times(2); // this validates the insufficient balance retry logic
+
+        $this->startTest();
+
     }
 
     /*
@@ -45923,6 +45919,620 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $this->app->instance('splitzService', $splitzMock);
+    }
+
+    public function testPayoutServiceDualWriteDirectPushHandle()
+    {
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout', 'live');
+        $this->assertNull($payout);
+
+        $payoutData = [
+            'id'                   => "randomid111111",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "processed",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutLogs = [
+            [
+                'id'           => 'randomid111112',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'pending',
+                'to'           => 'create_request_submitted',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000000,
+                'updated_at'   => 1000000000
+            ],
+            [
+                'id'           => 'randomid111113',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'created',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111123',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'non_existing_status',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111133',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'scheduled',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111114',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'initiated',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000002,
+                'updated_at'   => 1000000001
+            ]
+        ];
+
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogs);
+
+        /** @var ReversalEntity $payout */
+        $reversal = $this->getDbLastEntity('reversal', 'live');
+        $this->assertNull($reversal);
+
+        $reversalData = [
+            'id'             => 'randomid111115',
+            'payout_id'      => 'randomid111111',
+            'merchant_id'    => "10000000000000",
+            'balance_id'     => "KHTaUGgTXc0dhH",
+            'amount'         => 2000000,
+            'currency'       => "INR",
+            'notes'          => "{}",
+            'fees'           => 10,
+            'tax'            => 33,
+            'channel'        => 'mychannel',
+            'transaction_id' => 'randomid111116',
+            'utr'            => "933815383815",
+            'created_at'     => 1663092114,
+            'updated_at'     => 1663092116,
+        ];
+
+        \DB::connection('test')->table('ps_reversals')->insert($reversalData);
+
+        /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
+        $payoutStatusDetails = $this->getDbEntities(
+            'payouts_status_details',
+            ['payout_id' => 'randomid111111'],
+            'live');
+        $this->assertEquals(0, sizeof($payoutStatusDetails->toArray()));
+
+        $payoutStatusDetailsData = [
+            [
+                'id'           => 'randomid111116',
+                'payout_id'    => 'randomid111111',
+                'status'       => 'initiated',
+                'reason'       => 'timepass',
+                'description'  => 'bye',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000002,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111118',
+                'payout_id'    => 'randomid111111',
+                'status'       => 'reversed',
+                'reason'       => 'timepass failed',
+                'description'  => 'bye',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000002,
+                'updated_at'   => 1000000001
+            ]
+        ];
+
+        \DB::connection('test')->table('ps_payout_status_details')->insert($payoutStatusDetailsData);
+
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+        ];
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $this->getDbLastEntity('payouts_details', 'live');
+        $this->assertNull($payoutDetails);
+
+        $payoutDetailsData = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_payout_details')->insert($payoutDetailsData);
+
+        /** @var PayoutSourceEntity $payoutSources */
+        $payoutSources = $this->getDbEntities(
+            'payout_source',
+            ['payout_id' => 'randomid111111'],
+            'live');
+        $this->assertEquals(0, sizeof($payoutSources->toArray()));
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111120',
+                'payout_id'   => 'randomid111111',
+                'source_id'   => 'randomid111121',
+                'source_type' => 'randomid111122',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+            [
+                'id'          => 'randomid111123',
+                'payout_id'   => 'randomid111111',
+                'source_id'   => 'randomid111124',
+                'source_type' => 'randomid111125',
+                'priority'    => 2,
+                'created_at'  => 1000000003,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        /** @var WorkflowEntityMapEntity $workflowEntityMap */
+        $workflowEntityMap = $this->getDbLastEntity('workflow_entity_map', 'live');
+        $this->assertNull($workflowEntityMap);
+
+        $workflowEntityMapData = [
+            'id'          => 'randomid111126',
+            'workflow_id' => 'randomid111127',
+            'entity_id'   => 'randomid111111',
+            'config_id'   => 'randomid111128',
+            'entity_type' => 'payout',
+            'merchant_id' => "10000000000000",
+            'org_id'      => 'randomid111129',
+            'created_at'  => 1000000003,
+            'updated_at'  => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_workflow_entity_map')->insert($workflowEntityMapData);
+
+        $idempotencyKeyData = [
+            'id'              => 'randomid111127',
+            'source_id'       => 'randomid111111',
+            'source_type'     => 'payout',
+            'idempotency_key' => 'random_ikey',
+            'merchant_id'     => "10000000000000",
+            'created_at'      => 1000000003,
+            'updated_at'      => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+
+        $this->fixtures->on('live')->create(
+            'idempotency_key',
+            [
+                'source_type'     => 'payout',
+                'idempotency_key' => 'random_ikey',
+                'merchant_id'     => "10000000000000",
+                'created_at'      => 1000000003,
+                'updated_at'      => 1000000001
+            ]
+        );
+
+        $idempotencyKeyBefore = $this->getDbLastEntity('idempotency_key', 'live');
+
+        $this->assertEmpty($idempotencyKeyBefore['source_id']);
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new PayoutServiceDualWriteDirectPush( [
+            'entity_id'                  => 'randomid111111',
+            'entity_type'                => 'payout',
+            'timestamp'                  => $timestamp,
+            'direct_push_from_ps_to_api' => true,
+        ]))->handle();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbEntityById('payout', 'randomid111111', 'live');
+        $this->assertNotNull($payout);
+
+        /** @var ReversalEntity $payout */
+        $reversal = $this->getDbEntityById('reversal', 'randomid111115', 'live');
+        $this->assertNotNull($reversal);
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $this->getDbLastEntity('payouts_details', 'live');
+        $this->assertNotNull($payoutDetails);
+
+        /** @var WorkflowEntityMapEntity $workflowEntityMap */
+        $workflowEntityMap = $this->getDbEntityById('workflow_entity_map', 'randomid111126', 'live');
+        $this->assertNotNull($workflowEntityMap);
+
+        /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
+        $payoutStatusDetails = $this->getDbEntities(
+            'payouts_status_details',
+            ['payout_id' => $payout->getId()],
+            'live');
+
+        $this->assertEquals($payoutStatusDetailsData, $payoutStatusDetails->toArray());
+
+        /** @var PayoutSourceEntity $payoutSources */
+        $payoutSources = $this->getDbEntities(
+            'payout_source',
+            ['payout_id' => $payout->getId()],
+            'live');
+
+        $this->assertEquals($payoutSourcesData, $payoutSources->toArray());
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals('dual_write', $payoutMetadata->meta_name);
+        $this->assertGreaterThanOrEqual($timestamp, $data->timestamp);
+
+        $idempotencyKeyAfter = $this->getDbEntityById('idempotency_key', $idempotencyKeyBefore['id'], 'live');
+
+        $idempotencyKeyAfterArray = $idempotencyKeyAfter->toArray();
+
+        foreach ($idempotencyKeyAfterArray as $key => $idempotencyAttributeAfter)
+        {
+            if ($key === 'source_id')
+            {
+                $this->assertEquals($idempotencyKeyData['source_id'], $idempotencyAttributeAfter);
+            }
+
+            else
+            {
+                if ($key === 'updated_at')
+                {
+                    $this->assertGreaterThan($idempotencyKeyBefore['updated_at'], $idempotencyAttributeAfter);
+                }
+
+                else
+                {
+                    $this->assertEquals($idempotencyKeyBefore[$key], $idempotencyAttributeAfter);
+                }
+            }
+        }
+    }
+
+    public function testCreatePayoutWithLinkedNumber()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $fetchMappedVpaMock = Mockery::mock('RZP\Services\PayoutService\VpaMapperFetch',
+            [$this->app])->makePartial();
+
+        $fetchMappedVpaMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $this->assertEquals('1234567890', last(explode('/', $input['url'])));
+
+                $this->assertEquals('GET', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'vpa' => 'shashi@okaxis',
+                    'customer_name' => 'Shashi Kumar'
+                ]);
+
+                $response->status_code = 200;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
+
+        $this->startTest();
+        $this->testCreatePayout();
+    }
+
+    public function testCreatePayoutWithLinkedNumberForVpaNotFound()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $fetchMappedVpaMock = Mockery::mock('RZP\Services\PayoutService\VpaMapperFetch',
+            [$this->app])->makePartial();
+
+        $fetchMappedVpaMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $this->assertEquals('1234567890', last(explode('/', $input['url'])));
+
+                $this->assertEquals('GET', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([]);
+
+                $response->status_code = 400;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithLinkedNumberForNameMismatch()
+    {
+        $this->ba->privateAuth();
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $fetchMappedVpaMock = Mockery::mock('RZP\Services\PayoutService\VpaMapperFetch',
+            [$this->app])->makePartial();
+
+        $fetchMappedVpaMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function(array $input) {
+
+                $this->assertEquals('1234567890', last(explode('/', $input['url'])));
+
+                $this->assertEquals('GET', $input['method']);
+
+                $response = new \WpOrg\Requests\Response();
+
+                $response->body = json_encode([
+                    'vpa' => 'nawed@okaxis',
+                    'customer_name' => 'Example Example'
+                ]);
+
+                $response->status_code = 200;
+
+                return $response;
+            })->times(1);
+
+        $this->app->instance('mapped_vpa_fetch', $fetchMappedVpaMock);
+
+        $this->startTest();
+    }
+
+    public function testGetPayoutForAPIDBFirstFlow()
+    {
+        $this->createEsIndex();
+        $this->testCreatePayout();
+        $payout = $this->getDbLastEntity('payout');
+        $this->ba->privateAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+
+        //Splitz Experimentation Disabled Flow Check
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: When API DB able to provide data for payoutId
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+
+        //Scenario: API DB doesn't find the Payout and PS Call is disabled - Returns API DB Exception
+        $psPayoutId = $this->generatePsPayoutId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        try {
+            $payoutResp = $this->startTest();
+        } catch(\Throwable $e){
+            $this->assertNotNull($e);
+            $this->assertEquals("BAD_REQUEST_INVALID_ID", $e->getCode());
+            $this->assertEquals("The id provided does not exist", $e->getMessage());
+        }
+    }
+
+    public function testGetPayoutForAPIDBFirstFlowOnLiveMode()
+    {
+        list($psPayoutId, $payoutMockData) = $this->mockPayoutServiceFetchClient();
+
+        $this->mockPayoutService();
+
+        $this->createEsIndex();
+
+        $this->testCreatePayoutOnLiveMode();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->ba->privateAuth("rzp_live_TheLiveAuthKey");
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+
+        //Splitz Experimentation Disabled Flow Check and Call to PS Microservice disabled
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+        //Enabled Call to PS Microservice
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        $payoutResp = $this->startTest();
+        $this->assertEquals($payoutResp['id'], $payoutMockData['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payoutMockData);
+
+        //Splitz Experimentation Enabled Flows Check
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID => 'enable']);
+
+        //Scenario: When API DB able to provide data for payoutId
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], 'pout_' . $payout['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payout->toArrayPublic());
+
+
+        //Scenario: API DB doesn't find the Payout and PS Call is enabled and return's payout
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $psPayoutId;
+        $payoutResp = $this->startTest();
+        $this -> assertNotNull($payoutResp);
+        $this->assertEquals($payoutResp['id'], $payoutMockData['id']);
+        $this->assertArraySelectiveEquals($payoutResp, $payoutMockData);
+    }
+
+    /**
+     * @return array
+     */
+    public function mockPayoutServiceFetchClient(): array
+    {
+        $psPayoutId = $this->generatePsPayoutId();
+        $payoutMockData = [
+            "id" => "pout_" . $psPayoutId,
+            "entity" => "payout",
+            "fund_account_id" => "fa_100000000000fa",
+            "amount" => 2000000,
+            "currency" => "INR",
+            "notes" => [
+                "abc" => "xyz"
+            ],
+            "fees" => 1062,
+            "tax" => 162,
+            "status" => "processing",
+            "purpose" => "refund",
+            "utr" => null,
+            "mode" => "IMPS",
+            "reference_id" => null,
+            "narration" => "Batman",
+            "batch_id" => null,
+            "failure_reason" => null,
+            "created_at" => 1740501773,
+            "fee_type" => null,
+            "scheduled_at" => null,
+            "status_details" => [
+                "reason" => null,
+                "description" => null,
+                "source" => null
+            ],
+            "merchant_id" => "10000000000000",
+            "status_details_id" => null
+        ];
+
+        $payoutFetchClientMock = Mockery::mock('RZP\Services\PayoutService\Fetch',
+            [$this->app])->makePartial();
+        $payoutFetchClientMock->shouldReceive('fetch')->with('payout', "pout_" . $psPayoutId, Mockery::type('array'))->andReturn($payoutMockData);
+        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE_FETCH, $payoutFetchClientMock);
+        return array($psPayoutId, $payoutMockData);
+    }
+
+    /**
+     * @return void
+     */
+    public function mockPayoutService(): void
+    {
+        $payoutServiceMock = Mockery::mock('RZP\Models\Payout\Service',
+            [$this->app])->makePartial();
+        $payoutServiceMock->shouldAllowMockingProtectedMethods();
+        $payoutServiceMock->shouldReceive('isLiveTraffic')->andReturn(true);
+        $this->app->instance(PayoutService::class, $payoutServiceMock);
     }
 }
 

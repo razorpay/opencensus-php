@@ -66,7 +66,7 @@ class Core extends Base\Core
 
         $validator->validateTokenExpiryDate($input);
 
-        $subscriptionRegistration = (new Entity)->build($input);
+        $subscriptionRegistration = (new Entity)->build($input, $merchant->getCategory(), $merchant->getMerchantId());
 
         if (($subscriptionRegistration->getMethod() === Payment\Method::CARD) or
             ($subscriptionRegistration->getMethod() === null))
@@ -276,6 +276,12 @@ class Core extends Base\Core
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY]  = $frequency;
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] = $maxAmount;
 
+        $defaultExpiry = Carbon::now()->addYear(10)->getTimestamp();
+        if($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] === UpiMandate\Frequency::ONETIME)
+        {
+            $defaultExpiry = Carbon::now()->addDays(60)->getTimestamp();
+        }
+
         $orderPayLoad =
             [
                 Order\Entity::RECEIPT         => $input[Order\Entity::RECEIPT] ?? null,
@@ -291,7 +297,7 @@ class Core extends Base\Core
                         UpiMandate\Entity::START_TIME      => Carbon::now()->addDay(1)->getTimestamp(),
                         UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at'])
                                                                 ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at']
-                                                                : Carbon::now()->addYear(10)->getTimestamp(),
+                                                                : $defaultExpiry,
                     ]
             ];
 
@@ -1012,31 +1018,46 @@ class Core extends Base\Core
             ]
         );
 
-        $order = $this->createOrder($tokenRegistration);
-
-        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED, $tokenRegistration->getMetricDimensions());
-
-        $paymentSuccess = true;
-
-        $tokenRegistration->incrementAttempts();
-
-        $this->trace->info(
-            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-            [
-                'token.registration_id' => $tokenRegistration->getId(),
-                'status'                => 'increment attempts'
-            ]
-        );
-
-        $this->repo->saveOrFail($tokenRegistration);
-
+        $paymentSuccess = false;
         try{
-            $payment = $this->createPayment($tokenRegistration, $order);
-        }
-        catch(Exception $ex)
-        {
-            $paymentSuccess = false;
+            $tokenRegistration->incrementAttempts();
 
+            $order = $this->createOrder($tokenRegistration);
+
+            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED, $tokenRegistration->getMetricDimensions());
+
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'attempts'              => $tokenRegistration->getAttempts(),
+                    'status'                => 'after order creation'
+                ]
+            );
+
+            $payment = $this->createPayment($tokenRegistration, $order);
+
+            if (isset($payment['razorpay_payment_id']))
+            {
+                $paymentSuccess = true;
+                $tokenRegistration->setStatus(Status::COMPLETED);
+                $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_SUCCESSFUL, $tokenRegistration->getMetricDimensions());
+            }
+            $this->repo->saveOrFail($tokenRegistration);
+
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'status'                => 'post payment attempt',
+                    'attempts'              => $tokenRegistration->getAttempts(),
+                    'payment_response'      => $payment,
+                    'is_payment_successful' => $paymentSuccess,
+                ]
+            );
+        }
+        catch(\Exception $ex)
+        {
             $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED,
                                 $tokenRegistration->getMetricDimensions(['failure_reason' => $ex->getCode()]));
 
@@ -1049,19 +1070,22 @@ class Core extends Base\Core
                 ]
             );
 
+            $this->trace->info(
+                TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+                [
+                    'token.registration_id' => $tokenRegistration->getId(),
+                    'attempts'              => $tokenRegistration->getAttempts(),
+                    'status'                => 'post payment attempt',
+                    'is_payment_successful' => $paymentSuccess,
+                ]
+            );
+
             $tokenRegistration->setFailureReason($ex->getCode());
 
             $this->repo->saveOrFail($tokenRegistration);
         }
 
-        if ($paymentSuccess === true)
-        {
-            $tokenRegistration->setStatus(Status::COMPLETED);
-
-            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_SUCCESSFUL, $tokenRegistration->getMetricDimensions());
-        }
-
-        $this->repo->saveOrFail($tokenRegistration);
+        return [];
     }
 
     /**
@@ -1179,13 +1203,32 @@ class Core extends Base\Core
             );
         }
 
+        $products = [];
+
+        if (!empty($previousOrder->products))
+        {
+            foreach ($previousOrder->products as $product)
+            {
+                if(isset($product['product']))
+                {
+                    $tempProduct = $product['product'] ;
+                    $tempProduct['type'] = $product['product_type'];
+                    $products[] = $tempProduct;
+                }
+                else
+                {
+                    $products[] = $product;
+                }
+            }
+        }
+
         $orderInput = [
             Order\Entity::AMOUNT           => $tokenRegistration->getAmount(),
             Order\Entity::CURRENCY         => $tokenRegistration->getCurrency(),
             Order\Entity::PAYMENT_CAPTURE  => true,
             Order\Entity::METHOD           => $tokenRegistration->getMethod(),
-            Order\Entity::NOTES            => $previousOrder->getNotes()->toArray(),
-            Order\Entity::PRODUCTS         => $previousOrder->products->toArrayPublic()['items'],
+            Order\Entity::NOTES            => $previousOrder->getNotes(),
+            Order\Entity::PRODUCTS         => $products ?? [],
             Order\Entity::RECEIPT          => 'auto_crg_' . Base\UniqueIdEntity::generateUniqueId(),
         ];
 

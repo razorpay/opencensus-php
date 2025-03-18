@@ -62,19 +62,6 @@ class Repository extends Base\Repository
             $unique[] = $value;
         }
         $unique = new PublicCollection($unique);
-        $fixEnabled = $this->app['razorx']->getTreatment($entityId,
-            RazorxTreatment::DCS_MERGE_FIX,
-            $mode ?? "live",
-        );
-        $this->trace->info(TraceCode::DCS_FEATURE_MERGE_PARITY, [
-            "experiment_result" => $fixEnabled,
-            "using_fix" => $fixEnabled !== "control",
-        ]);
-
-        if($fixEnabled === "control") {
-            return $merged;
-        }
-
         return $unique;
     }
 

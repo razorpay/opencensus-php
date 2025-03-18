@@ -66,6 +66,7 @@ class SavedVpaCustomerTokenTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+
     }
 
     public function testGetCustomerVpaTokensWithSaveVpaFeatureEnabled()

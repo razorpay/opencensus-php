@@ -17,11 +17,15 @@ class CreateSettlementOndemandFundAccount extends Job
 
     protected $metricsEnabled = true;
 
-    public function __construct($mode, $merchantId)
+    protected $bankAccount;
+
+    public function __construct($mode, $merchantId, $bankAccount = null)
     {
         parent::__construct($mode);
 
         $this->merchantId = $merchantId;
+
+        $this->bankAccount = $bankAccount;
     }
 
     public function handle()
@@ -34,7 +38,7 @@ class CreateSettlementOndemandFundAccount extends Job
 
         try
         {
-            (new OndemandFundAccount\Service)->addOndemandFundAccountForMerchant($this->merchantId);
+            (new OndemandFundAccount\Service)->addOndemandFundAccountForMerchant($this->merchantId, $this->bankAccount);
         }
         catch(\Exception $e)
         {

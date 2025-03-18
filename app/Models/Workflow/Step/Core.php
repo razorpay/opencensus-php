@@ -10,6 +10,8 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 class Core extends Base\Core
 {
+    const WORKFLOW_STEP_CREATED_CAC_ROLE = 'workflow_step_created_cac_role';
+
     public function create(array $input, Workflow\Entity $workflow)
     {
         $step = new Entity;
@@ -31,6 +33,18 @@ class Core extends Base\Core
 
         if ($isCacEnabled === true)
         {
+            /**
+             * Execution should never reach this point.
+             * The oldest workflow with cac_role is from Dec-2023 and all such workflows seem to be bugged out as there are no workflow_steps,
+             * workflow_actions or workflow_entity_map: Refer: PR#47129
+             *
+             * To minimise impact on other products that use these workflows, we will add a metric here and setup alerts to monitor usage.
+             */
+            $this->trace->count(self::WORKFLOW_STEP_CREATED_CAC_ROLE, [
+                'workflow_id' => $workflow->getId(),
+                'merchant_id' => empty($this->merchant) ? null : $this->merchant->getId(),
+            ]);
+
             $role = $this->repo->roles->findOrFailPublic($input[Entity::ROLE_ID]);
         }
         else

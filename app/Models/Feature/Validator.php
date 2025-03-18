@@ -155,21 +155,22 @@ class Validator extends Base\Validator
 
             $merchantId = null;
 
-            $treatment = null;
+            $isExperimentEnabled = false;
 
             if ($input[Entity::ENTITY_TYPE] === Constants::MERCHANT)
             {
                 $merchantId = $input[Entity::ENTITY_ID];
 
-                $treatment = $app->razorx->getTreatment(
-                    $merchantId,
-                    Merchant\RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE,
-                    $this->getMode()
-                );
+                $requestPayload = [
+                    "id" => $merchantId,
+                    "experiment_name" =>  Merchant\RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE,
+                    'request_data'  => json_encode(['id' => $merchantId])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
             }
 
-            if (($treatment === null) or
-                ($treatment !== 'on'))
+            if ($isExperimentEnabled !== true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,

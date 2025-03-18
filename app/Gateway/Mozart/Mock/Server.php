@@ -55,6 +55,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $closeVirtualAccount, Action::DEACTIVATE_VIRTUAL_ACCOUNT);
     }
 
+    public function deactivateVirtualAccountCollectX($input)
+    {
+        $deactivateVirtualAccountForCollectX = new DeactivateVirtualAccountCollectX();
+
+        return $this->processMockResponse($input, $deactivateVirtualAccountForCollectX, Action::DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX);
+    }
+
     public function createVirtualAccountForBanking($input)
     {
         $createVirtualAccountObj = new CreateVirtualAccountForBanking();
@@ -245,7 +252,8 @@ class Server extends Base\Mock\Server
              ($action === Action::CREATE_VIRTUAL_ACCOUNT) or
                 ($action === Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING) or
                 ($action === Action::CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING) or
-                ($action === Action::VERIFY)))
+                ($action === Action::VERIFY) or
+                ($action === Action::DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX)))
         {
             $input['entities'] = $input;
         }
@@ -1251,7 +1259,8 @@ class Server extends Base\Mock\Server
             (($entities['gateway'] === 'google_pay') or
              ($entities['gateway'] === 'billdesk_sihub') or
              ($entities['gateway'] === 'paysecure') or
-              $entities['gateway'] === 'bt_rbl'))
+             ($entities['gateway'] === 'bt_rbl') or
+               $entities['gateway'] === 'bt_ibl'))
         {
             return $entities['gateway'];
         }

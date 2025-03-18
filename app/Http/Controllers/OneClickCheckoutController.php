@@ -512,4 +512,12 @@ class OneClickCheckoutController extends Controller
         }, 'allowlist_zipcode.csv');
     }
 
+    // get1ccConfigsMigration is used for exposing all internal configs for migrating them to MCS.
+    public function get1ccConfigsMigration()
+    {
+        $input = Request::all();
+        $result = (new Service())->get1ccConfigsMigration($input);
+        return ApiResponse::json($result, 200);
+    }
+
 }

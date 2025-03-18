@@ -50,10 +50,6 @@ class ViewSerializer extends Base\Core
 
     protected $host;
 
-    const RAZORX_PERFORMANCE_OPTIMISED = 'pp_optimised_web_vitals';
-
-    const RAZORX_CROSSORIGIN_ENABLED = 'pp_crossorigin_enabled';
-
     public function __construct(Entity $paymentLink)
     {
         parent::__construct();
@@ -200,11 +196,7 @@ class ViewSerializer extends Base\Core
     {
         $mode = $this->mode ?? Mode::LIVE;
 
-        $lcpOptimised = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            self::RAZORX_PERFORMANCE_OPTIMISED,
-            $mode
-        );
+        $lcpOptimised = 'on';
 
         $contactOptional = $this->merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
 
@@ -460,11 +452,7 @@ class ViewSerializer extends Base\Core
 
         $disclaimerTextEnabled = 'on';
 
-        $crossoriginEnabled = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            self::RAZORX_CROSSORIGIN_ENABLED,
-            $mode
-        );
+        $crossoriginEnabled = 'on';
 
         return [
             'exempt_customer_flagging'       => $exemptCustomerFlagging,

@@ -682,4 +682,9 @@ class Entity extends Base\PublicEntity
             }
         }
     }
+
+    public function getVpaId()
+    {
+        return $this->getAttribute(self::VPA_ID);
+    }
 }

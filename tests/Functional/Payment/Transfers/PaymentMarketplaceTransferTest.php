@@ -158,7 +158,7 @@ class PaymentMarketplaceTransferTest extends TestCase
             'currency'      => 'INR',
         ];
 
-        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
+        $this->mockAllSplitzTreatment();
 
         $response = $this->transferPayment($this->payment['id'], $transfers);
 
@@ -207,7 +207,7 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->payment['email'] = 'invalid-email-address[at][dot]com'; // invalid email format
 
 
-        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'on');
+        $this->mockAllSplitzTreatment();
 
         $response = $this->transferPayment($this->payment['id'], $transfers);
         $transfer = $response['items'][0];
@@ -232,7 +232,13 @@ class PaymentMarketplaceTransferTest extends TestCase
             'currency'      => 'INR',
         ];
 
-        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'control');
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
 
         $response = $this->transferPayment($this->payment['id'], $transfers);
         $transfer = $response['items'][0];
@@ -790,7 +796,13 @@ class PaymentMarketplaceTransferTest extends TestCase
     {
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => 0]);
 
-        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'control');
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -2050,7 +2062,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testPaymentTransferProcessingWhenExperimentIsEnabledAndPaymentIsRefunded()
     {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+        $this->mockAllSplitzTreatment();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -2100,7 +2112,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testOrderTransferProcessingWhenExperimentIsEnabledAndPaymentIsRefunded()
     {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+        $this->mockAllSplitzTreatment();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 

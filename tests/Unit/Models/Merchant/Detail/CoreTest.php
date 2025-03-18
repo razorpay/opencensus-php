@@ -81,6 +81,7 @@ use RZP\Models\Merchant\Document;
 use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
 class CoreTest extends TestCase
 {
@@ -3492,10 +3493,9 @@ class CoreTest extends TestCase
                                               ->times(1)
                                               ->withArgs(function ($operation, $request, $additionalArgs) {
                                                   return $operation === 'merchant_pgos_update_activation_status';
-                                              })->andReturn(["pos_activation_status"=>Status::KYC_QUALIFIED_STB]);
+                                              })->andReturn(["pos_activation_status"=>Status::KYC_QUALIFIED_STB, "downstream_status_code"=> 200]);
 
         $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
-
 
         $activationStatusData = [
             DetailConstant::POS_ACTIVATION_STATUS => Status::KYC_QUALIFIED_STB,
@@ -3512,8 +3512,71 @@ class CoreTest extends TestCase
         $this->assertTrue($merchant->getAttribute(\RZP\Models\Merchant\Entity::LIVE));
         $this->assertEquals(0, $merchant->getAttribute(\RZP\Models\Merchant\Entity::ACTIVATED));
 
-
     }
+
+
+    public function testKysQualifiedStbInUpdatePosActivationStatusOfMerchantWithRiskTags()
+    {
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'blacklist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'rejected',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $workflowServiceMock = \Mockery::mock(\RZP\Services\Workflow\Service::class)->makePartial();
+
+        $workflowServiceMock->shouldReceive('handle')
+            ->once();
+
+        $this->app->instance('workflow', $workflowServiceMock);
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('shouldMerchantOnboardViaPGOS')
+            ->andReturn(true);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_fetch_pos_activation_flow';
+            })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_fetch_activation_status';
+            })->andReturn(["pos_activation_status"=>'under_review']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pos_fetch_all_order';
+            })->andReturn(["order_list"     => []]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $activationStatusData = [
+            DetailConstant::POS_ACTIVATION_STATUS => Status::KYC_QUALIFIED_STB,
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Merchant cannot be pos activated when risk tags are assigned to the merchant');
+
+        (new MerchantCore())->addTags($merchantDetails->merchant->getId(), [
+            'tags'  => ['risk_review_suspend'],
+        ], false);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        (new DetailCore())->updatePosActivationStatusOfMerchant($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetails->merchant->getId());
+        $this->assertFalse($merchant->getAttribute(\RZP\Models\Merchant\Entity::LIVE));
+    }
+
     public function testHandleRiskWorkFlowCreationErrors()
     {
 
@@ -9063,6 +9126,81 @@ class CoreTest extends TestCase
         $actionState = $this->getDbLastEntity('action_state', 'live');
 
         $statusChangedBy = $actionState['updated_by'];
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
+    public function testUpdateActivationStatusFromEDDPendingToActivatedForCrossBorderOnboarding()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null,
+            'iec_code'                  => '1234567890'
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "cross_border_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $merchantAttribute = [
+            'purpose_code' => 'P0104',
+        ];
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), $merchantAttribute);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class);
 
         $this->assertEquals('activated', $merchantDetailData['activation_status']);
 
@@ -19030,6 +19168,86 @@ class CoreTest extends TestCase
         //check if there is a entry in balance config
         $this->assertNotNull($balanceConfig);
         $this->assertEquals($balance['id'], $balanceConfig['balance_id']);
+    }
+
+
+    public function testSubmitMerchantInternalWithActionasActivatePosAndMarkKycVerifiedAndRiskTags()
+    {
+        Queue::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "contact_mobile"=>"7355206348",
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_website" => "https://www.hempstrol.com/",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "business_operation_city" => "Delhi",
+            "business_operation_pin" => 110022,
+            "business_category" => "ecommerce",
+            "bank_account_number"=>"1234567890",
+            "bank_branch_ifsc"=>"ICIC0000009",
+            "bank_account_name"=>"CHIZRINZ INFOWAY PRIVATE LIMITED",
+            "business_subcategory" => "fashion_and_lifestyle",
+            "steps_finished" => [
+            ],
+            "activation_progress" => 80,
+            "locked" => 0,
+            "activation_flow" => "whitelist",
+            "issue_fields" => "business_website",
+            "submitted" => 1,
+            "poi_verification_status" => "verified",
+            "poa_verification_status" => "verified",
+            "bank_details_verification_status" => "verified",
+            "kyc_clarification_reasons" => [
+                "nc_count" => 1,
+                "additional_details" => [
+                ],
+            ],
+            "live_transaction_done" => 0,
+            "additional_websites" => [
+            ],
+            "company_pan_verification_status" => "intiated",
+            "gstin_verification_status" => "failed",
+            "international_activation_flow" => "whitelist",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Merchant cannot be pos activated when risk tags are assigned to the merchant');
+
+        (new MerchantCore())->addTags($merchant->getId(), [
+            'tags'  => ['risk_review_suspend'],
+        ], false);
+
+        (new MDS())->submitMerchantInternal($merchantDetails->getId(), [
+            'action'                  => 'ACTIVATE_POS_AND_MARK_KYC_VERIFIED'
+        ]);
     }
 
     public function testSubmitSalesAssistedActivationForm()

@@ -225,14 +225,6 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
     protected function shouldPushEvent(Merchant\Entity $merchant): bool
     {
-        $isEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant->getId(), RazorxTreatment::SEGMENT_ANALYTICS_FUNCTIONALITY);
-
-        if($isEnabled === false)
-        {
-            return false;
-        }
-
         return true;
     }
 

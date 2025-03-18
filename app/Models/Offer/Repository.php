@@ -7,6 +7,9 @@ use DB;
 use Illuminate\Database\Eloquent\Builder;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\Traits\ExternalOffersRepo;
 use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
@@ -225,13 +228,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAllDefaultOffersForMerchant(string $merchantId)
+    public function fetchAllDefaultOffersForMerchant(string $merchantId, $enableCache = false)
     {
-        $oeResponse = $this->fetchAllDefaultOffersForMerchantFromOE($merchantId);
+        $oeResponse = $this->fetchAllDefaultOffersForMerchantFromOE($merchantId, $enableCache);
 
         if (empty($oeResponse) === false)
         {
             return $oeResponse;
+        }
+
+        $isLowerEnvironment = ((app()->runningUnitTests() === true) or
+                               (app()->isEnvironmentQA() === true));
+
+        if ($isLowerEnvironment === false)
+        {
+            return new PublicCollection();
         }
 
         return $this->newQuery()
@@ -241,6 +252,44 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetch(array $params,
+                          string $merchantId = null,
+                          string $connectionType = null): PublicCollection
+    {
+        $fetchMultipleOEInput = $params;
+
+        try
+        {
+
+            $count = isset($fetchMultipleOEInput['count']) === true ? $fetchMultipleOEInput['count'] : 20;
+
+            $skip = isset($fetchMultipleOEInput['skip']) === true ? $fetchMultipleOEInput['skip'] : 0;
+
+            $fetchMultipleOEInput['page_size'] = $count;
+
+            unset($fetchMultipleOEInput['count']);
+
+            $fetchMultipleOEInput['page'] = $skip != 0 ? max(1, (floor($skip / $count) + 1)) : 1;
+
+            unset($fetchMultipleOEInput['skip']);
+
+            (new Validator())->validateInput('fetch_multiple', $fetchMultipleOEInput);
+
+            $offersResponse = $this->repo->offer->fetchMultipleMerchantDashboardFromOE(
+                $this->merchant->getId(), $fetchMultipleOEInput);
+
+            return new PublicCollection($offersResponse);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::OFFERS_ENGINE_FETCH_MULTIPLE_FAILURE, [
+                "merchant_id" => $this->merchant->getId(),
+            ]);
+        }
+
+        return parent::fetch($params, $merchantId, $connectionType);
+    }
     /**
      * Build a query based upon the attribute set in the new offer entity,
      * to check whether an offer exists with the same condition.
@@ -272,4 +321,5 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
 }

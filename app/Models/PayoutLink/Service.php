@@ -82,18 +82,7 @@ class Service extends Base\Service
 
     public function checkIfMerchantOnAPI() : bool
     {
-        // todo temp fix https://jira.corp.razorpay.com/browse/RX-3668
         return false;
-
-        $mid = $this->merchant->getId();
-
-        $variant = $this->app['razorx']->getTreatment($mid,
-            Merchant\RazorxTreatment::RX_PAYOUT_LINK_MICROSERVICE,
-            $this->app['rzp.mode'] ?? 'live');
-
-        return !($variant == 'on');
-
-        //return $this->merchant->isFeatureEnabled(Constants::X_PAYOUT_LINKS_MS) == false;
     }
 
     public function resendNotification(string $payoutLinkId, array $input)

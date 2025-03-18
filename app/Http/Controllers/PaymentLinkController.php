@@ -58,6 +58,12 @@ class PaymentLinkController extends Controller
         {
             $this->service()->sendNotification($id, $this->input);
         });
+       return ApiResponse::json([]);
+    }
+
+    public function sendNotificationNCA(string $id)
+    {
+        $this->service()->sendNotificationNCA($id, $this->input);
         return ApiResponse::json([]);
     }
 
@@ -272,7 +278,7 @@ class PaymentLinkController extends Controller
             return $this->service()->createOrder($id, $this->input);
         });
 
-        return ApiResponse::json($response);
+        return $this->getApiResponseWithDecompSpecificFieldsInHeaders($response);
     }
 
     public function createOrderOptions(string $id, CurrentRequest $request)
@@ -313,6 +319,19 @@ class PaymentLinkController extends Controller
         return $response;
     }
 
+    private function getApiResponseWithDecompSpecificFieldsInHeaders($responseArray) {
+        $viewType = $responseArray[Entity::PAYMENT_PAGE_VIEW_TYPE];
+
+        // unset fields so that we don't change the contract
+        unset($responseArray[Entity::PAYMENT_PAGE_VIEW_TYPE]);
+
+        $apiResponse = ApiResponse::json($responseArray);
+
+        $apiResponse->headers->set('Payment-Page-View-Type', $viewType);
+
+        return $apiResponse;
+    }
+
     public function updatePaymentPageItem(string $paymentPageItemId)
     {
         $response = Tracer::inSpan(['name' => 'payment_page.ppi.update'], function() use($paymentPageItemId)
@@ -320,7 +339,7 @@ class PaymentLinkController extends Controller
             return $this->service()->updatePaymentPageItem($paymentPageItemId, $this->input);
         });
 
-        return ApiResponse::json($response);
+        return $this->getApiResponseWithDecompSpecificFieldsInHeaders($response);
     }
 
     public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId)
@@ -388,7 +407,7 @@ class PaymentLinkController extends Controller
             return $this->service()->setReceiptDetails($id, $input);
         });
 
-        return ApiResponse::json($response);
+        return $this->getApiResponseWithDecompSpecificFieldsInHeaders($response);
     }
 
     public function getInvoiceDetails(string $paymentId)

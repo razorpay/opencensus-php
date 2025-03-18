@@ -405,4 +405,12 @@ class Repository extends Base\Repository
                      ->pluck(Entity::MERCHANT_ID)
                      ->toArray();
     }
+
+    public function getAccountStatementDetailsByBalanceIds(array $balanceIds = []): array
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::BALANCE_ID, $balanceIds)
+            ->get()
+            ->all();
+    }
 }

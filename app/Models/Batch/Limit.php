@@ -55,6 +55,7 @@ class Limit
         Type::SUB_MERCHANT                          => 5000,
         Type::MERCHANT_UPLOAD_MIQ                   => 1000,
         Type::JAMMU_AND_KASHMIR_ONBOARDING          => 10000,
+        Type::HDFC_ONBOARDING                       => 10000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
         TYPE::IIN_HITACHI_VISA                      => 500000,
@@ -64,11 +65,13 @@ class Limit
         Type::PAYMENT_LINK_V2                       => 500100,
         Type::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG   => 20000,
         Type::ECOLLECT_ICICI                        => 100000,
-        'nach_debit_nach_citi'                      => 100000,
+        'nach_debit_nach_citi'                      => 350000,
         'nach_debit_nach_icici'                     => 100000,
         Type::ECOLLECT_RBL                          => 100000,
         Type::ECOLLECT_YESBANK                      => 100000,
         Type::ECOLLECT_AXIS                         => 100000,
+        Type::ECOLLECT_AXIS_BANKING                 => 100000,
+        Type::ECOLLECT_IDFC                         => 100000,
         Type::BANK_TRANSFER_EDIT                    => 10000,
         Type::MERCHANT_STATUS_ACTION                => 50000,
         Type::FUND_ACCOUNT                          => 50000,
@@ -85,6 +88,7 @@ class Limit
         Type::SUBMERCHANT_TYPE_UPDATE               => 50000,
         Type::NACH_MIGRATION                        => 500100,
         Type::LINKED_ACCOUNT_CREATE                 => 50000,
+        Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE => 50000,
         Type::PAYMENT_TRANSFER                      => 50000,
         Type::TRANSFER_REVERSAL                     => 50000,
         Type::PAYMENT_TRANSFER_RETRY                => 10000,
@@ -114,6 +118,7 @@ class Limit
         Type::BVS_BULK_KYC_VERIFICATION             => 50000,
         Type::UPDATE_ODS_MERCHANT_LIMITS            => 50000,
         Type::CREATE_GIFT_CARD_TRANSFERS            => 10000,
+        Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 => 50000,
     ];
 
     /**

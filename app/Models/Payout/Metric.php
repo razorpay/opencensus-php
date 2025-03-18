@@ -40,6 +40,10 @@ final class Metric
     const PAYOUT_PUBLIC_ERROR_CODE_UNMAPPED_BANK_STATUS_CODE        = 'payout_public_error_code_unmapped_bank_status_code';
     const PAYOUT_METRIC_PUSH_EXCEPTION_COUNT                        = 'payout_metric_push_exception_count';
     const FTS_OTP_CREATION_FAILURES_COUNT                           = 'fts_otp_creation_failures_count';
+    const PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT                      = 'payouts_to_phone_number_volume_count';
+    const PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT                     = 'payouts_to_phone_number_success_count';
+    const PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD_FAILURE_COUNT     = 'payouts_to_phone_number_name_matching_threshold_failure_count';
+    const PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT               = 'payouts_to_phone_number_not_found_count';
     const ICICI_2FA_APPROVE_ROUTE_FAILURES_COUNT                    = 'icici_2fa_approve_route_failures_count';
     const PAYOUTS_BATCH_PAYOUT_ENTITY_CREATION_FAILED_WEBHOOK_FAILED = 'payouts_batch_payout_entity_creation_failed_webhook_failed';
     const CREDITS_REVERSE_FOR_LEDGER_PAYOUT_FOR_INSUFFICIENT_BALANCE_COUNT = 'credits_reverse_for_ledger_payout_for_insufficient_balance_count';
@@ -81,6 +85,9 @@ final class Metric
     const SERVER_ERROR_PAYOUT_SERVICE_REQUEST_FAILED      = "server_error_payout_service_request_failed";
 
     const PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED           = "PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED";
+
+    const PAYOUTS_DISPATCHED_WHILE_FEE_RECOVERY_QUEUED_FLAG_SET = 'payouts_dispatched_while_fee_recovery_queued_flag_set';
+    const FEES_NON_ZERO_FOR_RZP_FEES_PAYOUT = 'fees_non_zero_for_rzp_fees_payouts';
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS                      = 'payout_queued_to_created_duration_seconds.histogram';
@@ -126,6 +133,9 @@ final class Metric
     const PAYOUT_LEDGER_PROCESS_DURATION                                 = 'payout_ledger_process_duration';
     const PAYOUT_FTS_SYNC_CALL_DURATION                                  = 'payout_fts_sync_call_duration';
     const SET_PRICING_RULE_INFO_IN_PAYOUT_SERVICE_REDIS_DURATION         = 'set_pricing_rule_info_in_payout_service_redis_duration';
+
+    // Get Payout By Id
+    const GET_PAYOUT_BY_ID_FLOW = 'payout_by_id_flow';
 
     // Dimension constants
     const SOURCE         = 'source';

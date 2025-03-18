@@ -221,14 +221,7 @@ class FeeRecoveryLowBalance extends Job
                 return;
             }
 
-            $properties = [
-                "id" => UniqueIdEntity::generateUniqueId(),
-                "experiment_id" => $this->app['config']->get('app.splitz_payout_harvester_query_experiment_id'),
-            ];
-
-            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'Enable');
-
-            $connectionType = $variant === true ? ConnectionType::DATA_WAREHOUSE_MERCHANT : ConnectionType::PAYMENT_FETCH_REPLICA;
+            $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
 
             $actualRecoveryPayoutsAmount = (new BankingAccount\Entity)->fetchOutstandingAmountToBeRecovered($this->merchantId, $balanceId, $connectionType);
 

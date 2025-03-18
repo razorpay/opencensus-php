@@ -60,7 +60,9 @@ trait TestsBusinessBanking
         bool $skipFeatureAddition = false,
         int $balance = 0,
         string $balanceType = AccountType::SHARED,
-        $channel = null)
+        $channel = null,
+        $ifscCode = 'RAZRB000000',
+        $setCorpId = false)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
@@ -79,6 +81,10 @@ trait TestsBusinessBanking
             'account_type'          =>  'current',
             'channel'               =>  $bankingBalance['channel'],
         ];
+        if($setCorpId === true)
+        {
+            $bankingAccountAttributes['reference1'] = '123456';
+        }
 
         $this->createBankingAccount($bankingAccountAttributes);
 
@@ -90,7 +96,7 @@ trait TestsBusinessBanking
                 'type'           => 'virtual_account',
                 'entity_id'      => $virtualAccount->getId(),
                 'account_number' => '2224440041626905',
-                'ifsc_code'      => 'RAZRB000000',
+                'ifsc_code'      => $ifscCode,
             ]);
         $virtualAccount->bankAccount()->associate($bankAccount);
         $virtualAccount->balance()->associate($bankingBalance);
@@ -334,7 +340,7 @@ trait TestsBusinessBanking
                                            string $useWorkflowMicroService = 'off',
                                            string $bulkPayoutsImprovementsRollout = 'on',
                                            string $oldToNewIfscForMergedBank = 'on',
-                                           string $rejectCommentInWebhook = 'off',
+                                           string $rejectCommentInWebhook = 'disable',
                                            string $allowVAToVAPayouts = 'control',
                                            string $allowWalletAccountAmazonPay = 'on',
                                            string $rblBASFetchV2 = 'off',
@@ -528,6 +534,7 @@ trait TestsBusinessBanking
             'bank_reference_number' => $attributes["bank_reference_number"] ?? '',
             'balance_id'            => $attributes["balance_id"] ?? '',
             'status'                => 'activated',
+            'reference1'             => $attributes["reference1"] ?? '',
         ]);
 
         return $bankingAccount;
@@ -635,4 +642,54 @@ trait TestsBusinessBanking
             ]
         );
     }
+    protected function setMockSplitzTreatment($id,$experimentName,$variantName,$requestData): void
+    {
+        $input = [
+            "id" => $id,
+            'experiment_name' => $experimentName
+
+        ];
+
+        if ($requestData != null)
+            $input['request_data'] =  json_encode($requestData);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+    }
+    protected function setMockSplitzTreatmnt($SplitzTreatment,string $defaultBehaviour = 'disable'): void
+    {
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($array) use ($defaultBehaviour, $SplitzTreatment)
+            {
+                if (array_key_exists($array['experiment_name'], $SplitzTreatment) === true)
+                {
+                    return ["response"=>["variant" => ["name" => $SplitzTreatment[$array['experiment_name']]]]];
+                }
+
+                return ["response"=>["variant" => ["name" => $defaultBehaviour]]];
+            });
+    }
+
+    protected function setMockSplitzTreatmentEvaluate($SplitzTreatment,string $defaultBehaviour = 'disable'): void
+    {
+        $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($array) use ($defaultBehaviour, $SplitzTreatment)
+            {
+                if (array_key_exists($array['experiment_name'], $SplitzTreatment) === true)
+                {
+                    return ["response"=>["variant" => ["name" => $SplitzTreatment[$array['experiment_name']]]]];
+                }
+
+                return ["response"=>["variant" => ["name" => $defaultBehaviour]]];
+            });
+    }
+
 }

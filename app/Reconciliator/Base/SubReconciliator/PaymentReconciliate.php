@@ -978,7 +978,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function getPaymentTransaction()
     {
-        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($this->payment, ConnectionType::PAYMENT_FETCH_REPLICA);
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchantForConnectionType($this->payment, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $txn;
     }
@@ -1088,6 +1088,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 ]);
 
             $this->sendPaymentReconNFCDataToCLS($this->payment, $data);
+
+            $this->setReconStatusAndSummary($this->payment);
 
             return $recordSuccess;
         }
@@ -1459,7 +1461,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $iin = $this->payment->card->getIin();
 
-        if ($iin !== null && $this -> shouldForceIINFetchFromAPI($iin) === true)
+        $forceIINFetchFromAPI = $iin !== null && $this->shouldForceIINFetchFromAPI($iin);
+
+        if ($forceIINFetchFromAPI === true)
         {
             $this->paymentIin = $this->iinRepo->findOrFailAPIEntity($iin);
 
@@ -1523,7 +1527,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             'payment_iin' => $this->paymentIin]
         );
 
-        $this->repo->saveOrFail($this->paymentIin);
+        if($forceIINFetchFromAPI === true)
+        {
+            $this->repo->saveOrFail($this->paymentIin);
+        }
     }
 
     protected function shouldForceIINFetchFromAPI(string $bin)
@@ -2444,10 +2451,21 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'batch_id'      => $this->batchId,
             ]);
 
-        if (isset($this->merchant) === false )
+        if (isset($this->merchant) === false || $this->payment->isCard())
         {
             $this->merchant = $this->repo->merchant->fetchMerchantFromEntity($this->payment); ;
         }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'info_code'     => 'PAYMENT_TRANSACTION_CREATE',
+                'message'       => 'Attempting to create payment transaction in recon with merchant',
+                'payment_id'    => $this->payment->getId(),
+                'gateway'       => $this->gateway,
+                'batch_id'      => $this->batchId,
+                'merchant'      => $this->merchant->getId(),
+            ]);
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
@@ -2493,13 +2511,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
         else
         {
-            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true and $this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
             {
 
                 (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
 
             }
-            else
+            else if ($this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
                 {
 
                 list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
@@ -2508,6 +2526,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             };
         }
+
+
+        if ($this->payment->getCpsRoute() == Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+        {
+            //
+            // If the row reaches this part of the code, that means that it is captured on the gateway's end.
+            //
+            $this->payment->setGatewayCaptured(true);
+        }
+
 
         // This is required to save the association of the transaction with the payment.
         $this->repo->saveOrFail($this->payment);
@@ -2527,8 +2555,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
             }
-            else if ($this->payment->hasBeenCaptured() === false)
+            // Since there is no transaction getting created in API service for external payments hence returning the
+            // flow from here only for cps_route=5 payments.
+            else if (($this->payment->hasBeenCaptured() === false) and
+                ($this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
             {
+
                 (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
             }
         }

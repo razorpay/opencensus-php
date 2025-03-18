@@ -305,6 +305,11 @@ return [
         'org_token' => env('RBL_VA_SECRET'),
     ],
 
+    'ibl_va'    => [
+        'org_token' => env('IBL_VA_SECRET'),
+        'secret'    => env('IBL_VA_SYMM_KEY'),
+    ],
+
     'axis_va' => [
         'org_token'   => env('AXIS_VA_SECRET'),
         'x_corp_code' => env('AXIS_X_CORP_CODE', "9845"),
@@ -567,6 +572,8 @@ return [
     'ezetap-api' => [
         'key'       => 'ezetap-api',
         'secret'    =>  env('EZETAP_API_SECRET'),
+        'url' =>  env('EZETAP_API_URL'),
+        'mock'      => env('EZETAP_DEVICE_SERVICE_MOCK', false),
     ],
     'pcp_service' => [
         'secret'    =>  env('PCP_SERVICE_SECRET'),
@@ -1593,6 +1600,7 @@ return [
         'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),
         'username'  => env('UPI_PAYMENT_SERVICE_KEY'),
         'password'  => env('UPI_PAYMENT_SERVICE_SECRET'),
+        'secret'    => env('UPI_PAYMENT_SERVICE_SECRET'),
         'enabled'   => env('UPI_PAYMENT_SERVICE_ENABLED', false),
         'url'       => [
             'live' => env('UPI_PAYMENT_SERVICE_LIVE_URL'),
@@ -2117,6 +2125,7 @@ return [
             'live'  => env('CHARGE_COLLECTIONS_LIVE_URL'),
         ],
         'request_timeout' => env('CHARGE_COLLECTIONS_REQUEST_TIMEOUT', 0.1),
+        'pricing_reads_timeout' => env('CHARGE_COLLECTIONS_PRICING_READS_TIMEOUT', 1),
     ],
 
     'razorassist' => [
@@ -2167,5 +2176,15 @@ return [
         'test_url'      => env('CMS_TEST_BASE_URL'),
         'test_username' => env('CMS_TEST_USERNAME'),
         'test_password' => env('CMS_TEST_PASSWORD'),
+    ],
+
+    'payments_bank_transfer_service' => [
+        'mock'      => env('PAYMENTS_BANK_TRANSFER_SERVICE_MOCK', false),
+        'username'  => env('PAYMENTS_BANK_TRANSFER_SERVICE_USERNAME', 'payments_bank_transfer_user'),
+        'secret'    => env('PAYMENTS_BANK_TRANSFER_SERVICE_SECRET','RANDOM_BTS_SECRET'),
+        'url'       => [
+            'live' => env('PAYMENTS_BANK_TRANSFER_SERVICE_LIVE_URL'),
+            'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
+        ],
     ],
 ];

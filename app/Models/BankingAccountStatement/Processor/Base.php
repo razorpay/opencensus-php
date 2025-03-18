@@ -139,10 +139,14 @@ abstract class Base extends BaseCore
                 break;
 
             default:
+                $accountNumber = $this->getAccountNumber();
+                $properties = ['experiment_id' => 'x_bas_reads_from_slave', 'id'=>$accountNumber];
+
+                $experimentResult = $this->isSplitzExperimentEnable($properties, 'enabled');
+
                 /** @var Entity|null $bankTxn */
                 $bankTxn = $this->repo->banking_account_statement
-                    ->findLatestByAccountNumberAndChannel($this->getAccountNumber(),
-                                                          $this->channel);
+                    ->findLatestByAccountNumberAndChannel($accountNumber, $this->channel, $experimentResult);
         }
 
         return $bankTxn;
@@ -409,5 +413,24 @@ abstract class Base extends BaseCore
         }
 
         return [$matchedBASFromBank, $existingBAS];
+    }
+    private function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
     }
 }

@@ -172,51 +172,47 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
-
         try
         {
-            if ($splitzResult === 'variables')
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+
+            $websitePolicyV2SplitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'policy_wizard_v2_exp_id');
+
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants for whom website policy v2 experiment is enabled
+            // merchants who are not completely activated
+
+            if (($merchant->getService() === MerchantConstants::PGOS or
+                 $websitePolicyV2SplitzResult === 'variables') and
+                $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED)
             {
-                $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+                $websiteDetails = (new Repository())->getWebsiteDetailsForMerchantId($data["merchant_id"]);
 
-                $websitePolicyV2SplitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'policy_wizard_v2_exp_id');
-
-                // dual write only for below merchants
-                // merchants for whom pgos is serving onboarding requests
-                // merchants for whom website policy v2 experiment is enabled
-                // merchants who are not completely activated
-
-                if (($merchant->getService() === MerchantConstants::PGOS or
-                     $websitePolicyV2SplitzResult === 'variables') and
-                    $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED)
+                if (empty($websiteDetails) === false)
                 {
-                    $websiteDetails = (new Repository())->getWebsiteDetailsForMerchantId($data["merchant_id"]);
+                    unset($data[Entity::MERCHANT_ID]);
 
-                    if (empty($websiteDetails) === false)
-                    {
-                        unset($data[Entity::MERCHANT_ID]);
+                    unset($data[Entity::ID]);
 
-                        unset($data[Entity::ID]);
+                    $websiteDetails->edit($data);
 
-                        $websiteDetails->edit($data);
+                    $this->repo->saveOrFail($websiteDetails);
+                }
+                else
+                {
+                    $websiteDetails = new Entity;
 
-                        $this->repo->saveOrFail($websiteDetails);
-                    }
-                    else
-                    {
-                        $websiteDetails = new Entity;
+                    $websiteDetails->setId($data[Entity::ID]);
 
-                        $websiteDetails->setId($data[Entity::ID]);
+                    unset($data[Entity::ID]);
 
-                        unset($data[Entity::ID]);
+                    $websiteDetails->build($data);
 
-                        $websiteDetails->build($data);
-
-                        $this->repo->merchant_website->saveOrFail($websiteDetails);
-                    }
+                    $this->repo->merchant_website->saveOrFail($websiteDetails);
                 }
             }
+
         } catch (\Throwable $e) {
             $this->trace->traceException(
                 $e,

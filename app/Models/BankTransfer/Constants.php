@@ -44,6 +44,14 @@ class Constants
 
     const HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID = "hdfc_ecms_fund_trans_experiment_id";
 
+    const TRANSFER_TYPE_UPI = "UPI";
+    const TRANSFER_TYPE_NEFT = "NEFT";
+    const TRANSFER_TYPE_RTGS = "RTGS";
+    const TRANSFER_TYPE_IMPS = "IMPS";
+    const TRANSFER_TYPE_FT = "FT";
+    const TRANSFER_TYPE_IFT = "IFT";
+    const TRANSFER_TYPE_TRANSFER = "TRANSFER";
+
     // List as per: https://razorpay.atlassian.net/browse/CB-1864
     const BLACKLISTED_MCC_FOR_CURRENCY_CLOUD = [
         self::ALCOHOL,
@@ -51,7 +59,6 @@ class Constants
         self::OUTBOUND_TELEMARKTING,
         self::PAWN_SHOPS,
         self::POLITCAL_ORGANIZATIONS,
-        self::PRECIOUS_STONES_AND_METALS,
         self::SEEDS_OR_PLANTS,
         self::TOBACCO,
     ];
@@ -77,6 +84,19 @@ class Constants
 //        'poolingAccountNumber',
 //        'vaNumber',
 //        'remitterAccountNumber'
+    ];
+
+    const COLLECTX_BANK_TRANSFER_MODES = [
+        self::TRANSFER_TYPE_NEFT,
+        self::TRANSFER_TYPE_RTGS,
+        self::TRANSFER_TYPE_IMPS,
+        self::TRANSFER_TYPE_FT,
+        self::TRANSFER_TYPE_IFT,
+        self::TRANSFER_TYPE_TRANSFER,
+    ];
+
+    const COLLECTX_UPI_TRANSFER_MODES = [
+        self::TRANSFER_TYPE_UPI,
     ];
 
 }

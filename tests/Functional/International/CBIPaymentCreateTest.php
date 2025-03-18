@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\InternationalIntegration;
 use RZP\Tests\Traits\MocksSplitz;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
 class CBIPaymentCreateTest extends TestCase
 {
@@ -482,4 +483,29 @@ class CBIPaymentCreateTest extends TestCase
 
     }
 
+    public function testPayoutStatusPushForICATransferAsSource()
+    {
+        $cbiServiceMock =  Mockery::mock(CrossBorderImportServiceClient::class);
+
+        $cbiServiceMock->shouldReceive('pushPayoutStatusUpdate');
+
+        $this->app->instance('cross_border_import_service', $cbiServiceMock);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'            =>      'processed',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+        ]);
+
+        $this->fixtures->create('payout_source', [
+            'payout_id' => $payout->getId(),
+            'source_id' => '1nvp2XPMmaRLxb',
+            'source_type' => 'ica_transfer',
+            'priority' => 1
+        ]);
+
+        SourceUpdater::update($payout);
+
+        // assert that the Payout Update Status was called when feature was enabled
+        $cbiServiceMock->shouldHaveReceived('pushPayoutStatusUpdate');
+    }
 }
