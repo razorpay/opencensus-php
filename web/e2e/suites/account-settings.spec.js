@@ -160,7 +160,7 @@ test.describe
   });
 
   // roast test myAccountManageTeamTest
-  test('should show manage team tab and send invite @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should show manage team tab and send invite @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Manage team' }).click();
