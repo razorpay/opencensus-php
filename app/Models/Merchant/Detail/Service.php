@@ -760,7 +760,7 @@ class Service extends Base\Service
             {
                 $input['merchantId'] = $merchantId;
 
-                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
+                $pgosResponse =  $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
 
                 $pgosResponse['activation_response'][DEConstants::IS_POS_DETAILS_SUBMITTED] = $isPosDetailsSubmitted;
 

@@ -14503,4 +14503,105 @@ We look forward to transacting with you!
 
         $this->startTest();
     }
+
+    public function testUpdateFieldsForApiSubMerchantsPostActivation()
+    {
+        $attributes = [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::MUTUAL_FUND,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+            MerchantDetails::ACTIVATION_STATUS => "activated"
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_access_map', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $input = [
+            'id'            => $merchantId,
+            'experiment_id' => 'Piw6AZBS4M2Oac',
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $response = $this->startTest();
+    }
+
+    public function testL3SubmissionForApiSubMerchantsPostActivation()
+    {
+        $attributes = [
+            MerchantDetails::ACTIVATION_STATUS => "activated"
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->times(1)
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_fetch_pos_activation_flow';
+            })->andReturn(["pos_activation_flow"=>'whitelist']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->times(1)
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_fetch_activation_status';
+            })->andReturn(["pos_activation_status"=>'']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->times(1)
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_update_activation_status';
+            })->andReturn(["pos_activation_status"=>'under_review',
+                'downstream_status_code'=>'200']);
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->times(1)
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_activation_save';
+            })->andReturn(["activation_response"=>[]]);
+
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_access_map', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $this->startTest();
+    }
+
 }
