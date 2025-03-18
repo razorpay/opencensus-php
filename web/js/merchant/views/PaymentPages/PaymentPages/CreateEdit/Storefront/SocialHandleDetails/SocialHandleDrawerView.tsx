@@ -65,6 +65,11 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
   useEffect(() => {
     if (!selectedHandle) return;
     const profile = socialHandles.find((profile) => profile.platform === selectedHandle.name);
+    if (!profile) {
+      setInputVal('');
+      setUploadedLogo('');
+      return;
+    }
     setInputVal(profile?.profile_url ?? '');
     if (profile?.logo_url && profile?.platform === PLATFORM_NAMES.CUSTOM) {
       setUploadedLogo(profile.logo_url);
@@ -322,10 +327,6 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
                 </Button>
                 <Button onClick={confirmDeleteSocialHandle}>Confirm</Button>
               </Box>
-              <AddDetailsFooterButtons
-                onCancel={cancelDeleteSocialHandle}
-                onSave={confirmDeleteSocialHandle}
-              />
             </BottomSheetFooter>
           </BottomSheet>
         ) : (
