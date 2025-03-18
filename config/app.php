@@ -953,9 +953,9 @@ return array(
     'magic_preferences_routing_to_checkout_service_exp_id' => env('MAGIC_PREFERENCES_ROUTING_TO_CHECKOUT_SERVICE_EXP_ID'),
 
     'dispute_merchant_emails_initiate_experiment_id' => env('DISPUTE_MERCHANT_EMAILS_INITIATE_EXPERIMENT_ID'),
-    
+
     'arb_pre_arb_fee_adjustment_experiment_id' => env('ARB_PRE_ARB_FEE_ADJUSTMENT_EXP_ID'),
-    
+
     'url_mismatch_reply_on_ticket_experiment_id' => env('URL_MISMATCH_REPLY_ON_TICKET_EXPERIMENT_ID'),
 
     'transaction_isolation_for_order_experiment_id' => env('TRANSACTION_ISOLATION_FOR_ORDER_EXP_ID'),
@@ -1073,7 +1073,7 @@ return array(
     'pgos_l2_submit' => env('PGOS_L2_SUBMIT'),
 
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
-    
+
     'migrate_mkyc_to_document_upload_v2' => env('MIGRATE_MKYC_TO_DOCUMENT_UPLOAD_V2'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
@@ -1352,8 +1352,6 @@ return array(
 
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
 
-    'send_payout_service_emails_via_stork' => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK'),
-
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
 
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS'),
@@ -1375,8 +1373,6 @@ return array(
     'api_migration_v3' => env('API_MIGRATION_V3'),
 
     'appending_userid_in_sendsms_payload' => env('APPENDING_USERID_IN_SENDSMS_PAYLOAD'),
-
-    'send_payout_service_emails_via_stork_all'  => env('SEND_PAYOUT_SERVICE_EMAILS_VIA_STORK_ALL'),
 
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
 

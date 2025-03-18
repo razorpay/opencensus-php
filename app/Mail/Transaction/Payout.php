@@ -7,13 +7,11 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Exception\LogicException;
-use RZP\Mail\Base\EmailHelper;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\ViewDataSerializer;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Payout\Repository as PayoutRepository;
 use RZP\Models\FundAccount\Repository as FundAccountRepository;
-use RZP\Trace\TraceCode;
 
 class Payout extends Transaction
 {
@@ -102,21 +100,7 @@ class Payout extends Transaction
 
     public function shouldSendEmailViaStork():bool
     {
-        $app = \App::getFacadeRoot();
-
-        $merchantId = $this->merchant['id'];
-
-        $isStorkEmailVIAEnabled = (new EmailHelper())->isSendingPayoutServiceMailsSupported($merchantId,$this->view);
-
-        $traceData = [
-            'merchant_id' => $merchantId,
-            'should_create_via_stork' => $isStorkEmailVIAEnabled,
-            'template_view' => $this->view,
-        ];
-
-        $app['trace']->info(TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_STORK_ALL, $traceData);
-
-        return ($isStorkEmailVIAEnabled);
+        return true;
     }
 
     public function getParamsForStork(): array

@@ -16017,7 +16017,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(2);
+            })->times(3);
 
         $this->testPayoutStatusUpdate();
     }
@@ -24405,7 +24405,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(6);
+            })->times(7);
 
         $this->testCreatePayout();
 
@@ -24448,7 +24448,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(6);
+            })->times(7);
 
         $this->testCreatePayoutOnLiveMode();
 
