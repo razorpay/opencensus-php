@@ -64,20 +64,22 @@ export function prepareDataForSubmit(
   const checkboxFields = ['default_offer', 'block', 'creation_terms_accepted'];
 
   // backward compatibility with payment_method
-  const instruments = transformedFormData.selectedInstruments
-    ? transformedFormData.selectedInstruments
-        .filter((instrument) => instrument !== ALL_PRE_PAID_PAYMENT_METHODS)
-        .map((instrument) => ({ method: instrument }))
-    : [
-        {
-          method: transformedFormData.payment_method,
-        },
-      ];
+  const instruments =
+    Array.isArray(transformedFormData.selectedInstruments) &&
+    transformedFormData.selectedInstruments.length
+      ? transformedFormData.selectedInstruments
+          .filter((instrument) => instrument !== ALL_PRE_PAID_PAYMENT_METHODS)
+          .map((instrument) => ({ method: instrument }))
+      : [
+          {
+            method: transformedFormData.payment_method,
+          },
+        ];
 
   const isSinglePaymentMethodOffer = instruments.length === 1;
-  const selectedSingleInstrument = instruments[0].method;
+  const selectedSingleInstrument = instruments[0]?.method;
 
-  if (isMultiPaymentOfferExperimentEnabled) {
+  if (isMultiPaymentOfferExperimentEnabled && !isSinglePaymentMethodOffer) {
     transformedFormData.instruments = instruments;
     transformedFormData.payment_method = 'multiple';
   } else {
