@@ -25,6 +25,13 @@ const _paymentId = () => {
 const INIT_POINT = 'Amount paid';
 const INIT_PAGE = SelfServeActionPages.PaymentlinksPayments;
 
+const appendCurrency = (paymentData, currency) => {
+  return paymentData.map((payment) => ({
+    ...payment,
+    currency,
+  }));
+};
+
 const PaymentDetails = ({ paymentlink, isPaymentlinksV2Enabled }) => {
   let hasPartialPaymentDetails = false;
   let paymentId, paidAt;
@@ -74,7 +81,11 @@ const PaymentDetails = ({ paymentlink, isPaymentlinksV2Enabled }) => {
               title="Payments"
               progressLoader={true}
               columns={[_paymentId(), paidOn, amount]}
-              items={isPaymentlinksV2Enabled ? paymentlink.payments : paymentlink.payments.items}
+              items={
+                isPaymentlinksV2Enabled
+                  ? appendCurrency(paymentlink.payments, paymentlink.currency)
+                  : appendCurrency(paymentlink.payments.items, paymentlink.currency)
+              }
               noStripe={true}
             />
           </div>
