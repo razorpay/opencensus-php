@@ -1388,7 +1388,9 @@ class Generator extends QrCode\Generator
         // QrCode/Generator/getTransactionReferenceTlv()
         $qrRefId = $this->getRefIdForQrCode($qrCode);
 
-        $upiString = $rupayRidTlv . $qrRefId;
+        $qrRefTlv = Tags::UPI_VPA_REFERENCE_TR . strlen($qrRefId) . $qrRefId;
+
+        $upiString = $rupayRidTlv . $qrRefTlv;
 
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }

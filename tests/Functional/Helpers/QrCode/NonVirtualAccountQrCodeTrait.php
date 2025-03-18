@@ -1557,7 +1557,7 @@ trait NonVirtualAccountQrCodeTrait
 
         // Multiple vs Single Use
         $qrId = $qrCode->getId();
-        $qrString .= $isMultipleUse ? "27350010A000000524STQ{$qrId}qrv2" : "27320010A000000524{$qrId}qrv2";
+        $qrString .= $isMultipleUse ? "27390010A0000005240121STQ{$qrId}qrv2" : "27360010A0000005240118{$qrId}qrv2";
 
         $qrString .= "520453995303356";
 
