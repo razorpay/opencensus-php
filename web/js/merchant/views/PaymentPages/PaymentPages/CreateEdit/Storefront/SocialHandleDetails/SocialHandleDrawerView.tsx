@@ -37,6 +37,7 @@ import {
   reorderSocialHandle,
 } from '@dashboards/payments/reducers/paymentPages/storefront';
 import { zIndicesMap } from '@libs/web-nexus/common/constant';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
   storefront,
@@ -72,6 +73,14 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
 
   const updateInputValue = (e: any) => {
     setInputVal(e.value);
+    track.addSocialLinkClicked({
+      storefrontId: storefront?.id,
+      isNewStorefront: Boolean(!storefront?.id),
+      socialHandle: {
+        name: selectedHandle?.name,
+        link: e.value,
+      },
+    });
   };
 
   const showDeleteConfirmation = (platform: string) => {
@@ -83,6 +92,10 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
     deleteSocialHandle({ platform: selectedPlatform });
     setSelectedPlatform('');
     setOpenDeleteModal(false);
+    track.deleteSocialLinkClicked(selectedPlatform, {
+      storefrontId: storefront?.id,
+      isNewStorefront: Boolean(!storefront?.id),
+    });
   };
 
   const cancelDeleteSocialHandle = () => {
@@ -127,6 +140,7 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
                 inputVal={inputVal}
                 handleInputChange={updateInputValue}
                 isMobile={isMobile}
+                storefrontId={storefront?.id}
               />
             ) : showSelectModal ? (
               <>
@@ -139,6 +153,10 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
                       value={item.name}
                       onClick={() => {
                         setSelectedHandle(item);
+                        track.socialHandleClicked(item?.name, {
+                          storefrontId: storefront?.id,
+                          isNewStoreFront: Boolean(!storefront?.id),
+                        });
                       }}
                     />
                   ))}
@@ -273,6 +291,7 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
               setUploadedLogo={setUploadedLogo}
               isSaveDisabled={isSaveDisabled}
               setSelectedHandle={setSelectedHandle}
+              storefrontId={storefront?.id}
             />
           )}
         </PaymentPagesDrawer>
@@ -316,7 +335,10 @@ const SocialHandleDrawerView: React.FC<SocialHandleDrawerViewProps> = ({
               subtitle="Your added handle will be deleted."
             />
             <ModalFooter>
-              <AddDetailsFooterButtons onCancel={cancelDeleteSocialHandle} onSave={confirmDeleteSocialHandle} />
+              <AddDetailsFooterButtons
+                onCancel={cancelDeleteSocialHandle}
+                onSave={confirmDeleteSocialHandle}
+              />
             </ModalFooter>
           </Modal>
         ))}

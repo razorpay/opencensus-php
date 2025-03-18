@@ -203,6 +203,7 @@ export interface SocialHandleModalProps {
   setUploadedLogo: React.Dispatch<React.SetStateAction<string>>;
   isSaveDisabled: boolean;
   setSelectedHandle: React.Dispatch<React.SetStateAction<SocialHandle | null>>;
+  storefrontId?: string | null;
 }
 
 export interface AddDetailsFooterButtonsProps {
@@ -272,4 +273,5 @@ export interface AddDetailsContentProps {
   inputVal: string;
   handleInputChange: (e: any) => void;
   isMobile: boolean;
+  storefrontId: string | null;
 }

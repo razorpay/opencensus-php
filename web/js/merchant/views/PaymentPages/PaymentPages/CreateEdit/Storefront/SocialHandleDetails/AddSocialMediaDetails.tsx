@@ -10,6 +10,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import LineItems from '../LineItems';
 import { AlertState } from '../types';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 const SocialHandleDrawerContainer = lazy(
   () => import(/* webpackChunkName: 'SocialHandleDrawerContainer' */ './SocialHandleDrawerContainer'),
@@ -91,6 +92,10 @@ const AddSocialMediaDetails: React.FC<IAddSocialMedialDetailsProps> = ({
 
   const handleSocialSwitchToggle = (isChecked: boolean) => {
     handleSocialHandlesSetting(isChecked);
+    track.socialHandlePreviewClicked({
+      storefrontId,
+      isNewStoreFront: Boolean(!storefrontId),
+    })
   };
 
   const handleAlertPrimaryClick = () => {

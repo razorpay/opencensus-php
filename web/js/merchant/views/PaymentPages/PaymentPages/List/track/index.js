@@ -516,6 +516,126 @@ function _track() {
         'upload banner modal',
       );
     },
+    socialHandleArrowClicked: (extraProperties) => {
+      sendToSegment(
+        'add social handles',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handles modal',
+      );
+    },
+    socialHandlePreviewClicked: (extraProperties) => {
+      sendToSegment(
+        'turn on social handles preview',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handles modal',
+      );
+    },
+    selectSocialHandleArrowClicked: (extraProperties) => {
+      sendToSegment(
+        'select a social account arrow',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handles modal',
+      );
+    },
+    socialHandleClicked: (platform, extraProperties) => {
+      sendToSegment(
+        `select social account ${platform}`,
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handle modal',
+      );
+    },
+    addSocialLinkClicked: (extraProperties) => {
+      sendToSegment(
+        'add social link',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handle modal',
+      );
+    },
+    uploadSocialHandleThumbnail: (extraProperties) => {
+      sendToSegment(
+        'Upload custom social handle thumbnail',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'upload custom social handle thumbnail modal',
+      );
+    },
+    confirmSocialLinkClicked: (extraProperties) => {
+      sendToSegment(
+        'confirm social link',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handle confirm modal',
+      );
+    },
+    editSocialLinkClicked: (platform, extraProperties) => {
+      sendToSegment(
+        `edit ${platform} handle`,
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'edit social handle confirm modal',
+      );
+    },
+    deleteSocialLinkClicked: (platform, extraProperties) => {
+      sendToSegment(
+        `delete ${platform} handle`,
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'delete social handle confirm modal',
+      );
+    },
+    missingSocialHandleErrorRendered: (extraProperties) => {
+      sendToSegment(
+        'missing social handle error',
+        'rendered',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handles modal',
+      );
+    },
   };
 }
 

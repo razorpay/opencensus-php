@@ -342,7 +342,7 @@ export default (state = initialState, action) => {
       return merge(state, {
         isLoading: false,
         error: '',
-        id: action.payload.id,
+        id: action.id,
         entity: transformStorefront(action.payload.data),
       });
     }

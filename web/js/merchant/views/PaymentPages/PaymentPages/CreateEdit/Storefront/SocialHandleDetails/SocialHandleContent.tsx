@@ -19,6 +19,7 @@ import {
   AddDetailsContentProps,
 } from '../types';
 import UploadCustomLogo from './UploadCustomLogo';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 export const AddDetailsFooterButtons = memo(
   ({
@@ -61,6 +62,7 @@ export const AddDetailsContent: React.FC<AddDetailsContentProps> = ({
   inputVal,
   handleInputChange,
   isMobile,
+  storefrontId = ""
 }) => {
   const isCustomedWebsite = selectedHandle?.name === PLATFORM_NAMES.CUSTOM;
 
@@ -77,6 +79,7 @@ export const AddDetailsContent: React.FC<AddDetailsContentProps> = ({
           setUploadedFile={setUploadedFile}
           uploadedLogo={uploadedLogo}
           setUploadedLogo={setUploadedLogo}
+          storefrontId={storefrontId}
         />
       )}
 
@@ -139,6 +142,7 @@ export const SocialHandleModal = memo(
     setUploadedLogo,
     isSaveDisabled,
     setSelectedHandle,
+    storefrontId = '',
   }: SocialHandleModalProps) => {
     return (
       <Modal isOpen={true} onDismiss={cancelSocialHandleOperation} size="medium">
@@ -156,6 +160,7 @@ export const SocialHandleModal = memo(
               inputVal={inputVal}
               handleInputChange={updateInputValue}
               isMobile={false}
+              storefrontId={storefrontId}
             />
           ) : (
             <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap="spacing.7">
@@ -164,8 +169,11 @@ export const SocialHandleModal = memo(
                   key={item.name}
                   item={item}
                   onSelect={(item) => {
-                    console.log('====CLCLLCLCLC');
                     setSelectedHandle(item);
+                    track.socialHandleClicked(item?.name, {
+                      storefrontId,
+                      isNewStoreFront: Boolean(!storefrontId),
+                    });
                   }}
                 />
               ))}

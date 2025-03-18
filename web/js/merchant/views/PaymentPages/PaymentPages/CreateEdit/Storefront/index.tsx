@@ -91,20 +91,18 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ChromeSearchBar from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/BuisnessDetails/ChromeSearchBar';
 
 const AddBuisnessDetails = lazy(
-  () =>
-    import(
-      /* webpackChunkName: 'AddBuisnessDetails' */ './BuisnessDetails/AddBuisnessDetails'),
+  () => import(/* webpackChunkName: 'AddBuisnessDetails' */ './BuisnessDetails/AddBuisnessDetails'),
 );
 
 const AddBannerDetails = lazy(
-  () =>
-    import(/* webpackChunkName: 'AddBannerDetails' */ './BannerDetails/AddBannerDetails'),
+  () => import(/* webpackChunkName: 'AddBannerDetails' */ './BannerDetails/AddBannerDetails'),
 );
 
 const AddSocialMediaDetails = lazy(
   () =>
     import(
-      /* webpackChunkName: 'AddSocialMediaDetails' */ './SocialHandleDetails/AddSocialMediaDetails'),
+      /* webpackChunkName: 'AddSocialMediaDetails' */ './SocialHandleDetails/AddSocialMediaDetails'
+    ),
 );
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();
@@ -191,6 +189,10 @@ const StoreFront = ({
 
   const handleAddSocialMediaClick = (val: boolean) => {
     setOpenSocialMediaDrawer(val);
+    track.socialHandleArrowClicked({
+      storefrontId: id,
+      isNewStoreFront: Boolean(isCreate),
+    });
   };
 
   const getMerchantDetails = useCallback(
@@ -610,6 +612,10 @@ const StoreFront = ({
     }
 
     if (isSocialHandlesEnabled && checkForSocialHanldesAlert()) {
+      track.missingSocialHandleErrorRendered({
+        storefrontId: id,
+        isNewStorefront: Boolean(isCreate),
+      });
       setShowAlert((prev) => ({
         ...prev,
         showSocialHandleAlert: true,

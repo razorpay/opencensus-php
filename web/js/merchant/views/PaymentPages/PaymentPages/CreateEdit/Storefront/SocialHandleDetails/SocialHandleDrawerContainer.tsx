@@ -14,6 +14,7 @@ import { SocialHandle, SocialHandleDrawerProps } from '../types';
 import SocialHandleDrawerView from './SocialHandleDrawerView';
 import { toTitleCase } from '@libs/shared-utils';
 import { validateHandle } from '../utils';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
 /**
  * Calculates the next position value for a new social media handle.
@@ -110,6 +111,14 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
         setSelectedHandle(null);
         setShowSelectModal(false);
         setIsEditing(false);
+        track.confirmSocialLinkClicked({
+          storefrontId: storefront?.id,
+          isNewStorefront: Boolean(!storefront?.id),
+          socialHandle: {
+            name: selectedHandle?.name,
+            link: inputVal,
+          },
+        });
       } catch (error) {
         showNotification({
           type: 'error',
@@ -139,6 +148,10 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
       setShowSelectModal(true);
       setSelectedHandle(handle);
     }
+    track.editSocialLinkClicked(platform, {
+      storefrontId: storefront?.id,
+      isNewStorefront: Boolean(!storefront?.id),
+    });
   };
 
   const openSocialHandleSelector = useCallback(() => {
@@ -150,6 +163,10 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
       return;
     }
     setShowSelectModal(true);
+    track.selectSocialHandleArrowClicked({
+      storefrontId: storefront?.id,
+      isNewStoreFront: Boolean(!storefront?.id),
+    });
   }, [hasReachedHandleLimit]);
 
   return (

@@ -10,6 +10,8 @@ import {
 } from '@razorpay/blade/components';
 import { convertFileToBase64, validateFile } from '../utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
+import { PLATFORM_NAMES } from '../../../constants';
 
 export interface UploadCustomLogoProps {
   onImageChange?: (file: File | null, name?: string) => void;
@@ -17,6 +19,7 @@ export interface UploadCustomLogoProps {
   setUploadedFile: React.Dispatch<React.SetStateAction<File | null>>;
   uploadedLogo: string;
   setUploadedLogo: React.Dispatch<React.SetStateAction<string>>;
+  storefrontId: string | null;
 }
 
 const UploadCustomLogo: React.FC<UploadCustomLogoProps> = ({
@@ -24,6 +27,7 @@ const UploadCustomLogo: React.FC<UploadCustomLogoProps> = ({
   uploadedFile,
   uploadedLogo,
   setUploadedLogo,
+  storefrontId = '',
 }) => {
   const [localFile, setLocalFile] = React.useState<BladeFile | null>(uploadedFile);
   const onImageUpload = async ({ fileList }) => {
@@ -40,6 +44,13 @@ const UploadCustomLogo: React.FC<UploadCustomLogoProps> = ({
     setUploadedLogo(base64Url);
     setUploadedFile(file);
     setLocalFile(file);
+    track.uploadSocialHandleThumbnail({
+      storefrontId: storefrontId,
+      isNewStorefront: Boolean(!storefrontId),
+      socialHandle: {
+        name: PLATFORM_NAMES.CUSTOM,
+      },
+    });
   };
 
   const handleRemove = () => {
