@@ -71,6 +71,7 @@ interface IPaymentRefundDetails {
   orgFeatures: string[];
   terminalProviders: any;
   shouldShowOptimizerDetails: boolean;
+  isIssueRefundHidden: boolean;
 }
 interface PaymentRefundContentType {
   enableBorderTopRadius?: boolean;
@@ -101,6 +102,7 @@ function PaymentRefundDetails({
   orgFeatures,
   terminalProviders,
   shouldShowOptimizerDetails,
+  isIssueRefundHidden,
 }: IPaymentRefundDetails): React.ReactElement {
   const { currency, refund_status } = paymentDetails!;
   const hasFooter = refund_status !== null;
@@ -172,7 +174,7 @@ function PaymentRefundDetails({
             >
               Refund
             </Text>
-            {!isCollectXEnabled ? (
+            {!isCollectXEnabled && !isIssueRefundHidden ? (
               <Button
                 size="small"
                 variant="secondary"

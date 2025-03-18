@@ -107,6 +107,19 @@ export interface IQuestionDetails {
   };
   id: string;
 }
+
+export interface RefundConfigForEntity {
+  action: string;
+  entity_id: string;
+  entity_type: string;
+  gateway?: string; 
+  method?: string;
+}
+
+export interface RefundConfig {
+  org: RefundConfigForEntity[];
+  merchant: RefundConfigForEntity[];
+}
 export interface IPaymentDetails {
   id: string;
   amount: number;

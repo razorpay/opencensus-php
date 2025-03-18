@@ -280,6 +280,12 @@ export const isRefundRevampEnabled = (splitz: SpiltzContextState): boolean => {
   return isExperimentEnabled(abExperiments.refund_revamp);
 };
 
+export const isRefundConfigRevampEnabled = (splitz: SpiltzContextState): boolean => {
+  const { abExperiments } = splitz || { abExperiments: { refund_config_revamp: undefined } };
+  if (!abExperiments?.refund_config_revamp) return false;
+  return isExperimentEnabled(abExperiments.refund_config_revamp);
+};
+
 export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
   const { abExperiments } = splitz || { abExperiments: { bounce_memo: undefined } };
   if (!abExperiments?.bounce_memo) return false;

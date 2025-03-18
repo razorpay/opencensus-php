@@ -230,5 +230,22 @@ describe('Payment Refund Details component', () => {
       expect(issueRefundBtn).toBeInTheDocument();
       expect(issueRefundBtn).toBeDisabled();
     });
+
+    test('Should hide issue refund button if refund is desabled via config for respective payment method', () => {
+      isIssueRefundDisabled.mockReturnValue(true);
+      isPaymentEligibleForRefundAsPerStatus.mockReturnValue(true);
+      isPaymentEligibleForRefund.mockReturnValue(true);
+      hasPaymentOpenNonFraudDisputes.mockReturnValue(false);
+      isGatewaySupportingRefund.mockReturnValue(true);
+      isPaymentThroughSeamlessProviders.mockReturnValue(false);
+      isIssueRefundDisabledForMethod.mockReturnValue(true);
+
+      const updatedAppProps = { ...appProps };
+      updatedAppProps.paymentIdRefundDetails = [];
+      updatedAppProps.isIssueRefundHidden = true;
+      render(<App props={updatedAppProps} />, { initialState });
+
+      expect(screen.queryByText('Issue refund')).not.toBeInTheDocument();
+    });
   });
 });

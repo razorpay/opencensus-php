@@ -33,6 +33,7 @@ import {
   fetchTransfersFn,
   refundPaymentFn,
   fetchAppDetails,
+  fetchRefundConfig,
 } from 'merchant/views/Transactions/model';
 import RefundModal from 'merchant/views/Transactions/v1/Payments/components/RefundModalNew';
 import RefundModalRevamp from 'merchant/views/Transactions/v2/Payments/components/PaymentRefund';
@@ -41,7 +42,10 @@ import {
   trackDetailsClick,
   trackDetailsPageLoad,
 } from 'merchant/views/Transactions/v2/common/tracking';
-import { isRefundRevampEnabled } from 'merchant/views/Transactions/v2/common/utils';
+import {
+  isRefundRevampEnabled,
+  isRefundConfigRevampEnabled,
+} from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -56,13 +60,14 @@ import {
   ICurrentBalance,
   ApplicationDetails,
 } from './types';
-import { isIssueRefundDisabled } from './utils';
+import { isIssueRefundDisabled, isIssueRefundBtnHidden } from './utils';
 
 const flexDirectionSettings: any = { base: 'column', xl: 'row', l: 'row' };
 
 interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
   showNotification: (data: any) => void;
   user: User;
+  org: any;
   openModal: (args) => void;
   fetchCurrentBalance: () => Promise<ICurrentBalance>;
   fetchRefundFee: () => Promise<Record<string, string>>;
@@ -73,6 +78,7 @@ interface PaymentDetailsProps extends RouteComponentProps<{ id: string }> {
 const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   const {
     user,
+    org,
     match: { params },
     location,
     showNotification,
@@ -88,6 +94,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   const [paymentIdRefundDetails, setPaymentIdRefundDetails] =
     useState<IPaymentIdRefundDetails | null>(null);
   const [error, setError] = useState(null);
+  const [isIssueRefundHidden, setIsIssueRefundHidden] = useState(false);
 
   const { theme } = useTheme();
   const { matchedBreakpoint } = useBreakpoint({
@@ -119,15 +126,35 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
         fetchTerminalProviders();
       }
       if (isPaymentsRoute) {
-        // payments route - api call flow
-        const responses = await Promise.all([
+        const promises = [
           fetchPaymentIdDetails(id, dashboardFlag),
           fetchPaymentIdRefundDetails(id),
-        ]);
+        ];
+
+        const isRefundConfigEnabled = isRefundConfigRevampEnabled(splitz);
+
+        // Get refund config for VAS orgs
+        if (isRefundConfigEnabled && user?.isVASOrg) {
+          promises.push(fetchRefundConfig('org', org?.id.replace('org_', '')));
+          promises.push(fetchRefundConfig('merchant', user?.id));
+        }
+
+        // payments route - api call flow
+        const responses = await Promise.all(promises);
 
         setPaymentIdDetails(responses[0].data);
         trackDetailsPageLoad({ latestTransactionStatus: responses[0].data.status });
         setPaymentIdRefundDetails(responses[1].data.items);
+
+        if (isRefundConfigEnabled && user?.isVASOrg) {
+          const refundConfig = {
+            org: responses[2]?.data?.refund_configs || [],
+            merchant: responses[3]?.data?.refund_configs || [],
+          };
+          const isIssueRefundHidden = isIssueRefundBtnHidden(responses[0]?.data, refundConfig) || false;
+
+          setIsIssueRefundHidden(isIssueRefundHidden);
+        }
 
         try {
           const appDetailsResponse = await fetchAppDetails(slicedPaymentId);
@@ -296,6 +323,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
                 paymentIdDetails={paymentIdDetails}
                 paymentIdRefundDetails={paymentIdRefundDetails}
                 reFetchPageDetails={reFetchPageDetails}
+                isIssueRefundHidden={isIssueRefundHidden}
               />
             )}
             <PaymentDetailsSection
@@ -311,6 +339,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
                 reFetchPageDetails={reFetchPageDetails}
                 shouldShowOptimizerDetails={shouldShowOptimizerDetails}
                 terminalProviders={terminalProviders}
+                isIssueRefundHidden={isIssueRefundHidden}
               />
             )}
           </Box>
@@ -320,6 +349,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
                 paymentIdDetails={paymentIdDetails}
                 paymentIdRefundDetails={paymentIdRefundDetails}
                 reFetchPageDetails={reFetchPageDetails}
+                isIssueRefundHidden={isIssueRefundHidden}
               />
             )}
           </Box>
@@ -331,6 +361,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  org: state.session.org,
   terminalProviders: state.navigator.terminalProviders,
 });
 

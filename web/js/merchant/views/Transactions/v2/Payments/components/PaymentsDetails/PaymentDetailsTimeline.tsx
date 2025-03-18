@@ -61,6 +61,7 @@ interface PaymentDetailsTimelineProps {
   openModal: (args: any) => void;
   reFetchPageDetails: (id: string) => void;
   user: any;
+  isIssueRefundHidden: boolean;
 }
 function PaymentDetailsTimeline({
   paymentIdDetails,
@@ -70,6 +71,7 @@ function PaymentDetailsTimeline({
   openModal,
   reFetchPageDetails,
   user,
+  isIssueRefundHidden,
 }: PaymentDetailsTimelineProps): JSX.Element {
   const [paymentTimelineData, setpaymentTimelineData] = useState<PaymentsTimeline | null>(null);
   const [skipTransactionTimeline, setSkipTransactionTimeline] =
@@ -251,7 +253,7 @@ function PaymentDetailsTimeline({
             <Spinner accessibilityLabel="timeline-loader" />
           </Box>
         )}
-        {!isIssueRefundDisabled(paymentIdDetails, user) &&
+        { !isIssueRefundHidden && !isIssueRefundDisabled(paymentIdDetails, user) &&
         !user.isJnKOmniEnabled &&
         !isConfigTagEnabled('refunds.refund') &&
         !isCollectXEnabled ? (

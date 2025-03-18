@@ -566,6 +566,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'refund_config_revamp',
+        experimentId: {
+          beta: 'Q5QJc6uaJiqsL0',
+          production: 'Q5Q6A259ly80M2',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'ray_ai',
         experimentId: {
           beta: 'NgMk9aLHhP79nc',

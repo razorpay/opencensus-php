@@ -521,4 +521,5 @@ export type PaymentsDashboardUserGetters = {
   isCardRefundDisabled: boolean;
   isNetbankingRefundDisabled: boolean;
   isUpiRefundDisabled: boolean;
+  isVASOrg: boolean;
 };

@@ -27,6 +27,13 @@ export const fetchRefundIdDetails = (id: string): Promise<any> => {
   });
 };
 
+export const fetchRefundConfig = (entityType: string, entityId: string): Promise<any> => {
+  return merchantFetch({
+    url: `refund_configs?entity_type=${entityType}&entity_id=${entityId}`,
+    method: 'GET',
+  });
+};
+
 export const fetchInstantRefundFeeFn = (id, amount): Promise<any> => {
   const method = 'get';
   const url = `refunds/fee/`;

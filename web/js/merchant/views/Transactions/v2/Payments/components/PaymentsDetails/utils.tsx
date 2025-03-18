@@ -39,6 +39,7 @@ import {
   IBankTransfer,
   DisputeStatus,
   IQuestionDetails,
+  RefundConfig,
 } from './types';
 
 export const shouldHideCapturePaymentAction = (
@@ -723,4 +724,31 @@ export const imageDownload = ({
     if (window.APP_ENV !== 'production')
       console.error('Image download failed:', (error as Error).message);
   }
+};
+
+export const isIssueRefundBtnHidden = (paymentIdDetails: IPaymentDetails, refundConfig: RefundConfig): boolean => {
+  const disableRefundDetails = {};
+
+  refundConfig?.org?.forEach((configDetails) => {
+    if (configDetails?.method === paymentIdDetails?.method) {
+      disableRefundDetails[configDetails.entity_type] = configDetails?.action === 'disable';
+    }
+  });
+
+  refundConfig?.merchant?.forEach((configDetails) => {
+    if (configDetails?.method === paymentIdDetails?.method) {
+      disableRefundDetails[configDetails.entity_type] = configDetails?.action === 'disable';
+    }
+  });
+
+  // By default refund will be enabled
+  // Merchant level config should be the highest priority over org
+  let isHideIssueRefund = false;
+
+  if (disableRefundDetails.hasOwnProperty('merchant')) {
+    isHideIssueRefund = disableRefundDetails.merchant;
+  } else if (disableRefundDetails.hasOwnProperty('org')) {
+    isHideIssueRefund = disableRefundDetails.org;
+  }
+  return isHideIssueRefund;
 };

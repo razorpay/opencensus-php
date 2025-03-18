@@ -1640,6 +1640,10 @@ export default class User {
     return isOrgFeatureExist('disable_paypal_pop_up');
   }
 
+  get isVASOrg() {
+    return isOrgFeatureExist('vas_org_identifer');
+  }
+
   // Bank account auto update or old workflow with the approval from admin
   bankAccountAutoUpdateOrWorkflow() {
     return true;
