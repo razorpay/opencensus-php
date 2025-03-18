@@ -31,7 +31,7 @@ export const _prepareDowntimeObj = ({
   instrumentValue,
   data,
 }) => {
-  if (!method || !instrumentType || !instrumentValue) return null;
+  if (!method || !instrumentType || !instrumentValue) return currentDowntimeObj;
   //cloning and appending to the current downtime obj
   let activeDowntimesObj = currentDowntimeObj;
   //null checks on properties
