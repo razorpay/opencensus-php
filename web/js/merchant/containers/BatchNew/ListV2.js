@@ -127,7 +127,7 @@ class BatchList extends ListContainer {
     } = this.props;
     const { user } = session;
     const showBatchUploadButton =
-      (showUploadForAdminOrOwner ? user?.isAdminOrOwner : true) && !user.isOrgCurlec;
+      (showUploadForAdminOrOwner ? user?.isAdminOrOwner : true);
     const { tabsData } = this.state;
     const tabData = propsTabData?.length > 0 ? propsTabData : tabsData;
 
