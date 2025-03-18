@@ -2401,6 +2401,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'block_bank_details_update',
+          experimentId: {
+            beta: 'Q1TQ8tAw2fz9g1',
+            production: 'Q1U3Sbl8XH3PEW',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

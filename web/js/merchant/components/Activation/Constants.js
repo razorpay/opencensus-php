@@ -4,6 +4,8 @@ export const LOADING = {
   PENDING: 0, // Pending = show spinner
   INITIAL: null, // Initial = hide spinner
   DEFAULT: 2, // Some custom message when form opens
+  SENDING_OTP: 3,
+  OTP_SENT: 4,
 };
 
 // Business categories

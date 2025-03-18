@@ -25,7 +25,8 @@ class OTPVerificationSession
     const MAX_RETRY_VALUE = 10;
 
     const enablePasswordAndApiKey2fa = "PASSWORD_API_KEY_2FA";
-    const enableRouteLinkedAccount2fa = "ROUTE_LINKED_ACCOUNT_2FA";
+    const blockLaBankAccountUpdate2fa = "BLOCK_LINKED_ACCOUNT_BA_UPDATE_2FA";
+
     /**
      * @var array $setUrls will hold the http method prefixed urls for which a session key needs to be set.
      *                     This is a map of http method prefixed url and a map of key value.
@@ -52,13 +53,14 @@ class OTPVerificationSession
      *                       the request body that should be checked.
      */
     public static array $checkUrls = [
-        "merchant/api/*/users/2fa"      => ["http_method" => "PATCH"],
-        "password"                      => ["http_method" => "POST"],
-        "merchant/api/*/keys/rzp_*"     => ["http_method" => "PUT"],
-        "merchant/api/*/keys"           => ["http_method" => "POST"],
-        "merchant/api/*/invitations"    => ["http_method" => "POST"],
-        "submerchants"                  => ["http_method" => "POST"],
-        "merchant/api/*/batches"        => ["http_method" => "POST", "body" => ["type" => "linked_account_create"]],
+        "merchant/api/*/users/2fa"               => ["http_method" => "PATCH"],
+        "password"                               => ["http_method" => "POST"],
+        "merchant/api/*/keys/rzp_*"              => ["http_method" => "PUT"],
+        "merchant/api/*/keys"                    => ["http_method" => "POST"],
+        "merchant/api/*/invitations"             => ["http_method" => "POST"],
+        "submerchants"                           => ["http_method" => "POST"],
+        "merchant/api/*/batches"                 => ["http_method" => "POST", "body" => ["type" => "linked_account_create"]],
+        "merchant/api/*/merchant/activation"     => ["http_method" => "POST", "body" => ["type" => "linked_account"]],
     ];
 
     public static array $bankingCheckOnRoutes = [
@@ -81,7 +83,7 @@ class OTPVerificationSession
     ];
 
     private static array $routeLinkedAccountUrlsBehindExp = [
-        "merchant/api/*/batches",
+        "merchant/api/*/merchant/activation",
     ];
 
     /**
@@ -184,7 +186,7 @@ class OTPVerificationSession
 
         // For Route 2FA flows
         if ((in_array($patternUriToBeChecked, self::$routeLinkedAccountUrlsBehindExp) === true) &&
-            ($this->isExptEnabled(config('splitz.experiments')[self::enableRouteLinkedAccount2fa])=== false))
+            ($this->isExptEnabled(config('splitz.experiments')[self::blockLaBankAccountUpdate2fa])=== false))
         {
             return;
         }

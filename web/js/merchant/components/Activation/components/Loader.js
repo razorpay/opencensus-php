@@ -48,6 +48,26 @@ function Loader({ isSaving, defaultMsg }) {
         );
         break;
 
+      case LOADING.SENDING_OTP:
+        content = (
+          <span className="Loader Loader--visible">
+            <span className="spin-btn" />
+            <span className="device--desktop">Sending OTP...</span>
+            <span className="device--mobile">Sending</span>
+          </span>
+        );
+        break;
+
+      case LOADING.OTP_SENT:
+        content = (
+          <span className="Loader Loader--visible">
+            <i className="i-check text-success" />
+            <span className="text-success device--desktop">OTP sent successfully</span>
+            <span className="text-success device--mobile">Sent</span>
+          </span>
+        );
+        break;
+
       case LOADING.DEFAULT:
         content = defaultMsg;
         break;

@@ -12,6 +12,27 @@ const defaultProps = {
   submerchantId: 'acc_submerchantId',
 };
 
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    (
+      <Component
+        {...props}
+        splitz={{
+          abExperiments: {
+            block_bank_details_update: {
+              variables: {
+                result: 'off',
+              },
+            },
+          },
+        }}
+      />
+    ),
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
+
 describe('SubmerchantContainer', () => {
   beforeAll(() => {
     window.rzp_user = {

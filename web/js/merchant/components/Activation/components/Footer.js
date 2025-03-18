@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from './Loader';
 import { connect } from 'react-redux';
@@ -7,12 +7,31 @@ import { classList } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import Input from 'common/new-ui/Input';
+import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { closeModal } from '@libs/web-nexus/merchant/reducers/modals';
 
-const Save = ({ saveCurrentTab, isCtaDisabled }) => (
-  <Button onClick={saveCurrentTab} disabled={isCtaDisabled}>
-    Save
-  </Button>
-);
+const Save = ({ saveCurrentTab, isCtaDisabled, shouldSendOTP, toggleOtpLoader }) => {
+  const context = useContext(TwoFactorVerificationContext);
+  const handleOnClick = () => {
+    if (shouldSendOTP) {
+      toggleOtpLoader();
+      context.criticalFlow({
+        enforceVerifyOtp: true,
+        onUserTwoFaVerified: function () {
+          saveCurrentTab();
+          closeModal();
+        },
+      });
+    } else {
+      saveCurrentTab();
+    }
+  };
+  return (
+    <Button onClick={handleOnClick} disabled={isCtaDisabled}>
+      Save
+    </Button>
+  );
+};
 
 const SaveAndNext = ({ isActivationFormFullView, next, isCtaDisabled }) => (
   <Button.Primary iconAfter="chevron-right" onClick={next} disabled={isCtaDisabled}>
@@ -50,27 +69,46 @@ let SubmitKYCForm = ({
   toggleSubmitLayer,
   trackEvents,
   submerchantId,
-}) => (
-  <Button.Primary
-    disabled={!isAllTabsValid}
-    onClick={() => {
-      tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
-      tracking.trackEvent(
-        window.rzpQ.onbr().initiated('kyc.submit_form', {
-          submerchant_id: submerchantId,
-        }),
-      );
-      toggleSubmitLayer();
-      trackEvents({
-        objectName: 'SignUp',
-        actionName: 'Submit L2 CTA Clicked',
-        screen: 'home page',
+  shouldSendOTP,
+  toggleOtpLoader,
+}) => {
+  const context = useContext(TwoFactorVerificationContext);
+
+  const hanldeSubmitKycForm = () => {
+    tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated('kyc.submit_form', {
+        submerchant_id: submerchantId,
+      }),
+    );
+    toggleSubmitLayer();
+    trackEvents({
+      objectName: 'SignUp',
+      actionName: 'Submit L2 CTA Clicked',
+      screen: 'home page',
+    });
+  };
+
+  const handleOnClick = () => {
+    if (shouldSendOTP) {
+      toggleOtpLoader();
+      context.criticalFlow({
+        enforceVerifyOtp: true,
+        onUserTwoFaVerified: function () {
+          hanldeSubmitKycForm();
+          closeModal();
+        },
       });
-    }}
-  >
-    Submit Form
-  </Button.Primary>
-);
+    } else {
+      hanldeSubmitKycForm();
+    }
+  };
+  return (
+    <Button.Primary disabled={!isAllTabsValid} onClick={handleOnClick}>
+      Submit Form
+    </Button.Primary>
+  );
+};
 
 SubmitKYCForm = connect(null, { ...EventActions })(SubmitKYCForm);
 
@@ -188,6 +226,8 @@ const Footer = ({
   onCheckboxChange,
   isActivationFormFullView,
   submerchantId,
+  shouldSendOTP,
+  toggleOtpLoader,
 }) => {
   const buttons = [];
 
@@ -206,7 +246,12 @@ const Footer = ({
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE) && !isActivationFormFullView) {
     buttons.push(
-      <Save saveCurrentTab={saveCurrentTab} isCtaDisabled={!canSubmitBusinessOverViewForm} />,
+      <Save
+        toggleOtpLoader={toggleOtpLoader}
+        shouldSendOTP={shouldSendOTP}
+        saveCurrentTab={saveCurrentTab}
+        isCtaDisabled={!canSubmitBusinessOverViewForm}
+      />,
     );
   }
 
@@ -234,6 +279,8 @@ const Footer = ({
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_KYC_FORM)) {
     buttons.push(
       <SubmitKYCForm
+        shouldSendOTP={shouldSendOTP}
+        toggleOtpLoader={toggleOtpLoader}
         isAllTabsValid={isAllTabsValid()}
         toggleSubmitLayer={toggleSubmitLayer}
         tracking={tracking}

@@ -254,6 +254,9 @@ return [
         // 2FA for route linked account batch upload
         'ROUTE_LINKED_ACCOUNT_2FA' => env('ROUTE_LINKED_ACCOUNT_2FA', ''),
 
+        // 2FA for route linked account update
+        'BLOCK_LINKED_ACCOUNT_BA_UPDATE_2FA' => env('BLOCK_LINKED_ACCOUNT_BA_UPDATE_2FA', ''),
+
         // enable rrn search in Payments
         'VAS_RRN_SEARCH' => env('VAS_RRN_SEARCH', ''),
 

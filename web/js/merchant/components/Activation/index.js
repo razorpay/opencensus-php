@@ -113,6 +113,7 @@ import { withSplitzService } from 'common/splitz';
 
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { compose } from 'redux';
+import { isExperimentEnabled } from '@libs/shared-utils';
 
 /*
  *             Main-form        LA-form
@@ -201,6 +202,10 @@ class ActivationWizard extends React.Component {
         window.hj('tagRecording', ['activation_form_open', this.props.user.current]);
       }
     }
+    const {
+      abExperiments: { block_bank_details_update },
+    } = this.props.splitz;
+    this.is2FAExpEnabled = isExperimentEnabled(block_bank_details_update);
 
     this.formName = 'KYC Form';
     this.formDescription = 'Complete and submit the form to accept payments.';
@@ -892,6 +897,7 @@ class ActivationWizard extends React.Component {
   };
 
   goto = async (newActiveTab, cb) => {
+    const tabInParams = newActiveTab;
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
       // And since showSubmitLayer is set true in same cycle as click on 'Submit Form' handler, it will take previous value which is false.
@@ -917,6 +923,25 @@ class ActivationWizard extends React.Component {
     this.props.setCurrentTab({
       tab_name: this.mainTabs[newActiveTab],
     });
+
+    if (this.is2FAExpEnabled && this.isLinkedAccountForm && currentActive !== BANK_ACCOUNT_TAB) {
+      if (cb) {
+        cb();
+      }
+      return;
+    }
+
+    if (
+      this.is2FAExpEnabled &&
+      this.isLinkedAccountForm &&
+      currentActive === BANK_ACCOUNT_TAB &&
+      tabInParams !== null
+    ) {
+      if (cb) {
+        cb();
+      }
+      return;
+    }
 
     const shouldSave = Object.keys(this.state.dirty).length ? true : null;
     if (!shouldSave) {
@@ -946,32 +971,36 @@ class ActivationWizard extends React.Component {
       };
     }
 
-    const reqData = {};
+    let reqData = {};
 
     /* Send only those fields which belongs to the TAB being saved */
-    Object.keys(currentDirty).forEach((name) => {
-      if (
-        currentDirty.hasOwnProperty(name) &&
-        (FORM_TABS_NAMES[currentActive].indexOf(name) !== -1 ||
-          ['physical_store', 'social_media', 'live_website_or_app'].indexOf(name) !== -1) &&
-        currentDirty[name] !== 'fakepath'
-      ) {
-        // Saving only the fields corresponding to currentActive tab.
-        const fieldVal = currentDirty[name];
-        reqData[name] = typeof fieldVal === 'string' ? fieldVal.trim() : fieldVal;
+    if (this.is2FAExpEnabled && this.isLinkedAccountForm) {
+      reqData = { ...currentDirty, type: 'linked_account' };
+    } else {
+      Object.keys(currentDirty).forEach((name) => {
+        if (
+          currentDirty.hasOwnProperty(name) &&
+          (FORM_TABS_NAMES[currentActive].indexOf(name) !== -1 ||
+            ['physical_store', 'social_media', 'live_website_or_app'].indexOf(name) !== -1) &&
+          currentDirty[name] !== 'fakepath'
+        ) {
+          // Saving only the fields corresponding to currentActive tab.
+          const fieldVal = currentDirty[name];
+          reqData[name] = typeof fieldVal === 'string' ? fieldVal.trim() : fieldVal;
 
-        // For business website empty string => user don't have website. null => user didn't attempt the field.
-        const allowEmptyString = [
-          'business_website',
-          'playstore_url',
-          'gstin',
-          'shop_establishment_number',
-        ];
-        if (allowEmptyString.indexOf(name) === -1) {
-          reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+          // For business website empty string => user don't have website. null => user didn't attempt the field.
+          const allowEmptyString = [
+            'business_website',
+            'playstore_url',
+            'gstin',
+            'shop_establishment_number',
+          ];
+          if (allowEmptyString.indexOf(name) === -1) {
+            reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+          }
         }
-      }
-    });
+      });
+    }
 
     if (!Object.keys(reqData).length) {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
@@ -1012,6 +1041,14 @@ class ActivationWizard extends React.Component {
       .then((data) => {
         if (this.unMounted) {
           return; // No further actions if component unmounted. To handle cross btn close, where only hit Api without doing then.
+        }
+
+        // As we are saving the data for all the tabs at one time
+        // need to mark all tabs active if data present is filled correctly
+        if (this.is2FAExpEnabled && this.isLinkedAccountForm) {
+          FORM_TABS.map((_, i) => {
+            this.markTabIfActive(i);
+          });
         }
 
         this.markTabIfActive(savingWhichTab); // Re-evaluate tab being saved tab.
@@ -1140,6 +1177,21 @@ class ActivationWizard extends React.Component {
           : '0', // '1' => checkbox ticked
     });
   }
+
+  toggleOtpLoader = () => {
+    this.setState({
+      isSaving: LOADING.SENDING_OTP,
+    });
+    this.removeLoader(2000);
+
+    setTimeout(() => {
+      this.setState({
+        isSaving: LOADING.OTP_SENT,
+      });
+
+      this.removeLoader(2000);
+    }, 2000);
+  };
 
   get isLinkedAccountForm() {
     return !!this.props.accountId;
@@ -2265,6 +2317,13 @@ class ActivationWizard extends React.Component {
       return [];
     }
 
+    if (this.is2FAExpEnabled && isLinkedAccountForm) {
+      if (!isLastTab) {
+        return [FOOTER_BUTTONS.SAVE_AND_NEXT];
+      }
+      return [FOOTER_BUTTONS.SAVE, FOOTER_BUTTONS.SUBMIT_KYC_FORM];
+    }
+
     if (!SAVE_BUTTON_DISABLED_STEPS.includes(activeTab)) {
       footerButtons.push(FOOTER_BUTTONS.SAVE);
     }
@@ -2372,6 +2431,11 @@ class ActivationWizard extends React.Component {
         )}
       </>
     );
+  }
+
+  get shouldSendOTP() {
+    const isDirtyPresent = !!Object.keys(this.state.dirty).length;
+    return this.is2FAExpEnabled && isDirtyPresent && this.isLinkedAccountForm;
   }
 
   render() {
@@ -2830,6 +2894,8 @@ class ActivationWizard extends React.Component {
             fetchData={this.props.fetchMerchantDetails}
             onCheckboxChange={this.onCheckboxChange}
             submitted={this.props.user.submitted}
+            shouldSendOTP={this.shouldSendOTP}
+            toggleOtpLoader={this.toggleOtpLoader}
           />
         </div>
       </div>
