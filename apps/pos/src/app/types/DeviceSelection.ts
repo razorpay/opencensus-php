@@ -68,6 +68,7 @@ export enum MODULAR_DEVICE_FIELDS {
   DEVICE_QR_PAYMENT_STATUS_FIELD = 'qr_payment_status_field',
   DEVICE_QR_CODE_STATUS_FIELD = 'qr_code_status_field',
   DEVICE_CLOSE_QR_FIELD = 'close_qr_field',
+  DEVICE_SELECTION_TIMESTAMP_FIELD = 'device_selection_timestamp_field',
 }
 
 export enum QuantityActions {

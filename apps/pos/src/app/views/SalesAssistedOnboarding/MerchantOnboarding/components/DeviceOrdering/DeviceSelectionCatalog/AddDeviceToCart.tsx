@@ -14,6 +14,7 @@ import {
 } from '@razorpay/blade/components';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import moment from 'moment';
 import AddDeviceToCartHeader from './AddDeviceToCartHeader';
 import DeviceFee from './DeviceFee';
 import OptionalFeatures from './OptionalFeatures';
@@ -108,6 +109,7 @@ const AddDeviceToCart = ({
     const processedFormData = processFormDataForModularSubmit(form);
     const payload: ModularPayload = {
       [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: onModularUpdate,
+      [MODULAR_DEVICE_FIELDS.DEVICE_SELECTION_TIMESTAMP_FIELD]: moment().unix(),
       ...processedFormData,
     };
 

@@ -133,6 +133,7 @@ describe('AddDeviceToCart', () => {
           device_item_quantity_field: 2,
           device_item_rental_charges_type_field: 0,
           device_item_setup_fee_type_field: 'standard',
+          device_selection_timestamp_field: expect.any(Number),
         }),
       );
     });
