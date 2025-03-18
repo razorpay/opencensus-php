@@ -37,8 +37,12 @@ export const makeLink = (key: string, params: Record<string, any> = {}) => {
 
   switch (key.toLowerCase()) {
     case 'additional_website':
+    case 'submit_website':
+    case 'resubmit_website':
     case 'add_additional_website':
       return ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS;
+    case 'generate_api_keys':
+      return ROUTES_INFO.API_KEYS;
     case 'increase_international_transaction_limit':
     case 'international':
     case 'toggle_international_revamped':

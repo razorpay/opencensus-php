@@ -12,20 +12,23 @@ import {
 import DotSeparator from './DotSeparator';
 import { badgeColorMap, isAppstorePlaystoreUrl } from './utils';
 import { BusinessWebsiteCardData } from '../types';
+import { TICKET_STATUS_LABELS } from '@dashboards/payments/views/TicketSupport/components/data';
 
 interface BusinessWebsiteCardProps {
   websiteData: BusinessWebsiteCardData;
   editCta?: React.ReactNode;
   isMobile: boolean;
+  isKLA: boolean;
 }
 
 const BusinessWebsiteCard: React.FC<BusinessWebsiteCardProps> = ({
   websiteData,
   editCta,
   isMobile,
+  isKLA,
 }) => {
   const { isPrimary, platform, status, url } = websiteData;
-  return (
+  return isKLA && status === TICKET_STATUS_LABELS.REJECTED ? null : (
     <Box
       marginRight="spacing.7"
       marginBottom="spacing.7"
