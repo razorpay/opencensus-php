@@ -94,6 +94,7 @@ class ListContainer extends Component {
       '/payments/b2b-exports',
       '/payments/invoices',
       '/refunds',
+      '/paymentlinks'
     ].includes(pathname);
     if (isPathIncluded && !params?.from && !params?.to) {
       params.from = moment().add(-7, 'd').startOf('day').unix();
