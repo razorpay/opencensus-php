@@ -280,5 +280,8 @@ return [
 
         // Rtux enabled experiment
         'RTUX_ENABLED_SPLITZ_EXPERIMENT_ID' => env('RTUX_ENABLED_SPLITZ_EXPERIMENT_ID', ''),
+
+        // Enable new auth rearch
+        "NEW_AUTH_REARCH" => env('NEW_AUTH_REARCH', ''),
     ]
 ];

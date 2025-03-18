@@ -1417,7 +1417,7 @@ class Service extends Base\Service
         }
 
         $currentMerchant = $user->currentMerchant();
-    
+
         $this->trace->info(
             TraceCode::GET_USER_SESSION_DATA,
             [
@@ -1425,7 +1425,7 @@ class Service extends Base\Service
                 'user_id'            => $user->id,
             ]
         );
-    
+
         $userCreatedAt = $user?->created_at ?? null;
 
         if (empty($currentMerchant) === false)
@@ -1437,7 +1437,7 @@ class Service extends Base\Service
             $merchantName = $currentMerchant->name;
 
             $merchantLogo = $currentMerchant->logo_url;
-    
+
             $currentMerchantPartnerType = $currentMerchant?->partner_type ?? null;
         }
 

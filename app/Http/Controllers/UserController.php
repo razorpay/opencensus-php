@@ -130,6 +130,27 @@ class UserController extends Controller
         $this->splitzExprimentData = [];
     }
 
+    private function isNewAuthReArch(): bool
+    {
+        $experimentId = config('splitz.experiments')[AppConstants::NEW_AUTH_REARCH];
+
+        if( $experimentId === null || $experimentId === "") {
+            return false;
+        }
+
+        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
+            $experimentId,
+            "100000razorpay",
+        );
+
+        if ($data === null)
+        {
+            return false;
+        }
+
+        return ($data['variables'][0]['value'] ?? null) === 'on';
+    }
+
     public function getDataForRendering($details, $org, $userError, $orgError): array
     {
         $data = [
@@ -141,7 +162,12 @@ class UserController extends Controller
             'org'                   => json_encode($org),
             'session_id'            => Session::getId(),
             'cdnDashboardUrl'       => \Config::get('app.cdn_dashboard_url'),
+            'isNewAuthReArch'      => $this->isNewAuthReArch(),
         ];
+
+        $this->trace->info(TraceCode::NEW_AUTH_REARCH_ENABLED, [
+            'result' => $data['isNewAuthReArch'],
+        ]);
 
         $data['requestPath'] = \Request::path();
 

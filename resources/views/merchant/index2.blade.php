@@ -14,7 +14,7 @@
     window.session_id = "{!! $session_id !!}";
     window.is_banking_request = {!! $is_banking_request !!};
   </script>
-  <script async src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/payments-dashboard/payments-dashboard.entry.js"></script>
+  <script async src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <!-- head tag ends here -->
   @include('partials/new-auth')
@@ -62,7 +62,6 @@
         console.error("err::", err);
       }
     }
-
     function oneTapError() {
       window.isOneTapScriptFailed = true;
       trackScriptEvent('signup.google_onetap_script_load', 'failed');
@@ -74,7 +73,11 @@
     trackScriptEvent('signup.google_onetap_script_attach', 'success');
   </script>
   <script defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
-  <script src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/newauth-dashboard/newauth-dashboard.entry.js"></script>
+  @if($isNewAuthReArch)
+    <script src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/newauth-dashboard/newauth-dashboard.entry.js"></script>
+  @else
+    <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
+  @endif
 @endif
 
 @include('partials/blade-coverage-script')

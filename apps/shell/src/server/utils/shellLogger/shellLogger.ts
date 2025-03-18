@@ -2,7 +2,7 @@ import winston, { Logger } from 'winston';
 import logConfig from './winstonConfig';
 import { getErrorMessage, getErrorStack } from '@apps/shell/src/server/utils/error-utils';
 import os from 'os';
-import { STAGE } from '@apps/shell/src/env';
+import { INSTANCE_TYPE, STAGE } from '@apps/shell/src/env';
 import errorService from '@razorpay/universe-cli/errorService';
 
 export interface LogType {
@@ -42,6 +42,7 @@ const logParse = <T extends LogLevel>({
   const logObject = {
     message,
     moduleName,
+    deployment_type: INSTANCE_TYPE,
     error: error
       ? {
           message: getErrorMessage(error),
@@ -65,6 +66,7 @@ const logParse = <T extends LogLevel>({
         moduleName,
         "x-request-id": requestMeta?.["x-request-id"] || "UNKNOWN",
         hostName: requestMeta?.hostName || "UNKNOWN",
+        deployment_type: INSTANCE_TYPE,
       },
       extra: {
         message,

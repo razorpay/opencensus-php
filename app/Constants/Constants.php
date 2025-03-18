@@ -73,4 +73,6 @@ class Constants {
     const MERCHANT_DETAILS_CACHE_NAME   = "merchant_details_cache";
 
     const REDIRECTION_URL_CACHE_NAME = "redirection_url_cache";
+
+    const NEW_AUTH_REARCH = 'NEW_AUTH_REARCH';
 }
