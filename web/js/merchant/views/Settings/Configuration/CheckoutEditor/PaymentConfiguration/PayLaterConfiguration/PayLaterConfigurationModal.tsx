@@ -6,7 +6,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@razorpay/blade/components';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import PayLaterListItem from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/PayLaterConfiguration/PayLaterListItem';
 import {
@@ -32,58 +32,56 @@ export default function PayLaterConfigurationModal({
     selectedPaymentConfig?.checkout_config?.display?.blocks?.[blockName]?.instruments || [];
   const { providers } = getPaylater(allMethodDetails);
 
-  const initialObjects = currentConfig.filter((item) => item.method === 'paylater');
-  let initialObject: PaymentConfigInstrument = {
-    providers: [],
-    method: 'paylater',
-  };
+  const initialPaylaterConfigs = currentConfig.filter((item) => item.method === 'paylater');
 
-  if (initialObjects.length > 1) {
-    initialObject =
-      initialObjects.find(
-        (item) => (item?.providers?.length ?? 0) === 0 || (item?.providers?.length ?? 0) > 1,
-      ) || initialObject;
-  } else if (initialObjects.length === 1) {
-    initialObject = initialObjects[0];
-  }
+  const defaultConfig = { providers: [], method: 'paylater' } as PaymentConfigInstrument;
 
-  const isInitialConfigExists =
-    currentConfig.filter((item) => item.method === 'paylater').length > 0;
-  const initialFinalCardConfigurationObj = {
-    ...initialObject,
+  const initialPaylaterConfig = initialPaylaterConfigs.length > 1
+    ? initialPaylaterConfigs.find(
+      (item) => (item?.providers?.length !== 1)
+    ) || defaultConfig
+    : initialPaylaterConfigs[0] || defaultConfig;
+
+  const isInitialConfigExists = initialPaylaterConfigs.length > 0;
+
+  const paylaterModalConfig = {
+    ...initialPaylaterConfig,
     providers:
-      (!initialObject?.providers || initialObject.providers.length === 0) && isInitialConfigExists
+
+      // 1. when no paylater config is provided => initialPaylaterConfig = defaultConfig.providers  
+      // 2. when only non single paylater config is provided => initialPaylaterConfig.providers  
+      // 3. when only single paylater config is provided => initialPaylaterConfig.providers  
+      // 4. when single and multiple (no provider provided) exist => allProviders  
+      // 5. when single and multiple (provider provided) exist => initialPaylaterConfig.providers 
+      (!initialPaylaterConfig?.providers || initialPaylaterConfig.providers.length === 0) && isInitialConfigExists
         ? providers.map((provider) => provider.code)
-        : initialObject.wallets,
+        : initialPaylaterConfig.providers,
   };
-  const [prevPaylaterConfig, setPrevPaylaterConfig] = useState(initialFinalCardConfigurationObj);
-  const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
-  const [activeBanks, setActiveBanks] = useState(initialFinalCardConfigurationObj);
 
-  if (!isEqual(prevPaylaterConfig, initialFinalCardConfigurationObj)) {
-    setPrevPaylaterConfig(initialFinalCardConfigurationObj);
-    setActiveBanks(initialFinalCardConfigurationObj)
+  const [updatedPaylaterConfig, setUpdatedPaylaterConfig] = useState(paylaterModalConfig);
+
+  const isConfigChanged = !isEqual(initialPaylaterConfig, updatedPaylaterConfig);
+  const [prevPaylaterConfig, setPrevPaylaterConfig] = useState(paylaterModalConfig);
+
+  if (!isEqual(prevPaylaterConfig, paylaterModalConfig)) {
+    setPrevPaylaterConfig(paylaterModalConfig);
+    setUpdatedPaylaterConfig(paylaterModalConfig)
   }
-
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    setIsEnableSaveButton(!isEqual(initialObject, activeBanks));
-  }, [activeBanks, initialObject]);
 
   const handleSave = () => {
     const updatedInstruments = [...currentConfig];
     const existingIndex = updatedInstruments.findIndex(
       (instrument) =>
-        instrument.method === activeBanks.method &&
-        (initialObjects.length > 1
+        instrument.method === updatedPaylaterConfig.method &&
+        (initialPaylaterConfigs.length > 1
           ? (instrument?.providers?.length ?? 0) === 0 || (instrument?.providers?.length ?? 0) > 1
           : true),
     );
 
     if (existingIndex !== -1) {
-      updatedInstruments[existingIndex] = activeBanks;
+      updatedInstruments[existingIndex] = updatedPaylaterConfig;
     } else {
-      updatedInstruments.push(activeBanks);
+      updatedInstruments.push(updatedPaylaterConfig);
     }
 
     const blocks = {
@@ -112,7 +110,7 @@ export default function PayLaterConfigurationModal({
           Cancel
         </Button>
         <Button
-          isDisabled={!isEnableSaveButton}
+          isDisabled={!isConfigChanged}
           onClick={() => {
             handleSave();
             onClose();
@@ -133,8 +131,8 @@ export default function PayLaterConfigurationModal({
               <Box testID="ListItemCard" key={index}>
                 <PayLaterListItem
                   item={item}
-                  activeBanks={activeBanks}
-                  setActiveBanks={setActiveBanks}
+                  activeBanks={updatedPaylaterConfig}
+                  setActiveBanks={setUpdatedPaylaterConfig}
                 />
               </Box>
             ))}

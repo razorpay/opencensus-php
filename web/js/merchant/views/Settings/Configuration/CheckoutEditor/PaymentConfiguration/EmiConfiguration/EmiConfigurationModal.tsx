@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@razorpay/blade/components';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import EmiCardTypeList from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/EmiConfiguration/EmiCardTypeList';
 import EmiCardProviderList from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/EmiConfiguration/EmiCardProviderList';
@@ -36,7 +36,7 @@ export default function EmiConfigurationModal({
   onClose: () => void;
   blockName: string;
 }) {
-  const cardType: { title: string; [key: string]: any }[] = [
+  const cardType: { title: string;[key: string]: any }[] = [
     {
       title: 'debit',
     },
@@ -52,7 +52,8 @@ export default function EmiConfigurationModal({
     selectedPaymentConfig?.checkout_config?.display?.blocks?.[blockName]?.instruments || [];
   const { providers } = getEmi(allMethodDetails);
   const { networks } = getCard(allMethodDetails);
-  const initialState = currentConfig?.find((item) => item.method === 'emi') || {
+  const cardConfig = currentConfig?.find((item) => item.method === 'emi')
+  const initialEmiConfig = cardConfig || {
     iins: [],
     types: [],
     method: 'emi',
@@ -63,86 +64,79 @@ export default function EmiConfigurationModal({
 
   const [emiIssuers, setEmiIssuers] = useState([...debitCardProviders, ...creditCardProviders]);
 
-  const isInitialConfigExists = currentConfig.filter((item) => item.method === 'emi').length > 0;
-  const initialFinalCardConfigurationObj = {
-    ...initialState,
+  const isInitialConfigExists = !!(cardConfig);
+  const emiModalConfig = {
+    ...initialEmiConfig,
     issuers:
-      (!initialState?.issuers || initialState.issuers.length === 0) && isInitialConfigExists
+      isInitialConfigExists && ((initialEmiConfig?.issuers ?? []).length === 0)
         ? emiIssuers.map((issuer) => issuer.code.replace('_DC', ''))
-        : initialState.issuers,
+        : initialEmiConfig.issuers,
     networks:
-      (!initialState?.networks || initialState.networks.length === 0) && isInitialConfigExists
+      isInitialConfigExists && ((initialEmiConfig?.networks ?? []).length === 0)
         ? networks.map((network) => network.name)
-        : initialState.networks,
+        : initialEmiConfig.networks,
     types:
-      (!initialState?.types || initialState.types.length === 0) && isInitialConfigExists
+      isInitialConfigExists && ((initialEmiConfig?.types ?? []).length === 0)
         ? cardType.map((type) => type.title)
-        : initialState.types,
+        : initialEmiConfig.types,
   };
-  const [prevEmiConfig, setPrevEmiConfig] = useState(initialFinalCardConfigurationObj);
-  const [activeEMI, setActiveEMI] = useState(initialFinalCardConfigurationObj);
+  const [updatedEMIConfig, setUpdatedEMIConfig] = useState(emiModalConfig);
+  const [prevEmiConfig, setPrevEmiConfig] = useState(emiModalConfig);
 
-  if (!isEqual(prevEmiConfig, initialFinalCardConfigurationObj)) {
-    setActiveEMI(initialFinalCardConfigurationObj);
-    setPrevEmiConfig(initialFinalCardConfigurationObj);
+  if (!isEqual(prevEmiConfig, emiModalConfig)) {
+    setUpdatedEMIConfig(emiModalConfig);
+    setPrevEmiConfig(emiModalConfig);
   }
-  
-  const initialObjects = currentConfig.filter((item) => item.method === 'cardless_emi');
-  const isInitialConfigExistsCardless =
-    currentConfig.filter((item) => item.method === 'cardless_emi').length > 0;
-  const initialObject =
-    initialObjects.length > 1
-      ? initialObjects.find(
-          (item) => (item.providers?.length ?? 0) === 0 || (item.providers?.length ?? 0) > 1,
-        ) || {
-          providers: [],
-          method: 'cardless_emi',
-        }
-      : initialObjects[0] || { wallets: [], method: 'cardless_emi' };
 
-  const initialFinalCardConfigurationObCardless = {
-    ...initialObject,
+  const initialConfigs = currentConfig.filter((item) => item.method === 'cardless_emi');
+  const isInitialConfigExistsCardless = currentConfig.some((item) => item.method === 'cardless_emi');
+
+  const defaultConfig = { providers: [], method: 'cardless_emi' };
+
+  const initialConfig = initialConfigs.length > 1
+    ? initialConfigs.find((item) => (item.providers?.length !== 1)) || defaultConfig
+    : initialConfigs[0] || defaultConfig;
+
+  const cardlessModalConfig = {
+    ...initialConfig,
     providers:
-      (!initialObject?.providers || initialObject.providers.length === 0) &&
-      isInitialConfigExistsCardless
+      // 1. when no CardlessEmi config is provided => initialCardlessEmiConfig = defaultConfig.providers  
+      // 2. when only non single CardlessEmi config is provided => initialCardlessEmiConfig.providers  
+      // 3. when only single CardlessEmi config is provided => initialCardlessEmiConfig.providers  
+      // 4. when single and multiple (no provider provided) exist => allproviders  
+      // 5. when single and multiple (provider provided) exist => initialCardlessEmiConfig.providers 
+      (!initialConfig?.providers || initialConfig.providers.length === 0) &&
+        isInitialConfigExistsCardless
         ? cardless.map((provider) => provider.code)
-        : initialObject.providers,
+        : initialConfig.providers,
   };
 
-  const [prevCardlessEmiConfig, setPrevCardlessEmiConfig] = useState(initialFinalCardConfigurationObCardless);
-
-  const [activeCardLessEmi, setActiveCardLessEmi] = useState(
-    initialFinalCardConfigurationObCardless,
+  const [updatedCardLessEmiConfig, setUpdatedCardLessEmiConfig] = useState(
+    cardlessModalConfig,
   );
+  const isConfigChanged = !isEqual(initialConfig, updatedCardLessEmiConfig) || !isEqual(initialEmiConfig, updatedEMIConfig)
+  const [prevCardlessEmiConfig, setPrevCardlessEmiConfig] = useState(cardlessModalConfig);
 
-  if (!isEqual(prevCardlessEmiConfig, initialFinalCardConfigurationObCardless)) {
-    setActiveCardLessEmi(initialFinalCardConfigurationObCardless);
-    setPrevCardlessEmiConfig(initialFinalCardConfigurationObCardless);
+  if (!isEqual(prevCardlessEmiConfig, cardlessModalConfig)) {
+    setUpdatedCardLessEmiConfig(cardlessModalConfig);
+    setPrevCardlessEmiConfig(cardlessModalConfig);
   }
   const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
 
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    setIsEnableSaveButton(
-      !isEqual(initialObject, activeCardLessEmi) || !isEqual(initialState, activeEMI),
-    );
-  }, [activeCardLessEmi, activeEMI]);
-
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
+  const updateEmiIssuers = (types) => {
     let issuers: { code: string; name: any }[] = [];
-    if ((activeEMI?.types ?? []).length === 0) {
+    if ((types ?? []).length === 0) {
       issuers = [...debitCardProviders, ...creditCardProviders];
     } else {
-      if ((activeEMI?.types ?? []).includes('debit')) {
+      if ((types ?? []).includes('debit')) {
         issuers = [...debitCardProviders, ...issuers];
       }
-      if ((activeEMI?.types ?? []).includes('credit')) {
-        issuers = [...creditCardProviders, ...issuers];
+      if ((types ?? []).includes('credit')) {
+        issuers = [...issuers, ...creditCardProviders];
       }
     }
     setEmiIssuers(issuers);
-  }, [activeEMI?.types]);
+  };
 
   const handleSave = () => {
     const updatedInstruments = [
@@ -152,28 +146,28 @@ export default function EmiConfigurationModal({
 
     // Update or add activeEMI
     const existingIndexEMI = updatedInstruments.findIndex(
-      (instrument) => instrument.method === activeEMI.method,
+      (instrument) => instrument.method === updatedEMIConfig.method,
     );
 
     if (existingIndexEMI !== -1) {
-      updatedInstruments[existingIndexEMI] = activeEMI;
+      updatedInstruments[existingIndexEMI] = updatedEMIConfig;
     } else {
-      updatedInstruments.push(activeEMI);
+      updatedInstruments.push(updatedEMIConfig);
     }
 
     // Update or add activeCardLessEmi
     const existingIndexCardless = updatedInstruments.findIndex(
       (instrument) =>
-        instrument.method === activeCardLessEmi.method &&
-        (initialObjects.length > 1
-          ? (instrument?.banks?.length ?? 0) === 0 || (instrument?.banks?.length ?? 0) > 1
+        instrument.method === updatedCardLessEmiConfig.method &&
+        (initialConfigs.length > 1
+          ? (instrument?.providers?.length ?? 0) === 0 || (instrument?.providers?.length ?? 0) > 1
           : true),
     );
 
     if (existingIndexCardless !== -1) {
-      updatedInstruments[existingIndexCardless] = activeCardLessEmi;
+      updatedInstruments[existingIndexCardless] = updatedCardLessEmiConfig;
     } else {
-      updatedInstruments.push(activeCardLessEmi);
+      updatedInstruments.push(updatedCardLessEmiConfig);
     }
 
     const blocks = {
@@ -203,7 +197,7 @@ export default function EmiConfigurationModal({
           Cancel
         </Button>
         <Button
-          isDisabled={!isEnableSaveButton}
+          isDisabled={!isConfigChanged}
           onClick={() => {
             handleSave();
             onClose();
@@ -231,8 +225,9 @@ export default function EmiConfigurationModal({
               <AccordionItemBody>
                 <EmiCardTypeList
                   cardType={cardType}
-                  finalCardConfigurationObj={activeEMI}
-                  setFinalCardConfigurationObj={setActiveEMI}
+                  updateEmiIssuers={updateEmiIssuers}
+                  finalCardConfigurationObj={updatedEMIConfig}
+                  setFinalCardConfigurationObj={setUpdatedEMIConfig}
                 />
               </AccordionItemBody>
             </AccordionItem>
@@ -243,8 +238,8 @@ export default function EmiConfigurationModal({
               <AccordionItemBody>
                 <EmiCardIssuerList
                   cardIssuer={emiIssuers}
-                  finalCardConfigurationObj={activeEMI}
-                  setFinalCardConfigurationObj={setActiveEMI}
+                  finalCardConfigurationObj={updatedEMIConfig}
+                  setFinalCardConfigurationObj={setUpdatedEMIConfig}
                 />
               </AccordionItemBody>
             </AccordionItem>
@@ -255,8 +250,8 @@ export default function EmiConfigurationModal({
               <AccordionItemBody>
                 <EmiCardProviderList
                   cardProvider={networks}
-                  finalCardConfigurationObj={activeEMI}
-                  setFinalCardConfigurationObj={setActiveEMI}
+                  finalCardConfigurationObj={updatedEMIConfig}
+                  setFinalCardConfigurationObj={setUpdatedEMIConfig}
                 />
               </AccordionItemBody>
             </AccordionItem>
@@ -266,8 +261,8 @@ export default function EmiConfigurationModal({
               <AccordionItemHeader title="Bin Number" />
               <AccordionItemBody>
                 <EmiBinNumber
-                  finalCardConfigurationObj={activeEMI}
-                  setFinalCardConfigurationObj={setActiveEMI}
+                  finalCardConfigurationObj={updatedEMIConfig}
+                  setFinalCardConfigurationObj={setUpdatedEMIConfig}
                 />
               </AccordionItemBody>
             </AccordionItem>
@@ -279,8 +274,8 @@ export default function EmiConfigurationModal({
                 <AccordionItemBody>
                   <CardlessEmi
                     cardlessProvider={cardless}
-                    finalCardConfigurationObj={activeCardLessEmi}
-                    setFinalCardConfigurationObj={setActiveCardLessEmi}
+                    finalCardConfigurationObj={updatedCardLessEmiConfig}
+                    setFinalCardConfigurationObj={setUpdatedCardLessEmiConfig}
                   />
                 </AccordionItemBody>
               </AccordionItem>

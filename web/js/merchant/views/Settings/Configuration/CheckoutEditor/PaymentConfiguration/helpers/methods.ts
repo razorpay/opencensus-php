@@ -61,7 +61,7 @@ export const getEmi = (details: MerchantCheckoutPaymentMethodDetails) => {
     .map((provider) => {
       return {
         code: provider,
-        name: emiBanks[provider]?.name,
+        name: emiBanksMap[provider]?.name,
       };
     })
     .filter(({ code }) => !DEBIT_EMI_ISSUERS.includes(code));

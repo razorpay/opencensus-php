@@ -4,14 +4,24 @@ import { Box, Button, Divider, useTheme } from '@razorpay/blade/components';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/createContext';
 import { PreventDiscardChangesModal } from './PaymentConfiguration/ConfigurationDetails/PreventDiscardChangesModal';
 import { SlideUp } from './components/styles';
+import { SavePaymentConfig } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/ConfigurationDetails/SavePaymentConfig';
+import { CHECKOUT_EDITOR_FIELDS } from './context';
 import sendToSegment from './track';
 
 const ConfigControls = () => {
-  const { isSaving, isValueModified, handleDiscardAllChanges, handleSave } = useCheckoutEditor();
+  const {
+    isSaving,
+    isValueModified,
+    isPaymentConfigChanged,
+    values,
+    handleDiscardAllChanges,
+    handleSave,
+  } = useCheckoutEditor();
 
   const { theme } = useTheme();
   const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isSavePaymentConfigModalOpen, setIsSavePaymentConfigModalOpen] = useState(false);
   const [isPreventDiscardChangesModalOpen, setIsPreventDiscardChangesModalOpen] = useState(false);
 
   function handleDiscardChangesContinue() {
@@ -24,6 +34,18 @@ const ConfigControls = () => {
       'Checkout Settings',
       'Checkout Editor',
     );
+  }
+  let modalType = '';
+  const isConfigSetAsDefaultInitially =
+    values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]?.isConfigSetAsDefaultInitially ?? false;
+  const isCurrentPaymentConfigDefault =
+    values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]?.is_default ?? false;
+  if (isCurrentPaymentConfigDefault && !isConfigSetAsDefaultInitially) {
+    modalType = 'default';
+  } else if (!isCurrentPaymentConfigDefault && !isConfigSetAsDefaultInitially) {
+    modalType = 'non-default';
+  } else {
+    modalType = '';
   }
 
   // this is done to support flying-in/out animation
@@ -69,13 +91,29 @@ const ConfigControls = () => {
             <Button
               isDisabled={!isValueModified || isSaving}
               isLoading={isSaving}
-              onClick={() => handleSave()}
+              onClick={() => {
+                if (isPaymentConfigChanged) {
+                  if (modalType === '') {
+                    handleSave();
+                  } else {
+                    setIsSavePaymentConfigModalOpen(true);
+                  }
+                } else {
+                  handleSave();
+                }
+              }}
             >
               Save all changes
             </Button>
           </Box>
         </Box>
       </SlideUp>
+      <SavePaymentConfig
+        isOpen={isSavePaymentConfigModalOpen}
+        onClose={() => setIsSavePaymentConfigModalOpen(false)}
+        isSaving={isSaving}
+        modalType={modalType}
+      />
       <PreventDiscardChangesModal
         isOpen={isPreventDiscardChangesModalOpen}
         title="Are you sure you want to discard all changes?"

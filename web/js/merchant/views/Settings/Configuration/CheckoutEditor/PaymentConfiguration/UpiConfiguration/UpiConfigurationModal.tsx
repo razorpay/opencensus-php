@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
   ArrowRightIcon,
@@ -17,70 +17,67 @@ import {
   CHECKOUT_EDITOR_FIELDS,
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
 import _track from './track';
 
-export default function UpiConfigurationModal({
+function UpiConfigurationModal({
   isOpen,
   onClose,
   blockName,
+  org,
 }: {
   isOpen: boolean;
   onClose: () => void;
   blockName: string;
+  org: { business_name: string }
 }) {
   const { values, handleSelectedConfigChange } = useCheckoutEditor();
   const selectedPaymentConfig = values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG];
   const currentConfig =
     selectedPaymentConfig?.checkout_config?.display?.blocks?.[blockName]?.instruments || [];
-  const [isEnableSaveButton, setIsEnableSaveButton] = React.useState(false);
-  const initialObject = currentConfig?.find((item) => item.method === 'upi') || {
+  const initialConfig = currentConfig?.find((item) => item.method === 'upi') || {
     method: 'upi',
     flows: [],
   };
   const isInitialConfigExists = currentConfig.filter((item) => item.method === 'upi').length > 0;
-  const initialFinalCardConfigurationObj = {
-    ...initialObject,
+  const initialUpiConfig = {
+    ...initialConfig,
     flows:
-      (!initialObject?.flows || initialObject.flows.length === 0) && isInitialConfigExists
+      (!initialConfig?.flows || initialConfig.flows.length === 0) && isInitialConfigExists
         ? ['qr', 'intent', 'collect']
-        : initialObject.flows,
+        : initialConfig.flows,
   };
-  const [prevUpiConfig, setPrevUpiConfig] = useState(initialFinalCardConfigurationObj);
-  const [upiFeatureEnabledList, setUpiFeatureEnabledList] = React.useState(
-    initialFinalCardConfigurationObj,
+  const [upiFeatureEnabledList, setUpiFeatureEnabledList] = useState(
+    initialUpiConfig,
   );
 
-  if (!isEqual(prevUpiConfig, initialFinalCardConfigurationObj)) {
-    setUpiFeatureEnabledList(initialFinalCardConfigurationObj);
-    setPrevUpiConfig(initialFinalCardConfigurationObj);
-  }
+  const isConfigChanged = !isEqual(initialConfig, upiFeatureEnabledList);
+  const [prevUpiConfig, setPrevUpiConfig] = useState(initialUpiConfig);
 
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    if (!isEqual(initialObject, upiFeatureEnabledList)) {
-      setIsEnableSaveButton(true);
-    } else {
-      setIsEnableSaveButton(false);
-    }
-  }, [upiFeatureEnabledList, currentConfig]);
+  if (!isEqual(prevUpiConfig, initialUpiConfig)) {
+    setUpiFeatureEnabledList(initialUpiConfig);
+    setPrevUpiConfig(initialUpiConfig);
+  }
+  const businessName = org?.business_name?.toLowerCase() || "razorpay";
 
   const UpiConfigurationList = [
     {
       title: 'UPI QR Code',
       docsUrl:
-        'https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-upi-flows',
+        `https://${businessName}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-upi-flows`,
       flows: 'qr',
     },
     {
       title: 'UPI Apps',
       docsUrl:
-        'https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-upi-apps',
+        `https://${businessName}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-upi-apps`,
       flows: 'intent',
     },
     {
       title: 'UPI ID/Number',
       docsUrl:
-        'https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/understand-configuration/#upi',
+        `https://${businessName}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/understand-configuration/#upi`,
       flows: 'collect',
     },
   ];
@@ -143,7 +140,7 @@ export default function UpiConfigurationModal({
               }
               accessibilityLabel="upi-qr-code"
               Description={
-                <Link href={item.docsUrl} icon={ArrowRightIcon} iconPosition="right">
+                <Link href={item.docsUrl} icon={ArrowRightIcon} iconPosition="right" target="_blank">
                   See documentation
                 </Link>
               }
@@ -155,8 +152,8 @@ export default function UpiConfigurationModal({
                     const newFlow = isChecked
                       ? [...(upiFeatureEnabledList?.flows || []), item.flows]
                       : (upiFeatureEnabledList.flows || []).filter(
-                          (prevItem) => prevItem !== item.flows,
-                        );
+                        (prevItem) => prevItem !== item.flows,
+                      );
                     setUpiFeatureEnabledList({
                       method: upiFeatureEnabledList.method,
                       flows: newFlow,
@@ -174,7 +171,7 @@ export default function UpiConfigurationModal({
           <Button variant="tertiary" onClick={onClose}>
             Cancel
           </Button>
-          <Button isDisabled={!isEnableSaveButton} onClick={handleSave}>
+          <Button isDisabled={!isConfigChanged} onClick={handleSave}>
             Save
           </Button>
         </Box>
@@ -182,3 +179,9 @@ export default function UpiConfigurationModal({
     </Modal>
   );
 }
+
+const mapStateToProps = (state) => ({
+  org: state.session.org,
+});
+
+export default compose(connect(mapStateToProps))(UpiConfigurationModal);

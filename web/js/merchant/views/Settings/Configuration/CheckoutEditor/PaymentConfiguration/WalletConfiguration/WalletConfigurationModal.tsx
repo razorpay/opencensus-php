@@ -6,7 +6,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@razorpay/blade/components';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import WalletListItem from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/WalletConfiguration/WalletListItem';
 import {
@@ -31,54 +31,50 @@ export default function WalletConfigurationModal({
     selectedPaymentConfig?.checkout_config?.display?.blocks?.[blockName]?.instruments || [];
   const { wallets } = getWallet(allMethodDetails);
 
-  const initialObjects = currentConfig.filter((item) => item.method === 'wallet');
-  const initialObject =
-    initialObjects.length > 1
-      ? initialObjects.find(
-          (item) => (item.wallets?.length ?? 0) === 0 || (item.wallets?.length ?? 0) > 1,
-        ) || {
-          wallets: [],
-          method: 'wallet',
-        }
-      : initialObjects[0] || { wallets: [], method: 'wallet' };
+  const initialWalletConfigs = currentConfig.filter((item) => item.method === 'wallet');
 
-  const isInitialConfigExists = currentConfig.filter((item) => item.method === 'wallet').length > 0;
-  const initialFinalCardConfigurationObj = {
-    ...initialObject,
+  const defaultConfig = { wallets: [], method: 'wallet' };
+
+  const initialWalletConfig = initialWalletConfigs.length > 1
+    ? initialWalletConfigs.find(
+      (item) => (item.wallets?.length !== 1)
+    ) || defaultConfig
+    : initialWalletConfigs[0] || defaultConfig;
+
+  const isInitialConfigExists = initialWalletConfigs.length > 0;
+
+  const walletModalConfig = {
+    ...initialWalletConfig,
     wallets:
-      (!initialObject?.wallets || initialObject.wallets.length === 0) && isInitialConfigExists
+      (!initialWalletConfig?.wallets || initialWalletConfig.wallets.length === 0) && isInitialConfigExists
         ? wallets.map((provider) => provider.code)
-        : initialObject.wallets,
+        : initialWalletConfig.wallets,
   };
 
-  const [prevWalletConfig, setPrevWalletConfig] = useState(initialFinalCardConfigurationObj);
-  const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
-  const [activeBanks, setActiveBanks] = useState(initialFinalCardConfigurationObj);
+  const [updatedWalletConfig, setUpdatedWalletConfig] = useState(walletModalConfig);
 
-  if (!isEqual(prevWalletConfig, initialFinalCardConfigurationObj)) {
-    setActiveBanks(initialFinalCardConfigurationObj);
-    setPrevWalletConfig(initialFinalCardConfigurationObj);
+  const isConfigChanged = !isEqual(initialWalletConfig, updatedWalletConfig);
+  const [prevWalletConfig, setPrevWalletConfig] = useState(walletModalConfig);
+
+  if (!isEqual(prevWalletConfig, walletModalConfig)) {
+    setUpdatedWalletConfig(walletModalConfig);
+    setPrevWalletConfig(walletModalConfig);
   }
-
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    setIsEnableSaveButton(!isEqual(initialObject, activeBanks));
-  }, [activeBanks, initialObject]);
 
   const handleSave = () => {
     const updatedInstruments = [...currentConfig];
     const existingIndex = updatedInstruments.findIndex(
       (instrument) =>
-        instrument.method === activeBanks.method &&
-        (initialObjects.length > 1
+        instrument.method === updatedWalletConfig.method &&
+        (initialWalletConfigs.length > 1
           ? (instrument?.wallets?.length ?? 0) === 0 || (instrument?.wallets?.length ?? 0) > 1
           : true),
     );
 
     if (existingIndex !== -1) {
-      updatedInstruments[existingIndex] = activeBanks;
+      updatedInstruments[existingIndex] = updatedWalletConfig;
     } else {
-      updatedInstruments.push(activeBanks);
+      updatedInstruments.push(updatedWalletConfig);
     }
 
     const blocks = {
@@ -113,8 +109,8 @@ export default function WalletConfigurationModal({
               <Box testID="ListItemCard" key={index}>
                 <WalletListItem
                   item={item}
-                  activeBanks={activeBanks}
-                  setActiveBanks={setActiveBanks}
+                  activeBanks={updatedWalletConfig}
+                  setActiveBanks={setUpdatedWalletConfig}
                 />
               </Box>
             ))}
@@ -126,7 +122,7 @@ export default function WalletConfigurationModal({
           <Button variant="tertiary" onClick={onClose}>
             Cancel
           </Button>
-          <Button isDisabled={!isEnableSaveButton} onClick={handleSave}>
+          <Button isDisabled={!isConfigChanged} onClick={handleSave}>
             Save
           </Button>
         </Box>

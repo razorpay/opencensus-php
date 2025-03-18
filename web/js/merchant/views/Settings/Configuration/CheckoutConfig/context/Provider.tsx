@@ -15,6 +15,7 @@ import { checkoutConfigContext } from './createContext';
 import { createPayloadToSaveConfig, hasValuesChanged } from './helpers';
 import { checkoutConfigReducer } from './reducer';
 import { AccountConfig, AccountLocale, MerchantCheckoutConfig } from './types';
+import { CHECKOUT_EDITOR_INITIAL_VALUES } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 
 export type CheckoutConfigProviderProps = {
   children: React.ReactNode;
@@ -197,21 +198,21 @@ const CheckoutConfigProvider = ({
 
         const configs = isEmpty(banner_config)
           ? values[CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE].configs.map((item) => ({
-              ...item,
-              bannerBackgroundColor: values[CHECKOUT_CONFIG_FIELDS.COLOR],
-            }))
+            ...item,
+            bannerBackgroundColor: values[CHECKOUT_CONFIG_FIELDS.COLOR],
+          }))
           : Object.keys(banner_config ?? {}).map((key) => {
-              const item = banner_config?.[key];
-              const label = CUSTOM_MESSAGE_BANNER_SCREEN_LABELS[key];
+            const item = banner_config?.[key];
+            const label = CUSTOM_MESSAGE_BANNER_SCREEN_LABELS[key];
 
-              return {
-                name: key,
-                label,
-                bannerMessageText: item?.text,
-                bannerBackgroundColor: item?.background_color,
-                bannerTextColor: item?.text_color,
-              };
-            });
+            return {
+              name: key,
+              label,
+              bannerMessageText: item?.text,
+              bannerBackgroundColor: item?.background_color,
+              bannerTextColor: item?.text_color,
+            };
+          });
 
         if (isMessageBannerHidden !== undefined) {
           setValue(CHECKOUT_CONFIG_FIELDS.CUSTOM_MESSAGE, {
@@ -244,8 +245,9 @@ const CheckoutConfigProvider = ({
     setMerchantConfigToState(state.values);
   };
 
-  const handleSave = async () => {
-    const payload = createPayloadToSaveConfig(state.values, state.config);
+  const handleSave = async (values?: typeof CHECKOUT_EDITOR_INITIAL_VALUES) => {
+    const currentValues = values ?? state.values;
+    const payload = createPayloadToSaveConfig(currentValues, state.config);
 
     try {
       setIsSaving(true);

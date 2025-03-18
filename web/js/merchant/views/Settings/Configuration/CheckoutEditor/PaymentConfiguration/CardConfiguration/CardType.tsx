@@ -5,9 +5,10 @@ import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEdit
 import _track from './track';
 
 export default function CardType({
-  finalCardConfigurationObj,
-  setFinalCardConfigurationObj,
+  updatedCardModalConfig,
+  setUpdatedCardModalConfig,
   cardType,
+  org,
 }) {
   return (
     <Box
@@ -20,8 +21,9 @@ export default function CardType({
         Card Type
       </Text>
       <Link
-        href="https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards"
+        href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards`}
         icon={ArrowRightIcon}
+        target="_blank"
         iconPosition="right"
         size='small'
       >
@@ -46,9 +48,9 @@ export default function CardType({
             RightComponent={
               <Switch
                 accessibilityLabel={`${item.title} switch`}
-                isChecked={finalCardConfigurationObj?.types?.includes(item.title)}
+                isChecked={updatedCardModalConfig?.types?.includes(item.title)}
                 onChange={({ isChecked }) => {
-                  setFinalCardConfigurationObj((prev) => {
+                  setUpdatedCardModalConfig((prev) => {
                     const updatedTypes = isChecked
                       ? [...prev.types, item.title]
                       : prev.types.filter((prevItem) => prevItem !== item.title);

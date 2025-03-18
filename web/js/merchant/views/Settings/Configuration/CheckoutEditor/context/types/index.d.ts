@@ -7,7 +7,7 @@ export type CheckoutEditorContext<Values> = {
   isSaving: boolean;
   isSavingTitleModalChange: boolean;
   isLoading: boolean;
-  handleSave: () => void;
+  handleSave: (values?: typeof CHECKOUT_EDITOR_INITIAL_VALUES) => void;
   handleSuggestionSubmit: (data: any) => void;
   handleFeedbackSubmit: (data: any) => void;
   handleLocaleChange: (value: string) => void;
@@ -301,6 +301,7 @@ export type MerchantCheckoutPaymentConfig = {
   created_at?: string;
   updated_at?: string;
   is_deleted?: boolean;
+  isConfigSetAsDefaultInitially?: boolean;
 };
 
 export type PaymentConfigCustomBlocks = {

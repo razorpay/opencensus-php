@@ -11,13 +11,13 @@ import {
 import { isEmpty } from 'lodash';
 import _track from './track';
 
-export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfigurationObj }) {
+export default function BinNumber({ updatedCardModalConfig, setUpdatedCardModalConfig, org }) {
   const [singleBINNumber, setSingleBINNumber] = useState<string>('');
   const [validationError, setValidationError] = useState<string | undefined>();
 
   const handleAddBIN = () => {
     if (singleBINNumber.length === 6) {
-      setFinalCardConfigurationObj((prev) => ({
+      setUpdatedCardModalConfig((prev) => ({
         ...prev,
         iins: isEmpty(prev.iins) ? [singleBINNumber] : [...prev.iins, singleBINNumber],
       }));
@@ -30,7 +30,7 @@ export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfi
   };
 
   const handleRemoveBIN = (values: string[]) => {
-    setFinalCardConfigurationObj((prev) => ({
+    setUpdatedCardModalConfig((prev) => ({
       ...prev,
       iins: prev.iins.filter((item) => !values.includes(item)),
     }));
@@ -46,7 +46,7 @@ export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfi
       <Text weight="semibold" size="large">
         BIN Number
       </Text>
-      <Link href="#" display="flex" icon={ArrowRightIcon} iconPosition="right">
+      <Link target="_blank" href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards`} display="flex" icon={ArrowRightIcon} iconPosition="right">
         See documentation
       </Link>
       <Box gap="spacing.5" display="flex" flexDirection="column" marginTop="spacing.5">
@@ -74,9 +74,9 @@ export default function BinNumber({ finalCardConfigurationObj, setFinalCardConfi
           </Box>
         </Box>
 
-        {finalCardConfigurationObj.iins?.length > 0 && (
+        {updatedCardModalConfig.iins?.length > 0 && (
           <Box display="flex" gap="spacing.1">
-            {finalCardConfigurationObj.iins.map((item, index) => (
+            {updatedCardModalConfig.iins.map((item, index) => (
               <Tag onDismiss={() => handleRemoveBIN(item)} key={index}>
                 {item}
               </Tag>

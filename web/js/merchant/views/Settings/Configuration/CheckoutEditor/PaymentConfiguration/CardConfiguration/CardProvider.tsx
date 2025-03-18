@@ -5,9 +5,10 @@ import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/Checkou
 import _track from './track';
 
 export default function CardProvider({
-  finalCardConfigurationObj,
-  setFinalCardConfigurationObj,
+  updatedCardModalConfig,
+  setUpdatedCardModalConfig,
   cardProvider,
+  org,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   return (
@@ -21,9 +22,10 @@ export default function CardProvider({
         Card Provider
       </Text>
       <Link
-        href="https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-card-networks"
+        href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-card-networks`}
         display="flex"
         icon={ArrowRightIcon}
+        target="_blank"
         iconPosition="right"
       >
         See documentation
@@ -71,9 +73,9 @@ export default function CardProvider({
                 </Badge>
                 <Switch
                   accessibilityLabel={`${item.name} switch`}
-                  isChecked={finalCardConfigurationObj?.networks?.includes(item.name)}
+                  isChecked={updatedCardModalConfig?.networks?.includes(item.name)}
                   onChange={({ isChecked }) => {
-                    setFinalCardConfigurationObj((prev) => {
+                    setUpdatedCardModalConfig((prev) => {
                       const updatedNetworks = isChecked
                         ? [...prev.networks, item.name]
                         : prev.networks.filter((prevItem) => prevItem !== item.name);

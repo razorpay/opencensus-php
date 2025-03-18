@@ -5,9 +5,10 @@ import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/Checkou
 import _track from './track';
 
 export default function CardIssuer({
-  finalCardConfigurationObj,
-  setFinalCardConfigurationObj,
+  updatedCardModalConfig,
+  setUpdatedCardModalConfig,
   cardIssuer,
+  org,
 }) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,9 +23,10 @@ export default function CardIssuer({
         Card Issuer
       </Text>
       <Link
-        href="https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-banks"
+        href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-banks`}
         display="flex"
         icon={ArrowRightIcon}
+        target='_blank'
         iconPosition="right"
       >
         See documentation
@@ -72,9 +74,9 @@ export default function CardIssuer({
                 </Badge>
                 <Switch
                   accessibilityLabel={`${item.name} switch`}
-                  isChecked={finalCardConfigurationObj?.issuers?.includes(item.code)}
+                  isChecked={updatedCardModalConfig?.issuers?.includes(item.code)}
                   onChange={({ isChecked }) => {
-                    setFinalCardConfigurationObj((prev) => {
+                    setUpdatedCardModalConfig((prev) => {
                       const updatedIssuers = isChecked
                         ? [...prev.issuers, item.code]
                         : prev.issuers.filter((prevItem) => prevItem !== item.code);

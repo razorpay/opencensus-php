@@ -6,6 +6,7 @@ import _track from './track';
 
 export default function EmiCardTypeList({
   finalCardConfigurationObj,
+  updateEmiIssuers,
   setFinalCardConfigurationObj,
   cardType,
 }) {
@@ -39,8 +40,9 @@ export default function EmiCardTypeList({
               accessibilityLabel={`${item.title} switch`}
               isChecked={finalCardConfigurationObj?.types?.includes(item.title)}
               onChange={({ isChecked }) => {
+                let updatedTypes = []
                 setFinalCardConfigurationObj((prev) => {
-                  const updatedTypes = isChecked
+                  updatedTypes = isChecked
                     ? [...prev.types, item.title]
                     : prev.types.filter((prevItem) => prevItem !== item.title);
 
@@ -49,6 +51,7 @@ export default function EmiCardTypeList({
                     types: updatedTypes,
                   };
                 });
+                updateEmiIssuers(updatedTypes)
                 _track.cardTypeToggled(item.title, isChecked);
               }}
             />

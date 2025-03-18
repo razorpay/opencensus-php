@@ -734,6 +734,7 @@ export const createMerchantCheckoutPaymentConfig = ({ type, ...data }) => {
       method: type,
       data,
     }),
+    currentSelectedPaymentConfig: { ...data },
   };
 };
 
@@ -1279,7 +1280,10 @@ const configReducer = (state = initialState, action) => {
 
     case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS}::SUCCESS`: {
       const configs = action.payload.data.checkout_configuration.checkout_configs;
-      const selectedPaymentConfig = (configs ?? []).find((config) => config?.is_default);
+      configs.forEach((config) => {
+        config.isConfigSetAsDefaultInitially = config.is_default;
+      });
+      const selectedPaymentConfig = (configs ?? []).find((config) => config.is_default);
 
       return merge(state, {
         checkoutPaymentConfigs: {
@@ -1347,8 +1351,10 @@ const configReducer = (state = initialState, action) => {
           if (config.is_default) {
             config.is_default = false;
           }
+          config.isConfigSetAsDefaultInitially = false
         });
       }
+      payloadConfig.isConfigSetAsDefaultInitially = isPayloadConfigDefault;
 
       // update existing config or add new config
       const updatedConfigIndex = configs.findIndex(
@@ -1373,13 +1379,17 @@ const configReducer = (state = initialState, action) => {
     }
 
     case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::ERROR`: {
-      return set(state, 'checkoutPaymentConfigs', {
-        loading: false,
-        data: state.checkoutPaymentConfigs.data,
-        error: action.payload.errors,
+      const configs = [...(state?.checkoutPaymentConfigs?.data || [])];
+      return merge(state, {
+        checkoutPaymentConfigs: {
+          loading: false,
+          data: configs,
+          error: null,
+        },
+        selectedPaymentConfig:
+          action?.currentSelectedPaymentConfig?.checkout_configuration?.checkout_config_request,
       });
     }
-
     default:
       return state;
   }

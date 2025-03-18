@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge, Box, Switch, Text } from '@razorpay/blade/components';
 import { ListItemCard } from 'merchant/views/Settings/Configuration/CheckoutEditor/components/ListItemCard';
 import { getInstrumentLogo } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/helpers/getInstrumentLogo';
@@ -9,7 +9,7 @@ export default function CardlessEmi({
   setFinalCardConfigurationObj,
   cardlessProvider,
 }) {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <Box borderRadius="large">
       <Box gap="spacing.5" display="flex" flexDirection="column">

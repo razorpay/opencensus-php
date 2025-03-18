@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import isEqual from 'lodash/isEqual';
 import {
   Box,
@@ -10,6 +10,8 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@razorpay/blade/components';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
 import CardType from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CardConfiguration/CardType';
 import CardIssuer from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CardConfiguration/CardIssuer';
 import CardProvider from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/CardConfiguration/CardProvider';
@@ -27,7 +29,6 @@ import { PaymentConfigInstrument } from 'merchant/views/Settings/Configuration/C
 const cardType: { title: string; [key: string]: any }[] = [
   {
     title: 'debit',
-    isEnabled: true,
   },
   {
     title: 'credit',
@@ -41,14 +42,16 @@ const initialState = {
   networks: [],
 };
 
-export default function CardConfigurationModal({
+function CardConfigurationModal({
   isOpen,
   onClose,
   blockName,
+  org
 }: {
   isOpen: boolean;
   onClose: () => void;
   blockName: string;
+  org: { business_name: string };
 }) {
   const { values, handleSelectedConfigChange } = useCheckoutEditor();
   const allMethodDetails = values[CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_METHOD_DETAILS];
@@ -58,60 +61,50 @@ export default function CardConfigurationModal({
 
   const { types, networks } = getCard(allMethodDetails);
   const { banks: activatedCardIssuers } = getNetbanking(allMethodDetails);
-  const [cardConfigType, setCardConfigType] = React.useState(['']);
-  const [isEnableSaveButton, setIsEnableSaveButton] = React.useState(false);
-  const initialObject = currentConfig?.find((item) => item.method === 'card') || initialState;
-  const isInitialConfigExists = currentConfig.filter((item) => item.method === 'card').length > 0;
-  const initialFinalCardConfigurationObj = {
-    ...initialObject,
+  const [cardConfigType, setCardConfigType] = useState(['']);
+  const cardConfig = currentConfig?.find((item) => item.method === 'card')
+
+  const initialCardConfig = cardConfig ?? initialState;
+  const isInitialConfigExists = !!(cardConfig);
+
+  const cardModalConfig = {
+    ...initialCardConfig,
     issuers:
-      (!initialObject?.issuers || initialObject.issuers.length === 0) && isInitialConfigExists
+      isInitialConfigExists && ((initialCardConfig?.issuers ?? []).length === 0)
         ? activatedCardIssuers.map((issuer) => issuer.code)
-        : initialObject.issuers,
+        : initialCardConfig.issuers,
     networks:
-      (!initialObject?.networks || initialObject.networks.length === 0) && isInitialConfigExists
+      isInitialConfigExists && ((initialCardConfig?.networks ?? []).length === 0)
         ? networks.map((network) => network.name)
-        : initialObject.networks,
+        : initialCardConfig.networks,
     types:
-      (!initialObject?.types || initialObject.types.length === 0) && isInitialConfigExists
+      isInitialConfigExists && ((initialCardConfig?.types ?? []).length === 0)
         ? cardType.map((type) => type.title)
-        : initialObject.types,
+        : initialCardConfig.types,
   };
-
-  const [prevCardConfig, setPrevCardConfig] = useState(initialFinalCardConfigurationObj);
-
-  const [finalCardConfigurationObj, setFinalCardConfigurationObj] = useState(
-    initialFinalCardConfigurationObj,
+  const [updatedCardModalConfig, setUpdatedCardModalConfig] = useState(
+    cardModalConfig,
   );
+  const [prevCardConfig, setPrevCardConfig] = useState(cardModalConfig);
 
-  if (!isEqual(initialFinalCardConfigurationObj, prevCardConfig)) {
-    setPrevCardConfig(initialFinalCardConfigurationObj);
-    setFinalCardConfigurationObj(initialFinalCardConfigurationObj);
+  if (!isEqual(cardModalConfig, prevCardConfig)) {
+    setPrevCardConfig(cardModalConfig);
+    setUpdatedCardModalConfig(cardModalConfig);
   }
-  
+
 
   const close = () => {
     onClose();
     setCardConfigType(['']);
   };
 
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    cardType.forEach((item) => {
-      if (!types[item.title]) {
-        item['isDisabled'] = true;
-      }
-    });
-  }, [types]);
-
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    if (!isEqual(initialObject, finalCardConfigurationObj)) {
-      setIsEnableSaveButton(true);
-    } else {
-      setIsEnableSaveButton(false);
+  cardType.forEach((item) => {
+    if (!types[item.title]) {
+      item['isDisabled'] = true;
     }
-  }, [finalCardConfigurationObj, currentConfig]);
+  });
+
+  const hasCardConfigChanged = !isEqual(initialCardConfig, updatedCardModalConfig)
 
   const handleSave = () => {
     const updatedInstruments = [
@@ -120,12 +113,12 @@ export default function CardConfigurationModal({
     ];
 
     const existingIndex = updatedInstruments.findIndex(
-      (instrument) => instrument.method === finalCardConfigurationObj.method,
+      (instrument) => instrument.method === updatedCardModalConfig.method,
     );
     if (existingIndex !== -1) {
-      updatedInstruments[existingIndex] = finalCardConfigurationObj;
+      updatedInstruments[existingIndex] = updatedCardModalConfig;
     } else {
-      updatedInstruments.push(finalCardConfigurationObj);
+      updatedInstruments.push(updatedCardModalConfig);
     }
     const blocks = {
       ...selectedPaymentConfig?.checkout_config?.display?.blocks,
@@ -153,7 +146,7 @@ export default function CardConfigurationModal({
       <Button variant="tertiary" onClick={close}>
         Cancel
       </Button>
-      <Button isDisabled={!isEnableSaveButton} onClick={handleSave}>
+      <Button isDisabled={!hasCardConfigChanged} onClick={handleSave}>
         Save
       </Button>
     </Box>
@@ -180,29 +173,33 @@ export default function CardConfigurationModal({
           <Box paddingTop="spacing.9" gap="spacing.5" display="flex" flexDirection="column">
             {cardConfigType.includes('Card Type') && (
               <CardType
-                setFinalCardConfigurationObj={setFinalCardConfigurationObj}
-                finalCardConfigurationObj={finalCardConfigurationObj}
+                setUpdatedCardModalConfig={setUpdatedCardModalConfig}
+                updatedCardModalConfig={updatedCardModalConfig}
                 cardType={cardType}
+                org={org}
               />
             )}
             {cardConfigType.includes('Card Provider') && (
               <CardProvider
-                setFinalCardConfigurationObj={setFinalCardConfigurationObj}
-                finalCardConfigurationObj={finalCardConfigurationObj}
+                setUpdatedCardModalConfig={setUpdatedCardModalConfig}
+                updatedCardModalConfig={updatedCardModalConfig}
                 cardProvider={networks}
+                org={org}
               />
             )}
             {cardConfigType.includes('Card Issuer') && (
               <CardIssuer
-                setFinalCardConfigurationObj={setFinalCardConfigurationObj}
-                finalCardConfigurationObj={finalCardConfigurationObj}
+                setUpdatedCardModalConfig={setUpdatedCardModalConfig}
+                updatedCardModalConfig={updatedCardModalConfig}
                 cardIssuer={activatedCardIssuers}
+                org={org}
               />
             )}
             {cardConfigType.includes('BIN Number') && (
               <BinNumber
-                setFinalCardConfigurationObj={setFinalCardConfigurationObj}
-                finalCardConfigurationObj={finalCardConfigurationObj}
+                setUpdatedCardModalConfig={setUpdatedCardModalConfig}
+                updatedCardModalConfig={updatedCardModalConfig}
+                org={org}
               />
             )}
           </Box>
@@ -214,3 +211,9 @@ export default function CardConfigurationModal({
     </Modal>
   );
 }
+
+const mapStateToProps = (state) => ({
+  org: state.session.org,
+});
+
+export default compose(connect(mapStateToProps))(CardConfigurationModal);

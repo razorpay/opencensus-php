@@ -8,9 +8,10 @@ import {
   ModalFooter,
   ModalHeader,
   SearchInput,
+  Text,
 } from '@razorpay/blade/components';
 import isEqual from 'lodash/isEqual';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import NetBankingListItem from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/NetBankingConfiguration/NetBankingListItem';
 import {
   CHECKOUT_EDITOR_FIELDS,
@@ -40,47 +41,43 @@ export default function NetBankingConfigurationModal({
     item.type = item.code.includes('_C') ? 'corporate' : 'retail';
   });
 
-  const initialObjects: PaymentConfigInstrument[] = currentConfig.filter(
-    (item) => item.method === 'netbanking',
+  const initialNetbankingConfig: PaymentConfigInstrument[] = currentConfig.filter(
+    (item) => item.method === 'netbanking'
   );
-  let initialObject = {
-    banks: [],
-    method: 'netbanking',
-  } as PaymentConfigInstrument;
 
-  if (initialObjects.length > 1) {
-    initialObject =
-      initialObjects.find(
-        (item) => (item?.banks?.length ?? 0) === 0 || (item?.banks?.length ?? 0) > 1,
-      ) || initialObject;
-    initialObject.banks = initialObject.banks || [];
-  } else if (initialObjects.length === 1) {
-    initialObject = initialObjects[0];
-  }
-  const isInitialConfigExists =
-    currentConfig.filter((item) => item.method === 'netbanking').length > 0;
-  const initialFinalCardConfigurationObj = {
-    ...initialObject,
+  const defaultConfig = { banks: [], method: 'netbanking' } as PaymentConfigInstrument;
+
+  const initialConfig = initialNetbankingConfig.length > 1
+    ? initialNetbankingConfig.find(
+      (item) => (item?.banks?.length !== 1)
+    ) || defaultConfig
+    : initialNetbankingConfig[0] || defaultConfig;
+
+  const isInitialConfigExists = initialNetbankingConfig.length > 0;
+
+  const netbnkingModalConfig = {
+    ...initialConfig,
     banks:
-      (!initialObject?.banks || initialObject.banks.length === 0) && isInitialConfigExists
+      // 1. when no netBanking config is provided => initialNetBankingConfig = defaultConfig.banks  
+      // 2. when only non single netBanking config is provided => initialNetBankingConfig.banks  
+      // 3. when only single netBanking config is provided => initialNetBankingConfig.banks  
+      // 4. when single and multiple (no provider provided) exist => allBanks  
+      // 5. when single and multiple (provider provided) exist => initialNetBankingConfig.banks 
+      (!initialConfig?.banks || initialConfig.banks.length === 0) && isInitialConfigExists
         ? banks.map((provider) => provider.code)
-        : initialObject.banks,
+        : initialConfig.banks,
   };
-  const [isEnableSaveButton, setIsEnableSaveButton] = useState(false);
-  const [prevNetbankingConfig, setPrevNetbankingConfig] = useState(initialFinalCardConfigurationObj);
-  const [activeBanks, setActiveBanks] = useState(initialFinalCardConfigurationObj);
-  if (!isEqual(prevNetbankingConfig, initialFinalCardConfigurationObj)) {
-    setActiveBanks(initialFinalCardConfigurationObj);
-    setPrevNetbankingConfig(initialFinalCardConfigurationObj);
+  const [updatedBankConfig, setUpdatedBankConfig] = useState(netbnkingModalConfig);
+  const [prevNetbankingConfig, setPrevNetbankingConfig] = useState(netbnkingModalConfig);
+  if (!isEqual(prevNetbankingConfig, netbnkingModalConfig)) {
+    setUpdatedBankConfig(netbnkingModalConfig);
+    setPrevNetbankingConfig(netbnkingModalConfig);
   }
   const [filteredBanks, setFilteredBanks] = useState(banks);
   const [searchFilter, setSearchFilter] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState<string>('');
 
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    setIsEnableSaveButton(!isEqual(initialObject, activeBanks));
-  }, [activeBanks, initialObject]);
+  const isConfigChanged = !isEqual(initialConfig, updatedBankConfig)
 
   const handleSearch = (searchQuery: string) => {
     const filtered = banks.filter((bank) => {
@@ -94,25 +91,20 @@ export default function NetBankingConfigurationModal({
     setFilteredBanks(filtered);
   };
 
-  // @HarshLileshShah remove this useEffect that you have added
-  useEffect(() => {
-    handleSearch(searchValue.toLowerCase());
-  }, [searchFilter, searchValue]);
-
   const handleSave = () => {
     const updatedInstruments = [...currentConfig];
     const existingIndex = updatedInstruments.findIndex(
       (instrument) =>
-        instrument.method === activeBanks.method &&
-        (initialObjects.length > 1
+        instrument.method === updatedBankConfig.method &&
+        (initialNetbankingConfig.length > 1
           ? (instrument?.banks?.length ?? 0) === 0 || (instrument?.banks?.length ?? 0) > 1
           : true),
     );
 
     if (existingIndex !== -1) {
-      updatedInstruments[existingIndex] = activeBanks;
+      updatedInstruments[existingIndex] = updatedBankConfig;
     } else {
-      updatedInstruments.push(activeBanks);
+      updatedInstruments.push(updatedBankConfig);
     }
 
     const blocks = {
@@ -147,8 +139,15 @@ export default function NetBankingConfigurationModal({
               label=""
               labelPosition="top"
               name="search"
-              onChange={(event) => setSearchValue(event.value || '')}
-              onClearButtonClick={() => setSearchValue('')}
+              onChange={(event) => {
+                const value = event.value || '';
+                setSearchValue(value);
+                handleSearch(value.toLowerCase());
+              }}
+              onClearButtonClick={() => {
+                setSearchValue('');
+                handleSearch('');
+              }}
               placeholder="Search for banks"
               size="large"
             />
@@ -158,22 +157,30 @@ export default function NetBankingConfigurationModal({
               top="spacing.3"
               right="spacing.7"
               selectionType="multiple"
-              onChange={({ values }) => setSearchFilter(values)}
+              onChange={({ values }) => {
+                setSearchFilter(values);
+                handleSearch(searchValue.toLowerCase());
+              }}
             >
               <Chip value="retail">Retail banks</Chip>
               <Chip value="corporate">Corporate banks</Chip>
             </ChipGroup>
           </Box>
           <Box gap="spacing.5" display="flex" flexDirection="column" paddingTop="spacing.7">
-            {filteredBanks.map((item, index) => (
-              <Box testID="ListItemCard" key={index}>
-                <NetBankingListItem
-                  item={item}
-                  activeBanks={activeBanks}
-                  setActiveBanks={setActiveBanks}
-                />
+            {filteredBanks.length === 0 ? (
+              <Box display="flex" justifyContent="center" paddingY="spacing.11">
+                <Text weight="semibold" color="surface.text.gray.muted" size='large'>No results found</Text>
               </Box>
-            ))}
+            ) :
+              (filteredBanks.map((item, index) => (
+                <Box testID="ListItemCard" key={index}>
+                  <NetBankingListItem
+                    item={item}
+                    activeBanks={updatedBankConfig}
+                    setActiveBanks={setUpdatedBankConfig}
+                  />
+                </Box>
+              )))}
           </Box>
         </Box>
       </ModalBody>
@@ -182,7 +189,7 @@ export default function NetBankingConfigurationModal({
           <Button variant="tertiary" onClick={onClose}>
             Cancel
           </Button>
-          <Button isDisabled={!isEnableSaveButton} onClick={handleSave}>
+          <Button isDisabled={!isConfigChanged} onClick={handleSave}>
             Save
           </Button>
         </Box>
