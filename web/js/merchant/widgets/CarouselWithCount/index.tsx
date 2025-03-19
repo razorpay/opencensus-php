@@ -26,6 +26,7 @@ export const CarouselWithCountWidget: React.FC<
 
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
+  const cardsHeadingList = components.map((component) => component?.title);
 
   useEffect(() => {
     if (!isLoading && !isRetrying) {
@@ -34,6 +35,7 @@ export const CarouselWithCountWidget: React.FC<
         widgetId,
         actionBy: widgetId,
         ...(error ? { error: `${error.message}` } : { count: components.length }),
+        cardsHeadingList,
       };
       track({
         objectName: 'widget',
