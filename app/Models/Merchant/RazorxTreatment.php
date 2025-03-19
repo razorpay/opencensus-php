@@ -1004,8 +1004,6 @@ final class RazorxTreatment
 
     public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
 
-    public const BIN_SERVICE_IIN_FETCH_PRIMARY = 'bin_service_iin_fetch_primary';
-
     const REFUND_FIND_MANY_RELATIONS = 'refund_find_many_relations';
 
     /**

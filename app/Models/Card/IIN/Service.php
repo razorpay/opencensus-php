@@ -1014,19 +1014,7 @@ class Service extends Base\Service
 
     public function shouldDualWrite(): bool
     {
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),RazorxTreatment::ALLOW_BIN_SERVICE_DUAL_WRITE, $this->mode);
-
-        $this->trace->info(TraceCode::BIN_SERVICE_DUAL_WRITE_VARIANT, [
-            'razorx_variant' => $variant,
-            'mode' => $this->mode,
-            'env' => $this->app['env'],
-        ]);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     public function compareBinServiceEntityAndApiServiceEntity($apiServiceEntity, $binServiceEntity, $extraTraceData)
@@ -1178,14 +1166,7 @@ class Service extends Base\Service
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment($iin, RazorxTreatment::BIN_SERVICE_IIN_FETCH_PRIMARY, $this->mode);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     private function bulkUpdateFeaturesForBin($iin, $input)
