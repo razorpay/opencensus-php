@@ -14,8 +14,9 @@ import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 
-import { trackLinkClick } from './ga';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { trackLinkClick } from './ga';
 import { switchMode } from "@libs/shared-utils";
 
 class TestModeBanner extends Component {
@@ -87,7 +88,7 @@ class TestModeBanner extends Component {
       return null;
     }
 
-    if (user.isOrgAxis && !isAdminAsMerchant?.data) {
+    if ((user.isOrgAxis || isOrgFeatureExist('hide_activation_form')) && !isAdminAsMerchant?.data) {
       return null;
     }
 

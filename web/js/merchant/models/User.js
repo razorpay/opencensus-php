@@ -2116,6 +2116,10 @@ export default class User {
   get isNetbankingRefundDisabled() {
     return this.isFeatureEnabled('disable_nb_refunds');
   }
+
+  get isProductTourScreenHidden() {
+    return this.isFeatureEnabled('hide_product_tour_screens');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap, shouldSkipRoleCheck = false) {

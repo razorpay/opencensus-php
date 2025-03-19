@@ -89,7 +89,9 @@ export default class SideBar extends React.Component {
 
     return (
       <div className="PaymentButton-Create-SideBar">
-        <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+        <ShowWhen
+          additionalCondition={(user) => !user.isOrgAxis && !user.isProductTourScreenHidden}
+        >
           <img src={sidebarImage} />
         </ShowWhen>
 

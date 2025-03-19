@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from 'test-utils';
 import { storeWithInitialState } from 'merchant/store';
 import '@testing-library/jest-dom/extend-expect';
 import TestModeBanner from 'merchant/components/TestModeBanner';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 const props = {
   user: {
@@ -19,6 +20,11 @@ const props = {
 };
 const testModeText = 'Test Mode';
 const liveModeText = 'Live mode';
+
+jest.mock('merchant/models/User', () => ({
+  __esModule: true,
+  isOrgFeatureExist: jest.fn().mockReturnValue(false),
+}));
 
 describe('TestModeBanner', () => {
   beforeEach(() => {
@@ -44,6 +50,12 @@ describe('TestModeBanner', () => {
 
   it('should not return JSX if isOrgAxis', () => {
     render(<App initialState={{ session: { user: { ...props.user, isOrgAxis: true } } }} />);
+    expect(screen.queryByText(testModeText)).not.toBeInTheDocument();
+  });
+
+  it('should not return JSX if hide_activation_form org FF exists', () => {
+    isOrgFeatureExist.mockReturnValueOnce(true);
+    render(<App {...props} />);
     expect(screen.queryByText(testModeText)).not.toBeInTheDocument();
   });
 

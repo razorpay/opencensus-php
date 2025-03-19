@@ -517,9 +517,9 @@ export type PaymentsDashboardUserGetters = {
   isAssistedOnboardingMerchant: boolean;
   isJnKOmniEnabled: boolean;
   isPgLegderReverseShadowEnabled: boolean;
-  isUpiRefundsDisabled: boolean;
   isCardRefundDisabled: boolean;
   isNetbankingRefundDisabled: boolean;
   isUpiRefundDisabled: boolean;
+  isProductTourScreenHidden: boolean;
   isVASOrg: boolean;
 };

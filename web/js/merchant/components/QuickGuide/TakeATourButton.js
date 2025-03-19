@@ -40,7 +40,7 @@ class TakeATourButton extends Component {
 
   render() {
     return (
-      <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+      <ShowWhen additionalCondition={(user) => !user.isOrgAxis && !user.isProductTourScreenHidden}>
         <span className="btn btn-link" onClick={this.onClick}>
           <i className="i i-lightbulb" /> Need help? Take a tour
         </span>

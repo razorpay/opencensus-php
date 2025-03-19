@@ -882,7 +882,8 @@ class HomeContainer extends Component {
       canShowL1ActivationModals,
     };
 
-    commonProps.showOnboardingBanner = user.isOrgAxis ? null : commonProps.showOnboardingBanner;
+    commonProps.showOnboardingBanner =
+      user.isOrgAxis || user.isProductTourScreenHidden ? null : commonProps.showOnboardingBanner;
 
     const isPartnerOnBoardingModalShown = getItem(this.partnerOnBoardingToken);
 
