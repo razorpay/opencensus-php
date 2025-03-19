@@ -71,6 +71,7 @@ export class ShellRedirectionService {
 
     if (AppConstants.DomainRedirectMap[domain]) {
       const { id, redirect_url } = AppConstants.DomainRedirectMap[domain];
+
       if (this.isDomainRedirectionEnabled(id)) {
         return redirect_url;
       }

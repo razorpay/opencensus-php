@@ -9,6 +9,7 @@ use App\Trace\TraceCode;
 class ApiUrl
 {
     const API_HOST_COOKIE_KEY = 'rzp_api_host';
+    const UNKNOWN_REFERRER_DOMAIN = 'unknown_referrer_domain';
 
     /**
      * Whitelist of API hosts that can be sent in the `rzp_api_host` cookie
@@ -118,8 +119,9 @@ class ApiUrl
     public static function getReferrerDomain(): string
     {
         $referrer = self::getReferrerUrl();
+        $parsedUrl = parse_url($referrer ?? self::UNKNOWN_REFERRER_DOMAIN , PHP_URL_HOST);
 
-        return  empty($referrer) ? 'unknown_referrer' : parse_url($referrer, PHP_URL_HOST);
+        return empty($parsedUrl) ? self::UNKNOWN_REFERRER_DOMAIN : $parsedUrl;
     }
 
     public static function getReferrerUrl()
