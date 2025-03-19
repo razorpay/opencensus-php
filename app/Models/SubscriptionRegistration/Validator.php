@@ -303,7 +303,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($input[CustomerEntity::CONTACT]) === true)
+        if (empty($input[CustomerEntity::CONTACT]) === true and
+            $merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL) === false)
         {
 
             $this->getTrace()->count(
