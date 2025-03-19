@@ -3056,6 +3056,8 @@ class Service extends Base\Service
 
     public function getCustomerByMerchantTypeRupayPP($input) {
 
+        $customerContact = $input[TokenEntity::CUSTOMER_PHONE_NUMBER];
+
         $merchantForCustomerCreation = $this->merchant;
 
         $standardCheckoutEnabledPP = $this->isStandardCheckoutEnabledForPPMerchant($merchantForCustomerCreation->getId());
@@ -3063,8 +3065,20 @@ class Service extends Base\Service
         if($standardCheckoutEnabledPP)
             $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
 
+        if(strlen($customerContact) > 10 && $this->checkIsCustomCheckoutEnabledForMerchant(
+                $merchantForCustomerCreation->getId(),
+                'enable'
+            )){
+            $customerContact = substr($customerContact, -10);
+
+            $existingCustomer =  $this->repo->customer->findByContactAndMerchant($customerContact, $merchantForCustomerCreation);
+            if($existingCustomer !== null) {
+                return $existingCustomer;
+            }
+        }
+
         $customer =  (new Customer\Core)->createLocalCustomer([
-            Customer\Entity::CONTACT       => $input[TokenEntity::CUSTOMER_PHONE_NUMBER],
+            Customer\Entity::CONTACT       => $customerContact,
         ], $merchantForCustomerCreation, false);
 
         $this->trace->info(

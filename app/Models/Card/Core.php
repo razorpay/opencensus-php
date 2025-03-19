@@ -181,6 +181,7 @@ class Core extends Base\Core
         if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate"
             || $asyncTokenisationJobId === "hdfcPushProvIssuerTokenMigrate") {
             $input = [
+                'via_push_provisioning'            =>true,
                 'asyncTokenisationJobId'           => $asyncTokenisationJobId,
                 'hdfc_push_prov'                   => true,
                 'pushProvisioningReceipt'          => $input['pushProvisioningReceipt'],
