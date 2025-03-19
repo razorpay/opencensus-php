@@ -203,7 +203,7 @@ class ApplicableOn extends React.Component {
                 <DocLink
                   target="_blank"
                   rel="noopener noreferrer"
-                  href="https://razorpay.com/docs/offers/no-cost-emi/"
+                  href="https://razorpay.com/docs/payments/offers/no-cost-emi/"
                 >
                   here
                 </DocLink>

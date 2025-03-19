@@ -134,7 +134,7 @@ class OfferIndex extends Component {
                       <HeaderAction>
                         <div className="btn-toolbar pull-right">
                           <TakeATourButton feature={RZPFeatures.OFFERS} />
-                          <DocsLink url="https://razorpay.com/docs/offers/" />
+                          <DocsLink url="https://razorpay.com/docs/payments/offers/" />
                           <ShowWhen
                             additionalCondition={(user) =>
                               (this.props.mode !== 'live' || !user.isRejected) &&

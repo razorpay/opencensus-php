@@ -168,7 +168,10 @@ export default class NoCostEmiMethods extends React.Component {
             <li>
               In No-Cost-EMI, the interest charged by bank is given as a discount to the customer.
               To know more about how this works, click{' '}
-              <DocLink target="_blank" href="https://razorpay.com/docs/offers/no-cost-emi/">
+              <DocLink
+                target="_blank"
+                href="https://razorpay.com/docs/payments/offers/no-cost-emi/"
+              >
                 here
               </DocLink>
               .

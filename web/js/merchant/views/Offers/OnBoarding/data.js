@@ -8,8 +8,7 @@ export const FEATURES_DATA = [
   {
     icon: require('assets/product_onboarding/offers_discount_type.svg'),
     title: 'Customise Discount Type',
-    desc:
-      'Give your customers flat discounts or percentage discounts depending on your promotional scheme.',
+    desc: 'Give your customers flat discounts or percentage discounts depending on your promotional scheme.',
   },
   {
     icon: require('assets/product_onboarding/offers_no_cost_emi.svg'),
@@ -22,6 +21,6 @@ export const FEATURES_DATA = [
 export const FEATURES_LINKS = [
   {
     label: 'Know more',
-    url: 'https://razorpay.com/docs/offers/',
+    url: 'https://razorpay.com/docs/payments/offers/',
   },
 ];

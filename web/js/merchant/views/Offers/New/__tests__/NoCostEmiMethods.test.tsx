@@ -67,7 +67,7 @@ describe('NoCostEmiMethods Component', () => {
       expect(screen.getByText('here')).toBeInTheDocument();
       expect(screen.getByText('here').closest('a')).toHaveAttribute(
         'href',
-        'https://razorpay.com/docs/offers/no-cost-emi/',
+        'https://razorpay.com/docs/payments/offers/no-cost-emi/',
       );
     });
   });
