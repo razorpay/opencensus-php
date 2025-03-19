@@ -172,7 +172,8 @@ class CrossBorderImportServiceClient
             'merchant_id' => $input['merchant_id'],
             'payment_id' => $input['id'],
             'recurring' => $input['recurring'],
-            'library' => (new PaymentService)->getLibraryFromPayment($input)
+            'library' => (new PaymentService)->getLibraryFromPayment($input),
+            'flow'=> $input['flow']
         ];
 
         try {
@@ -309,7 +310,7 @@ class CrossBorderImportServiceClient
                'message'   => 'payout status details source will be read from JSON file'
            ]);
        }
-       
+
        $this->trace->debug(TraceCode::CROSS_BORDER_IMPORT_PAYOUT_UPDATE_WEBHOOK_DEBUG, [
            'message'   => 'payout status details source will be read from reason v/s source map'
        ]);
