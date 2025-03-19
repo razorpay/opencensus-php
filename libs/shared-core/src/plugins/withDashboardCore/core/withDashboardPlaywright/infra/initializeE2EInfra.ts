@@ -38,7 +38,7 @@ export const initializeE2EInfra = async () => {
     /**
      * @warning Remove this once the devstack changes are merged
      */
-    const tempKubeManifestRef = 'devstack/dashboard-shell';
+    const tempKubeManifestRef = 'devstack/dashboard-shell-master';
 
     const payload = {
       workflow_name: process.env.ASSIGNED_ARGO_WORKFLOW_NAME,

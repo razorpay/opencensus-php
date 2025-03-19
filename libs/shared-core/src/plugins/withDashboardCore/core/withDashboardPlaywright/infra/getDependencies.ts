@@ -21,10 +21,11 @@ export const getDependencies = (depCommits: Record<string, string>) => {
       // };
     }
     if (depName === 'terminals') {
-      // dependency.chart_values = {
-      // terminals_live_replicas: 1,
-      // terminals_test_replicas: 1,
-      // };
+      dependency.chart_values = {
+        ephemeral_db: true,
+        // terminals_live_replicas: 1,
+        // terminals_test_replicas: 1,
+      };
     }
     if (depName === 'settlements') {
       dependency.chart_values = {
@@ -63,7 +64,7 @@ export const getDependencies = (depCommits: Record<string, string>) => {
     }
 
     if (depName === 'payment-links') {
-      // es_replicas, expire_replicas, webhook_replicas are required (and set to 1 by default)
+      // es_replicas, expire_replicas, webhook_replicas are required (and set to 1 by default).
       dependency.chart_values = {
         run_es_in_sync: '1',
         email_replicas: 0,
@@ -85,12 +86,20 @@ export const getDependencies = (depCommits: Record<string, string>) => {
         pgrouter_worker_notification_replicas: 0,
         pgrouter_worker_outbox_relay_replicas: 0,
         pgrouter_worker_ledger_replicas: 0,
+        pgrouter_worker_pos_notification_update_replicas: 0,
+        pgrouter_worker_order_translator_pos_event_replicas: 0,
         pgrouter_app_mode: 'live',
       };
     }
     if (depName === 'ui-config-service') {
       dependency.chart_values = {
         service_account_enabled: false,
+      };
+    }
+
+    if (depName === 'no-code-apps') {
+      dependency.chart_values = {
+        worker_replicas: 0,
       };
     }
 
