@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { Link, ArrowUpRightIcon } from '@razorpay/blade/components';
 
 import { CommonPoints } from 'merchant/views/Navigator/components/Provider/SeamlessComponents/CommonPoints';
@@ -128,41 +128,6 @@ export const TPV_OPTIONS = {
   1: 'TPV Only',
   2: 'Both (TPV and Non TPV)',
 };
-
-export const HAS_UPI_FEATURES = [
-  'upi_mindgate',
-  'upi_icici',
-  'upi_axis',
-  'billdesk_optimizer',
-  'pay10',
-  'optimizer_razorpay',
-  'easebuzz_optimizer',
-  'zaakpay',
-  'cashfree',
-  'payu',
-  'pinelabs',
-  'ingenico',
-  'phonepe',
-];
-
-export const HAS_NETBANKING_FEATURES = [
-  'atom',
-  'netbanking_axis',
-  'billdesk_optimizer',
-  'pay10',
-  'netbanking_icici',
-  'netbanking_hdfc',
-  'optimizer_razorpay',
-  'easebuzz_optimizer',
-  'zaakpay',
-  'cashfree',
-  'payu',
-  'ingenico',
-  'atom',
-  'phonepe',
-  'netbanking_sbi',
-  'netbanking_kotak',
-];
 
 export const ACCOUNT_TYPE_OPTIONS = [
   { label: 'Regular', value: false },

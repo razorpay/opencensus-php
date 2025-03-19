@@ -33,8 +33,7 @@ describe('handleTPVFeatures', () => {
         'Payment Methods': ['netbanking'],
       },
     };
-    const gateway = 'billdesk_optimizer';
-    expect(handleTPVFeatures(payload, gateway)).toEqual({
+    expect(handleTPVFeatures(payload)).toEqual({
       Gateway_details: {
         'Payment Methods': ['netbanking'],
         'Netbanking Features': { tpv: 0 },
@@ -48,8 +47,7 @@ describe('handleTPVFeatures', () => {
         'Payment Methods': ['upi'],
       },
     };
-    const gateway = 'billdesk_optimizer';
-    expect(handleTPVFeatures(payload, gateway)).toEqual({
+    expect(handleTPVFeatures(payload)).toEqual({
       Gateway_details: {
         'Payment Methods': ['upi'],
         'UPI Features': { tpv: 0 },

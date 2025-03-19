@@ -165,7 +165,14 @@ describe('Optimizer IntegrationTesting IntegrationAuditSummary Utils', () => {
 
 describe('Optimizer IntegrationTesting Utils - tpvFeaturesPayload', () => {
   test('should return upi features for gateway which support upi features', () => {
-    const result = tpvFeaturesPayload(1, { upi: true }, 'cashfree');
+    const MOCK_GATEWAY_META = {
+      TPV: {
+        data_type: 'array',
+        data_value: [0, 1, 2],
+        terminals_key: '',
+      },
+    };
+    const result = tpvFeaturesPayload(1, { upi: true }, MOCK_GATEWAY_META);
     expect(result).toEqual({
       'UPI Features': {
         tpv: 1,
@@ -174,7 +181,14 @@ describe('Optimizer IntegrationTesting Utils - tpvFeaturesPayload', () => {
   });
 
   test('should return netbanking features for gateway which support netbanking features', () => {
-    const result = tpvFeaturesPayload(2, { netbanking: true }, 'cashfree');
+    const MOCK_GATEWAY_META = {
+      TPV: {
+        data_type: 'array',
+        data_value: [0, 1, 2],
+        terminals_key: '',
+      },
+    };
+    const result = tpvFeaturesPayload(2, { netbanking: true }, MOCK_GATEWAY_META);
     expect(result).toEqual({
       'Netbanking Features': {
         tpv: 2,
@@ -183,7 +197,14 @@ describe('Optimizer IntegrationTesting Utils - tpvFeaturesPayload', () => {
   });
 
   test('should return upi and netbanking features for gateway which support upi and netbanking features', () => {
-    const result = tpvFeaturesPayload(0, { upi: true, netbanking: true }, 'cashfree');
+    const MOCK_GATEWAY_META = {
+      TPV: {
+        data_type: 'array',
+        data_value: [0, 1, 2],
+        terminals_key: '',
+      },
+    };
+    const result = tpvFeaturesPayload(0, { upi: true, netbanking: true }, MOCK_GATEWAY_META);
     expect(result).toEqual({
       'UPI Features': {
         tpv: 0,
@@ -195,7 +216,7 @@ describe('Optimizer IntegrationTesting Utils - tpvFeaturesPayload', () => {
   });
 
   test('should return empty object for gateway which does not support upi and netbanking features', () => {
-    const result = tpvFeaturesPayload(0, { upi: true, netbanking: true }, 'paytm');
+    const result = tpvFeaturesPayload(0, { upi: true, netbanking: true }, {});
     expect(result).toEqual({});
   });
 });

@@ -1,13 +1,7 @@
 import { Badge, CheckIcon, CloseIcon, InfoIcon } from '@razorpay/blade/components';
 
 import { titleCase } from 'common/utils/rzp-utils';
-import {
-  METHODS_MAP,
-  UPI_FEATURES,
-  HAS_UPI_FEATURES,
-  NETBANKING_FEATURES,
-  HAS_NETBANKING_FEATURES,
-} from 'merchant/views/Navigator/constants';
+import { METHODS_MAP, UPI_FEATURES, NETBANKING_FEATURES } from 'merchant/views/Navigator/constants';
 import { BANKS_LIST } from 'merchant/views/Optimizer/AddProvider/bankList';
 
 import { CARD_TYPES, CARD_NETWORKS, WALLETS_MAP, GATEWAY_NAMES, BANK_TYPES } from './constants';
@@ -345,19 +339,20 @@ export const exportedForTesting = {
   CoverageBadge,
 };
 
-export const tpvFeaturesPayload = (value, methods, gateway) => {
+export const tpvFeaturesPayload = (value, methods, gatewayMetaData) => {
   const payload = {};
   const tpv = Number(value) ?? 0;
   const hasUPIMethod = methods.upi;
   const hasNBMethod = methods.netbanking;
+  const hasTPV = gatewayMetaData?.hasOwnProperty('TPV');
 
-  if (hasUPIMethod && HAS_UPI_FEATURES.includes(gateway)) {
+  if (hasUPIMethod && hasTPV) {
     payload[UPI_FEATURES] = { tpv };
   } else {
     delete payload[UPI_FEATURES];
   }
 
-  if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(gateway)) {
+  if (hasNBMethod && hasTPV) {
     payload[NETBANKING_FEATURES] = { tpv };
   } else {
     delete payload[NETBANKING_FEATURES];

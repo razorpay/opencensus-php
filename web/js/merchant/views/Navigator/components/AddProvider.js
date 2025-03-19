@@ -13,8 +13,6 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import {
   INIT_PROVIDER_STATE,
   INIT_FORM_STATE,
-  HAS_NETBANKING_FEATURES,
-  HAS_UPI_FEATURES,
   NETBANKING_FEATURES,
   UPI_FEATURES,
   SKIP_VALIDATION_KEYS,
@@ -110,9 +108,9 @@ class AddProvider extends React.Component {
         const hasNBMethod = paymentMethods.includes('netbanking');
         const hasUPIMethod = paymentMethods.includes('upi');
 
-        if (hasUPIMethod && HAS_UPI_FEATURES.includes(Gateway)) {
+        if (hasUPIMethod) {
           provider.Gateway_details.TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
-        } else if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(Gateway)) {
+        } else if (hasNBMethod) {
           provider.Gateway_details.TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
         } else {
           provider.Gateway_details.TPV = 0;
@@ -183,7 +181,7 @@ class AddProvider extends React.Component {
         }
       }
 
-      if ([...HAS_NETBANKING_FEATURES, ...HAS_UPI_FEATURES].includes(provider)) {
+      if (prevState.providers?.[provider]?.hasOwnProperty('TPV')) {
         provider_st.Gateway_details.TPV = 0;
       }
 
@@ -552,14 +550,14 @@ class AddProvider extends React.Component {
     const tpv = Number(Gateway_details?.TPV) ?? 0;
 
     if (Gateway_details.hasOwnProperty('TPV')) {
-      if (hasUPIMethod && HAS_UPI_FEATURES.includes(selectedProvider)) {
+      if (hasUPIMethod) {
         const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
         Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
       } else {
         delete Gateway_details[UPI_FEATURES];
       }
 
-      if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(selectedProvider)) {
+      if (hasNBMethod) {
         const netBankingFeatures = Gateway_details?.[NETBANKING_FEATURES] || {};
         Gateway_details[NETBANKING_FEATURES] = { ...netBankingFeatures, tpv };
       } else {

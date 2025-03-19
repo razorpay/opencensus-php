@@ -1,10 +1,5 @@
 import { POPULAR_GATEWAYS } from 'merchant/views/Optimizer/OnBoarding/constants';
-import {
-  HAS_UPI_FEATURES,
-  HAS_NETBANKING_FEATURES,
-  UPI_FEATURES,
-  NETBANKING_FEATURES,
-} from 'merchant/views/Navigator/constants';
+import { UPI_FEATURES, NETBANKING_FEATURES } from 'merchant/views/Navigator/constants';
 
 export const filterPopularGateways = (
   supportedGateways: Record<string, unknown>,
@@ -21,17 +16,17 @@ export const filterPopularGateways = (
   return supportedGatewaysList;
 };
 
-export const handleTPVFeatures = (payload: Record<string, unknown>, gateway: string) => {
+export const handleTPVFeatures = (payload: Record<string, unknown>) => {
   const paymentMethods = (payload.Gateway_details as Object)['Payment Methods'];
   const hasNBMethod = paymentMethods.includes('netbanking');
   const hasUPIMethod = paymentMethods.includes('upi');
-  if (hasUPIMethod && HAS_UPI_FEATURES.includes(gateway)) {
+  if (hasUPIMethod) {
     payload.Gateway_details = {
       ...(payload.Gateway_details as Object),
       [UPI_FEATURES]: { tpv: 0 },
     };
   }
-  if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(gateway)) {
+  if (hasNBMethod) {
     payload.Gateway_details = {
       ...(payload.Gateway_details as Object),
       [NETBANKING_FEATURES]: { tpv: 0 },

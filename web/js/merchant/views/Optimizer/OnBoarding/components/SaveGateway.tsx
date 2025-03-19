@@ -151,7 +151,7 @@ export const SaveGateway = ({
           (method) => method !== 'wallet',
         ) || [];
       if ((supportedGateways[gateway] as Record<string, unknown>)?.TPV) {
-        payload = handleTPVFeatures(payload, gateway);
+        payload = handleTPVFeatures(payload);
       }
 
       addProvider({ payload })

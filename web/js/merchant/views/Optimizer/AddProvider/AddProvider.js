@@ -13,8 +13,6 @@ import { getSelectedProviderWithAcquirer as getSelectedProvider } from 'merchant
 import {
   METHODS,
   INIT_PROVIDER_STATE,
-  HAS_NETBANKING_FEATURES,
-  HAS_UPI_FEATURES,
   NETBANKING_FEATURES,
   UPI_FEATURES,
   INSTANT_PROVIDER_UNSUPPORTED_METHODS,
@@ -154,17 +152,9 @@ class AddProvider extends React.Component {
           Gateway === RAZORPAY_GATEWAY_KEY &&
           Gateway_details?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
-        const paymentMethods = Gateway_details?.['Payment Methods'] ?? [];
-        const hasNBMethod = paymentMethods.includes('netbanking');
-        const hasUPIMethod = paymentMethods.includes('upi');
-
-        if (hasUPIMethod && HAS_UPI_FEATURES.includes(Gateway)) {
-          provider.Gateway_details.TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
-        } else if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(Gateway)) {
-          provider.Gateway_details.TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
-        } else {
-          provider.Gateway_details.TPV = 0;
-        }
+        const UPITPV = Gateway_details[UPI_FEATURES]?.tpv;
+        const NBTPV = Gateway_details[NETBANKING_FEATURES]?.tpv;
+        provider.Gateway_details.TPV = UPITPV ?? NBTPV ?? 0;
 
         // Edge case where provider added thorugh integration audit where wallet method didn't go live after provider onboarding
         // and after that if we disable the integration audit on MID we don't get the wallets paytm for specific to Paytm Gateway
@@ -269,9 +259,11 @@ class AddProvider extends React.Component {
 
   // function to check TPV support.
   checkTPVSupport(selectedProvider, providers) {
+    const selectedProviderObj = providers?.[selectedProvider];
+    const paymentMethods = selectedProviderObj?.['Payment Methods'].data_value;
     return (
-      providers?.[selectedProvider]?.hasOwnProperty('TPV') &&
-      [...HAS_NETBANKING_FEATURES, ...HAS_UPI_FEATURES].includes(selectedProvider)
+      selectedProviderObj?.hasOwnProperty('TPV') &&
+      (paymentMethods?.includes('upi') || paymentMethods?.includes('netbanking'))
     );
   }
 
@@ -801,14 +793,14 @@ class AddProvider extends React.Component {
     const tpv = Number(Gateway_details?.TPV) ?? 0;
 
     if (Gateway_details.hasOwnProperty('TPV')) {
-      if (hasUPIMethod && HAS_UPI_FEATURES.includes(selectedProvider)) {
+      if (hasUPIMethod) {
         const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
         Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
       } else {
         delete Gateway_details[UPI_FEATURES];
       }
 
-      if (hasNBMethod && HAS_NETBANKING_FEATURES.includes(selectedProvider)) {
+      if (hasNBMethod) {
         const netBankingFeatures = Gateway_details?.[NETBANKING_FEATURES] || {};
         Gateway_details[NETBANKING_FEATURES] = { ...netBankingFeatures, tpv };
       } else {

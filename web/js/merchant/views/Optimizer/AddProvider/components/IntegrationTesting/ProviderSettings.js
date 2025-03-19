@@ -116,7 +116,7 @@ export const ProviderSettings = ({
   };
 
   const changeTpv = ({ value }) => {
-    const payload = tpvFeaturesPayload(value, methods, gateway);
+    const payload = tpvFeaturesPayload(value, methods, gatewayMetaData);
     setMethods({
       ...methods,
       ...payload,
