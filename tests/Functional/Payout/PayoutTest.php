@@ -28502,6 +28502,164 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotContains('HDFC', $eventConfigFromFTS['BENEFICIARY'], true);
     }
 
+    public function testPayoutEventPushToXBalanceServiceForAPIPayout()
+    {
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function($array) {
+                 return ["response" => ["variant" => ["name" => 'enabled']]];
+             });
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+
+            public $payload;
+
+            public function pushRaw($payload, $queueName)
+            {
+                $this->payload   = $payload;
+                $this->queueName = $queueName;
+
+                return true;
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->on('live')->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $payoutCore = $this->app->make('RZP\Models\Payout\Core');
+        $payoutCore->pushPayoutEventToBalanceService($payout);
+
+        $queuePayload = json_decode($queueObject->payload);
+        $queueName    = $this->app['config']->get('queue.x_balances_payout_event.' . Mode::LIVE);
+
+        $this->assertEquals($queueName, $queueObject->queueName);
+        $this->assertEquals($payout->getId(), $queuePayload->entity_id);
+        $this->assertEquals($payout->getBalanceId(), $queuePayload->balance_id);
+        $this->assertEquals($payout->getMerchantId(), $queuePayload->merchant_id);
+        $this->assertNotNull($queuePayload->event_creation_time);
+    }
+
+    public function testPayoutEventPushToXBalanceServiceForAPIPayoutException()
+    {
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function($array) {
+                 return ["response" => ["variant" => ["name" => 'enabled']]];
+             });
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+
+            public $payload;
+
+            public $isExceptionThrown;
+
+            public function pushRaw($payload, $queueName)
+            {
+                $this->isExceptionThrown = true;
+                throw new Exception("This exception class will not be found");
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->on('live')->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $payoutCore = $this->app->make('RZP\Models\Payout\Core');
+        $payoutCore->pushPayoutEventToBalanceService($payout);
+
+        $this->assertEquals(true, $queueObject->isExceptionThrown);
+    }
+
+    public function testPayoutEventNotPushedToXBalanceServiceForAPIPayoutOnSplitzDisabled()
+    {
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function($array) {
+                 return ["response" => ["variant" => ["name" => 'disabled']]];
+             });
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+
+            public $payload;
+
+            public function pushRaw($payload, $queueName)
+            {
+                $this->isPushed = true;
+            }
+        };
+
+        $queueMock->shouldNotReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->on('live')->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $payoutCore = $this->app->make('RZP\Models\Payout\Core');
+        $payoutCore->pushPayoutEventToBalanceService($payout);
+    }
+
     public function testCreateRequestSubmittedToOnHoldAndProcessing()
     {
         $balanceId = $this->bankingBalance->getId();

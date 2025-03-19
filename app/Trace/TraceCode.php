@@ -5201,6 +5201,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_CACHE_STORE_ERROR                               = 'TOKEN_CACHE_STORE_ERROR';
 
     const QUEUE_PUSH_TO_ACCOUNT_STATEMENTS_SOURCE_EVENT_ERROR   = 'QUEUE_PUSH_TO_ACCOUNT_STATEMENTS_SOURCE_EVENT_ERROR';
+    const X_BALANCES_PAYOUT_EVENT_PUSH_ERROR                    = 'X_BALANCES_PAYOUT_EVENT_PUSH_ERROR';
     const INSTRUMENT_ENTITY_EVENT_ERROR                         = 'INSTRUMENT_ENTITY_EVENT_ERROR';
     const MERCHANT_PAYMENT_INSTRUMENTS_FETCH_RESPONSE           = 'MERCHANT_PAYMENT_INSTRUMENTS_FETCH_RESPONSE';
     const QR_PAYER_NAME_EMPTY                                   = 'Payer name is empty in the request payload';

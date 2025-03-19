@@ -213,6 +213,9 @@ return [
     'account_statements_source_event' => [
         'live'       => env('AWS_ACCOUNT_STATEMENTS_SOURCE_EVENT_LIVE_QUEUE'),
     ],
+    'x_balances_payout_event' => [
+        'live'       => env('AWS_X_BALANCES_PAYOUT_EVENT_LIVE_QUEUE'),
+    ],
     'terminal_batch' => [
         'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
         'live'       => env('AWS_TERMINAL_BATCH_QUEUE'),

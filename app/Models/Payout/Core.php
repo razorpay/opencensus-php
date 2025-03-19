@@ -504,6 +504,8 @@ class Core extends Base\Core
         if ($payout->getIsPayoutService() === false)
         {
             $this->postCreationForPayouts($payout);
+
+            $this->pushPayoutEventToBalanceService($payout);
         }
 
         return $payout;
@@ -12651,5 +12653,39 @@ class Core extends Base\Core
         return $this->isSplitzExperimentEnable($properties, 'enable', TraceCode::FEE_RECOVERY_QUEUED_PAYOUT_FLAG_UNSET_ERROR);
     }
 
+    public function pushPayoutEventToBalanceService(Entity $payout): void
+    {
+        try
+        {
+            $balance = $payout->balance;
 
+            $properties = [
+                'id'            => $balance->getId(),
+                'experiment_id' => 'x_balances_payout_event',
+                'request_data'  => json_encode(['balance_id' => $balance->getId()])
+            ];
+            $expResult  = $this->isSplitzExperimentEnable($properties, 'enabled');
+
+            if ($expResult == true && $payout->balance->isAccountTypeDirect())
+            {
+                $pushData = [
+                    'entity_id'           => $payout->getId(),
+                    'event_creation_time' => $payout->getCreatedAt(),
+                    'merchant_id'         => $payout->getMerchantId(),
+                    'balance_id'          => $payout->getBalanceId()
+                ];
+
+                $queueName = $this->app['config']->get('queue.x_balances_payout_event.' . $this->mode);
+
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($pushData), $queueName);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::X_BALANCES_PAYOUT_EVENT_PUSH_ERROR, [
+                'payout_id' => $payout->getId(),
+                'error'     => $e->getMessage()
+            ]);
+        }
+    }
 }
