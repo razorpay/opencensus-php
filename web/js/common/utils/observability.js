@@ -176,6 +176,10 @@ export function initSentry(appName) {
           return event;
         },
         tracesSampler: (options) => {
+          if (!['payments-dashboard', 'la-dashboard'].includes(appName)) {
+            return 0;
+          }
+
           const sentryOp = options?.attributes?.['sentry.op'];
           switch (sentryOp) {
             case 'pageload':
