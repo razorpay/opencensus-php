@@ -1641,7 +1641,7 @@ export default class User {
   }
 
   get isVASOrg() {
-    return isOrgFeatureExist('vas_org_identifer');
+    return isOrgFeatureExist('vas_org_identifier');
   }
 
   // Bank account auto update or old workflow with the approval from admin
