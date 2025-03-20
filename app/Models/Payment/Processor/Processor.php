@@ -1614,11 +1614,6 @@ class Processor
 
                 $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
 
-                // not required in case of billdesk, add vpa if required for any other provider
-                $input[Payment\Entity::CARD] = null;
-                $input[Payment\Entity::UPI] = null;
-                $input[Payment\Entity::BANK_ACCOUNT] = null;
-
                 if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD)
                 {
                     $card = $this->repo->card->fetchForToken($token);
@@ -1708,6 +1703,10 @@ class Processor
                 ];
 
                 $input["recurring_token"] = $recurringToken;
+                // not required in case of billdesk, add vpa if required for any other provider
+                $input[Payment\Entity::CARD] = null;
+                $input[Payment\Entity::UPI] = null;
+                $input[Payment\Entity::BANK_ACCOUNT] = null;
 
                 $this->trace->info(TraceCode::OPTIMIZER_REARCH_ROUTING_CRITERIA_PASSED_REASON, [
                     'merchant_id' => $merchant->getId(),
