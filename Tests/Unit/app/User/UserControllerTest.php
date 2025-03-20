@@ -3,7 +3,6 @@
 namespace Tests\Unit\app\Edge;
 
 use App\Constants\Constants;
-use App\Edge\EdgeClient;
 use App\Http\Controllers\UserController;
 use App\Providers\GenericUser;
 use Illuminate\Contracts\Console\Kernel;
@@ -57,16 +56,6 @@ class UserControllerTest extends BaseTestCase {
         $userController = new UserController();
 
         $this->userLogin();
-
-        $edgeClientMock = $this->getMockBuilder(EdgeClient::class)->onlyMethods(['revokeToken'])->getMock();
-
-        $reflectionClass = new \ReflectionClass(UserController::class);
-
-        $privateProperty = $reflectionClass->getProperty('edgeClient');
-
-        $privateProperty->setAccessible(true);
-
-        $privateProperty->setValue($userController, $edgeClientMock);
 
         $userController->getLogout();
 

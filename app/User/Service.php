@@ -21,7 +21,6 @@ use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\Http\Headers;
 use App\User\Constants as UserConstants;
-use App\Edge\EdgeClient;
 use Lcobucci\JWT\Token;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
@@ -122,10 +121,6 @@ class Service extends Base\Service
      */
     private ?Guzzle $httpClient;
 
-    /**
-     * @var \GuzzleHttp\Client|null
-     */
-    private $edgeClient;
 
     private $splitzExprimentData;
 
@@ -142,8 +137,6 @@ class Service extends Base\Service
         $this->metrics = $app['metrics'];
 
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
-
-        $this->edgeClient = new EdgeClient();
 
         $this->splitzExprimentData = [];
     }
@@ -1239,21 +1232,7 @@ class Service extends Base\Service
      * @return ?array Edge response on success
      */
     public function reissueTokenOnEdge(string $merchantId, GenericUser $user) {
-        try {
-            return $this->edgeClient->reissueToken($merchantId, $user);
-        } catch (\Exception $e) {
-            $this->trace->error(TraceCode::EDGE_TOKEN_REISSUE_FAILED, [
-                "message"   => "Failed to reissue user session token at edge for switch merchant: " . $e->getMessage(),
-            ]);
-
-            // TODO: throw exception when we move out of shadow mode
-            // return if user token can not be reissued at edge
-            // we will not alter the sessions at redis unless edge tokens are reissued successfully
-//            throw new ServerErrorException(
-//                "Failed to switch merchant: " . $e->getMessage(),
-//                \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
-//                500);
-        }
+       return null;
     }
 
     /**
