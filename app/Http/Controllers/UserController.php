@@ -2556,7 +2556,7 @@ class UserController extends Controller
 
         $data = (new SplitzService())->getVariantBulk($merchantId, [$shellExpId], [], AppConstants::SPLITZ_BULK_EVALUATE_PATH);
 
-        $this->splitzExprimentData[$shellExpId] = $data[$shellExpId];
+        $this->splitzExprimentData[$shellExpId] = array_get($data, $shellExpId, []);
 
         return $this->getShellRedirectionExperimentResult();
     }

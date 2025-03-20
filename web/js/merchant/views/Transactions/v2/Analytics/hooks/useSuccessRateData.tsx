@@ -20,7 +20,7 @@ export default function useSuccessRateData(): SuccessRateDataHookResponse {
     const response = await fetch<SuccessRateAPIResponse>({
       url: 'success-rate/merchant/sr',
       method: 'POST',
-      // this API doesn't work in test mode
+      // this API doesn't work in test mode.
       mode: EnvironmentsModes.LIVE,
       data: getSuccessRateRequestPayload(from, to),
     });
