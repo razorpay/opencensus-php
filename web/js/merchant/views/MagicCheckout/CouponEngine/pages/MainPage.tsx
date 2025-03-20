@@ -24,6 +24,8 @@ import 'merchant/views/MagicCheckout/css/coupon-engine/promotional-banner.styl';
 
 // constant imports
 import { getNavItems, COUPON_NAMES } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
 const initialFiltersState = {
   type: 'all',
   code: '',
@@ -51,6 +53,7 @@ const MainPage: React.FC<MainPageProps> = ({
   const NAV_ITEMS = getNavItems();
   const [activeNav, setActiveNav] = useState<string>(NAV_ITEMS[0].id);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const isFreebieCouponExpEnabled = useMagicExperiment('freebie_coupon');
   const { setAllCouponsList, setShopifySyncStatus } = useContext(ModalContext);
   const [shouldShowPromotionalBanner, setShouldShowPromotionalBanner] = useState<boolean>(
     getItem(`showCouponBanner-${merchantId}`) !== 'false',
@@ -84,9 +87,23 @@ const MainPage: React.FC<MainPageProps> = ({
       ) {
         setActiveNavAndCouponsList(0, []);
       } else {
-        const couponsList = isRcodEnabled
-          ? couponsData.coupons.filter((coupon) => coupon?.type !== COUPON_NAMES.FREE_SHIPPING)
-          : couponsData.coupons;
+        /**
+         * For MagicX , Free shipping coupon type and bulk order discount is not available
+         */
+        const excludedCouponsForMagicX = [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER];
+        const excludedCouponsForMagicCheckout: string[] = [];
+        if (!isFreebieCouponExpEnabled) {
+          excludedCouponsForMagicX.push(COUPON_NAMES.FREEBIE_ITEM);
+          excludedCouponsForMagicCheckout.push(COUPON_NAMES.FREEBIE_ITEM);
+        }
+        const excludedCouponTypes = isRcodEnabled
+          ? excludedCouponsForMagicX
+          : excludedCouponsForMagicCheckout;
+
+        const couponsList = couponsData?.coupons?.filter(
+          (coupon) => !excludedCouponTypes.includes(coupon.type),
+        );
+
         setActiveNavAndCouponsList(1, couponsList);
       }
       const syncStatus = isStatusSuccess

@@ -153,6 +153,9 @@ export function createFreeShippingCouponPayload({
       {
         type: combineCoupons.shouldCombineBulkDiscountCoupon ? COUPON_KEYS.bulk_order : null,
       },
+      {
+        type: combineCoupons.shouldCombineFreebieItemCoupon ? COUPON_KEYS.freebie_item : null,
+      },
     ],
   };
 

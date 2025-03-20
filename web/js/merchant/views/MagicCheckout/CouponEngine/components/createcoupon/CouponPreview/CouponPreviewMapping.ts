@@ -298,7 +298,7 @@ const combinationPreviewMapping = (
     },
     {
       text: 'Combines with Free Shipping coupons',
-      condition: () => widgetsData.combineCoupons.shouldCombineFreeShippingCoupon,
+      condition: () => !isRcodEnabled && widgetsData.combineCoupons.shouldCombineFreeShippingCoupon,
     },
     {
       text: 'Combines with bulk coupons',
@@ -307,6 +307,10 @@ const combinationPreviewMapping = (
     {
       text: 'Combines with BXGY coupons',
       condition: () => widgetsData.combineCoupons.shouldCombineBxGyDiscountCoupon,
+    },
+    {
+      text: 'Combines with Freebie Item coupons',
+      condition: () => widgetsData.combineCoupons.shouldCombineFreebieItemCoupon,
     },
     {
       text: `Can't combine with other coupons`,

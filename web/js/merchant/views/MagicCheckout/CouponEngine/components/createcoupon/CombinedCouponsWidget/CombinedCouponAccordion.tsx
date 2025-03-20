@@ -9,6 +9,9 @@ import {
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
 import { Alert } from '@razorpay/blade/components';
 
+//helper imports
+import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
+
 // context imports
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
@@ -22,6 +25,7 @@ interface CombinedCouponProps {
 
 const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, isRcodEnabled }) => {
   const { widgetsData, setWidgetsData } = useContext(ModalContext);
+  const isFreebieCouponEXPEnabled = useMagicExperiment('freebie_coupon');
 
   const isCombinedCouponsChecboxChecked = useCallback(() => {
     const {
@@ -30,6 +34,7 @@ const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, isRcodEnabl
       shouldCombineBulkDiscountCoupon,
       shouldCombineBxGyDiscountCoupon,
       shouldCombineFreeShippingCoupon,
+      shouldCombineFreebieItemCoupon,
     } = widgetsData.combineCoupons;
 
     return (
@@ -37,7 +42,8 @@ const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, isRcodEnabl
       shouldCombineOtherAmountOffProductCoupons ||
       shouldCombineBulkDiscountCoupon ||
       shouldCombineBxGyDiscountCoupon ||
-      shouldCombineFreeShippingCoupon
+      shouldCombineFreeShippingCoupon ||
+      shouldCombineFreebieItemCoupon
     );
   }, [widgetsData.combineCoupons]);
 
@@ -63,6 +69,8 @@ const CombinedCoupon: React.FC<CombinedCouponProps> = ({ couponName, isRcodEnabl
           {DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG[couponName].map((item) => {
             //   * We are not allowing free shipping coupon combinations for magicX merchants.
             if (isRcodEnabled && item?.type === 'shouldCombineFreeShippingCoupon') return null;
+            if (!isFreebieCouponEXPEnabled && item?.type === 'shouldCombineFreebieItemCoupon' && !widgetsData.combineCoupons[item.type])
+              return null;
             return (
               <div className="display-flex" key={item.type}>
                 <Input.Check

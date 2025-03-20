@@ -54,9 +54,16 @@ describe('coupon Modal', () => {
     expect(screen.queryByText('Freebie Item')).toBeInTheDocument();
   });
 
-  test('Should not render Freebie Item Coupon Option for Magic Checkout', () => {
-    render(<CreateCouponModal />);
-    expect(screen.queryByText('Freebie Item')).not.toBeInTheDocument();
+  test('Should render Freebie Item Coupon Option for Magic Checkout if freebie EXP is On', () => {
+    const initState = {
+      magicCheckout: {
+        rcod: false,
+      },
+    };
+    render(<CreateCouponModal />, {
+      reduxStore: storeWithInitialState({ ...initState }),
+    });
+    expect(screen.queryByText('Freebie Item')).toBeInTheDocument();
     //Other coupon options should be rendered
     expect(screen.getByText('Amount discounted on orders')).toBeInTheDocument();
     expect(screen.queryByText('Free shipping')).toBeInTheDocument();

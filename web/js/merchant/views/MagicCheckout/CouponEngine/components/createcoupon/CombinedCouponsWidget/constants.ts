@@ -16,7 +16,9 @@ export const DISCOUNT_TYPE_BASED_MULTI_COUPON_CONFIG = {
     { type: 'shouldCombineAmountOffOrderCoupon', name: 'Amount off order coupons' },
     { type: 'shouldCombineBulkDiscountCoupon', name: 'Bulk discount coupons' },
     { type: 'shouldCombineBxGyDiscountCoupon', name: 'BxGy discount coupons' },
+    { type: 'shouldCombineFreebieItemCoupon', name: 'Freebie item coupon' },
   ],
+  freebie_item: [{ type: 'shouldCombineFreeShippingCoupon', name: 'Free shipping coupons' }],
 };
 
 export const DEFAULT_MULTI_COUPON_CONFIG = {

@@ -55,5 +55,6 @@ export const widgetMappings = {
     CouponValidityWidget,
     CouponEligibilityWidget,
     UsageRestrictionWidget,
+    CombineCouponsWidget,
   ],
 };

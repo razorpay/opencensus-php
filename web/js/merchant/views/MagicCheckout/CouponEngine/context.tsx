@@ -79,6 +79,7 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     shouldCombineAmountOffOrderCoupon: false,
     shouldCombineBulkDiscountCoupon: false,
     shouldCombineBxGyDiscountCoupon: false,
+    shouldCombineFreebieItemCoupon: false,
   },
   status: 'published',
   source: null,

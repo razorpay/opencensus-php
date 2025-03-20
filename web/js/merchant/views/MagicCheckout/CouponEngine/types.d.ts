@@ -87,6 +87,7 @@ export interface CombineCoupons {
   shouldCombineOtherAmountOffProductCoupons: boolean;
   shouldCombineBulkDiscountCoupon: boolean;
   shouldCombineBxGyDiscountCoupon: boolean;
+  shouldCombineFreebieItemCoupon: boolean;
 }
 
 export interface CouponDetails {

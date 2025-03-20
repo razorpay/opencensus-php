@@ -60,12 +60,17 @@ const GenericCoupons: React.FC<GenericCouponsProps> = ({
        * For MagicX , Free shipping coupon type and bulk order discount is not available
        */
       const excludedCouponsForMagicX = [COUPON_NAMES.FREE_SHIPPING, COUPON_NAMES.BULK_ORDER];
-      if (!isFreebieCouponExpEnabled || !isRcodEnabled) {
+      const excludedCouponsForMagicCheckout: string[] = [];
+      if (!isFreebieCouponExpEnabled) {
         excludedCouponsForMagicX.push(COUPON_NAMES.FREEBIE_ITEM);
+        excludedCouponsForMagicCheckout.push(COUPON_NAMES.FREEBIE_ITEM);
       }
-      const couponsList = isRcodEnabled
-        ? coupons?.filter((coupon) => !excludedCouponsForMagicX.includes(coupon.type))
-        : coupons;
+      const excludedCouponTypes = isRcodEnabled
+        ? excludedCouponsForMagicX
+        : excludedCouponsForMagicCheckout;
+
+      const couponsList = coupons?.filter((coupon) => !excludedCouponTypes.includes(coupon.type));
+
       setAllCouponsList(couponsList || []);
     } catch (err) {
       showNotification({

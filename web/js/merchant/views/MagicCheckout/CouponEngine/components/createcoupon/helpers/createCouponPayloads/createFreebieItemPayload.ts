@@ -18,6 +18,9 @@ import {
   UsageRestriction,
 } from 'merchant/views/MagicCheckout/CouponEngine/types.d';
 
+// constant imports
+import { COUPON_KEYS } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CombinedCouponsWidget/constants';
+
 export function createFreebieItemPayload({
   couponDetails,
   productsPurchased,
@@ -181,6 +184,11 @@ export function createFreebieItemPayload({
     flags: {
       force_display: couponDetails.display && Boolean(couponDetails.couponDiscoveryEnabled),
     },
+    combined_coupons: [
+      {
+        type: combineCoupons.shouldCombineFreeShippingCoupon ? COUPON_KEYS.free_shipping : null,
+      },
+    ],
   };
 
   return sanitizePayload(couponPayload);

@@ -44,7 +44,7 @@ const CreateCouponModal = ({ closeModal, isRcodEnabled }) => {
       : [COUPON_NAMES.BULK_ORDER]
     : [];
 
-  if (!isFreebieCouponEXPEnabled || !isRcodEnabled) {
+  if (!isFreebieCouponEXPEnabled) {
     excludedCoupons.push(COUPON_NAMES.FREEBIE_ITEM);
   }
   const AVAILABLE_COUPON_TYPES = getAvailableCouponTypes(excludedCoupons);

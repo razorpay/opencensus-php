@@ -70,7 +70,7 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
       : [COUPON_NAMES.BULK_ORDER]
     : [];
 
-  if (!isFreebieCouponEXPEnabled || !isRcodEnabled) {
+  if (!isFreebieCouponEXPEnabled) {
     excludedCouponTypes.push(COUPON_NAMES.FREEBIE_ITEM);
   }
 
