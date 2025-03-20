@@ -47,8 +47,6 @@ class LinkedAccount extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->merchantCore->blockLinkedAccountCreationIfApplicable($this->merchant);
-
         $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use (& $entry)
         {
             return $this->createOrUpdateAccountForEntry($entry);
