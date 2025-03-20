@@ -5,7 +5,7 @@ export class AppConstants{
     static readonly ACTIVATION_FORM_MILESTONE_L1 = 'L1';
     static readonly ACTIVATION_FORM_MILESTONE_L2 = 'L2';
     static readonly MODULAR_ONBOARDING = "MODULAR_ONBOARDING";
-    static readonly ORG_RZP = 'RZP';
+    static readonly ORG_RZP = 'rzp';
     static readonly INDIA_COUNTRY_CODE = 'IN';
     static readonly ORG_RZP_ID = 'org_100000razorpay';
     static readonly RZP_MERCHANT_ID = 'rzp_merchant_id';
