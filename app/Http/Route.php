@@ -17660,7 +17660,8 @@ class Route
             'payment_page_save_receipt_for_payment',
             'fetch_order_line_items',
             'fetch_product_details_for_order',
-            'payment_page_notify_nca'
+            'payment_page_notify_nca',
+            'feature_add_internal'
         ],
 
         'ucs' => [
