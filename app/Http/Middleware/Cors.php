@@ -76,6 +76,30 @@ class Cors
         'razorpay_accounts_domain' => [
             'url_config'    => 'app.razorpay_accounts_url'
         ],
+
+        'axis_unipg_accounts_domain' => [
+            'url_config'    => 'app.axis_unipg_accounts_url'
+        ],
+
+        'axis_easypay_accounts_domain' => [
+            'url_config'    => 'app.axis_easypay_accounts_url'
+        ],
+
+        'hdfc_pro_accounts_domain' => [
+            'url_config'    => 'app.hdfc_pro_accounts_url'
+        ],
+
+        'hdfc_giga_accounts_domain' => [
+            'url_config'    => 'app.hdfc_giga_accounts_url'
+        ],
+
+        'hdfc_vas_accounts_domain' => [
+            'url_config'    => 'app.hdfc_vas_accounts_url'
+        ],
+
+        'hdfc_collect_now_accounts_domain' => [
+            'url_config'    => 'app.hdfc_collect_now_accounts_url'
+        ],
     ];
 
     protected function shouldAllowCors($request, $originHost) : bool

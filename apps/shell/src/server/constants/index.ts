@@ -66,5 +66,13 @@ export class AppConstants{
     static readonly DomainRedirectMap: Record<string, { id: string; redirect_url: string }> = {
         'dashboard-curlec.dev.razorpay.in': { redirect_url: 'https://accounts-curlec.np.razorpay.in', id: 'CURLEC_REDIRECTION_ENABLED' },
         'dashboard.curlec.com': { redirect_url: 'https://accounts.curlec.com', id: 'CURLEC_REDIRECTION_ENABLED' },
+        'axiseasypay.razorpay.com': { redirect_url: 'https://axiseasypay-accounts.razorpay.com', id:'BANKING_REDIRECTION_ENABLED'},
+        'axis.razorpay.com': { redirect_url: 'https://axis-accounts.razorpay.com', id:'BANKING_REDIRECTION_ENABLED'},
+        'hdfcbank.razorpay.com': { redirect_url: 'https://hdfcbank-accounts.razorpay.com', id:'BANKING_REDIRECTION_ENABLED'},
+        'giga.razorpay.com': { redirect_url: 'https://giga-accounts.razorpay.com', id:'BANKING_REDIRECTION_ENABLED'},
+        'hdfc.razorpay.com': { redirect_url: 'https://hdfc-accounts.razorpay.com', id:'BANKING_REDIRECTION_ENABLED'},
+        'hdfcbankcollectnow.razorpay.com': { redirect_url: 'https://hdfcbankcollectnow-accounts.razorpay.com', id:'BANKING_REDIRECTION_ENABLED'},
+        'dashboard-axis.dev.razorpay.in': { redirect_url: 'https://accounts-axis.np.razorpay.in', id:'BANKING_REDIRECTION_ENABLED'},
+        'dashboard-axiseasypay.dev.razorpay.in': { redirect_url: 'https://accounts-axiseasypay.np.razorpay.in', id:'BANKING_REDIRECTION_ENABLED'},
     }
 }

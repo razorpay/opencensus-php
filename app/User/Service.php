@@ -3987,10 +3987,21 @@ class Service extends Base\Service
             // No experiment is set
             return true;
         }
+
+        [$orgError, $org] = $this->getOrgDetails();
+
+        if (!empty($orgError)) {
+            return false;
+        }
+
+        $orgID = $org[MerchantConstants::ORG_ID] ?? '';
+
         $experimentId = env($id);
         $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
             $experimentId,
             "",
+            "",
+            $orgID
         );
 
         if ($data === null)

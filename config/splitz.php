@@ -283,5 +283,8 @@ return [
 
         // Enable new auth rearch
         "NEW_AUTH_REARCH" => env('NEW_AUTH_REARCH', ''),
+
+        // banking unified signup
+        'BANKING_REDIRECTION_ENABLED' => env('BANKING_REDIRECTION_ENABLED', ''),
     ]
 ];

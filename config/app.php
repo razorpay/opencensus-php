@@ -295,6 +295,12 @@ return array(
     'razorpay_accounts_url' => env('RAZORPAY_ACCOUNTS_URL'),
     'hosted_service_url'          => env('HOSTED_SERVICE_URL'),
     'razorpay_accounts_login_url' => env('RAZORPAY_ACCOUNTS_LOGIN_URL'),
+    'axis_easypay_accounts_url' => env('AXIS_EASYPAY_ACCOUNTS_URL'),
+    'axis_unipg_accounts_url' => env('AXIS_UNIPG_ACCOUNTS_URL'),
+    'hdfc_pro_accounts_url'       => env('HDFC_PRO_ACCOUNTS_URL'),
+    'hdfc_giga_accounts_url'      => env('HDFC_GIGA_ACCOUNTS_URL'),
+    'hdfc_vas_accounts_url' => env('HDFC_VAS_ACCOUNTS_URL'),
+    'hdfc_collect_now_accounts_url' => env('HDFC_COLLECT_NOW_ACCOUNTS_URL'),
 
     'razorassist' => [
         'url'       => env('RAZORASSIST_HOST_URL'),
