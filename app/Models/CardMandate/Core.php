@@ -382,7 +382,7 @@ class Core extends Base\Core
             $mandateResponse = $input[MandateHQ\Constants::WEBHOOK_PAYLOAD][MandateHQ\Constants::WEBHOOK_ENTITY_MANDATE];
             $mandate = MandateHQ\MandateHQ::getMandateFromMandateHqResponse($mandateResponse[MandateHQ\Constants::WEBHOOK_ENTITY]);
 
-            $this->updateMandateFromCallbackResponse($mandate);
+            $this->updateMandateFromCallbackResponse($mandate, $input);
         }
 
         if (in_array(MandateHQ\Constants::WEBHOOK_ENTITY_NOTIFICATION, $contains))
@@ -390,13 +390,13 @@ class Core extends Base\Core
             $notificationResponse = $input[MandateHQ\Constants::WEBHOOK_PAYLOAD][MandateHQ\Constants::WEBHOOK_ENTITY_NOTIFICATION];
             $notification = MandateHQ\MandateHQ::getNotificationFromMandateHqResponse($notificationResponse[MandateHQ\Constants::WEBHOOK_ENTITY]);
 
-            (new CardMandateNotification\Core)->updateNotificationFromCallbackResponse($notification);
+            (new CardMandateNotification\Core)->updateNotificationFromCallbackResponse($notification, $input);
         }
 
         return [];
     }
 
-    protected function updateMandateFromCallbackResponse(Mandate $mandate)
+    protected function updateMandateFromCallbackResponse(Mandate $mandate, $input = [])
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
@@ -413,7 +413,12 @@ class Core extends Base\Core
 
         if ($cardMandate === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            $this->trace->info(TraceCode::CARD_RECURRING_REARCH_MANDATE_CALLBACK, [
+                'mandate_id' => $mandateId,
+            ]);
+
+            $this->app['card.payments']->handleMandateHQCallback($input);
+            return [];
         }
 
         $previousStatus = $this->repo->transaction(

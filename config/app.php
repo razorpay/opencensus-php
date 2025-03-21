@@ -1238,6 +1238,10 @@ return array(
 
     'emandate_async_payment_with_async_balance' => env('EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BALANCE_EXP_ID'),
 
+    'enable_rearch_card_recurring_flow_hub_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB_MANDATEHQ'),
+
+    'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
+
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
     'append_gateway_payment_id_payu_exp_id' => env('APPEND_GATEWAY_PAYMENT_ID_PAYU_EXP_ID'),
