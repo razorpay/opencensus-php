@@ -69,6 +69,23 @@ class Repository extends Base\Repository
                     ->count();
     }
 
+
+    public function fetchFeeRecoveries($entityIdList,
+                                                     $entityType,
+                                                     $type)
+    {
+        $typeColumn             = $this->dbColumn(Entity::TYPE);
+        $entityIdColumn         = $this->dbColumn(Entity::ENTITY_ID);
+        $entityTypeColumn       = $this->dbColumn(Entity::ENTITY_TYPE);
+
+        $query = $this->newQuery()
+            ->whereIn($entityIdColumn, $entityIdList)
+            ->where($entityTypeColumn, '=', $entityType)
+            ->where($typeColumn, '=', $type);
+
+        return $query->get();
+    }
+
     /**
      * This function updates the fee_recovery status from processing to recovered/unrecovered
      * based on corresponding fee recovery payout's status.

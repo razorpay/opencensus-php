@@ -4002,4 +4002,88 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($expectedStartTime->timestamp, $startTime->timestamp);
         $this->assertEquals($expectedEndTime->timestamp, $endTime->timestamp);
     }
+
+    public function testProcessFeeRecoveryNoDataCorrectionRequired(){
+        $startTime = Carbon::create(2020, 1, 4, 7, null, null, Timezone::IST);
+        $endTime = Carbon::create(2020, 1, 4, 9, null, null, Timezone::IST);
+
+        [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
+
+        $this->ba->cronAuth();
+
+        $response = (new FeeRecovery\Core())->processFeeRecoveryDataCorrection([
+            \RZP\Models\FeeRecovery\Entity::BALANCE_ID => $payout->getBalanceId(),
+            \RZP\Models\FeeRecovery\Entity::FROM => $startTime->getTimestamp(),
+            \RZP\Models\FeeRecovery\Entity::TO => $endTime->getTimestamp()
+        ]);
+        assertTrue($response);
+    }
+
+    public function testProcessFeeRecoveryDataCorrectionForInitiatedPayouts(){
+        $startTime = Carbon::create(2020, 1, 4, 7, null, null, Timezone::IST);
+        $endTime = Carbon::create(2020, 1, 4, 9, null, null, Timezone::IST);
+
+        [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
+
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout['id']])->toArray();
+        self::assertNotNull($feeRecovery1);
+        $this->fixtures->edit('fee_recovery', $feeRecovery1['id'], ["entity_id" => "dummyId1"]);
+
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout['id']]);
+        self::assertNull($feeRecovery1);
+        $this->ba->cronAuth();
+
+        $response = (new FeeRecovery\Core())->processFeeRecoveryDataCorrection([
+            \RZP\Models\FeeRecovery\Entity::BALANCE_ID => $payout->getBalanceId(),
+            \RZP\Models\FeeRecovery\Entity::FROM => $startTime->getTimestamp(),
+            \RZP\Models\FeeRecovery\Entity::TO => $endTime->getTimestamp()
+        ]);
+        assertTrue($response);
+    }
+
+    public function testProcessFeeRecoveryDataCorrectionForFailedPayouts(){
+        $startTime = Carbon::create(2020, 1, 4, 7, null, null, Timezone::IST);
+        $endTime = Carbon::create(2020, 1, 4, 9, null, null, Timezone::IST);
+
+        [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout2['id'],  'type' => 'credit'])->toArray();
+        self::assertNotNull($feeRecovery1);
+
+        $this->fixtures->edit('fee_recovery', $feeRecovery1['id'], ["entity_id" => "dummyId1"]);
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout2['id'], 'type' => 'credit']);
+        self::assertNull($feeRecovery1);
+
+        $this->ba->cronAuth();
+
+        $response = (new FeeRecovery\Core())->processFeeRecoveryDataCorrection([
+            \RZP\Models\FeeRecovery\Entity::BALANCE_ID => $payout->getBalanceId(),
+            \RZP\Models\FeeRecovery\Entity::FROM => $startTime->getTimestamp(),
+            \RZP\Models\FeeRecovery\Entity::TO => $endTime->getTimestamp()
+        ]);
+        assertTrue($response);
+    }
+
+
+    public function testProcessFeeRecoveryDataCorrectionForReversedPayouts(){
+        $startTime = Carbon::create(2020, 1, 4, 7, null, null, Timezone::IST);
+        $endTime = Carbon::create(2020, 1, 4, 9, null, null, Timezone::IST);
+
+        [$payout, $payout2, $payout3] = $this->createPayoutsForFeeRecoveryTests();
+        $reversal = $this->getDbEntity('reversal', ['entity_id' => $payout3['id']]);
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $reversal['id'], 'type' => 'credit'])->toArray();
+        self::assertNotNull($feeRecovery1);
+
+        $this->fixtures->edit('fee_recovery', $feeRecovery1['id'], ["entity_id" => "dummyId1"]);
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $reversal['id'], 'type' => 'credit']);
+        self::assertNull($feeRecovery1);
+
+        $this->ba->cronAuth();
+
+        $response = (new FeeRecovery\Core())->processFeeRecoveryDataCorrection([
+            \RZP\Models\FeeRecovery\Entity::BALANCE_ID => $payout->getBalanceId(),
+            \RZP\Models\FeeRecovery\Entity::FROM => $startTime->getTimestamp(),
+            \RZP\Models\FeeRecovery\Entity::TO => $endTime->getTimestamp()
+        ]);
+        assertTrue($response);
+    }
 }

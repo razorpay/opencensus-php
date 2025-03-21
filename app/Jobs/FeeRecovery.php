@@ -49,6 +49,10 @@ class FeeRecovery extends Job
      */
     private $task;
 
+    private $WHITELISTED_ERROR_CODES_FOR_DATA_CORRECTION = [
+        ErrorCode::BAD_REQUEST_FEE_RECOVERY_ALREADY_INITIATED
+    ];
+
     public function __construct(string $mode,
                                 string $feeRecoveryPayoutId = null,
                                 string $balanceId = null,
@@ -128,6 +132,9 @@ class FeeRecovery extends Job
                     Trace::ERROR,
                     TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
                     $data);
+                if(in_array($ex->getCode(), $this->WHITELISTED_ERROR_CODES_FOR_DATA_CORRECTION)) {
+                    FeeRecoveryDataCorrection::dispatch($this->mode, $this->balanceId, $this->startTimeStamp, $this->endTimeStamp);
+                }
             }
             else
             {
