@@ -21,7 +21,7 @@ test.describe
     await page.waitForSelector('text=Merchant Details');
   });
 
-  test.skip('Should render aggregator modal pricing step correctly', async ({ page, worker }) => {
+  test('Should render aggregator modal pricing step correctly', async ({ page, worker }) => {
     await worker.use(queryMocks.MerchantById);
     await worker.use(queryMocks.MerchantModularOnboardingDetailsAsSales);
     const detailsLink = page.getByTestId('OsZjP3fjbIskDI');
@@ -100,7 +100,7 @@ test.describe
     await expect(page.getByRole('button', { name: 'Skip & add later' })).toBeDisabled();
   });
 
-  test.skip('should complete the pricing step successfully - Direct Model', async ({
+  test('should complete the pricing step successfully - Direct Model', async ({
     page,
     worker,
   }) => {
@@ -157,7 +157,7 @@ test.describe
     await expect(pricingStepCard).toContainText(STATUS_TEXT.COMPLETED);
   });
 
-  test.skip('should complete the pricing step successfully - Aggregator Model', async ({
+  test('should complete the pricing step successfully - Aggregator Model', async ({
     page,
     worker,
   }) => {
@@ -252,7 +252,7 @@ test.describe
     await expect(pricingStepCard).toContainText(STATUS_TEXT.COMPLETED);
   });
 
-  test.skip('Should display validation error for invalid MDR rate values & NACH file upload', async ({
+  test('Should display validation error for invalid MDR rate values & NACH file upload', async ({
     page,
     worker,
   }) => {

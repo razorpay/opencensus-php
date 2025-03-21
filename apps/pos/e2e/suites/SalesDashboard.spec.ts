@@ -8,7 +8,7 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
   test.use({
     storageState: getStorageStatePath().POS_SALES_AGENT,
   });
-  test.skip('should render sales dashboard view if logged in as sales agent @flow=pos-sales-assisted', async ({
+  test('should render sales dashboard view if logged in as sales agent @flow=pos-sales-assisted', async ({
     page,
     worker,
   }) => {
@@ -38,7 +38,7 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await expect(merchantKycStepCard).toContainText('KYC Qualified');
   });
 
-  test.skip('should render sales dashboard when no merchant is onboarded', async ({
+  test('should render sales dashboard when no merchant is onboarded', async ({
     page,
     worker,
   }) => {
