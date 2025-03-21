@@ -29,6 +29,7 @@ class Fetch extends BaseFetch
             Entity::DEDUCTION_REVERSAL_AT_FROM  => 'sometimes|epoch',
             Entity::DEDUCTION_REVERSAL_AT_TO    => 'sometimes|epoch',
             Entity::DEDUCT_AT_ONSET             => 'sometimes',
+            Entity::DISPUTE_OUTCOME_REASON_ID   => 'sometimes|string',
         ],
     ];
 
@@ -55,6 +56,7 @@ class Fetch extends BaseFetch
             Entity::DEDUCTION_REVERSAL_AT_FROM,
             Entity::DEDUCTION_REVERSAL_AT_TO,
             Entity::DEDUCT_AT_ONSET,
+            Entity::DISPUTE_OUTCOME_REASON_ID,
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,

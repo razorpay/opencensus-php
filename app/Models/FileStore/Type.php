@@ -340,6 +340,9 @@ class Type
 
     const JPMC_DECRYPTED_FILES = 'jpmc_decrypted_files';
 
+    const AUTO_CLOSURE_MF_MERCHANTS = 'auto_closure_mf_merchants';
+    const BSE_CIRCULARS = 'bse_circulars';
+
     /**
      * Map of types allowed for each entity.
      */
@@ -501,6 +504,7 @@ class Type
             self::ICICI_DEBIT_EMI_FILE,
             self::ICICI_DEBIT_EMI_REFUND_FILE,
             self::IDFC_EMI_FILE,
+            self::AUTO_CLOSURE_MF_MERCHANTS,
         ],
 
         Constants\Entity::BATCH => [
@@ -952,7 +956,10 @@ class Type
 
         self::SECURITY_ALERT_BUCKET_CONFIG => [
             self::WAF_RULES_FILE,
-        ]
+        ],
+        self::AUTO_CLOSURE_MF_MERCHANTS => [
+            self::BSE_CIRCULARS,
+        ],
     ];
 
     /**

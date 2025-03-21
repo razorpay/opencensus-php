@@ -55,7 +55,9 @@ use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity, FreshdeskTicket\Service as FreshDeskService};
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
-
+use Symfony\Component\HttpFoundation\File\File as File2;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\Dispute\Service as DisputeService;
 class Core extends Base\Core
 {
     use FileHandlerTrait;
@@ -163,6 +165,8 @@ class Core extends Base\Core
             function() use ($payment, $reason, $input, $isShadowModeDualWrite, $reverseShadowResp)
             {
                 $input = $this->preProcessInputForCreate($input);
+
+                $input = $this->preProcessInputForAutoClosureCbkMfMxSkipEmail($input, $payment);
 
                 (new Validator)->validatePaymentAndMerchantForDispute($input, $payment);
 
@@ -291,6 +295,10 @@ class Core extends Base\Core
                         ]);
                     }
                 }
+
+                // This function check's the auto_closure_cbk_mf_mx featured enabled are not
+                // if enabled then this dispute will contest & internal_status & merchant_status will be under review
+                $this->processChargebackAutoClosure($input,$dispute,$payment);
 
                 return $dispute;
             });
@@ -730,14 +738,14 @@ class Core extends Base\Core
 
                         ]
                         );
-                    
+
                     $feeAmount = abs($adjustment->getAmount());
                     $feeCurrency = $adjustment->getCurrency();
                     // this is the fallback code need discuss with team if keep this or remove
                     // if (empty($feeAmount) && empty($feeCurrency)) {
                     //     [$feeAmount, $feeCurrency] = $this->getAmountInMerchantCurrency($fee, $currency, $dispute);
                     // }
-                    
+
                     $feePositiveAdjustmentId = $this->createPositiveAdjustmentAndUpdateDispute($dispute, $feeAmount, false, $feeCurrency, true);
 
                     $input[DisputeConstants::FEE_POSITIVE_ADJUSTMENT_ID] = $feePositiveAdjustmentId;
@@ -934,38 +942,38 @@ class Core extends Base\Core
             abs($amount),
             $currency,
             $merchantCurrency);
-        
+
         $this->trace->info(TraceCode::AMOUNT_IN_MERCHANT_CURRENCY, [
             'amount' => $amount,
             'merchantCurrency' => $merchantCurrency,
         ]);
-    
+
         return [$merchantAmount, $merchantCurrency];
     }
 
     protected function getFeeDescription($dispute, $adjustmentType = null) {
-     
+
         $disputePhase = $dispute->getPhase();
         $adjustmentDescription = '';
         if ($disputePhase === Phase::PRE_ARBITRATION) {
             if ($adjustmentType === LedgerConstants::POSITIVE_ADJUSTMENT) {
                 $adjustmentDescription = self::FEE_CREDIT_PRE_ARB_ADJUSTMENT_DESCRIPTION;
-            } 
+            }
             elseif ($adjustmentType === LedgerConstants::NEGATIVE_ADJUSTMENT) {
                 $adjustmentDescription = self::FEE_DEBIT_PRE_ARB_ADJUSTMENT_DESCRIPTION;
             }
-        } 
+        }
         elseif ($disputePhase === Phase::ARBITRATION) {
             if ($adjustmentType === LedgerConstants::POSITIVE_ADJUSTMENT) {
                 $adjustmentDescription = self::FEE_CREDIT_ARB_ADJUSTMENT_DESCRIPTION;
-            } 
+            }
             elseif ($adjustmentType === LedgerConstants::NEGATIVE_ADJUSTMENT) {
                 $adjustmentDescription = self::FEE_DEBIT_ARB_ADJUSTMENT_DESCRIPTION;
             }
         }
-        
+
         return $adjustmentDescription;
-        
+
     }
     // For negativeAdjustments created for pre-arb and arb fees no dispute entity update is required.
     protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $updatePaymentAttributes = true, $currency = '', $isFee = false)
@@ -982,7 +990,7 @@ class Core extends Base\Core
         $adjustmentDescription = self::DEBIT_ADJUSTMENT_DESCRIPTION;
 
         if ($isFee){
-            $adjustmentDescription = 
+            $adjustmentDescription =
                 $this->getFeeDescription($dispute, LedgerConstants::NEGATIVE_ADJUSTMENT);
         }
         if ($adjustmentDescription === '')
@@ -1117,7 +1125,7 @@ class Core extends Base\Core
 
         if ($isFee === true) {
             if ($isFee){
-                $adjustmentDescription = 
+                $adjustmentDescription =
                     $this->getFeeDescription($dispute, LedgerConstants::POSITIVE_ADJUSTMENT);
             }
         }
@@ -3083,5 +3091,59 @@ class Core extends Base\Core
             DisputeConstants::FEE_AMOUNT => 0,
             DisputeConstants::CURRENCY => DisputeConstants::CURRENCY_INR,
         ];
+    }
+    private function processChargebackAutoClosure(array $input, Entity $dispute, Payment\Entity $payment): void
+    {
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true && $input[Entity::PHASE] === Phase::CHARGEBACK && !(new Validator)::isPhaseDispute($input)) {
+
+            $isTPlus5ChargebackValid = (new Validator)->isAutoClosureChargebackTimeValid($payment);
+
+            $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_VERIFY_TPLUS5_CHECK, ['VERIFY_TPLUS5_CHECK'=> $isTPlus5ChargebackValid]);
+
+            if ($isTPlus5ChargebackValid) {
+                $this->processTPlus5Chargeback($dispute, $payment, $input);
+            }
+        }
+    }
+
+    private function processTPlus5Chargeback(Entity $dispute, Payment\Entity $payment, array $input) : Entity
+    {
+        $this->merchant = $dispute->merchant;
+
+        $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_CREATE_REQUEST, ['Auto_closure_chargeback_tplus5_request'=> $input]);
+
+        $docIds = (new DisputeService())->getChargebackDisputeDocIds($payment);
+
+        $input = (new DisputeService())->getContestDisputePayload($payment, $docIds);
+
+        $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_CONTEST_REQUEST, $input);
+
+        $config = $this->app['config']->get('filestore.aws');
+
+        if ($config['mock']) {
+            return (new DisputeService())->mockContestChargebackDispute($dispute);
+        }
+
+        $this->patchDisputeContestById((new DisputeService())->getDisputeId($dispute), $input);
+
+        return $dispute;
+    }
+
+    private function preProcessInputForAutoClosureCbkMfMxSkipEmail($input, Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true) {
+
+            $input[Entity::SKIP_EMAIL] = 1;
+
+            $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_SKIP_EMAIL, ['AUTO_CLOSURE_CBK_MF_MX_SKIP_MAIL'=> $input]);
+
+            return $input;
+        }
+
+        return $input;
     }
 }

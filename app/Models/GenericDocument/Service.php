@@ -67,6 +67,7 @@ class Service extends Base\Service
      */
     public function uploadMerchantDocument(\RZP\Models\Merchant\Entity $merchant, array $input)
     {
+        $this->merchant = $merchant;
 
         $validator = (new Validator);
 
@@ -99,13 +100,13 @@ class Service extends Base\Service
                 DocumentConstants::CONTENT_DISPOSITION => DocumentConstants::CONTENT_DISPOSITION_INLINE
             ];
 
-            $params[$type] = $ufhService->uploadFileAndGetResponse($file, $fileName, $type, $this->merchant, $fileMetaData);
+            $params[$type] = $ufhService->uploadFileAndGetResponse($file, $fileName, $type, $this->merchant, $fileMetaData,$this->merchant->getId());
         }
 
         return $params;
     }
 
-    public function getDocument(array $input, string $documentId)
+    public function getDocument(array $input, string $documentId, $merchantId = null)
     {
         $fileStoreId = ResponseHelper::getDocumentId($documentId, Constants::DOCUMENT_ID_SIGN, Constants::FILE_ID_SIGN);
 
@@ -113,9 +114,9 @@ class Service extends Base\Service
 
         $validator->validateInput('fetchDocument', $input);
 
-        $signedUrlResponse = $this->getDocumentDownloadLinkFromUFH($input, $fileStoreId, $this->merchant->getId());
+        $signedUrlResponse = $this->getDocumentDownloadLinkFromUFH($input, $fileStoreId, $merchantId ?? $this->merchant->getId());
 
-        $fileData = $this->fetchFiles([$fileStoreId], $this->merchant->getId());
+        $fileData = $this->fetchFiles([$fileStoreId], $merchantId ?? $this->merchant->getId());
 
         $this->validateFileResponse($fileData, [$fileStoreId]);
 
@@ -208,5 +209,11 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_INVALID_FILE_IDS_PROVIDED . ': ' . implode(', ', $documentIds));
         }
+    }
+
+    public function uploadChargebackDisputeDocuments(\RZP\Models\Merchant\Entity $merchant, array $input)
+    {
+         $this->merchant = $merchant;
+         return $this->uploadDocument($input);
     }
 }

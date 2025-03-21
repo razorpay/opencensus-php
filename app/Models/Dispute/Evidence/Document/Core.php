@@ -41,7 +41,11 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_INPUT, $input);
 
+        $this->merchant = $dispute->merchant;
+
         $document = (new Entity)->build($input);
+
+        (new Validator)->validateMxDocumentId(Entity::DOCUMENT_ID, $input['document_id'],$this->merchant->getId());
 
         if($bulk === true)
         {

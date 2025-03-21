@@ -1877,6 +1877,8 @@ class PublicErrorDescription
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'Partner does not have access to this feature';
 
     const BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Creation is currently blocked for RBL Merchants.";
+    const  BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_FAILURE = "A dispute can't be raised for the mentioned payment since it was made less than 5 days ago with an BSE registered broking merchant. Please proceed to file a chargeback or else wait for 5 days from the date of payment to raise a dispute";
+    const  BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_UPLOAD_FAILURE = 'Failed to upload the BSE circulars to UFH services';
 
     const BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_NOT_ALLOWED_RBL = "Adding allowed payer to RBL VA is not allowed";
 

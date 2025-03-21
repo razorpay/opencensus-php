@@ -2429,6 +2429,11 @@ class Constants
      */
     const ALLOW_PARTIAL_CAPTURE = 'allow_partial_capture';
 
+    /**
+     * This Feature flag allows to enable auto closure chargeback T+5 for BSE merchants
+     */
+    const AUTO_CLOSURE_CBK_MF_MX = 'auto_closure_cbk_mf_mx';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3368,6 +3373,7 @@ class Constants
         self::PAYOUTS_BLOCKED_ON_LITE      => true,
         self::ALLOW_PARTIAL_CAPTURE => true,
         self::ENABLE_IMPORT_FLOW           => true,
+        self::AUTO_CLOSURE_CBK_MF_MX       => true,
         self::HIDE_RX_PAYROLL_PAYOUTS   => true,
 
     ];
@@ -4920,6 +4926,11 @@ class Constants
             'feature' => self::ENABLE_IMPORT_FLOW,
             'display_name' => 'Feature flag to enable import flow on merchants',
             'documentation' => 'this feature flag will be enabled for merchants outside of india'
+        ],
+        self::AUTO_CLOSURE_CBK_MF_MX => [
+            'feature'       => self::AUTO_CLOSURE_CBK_MF_MX,
+            'display_name'  => 'Auto closure chargeback is raised before T+5',
+            'documentation' => 'this feature flag will be enabled for BSE merchants',
         ],
         self::HIDE_RX_PAYROLL_PAYOUTS => [
             'feature' => self::HIDE_RX_PAYROLL_PAYOUTS,
