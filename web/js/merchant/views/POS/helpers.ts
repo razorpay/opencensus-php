@@ -1327,8 +1327,39 @@ export const getDeviceChargesData = (workflowConfig) => {
     deviceSelectionStep.components,
     PAYMENT_OPTIONS_COMPONENT,
   );
+
+  const paymentOptionsComponentQRCode = getComponentByName(
+    deviceSelectionStep.components,
+    QR_CODE_COMPONENT_V2,
+  );
+
+  const paymentOptionsComponentPaymentLink = getComponentByName(
+    deviceSelectionStep.components,
+    SALES_ASSISTED_PAYMENT_LINK_COMPONENT,
+  );
+
+  const finalDeviceOrderItemsSummaryFieldQRCode = paymentOptionsComponentQRCode?.fields.find(
+    (field) => field.name === 'final_device_order_items_summary_field',
+  );
+
+  const finalDeviceOrderSummaryFieldQRCode = paymentOptionsComponentQRCode?.fields.find(
+    (field) => field.name === 'final_device_order_summary_field',
+  );
+
+  const finalDeviceOrderItemsSummaryFieldPL = paymentOptionsComponentPaymentLink?.fields.find(
+    (field) => field.name === 'final_device_order_items_summary_field',
+  );
+
+  const finalDeviceOrderSummaryFieldPL = paymentOptionsComponentPaymentLink?.fields.find(
+    (field) => field.name === 'final_device_order_summary_field',
+  );
+
   //TODO: eventually remove the code from 1352-1370 since payment link expt is 100% enabled
-  if (paymentOptionsComponent) {
+  if (
+    paymentOptionsComponent &&
+    ((finalDeviceOrderItemsSummaryFieldQRCode && finalDeviceOrderSummaryFieldQRCode) ||
+      (finalDeviceOrderItemsSummaryFieldPL && finalDeviceOrderSummaryFieldPL))
+  ) {
     let selectedPaymentOption = '';
     const fields = paymentOptionsComponent.fields;
     const paymentOptionsField: any = fields.find(
