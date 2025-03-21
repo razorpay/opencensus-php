@@ -22,6 +22,12 @@ import {
   NavItemPropType,
 } from 'merchant/views/MagicCheckout/AnalyticsSettings/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { TabsContainer, TabsHeader } from 'merchant/views/MagicCheckout/components/styled';
+import { Box } from '@razorpay/blade/components';
+import DocsLink from '@dashboards/payments/components/DocsLink';
+import getDocsUrl from 'merchant/views/MagicCheckout/utils/getDocsurl';
+import { useStore } from '@apps/shell/src/client/store/commonStore';
+import { useLocation } from 'react-router-dom';
 
 const AnalyticsSettingContainer = styled.div`
   padding: 16px;
@@ -68,7 +74,8 @@ const AnalyticsSettings = (props: AnalyticsSettingsPropsType): JSX.Element => {
     showNotification,
     resetConfigs,
   } = props;
-
+  const org = useStore((state) => state.session.org);
+  const currentPath = useLocation().pathname.replace('/app', '');
   const { isLoading } = analyticsSettingsConfigs;
 
   useEffect(() => {
@@ -101,22 +108,27 @@ const AnalyticsSettings = (props: AnalyticsSettingsPropsType): JSX.Element => {
           </Text>
           <div className="tabs margin-t-16">
             <div className="tabbed-container">
-              <header>
-                {ANALYTICS_SETTINGS_ROUTES.map((item) => {
-                  if (item.condition && !item.condition(platform)) {
-                    return null;
-                  }
-                  return (
-                    <TabNavItem
-                      key={item.id}
-                      id={item.id}
-                      title={item.title}
-                      activeTab={activeTab}
-                      setActiveTab={setActiveTab}
-                    />
-                  );
-                })}
-              </header>
+              <TabsContainer>
+                <TabsHeader>
+                  {ANALYTICS_SETTINGS_ROUTES.map((item) => {
+                    if (item.condition && !item.condition(platform)) {
+                      return null;
+                    }
+                    return (
+                      <TabNavItem
+                        key={item.id}
+                        id={item.id}
+                        title={item.title}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                      />
+                    );
+                  })}
+                </TabsHeader>
+                <Box display="inline" justifyContent="flex-end" alignItems="center">
+                  <DocsLink url={getDocsUrl({ activeTab, org, currentPath })} />
+                </Box>
+              </TabsContainer>
               <div>
                 {ANALYTICS_SETTINGS_ROUTES.map((item) => (
                   <TabContent

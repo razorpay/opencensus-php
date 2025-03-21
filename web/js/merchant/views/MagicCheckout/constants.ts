@@ -36,3 +36,12 @@ export const MAGIC_DOC_LINK =
 
 export const MAGIC_DASHBOARD_REVAMP_EXPERIMENT = 'magic_dashboard_revamp';
 export const MAGICX_PUBLICAPP_COD_EXPERIMENT = 'magicx_publicapp_cod';
+
+export const PATHS = {
+  SHIPPING_SETUP: '/magic/settings/shipping-setup',
+  COD_SETTINGS: '/magic/settings/cod-settings/settings',
+  COUPONS: '/magic/coupons',
+  PARTIAL_COD: '/magic/settings/cod-settings/partial-cod',
+  GOOGLE_ANALYTICS: 'google-analytics',
+  FACEBOOK_ADS: 'facebook-ads'
+};

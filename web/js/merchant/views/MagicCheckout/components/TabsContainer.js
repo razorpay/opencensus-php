@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
@@ -21,6 +21,11 @@ import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/
 
 import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicExperiment';
 import { isRouteAuthorised } from 'merchant/views/MagicCheckout/utils/genericRouteCheck';
+import DocsLink from '@dashboards/payments/components/DocsLink';
+import { Box } from '@razorpay/blade/components';
+import { TabsContainer, TabsHeader } from './styled';
+import getDocsUrl from '@dashboards/payments/views/MagicCheckout/utils/getDocsurl';
+import { useStore } from '@apps/shell/src/client/store/commonStore';
 
 const getTabName = (tabName, dashboardView, abExperiments) => {
   if (
@@ -44,12 +49,14 @@ const RouteContainer = ({
   /**
    * configFlag represents if we are on magic configuration flow which will render Magic Checkout on new route.
    * If this flag is true , we will render Tabs with updated paths that supports configuration flow.
-   */
+  */
   const configFlag = checkMagicConfigurationFlow();
   const { abExperiments } = useSplitzService();
   const isMagicDashboardV2Enabled = useMagicExperiment(MAGIC_DASHBOARD_REVAMP_EXPERIMENT);
   const [magicCheckoutRoutes, setMagicCheckoutRoutes] = useState();
+  const currentPath = useLocation().pathname.replace('/app', '');
   let redirectPath;
+  const org = useStore((state) => state.session.org);
 
   useEffect(() => {
     let magicCheckoutRoutesTemp = isMagicDashboardV2Enabled
@@ -150,9 +157,14 @@ const RouteContainer = ({
           </div>
         ) : (
           <>
-            <header id="super-checkout-header" className="scrollable-tab-header">
-              {magicCheckoutRoutes?.map(renderNav)}
-            </header>
+            <TabsContainer id="super-checkout-header" className="scrollable-tab-header">
+              <TabsHeader>
+                {magicCheckoutRoutes?.map(renderNav)}
+              </TabsHeader>
+              <Box display="inline" justifyContent="flex-end" alignItems="center" right={0}>
+                <DocsLink url={getDocsUrl({ currentPlatform: platform, org, currentPath })} />
+              </Box>
+            </TabsContainer>
             <content>
               <Routes>
                 {magicCheckoutRoutes?.map((item) => {
