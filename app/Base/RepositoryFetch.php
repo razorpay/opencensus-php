@@ -616,6 +616,10 @@ trait RepositoryFetch
     {
         $app = $this->app;
 
+        if (($app['env'] == Environment::PRODUCTION) && ($experiment === self::MERCHANT_TIDB_EXPERIMENT)){
+            return true;
+        }
+
         $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
             $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
 

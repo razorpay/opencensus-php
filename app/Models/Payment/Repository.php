@@ -748,6 +748,7 @@ EOT;
             // The variant is used for switching between tidb admin / merchant -> slave
             // and also for reverting back to ES and slave in case admin tibd is not able
             // to support queries
+            //hardcoding response for this as true for MERCHANT_TIDB_EXPERIMENT in isExperimentEnabled
             if (($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true) or
                 (app()->isEnvironmentProduction() === false))
             {
@@ -1210,6 +1211,7 @@ EOT;
             // The variant is used for switching between tidb admin / merchant -> slave
             // and also for reverting back to ES and slave in case admin tibd is not able
             // to support queries
+            //hardcoding response for this as true for MERCHANT_TIDB_EXPERIMENT in isExperimentEnabled
             if (($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true) or
                 (app()->isEnvironmentProduction() === false))
             {
