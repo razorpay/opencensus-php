@@ -4785,13 +4785,24 @@ class Processor
         if ((isset($input[Payment\Entity::METHOD])) and
             ($input[Payment\Entity::METHOD] === Payment\Method::CARD))
         {
-            $variant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
-                $this->mode
-            );
 
-            if (($variant === 'on') and
+            $properties = [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.card_mandate_enable_multiple_frequencies'),
+                'request_data' => json_encode([
+                    'mid' => $this->merchant->getId()
+                ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'response' => $response,
+            ]);
+
+            if (($variant === 'enable') and
                 (isset($input[Payment\Entity::TOKEN])) and
                 (isset($input[Payment\Entity::CUSTOMER_ID])))
             {
