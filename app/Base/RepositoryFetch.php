@@ -616,7 +616,7 @@ trait RepositoryFetch
     {
         $app = $this->app;
 
-        if (($app['env'] == Environment::PRODUCTION) && ($experiment === self::MERCHANT_TIDB_EXPERIMENT)){
+        if (($app['env'] == Environment::PRODUCTION) && ($experiment === "rearch_fetch_tidb_or_slave")){
             return true;
         }
 
