@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE    => 'approved_transaction_limit',
         Constants::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT => 'rejection_reason_data',
         Constants::PARTNER_ACTIVATION_SAVE                  => 'rejection_reason_data',
+        Constants::MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE  => 'rejection_reason_data',
     ];
 
     public function validateWorkflowObserverData($differEntity, array $input)
