@@ -10,7 +10,10 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding';
+import {
+  getCurrentProductOnBoardingDetails,
+  handleProductQuickGuide,
+} from 'merchant/reducers/onboarding';
 import lazy from 'merchant/routes/LazyLoader';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
@@ -45,6 +48,22 @@ class PaymentPagesContainer extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+  }
+
+  componentWillUnmount() {
+    const { paymentPageProductOnBoarding, handleProductQuickGuide } = this.props;
+    const { isPaymentPageWysiwyg } = this.state || {
+      isPaymentPageWysiwyg: false,
+    };
+
+    if (paymentPageProductOnBoarding.isTour) {
+      handleProductQuickGuide({
+        ...paymentPageProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: isPaymentPageWysiwyg,
+        isTour: isPaymentPageWysiwyg,
+      });
+    }
   }
 
   render() {
@@ -108,9 +127,14 @@ class PaymentPagesContainer extends Component {
   }
 }
 
-export default connect((state) => {
-  return {
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
-    user: state.session.user,
-  };
-})(PaymentPagesContainer);
+export default connect(
+  (state) => {
+    return {
+      paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
+      user: state.session.user,
+    };
+  },
+  {
+    handleProductQuickGuide,
+  },
+)(PaymentPagesContainer);

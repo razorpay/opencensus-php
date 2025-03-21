@@ -199,17 +199,6 @@ class PaymentPagesContainer extends ListContainer {
   };
 
   componentWillUnmount() {
-    const { paymentPageProductOnBoarding } = this.props;
-
-    if (paymentPageProductOnBoarding.isTour) {
-      this.props.handleProductQuickGuide({
-        ...paymentPageProductOnBoarding,
-        showOnboarding: false,
-        isQuickGuideOpen: this.state.isPaymentPageWysiwyg,
-        isTour: this.state.isPaymentPageWysiwyg,
-      });
-    }
-
     // Cancel out the request when component unmounts
     this.cancelToken.current?.cancel();
   }

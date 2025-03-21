@@ -44,6 +44,23 @@ class InvoicesContainer extends Component {
     }
   }
 
+  componentWillUnmount() {
+    const { invoicesProductOnBoarding, handleProductQuickGuide } = this.props;
+    const { isInvoiceView } = this.state || {
+      isInvoiceView: false,
+    };
+
+    if (invoicesProductOnBoarding.isTour) {
+      handleProductQuickGuide({
+        ...invoicesProductOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: isInvoiceView,
+        isTour: isInvoiceView,
+        lastItemId: null,
+      });
+    }
+  }
+
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       nextProps.invoices.loading !== this.props.invoices.loading ||

@@ -144,20 +144,6 @@ class InvoicesListContainer extends ListContainer {
     });
   }
 
-  componentWillUnmount() {
-    const { invoicesProductOnBoarding } = this.props;
-
-    if (invoicesProductOnBoarding.isTour) {
-      this.props.handleProductQuickGuide({
-        ...invoicesProductOnBoarding,
-        showOnboarding: false,
-        isQuickGuideOpen: this.state.isInvoiceView,
-        isTour: this.state.isInvoiceView,
-        lastItemId: null,
-      });
-    }
-  }
-
   onClickNewInvoice = () => {
     const { history, invoices, invoicesProductOnBoarding } = this.props;
 
