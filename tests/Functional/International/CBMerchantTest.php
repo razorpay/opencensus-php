@@ -233,9 +233,9 @@ class CBMerchantTest extends TestCase
         $asvSdkAccount = new AsvSdkAccount();
         $mockAccountClient = $this->getMockAsvClient();
 
-        $this->mockAsvResponsesForCrossBorderOnboarding('edd_non_verified', $asvSdkAccount, $mockAccountClient);
-
         $this->mockAsvResponsesForCrossBorderOnboarding('get_additional_details', $asvSdkAccount, $mockAccountClient);
+
+        $this->mockAsvResponsesForCrossBorderOnboarding('edd_non_verified', $asvSdkAccount, $mockAccountClient);
 
         $this->mockAsvResponsesForCrossBorderOnboarding('save_additional_details', $asvSdkAccount, $mockAccountClient);
 

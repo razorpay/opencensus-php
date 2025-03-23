@@ -6601,6 +6601,13 @@ class Core extends Base\Core
                 }
             }
 
+            $response['cross_border_product_opted'] = null;
+            if (isset($additionalDetailsFromASV['cross_border_onboarding'])) {
+                $response['cross_border_product_opted'] = !empty($additionalDetailsFromASV['cross_border_onboarding']['selected_product'])
+                    ? $additionalDetailsFromASV['cross_border_onboarding']['selected_product']
+                    : 'moneysaver';
+            }
+
             return $response;
         });
 
