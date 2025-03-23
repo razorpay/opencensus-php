@@ -3339,12 +3339,12 @@ class Processor
     private function preProcessTokenisedPaymentRequestForRearch(&$input, $merchant) : bool
     {
         $tokenId = $input[Payment\Entity::TOKEN];
-
+        $ifenvITF = Environment::isEnvironmentItf($this->app['env']);
         try {
             // First fetch the relevant customer (global or local)
             list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                 $input, $merchant, false);
-            if ($customer !== null)
+            if ($customer !== null  && !$ifenvITF)
             {
                 $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
             }
