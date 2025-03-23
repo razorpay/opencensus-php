@@ -20,6 +20,7 @@ final class Metric
     const COMMISSION_TRANSACTION_JOB_FAILED_TOTAL = 'commission_transaction_job_failed_total';
     const COMMISSION_TRANSACTION_JOB_EXHAUSTED_TOTAL = 'commission_transaction_job_exhausted_total';
     const COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED_TOTAL = 'commission_transaction_on_hold_clear_failed_total';
+    const COMMISSION_TRANSACTION_ON_HOLD_CLEAR_OLD_INVOICE_FAILED_TOTAL = 'commission_transaction_on_hold_clear_old_invoice_failed_total';
     const COMMISSION_INVOICE_GENERATE_JOB_FAILED_TOTAL = 'commission_invoice_generate_job_failed_total';
     const COMMISSION_INVOICE_GENERATE_RETRY_EXHAUSTED_TOTAL = 'commission_invoice_generate_retry_exhausted_total';
     const COMMISSION_TDS_SETTLEMENT_TOTAL = 'commission_tds_settlement_total';
@@ -33,6 +34,7 @@ final class Metric
     const PARTNER_KYC_NOTIFICATION_TOTAL = 'partner_kyc_notification_total';
 
     const COMMISSION_ON_HOLD_CLEAR_PROCESS_TIME_MS      = "commission_on_hold_clear_process_time_ms";
+    const COMMISSION_ON_HOLD_CLEAR_OLD_INVOICE_PROCESS_TIME_MS      = "commission_on_hold_clear_old_invoice_process_time_ms";
     const COMMISSION_TDS_SETTLEMENT_PROCESS_TIME_MS     = "commission_tds_settlement_process_time_ms";
     const COMMISSION_TDS_SETTLEMENT_JOB_FAILURE_TOTAL   = "commission_tds_settlement_job_failure_total";
     const SUBMERCHANT_INVITE_BATCH_DAILY_LIMIT_EXCEEDED = 'submerchant_invite_batch_daily_limit_exceeded';
