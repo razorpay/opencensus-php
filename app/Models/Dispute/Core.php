@@ -3135,7 +3135,7 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true) {
+        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true && (new Validator)->isAutoClosureChargebackTimeValid($payment)) {
 
             $input[Entity::SKIP_EMAIL] = 1;
 
