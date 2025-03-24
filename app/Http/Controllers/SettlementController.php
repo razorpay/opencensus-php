@@ -10,6 +10,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Batch;
+use RZP\Models\Settlement\Constants;
 
 class SettlementController extends Controller
 {
@@ -544,6 +545,14 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->sendGifuFile($input, $orgId);
+
+        $splitzResult = $this->service()->evaluateGefuFileGenerationExperiment($orgId, Constants::GEFU_FILE_GENERATION_EXPERIMENT_ID);
+
+        if((isset($splitzResult) === true) and (strtolower($splitzResult) === 'enable') and ($this->app['rzp.mode'] === 'live'))
+        {
+          $gefuResp =  $this->service()->triggerGefuFileGeneration($input);
+          return ApiResponse::json($gefuResp);
+        }
 
         return ApiResponse::json($data);
     }

@@ -2044,6 +2044,35 @@ class Service extends Base\Service
         return app('settlements_api')->triggerFileGeneration($input);
     }
 
+    public function triggerGefuFileGeneration(array $input = null) : array
+    {
+        $gefuInput = [];
+        if (isset($input['is_manual']) && $input['is_manual'] === true)
+        {
+            $gefuInput['start_time'] = $input['from_timestamp'];
+            $gefuInput['end_time'] =   $input['to_timestamp'];
+            $gefuInput['is_manual'] = true;
+        }
+
+        return app('settlements_api')->triggerGefuFileGeneration($gefuInput);
+    }
+
+    public function evaluateGefuFileGenerationExperiment(string $orgId, string $experimentName)
+    {
+        $experimentId = $this->app['config']->get('app.'.$experimentName);
+
+        $response = $this->app['splitzService']->evaluateRequest([
+            'id'            => $orgId,
+            'experiment_id' => $experimentId,
+        ]);
+
+        if (!empty($response['response']['variant']) && isset($response['response']['variant']['name'])) {
+            return $response['response']['variant']['name'];
+        }
+
+        return '';
+    }
+
     public function getHoldReasonCodeMappings(array $input) : array
     {
         return app('settlements_dashboard')->getHoldReasonCodeMappingsDashboard($input);

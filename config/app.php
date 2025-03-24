@@ -1232,6 +1232,8 @@ return array(
 
     'hdfc_ecms_fund_trans_experiment_id' => env('HDFC_ECMS_FUND_TRANS_EXPERIMENT_ID'),
 
+    'gefu_file_generation_experiment_id' => env('GEFU_FILE_GENERATION_EXPERIMENT_ID'),
+
     'enable_rearch_card_recurring_flow' => env('ENABLE_REARCH_CARD_RECURRING_FLOW'),
 
     'enable_rearch_card_recurring_initial_flow' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW'),

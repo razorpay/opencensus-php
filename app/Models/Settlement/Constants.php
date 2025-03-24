@@ -62,4 +62,6 @@ class Constants {
     const RAZORX_SETL_AMOUNT_FROM_NSS_REVERSE_SHADOW = 'setl_amount_from_nss_reverse_shadow';
 
     const RAZORX_VARIANT_ON = 'on';
+
+    const GEFU_FILE_GENERATION_EXPERIMENT_ID = "gefu_file_generation_experiment_id";
 }
