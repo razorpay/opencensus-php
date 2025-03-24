@@ -62,7 +62,7 @@ app/Models/Merchant/AccessMap/MigrateSource.php               @razorpay/spine-ed
 app/Models/OAuthApplication/                                  @razorpay/spine-edge
 app/Models/OAuthToken/                                        @razorpay/spine-edge
 app/Models/FeeRecovery/                                       @razorpay/Payouts-core
-app/Models/BankingAccount/                                    @razorpay/ob-infra-backend-pr-reviewers
+app/Models/BankingAccount/                                    @razorpay/ob-infra-backend-pr-reviewers @razorpay/Payouts-core
 app/Models/BankingAccountService/                             @razorpay/ob-infra-backend-pr-reviewers
 #
 # Services

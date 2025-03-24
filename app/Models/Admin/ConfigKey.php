@@ -198,6 +198,10 @@ class ConfigKey
 
     const COLLECTX_SERIES_PREFIX = self::PREFIX . 'collectx_series_prefix';
 
+    const RBL_VPA_VALIDATE_API_SESSION_TOKEN      = self::PREFIX . 'rbl_vpa_validate_api_session_token';
+
+    const RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN = self::PREFIX . 'rbl_vpa_validate_api_gateway_auth_token';
+
     const PAYER_ACCOUNT_NUMBER_INVALID_REGEXES  = self::PREFIX . 'payer_account_number_invalid_regexes';
 
     const PAYER_ACCOUNT_NAME_INVALID_REGEXES  = self::PREFIX . 'payer_account_name_invalid_regexes';

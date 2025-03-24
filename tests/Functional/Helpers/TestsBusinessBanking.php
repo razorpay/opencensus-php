@@ -533,7 +533,7 @@ trait TestsBusinessBanking
             'pincode'               => $attributes["pincode"] ?? '1',
             'bank_reference_number' => $attributes["bank_reference_number"] ?? '',
             'balance_id'            => $attributes["balance_id"] ?? '',
-            'status'                => 'activated',
+            'status'                => $attributes['status'] ?? 'activated',
             'reference1'             => $attributes["reference1"] ?? '',
         ]);
 

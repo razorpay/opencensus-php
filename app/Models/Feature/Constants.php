@@ -2310,6 +2310,11 @@ class Constants
      */
     const COLLECTX_ENABLED = 'collectx_enabled';
 
+    /**
+     * feature flag is used to validate vpa using rbl api which return ifsc_code in response
+     */
+    const VPA_BANK_INFO_ENABLED = 'vpa_bank_info_enabled';
+
     const BANK_ADMIN_ADFS_LOGIN = 'bank_admin_adfs_login';
 
     const MESSAGE_BANNER_ENABLED = 'message_banner_enabled';
@@ -3334,6 +3339,7 @@ class Constants
         self::VENDOR_ONBOARDING_ENABLED              => true,
         self::BUYER_PROTECT_SIGNED_UP                => true,
         self::COLLECTX_ENABLED                       => true,
+        self::VPA_BANK_INFO_ENABLED                  => true,
 
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT          => true,
         self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT       => true,
@@ -4768,6 +4774,11 @@ class Constants
             'feature'       => self::COLLECTX_ENABLED,
             'display_name'  => 'CollectX Enabled',
             'documentation' => 'Enable merchant on CollectX and create VAs with balance type banking',
+        ],
+        self::VPA_BANK_INFO_ENABLED => [
+            'feature'         => self::VPA_BANK_INFO_ENABLED,
+            'display_name'    => 'VPA Bank Info Enabled',
+            'documentation'   => 'If enabled, validate vpa using rbl api which return ifsc_code in response',
         ],
         self::HIDE_INVOICE_REPORT => [
             'feature'       => self::HIDE_INVOICE_REPORT,

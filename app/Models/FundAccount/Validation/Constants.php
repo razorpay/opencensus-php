@@ -51,6 +51,12 @@ class Constants
 
     const FAILED_DUE_TO_LOW_BALANCE         = "failed_due_to_low_balance";
 
+    const RblPoolAccountMID = "Fr3lebmRmT0Cpy";
+
+    const CREDENTIALS_VAULT_NAMESPACE = "nodal_certs";
+
+    const RAZORPAYX_NODAL_CERTS     = 'razorpayx_nodal_certs';
+
     protected $slackSettings;
 
     public static function slackSettings()

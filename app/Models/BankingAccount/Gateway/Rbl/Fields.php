@@ -72,6 +72,10 @@ class Fields
     const HMAC_KEY                          = 'hmacKey';
     const MRCH_ORG_ID                       = 'mrchOrgId';
     const AGGR_ORG_ID                       = 'aggrOrgId';
+    const GATEWAY_AUTH                      = 'gateway_auth';
+    const GATEWAY_SESSION                   = 'gateway_session';
+    const TOKEN                             = 'token';
+
 
     // Fields for Fetch Balance API
     const SOURCE_ACCOUNT                    = 'source_account';
@@ -84,6 +88,10 @@ class Fields
     const BAL_AMOUNT                        = 'BalAmt';
     const AUTH_USERNAME                     = 'auth_username';
     const AUTH_PASSWORD                     = 'auth_password';
+
+    // Extra Fields for validate Vpa API
+    const VPA_HANDLE                        = 'handle';
+    const VPA_USERNAME                      = 'username';
 
     // Fields which store the credentials for a Banking account
 
