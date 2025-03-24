@@ -7956,6 +7956,30 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $fee = (float)$this->getFee() / $paymentMeta->getMccForexRate();
         }
+        else
+        {
+            $app = \App::getFacadeRoot();
+            try
+            {
+                $param = [
+                    "entity_id" => $this->getId(),
+                    "entity_type" => "payment",
+                ];
+                $pxbResponse = $app['payments-cross-border']->getForexRates([], $param);
+                if(isset($pxbResponse) && isset($pxbResponse['base_forex_rate']))
+                {
+                    $fee = (float)$this->getFee() / $pxbResponse['base_forex_rate'];
+                }
+            }
+            catch (\Exception $e)
+            {
+                $app['trace']->error(TraceCode::PAYMENT_FEE_CONVERSION_FAILED, [
+                    'payment_id' => $this->getId(),
+                    'merchant_id' => $this->getMerchantId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return (int)ceil($fee);
     }

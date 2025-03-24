@@ -783,7 +783,9 @@ return array(
 
     'cross_border_skip_address_check_experiment_id' => env('CROSS_BORDER_SKIP_ADDRESS_CHECK_EXPERIMENT_ID'),
 
-    'cross_border_skip_fee_bearer_check_experiment_id' => env('CROSS_BORDER_SKIP_FEE_BEARER_CHECK_EXPERIMENT_ID'),
+    'cross_border_cfb_inr_experiment_id' => env('CROSS_BORDER_CFB_INR_EXPERIMENT_ID'),
+
+    'cross_border_cfb_non_inr_experiment_id' => env('CROSS_BORDER_CFB_NON_INR_EXPERIMENT_ID'),
 
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
 

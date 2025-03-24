@@ -878,9 +878,12 @@ class Processor
             return false;
         }
 
-        $skipFeeBearerCheck = $this->evaluateSplitzExperimentforSkipFeeBearerCheck($merchant);
-        if (!$skipFeeBearerCheck && ($merchant->isFeeBearerCustomerOrDynamic() === true)){
-            return false;
+        if ($merchant->isFeeBearerCustomerOrDynamic() === true){
+            if ($this->inputCurrencyNotINR($input)) {
+                return $this->evaluateSplitzExperimentforNonINRCFBRearch($merchant);
+
+            }
+            return $this->evaluateSplitzExperimentforINRCFBRearch($merchant);
         }
 
         if($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID){
@@ -984,13 +987,49 @@ class Processor
         return false;
     }
 
-    private function evaluateSplitzExperimentforSkipFeeBearerCheck ($merchant)
+    private function evaluateSplitzExperimentforINRCFBRearch ($merchant)
     {
         try
         {
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.cross_border_skip_fee_bearer_check_experiment_id'),
+                'experiment_id' => $this->app['config']->get('app.cross_border_cfb_inr_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    public function evaluateSplitzExperimentforNonINRCFBRearch ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_cfb_non_inr_experiment_id'),
                 'request_data'  => json_encode(
                     [
                         'merchant_id' => $merchant->getId(),

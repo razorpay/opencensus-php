@@ -4898,6 +4898,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_FEATURE_FLAG_DISABLED                              = 'ES_FEATURE_FLAG_DISABLED';
     const FPX_EMAIL_SUPPRESS                                    = 'FPX_EMAIL_SUPPRESS';
 
+    const PAYMENT_FEE_CONVERSION_FAILED = 'PAYMENT_FEE_CONVERSION_FAILED';
+
     const DUITNOW_PAY_EMAIL_SUPPRESS                            = 'DUITNOW_PAY_EMAIL_SUPPRESS';
     const WALLET_EMAIL_SUPPRESS                                 = 'WALLET_EMAIL_SUPPRESS';
     const GIFTCARD_EMAIL_SUPPRESS                               = 'GIFTCARD_EMAIL_SUPPRESS';
