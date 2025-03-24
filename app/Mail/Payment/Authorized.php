@@ -87,6 +87,7 @@ class Authorized extends Base
             $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
                 'data' => $this->data,
                 'shouldSendEmailViaStork' => false,
+                'view' => $this->view
             ]);
             return false;
         }
@@ -94,6 +95,7 @@ class Authorized extends Base
         $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
             'data' => $this->data,
             'shouldSendEmailViaStork' => true,
+            'view' => $this->view
         ]);
 
         return true;
