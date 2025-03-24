@@ -10,6 +10,7 @@ use Config;
 use Monolog\Logger;
 use RZP\Constants\Metric as Metrics;
 use RZP\Jobs\OrderPaymentsParity;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Admin;
 use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
@@ -5386,109 +5387,6 @@ class Service extends Base\Service
         $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction, $asyncTxnEnabled);
     }
 
-
-    public function fetchpaymentwithSubscription(string $subscriptionId): array
-    {
-        $payment = $this->repo->payment->fetchBySubscriptionId($subscriptionId);
-
-        $payload = [];
-
-        if($payment != null) {
-
-
-            $payload = $payment->toArrayAdmin();
-
-            $payload['merchant'] = [
-                Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
-                Merchant\Entity::WEBSITE => $payment->merchant->getWebsite(),
-                Merchant\Entity::EMAIL => $payment->merchant->getTransactionReportEmail(),
-            ];
-
-            $payload['customer'] = [
-                'email' => $payment->customer->getEmail(),
-                'phone' => $payment->customer->getContact(),
-            ];
-
-            if ($payment->hasCard() === true) {
-                $card = $payment->card;
-                $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
-
-                $cardDetails = $card->toArrayPublic();
-
-                $cardFormatted = [
-                    'number' => '**** **** **** ' . $card->getLast4(),
-                    'expiry' => $expiryMonth . '/' . $card->getExpiryYear(),
-                    'network' => $card->getNetworkCode(),
-                    'color' => $card->getNetworkColorCode()
-                ];
-
-                $payload['card'] = array_merge($cardDetails, $cardFormatted);
-            }
-
-            $this->addInvoiceOfferDetailsForSubscription($payment, $payload);
-        }
-
-        return $payload;
-    }
-
-    public function fetchpaymentwithSubscriptionEmailAndContactNotNull(string $subscriptionId): array
-    {
-        $payment = $this->repo->payment->fetchBySubscriptionIdEmailAndContactNotNull($subscriptionId);
-
-        $payload = [];
-
-        if($payment != null) {
-
-
-            $payload = $payment->toArrayAdmin();
-
-            $payload['customer'] = [
-                'email' => $payment->email,
-                'phone' => $payment->contact,
-            ];
-        }
-
-        return $payload;
-    }
-
-    private function addInvoiceOfferDetailsForSubscription(Payment\Entity $payment, &$payload)
-    {
-        if ($payment->hasInvoice() === true)
-        {
-            $payload['invoice'] = [
-                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
-                Invoice\Entity::BILLING_END => $payment->invoice->getBillingEnd()
-            ];
-        }
-
-        // offer payload
-        $paidOffer = $payment->getOffer();
-
-        if($paidOffer !== null)
-        {
-            $discountAmount = $paidOffer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
-
-            $paidOfferSubscription = $this->repo->offer->fetchSubscriptionOfferById($paidOffer->getId(), $payment->getMerchantId());
-
-            // TODO Change to gettter after offer team approval
-            $paidOfferSubscriptionDetails = [
-                'id'              => $paidOffer->getId(),
-                'name'            => $paidOfferSubscription->getName(),
-                'payment_method'  => $paidOfferSubscription->getPaymentMethod(),
-                'applicable_on'   => $paidOfferSubscription['applicable_on'],
-                'redemption_type' => $paidOfferSubscription['redemption_type'],
-                'no_of_cycles'    => $paidOfferSubscription['no_of_cycles'],
-            ];
-
-            $payload['offer'] = [
-                'order_amount'      => $payment->order->getAmount(),
-                'discounted_amount' => $discountAmount,
-                'offer_details'     => $paidOfferSubscriptionDetails,
-            ];
-        }
-    }
-
-
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array
     {
         $payment = null;
@@ -5509,46 +5407,7 @@ class Service extends Base\Service
                 Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
         }
 
-        $payload = $payment->toArrayAdmin();
-
-        $payload['merchant'] = [
-            Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
-            Merchant\Entity::WEBSITE       => $payment->merchant->getWebsite(),
-            Merchant\Entity::EMAIL         => $payment->merchant->getTransactionReportEmail(),
-        ];
-
-        $customerEmail = null;
-        $customerContact = null;
-
-        if ($payment->customer !== null)
-        {
-            $customerEmail = $payment->customer->getEmail();
-            $customerContact = $payment->customer->getContact();
-        }
-
-        $payload['customer'] = [
-            'email' => $customerEmail,
-            'phone' => $customerContact,
-        ];
-
-        if ($payment->hasCard() === true)
-        {
-            $card = $payment->card;
-            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
-
-            $cardDetails = $card->toArrayPublic();
-
-            $cardFormatted = [
-                'number'  => '**** **** **** ' . $card->getLast4(),
-                'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
-                'network' => $card->getNetworkCode(),
-                'color'   => $card->getNetworkColorCode()
-            ];
-
-            $payload['card'] = array_merge($cardDetails, $cardFormatted);
-        }
-
-        $this->addInvoiceOfferDetailsForSubscription($payment, $payload);
+        $payload = (new ApiEventSubscriber)->constructPaymentPayloadForSubscriptionNotification($payment);
 
         return $payload;
     }

@@ -2412,7 +2412,7 @@ class ApiEventSubscriber extends Base\Core
         return $merchant;
     }
 
-    protected function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
+    public function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
     {
         $payload = $payment->toArrayAdmin();
 

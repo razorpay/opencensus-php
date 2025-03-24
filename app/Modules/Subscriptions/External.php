@@ -74,11 +74,11 @@ class External extends Base
         $this->getsEntityResponse = false;
 
         $headers = [
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
-        $mode = $this->mode === 'test' ? 't' : 'l';
+        $mode = app('rzp.mode') === 'test' ? 't' : 'l';
 
         $url = $mode . '/admin/' . $entityName . '/'.$entityId;
 
@@ -136,11 +136,11 @@ class External extends Base
         $this->getsEntityResponse = false;
 
         $headers = [
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
-        $mode = $this->mode === 'test' ? 't' : 'l';
+        $mode = app('rzp.mode') === 'test' ? 't' : 'l';
 
         $url = $mode . '/admin/' . $entityName ;
 
@@ -164,7 +164,7 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
@@ -179,10 +179,10 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode
+            self::MODE_HEADER_KEY     => app('rzp.mode')
         ];
 
-        $mode = $this->mode === 'test' ? 't' : 'l';
+        $mode = app('rzp.mode') === 'test' ? 't' : 'l';
 
         $url = $mode . '/subscriptions/' . $subscriptionId . '/hosted';
 
@@ -195,10 +195,10 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode
+            self::MODE_HEADER_KEY     => app('rzp.mode')
         ];
 
-        $mode = $this->mode === 'test' ? 't' : 'l';
+        $mode = app('rzp.mode') === 'test' ? 't' : 'l';
 
         $url = $mode . '/subscriptions/' . $subscriptionId . '/hosted';
 
@@ -226,7 +226,7 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
@@ -271,7 +271,7 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
@@ -290,7 +290,7 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
@@ -309,7 +309,7 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
@@ -326,7 +326,7 @@ class External extends Base
 
         $headers += [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
@@ -343,7 +343,7 @@ class External extends Base
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
-            self::MODE_HEADER_KEY     => $this->mode,
+            self::MODE_HEADER_KEY     => app('rzp.mode'),
             'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 

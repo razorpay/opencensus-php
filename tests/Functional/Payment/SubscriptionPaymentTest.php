@@ -458,23 +458,6 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertNull($paymentAddressEntity);
     }
 
-    public function testFetchPaymentWithSubscriptionEmailAndContactNotNull()
-    {
-        $this->subscriptionMock = $this->mockSubscription();
-
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/payments/data_fix/subscriptions/GTSXI0raxv1G2U',
-            'content' => [],
-        ];
-
-        $this->ba->subscriptionsAppAuth();
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals($response, []);
-    }
-
     private function getDefaultPaymentFlowsRequestData($iin = null, $amount = 99900)
     {
         if ($iin === null)

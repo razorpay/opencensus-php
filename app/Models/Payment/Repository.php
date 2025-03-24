@@ -4844,26 +4844,6 @@ GROUP BY
         return null;
     }
 
-    public function fetchBySubscriptionId(string $subscriptionId)
-    {
-        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
-
-        $payment = $this->newQuery()
-                        ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                        ->first();
-
-        if (empty($payment) === false)
-        {
-            return $payment;
-        }
-
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-        return $this->newQueryWithConnection($connectionType)
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->first();
-    }
-
     public function fetchSubscriptionIdAndRecurringType(string $subscriptionId, string $tokenId, $recurringTypes, $paymentStatuses)
     {
         $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
@@ -4917,24 +4897,6 @@ GROUP BY
                         ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                         ->findOrFailPublic($paymentId);
         }
-    }
-
-    public function fetchBySubscriptionIdEmailAndContactNotNull(string $subscriptionId)
-    {
-        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
-
-        $query = $this->newQuery();
-
-        return $query
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->whereNotNull(Entity::EMAIL)
-                    ->whereNotNull(Entity::CONTACT)
-                    ->where(function ($query) {
-                        $query->where(Entity::RECURRING_TYPE, '=', 'initial')
-                              ->orWhere(Entity::RECURRING_TYPE, '=', 'card_change');
-                        })
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->first();
     }
 
     public function fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
