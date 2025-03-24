@@ -703,6 +703,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        if ($merchant->isLinkedAccount())
+        {
+            $this->blockAccountUpdateWithout2FaForLinkedAccount($this->merchant, $input);
+        }
+
         $this->allowEditingOfBusinessNameAndDBAKYC($merchant, $input);
 
         Entity::modifyConvertEmptyStringsToNull($input);
@@ -5998,5 +6003,48 @@ class Service extends Base\Service
         return (($isPosDetailsSubmitted === '1') or
             ($isPosDetailsSubmitted === 1) or
             ($isPosDetailsSubmitted === true));
+    }
+
+    private function blockAccountUpdateWithout2FaForLinkedAccount($merchant, &$input)
+    {
+        if (($this->app['basicauth']?->isDashboardApp() ?? false) === false)
+        {
+            return;
+        }
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getParentId(),
+                'experiment_id' => $this->app['config']->get('app.block_account_update_for_linked_account_exp_id'),
+            ],
+            'variant'
+        );
+
+        $this->trace->info(TraceCode::BLOCK_BANK_ACCOUNT_UPDATE_FOR_LA_EXP_RESULT, [
+            'linked_account_id' => $merchant->getId(),
+            'parent_id'         => $merchant->getParentId(),
+            'is_enabled'        => $isExpEnabled,
+        ]);
+
+        if($isExpEnabled === false)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::BANK_ACCOUNT_NUMBER]) || isset($input[Entity::BANK_BRANCH_IFSC]))
+        {
+            if (!isset($input['type']) || $input['type'] !== 'linked_account')
+            {
+                $this->trace->error(TraceCode::INVALID_TYPE_FOR_BA_UPDATE_WITH_2FA, [
+                    'linked_account_id' => $merchant->getId(),
+                    'parent_id'         => $merchant->getParentId(),
+                    'type'              => $input['type'] ?? '',
+                ]);
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATE_BLOCKED_WITHOUT_2FA);
+            }
+        }
+
+        unset($input['type']);
     }
 }

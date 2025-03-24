@@ -1869,7 +1869,7 @@ class Service extends Base\Service
                 else
                 {
                     // fetch transfers by order_id from route
-                    $resp = $this->app['route']->fetchTransfersBySourceId($payment->getMerchantId(), $order->getId(), 1);
+                    $resp = $this->app['route']->fetchTransfersBySourceId($payment->getMerchantId(), $order->getId());
 
                     // Should process via Route if any order transfer is present on Route
                     if ((empty($resp) === false) && $resp["count"] > 0)

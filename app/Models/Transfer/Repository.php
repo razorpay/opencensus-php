@@ -99,7 +99,7 @@ class Repository extends Base\Repository
         {
             $routeTransfers = app('route')->fetchTransfersBySourceId($merchant->getId(), $sourceId);
 
-            $apiTransfers->merge($routeTransfers);
+            $apiTransfers = $apiTransfers->merge($routeTransfers);
         }
 
         return $apiTransfers;

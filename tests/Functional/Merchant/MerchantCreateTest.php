@@ -2148,6 +2148,171 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateBankAccountDetailsOfLinkedAccountWith2FaExpEnabledInvalidRequest()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
+
+        $this->ba->proxyAuth();
+
+        $account = $account->toArrayPublic();
+
+        $input = [
+            "experiment_id" => "Q1TQ8tAw2fz9g1",
+            "id"            => $account['id'],
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "variant"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'      => 'test10013',
+                'business_type'      => '4',
+                'bank_branch_ifsc'   => 'UTIB0005157',
+                'bank_account_number' => '101111',
+                'bank_account_name' => 'test10013',
+            ],
+        ];
+
+        $request['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch (\Throwable $e)
+        {
+            $this->assertExceptionClass($e, \RZP\Exception\BadRequestException::class);
+            $this->assertEquals("Linked account update is blocked without 2FA", $e->getMessage());
+        }
+    }
+
+    public function testUpdateBankAccountDetailsOfLinkedAccountWith2FaExpEnabledValidRequest()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
+
+        $this->ba->proxyAuth();
+
+        $account = $account->toArrayPublic();
+
+        $input = [
+            "experiment_id" => "Q1TQ8tAw2fz9g1",
+            "id"            => $account['id'],
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "variant"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'type'  => 'linked_account',
+                'business_name'      => 'test10013',
+                'business_type'      => '4',
+                'bank_branch_ifsc'   => 'UTIB0005157',
+                'bank_account_number' => '101111',
+                'bank_account_name' => 'test10013',
+            ],
+        ];
+
+        $request['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['data']['activated']);
+
+        $this->assertEquals('UTIB0005157', $response['data']['bank_branch_ifsc']);
+
+        $this->assertEquals('101111', $response['data']['bank_account_number']);
+    }
+
+    public function testUpdateBankAccountDetailsOfLinkedAccountWith2FaExpDisabled()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
+
+        $this->ba->proxyAuth();
+
+        $account = $account->toArrayPublic();
+
+        $input = [
+            "experiment_id" => "Q1TQ8tAw2fz9g1",
+            "id"            => $account['id'],
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "disabled"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'      => 'test10013',
+                'business_type'      => '4',
+                'bank_branch_ifsc'   => 'UTIB0005157',
+                'bank_account_number' => '101111',
+                'bank_account_name' => 'test10013',
+            ],
+        ];
+
+        $request['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['data']['activated']);
+
+        $this->assertEquals('UTIB0005157', $response['data']['bank_branch_ifsc']);
+
+        $this->assertEquals('101111', $response['data']['bank_account_number']);
+    }
+
     public function testCreateMarketplaceLinkedAccountWithDashboardUser()
     {
         Mail::fake();

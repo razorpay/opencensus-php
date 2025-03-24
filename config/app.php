@@ -1182,6 +1182,8 @@ return array(
 
     'refund_after_transfer_reversal_exp_id' => env('REFUND_AFTER_TRANSFER_REVERSAL_EXP_ID'),
 
+    'block_account_update_for_linked_account_exp_id' => env('BLOCK_ACCOUNT_UPDATE_FOR_LA_EXP_ID'),
+
     'recurring_populate_error_metadata' => env('RECURRING_POPULATE_ERROR_METADATA'),
 
     'visa_cvv_less_experiment' => env('VISA_CVV_LESS_EXPERIMENT'),
