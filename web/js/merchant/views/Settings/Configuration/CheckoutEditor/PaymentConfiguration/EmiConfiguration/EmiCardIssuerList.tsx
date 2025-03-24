@@ -58,9 +58,6 @@ export default function EmiCardIssuerList({
             accessibilityLabel={item.name}
             RightComponent={
               <Box display="flex" gap="spacing.5">
-                <Badge color="positive" size="large">
-                  Activated
-                </Badge>
                 <Switch
                   accessibilityLabel={`${item.name} switch`}
                   isChecked={finalCardConfigurationObj?.issuers?.includes(

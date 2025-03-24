@@ -18,13 +18,14 @@ export default function CardProvider({
       paddingX="spacing.4"
       borderRadius="large"
     >
-      <Text weight="semibold" size="large">
+      <Text weight="semibold" size="medium">
         Card Provider
       </Text>
       <Link
         href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-card-networks`}
         display="flex"
         icon={ArrowRightIcon}
+        size='small'
         target="_blank"
         iconPosition="right"
       >
@@ -68,9 +69,6 @@ export default function CardProvider({
             }
             RightComponent={
               <Box display="flex" gap="16px">
-                <Badge color="positive" size="large">
-                  Activated
-                </Badge>
                 <Switch
                   accessibilityLabel={`${item.name} switch`}
                   isChecked={updatedCardModalConfig?.networks?.includes(item.name)}

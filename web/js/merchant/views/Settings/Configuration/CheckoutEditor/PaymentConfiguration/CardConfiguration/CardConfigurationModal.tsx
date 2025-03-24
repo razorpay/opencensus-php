@@ -165,9 +165,9 @@ function CardConfigurationModal({
               selectionType="multiple"
             >
               <Chip value="Card Type">Card Type</Chip>
-              <Chip value="Card Provider">Card Provider</Chip>
+              <Chip value="Card Provider">Card Network</Chip>
               <Chip value="Card Issuer">Card Issuer</Chip>
-              <Chip value="BIN Number">BIN Number</Chip>
+              <Chip value="BIN Number">BIN</Chip>
             </ChipGroup>
           </Box>
           <Box paddingTop="spacing.9" gap="spacing.5" display="flex" flexDirection="column">

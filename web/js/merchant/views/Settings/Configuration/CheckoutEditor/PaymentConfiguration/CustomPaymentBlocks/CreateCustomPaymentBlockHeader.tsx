@@ -30,6 +30,7 @@ export default function CreateCustomPaymentBlockHeader({
             display="flex"
             alignSelf="center"
             variant="button"
+            color="primary"
             size="medium"
             iconPosition="right"
             icon={PlusIcon}

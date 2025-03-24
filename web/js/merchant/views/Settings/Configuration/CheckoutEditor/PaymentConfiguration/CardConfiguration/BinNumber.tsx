@@ -25,7 +25,7 @@ export default function BinNumber({ updatedCardModalConfig, setUpdatedCardModalC
       setValidationError(undefined);
       _track.cardBinNumberAdded(singleBINNumber);
     } else {
-      setValidationError('Bin number should be 6 digits');
+      setValidationError('Bin should be 6 digits');
     }
   };
 
@@ -43,16 +43,16 @@ export default function BinNumber({ updatedCardModalConfig, setUpdatedCardModalC
       paddingX="spacing.4"
       borderRadius="large"
     >
-      <Text weight="semibold" size="large">
+      <Text weight="semibold" size="medium">
         BIN Number
       </Text>
-      <Link target="_blank" href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards`} display="flex" icon={ArrowRightIcon} iconPosition="right">
+      <Link target="_blank" href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards`} display="flex" icon={ArrowRightIcon} iconPosition="right" size="small">
         See documentation
       </Link>
       <Box gap="spacing.5" display="flex" flexDirection="column" marginTop="spacing.5">
         <Box display="flex" gap="spacing.5">
           <TextInput
-            placeholder="Enter BIN number"
+            placeholder="Enter BIN"
             label=""
             maxCharacters={6}
             type="number"
@@ -64,7 +64,7 @@ export default function BinNumber({ updatedCardModalConfig, setUpdatedCardModalC
                 setSingleBINNumber(value || '');
                 setValidationError(undefined);
               } else {
-                setValidationError('Bin number should be digits only');
+                setValidationError('Use digits only');
               }
             }}
             value={singleBINNumber}

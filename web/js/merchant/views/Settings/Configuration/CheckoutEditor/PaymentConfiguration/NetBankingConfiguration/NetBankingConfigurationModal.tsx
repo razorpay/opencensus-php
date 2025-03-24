@@ -19,6 +19,7 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { getNetbanking } from 'merchant/views/Settings/Configuration/CheckoutEditor/PaymentConfiguration/helpers/methods';
 import { PaymentConfigInstrument } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
+import { CORPORATE, NETBANKING, RETAIL } from './constant';
 
 export default function NetBankingConfigurationModal({
   isOpen,
@@ -34,18 +35,22 @@ export default function NetBankingConfigurationModal({
   const selectedPaymentConfig = values[CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG];
   const currentConfig =
     selectedPaymentConfig?.checkout_config?.display?.blocks?.[blockName]?.instruments || [];
-  const { banks }: { banks: { code: string; name: any; type?: string }[] } =
+  const { banks = [] }: { banks: { code: string; name: any; type?: string }[] } =
     getNetbanking(allMethodDetails);
 
-  banks.forEach((item) => {
-    item.type = item.code.includes('_C') ? 'corporate' : 'retail';
-  });
-
+  if (Array.isArray(banks) && banks.length > 0) {
+    banks.forEach((item) => {
+      if (item) {
+        item.type = item?.code?.includes('_C') ? CORPORATE : RETAIL;
+      }
+    });
+  }
+  const hasCorporateBank = banks.some((bank) => bank.type === CORPORATE);
   const initialNetbankingConfig: PaymentConfigInstrument[] = currentConfig.filter(
-    (item) => item.method === 'netbanking'
+    (item) => item.method === NETBANKING,
   );
 
-  const defaultConfig = { banks: [], method: 'netbanking' } as PaymentConfigInstrument;
+  const defaultConfig = { banks: [], method: CORPORATE } as PaymentConfigInstrument;
 
   const initialConfig = initialNetbankingConfig.length > 1
     ? initialNetbankingConfig.find(
@@ -79,7 +84,7 @@ export default function NetBankingConfigurationModal({
 
   const isConfigChanged = !isEqual(initialConfig, updatedBankConfig)
 
-  const handleSearch = (searchQuery: string) => {
+  const handleSearch = (searchQuery: string, searchFilter: string[], banks: { code: string; name: any; type?: string }[]) => {
     const filtered = banks.filter((bank) => {
       const isBankTypesMatch = searchFilter.length === 0 || searchFilter.includes(bank?.type || '');
       return (
@@ -142,16 +147,16 @@ export default function NetBankingConfigurationModal({
               onChange={(event) => {
                 const value = event.value || '';
                 setSearchValue(value);
-                handleSearch(value.toLowerCase());
+                handleSearch(value.toLowerCase(), searchFilter, banks);
               }}
               onClearButtonClick={() => {
                 setSearchValue('');
-                handleSearch('');
+                handleSearch('', searchFilter, banks);
               }}
               placeholder="Search for banks"
               size="large"
             />
-            <ChipGroup
+            {hasCorporateBank && <ChipGroup
               label=""
               position="absolute"
               top="spacing.3"
@@ -159,12 +164,12 @@ export default function NetBankingConfigurationModal({
               selectionType="multiple"
               onChange={({ values }) => {
                 setSearchFilter(values);
-                handleSearch(searchValue.toLowerCase());
+                handleSearch(searchValue.toLowerCase(), values, banks);
               }}
             >
               <Chip value="retail">Retail banks</Chip>
               <Chip value="corporate">Corporate banks</Chip>
-            </ChipGroup>
+            </ChipGroup>}
           </Box>
           <Box gap="spacing.5" display="flex" flexDirection="column" paddingTop="spacing.7">
             {filteredBanks.length === 0 ? (

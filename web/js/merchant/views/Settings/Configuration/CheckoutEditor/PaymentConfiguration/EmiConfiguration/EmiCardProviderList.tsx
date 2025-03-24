@@ -50,9 +50,6 @@ export default function EmiCardProviderList({
             }
             RightComponent={
               <Box display="flex" gap="16px">
-                <Badge color="positive" size="large">
-                  Activated
-                </Badge>
                 <Switch
                   accessibilityLabel={`${item.name} switch`}
                   isChecked={finalCardConfigurationObj?.networks?.includes(item.name)}

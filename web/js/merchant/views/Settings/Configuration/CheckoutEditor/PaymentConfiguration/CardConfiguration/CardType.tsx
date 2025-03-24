@@ -17,15 +17,15 @@ export default function CardType({
       paddingX="spacing.4"
       borderRadius="large"
     >
-      <Text weight="medium" size="large">
+      <Text weight="semibold" size="medium">
         Card Type
       </Text>
       <Link
         href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-cards`}
         icon={ArrowRightIcon}
+        size='small'
         target="_blank"
         iconPosition="right"
-        size='small'
       >
         See documentation
       </Link>

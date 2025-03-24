@@ -24,11 +24,10 @@ describe('PayLaterListItem', () => {
     expect(getByAltText(item.name)).toBeInTheDocument();
   });
 
-  it('should render activated badge and switch when activated', () => {
-    const { getByText, getByRole } = render(
+  it('should render switch when activated', () => {
+    const { getByRole } = render(
       <PayLaterListItem item={item} activeBanks={activeBanks} setActiveBanks={setActiveBanks} />,
     );
-    expect(getByText('Activated')).toBeInTheDocument();
     expect(getByRole('switch')).toBeInTheDocument();
   });
   it('should update active banks when switch is toggled', () => {

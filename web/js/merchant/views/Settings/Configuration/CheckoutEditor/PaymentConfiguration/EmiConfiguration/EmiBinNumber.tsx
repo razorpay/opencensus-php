@@ -16,7 +16,7 @@ export default function EmiBinNumber({ finalCardConfigurationObj, setFinalCardCo
       setSingleBINNumber('');
       setValidationError(undefined);
     } else {
-      setValidationError('Bin number should be 6 digits');
+      setValidationError('Bin should be 6 digits');
     }
     _track.cardBinNumberAdded(singleBINNumber);
   };
@@ -33,7 +33,7 @@ export default function EmiBinNumber({ finalCardConfigurationObj, setFinalCardCo
       <Box gap="spacing.5" display="flex" flexDirection="column" marginTop={'spacing.5'}>
         <Box display="flex" gap="spacing.5">
           <TextInput
-            placeholder="Enter BIN number"
+            placeholder="Enter BIN"
             label=""
             maxCharacters={6}
             type="number"
@@ -45,7 +45,7 @@ export default function EmiBinNumber({ finalCardConfigurationObj, setFinalCardCo
                 setSingleBINNumber(value || '');
                 setValidationError(undefined);
               } else {
-                setValidationError('Bin number should be digits only');
+                setValidationError('Use digits only');
               }
             }}
             value={singleBINNumber}

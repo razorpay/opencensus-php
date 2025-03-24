@@ -54,9 +54,6 @@ export default function CardlessEmi({
             }
             RightComponent={
               <Box display="flex" gap="16px">
-                <Badge color="positive" size="large">
-                  Activated
-                </Badge>
                 <Switch
                   accessibilityLabel={`${item.details.name} switch`}
                   isChecked={finalCardConfigurationObj?.providers?.includes(item.code)}

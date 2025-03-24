@@ -246,7 +246,7 @@ export default function EmiConfigurationModal({
           </Accordion>
           <Accordion variant="filled">
             <AccordionItem>
-              <AccordionItemHeader title="Card Provider" />
+              <AccordionItemHeader title="Card Network" />
               <AccordionItemBody>
                 <EmiCardProviderList
                   cardProvider={networks}
@@ -258,7 +258,7 @@ export default function EmiConfigurationModal({
           </Accordion>
           <Accordion variant="filled">
             <AccordionItem>
-              <AccordionItemHeader title="Bin Number" />
+              <AccordionItemHeader title="BIN" />
               <AccordionItemBody>
                 <EmiBinNumber
                   finalCardConfigurationObj={updatedEMIConfig}

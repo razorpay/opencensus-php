@@ -284,18 +284,22 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
           ref={customBlockBodyRef}
           height={isExpanded ? customBlockBodyRef?.current?.scrollHeight : '0'}
         >
-          <Box display="flex" flexDirection="column" gap="spacing.7" paddingX="spacing.2">
-            <TextInput
-              label="Payment block name"
-              helpText="Use 2-3 words only"
-              value={block?.name ?? ''}
-              isRequired
-              onChange={({ value }) => {
-                handleBlockNameUpdate(value ?? '');
-              }}
-            />
-            <Box display="flex" flexDirection="column" gap="spacing.4" paddingX="spacing.2">
-              <Text size="small">Add payment method or instrument</Text>
+          <Box display="flex" flexDirection="column" gap="spacing.7" paddingX="spacing.1">
+            <Box display="flex" flexDirection="column" gap="spacing.4">
+              <Text size="small" color='surface.text.gray.muted' weight='semibold'>Payment block name</Text>
+              <TextInput
+                accessibilityLabel="Payment block name"
+                label=''
+                helpText="Use 2-3 words only"
+                value={block?.name ?? ''}
+                isRequired
+                onChange={({ value }) => {
+                  handleBlockNameUpdate(value ?? '');
+                }}
+              />
+            </Box>
+            <Box display="flex" flexDirection="column" gap="spacing.4">
+              <Text size="small" color='surface.text.gray.muted' weight='semibold'>Add payment method or instrument</Text>
               <PointerDivWrapper
                 onClick={() => {
                   setIsAddSingleInstrumentModalOpen(true);

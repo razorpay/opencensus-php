@@ -19,13 +19,14 @@ export default function CardIssuer({
       paddingX="spacing.4"
       borderRadius="large"
     >
-      <Text weight="semibold" size="large">
+      <Text weight="semibold" size="medium">
         Card Issuer
       </Text>
       <Link
         href={`https://${org.business_name?.toLowerCase() || "razorpay"}.com/docs/payments/payment-gateway/web-integration/standard/configure-payment-methods/supported-methods/#supported-banks`}
         display="flex"
         icon={ArrowRightIcon}
+        size='small'
         target='_blank'
         iconPosition="right"
       >
@@ -69,9 +70,6 @@ export default function CardIssuer({
             accessibilityLabel={item.name}
             RightComponent={
               <Box display="flex" gap="spacing.5">
-                <Badge color="positive" size="large">
-                  Activated
-                </Badge>
                 <Switch
                   accessibilityLabel={`${item.name} switch`}
                   isChecked={updatedCardModalConfig?.issuers?.includes(item.code)}

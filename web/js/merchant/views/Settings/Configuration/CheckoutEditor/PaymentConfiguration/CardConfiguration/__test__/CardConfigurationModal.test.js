@@ -43,8 +43,8 @@ describe('CardConfigurationModal', () => {
 
   it('renders BinNumber component when BIN Number is selected', () => {
     const { getAllByText } = render(<CardConfigurationModal {...props} />);
-    fireEvent.click(getAllByText('BIN Number')[0]);
-    expect(getAllByText('BIN Number')[0]).toBeInTheDocument();
+    fireEvent.click(getAllByText('BIN')[0]);
+    expect(getAllByText('BIN')[0]).toBeInTheDocument();
   });
 
   it('enables save button when configuration changes', () => {

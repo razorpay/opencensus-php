@@ -43,9 +43,6 @@ export default function WalletListItem({ item, activeBanks, setActiveBanks }) {
       }
       RightComponent={
         <Box display="flex" gap="16px">
-          <Badge color="positive" size="large">
-            Activated
-          </Badge>
           <Switch
             accessibilityLabel={`${item.name} switch`}
             isChecked={activeBanks?.wallets?.includes(item.code)}

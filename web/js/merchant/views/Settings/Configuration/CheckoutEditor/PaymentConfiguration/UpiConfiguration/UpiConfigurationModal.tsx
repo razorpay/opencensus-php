@@ -134,13 +134,13 @@ function UpiConfigurationModal({
               key={index}
               backgroundColor="surface.background.gray.moderate"
               Title={
-                <Text variant="body" weight="medium" size="medium">
+                <Text variant="body" weight="semibold" size="medium">
                   {item.title}
                 </Text>
               }
               accessibilityLabel="upi-qr-code"
               Description={
-                <Link href={item.docsUrl} icon={ArrowRightIcon} iconPosition="right" target="_blank">
+                <Link href={item.docsUrl} icon={ArrowRightIcon} iconPosition="right" target="_blank" size="small">
                   See documentation
                 </Link>
               }
