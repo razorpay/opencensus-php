@@ -122,6 +122,8 @@ class Type
     const TERMINAL_CREATION         = 'terminal_creation';
 
     const DEVICE_TERMINAL_MAPPING    = 'device_terminal_mapping';
+    const QR_DEVICE_MAPPING         = 'qr_device_mapping';
+    const QR_DEVICE_UNMAPPING       = 'qr_device_unmapping';
 
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
@@ -429,6 +431,8 @@ class Type
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
+        self::QR_DEVICE_MAPPING,
+        self::QR_DEVICE_UNMAPPING,
     ];
 
     /**
@@ -795,6 +799,8 @@ class Type
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
         self::ECOLLECT_IDFC,
+        self::QR_DEVICE_MAPPING,
+        self::QR_DEVICE_UNMAPPING,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -905,6 +911,8 @@ class Type
         self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
         self::UPDATE_ODS_MERCHANT_LIMITS              => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2   => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::QR_DEVICE_MAPPING                       => Name::ADMIN_BATCH_CREATE,
+        self::QR_DEVICE_UNMAPPING                     => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [
