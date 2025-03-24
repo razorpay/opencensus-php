@@ -74,9 +74,7 @@ function ReserveBalance({
   }
 
   const showReserveBalanceSelfServeButton =
-    !user.isOrgAxis &&
-    user.isReserveBalanceSelfServeEnabled &&
-    [rolesList.OWNER, rolesList.ADMIN].includes(user.role);
+    !user.isOrgAxis && [rolesList.OWNER, rolesList.ADMIN].includes(user.role);
 
   return (
     <Card>
@@ -105,20 +103,6 @@ function ReserveBalance({
           ) : (
             <Spinner marginY="auto" />
           )}
-          {!user.isOrgAxis && !user.isReserveBalanceSelfServeEnabled && (
-            <>
-              {ticketGenerated || ticketStatusData.ticket_status === TICKET_STATUS.processing ? (
-                <Button variant="secondary">Processing...</Button>
-              ) : ticketStatusData.ticket_status === TICKET_STATUS.resolved ||
-                ticketStatusData.ticket_status === TICKET_STATUS.closed ||
-                balance > 0 ? null : (
-                <Button variant="secondary" onClick={handleActivate}>
-                  Activate
-                </Button>
-              )}
-            </>
-          )}
-
           {showReserveBalanceSelfServeButton ? (
             <Box display="flex" gap="spacing.3" alignItems="center">
               <WithdrawButton
@@ -149,8 +133,7 @@ function ReserveBalance({
           ) : null}
         </Box>
         {ticketGenerated ||
-        (ticketStatusData.ticket_status === 'Processing' &&
-          !user.isReserveBalanceSelfServeEnabled) ? (
+        (ticketStatusData.ticket_status === 'Processing') ? (
           <Text
             size="small"
             weight="medium"
