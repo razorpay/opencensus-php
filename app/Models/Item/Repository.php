@@ -41,4 +41,16 @@ class Repository extends Base\Repository
 
         return $item;
     }
+
+    public function bulkInsert(array $items)
+    {
+        return $this->newQuery()->insert($items);
+    }
+
+    public function deleteItemsByIds(array $itemIds)
+    {
+        return $this->newQuery()
+                    ->whereIn('id', $itemIds)
+                    ->forceDelete();
+    }
 }

@@ -1624,6 +1624,7 @@ class Route
         'payment_page_update'                      => ['patch',    'payment_pages/{id}',                             'PaymentLinkController@update'                                      ],
         'payment_page_notify'                      => ['post',     'payment_pages/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
         'payment_page_notify_nca'                  => ['post',     'payment_pages/{id}/notify_nca',                  'PaymentLinkController@sendNotificationNCA'                            ],
+        'payment_page_dual_write_internal'         => ['post',     'internal/payment_pages/dual_write',              'PaymentLinkController@dualWriteFromNCA'                            ],
         'payment_page_notify_all'                  => ['post',     'payment_pages/{id}/fetch_notify_details',        'PaymentLinkController@sendNotificationToAllRecords'                ],
         'payment_page_expire_cron'                 => ['post',     'payment_pages/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
         'payment_page_deactivate'                  => ['patch',    'payment_pages/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
@@ -6988,6 +6989,9 @@ class Route
         'qr_code_merchant_create',
         'set_qr_code_device',
         'qr_code_device_id_unmap',
+
+        // NoCodeApps
+        'payment_page_dual_write_internal',
 
         'settlement_ondemand_create_internal',
         'user_create_merchant_internal',
@@ -17650,6 +17654,7 @@ class Route
             'payment_page_save_receipt_for_payment',
             'fetch_order_line_items',
             'fetch_product_details_for_order',
+            'payment_page_dual_write_internal',
             'payment_page_notify_nca',
             'feature_add_internal'
         ],

@@ -571,6 +571,15 @@ class PaymentLinkController extends Controller
         ]);
     }
 
+    public function dualWriteFromNCA()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->dualWriteFromNCA($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @return mixed
      */
