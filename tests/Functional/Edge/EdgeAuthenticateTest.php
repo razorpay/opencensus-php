@@ -181,7 +181,7 @@ class EdgeAuthenticateTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
         ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren) {
 
-            $this->assertEquals('owner', $roleId);
+            $this->assertEquals('Owner', $roleId);
             $this->assertEquals('razorpayx', $orgId);
             $this->assertEquals(self::TEST_MERCHANT_ID, $ownerId);
             $this->assertEquals(true, $expandChildren);

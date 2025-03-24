@@ -196,7 +196,7 @@ class Core extends Base\Core
             'input' => $input
         ]);
 
-        if (BankingRole::exists($id))
+        if (BankingRole::isCACStandardRole($id))
         {
             throw new Exception\BadRequestValidationFailureException("Can't Edit Standard Roles" ,
                 $input);
@@ -612,7 +612,7 @@ class Core extends Base\Core
             Constants::OWNER_IDS => $merchantIdList,
         ];
 
-        if (isset($input[Entity::ID]) && BankingRole::exists($input[Entity::ID]))
+        if (isset($input[Entity::ID]) && BankingRole::isCACStandardRole($input[Entity::ID]))
         {
             $requestParams[Entity::NAME] = BankingRole::getStandardRoleNameFromRoleId($input[Entity::ID]);
         }
