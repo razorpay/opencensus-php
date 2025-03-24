@@ -4,6 +4,7 @@ import {
   makeUpdatedReportConfigPayload,
   makeReportConfigPayload,
 } from 'merchant/views/Reconciliations/helper';
+import type { DownloadReportParams } from 'merchant/views/Reconciliations/SplitScreen/types';
 
 const fetchProcessSourceColumns = async ({ processIds }: { processIds: string[] }) => {
   const fetchProcessesSourceColumnPayload = {
@@ -329,6 +330,40 @@ const deleteReconRun = async ({ runId }) => {
   return deleteReconRunRes;
 };
 
+const downloadSplitScreenReport = async ({ runId, sources, fromDate, toDate, filter }: DownloadReportParams) => {
+  const downloadReportPayload = {
+    trigger_type: 'multi-sheet-manual',
+    run_ids: [runId],
+    merchant_source_ids: sources,
+    transaction_date_range: {
+      from_date: fromDate,
+      to_date: toDate,
+    },
+    column_filters: Object.entries(filter).reduce<{ key: string; value: string }[]>(
+      (acc, [key, value]) => {
+        if (value) {
+          acc.push({ key, value: value as string });
+        }
+        return acc;
+      },
+      [],
+    ),
+  };
+
+  const downloadReport = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/reporting/trigger_report`,
+    mode: 'live',
+    method: 'post',
+    data: downloadReportPayload,
+  });
+
+  if (downloadReport.status_code !== 200) {
+    throw downloadReport;
+  }
+
+  return downloadReport;
+};
+
 export {
   fetchProcessSourceColumns,
   createReportConfig,
@@ -346,4 +381,5 @@ export {
   fetchReconProcessDetail,
   fetchingSplitScreenMatchingRecord,
   deleteReconRun,
+  downloadSplitScreenReport,
 };

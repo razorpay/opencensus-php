@@ -8,6 +8,15 @@ interface MerchantSources {
   name: string;
 }
 
+interface Notification {
+  type: 'success' | 'error' | 'neutral' | 'info';
+  message: string;
+}
+
+interface SplitScreenProps {
+  showNotification: (notification: Notification) => void;
+}
+
 interface DataGridProps {
   reconFilter: Record<string, any>;
   dateRange: Record<string, any>;
@@ -50,7 +59,15 @@ interface UseDragReturnType {
   isDragging: boolean;
 }
 
-export type {
+type DownloadReportParams = {
+  runId: string;
+  sources: string[];
+  fromDate: string;
+  toDate: string;
+  filter: Record<string, string>;
+};
+
+export {
   IData,
   DataGridProps,
   FilterModalProps,
@@ -58,4 +75,6 @@ export type {
   UseDragOptions,
   UseDragState,
   UseDragReturnType,
+  SplitScreenProps,
+  DownloadReportParams,
 };

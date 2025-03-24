@@ -18,8 +18,7 @@ import {
   Tooltip,
   ActionListItemText,
 } from '@razorpay/blade/components';
-import { useQuery } from '@tanstack/react-query';
-import { IData } from 'merchant/views/Reconciliations/SplitScreen/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import moment from 'moment';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -35,10 +34,20 @@ import SplitScreenDrawer from 'merchant/views/Reconciliations/SplitScreen/SplitS
 import { ReconDivider } from 'merchant/views/Reconciliations/SplitScreen/style';
 import { useDrag } from 'merchant/views/Reconciliations/SplitScreen/usedrag';
 import { dateRangePreset } from 'merchant/views/Reconciliations/SplitScreen/utils';
-import { fetchProcessRunList, fetchReconProcessDetail } from 'merchant/views/Reconciliations/api';
+import {
+  fetchProcessRunList,
+  fetchReconProcessDetail,
+  downloadSplitScreenReport,
+} from 'merchant/views/Reconciliations/api';
 import { RenderErrorLoadingOrChild } from 'merchant/views/Reconciliations/commonComponents';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-const SplitScreen = () => {
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
+import type { SplitScreenProps, IData, DownloadReportParams } from 'merchant/views/Reconciliations/SplitScreen/types';
+
+const SplitScreen: React.FC<SplitScreenProps> = ({ showNotification }) => {
   const navigate = useNavigate();
   const { runId, processId } = useParams();
 
@@ -80,7 +89,28 @@ const SplitScreen = () => {
     queryKey: ['reconProcess', processId],
     queryFn: () => fetchReconProcessDetail({ processId }),
   });
-
+  
+  const {
+    mutate: downloadReportMutation,
+    isLoading: isLoadingForDownloadReport,
+  } = useMutation({
+    mutationFn: ({ runId, sources, fromDate, toDate, filter }: DownloadReportParams) => 
+      downloadSplitScreenReport({ runId, sources, fromDate, toDate, filter }),
+    onError: () => {
+      showNotification({
+        type: 'error',
+        message: `Unable to download report. Please try again later.`,
+      });
+    },
+    onSuccess: () => {
+      showNotification({
+        type: 'success',
+        message: `Report is being generated. Please check in the download section after some time.`,
+      });
+      navigate(`${RECON_DASHBOARD_BASEURL}/${DashboardTabs.DOWNLOADS}`);
+    }
+  });
+  
   const goBack = () => {
     navigate(-1);
   };
@@ -181,7 +211,21 @@ const SplitScreen = () => {
               accessibilityLabel="Advance Filters"
             />
           </Tooltip>
-          <Button variant="primary" icon={DownloadIcon} iconPosition="left">
+          <Button
+            variant="primary"
+            icon={DownloadIcon}
+            iconPosition="left"
+            isLoading={isLoadingForDownloadReport}
+            onClick={() =>
+              downloadReportMutation({
+                runId,
+                sources: reconPairSources,
+                fromDate: dateRange.startDate ? `${moment(dateRange.startDate).unix()}` : '0',
+                toDate: dateRange.endDate ? `${moment(dateRange.endDate).unix()}` : '0',
+                filter: reconFilter,
+              })
+            }
+          >
             Export View
           </Button>
         </Box>
@@ -239,4 +283,4 @@ const SplitScreen = () => {
   );
 };
 
-export default SplitScreen;
+export default compose(connect(null, { showNotification }))(SplitScreen);

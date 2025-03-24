@@ -99,7 +99,7 @@ const RunsListTable = ({
     );
   };
 
-  const goSplitScreen = ({ runId }) => {
+  const goToSplitScreen = ({ runId }) => {
     analyticsTrackWithUserInfo({
       screen: ReconScreens.GlobalRunListing,
       objectName: 'recon split screen',
@@ -109,6 +109,8 @@ const RunsListTable = ({
       `${RECON_DASHBOARD_BASEURL}/${DashboardTabs.PROCESSES}/${processId}/${ProcessTabs.SPLIT}/${runId}`,
     );
   };
+
+  const isSplitScreenEnabled = /\/split-screen/i.test(location.pathname);
 
   return (
     <Box marginTop="spacing.3">
@@ -166,7 +168,12 @@ const RunsListTable = ({
                       </BladeLink>
                     </TableCell>
                     <TableCell>
-                      <BladeLink onClick={() => goToRunDetailsPage({ runId: item.id })}>
+                      <BladeLink
+                        onClick={() => isSplitScreenEnabled ? 
+                          goToSplitScreen({ runId: item.id }) : 
+                          goToRunDetailsPage({ runId: item.id })
+                        }
+                      >
                         Details
                       </BladeLink>
                     </TableCell>
