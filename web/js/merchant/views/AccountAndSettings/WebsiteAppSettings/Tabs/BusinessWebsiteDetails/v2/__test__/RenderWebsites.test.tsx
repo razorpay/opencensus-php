@@ -23,6 +23,7 @@ const defaultProps = {
     appstore_url: '',
     playstore_url: '',
     additional_websites: [],
+    has_key_access: true,
   },
 };
 

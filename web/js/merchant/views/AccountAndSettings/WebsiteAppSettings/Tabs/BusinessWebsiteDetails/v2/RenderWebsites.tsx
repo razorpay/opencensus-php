@@ -43,7 +43,7 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
     businessWebsiteWorkflow,
   });
 
-  const isKLA = user.has_key_access;
+  const isKLA = !user.has_key_access;
 
   const EditCta = (
     <Box>
@@ -78,7 +78,7 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
     return <WebsiteCardLoadingState isMobile={isMobile} cardsNumber={cardsNumber} />;
   }
 
-  return businessWebsitesToShow.length === 0 || (isKLA && businessWebsitesToShow.length === 0) ? (
+  return isKLA || businessWebsitesToShow.length === 0 ? (
     <Box
       display="flex"
       flexDirection="column"
@@ -106,7 +106,6 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
           websiteData={websiteData}
           editCta={websiteData.isPrimary ? EditCta : null}
           isMobile={isMobile}
-          isKLA={isKLA}
         />
       ))}
     </Box>
