@@ -7,6 +7,7 @@ final class Metric
     //Metric_Names
     const FEE_RECOVERY_ISSUE = "FEE_RECOVERY_ISSUE";
     const FEE_RECOVERY_DATA_CORRECTION_JOB  = "FEE_RECOVERY_DATA_CORRECTION_JOB";
+    const FEE_RECOVERY_CRON_JOB = "FEE_RECOVERY_CRON_JOB";
 
     //Labels
     const CODE = "code";

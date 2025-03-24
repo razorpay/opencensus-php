@@ -5,13 +5,16 @@ namespace RZP\Jobs;
 use App;
 use Carbon\Carbon;
 
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
 use RZP\Models\FeeRecovery\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Schedule\Task\Entity as TaskEntity;
 use RZP\Models\FeeRecovery\Core as FeeRecoveryCore;
+use RZP\Models\FeeRecovery\Metric as FeeRecoveryMetrics;
 
 class FeeRecovery extends Job
 {
@@ -50,7 +53,8 @@ class FeeRecovery extends Job
     private $task;
 
     private $WHITELISTED_ERROR_CODES_FOR_DATA_CORRECTION = [
-        ErrorCode::BAD_REQUEST_FEE_RECOVERY_ALREADY_INITIATED
+        ErrorCode::BAD_REQUEST_FEE_RECOVERY_ALREADY_INITIATED,
+        ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING
     ];
 
     public function __construct(string $mode,
@@ -102,6 +106,7 @@ class FeeRecovery extends Job
 
         try
         {
+            $this->trace->count(FeeRecoveryMetrics::FEE_RECOVERY_CRON_JOB, [FeeRecoveryMetrics::STATUS => FeeRecoveryMetrics::INITIATED]);
 
             $feeRecoveryCore = new FeeRecoveryCore();
 
@@ -119,10 +124,31 @@ class FeeRecovery extends Job
 
             $this->repoManager->saveOrFail($this->task);
 
+            $this->trace->count(FeeRecoveryMetrics::FEE_RECOVERY_CRON_JOB, [FeeRecoveryMetrics::STATUS => FeeRecoveryMetrics::SUCCESS]);
+
             $this->delete();
         }
         catch (\Throwable $ex)
         {
+            $this->trace->count(FeeRecoveryMetrics::FEE_RECOVERY_CRON_JOB, [
+                FeeRecoveryMetrics::STATUS => FeeRecoveryMetrics::FAILURE,
+                FeeRecoveryMetrics::CODE => $ex->getCode()
+            ]);
+
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING) {
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
+                    $data);
+
+                FeeRecoveryDataCorrection::dispatch($this->mode, $this->balanceId, $this->startTimeStamp, $this->endTimeStamp);
+                $this->delete();
+
+                return;
+            }
+
             if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->delete();

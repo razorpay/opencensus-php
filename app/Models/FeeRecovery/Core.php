@@ -560,6 +560,12 @@ class Core extends Base\Core
             list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
                                                                                                             $startTimestamp,
                                                                                                             $endTimestamp);
+            // fetch fee recoveries
+            list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($payouts->getIds(), $failedPayouts->getIds(), $reversals->getIds());
+
+            $payouts = $this->filterAndCheckFeeRecoveryStatus($payouts, $feeRecoveryPayouts, Entity::PAYOUT);
+            $failedPayouts = $this->filterAndCheckFeeRecoveryStatus($failedPayouts, $feeRecoveryFailedPayouts, Entity::PAYOUT);
+            $reversals = $this->filterAndCheckFeeRecoveryStatus($reversals, $feeRecoveryReversals, Entity::REVERSAL);
 
             $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
 
@@ -589,11 +595,9 @@ class Core extends Base\Core
                 ];
             }
 
-            $feeRecoveryPayout =  $this->processAndGetFeeRecoveryPayout($payouts,
-                                                                        $failedPayouts,
-                                                                        $reversals,
-                                                                        $balance,
-                                                                        $amount);
+            $feeRecoveryPayout =  $this->processAndGetFeeRecoveryPayout($payouts, $failedPayouts, $reversals,
+                                                                        $feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals,
+                                                                        $balance, $amount);
 
             return $feeRecoveryPayout->toArrayPublic();
 
@@ -602,6 +606,36 @@ class Core extends Base\Core
         ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $response;
+    }
+
+    /**
+     * Filters out recoveries other than UNRECOVERED.
+     * Throws an error if any recovery entries are missing, as recovery should not proceed in such cases.
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function filterAndCheckFeeRecoveryStatus($entities, $feeRecoveries, $entityType)
+    {
+        return $entities->reject(function($entity) use ($feeRecoveries, $entityType) {
+            $feeRecovery = $feeRecoveries->firstWhere(Entity::ENTITY_ID, $entity->getId());
+
+            if (!$feeRecovery) {
+                $this->trace->error(
+                    TraceCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING,
+                    [
+                        'entity_id' => $entity->getId(),
+                        'entity_type' => $entityType
+                    ]
+                );
+
+                $errorMessage = 'Fee recovery not found for ' . $entityType . ' ID: ' . $entity->getId();
+
+                throw new LogicException($errorMessage,
+                    ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING,);
+            }
+
+            return $feeRecovery->getStatus() !== Status::UNRECOVERED;
+        });
     }
 
     protected function getPayoutAndReversalEntitiesForFeeRecovery(Balance\Entity $balance,
@@ -803,6 +837,9 @@ class Core extends Base\Core
     protected function processAndGetFeeRecoveryPayout(Base\PublicCollection $payouts,
                                                       Base\PublicCollection $failedPayouts,
                                                       Base\PublicCollection $reversals,
+                                                      Base\PublicCollection $payoutFeeRecoveries,
+                                                      Base\PublicCollection $failedPayoutFeeRecoveries,
+                                                      Base\PublicCollection $reversalFeeRecoveries,
                                                       Balance\Entity $balance,
                                                       $amount)
     {
@@ -810,7 +847,20 @@ class Core extends Base\Core
         $failedPayoutIds    = $failedPayouts->getIds();
         $reversalIds        = $reversals->getIds();
 
-        $this->validateNoExistingFeeRecoveryInProcess($payoutIds, $failedPayoutIds, $reversalIds);
+        $unRecoveredPayoutsCount = $payoutFeeRecoveries->filter(function($feeRecovery) {
+            return $feeRecovery->getStatus() === Status::UNRECOVERED;
+        })->count();
+
+        $unRecoveredFailedPayoutsCount = $failedPayoutFeeRecoveries->filter(function($feeRecovery) {
+            return $feeRecovery->getStatus() === Status::UNRECOVERED;
+        })->count();
+
+        $unRecoveredReversalsCount = $reversalFeeRecoveries->filter(function($feeRecovery) {
+            return $feeRecovery->getStatus() === Status::UNRECOVERED;
+        })->count();
+
+        $this->validateNoExistingFeeRecoveryInProcess($payoutIds, $failedPayoutIds, $reversalIds,
+            $unRecoveredPayoutsCount, $unRecoveredFailedPayoutsCount, $unRecoveredReversalsCount);
 
         return $this->repo->transaction(
             function() use ($balance, $payoutIds, $failedPayoutIds, $reversalIds, $amount)
@@ -903,22 +953,9 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateNoExistingFeeRecoveryInProcess($payoutIds,
-                                                              $failedPayoutIds,
-                                                              $reversalIds)
+    protected function validateNoExistingFeeRecoveryInProcess($payoutIds, $failedPayoutIds, $reversalIds,
+                                                              $unRecoveredPayoutCount, $unRecoveredFailedPayoutCount, $unRecoveredReversalCount)
     {
-        $unRecoveredPayoutCount = $this->fetchUnrecoveredFeeRecoveryCountViaBatching($payoutIds,
-                                                                                    Entity::PAYOUT,
-                                                                                    Type::DEBIT);
-
-        $unRecoveredFailedPayoutCount = $this->fetchUnrecoveredFeeRecoveryCountViaBatching($failedPayoutIds,
-                                                                                          Entity::PAYOUT,
-                                                                                          Type::CREDIT);
-
-        $unRecoveredReversalCount = $this->fetchUnrecoveredFeeRecoveryCountViaBatching($reversalIds,
-                                                                                      Entity::REVERSAL,
-                                                                                      Type::CREDIT);
-
         $payoutIdsCount = count($payoutIds);
         $reversalIdsCount = count($reversalIds);
         $failedPayoutIdsCount = count($failedPayoutIds);
