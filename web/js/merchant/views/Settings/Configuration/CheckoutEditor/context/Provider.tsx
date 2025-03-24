@@ -89,6 +89,7 @@ export type CheckoutEditorProviderProps = {
   updateEmailConfig: (payload: unknown) => Promise<unknown>;
   createMerchantCheckoutPaymentConfig: (payload: unknown) => Promise<unknown>;
   apiKey?: string;
+  merchantCheckoutKeylessHeader: string | null;
   merchantCheckoutPaymentMethodDetails?: MerchantCheckoutPaymentMethodDetails;
 };
 
@@ -116,6 +117,7 @@ const CheckoutEditorProvider = ({
   showNotification,
   updateEmailConfig,
   apiKey,
+  merchantCheckoutKeylessHeader,
   merchantCheckoutPaymentMethodDetails,
 }: CheckoutEditorProviderProps): JSX.Element => {
   const [state, dispatch] = useReducer(checkoutFeatureReducer, INITIAL_STATE);
@@ -384,46 +386,42 @@ const CheckoutEditorProvider = ({
     }
   }, [apiKey]);
 
-  const setMerchantCheckoutPaymentConfigToState = useCallback(() => {
-    if (merchantCheckoutPaymentConfigs) {
-      if (merchantCheckoutPaymentConfigs.loading) {
-        setIsLoading(true);
-      } else if (merchantCheckoutPaymentConfigs?.data) {
-        const razorpayConfig = !selectedPaymentConfig
-          ? {
-            ...DEFAULT_PAYMENT_CONFIG,
-            is_default: true,
-          }
-          : DEFAULT_PAYMENT_CONFIG;
-        dispatch({
-          type: ACTIONS.SET_VALUES,
-          payload: {
-            [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]:
-              merchantCheckoutPaymentConfigs?.data ?? [],
-            [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]:
-              selectedPaymentConfig ?? razorpayConfig,
-            [CHECKOUT_EDITOR_FIELDS.PREVIEW_SCREEN]: PREVIEW_SCREEN.HOME,
-            [CHECKOUT_EDITOR_FIELDS.IS_CONFIG_SET_AS_DEFAULT_INITIALLY]:
-              selectedPaymentConfig?.is_default ?? false,
-            [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_OPTION]: {
-              name: 'home',
-              isCustomBlock: false,
-            },
+  const setMerchantCheckoutPaymentConfigsToState = useCallback(() => {
+    if (merchantCheckoutPaymentConfigs && !merchantCheckoutPaymentConfigs?.loading && merchantCheckoutPaymentConfigs?.data) {
+      const razorpayConfig = !selectedPaymentConfig
+        ? {
+          ...DEFAULT_PAYMENT_CONFIG,
+          is_default: true,
+        }
+        : DEFAULT_PAYMENT_CONFIG;
+      dispatch({
+        type: ACTIONS.SET_VALUES,
+        payload: {
+          [CHECKOUT_EDITOR_FIELDS.ALL_PAYMENT_CONFIGS]:
+            merchantCheckoutPaymentConfigs?.data ?? [],
+          [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_CONFIG]:
+            selectedPaymentConfig ?? razorpayConfig,
+          [CHECKOUT_EDITOR_FIELDS.PREVIEW_SCREEN]: PREVIEW_SCREEN.HOME,
+          [CHECKOUT_EDITOR_FIELDS.IS_CONFIG_SET_AS_DEFAULT_INITIALLY]:
+            selectedPaymentConfig?.is_default ?? false,
+          [CHECKOUT_EDITOR_FIELDS.SELECTED_PAYMENT_OPTION]: {
+            name: 'home',
+            isCustomBlock: false,
           },
-        });
+        },
+      });
 
-        dispatch({
-          type: ACTIONS.SET_CONFIG,
-          payload: {
-            merchantCheckoutSelectedPaymentConfig: selectedPaymentConfig ?? razorpayConfig,
-          },
-        });
+      dispatch({
+        type: ACTIONS.SET_CONFIG,
+        payload: {
+          merchantCheckoutSelectedPaymentConfig: selectedPaymentConfig ?? razorpayConfig,
+        },
+      });
 
-        const paymentConfigIDs = (merchantCheckoutPaymentConfigs?.data ?? []).map(
-          (config) => config?.config_id ?? '',
-        );
-        _payment_config_track.paymentConfigsLoaded(paymentConfigIDs);
-      }
+      const paymentConfigIDs = (merchantCheckoutPaymentConfigs?.data ?? []).map(
+        (config) => config?.config_id ?? '',
+      );
+      _payment_config_track.paymentConfigsLoaded(paymentConfigIDs);
     }
   }, [merchantCheckoutPaymentConfigs, selectedPaymentConfig]);
 
@@ -507,6 +505,17 @@ const CheckoutEditorProvider = ({
     },
     [merchantCheckoutConfig],
   );
+
+  const setCheckoutKeylessHeaderToState = useCallback(() => {
+    if (merchantCheckoutKeylessHeader) {
+      dispatch({
+        type: ACTIONS.SET_VALUES,
+        payload: {
+          [CHECKOUT_EDITOR_FIELDS.KEYLESS_HEADER]: merchantCheckoutKeylessHeader,
+        },
+      });
+    }
+  }, [merchantCheckoutKeylessHeader]);
 
   const handleDiscardAllChanges = () => {
     setAccountConfigToState();
@@ -796,12 +805,16 @@ const CheckoutEditorProvider = ({
   }, [apiKey, setAPIKeyToState]);
 
   useEffect(() => {
-    setMerchantCheckoutPaymentConfigToState();
-  }, [merchantCheckoutPaymentConfigs, setMerchantCheckoutPaymentConfigToState]);
+    setMerchantCheckoutPaymentConfigsToState();
+  }, [merchantCheckoutPaymentConfigs, setMerchantCheckoutPaymentConfigsToState]);
 
   useEffect(() => {
     setMerchantCheckoutPaymentMethodDetailsToState();
   }, [merchantCheckoutPaymentMethodDetails, setMerchantCheckoutPaymentMethodDetailsToState]);
+
+  useEffect(() => {
+    setCheckoutKeylessHeaderToState();
+  }, [merchantCheckoutKeylessHeader, setCheckoutKeylessHeaderToState]);
 
   return (
     <checkoutEditorContext.Provider

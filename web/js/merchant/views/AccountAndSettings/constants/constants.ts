@@ -9,6 +9,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.BRANDING]: 'Branding',
   [ROUTES_INFO.CHECKOUT_STYLING]: 'Checkout Styling',
   [ROUTES_INFO.CHECKOUT_FEATURES]: 'Checkout Features',
+  [ROUTES_INFO.PAYMENT_CONFIGURATION]: 'Payment Configuration',
   [ROUTES_INFO.FLASH_CHECKOUT]: 'Flash checkout',
   [ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE]: 'Mandate summary page',
   [ROUTES_INFO.TRUSTED_BADGE]: 'Trusted badge',

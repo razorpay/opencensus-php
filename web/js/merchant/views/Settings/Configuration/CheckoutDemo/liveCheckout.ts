@@ -6,6 +6,7 @@ import { AVAILABLE_TITLE_STYLE } from 'merchant/views/Settings/Configuration/Che
 function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
   const options: {
     key: string;
+    keyless_header?: string;
     amount: number;
     name?: string;
     'prefill.contact': string;
@@ -55,6 +56,14 @@ function getOptionsFromState(state, abExperiments: Record<string, any> = {}) {
 
   if (state.apiKey) {
     options.key = state.apiKey;
+    // force set keyless_header to be empty
+    options.keyless_header = '';
+  }
+
+  if (state.keylessHeader) {
+    options.keyless_header = state.keylessHeader;
+    // force set apiKey to be empty
+    options.key = '';
   }
 
   if (state.locale) {

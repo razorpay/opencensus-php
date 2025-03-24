@@ -20,9 +20,9 @@ type CheckoutV2Props = {
 
 const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2Props) => {
   const { isDesktopPreview } = useCheckoutPreview();
-  const { values } = useCheckoutEditor();
+  const { values, isLoading } = useCheckoutEditor();
 
-  const merchantAPIKey = values[CHECKOUT_EDITOR_FIELDS.API_KEY];
+  const merchantAPIKey = values[CHECKOUT_EDITOR_FIELDS.API_KEY] || values[CHECKOUT_EDITOR_FIELDS.KEYLESS_HEADER];
 
   const updateCheckout = useRef<Promise<{
     update: (value: Record<string, unknown>) => void;
@@ -74,6 +74,10 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
       }
     }
   }, [updateValues, values]);
+
+  if (isLoading) {
+    return null;
+  }
 
   return merchantAPIKey ? (
     <CheckoutFrame

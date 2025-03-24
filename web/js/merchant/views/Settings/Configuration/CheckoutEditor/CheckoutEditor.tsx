@@ -41,6 +41,7 @@ import {
   createMerchantCheckoutPaymentConfig,
   fetchMerchantCheckoutMethodDetails,
   fetchConfig,
+  fetchMerchantCheckoutKeylessHeader,
 } from 'merchant/reducers/config';
 import { fetchKeys } from 'merchant/reducers/keys';
 import {
@@ -96,8 +97,10 @@ type CheckoutEditorProps = {
   updateEmailConfig: typeof updateEmailConfig;
   fetchMerchantCheckoutPaymentConfigurations: typeof fetchMerchantCheckoutPaymentConfigurations;
   fetchKeys: typeof fetchKeys;
+  fetchMerchantCheckoutKeylessHeader: typeof fetchMerchantCheckoutKeylessHeader;
   mode: Environments;
   apiKey: string;
+  merchantCheckoutKeylessHeader: string | null;
   createMerchantCheckoutPaymentConfig: typeof createMerchantCheckoutPaymentConfig;
   merchantCheckoutPaymentMethodDetails: MerchantCheckoutPaymentMethodDetails;
   fetchMerchantCheckoutMethodDetails: typeof fetchMerchantCheckoutMethodDetails;
@@ -138,8 +141,10 @@ const CheckoutEditor = ({
   merchantCheckoutPaymentConfigs,
   selectedPaymentConfig,
   fetchKeys,
+  fetchMerchantCheckoutKeylessHeader,
   mode,
   apiKey,
+  merchantCheckoutKeylessHeader,
   createMerchantCheckoutPaymentConfig,
   merchantCheckoutPaymentMethodDetails,
   fetchMerchantCheckoutMethodDetails,
@@ -208,6 +213,10 @@ const CheckoutEditor = ({
   useEffect(() => {
     fetchConfig();
   }, [fetchConfig]);
+
+  useEffect(() => {
+    fetchMerchantCheckoutKeylessHeader();
+  }, [fetchMerchantCheckoutKeylessHeader])
 
   const editorScreenRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +302,7 @@ const CheckoutEditor = ({
       updateEmailConfig={updateEmailConfig}
       trustedBadge={trustedBadge}
       apiKey={apiKey}
+      merchantCheckoutKeylessHeader={merchantCheckoutKeylessHeader}
       createMerchantCheckoutPaymentConfig={createMerchantCheckoutPaymentConfig}
       selectedPaymentConfig={selectedPaymentConfig}
       merchantCheckoutPaymentMethodDetails={merchantCheckoutPaymentMethodDetails}
@@ -385,6 +395,7 @@ const mapActionsToProps = (dispatch: Dispatch<AnyAction>) => {
       updateConfig,
       updateEmailConfig,
       fetchKeys,
+      fetchMerchantCheckoutKeylessHeader,
       fetchMerchantCheckoutMethodDetails,
     },
     dispatch,
@@ -412,5 +423,6 @@ export default connect((state) => {
     apiKey: state.keys?.keys?.[0]?.id ?? null,
     mode: state.session.mode,
     merchantCheckoutPaymentMethodDetails: state.config?.checkoutPaymentMethodDetails?.data,
+    merchantCheckoutKeylessHeader: state.config?.checkoutKeylessHeader?.data?.keyless_header ?? null,
   };
 }, mapActionsToProps)(CheckoutEditor);

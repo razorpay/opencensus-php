@@ -40,6 +40,7 @@ const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'FETCH_MERCHANT_CHECKOUT_STYLING_
 const FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS = 'FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS';
 const FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS =
   'FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS';
+const FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER='FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER'
 const CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR';
@@ -738,6 +739,13 @@ export const createMerchantCheckoutPaymentConfig = ({ type, ...data }) => {
   };
 };
 
+export const fetchMerchantCheckoutKeylessHeader = () => {
+  return {
+    type: FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER,
+    payload: merchantFetch('checkout/keyless_auth_dashboard'),
+  };
+}
+
 const initialState = {
   loading: true,
   error: null,
@@ -814,6 +822,16 @@ const initialState = {
     data: null,
     error: null,
   },
+  checkoutPaymentMethodDetails: {
+    loading: true,
+    data: null,
+    error: null,
+  },
+  checkoutKeylessHeader: {
+    loading: true,
+    data: null,
+    error: null,
+  }
 };
 
 const defaultLocale = {
@@ -1307,7 +1325,7 @@ const configReducer = (state = initialState, action) => {
     case `${FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS}::PENDING`: {
       return merge(state, {
         checkoutPaymentMethodDetails: {
-          ...state.checkoutPaymentMethods,
+          ...state.checkoutPaymentMethodDetails,
           loading: true,
         },
       });
@@ -1329,6 +1347,31 @@ const configReducer = (state = initialState, action) => {
         data: action.payload.data,
         error: action.payload.errors,
       });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER}::PENDING`: {
+      return merge(state, {
+        checkoutKeylessHeader: {
+          ...state.checkoutKeylessHeader,
+          loading: true,
+        },
+      });
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER}::SUCCESS`: {
+      return set(state, 'checkoutKeylessHeader', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      })
+    }
+
+    case `${FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER}::ERROR`: {
+      return set(state, 'checkoutKeylessHeader', {
+        loading: false,
+        data: action.payload.data,
+        error: action.payload.errors
+      })
     }
 
     case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::PENDING`: {

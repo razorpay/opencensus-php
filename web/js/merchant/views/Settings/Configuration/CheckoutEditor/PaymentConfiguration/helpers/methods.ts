@@ -22,7 +22,8 @@ import { get as getValue } from './common';
 
 export const getCod = (details: MerchantCheckoutPaymentMethodDetails) => {
   return {
-    title: STANDARD_PAYMENT_BLOCK_NAMES.COD,
+    title: "COD",
+    name: STANDARD_PAYMENT_BLOCK_NAMES.COD,
     description: 'Configure Cash on Delivery payment option',
     isEnabled: getValue(details, 'enabled.cod', false),
   };
