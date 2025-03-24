@@ -2089,6 +2089,7 @@ trait Capture
                     'payment_id' => $payment->getId(),
                     'message'    => $e->getMessage(),
                 ]);
+            throw $e;
         }
     }
 
