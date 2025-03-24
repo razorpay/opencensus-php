@@ -1653,6 +1653,12 @@ class Route
         'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
         'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
 
+        // nca payment receipt routes
+        'payment_page_get_invoice_details_for_nca' => ['get',      'nca/{payment_id}/receipt',                          'PaymentLinkController@getInvoiceDetailsForNCA'                  ],
+        'payment_page_generate_receipt_for_nca'    => ['post',     'nca/{payment_id}/generate_receipt',                 'PaymentLinkController@createInvoiceForNCAProducts'              ],
+        'payment_page_send_receipt_for_nca'        => ['post',     'nca/{payment_id}/send_receipt',                     'PaymentLinkController@sendReceiptForNCA'                        ],
+        'payment_page_save_receipt_for_nca'        => ['post',     'nca/{payment_id}/save_receipt',                     'PaymentLinkController@saveReceiptForNCA'                        ],
+
         // Payment Handle Routes
         'payment_handle_precreate'                 => ['post',     'precreate_payment_handle',                                'PaymentLinkController@precreatePaymentHandle'             ],
         "payment_handle_create"                    => ['post',     'payment_handle',                                          'PaymentLinkController@createPaymentHandle'                ],
@@ -7555,6 +7561,10 @@ class Route
         'payment_page_save_receipt_for_payment',
         'payment_page_get_pending_payments',
         'payment_page_get_batches',
+        'payment_page_generate_receipt_for_nca',
+        'payment_page_get_invoice_details_for_nca',
+        'payment_page_send_receipt_for_nca',
+        'payment_page_save_receipt_for_nca',
 
         // payment handle routes
         'payment_handle_precreate',
@@ -17656,7 +17666,11 @@ class Route
             'fetch_product_details_for_order',
             'payment_page_dual_write_internal',
             'payment_page_notify_nca',
-            'feature_add_internal'
+            'feature_add_internal',
+            'payment_page_get_invoice_details_for_nca',
+            'payment_page_generate_receipt_for_nca',
+            'payment_page_send_receipt_for_nca',
+            'payment_page_save_receipt_for_nca',
         ],
 
         'ucs' => [

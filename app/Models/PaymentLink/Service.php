@@ -918,14 +918,36 @@ class Service extends Base\Service
         return $this->core->getInvoiceDetails($paymentId);
     }
 
+    public function getInvoiceDetailsForNCA(string $paymentId, array $ncaInput)
+    {
+        return $this->core->getInvoiceDetailsForNCA($paymentId, $ncaInput);
+    }
+
+    public function createInvoiceForNCAProducts(string $paymentId, array $ncaInput)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        return $this->core->createInvoiceForNCAProducts($ncaInput, $payment, true);
+    }
+
     public function sendReceipt(string $paymentId, array $input)
     {
         return $this->core->sendReceipt($paymentId, $input);
     }
 
+    public function sendReceiptForNCA(string $paymentId, array $input)
+    {
+        return $this->core->sendReceiptForNCA($paymentId, $input);
+    }
+
     public function saveReceiptForPayment(string $paymentId, array $input)
     {
         return $this->core->saveReceiptForPaymentAndGeneratePdf($paymentId, $input);
+    }
+
+    public function saveReceiptForNCA(string $paymentId, array $input)
+    {
+        return $this->core->saveReceiptForNCAAndGeneratePdf($paymentId, $input);
     }
 
     public function getPayments(string $id, array $input)

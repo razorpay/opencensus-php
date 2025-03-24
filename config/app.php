@@ -867,6 +867,8 @@ return array(
 
     'nocodeapp_pricing_exp_id' => env('NOCODEAPP_PRICING_EXP_ID'),
 
+    'payment_page_proxy_state_exp_id' => env('PAYMENT_PAGE_PROXY_STATE_EXP_ID'),
+
     'nocodeapp_pricing_plans_exp_id' => env('NOCODEAPP_PRICING_PLANS_EXP_ID'),
 
     'no_website_merchant_automation_activation_exp_id' => env('NO_WEBSITE_MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
@@ -1255,7 +1257,7 @@ return array(
     'upi_recurring_optimizer_experiment_id' => env('UPI_RECURRING_OPTIMIZER_EXPERIMENT_ID'),
 
     'enabled_rearch_optimizer_recurring_flow' => env('ENABLED_REARCH_OPTIMIZER_RECURRING_FLOW'),
-    
+
     'card_mandate_enable_multiple_frequencies' => env('CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES'),
 
     'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),

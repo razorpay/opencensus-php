@@ -1280,6 +1280,27 @@ class Core extends Base\Core
 
         $paymentLink = $this->repo->payment_link->find($payment->order->getProductId());
 
+        if ($paymentLink === null)
+        {
+            $this->trace->info(TraceCode::NCA_DECOMP_NO_PL_ENTITY, [
+                'productId'   => $payment->order->getProductId(),
+                'step' => 'postPaymentCaptureAttemptProcessing',
+            ]);
+
+            return;
+        }
+
+        if ($this->isSourceOfTruthNCA($paymentLink))
+        {
+            $this->trace->info(TraceCode::NCA_DECOMP_SKIPPING_EXTERNAL_ENTITY_CREATION, [
+                'payment_id' => $payment->getId(),
+                'payment_link_id' => $paymentLink->getId(),
+            ]);
+
+            return;
+        }
+
+
         $this->trace->info(
             TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
             [
@@ -1358,7 +1379,76 @@ class Core extends Base\Core
         $this->eventPaymentPagePaid($paymentLink, $payment);
 
         $this->updateHostedCache($paymentLink);
+
     }
+
+    private function isSourceOfTruthNCA(Entity $paymentLink): bool
+    {
+
+        // add other view types here as they are migrated out of monolith
+        if ($paymentLink->getViewType() != Entity::VIEW_TYPE_PAGE)
+        {
+            return false;
+        }
+
+        // these pages have custom templates for hosted pages which aren't migrated yet.
+        if (in_array($paymentLink->getId(), ['AYH6hOlLr3zCK1', 'AmZMicI2ht77ik', 'Ao6VPqmp0W6f94', 'Anov8bCq3ifLvl']))
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $paymentLink->getMerchantId(),
+            'experiment_id' => $this->app['config']->get('app.payment_page_proxy_state_exp_id'),
+            'request_data'  => json_encode(
+                [
+                    'merchant_id'    => $paymentLink->getMerchantId(),
+                    'route_name'     => 'payment_callback',
+                    'product_id'     => $paymentLink->getId(),
+                    'view_type'      => $paymentLink->getViewType(),
+                ]
+            ),
+        ];
+
+        return $this->matchSplitzVariant(
+            $properties,
+            ['dual_write_read_external', 'nca_only'],
+            TraceCode::NCA_DECOMP_SPLITZ_ERROR
+        );
+    }
+
+    public function matchSplitzVariant(array $properties, array $checkVariants, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $this->trace->info(TraceCode::NCA_DECOMP_SPLITZ_RESULT, [
+                'variant' => $variant,
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+
+            // check if variant is in array
+            if (in_array($variant, $checkVariants))
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, null, $traceCode, ['id' => $id]);
+        }
+
+        return false;
+    }
+
 
     public function createOrder(Entity $paymentLink, array $input)
     {
@@ -1532,6 +1622,64 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function getInvoiceDetailsForNCA(string $paymentId, array $ncaInput)
+    {
+
+        $payment = Tracer::inSpan(['name' => 'payment_page.invoice.find_entity'], function() use($paymentId)
+        {
+            return $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
+
+        $order = $payment->order;
+
+        if(empty($order) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt is not generated for this payment');
+        }
+
+        $invoice = $order->invoice;
+
+        if(empty($invoice) === true)
+        {
+            $invoice = $this->generateInvoiceForGetReceiptIfPossibleForNCA($payment, $ncaInput);
+        }
+
+        $invoiceId = $invoice->getPublicId();
+
+        $receipt = $invoice->getReceipt();
+
+        $response = [
+            'invoice_id' => $invoiceId,
+            'receipt'    => $receipt,
+            'is_nca_invoice' => $invoice->isNCAPaymentPageInvoice(),
+        ];
+
+        $invoiceCore = new Invoice\Core();
+
+        $pdf = Tracer::inSpan(['name' => 'payment_page.invoice.get_fresh_invoice'], function() use($invoiceCore, $invoice, $ncaInput)
+        {
+            return $invoiceCore->getFreshInvoicePdfForNCAProducts($invoice, $ncaInput);
+        });
+
+        if ($pdf === null)
+        {
+            return $response;
+        }
+
+        $pdfUrl = Tracer::inSpan(['name' => 'payment_page.invoice.get_signed_url'], function() use($invoice)
+        {
+            return (new Invoice\FileUploadUfh())->getSignedUrl($invoice);
+        });
+
+        $response['receipt_download_url'] = $pdfUrl;
+
+        return $response;
+    }
+
     public function sendReceipt(string $paymentId, array $input)
     {
         $payment = Tracer::inSpan(['name' => 'payment_page.receipt.send.find_payment'], function() use($paymentId)
@@ -1583,6 +1731,70 @@ class Core extends Base\Core
 
     }
 
+
+    public function sendReceiptForNCA(string $paymentId, array $ncaInput)
+    {
+        $payment = Tracer::inSpan(['name' => 'payment_page.receipt.send_for_nca.find_payment'], function() use($paymentId)
+        {
+            return $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
+
+        $order = $payment->order;
+
+        $invoice = $order->invoice;
+
+        if(empty($invoice) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt is not generated for this payment');
+        }
+
+        // this is just the input according to previous contract. we aren't dealing with validations of other fields here.
+        // they are already validated in NCA.
+        $input = [
+            Invoice\Entity::RECEIPT => $ncaInput[Invoice\Entity::RECEIPT]
+        ];
+
+        Tracer::inSpan(['name' => 'payment_page.receipt.send_for_nca.validate_input'], function() use($input)
+        {
+            (new Validator)->validateInput('save_receipt_if_present', $input);
+        });
+
+        // just an extra validation to check if it's an NCA payment page invoice.
+        if ($invoice->isNCAPaymentPageInvoice() === false) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'The payment does not belong to payment pages');
+        }
+
+        if(isset($input[Invoice\Entity::RECEIPT]) === true)
+        {
+            $receipt = $input[Invoice\Entity::RECEIPT];
+
+            Tracer::inSpan(['name' => 'payment_page.receipt.send_for_nca.set_attribute'], function() use($invoice, $receipt)
+            {
+                $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+            });
+
+            Tracer::inSpan(['name' => 'payment_page.receipt.send_for_nca.save'], function() use($invoice)
+            {
+                $this->repo->invoice->save($invoice);
+            });
+        }
+
+        $invoiceCore = new Invoice\Core();
+
+        return Tracer::inSpan(['name' => 'payment_page.receipt.send_for_nca.send_notification'], function() use($invoiceCore, $invoice, $ncaInput)
+        {
+            return $invoiceCore->sendNotificationForNCAProducts($invoice, $ncaInput,Invoice\NotifyMedium::EMAIL, true);
+        });
+    }
+
     public function saveReceiptForPaymentAndGeneratePdf(string $paymentId, array $input)
     {
         $payment = Tracer::inSpan(['name' => 'payment_page.receipt.save.find_payment'], function() use($paymentId)
@@ -1630,6 +1842,69 @@ class Core extends Base\Core
         return Tracer::inSpan(['name' => 'payment_page.receipt.save.create_invoice_pdf'], function() use($invoice, $invoiceCore)
         {
             return $invoiceCore->createInvoicePdf($invoice);
+        });
+    }
+
+    public function saveReceiptForNCAAndGeneratePdf(string $paymentId, array $ncaInput)
+    {
+        $payment = Tracer::inSpan(['name' => 'payment_page.receipt.save_for_nca.find_payment'], function() use($paymentId)
+        {
+            return $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
+
+        $order = $payment->order;
+
+        $invoice = $order->invoice; // this should have been generated after the payment is captured.
+
+        if(empty($invoice) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt is not generated for this payment');
+        }
+
+        // this is just the input according to previous contract. we aren't dealing with validations of other fields here.
+        // they are already validated in NCA.
+        $input = [
+            Invoice\Entity::RECEIPT => $ncaInput[Invoice\Entity::RECEIPT]
+        ];
+
+        Tracer::inSpan(['name' => 'payment_page.receipt.save_for_nca.validate'], function() use($input)
+        {
+            (new Validator)->validateInput('save_receipt', $input);
+        });
+
+        // just an extra validation to check if it's an NCA payment page invoice.
+        if ($invoice->isNCAPaymentPageInvoice() === false) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'The payment does not belong to payment pages');
+        }
+
+        if(isset($input[Invoice\Entity::RECEIPT]) === true)
+        {
+            $receipt = $input[Invoice\Entity::RECEIPT];
+
+            Tracer::inSpan(['name' => 'payment_page.receipt.save_for_nca.set_attribute'], function() use($invoice, $receipt)
+            {
+                $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+            });
+
+            Tracer::inSpan(['name' => 'payment_page.receipt.save_for_nca.save'], function() use($invoice)
+            {
+                $this->repo->invoice->save($invoice);
+            });
+        }
+
+        $invoiceCore = new Invoice\Core();
+
+        return Tracer::inSpan(['name' => 'payment_page.receipt.save_for_nca.create_invoice_pdf'], function() use($invoice, $invoiceCore, $ncaInput)
+        {
+            return $invoiceCore->createInvoicePdfForNCAProducts($invoice, $ncaInput);
         });
     }
 
@@ -1937,6 +2212,54 @@ class Core extends Base\Core
         $this->trace->count(Metric::PAYMENT_PAGE_RECEIPT_GENERATED, $paymentLink->getMetricDimensions());
     }
 
+    public function createInvoiceForNCAProducts(array $ncaInput, Payment\Entity $payment, bool $sendEmail = true)
+    {
+        // we check for this anyway in NCA but adding this here as an extra check
+        if($ncaInput['is_receipt_enabled'] === false)
+        {
+            new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipts not enabled for the page');
+        }
+
+        $merchant = $this->merchant;
+
+        $invoiceCreateInput = $this->getInvoiceCreateInputForNCAPaymentPages($ncaInput, $payment);
+
+        $invoiceCore = (new Invoice\Core());
+
+        $invoice = $invoiceCore->create(
+            $invoiceCreateInput,
+            $merchant,
+            null,
+            null,
+            null,
+            null,
+            $payment->order);
+
+        $invoice->setStatus(Invoice\Status::PAID);
+
+        $this->repo->save($invoice);
+
+        $customSerialNumberEnabled = $ncaInput['is_custom_serial_number_enabled'] ?? false;
+
+        if ($sendEmail === true && !$customSerialNumberEnabled)
+        {
+            $response = $invoiceCore->sendNotificationForNCAProducts($invoice, $ncaInput, Invoice\NotifyMedium::EMAIL, true);
+        }
+
+        $this->trace->count(Metric::PAYMENT_PAGE_RECEIPT_GENERATED_FOR_NCA, [
+            'view_type' => $ncaInput['view_type'],
+        ]);
+
+        $response['invoice_id'] = $invoice->getPublicId();
+
+        return $response;
+    }
+
+
     public function addCustomAmountForPaymentHandleIfRequired(array & $payload, string $host, array $input)
     {
         if(isset($input[Entity::AMOUNT]) === true && $host === config('app.payment_handle_domain'))
@@ -2058,6 +2381,43 @@ class Core extends Base\Core
         );
 
         return $input;
+    }
+
+    protected function getInvoiceCreateInputForNCAPaymentPages(array $ncaInput, Payment\Entity $payment): array
+    {
+        $customer = [
+            Customer\Entity::CONTACT   => $payment->getContact(),
+            Customer\Entity::EMAIL     => $payment->getEmail()
+        ];
+
+        $comment = $ncaInput['payment_success_message'];
+
+        $lineItems = $ncaInput['line_items'];
+
+        $customSerialNumberEnabled = $ncaInput['is_custom_serial_number_enabled'];
+
+        $receipt = $customSerialNumberEnabled ? null : $payment->getPublicId();
+
+        $input = [
+            IE::TYPE                => Invoice\Type::NCA_INVOICE,
+            IE::EMAIL_NOTIFY        => 0,
+            IE::SMS_NOTIFY          => 0,
+            IE::CUSTOMER            => $customer,
+            IE::LINE_ITEMS          => $lineItems,
+            IE::COMMENT             => is_string($comment) ? $comment : null,
+            IE::TERMS               => $ncaInput['terms'],
+            IE::RECEIPT             => $receipt,
+            IE::REMINDER_ENABLE     => false,
+            IE::CURRENCY            => $ncaInput['currency'] ?? 'INR',
+            IE::DATE                => $payment->getCapturedAt(),
+        ];
+
+        return array_filter(
+            $input,
+            function ($value) {
+                return $value !== null;
+            }
+        );
     }
 
     protected function getLineItemsInput(Order\Entity $order)
@@ -4399,6 +4759,52 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_INVOICE, ["payment_id" => $payment->getPublicId()]);
             $this->createInvoiceIfEnabled($paymentLink, $payment, false);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $error;
+        }
+
+        $order = $payment->order;
+
+        if (empty($order) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_ORDER_EMPTY, ["payment_id" => $payment->getPublicId()]);
+            throw $error;
+        }
+
+        $invoice = $order->invoice;
+
+        if (empty($invoice) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_INVOICE_STILL_EMPTY, ["payment_id" => $payment->getPublicId()]);
+            throw $error;
+        }
+
+        return $invoice;
+    }
+
+    private function generateInvoiceForGetReceiptIfPossibleForNCA(Payment\Entity $payment, array $ncaInput): Invoice\Entity
+    {
+        $error = new BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR,
+            null,
+            null,
+            'Receipt is not generated for this payment');
+
+        if($ncaInput['is_receipt_enabled'] === false) // can't throw this err at NCA as first we need to check if invoice is present or not for the payment
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_RECIEPT_NOT_ENABLED, ["payment_id" => $payment->getPublicId()]);
+            throw $error;
+        }
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_INVOICE, ["payment_id" => $payment->getPublicId()]);
+
+            $this->createInvoiceForNCAProducts($ncaInput, $payment, false);
         }
         catch (\Throwable $e)
         {
