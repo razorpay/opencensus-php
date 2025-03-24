@@ -6,6 +6,7 @@ import {
   CarouselItem,
   Button,
   ArrowRightIcon,
+  Heading
 } from '@razorpay/blade/components';
 import { FeatureListProps, ImageCarouselProps, PageCardProps } from './types';
 import { PAYMENT_PAGES_TYPES } from './PageConfig';
@@ -21,7 +22,7 @@ export const FeatureList: React.FC<FeatureListProps> = ({ features, isMobile }) 
       {features.map((feature, index) => (
         <Box key={index} display="flex" alignItems="center" gap="spacing.3">
           {feature.icon}
-          <Text size={isMobile ? 'small' : 'medium'} weight="medium">
+          <Text variant='body' size={isMobile ? 'small' : 'large'} weight={isMobile ? "regular" : "medium"}>
             {isMobile ? feature.textMobile : feature.textDesktop}
           </Text>
         </Box>
@@ -60,12 +61,12 @@ export const PageCard: React.FC<PageCardProps> = ({ config, onCreateClick, type,
         marginBottom="spacing.7"
       >
         <Box display="flex" flexDirection="column" gap="spacing.2">
-          <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+          <Heading size={isMobile ? "small" :"medium"} weight="semibold" color="surface.text.gray.normal">
             {config.title}
-          </Text>
+          </Heading>
           <Text
-            size={isMobile ? 'small' : 'medium'}
-            weight="medium"
+            size={isMobile ? 'small' : 'large'}
+            weight="semibold"
             variant="body"
             color="surface.text.gray.normal"
           >

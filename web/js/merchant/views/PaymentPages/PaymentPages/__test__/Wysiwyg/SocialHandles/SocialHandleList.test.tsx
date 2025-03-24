@@ -45,7 +45,7 @@ describe('SocialHandleList Component', () => {
     mockSocialHandles.forEach((handle) => {
       expect(screen.getByTestId(`single-social-handle-${handle.platform}`)).toBeInTheDocument();
     });
-    expect(screen.getByText('Your added banner images')).toBeInTheDocument();
+    expect(screen.getByText('Your added handles')).toBeInTheDocument();
     mockSocialHandles.map(({ platform }) => {
       expect(screen.getByTestId(`single-social-handle-${platform}`)).toBeInTheDocument();
     });
@@ -65,7 +65,7 @@ describe('SocialHandleList Component', () => {
     const oldIndex = 0;
     const newIndex = 2;
 
-    const sortableContainer = screen.getByText('Your added banner images').parentElement as Element;
+    const sortableContainer = screen.getByText('Your added handles').parentElement as Element;
     fireEvent(
       sortableContainer,
       new CustomEvent('sortend', {

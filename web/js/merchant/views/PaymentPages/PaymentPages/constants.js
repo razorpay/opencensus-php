@@ -188,3 +188,13 @@ export const SOCIAL_PATTERNS = {
     /^(?:https?:)?\/\/www\.google\.com\/.*/, // Matches any URL starting with www.google.com/
   ],
 };
+
+export const CROPPER_ASPECT_RATIOS_DESKTOP = {
+  width: 984,
+  height: 200,
+}
+
+export const CROPPER_ASPECT_RATIOS_MOBILE = {
+  width: 360,
+  height: 140,
+}

@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
 import lazy from 'merchant/routes/LazyLoader';
-import { IBannerImage } from 'merchant/reducers/paymentPages/types';
 import { withRouter } from 'common/deprecated/withRouter';
 import {
   AddProductBox,
@@ -222,7 +221,7 @@ const StoreFront = ({
         const livePreviewResponse = getStorefrontHostedPagesFormat(
           merchantData,
           isStorefrontV1Enabled,
-          storefront.entity.title,
+          storefront.entity,
           isCreate
             ? convertToHostedPagesProduct(
                 isIframeLoadedRef

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Text, IconButton, CloseIcon } from '@razorpay/blade/components';
+import { Box, IconButton, CloseIcon,Heading } from '@razorpay/blade/components';
 import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -47,9 +47,9 @@ const TemplateSelectionV2: React.FC<TemplateSelectionProps> = ({
         alignItems="center"
         marginBottom={isMobile ? "spacing.5" : "spacing.8"}
       >
-        <Text size="large" weight="semibold" variant="body" color="surface.text.gray.subtle">
+        <Heading size={isMobile ? "small" : "large" }weight="semibold" color="surface.text.gray.subtle">
           Select a page according to your needs
-        </Text>
+        </Heading>
         <IconButton
           icon={CloseIcon}
           size="large"

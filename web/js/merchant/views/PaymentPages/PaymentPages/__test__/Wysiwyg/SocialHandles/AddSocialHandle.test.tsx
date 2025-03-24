@@ -135,7 +135,7 @@ describe('SocialHandleDrawerContainer Component', () => {
 
     render(<SocialHandleList {...mockSocialHandleListProps} />);
 
-    expect(screen.getByText('Your added banner images')).toBeInTheDocument();
+    expect(screen.getByText('Your added handles')).toBeInTheDocument();
     expect(screen.getByTestId('single-social-handle-instagram')).toBeInTheDocument();
   });
 });

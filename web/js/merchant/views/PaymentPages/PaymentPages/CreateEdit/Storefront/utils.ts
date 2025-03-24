@@ -8,7 +8,10 @@ import {
 import { formatTextAmountField } from 'merchant/views/PaymentPages/common/Products/utils';
 import { FlipOptions, ICheckbox, IHostedPagesProduct, PixelCrop } from './types';
 import ProductPlaceholderImage from 'assets/payment_pages/product-image-placeholder.png';
-import { SOCIAL_PATTERNS } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import {
+  SOCIAL_PATTERNS,
+  SOCIAL_HANDLES,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 // export const _product: IHostedPagesProduct = {
 //   id: 'ppi_KBkFIK490VlplY',
@@ -106,20 +109,35 @@ export function convertToHostedPagesProduct(
 export function getStorefrontHostedPagesFormat(
   merchantData,
   isStorefrontV1Enabled,
-  title,
+  entity,
   products,
 ) {
+  const banner_images = getIframeBannerData(entity?.banner_images);
+  const social_handles = getIframeSocialHandle(entity?.social_handles);
   const livePreviewResponse = {
     ..._livePreviewResponse,
     merchant: {
       ..._livePreviewResponse.merchant,
       ...merchantData,
+      support_details: {
+        support_email: entity.contactEmail,
+        support_mobile: entity.contactPhone,
+      },
     },
     store: {
       ..._livePreviewResponse.store,
       storefront_v1_enabled: isStorefrontV1Enabled,
-      title,
+      title: entity.title,
       products,
+      banner_images,
+      social_handles,
+      terms: entity?.terms,
+      settings: {
+        base_config: {
+          banner_feature_enabled: entity.settings?.base_config?.banner_feature_enabled,
+          social_handles_enabled: entity.settings?.base_config?.social_handles_enabled,
+        },
+      },
     },
   };
   return livePreviewResponse;
@@ -346,4 +364,9 @@ export const validateHandle = (platform, inputVal) => {
   }
 
   return regexPattern.test(inputVal);
+};
+
+export const getSocialHandleSrc = (name) => {
+  const handle = SOCIAL_HANDLES.find((handle) => handle.name === name);
+  return handle ? handle.src : '';
 };

@@ -53,18 +53,18 @@ export const PAGE_CONFIGS = {
     features: [
       {
         icon: <InstantSettlementIcon color="surface.icon.onSea.onSubtle" />,
-        textDesktop: 'Create a single-page checkout—no coding, no full store setup needed.',
-        textMobile: 'Simple one-page checkout, needs no store!'
+        textDesktop: 'Custom-branded checkout for seamless payments—no coding required!',
+        textMobile: 'Custom checkout for payments - no coding!'
       },
       {
         icon: <PaymentPagesIcon color="surface.icon.onSea.onSubtle" />,
-        textDesktop: 'Ideal for one-time payments, services, and registrations.',
-        textMobile: 'Ideal for services, courses & single item sales'
+        textDesktop: 'Ideal for businesses selling single products, offerings and registrations',
+        textMobile: 'Ideal for selling single products and services'
       },
       {
         icon: <ShuffleIcon color="surface.icon.onSea.onSubtle" />,
-        textDesktop: 'No cart or catalog—customers pay directly on the page.',
-        textMobile: 'No cart—customers pay instantly.'
+        textDesktop: 'Custom form to collect customer inputs and payments on one page',
+        textMobile: 'Custom form to gather inputs and payments'
       }
     ],
     carouselImages: [

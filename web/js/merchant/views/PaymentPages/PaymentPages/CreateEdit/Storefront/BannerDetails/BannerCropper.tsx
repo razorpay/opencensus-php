@@ -22,6 +22,7 @@ import {
 import { getCroppedImg } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/utils';
 import Loader from 'common/ui/Loader';
 import { IBannerImage } from 'merchant/reducers/paymentPages/types';
+import { CROPPER_ASPECT_RATIOS_DESKTOP, CROPPER_ASPECT_RATIOS_MOBILE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 interface CropDimensions {
   x: number;
@@ -97,10 +98,7 @@ const RenderCropper: React.FC<RenderCropperProps> = ({
         onCropChange={setCrop}
         onCropComplete={onCropComplete}
         onZoomChange={setZoom}
-        cropSize={{
-          width: isMobile ? 360 : 984,
-          height: isMobile ? 124 : 180,
-        }}
+        cropSize={isMobile ? CROPPER_ASPECT_RATIOS_MOBILE : CROPPER_ASPECT_RATIOS_DESKTOP}
         setCropSize={setCropSize}
         setMediaSize={setMediaSize}
       />

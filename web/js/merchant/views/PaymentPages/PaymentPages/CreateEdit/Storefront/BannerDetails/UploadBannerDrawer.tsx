@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -17,6 +17,7 @@ import {
   ModalFooter,
   BottomSheetFooter,
 } from '@razorpay/blade/components';
+import Loader from '@libs/web-nexus/common/ui/Loader';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 
@@ -36,6 +37,7 @@ import {
   MAX_BANNERS_ALLOWED,
   MAX_ENABLED_BANNERS,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { zIndicesMap } from '@libs/web-nexus/common/constant';
 
 const BannerList = lazy(
   () => import(/* webpackChunkName: 'StorefrontV1BannerList' */ './BannerList'),
@@ -187,6 +189,16 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
   const [bannerData, setBannerData] = useState<Array<IBannerImage>>(banner_images || []);
   const [selectedBanner, setSelectedBanner] = useState<IBannerImage | null>(null);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
+  const [showLoader, setShowLoader] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isMobile) {
+      setShowLoader(true)
+      setTimeout(() => {
+        setShowLoader(false);
+      }, 300);
+    }
+  }, []);
 
   const onImageUpload = ({ isReplacing }: { isReplacing: boolean }) => {
     if (!isReplacing && bannerData?.length >= MAX_BANNERS_ALLOWED) {
@@ -412,21 +424,27 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
         <BottomSheet
           isOpen={true}
           onDismiss={handleClose}
-          zIndex={10000}
-          snapPoints={[0.9, 0.9, 0.9]}
+          zIndex={zIndicesMap.modal}
+          snapPoints={[0.9, 0.9, 1]}
         >
           <BottomSheetHeader title="Add store banner" />
           <BottomSheetBody>
-            <RenderBannerSection
-              onImageUpload={onImageUpload}
-              bannerData={bannerData}
-              handleReorder={handleReorder}
-              handleToggle={handleToggle}
-              handleDeleteImage={handleDeleteImage}
-              handleReplaceImage={handleReplaceImage}
-              isMobile={isMobile}
-              handleEditImage={handleEditImage}
-            />
+            {showLoader && bannerData?.length > 0 ? (
+              <Box height="500px">
+                <Loader />
+              </Box>
+            ) : (
+              <RenderBannerSection
+                onImageUpload={onImageUpload}
+                bannerData={bannerData}
+                handleReorder={handleReorder}
+                handleToggle={handleToggle}
+                handleDeleteImage={handleDeleteImage}
+                handleReplaceImage={handleReplaceImage}
+                isMobile={isMobile}
+                handleEditImage={handleEditImage}
+              />
+            )}
           </BottomSheetBody>
         </BottomSheet>
       ) : (
@@ -486,7 +504,7 @@ const UploadBannerDrawer: React.FC<IUploadBannerDrawer> = ({
           <BottomSheet
             isOpen={true}
             onDismiss={handleConfirmCancel}
-            zIndex={10000}
+            zIndex={zIndicesMap.modal}
             snapPoints={[0.9, 0.9, 0.9]}
           >
             <BottomSheetHeader

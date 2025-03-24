@@ -66,7 +66,7 @@ const SocialHandleList: React.FC<SocialHandleListProps> = ({
       paddingBottom={isMobile ? 'spacing.11' : 'spacing.0'}
     >
       <Text color="surface.text.gray.normal" size="large" variant="body" weight="semibold">
-        Your added banner images
+      Your added handles
       </Text>
       <SortableList
         items={sortedsocialHandleList}
