@@ -82,9 +82,7 @@ export default function SubscriptionDetails(props) {
 
   const showCancelBtn = ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
 
-  const showPauseAndResumeBtn =
-    ['active', 'paused'].indexOf(subscription.status) !== -1 &&
-    props.isSubscriptionPauseAndResumeEnabled;
+  const showPauseAndResumeBtn = ['active', 'paused'].indexOf(subscription.status) !== -1;
 
   const showOfferCancelBtn =
     ['cancelled', 'completed', 'expired'].indexOf(subscription.status) === -1;
@@ -139,7 +137,9 @@ export default function SubscriptionDetails(props) {
                   <div style={{ marginTop: '4px' }}>
                     <div className="label--primary">{plan.item.name}</div>
                     <div className="label--secondary">{plan.item.description}</div>
-                    <div className="label--secondary">{getDescription(plan.interval, plan.period)}</div>
+                    <div className="label--secondary">
+                      {getDescription(plan.interval, plan.period)}
+                    </div>
                   </div>
                 </div>
               </EntityDetailRow>
@@ -169,14 +169,19 @@ export default function SubscriptionDetails(props) {
 
                   <span>
                     {showPauseAndResumeBtn && (
-                      <button className="btn btn-default btn-xs m-l" onClick={onClickPauseAndResume}>
+                      <button
+                        className="btn btn-default btn-xs m-l"
+                        onClick={onClickPauseAndResume}
+                      >
                         {subscription.status === 'paused' ? 'Resume' : 'Pause'}
                       </button>
                     )}
 
                     {showCancelBtn && (
                       <button
-                        className={showPauseAndResumeBtn ? 'm-l btn btn-default btn-xs' : 'btn-link'}
+                        className={
+                          showPauseAndResumeBtn ? 'm-l btn btn-default btn-xs' : 'btn-link'
+                        }
                         onClick={onCancelClick}
                       >
                         Cancel
@@ -187,7 +192,9 @@ export default function SubscriptionDetails(props) {
               </EntityDetailRow>
 
               <EntityDetailRow label="Payment Method">
-                <div className="payment_method">{titleCase(subscription.payment_method) || '--'}</div>
+                <div className="payment_method">
+                  {titleCase(subscription.payment_method) || '--'}
+                </div>
                 {(subscription.payment_details || []).map((ele, i) => (
                   <div key={i}>{ele}</div>
                 ))}
@@ -208,7 +215,9 @@ export default function SubscriptionDetails(props) {
                           </button>
                         </div>
                       )}
-                      <div className="label--primary">{selectedOffer ? selectedOffer.name : ''}</div>
+                      <div className="label--primary">
+                        {selectedOffer ? selectedOffer.name : ''}
+                      </div>
                       {subscription.offer && (
                         <div className="label--secondary">
                           Redeemed on {subscription.offer.applied_count}/

@@ -391,7 +391,6 @@ export type PaymentsDashboardUserGetters = {
   isPartnerRole: boolean;
   isRouteCodeSupportEnabled: boolean;
   isRouteLinkedAccountCreationDisabled: boolean;
-  isSubscriptionPauseAndResumeEnabled: boolean;
   isPLSwitchEnabled: boolean;
   isOnboardingV2Enabled: boolean;
   isActivationMccPendingProgressbarDisabled: boolean;

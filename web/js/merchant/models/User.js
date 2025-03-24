@@ -1314,7 +1314,7 @@ export default class User {
   }
 
   get isSubscriptionOffersEnabled() {
-    return this.getExpStatus('offer_on_subscription') && !this.isChargeAtWillEnabled;
+    return !this.isChargeAtWillEnabled;
   }
 
   // below getter is dead code, please remove
@@ -1391,10 +1391,6 @@ export default class User {
 
   get isRouteLinkedAccountCreationDisabled() {
     return this.merchant.category === '6211' && this.merchant.category2 === 'mutual_funds';
-  }
-
-  get isSubscriptionPauseAndResumeEnabled() {
-    return this.getExpStatus('pause_resume_enabled');
   }
 
   get isPLSwitchEnabled() {

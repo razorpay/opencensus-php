@@ -920,7 +920,6 @@ class SubscriptionDetailsContainer extends React.Component {
           customer={entity && entity.customer_id ? customer : {}}
           cancelUpdateSubscription={this.handleCancelUpdateSubscription}
           onClickPauseAndResume={this.onClickPauseAndResume}
-          isSubscriptionPauseAndResumeEnabled={user.isSubscriptionPauseAndResumeEnabled}
           isSubscriptionOffersEnabled={
             user.isSubscriptionOffersEnabled &&
             !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers')
