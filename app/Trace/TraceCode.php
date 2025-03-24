@@ -4897,6 +4897,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PACB_BANK_TRANSFER_EMPTY_ORDER_META                   = 'PACB_BANK_TRANSFER_EMPTY_ORDER_META';
     const ES_FEATURE_FLAG_DISABLED                              = 'ES_FEATURE_FLAG_DISABLED';
     const FPX_EMAIL_SUPPRESS                                    = 'FPX_EMAIL_SUPPRESS';
+    const B2B_PAYMENT_ALREADY_EXISTS                            = 'B2B_PAYMENT_ALREADY_EXISTS';
 
     const PAYMENT_FEE_CONVERSION_FAILED = 'PAYMENT_FEE_CONVERSION_FAILED';
 

@@ -2449,6 +2449,27 @@ class Service extends Base\Service
 
         $merchantId = $mii->getMerchantId();
 
+        $from =  Carbon::now('Asia/Kolkata')->subDays(30)->getTimestamp();
+        $to =  Carbon::now('Asia/Kolkata')->getTimestamp();
+
+        $paymentsWithSameRef = $this->repo->payment->getPaymentsDuplicateReferenceId(Constants\Entity::CURRENCY_CLOUD,
+            $merchantId, $input['related_entity_short_reference'], [Payment\Status::FAILED], $from, $to);
+
+        // if payment already exist , raise an alert and return don't create payment
+        if ($paymentsWithSameRef > 0) {
+            $this->trace->info(TraceCode::B2B_PAYMENT_ALREADY_EXISTS, [
+                'payment_request' => $input,
+                'merchant_id' => $merchantId,
+            ]);
+
+            // add an alert
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_DUPLICATE_PAYMENT, [
+                'reference_id' => $input['related_entity_short_reference'],
+            ]);
+
+            return [];
+        }
+
         $request = [
             'txn_id' => $input['related_entity_id'],
             'contact_id' => $mii->getReferenceId(),

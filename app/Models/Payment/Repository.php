@@ -5452,6 +5452,17 @@ GROUP BY
             ->get();
     }
 
+    public function getPaymentsDuplicateReferenceId($gateway, $merchantId, $referenceId, $statuses, $from, $to)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::GATEWAY, $gateway)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereBetween(Payment\Entity::CREATED_AT, array($from, $to))
+            ->whereNotIn(Entity::STATUS, $statuses)
+            ->where(Entity::REFERENCE1, $referenceId)
+            ->count();
+    }
+
     public function getPaymentsWithoutReferenceId($gateway,
                                                   $status,
                                                   $method = '',
