@@ -6,12 +6,10 @@ import { useSplitzService } from 'common/splitz';
 import { isExperimentActive } from 'common/utils/rzp-utils';
 import { CheckoutPreviewButtons } from 'merchant/views/Settings/Configuration/CheckoutDemo/CheckoutPreviewButtons';
 import {
-  Wrapper,
   FrameContainer,
   MobileBackground,
   MobileToolbar,
   PreviewBadge,
-  ScrollablePreview,
 } from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
 import {
   CHECKOUT_EDITOR_FIELDS,
@@ -23,6 +21,32 @@ import CheckoutV2 from './CheckoutV2';
 import { ZoomSettings } from './ZoomSettings';
 import { PREFERRED_PREVIEW_SESSION_STORAGE_KEY } from './constants';
 import { CheckoutPreviewContext } from './context/createContext';
+
+const Wrapper = ({ children }) => (
+  <Box
+    display="flex"
+    flex="3"
+    alignItems="center"
+    flexDirection="column"
+    overflow="hidden"
+    borderRadius="2xlarge"
+    backgroundColor="surface.background.gray.moderate"
+    height="100%"
+  >
+    {children}
+  </Box>
+);
+
+const ScrollablePreviewWrapper = ({ children, isDesktopPreview }) => (
+  <Box
+    position="relative"
+    overflow="scroll"
+    height="500px"
+    width={isDesktopPreview ? 'auto' : '100%'}
+  >
+    {children}
+  </Box>
+);
 
 const CheckoutDemo = (): JSX.Element => {
   const hasUserPreferredDesktopPreview =
@@ -50,7 +74,7 @@ const CheckoutDemo = (): JSX.Element => {
       <Wrapper>
         <PreviewBadge>Preview</PreviewBadge>
 
-        <ScrollablePreview isDesktopPreview={isDesktopPreview}>
+        <ScrollablePreviewWrapper isDesktopPreview={isDesktopPreview}>
           {!isDesktopPreview ? (
             <MobileBackground
               zoomMethodsScreen={previewScreen === PREVIEW_SCREEN.METHODS}
@@ -69,8 +93,8 @@ const CheckoutDemo = (): JSX.Element => {
           >
             <CheckoutV2 />
           </FrameContainer>
-        </ScrollablePreview>
-        <Box display="flex" gap="spacing.6" alignSelf="flex-start" padding="spacing.4">
+        </ScrollablePreviewWrapper>
+        <Box display="flex" gap="spacing.6" alignSelf="flex-start" padding="spacing.4" width="45%">
           <CheckoutPreviewButtons />
           <ZoomSettings />
         </Box>

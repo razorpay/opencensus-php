@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge } from '@razorpay/blade/components';
+import { Badge, Box } from '@razorpay/blade/components';
 
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
@@ -7,9 +7,14 @@ import { FESTIVAL_THEME_DEFAULT_VALUE } from 'merchant/views/Settings/Configurat
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { CHECKOUT_EDITOR_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import FeatureToggle from 'merchant/views/Settings/Configuration/components/Configuration/FeatureToggle';
-import { TitleWrapper } from 'merchant/views/Settings/Configuration/components/Configuration/styled';
 
 import track from './track';
+
+const TitleWrapper = ({ children }) => (
+  <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.2">
+    {children}
+  </Box>
+);
 
 const FestivalTheme = () => {
   const { values, handleFestivalThemeToggle } = useCheckoutEditor();

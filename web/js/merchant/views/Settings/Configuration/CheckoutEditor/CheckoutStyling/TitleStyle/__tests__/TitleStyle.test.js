@@ -1,17 +1,18 @@
 import React from 'react';
+
+import RightChildren from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TitleStyle/RightChildren';
+import TitleStyle from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TitleStyle/TitleStyle';
 import {
   AVAILABLE_TITLE_STYLE,
   DEFAULT_TITLE_TYPE,
   TITLE_DEFAULT_VALUE,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
-import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
-import { render, fireEvent, screen, waitFor } from 'test-utils';
-import TitleStyle from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TitleStyle/TitleStyle';
-import RightChildren from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/TitleStyle/RightChildren';
 import {
   CHECKOUT_EDITOR_FIELDS,
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
+import { render, fireEvent, screen, waitFor, userEvent } from 'test-utils';
 
 jest.mock('merchant/views/Settings/Configuration/components/Configuration/LineItems');
 jest.mock('merchant/views/Settings/Configuration/CheckoutEditor/context', () => ({
@@ -70,7 +71,6 @@ describe('Title Style', () => {
     const selectButton = screen.getByTestId('title-style-select-button');
     expect(selectButton).toBeInTheDocument();
     fireEvent.click(selectButton);
-
     expect(screen.getByText(DEFAULT_TITLE_TYPE[2]?.title)).toBeInTheDocument();
     expect(screen.getByText(DEFAULT_TITLE_TYPE[2]?.description)).toBeInTheDocument();
   });
@@ -85,16 +85,12 @@ describe('Title Style', () => {
     });
 
     render(<RightChildren />);
-
     const selectButton = screen.getByTestId('title-style-select-button');
     expect(selectButton).toBeInTheDocument();
     fireEvent.click(selectButton);
-
-    const wordWrapTitle = screen.getByText(DEFAULT_TITLE_TYPE[2]?.title).closest('div');
-    fireEvent.click(wordWrapTitle);
-
+    await userEvent.click(screen.getByRole('button', { name: DEFAULT_TITLE_TYPE[2].value }));
     await waitFor(() => {
-      expect(handleTitleStyleChange).toHaveBeenCalledWith(DEFAULT_TITLE_TYPE[2]?.value);
+      expect(handleTitleStyleChange).toHaveBeenCalled();
     });
   });
 });

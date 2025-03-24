@@ -10,7 +10,7 @@ import {
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
-import { RightChildrenWrapper } from 'merchant/views/Settings/Configuration/components/Configuration/styled';
+import { RightChildrenWrapper } from 'merchant/views/Settings/Configuration/components/Configuration/Wrappers';
 
 import track from './track';
 

@@ -1,15 +1,6 @@
 import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
 
-export const RightChildrenWrapper = styled.div(
-  ({ theme }: { theme: Theme }) => `
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: ${theme.spacing[3]}px;
-  `,
-);
-
 export const SingleChildren = styled.div(
   ({ theme, isSelected }: { theme: Theme; isSelected: boolean }) => `
     display: flex;

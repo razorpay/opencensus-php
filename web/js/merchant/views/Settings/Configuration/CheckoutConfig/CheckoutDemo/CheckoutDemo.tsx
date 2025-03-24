@@ -8,7 +8,7 @@ import {
   Wrapper,
   FrameContainer,
   MobileBackground,
-} from 'merchant/views/Settings/Configuration/CheckoutDemo/styles';
+} from 'merchant/views/Settings/Configuration/CheckoutConfig/CheckoutDemo/styles';
 import mobileBg from 'assets/mobile.png';
 
 import CheckoutV2 from './CheckoutV2';

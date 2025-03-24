@@ -1,5 +1,4 @@
 import React from 'react';
-
 import {
   Badge,
   Box,
@@ -10,16 +9,37 @@ import {
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from '@razorpay/blade/components';
-import {
-  LeftWrapper,
-  TopWrapper,
-  Wrapper,
-} from 'merchant/views/Settings/Configuration/components/Configuration/styled';
-
 import { LineItemsProps } from 'merchant/views/Settings/Configuration/components/Configuration/types';
-import { showNotification } from 'merchant_common/reducers/notifications';
+
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import sendToSegment from 'merchant/views/Settings/Configuration/CheckoutEditor/track';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+const Wrapper = ({ children }) => (
+  <Box
+    display="flex"
+    flexDirection="column"
+    justifyContent="space-between"
+    gap="spacing.3"
+    borderRadius="large"
+    backgroundColor="surface.background.gray.moderate"
+    padding={['spacing.4', 'spacing.5']}
+  >
+    {children}
+  </Box>
+);
+
+const TopWrapper = ({ children }) => (
+  <Box display="flex" alignItems="center" justifyContent="space-between" gap="spacing.3">
+    {children}
+  </Box>
+);
+
+const LeftWrapper = ({ children }) => (
+  <Box display="flex" flexDirection="column" alignItems="flex-start" justifyContent="space-between">
+    {children}
+  </Box>
+);
 
 const LineItems: React.FC<LineItemsProps> = ({
   title,
@@ -67,12 +87,12 @@ const LineItems: React.FC<LineItemsProps> = ({
             color="surface.text.gray.normal"
             variant="body"
             size="medium"
-            display={'flex'}
+            display="flex"
           >
             {title}
             {isNewTag && (
-              <Box alignItems={'center'} display={'flex'}>
-                <Badge size="small" color={'positive'} emphasis={'intense'} marginLeft={'8px'}>
+              <Box alignItems="center" display="flex">
+                <Badge size="small" color="positive" emphasis="intense" marginLeft="8px">
                   New
                 </Badge>
               </Box>
@@ -87,19 +107,19 @@ const LineItems: React.FC<LineItemsProps> = ({
       {extraItems}
       {showFeedback && !blockData?.is_feedback_taken && (
         <Box
-          backgroundColor={'surface.background.gray.subtle'}
-          padding={'spacing.3'}
+          backgroundColor="surface.background.gray.subtle"
+          padding="spacing.3"
           display={submittedFeedbackType === 'not_submitted' ? 'flex' : 'block'}
-          justifyContent={'space-between'}
-          alignItems={'center'}
-          borderRadius={'medium'}
+          justifyContent="space-between"
+          alignItems="center"
+          borderRadius="medium"
         >
           {submittedFeedbackType === 'not_submitted' ? (
             <>
               <Text color="surface.text.gray.muted" variant="body" size="small" weight="regular">
                 Did you like this feature?
               </Text>
-              <Box gap={'spacing.3'} display={'flex'}>
+              <Box gap="spacing.3" display="flex">
                 <Button
                   variant="primary"
                   color="positive"
@@ -121,8 +141,8 @@ const LineItems: React.FC<LineItemsProps> = ({
               </Box>
             </>
           ) : (
-            <Box display={'flex'} alignItems={'center'} gap={'spacing.3'} width={'100%'}>
-              <Box width={'100%'}>
+            <Box display="flex" alignItems="center" gap="spacing.3" width="100%">
+              <Box width="100%">
                 <TextInput
                   label=""
                   placeholder={

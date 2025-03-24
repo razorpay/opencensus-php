@@ -11,7 +11,7 @@ import { render, screen, fireEvent } from 'test-utils';
 jest.mock('merchant/views/Settings/Configuration/CheckoutEditor/context', () => ({
   useCheckoutEditor: jest.fn(),
   CHECKOUT_EDITOR_FIELDS: {
-    BORDER_STYLE: 'borderStyle',
+    BORDER_STYLE: 'borderRadius',
   },
 }));
 
@@ -40,21 +40,22 @@ describe('ButtonStyle', () => {
     });
 
     render(<ButtonStyle />);
-    expect(screen.getByText(AVAILABLE_BORDER_STYLE.ROUNDED)).toBeInTheDocument();
-    expect(screen.getByText(AVAILABLE_BORDER_STYLE.SHARP)).toBeInTheDocument();
+    const sharpButtonRadio = screen.getByDisplayValue(AVAILABLE_BORDER_STYLE.SHARP);
+    const roundButtonRadio = screen.getByDisplayValue(AVAILABLE_BORDER_STYLE.ROUNDED);
+    expect(sharpButtonRadio).toBeInTheDocument();
+    expect(roundButtonRadio).toBeInTheDocument();
   });
 
   it('marks the selected button style', () => {
+    const mockValues = { [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: AVAILABLE_BORDER_STYLE.SHARP };
     useCheckoutEditor.mockReturnValue({
-      values: { [CHECKOUT_EDITOR_FIELDS.BORDER_STYLE]: AVAILABLE_BORDER_STYLE.SHARP },
+      values: mockValues,
       handleButtonStyleChange,
     });
 
     render(<ButtonStyle />);
-
-    const sharpButton = screen.getByText(AVAILABLE_BORDER_STYLE.SHARP).closest('div');
-    const expectedStyle = '1.5px solid hsla(211,20%,52%,0.18)';
-    expect(sharpButton).toHaveStyle(`border: ${expectedStyle}`);
+    const sharpButtonRadio = screen.getByDisplayValue(AVAILABLE_BORDER_STYLE.SHARP);
+    expect(sharpButtonRadio).toHaveAttribute('aria-checked', 'true');
   });
 
   it('calls handleButtonStyleChange when a button is clicked', () => {

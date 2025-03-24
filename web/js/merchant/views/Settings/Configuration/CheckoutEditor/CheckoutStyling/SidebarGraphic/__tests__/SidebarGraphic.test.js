@@ -7,11 +7,10 @@ import {
   SIDEBAR_DEFAULT_VALUE,
   SIDEBAR_GRAPHICS_ITEMS,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
-import FeatureToggle from 'merchant/views/Settings/Configuration/components/Configuration/FeatureToggle';
-import { render, screen, fireEvent } from 'test-utils';
-
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { CHECKOUT_EDITOR_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
+import FeatureToggle from 'merchant/views/Settings/Configuration/components/Configuration/FeatureToggle';
+import { render, screen, fireEvent } from 'test-utils';
 
 jest.mock('merchant/views/Settings/Configuration/components/Configuration/FeatureToggle');
 jest.mock('merchant/views/Settings/Configuration/CheckoutEditor/context', () => ({
@@ -56,9 +55,9 @@ describe('SidebarGraphic', () => {
       },
     });
     render(<ExtraItems />);
-    expect(screen.getByAltText(SIDEBAR_GRAPHICS_ITEMS[0].value)).toBeInTheDocument();
-    expect(screen.getByAltText(SIDEBAR_GRAPHICS_ITEMS[1].value)).toBeInTheDocument();
-    expect(screen.getByAltText(SIDEBAR_GRAPHICS_ITEMS[2].value)).toBeInTheDocument();
+    SIDEBAR_GRAPHICS_ITEMS.forEach((item) => {
+      expect(screen.getByTestId(`radio-${item.value}`)).toBeInTheDocument();
+    });
   });
 
   test('render the SidebarGraphic with enabled true and selected graphic', () => {
@@ -71,9 +70,13 @@ describe('SidebarGraphic', () => {
       },
     });
     render(<ExtraItems />);
-    const selectedGraphics = screen.getByAltText(SIDEBAR_GRAPHICS_ITEMS[2].value).closest('div');
-    const expectedStyle = '1.5px solid hsla(227,100%,59%,1)';
-    expect(selectedGraphics).toHaveStyle(`border: ${expectedStyle}`);
+    const selectedGraphic = screen.getByTestId(
+      `test-sidebar-graphic-${SIDEBAR_GRAPHICS_ITEMS[2].value}`,
+    );
+    expect(selectedGraphic).toHaveAttribute(
+      'aria-label',
+      `${SIDEBAR_GRAPHICS_ITEMS[2].value}-selected`,
+    );
   });
 
   it('calls handleSidebarGraphicValueChange when a graphics is clicked', () => {

@@ -1,37 +1,22 @@
 import React from 'react';
-import { Text } from '@razorpay/blade/components';
 import {
-  ButtonStyleItem,
-  RightChildrenProps,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types';
+  Chip,
+  ChipGroup,
+  TopLeftRoundedCornerIcon,
+  TopLeftSharpCornerIcon,
+} from '@razorpay/blade/components';
 
-import { RoundedIcon } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/icons/RoundedIcon';
-import { SharpIcon } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/icons/SharpIcon';
-import {
-  RightChildrenWrapper,
-  SingleChildren,
-} from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/ButtonStyle/styled';
 import { AVAILABLE_BORDER_STYLE } from 'merchant/views/Settings/Configuration/CheckoutEditor/CheckoutStyling/constants/DefaultValue';
 import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 import { CHECKOUT_EDITOR_FIELDS } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
 
+import { RightChildrenWrapper } from 'merchant/views/Settings/Configuration/components/Configuration/Wrappers';
 import track from './track';
 
 const BORDER_TITLE = 'Border style';
 
-const BORDER_STYLE_ITEMS: ButtonStyleItem[] = [
-  {
-    name: AVAILABLE_BORDER_STYLE.ROUNDED,
-    icon: <RoundedIcon />,
-  },
-  {
-    name: AVAILABLE_BORDER_STYLE.SHARP,
-    icon: <SharpIcon />,
-  },
-];
-
-const RightChildren: React.FC<RightChildrenProps> = ({ buttons }) => {
+const RightChildren = () => {
   const { values, handleButtonStyleChange } = useCheckoutEditor();
 
   const selectedButton = values[CHECKOUT_EDITOR_FIELDS.BORDER_STYLE];
@@ -41,31 +26,37 @@ const RightChildren: React.FC<RightChildrenProps> = ({ buttons }) => {
   }
   return (
     <RightChildrenWrapper>
-      {buttons.map((button) => {
-        const isSelected = selectedButton === button.name;
-
-        return (
-          <SingleChildren
-            key={button.name}
-            isSelected={isSelected}
-            onClick={() => handleButtonStyleClick(button.name)}
-          >
-            {React.cloneElement(button.icon, { selectedButton })}
-            <Text>{button.name}</Text>
-          </SingleChildren>
-        );
-      })}
+      <ChipGroup
+        accessibilityLabel="choose one border style from options below"
+        selectionType="single"
+        onChange={({ values }) => {
+          handleButtonStyleClick(values?.[0]);
+        }}
+        defaultValue={selectedButton}
+        marginBottom="none"
+        marginTop="spacing.3"
+      >
+        <Chip
+          value={AVAILABLE_BORDER_STYLE.ROUNDED}
+          icon={TopLeftRoundedCornerIcon}
+          marginBottom="none"
+        >
+          rounded
+        </Chip>
+        <Chip
+          value={AVAILABLE_BORDER_STYLE.SHARP}
+          icon={TopLeftSharpCornerIcon}
+          marginBottom="none"
+        >
+          sharp
+        </Chip>
+      </ChipGroup>
     </RightChildrenWrapper>
   );
 };
 
 const ButtonStyle = () => {
-  return (
-    <LineItems
-      title={BORDER_TITLE}
-      rightChildren={<RightChildren buttons={BORDER_STYLE_ITEMS} />}
-    />
-  );
+  return <LineItems title={BORDER_TITLE} rightChildren={<RightChildren />} />;
 };
 
 export default ButtonStyle;

@@ -22,8 +22,6 @@ import {
 } from 'merchant/views/AccountAndSettings/constants/constants';
 import {
   StyledConfiguration,
-  StyledDivider,
-  StyledTabContentContainer,
   StyledHeader,
   StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
@@ -36,6 +34,7 @@ import {
   isSkipMandatorySummaryPageAllowed,
   isTrustedBadgeAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { Box } from '@razorpay/blade/components';
 
 const TrustedBadge = lazy(
   () => import(/* webpackChunkName: "BankAccountDetails" */ 'merchant/views/Account/TrustedBadge'),
@@ -122,8 +121,15 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>
-            <StyledDivider>
-              <StyledTabContentContainer className="content">
+            <Box margin={['25px', '0px', '0px', '0px']}>
+              <Box
+                backgroundColor="surface.background.gray.intense"
+                padding="spacing.7"
+                display="block"
+                borderTopWidth="none"
+                borderWidth="thin"
+                borderColor="surface.border.gray.muted"
+              >
                 <ShowWhen additionalCondition={(user) => isConfigurationViewAllowed(user)}>
                   <Routes>
                     <Route
@@ -167,6 +173,18 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                     />
                   </Routes>
                 </ShowWhen>
+                <Routes>
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.TRUSTED_BADGE)}
+                    element={
+                      <RouteGuard
+                        additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}
+                      >
+                        <TrustedBadge />
+                      </RouteGuard>
+                    }
+                  />
+                </Routes>
                 <ShowWhen
                   additionalCondition={() => isCheckoutV2SettingsAllowed(extraConfig, user)}
                 >
@@ -189,21 +207,13 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                         }
                       />
                       <Route
-                        path={getRefRoute(ROUTES_INFO.CHECKOUT_FEATURES)}
+                        path={getRefRoute(ROUTES_INFO.PAYMENT_CONFIGURATION)}
                         element={
                           <RouteGuard
                             additionalCondition={() =>
                               isCheckoutV2PaymentConfigsEnabled(extraConfig)
                             }
                           >
-                            <StyledConfiguration showFeatures />
-                          </RouteGuard>
-                        }
-                      />
-                      <Route
-                        path={getRefRoute(ROUTES_INFO.PAYMENT_CONFIGURATION)}
-                        element={
-                          <RouteGuard>
                             <StyledConfiguration showPaymentConfiguration />
                           </RouteGuard>
                         }
@@ -224,20 +234,8 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                     />
                   </Routes>
                 </ShowWhen>
-                <Routes>
-                  <Route
-                    path={getRefRoute(ROUTES_INFO.TRUSTED_BADGE)}
-                    element={
-                      <RouteGuard
-                        additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}
-                      >
-                        <TrustedBadge />
-                      </RouteGuard>
-                    }
-                  />
-                </Routes>
-              </StyledTabContentContainer>
-            </StyledDivider>
+              </Box>
+            </Box>
           </Suspense>
         </ErrorBoundary>
       </div>

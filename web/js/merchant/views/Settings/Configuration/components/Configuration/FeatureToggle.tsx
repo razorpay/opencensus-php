@@ -1,13 +1,12 @@
 import React from 'react';
-
 import { Switch } from '@razorpay/blade/components';
-import { RightChildrenWrapper } from './styled';
-import LineItems from './LineItems';
-
 import {
   FeatureToggleProps,
   RightChildrenProps,
 } from 'merchant/views/Settings/Configuration/components/Configuration/types';
+
+import LineItems from './LineItems';
+import { RightChildrenWrapper } from './Wrappers';
 
 const RightChildren: React.FC<RightChildrenProps> = ({
   isChecked,

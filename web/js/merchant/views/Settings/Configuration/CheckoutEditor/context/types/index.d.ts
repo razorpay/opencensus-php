@@ -348,15 +348,6 @@ export type ColorTextInputProps = {
   name: string;
 };
 
-export type RightChildrenProps = {
-  buttons: ButtonStyle[];
-};
-
-export type ButtonStyleItem = {
-  name: string;
-  icon: React.ReactElement;
-};
-
 export type TrustedBadgeType = {
   status: {
     original: any;

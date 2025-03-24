@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Box, CheckCircleIcon, IconButton, Text, TrashIcon } from '@razorpay/blade/components';
+import {
+  Box,
+  CheckCircleIcon,
+  IconButton,
+  Link,
+  Text,
+  TrashIcon,
+} from '@razorpay/blade/components';
 import uploadedSvg from 'assets/checkout-editor/title-style/uploaded-image.svg';
 import { UploadLogoProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 
@@ -10,9 +17,25 @@ import {
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { ImageSelectedWrapper, ImageSelector } from './styled';
-
 const BRAND_LOGO_SIZE_LIMIT = 5;
+
+const ImageSelectedWrapper = ({ children }) => {
+  return (
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      padding="spacing.3"
+      borderRadius="small"
+      borderStyle="solid"
+      borderColor="surface.border.gray.subtle"
+      backgroundColor="surface.background.gray.moderate"
+      height="54px"
+    >
+      {children}
+    </Box>
+  );
+};
 
 const UploadLogo: React.FC<UploadLogoProps> = ({ image, imageRaw, type }) => {
   const { handleLogoChange, handleWordmarkChange } = useCheckoutEditor();
@@ -72,6 +95,31 @@ const UploadLogo: React.FC<UploadLogoProps> = ({ image, imageRaw, type }) => {
 
   const isImageEmpty = image === EMPTY_LOGO || image === EMPTY_WORDMARK;
 
+  const ImageSelector = ({ onClick }) => {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        padding={['spacing.3', 'spacing.5']}
+        height="64px"
+        borderRadius="small"
+        borderStyle="dashed"
+      >
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          paddingLeft="spacing.4"
+          gap="spacing.3"
+        >
+          <Link onClick={onClick} variant="button">
+            Upload
+          </Link>
+        </Box>
+      </Box>
+    );
+  };
+
   return (
     <>
       {!isImageEmpty || imageRaw ? (
@@ -88,7 +136,7 @@ const UploadLogo: React.FC<UploadLogoProps> = ({ image, imageRaw, type }) => {
             <Box display="flex" justifyContent="center" alignItems="center" gap="spacing.4">
               <img src={uploadedSvg} alt="uploaded-svg" />
               <Box display="flex" justifyContent="center" alignItems="center" gap="spacing.3">
-                <Box width="240px">
+                <Box>
                   <Text
                     weight="medium"
                     size="medium"

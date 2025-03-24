@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@razorpay/blade/components';
+import { Box, Card, CardBody } from '@razorpay/blade/components';
 
 import {
   CONTACT_SCREEN_NAME,
@@ -9,7 +9,6 @@ import { useCheckoutEditor } from 'merchant/views/Settings/Configuration/Checkou
 
 import ChangeColorInput from './ChangeColorInput';
 import MessageTextInput from './MessageTextInput';
-import { ExtraItemsWrapper } from './styled';
 import track from './track';
 
 const ExtraItems = () => {
@@ -33,33 +32,31 @@ const ExtraItems = () => {
     track.handleMessageBannerThemeEdit();
   };
 
-  return (
-    <>
-      {values.customMessage.isEnabled && (
-        <ExtraItemsWrapper>
-          <MessageTextInput
-            message="Message on checkout"
-            value={currentConfig.bannerMessageText}
-            onChange={handleTextChange}
-          />
+  return values.customMessage.isEnabled ? (
+    <Card backgroundColor="surface.background.gray.intense">
+      <CardBody>
+        <MessageTextInput
+          message="Message on checkout"
+          value={currentConfig.bannerMessageText}
+          onChange={handleTextChange}
+        />
 
-          <Box
-            display="flex"
-            gap="spacing.5"
-            marginTop="spacing.4"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="flex-start"
-          >
-            <ChangeColorInput
-              value={currentConfig.bannerBackgroundColor}
-              onChange={handleBackgroundColorChange}
-            />
-          </Box>
-        </ExtraItemsWrapper>
-      )}
-    </>
-  );
+        <Box
+          display="flex"
+          gap="spacing.5"
+          marginTop="spacing.4"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="flex-start"
+        >
+          <ChangeColorInput
+            value={currentConfig.bannerBackgroundColor}
+            onChange={handleBackgroundColorChange}
+          />
+        </Box>
+      </CardBody>
+    </Card>
+  ) : null;
 };
 
 export default ExtraItems;

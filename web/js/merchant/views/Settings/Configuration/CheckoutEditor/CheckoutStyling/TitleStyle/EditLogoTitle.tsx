@@ -1,9 +1,17 @@
 import React from 'react';
-import { Button, Text, ArrowLeftIcon, Box, IconButton } from '@razorpay/blade/components';
+import {
+  Button,
+  ArrowLeftIcon,
+  Box,
+  IconButton,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from '@razorpay/blade/components';
 import { EditLogoTitleProps } from 'merchant/views/Settings/Configuration/CheckoutEditor/context/types/titleType';
 import { connect } from 'react-redux';
 
-import { Modal, ModalContent, ModalMask } from 'common/new-ui/Modal';
 import CheckoutV2 from 'merchant/views/Settings/Configuration/CheckoutDemo/CheckoutV2';
 import {
   AVAILABLE_TITLE_STYLE,
@@ -20,15 +28,54 @@ import {
 
 import BrandNameTextInput from './BrandNameTextInput';
 import UploadLogo from './UploadLogo';
-import {
-  ContentWrapper,
-  EditModalHeadingWrapper,
-  FooterWrapper,
-  IframeWrapper,
-  LeftContentWrapper,
-  RightContentWrapper,
-} from './styled';
 import track from './track';
+
+const LeftContentWrapper = ({ children }) => {
+  return (
+    <Box
+      display="flex"
+      justifyContent="flex-start"
+      gap="spacing.7"
+      width="412px"
+      alignItems="center"
+      flexDirection="column"
+    >
+      {children}
+    </Box>
+  );
+};
+
+const RightContentWrapper = ({ children }) => {
+  return (
+    <Box
+      display="flex"
+      alignItems="center"
+      borderRadius="large"
+      backgroundColor="surface.background.gray.moderate"
+      width="412px"
+      height="283px"
+      overflow="hidden"
+      position="relative"
+    >
+      {children}
+    </Box>
+  );
+};
+
+const IframeWrapper = ({ children }) => {
+  return (
+    <Box
+      position="absolute"
+      top="330px"
+      height="470px"
+      width="470px"
+      left="330px"
+      transform=" translateY(-35%) scale(2.2, 2.2)"
+    >
+      {children}
+    </Box>
+  );
+};
 
 const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
   setShowTitleTypeModal,
@@ -116,72 +163,72 @@ const EditLogoTitle: React.FC<EditLogoTitleProps> = ({
     onDiscard();
     setShowTitleTypeModal(true);
   };
-  const content: any = (
-    <>
-      <EditModalHeadingWrapper>
-        <IconButton
-          icon={ArrowLeftIcon}
-          accessibilityLabel="go-back-edit-modal"
-          emphasis="intense"
-          size="large"
-          onClick={onBackButtonClick}
-        />
-        <Box display="flex" flexDirection="column">
-          <Text color="surface.text.gray.normal" weight="semibold" size="large" variant="body">
-            {EDIT_LOGO_TITLE_HEADER_VALUE[selectedTitleStyle]?.title}
-          </Text>
-          <Text color="surface.text.gray.muted" weight="regular" size="small" variant="body">
-            {EDIT_LOGO_TITLE_HEADER_VALUE[selectedTitleStyle]?.subTitle}
-          </Text>
-        </Box>
-      </EditModalHeadingWrapper>
-      <ContentWrapper>
-        <LeftContentWrapper>
-          {shouldShowBrandNameTextInput ? (
-            <BrandNameTextInput
-              brandName={brandName}
-              setBrandName={handleBrandNameChange}
-              isDisabled={!user.isAdminOrOwner}
-            />
-          ) : null}
-          {shouldShowUploadLogoInput ? (
-            <UploadLogo type="logo" image={logo} imageRaw={logoRaw} />
-          ) : null}
-          {shouldShowUploadWordmarkInput ? (
-            <UploadLogo type="wordmark" image={wordmark} imageRaw={wordmarkRaw} />
-          ) : null}
-        </LeftContentWrapper>
-        <RightContentWrapper>
-          <IframeWrapper>
-            <CheckoutV2 zoomTitleStyle={true} forceLoadDesktopView={true} />
-          </IframeWrapper>
-        </RightContentWrapper>
-      </ContentWrapper>
-      <FooterWrapper>
-        <Button variant="tertiary" color="primary" size="medium" onClick={onDiscard}>
-          Discard
-        </Button>
-        <Button
-          variant="primary"
-          color="primary"
-          size="medium"
-          onClick={onSaveBrandNameAndLogo}
-          isDisabled={!hasValuesChanged()}
-          isLoading={isSavingTitleModalChange}
-        >
-          Save and continue
-        </Button>
-      </FooterWrapper>
-    </>
-  );
+
   return (
-    <ModalMask>
-      <Modal className="non3dsCardsModal" onClose={onDiscard}>
-        <ModalContent header={undefined} banner={undefined}>
-          {content}
-        </ModalContent>
-      </Modal>
-    </ModalMask>
+    <Modal isOpen={true} onDismiss={onDiscard} size="large">
+      <ModalHeader
+        leading={
+          <IconButton
+            icon={ArrowLeftIcon}
+            accessibilityLabel="go-back-edit-modal"
+            emphasis="intense"
+            size="large"
+            onClick={onBackButtonClick}
+          />
+        }
+        title={EDIT_LOGO_TITLE_HEADER_VALUE[selectedTitleStyle]?.title}
+        subtitle={EDIT_LOGO_TITLE_HEADER_VALUE[selectedTitleStyle]?.subTitle}
+      />
+      <ModalBody>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          gap="spacing.7"
+          width="100%"
+          padding="spacing.4"
+        >
+          <LeftContentWrapper>
+            {shouldShowBrandNameTextInput ? (
+              <BrandNameTextInput
+                brandName={brandName}
+                setBrandName={handleBrandNameChange}
+                isDisabled={!user.isAdminOrOwner}
+              />
+            ) : null}
+            {shouldShowUploadLogoInput ? (
+              <UploadLogo type="logo" image={logo} imageRaw={logoRaw} />
+            ) : null}
+            {shouldShowUploadWordmarkInput ? (
+              <UploadLogo type="wordmark" image={wordmark} imageRaw={wordmarkRaw} />
+            ) : null}
+          </LeftContentWrapper>
+          <RightContentWrapper>
+            <IframeWrapper>
+              <CheckoutV2 zoomTitleStyle={true} forceLoadDesktopView={true} />
+            </IframeWrapper>
+          </RightContentWrapper>
+        </Box>
+      </ModalBody>
+
+      <ModalFooter>
+        <Box display="flex" width="100%" gap="spacing.5" justifyContent="flex-end">
+          <Button variant="tertiary" color="primary" size="medium" onClick={onDiscard}>
+            Discard
+          </Button>
+          <Button
+            variant="primary"
+            color="primary"
+            size="medium"
+            onClick={onSaveBrandNameAndLogo}
+            isDisabled={!hasValuesChanged()}
+            isLoading={isSavingTitleModalChange}
+          >
+            Save and continue
+          </Button>
+        </Box>
+      </ModalFooter>
+    </Modal>
   );
 };
 

@@ -21,8 +21,9 @@ import {
   CHECKOUT_EDITOR_FIELDS,
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
+import LineItems from 'merchant/views/Settings/Configuration/components/Configuration/LineItems';
 
-import { LeftWrapper, TopWrapper, Wrapper, TrustedIconWrapper } from './styled';
+import { TrustedIconWrapper } from './styled';
 import track from './track';
 
 export type RazorpayTrustedBadgeProps = {
@@ -56,12 +57,10 @@ const RazorpayTrustedBadge = ({
 
   return (
     <>
-      <Wrapper>
-        <TopWrapper>
-          <LeftWrapper>
-            <Text weight="medium" color="surface.text.gray.normal" variant="body" size="medium">
-              {TRUSTED_BADGE_DEFAULT_VALUE.title}
-            </Text>
+      <LineItems
+        title={TRUSTED_BADGE_DEFAULT_VALUE.title}
+        subTitle={
+          <Box display="flex" flexDirection="column" alignItems="flex-start">
             <Box display="flex" justifyContent="center" gap="spacing.2">
               <Text>
                 <Text
@@ -84,10 +83,10 @@ const RazorpayTrustedBadge = ({
                 Razorpay Trusted Business
               </Text>
             </TrustedIconWrapper>
-          </LeftWrapper>
-          {rightChildren}
-        </TopWrapper>
-      </Wrapper>
+          </Box>
+        }
+        rightChildren={rightChildren}
+      />
       {isShowTrutedBadgeModal && (
         <Modal
           isOpen={isShowTrutedBadgeModal}
