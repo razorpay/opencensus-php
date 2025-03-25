@@ -718,7 +718,7 @@ trait Capture
             if (($this->payment->getGateway() ===  Payment\Gateway::PAYSECURE or $this->payment->getGateway() ===  Payment\Gateway::FULCRUM)
                 && $this->payment->isGatewayCaptured() === false){
                 //Adding 2 days and 5.5 hours UTC timestamp to handle edge cases of last 5.5 hours of the day.
-                $maxTimestampOfTheDay = $this->payment->getCreatedAt() + PaymentConstants::MAX_ALLOWED_CAPTURE_TIME;
+                $maxTimestampOfTheDay = $this->payment->getAuthorizeTimestamp() + PaymentConstants::MAX_ALLOWED_CAPTURE_TIME;
 
                 $dateTime = new DateTime();
                 $dateTime->setTimestamp($maxTimestampOfTheDay);
