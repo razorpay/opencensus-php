@@ -6354,12 +6354,23 @@ class Core extends Base\Core
 
             $payout->setChannel($ftsChannel);
 
-            $transaction = $payout->transaction;
-
-            if (empty($transaction) === false)
+            try
             {
-                $transaction->setChannel($ftsChannel);
-                $this->repo->saveOrFail($transaction);
+                $transaction = $payout->transaction;
+
+                if (empty($transaction) === false)
+                {
+                    $transaction->setChannel($ftsChannel);
+                    $this->repo->saveOrFail($transaction);
+                }
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TXN_CHANNEL_UPDATE_FAILED, [
+                    'message' => $t->getMessage(),
+                    'balance_account_type' => $payout->getBalanceAccountType(),
+                    'payout_id' => $payout->getId(),
+                ]);
             }
         }
     }

@@ -33374,6 +33374,71 @@ class PayoutTest extends OAuthTestCase
 
     }
 
+    public function testPayoutChannelChangeWhenTxnCreatedInLedgerReverseShadowWithoutDualWrite()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('icici', $payout->getChannel());
+
+        $this->assertNull($payout->transaction);
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->edit('payout', $payoutId, [
+            'transaction_id' => 'random14id1234'
+        ]);
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'SHARED',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => 'Pullak',
+                'cms_ref_no'       => '7a452792bee811ec949d0a0047340000',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+    }
+
     public function testPayoutChannelChangeWhenTxnNotCreatedAndModeIsAmazonPayInLedgerReverseShadow()
     {
         $this->app['config']->set('applications.ledger.enabled', false);
