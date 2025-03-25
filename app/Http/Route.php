@@ -3656,7 +3656,8 @@ class Route
         'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'           ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'                        ],
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
-        'submerchant_partner_feature_check'        => ['get',      'submerchant/partner_feature_check/{featureName}', 'MerchantController@isFeatureEnabledForPartnerOfSubmerchant'                    ],
+        'submerchant_partner_feature_check'        => ['get',      'submerchant/partner_feature_check/{featureName}', 'MerchantController@isFeatureEnabledForPartnerOfSubmerchant'       ],
+        'partner_referral'                         => ['post',     'partner/referral',                                'PartnerController@processReferralCode'],
 
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
@@ -7149,6 +7150,7 @@ class Route
     //
 
     public static $proxy = [
+        'partner_referral',
         'add_sales_user_mapping',
         'merchant_activation_details_sales',
         'initiate_pos_onboarding',
@@ -12692,6 +12694,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'partner_referral',
             'add_sales_user_mapping',
             'merchant_activation_details_sales',
             'initiate_pos_onboarding',

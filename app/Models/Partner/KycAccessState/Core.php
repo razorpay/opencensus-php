@@ -367,7 +367,7 @@ class Core extends Base\Core
         return $subMerchantKycAccess;
     }
 
-    protected function createOrGetKycRequestForEasySubMerchantKyc(array $input)
+    public function createOrGetKycRequestForEasySubMerchantKyc(array $input)
     {
         $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID]);
 

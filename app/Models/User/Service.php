@@ -1059,7 +1059,7 @@ class Service extends Base\Service
     // should be stored separately. as of now, this change is enforced only for one product but other products should also adopt this approach.
     public function shouldStoreProductSpecificWorkflowType($product): bool
     {
-        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING]);
+        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING]);
     }
 
     public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
@@ -1552,7 +1552,7 @@ class Service extends Base\Service
     }
 
 
-    private function processReferralCode(string $merchantId, string $referralCode): void
+    public function processReferralCode(string $merchantId, string $referralCode, bool $withRetry = true): array
     {
         try
         {
@@ -1563,14 +1563,14 @@ class Service extends Base\Service
 
             if (empty($referralCode) === true)
             {
-                return;
+                return [];
             }
 
             $referral = (new Merchant\Referral\Core)->fetchReferralByReferralCode($referralCode);
 
             if (empty($referral))
             {
-                return;
+                return [];
             }
             // dispatch create_signup_source
             $product = $this->auth->getRequestOriginProduct();
@@ -1582,10 +1582,14 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-            $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, false);
+            if ($withRetry) {
+                $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, false);
+            } else {
+                $detailService->applyReferralPartner($merchant, $referralInput, false);
+            }
 
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL);
-
+            return $referralInput;
         }
         catch (\Exception $e)
         {
@@ -1598,6 +1602,7 @@ class Service extends Base\Service
                                              'message'      => 'Error occurred while linking subM during signUp'
                                          ]);
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_FAILURE_TOTAL);
+            return [];
         }
     }
 

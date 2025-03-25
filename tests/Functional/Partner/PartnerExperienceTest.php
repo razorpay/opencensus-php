@@ -5272,4 +5272,28 @@ class PartnerExperienceTest extends OAuthTestCase
                  "disable_captcha" => true
              ]);
     }
+    public function testVerifyPartnerReferralDuringMasterKYCMobileLogin()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->fixtures->create('referrals', ['merchant_id' => self::DEFAULT_MERCHANT_ID, 'ref_code' => 'teslacomikejzc']);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user['id']);
+
+        $this->startTest();
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $this->assertEquals($kycAccess->getState(), 'pending_approval');
+
+        $this->assertEquals($accessMap->hasKycAccess(), false);
+
+        $this->assertSame('10000000000009', $accessMap['merchant_id']);
+
+        $this->assertSame('10000000000000', $accessMap['entity_owner_id']);
+    }
 }

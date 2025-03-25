@@ -5730,7 +5730,7 @@ class Core extends Base\Core
     {
         // if merchant is not referred by partner, return false
         $mapping = (new AccessMap\Repository)->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $partner->getId());
-        if (empty($mapping) === true || in_array($partner->getPartnerType(),[Constants::RESELLER, Constants::PURE_PLATFORM]) == false )
+        if (empty($mapping) || $partner->getPartnerType() == Constants::FULLY_MANAGED )
         {
             return false;
         }

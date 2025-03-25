@@ -93,6 +93,7 @@ use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use RZP\Tests\Functional\Helpers\BankingAccount\BankingAccountTrait;
 use function GuzzleHttp\json_decode;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Tests\Functional\Merchant\Partner\PartnerExperienceTest;
 
 class UserTest extends TestCase
 {

@@ -2602,4 +2602,19 @@ return [
             ],
         ],
     ],
+    'testVerifyPartnerReferralDuringMasterKYCMobileLogin' => [
+        'request' => [
+            'url'     => '/partner/referral',
+            'method'  => 'POST',
+            'content' => [
+                'referral_code'  => 'teslacomikejzc',
+                'kyc_access' => 'true'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true
+            ],
+        ],
+    ],
 ];
