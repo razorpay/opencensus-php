@@ -154,7 +154,17 @@ return [
         'mock'               => env('EZETAP_WEBHOOK_MOCK', false),
         'url'                => env('EZETAP_WEBHOOK_URL'),
         'device_webhook_url' => env('EZETAP_DEVICE_WEBHOOK_URL'),
-        'secret'        => env('EZETAP_WEBHOOK_SECRET'),
+        'secret'             => env('EZETAP_WEBHOOK_SECRET'),
+    ],
+
+    'ezetap-request' => [
+        'update_org_code_url_mock'      => env('EZETAP_WEBHOOK_MOCK', false),
+        'update_org_code_url'           => env('EZETAP_UPDATE_ORGCODE_URL'),
+        'update_org_code_url_secret'    => env('EZETAP_WEBHOOK_SECRET'),
+
+        'remove_org_code_url_mock'      => env('EZETAP_WEBHOOK_MOCK', false),
+        'remove_org_code_url'           => env('EZETAP_REMOVE_ORGCODE_URL'),
+        'remove_org_code_url_secret'    => env('EZETAP_WEBHOOK_SECRET'),
     ],
 
     'raven' => [

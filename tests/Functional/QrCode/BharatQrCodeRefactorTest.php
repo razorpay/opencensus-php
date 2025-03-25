@@ -1140,4 +1140,45 @@ class BharatQrCodeRefactorTest extends TestCase
 
     }
 
+    public function testBatchServiceMapDevice()
+    {
+        $this->testUpiHdfcMindgateCreateBharatQrCodeMultipleUse();
+        $actualEzetapNotificationCallCount =0 ;
+        $eventList =[] ;
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount,$eventList);
+
+        $qrCode = $this->getDbLastEntity('qr_code','live');
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'randomDeviceId',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        $this->assertEquals('qr_'.$qrCode['id'],$response['id']);
+        $this->assertEquals('randomDeviceId',$response['device_id']);
+
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'randomDeviceId',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => 'Yes',
+                    'unmap_from_qr' => 'yes'
+                ],
+            ]
+        ]);
+
+        $qrCode->reload();
+
+        $this->assertEquals(true,$response['success']);
+        $this->assertEquals($qrCode['id'],$response['id']);
+        $this->assertNull($qrCode->getDeviceId());
+    }
 }

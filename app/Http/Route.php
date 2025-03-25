@@ -844,6 +844,7 @@ class Route
         'create_sqr_for_single_stack'              => ['post',     'payments/singlestack/qr_codes',                  'QrCodeController@createSqrWithVPA'                           ],
         'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                   'QrCodeController@setDeviceIdForQr'                              ],
         'qr_code_device_id_unmap'                  => ['put',      'payments/qr_codes/device/unmap',                 'QrCodeController@unMapDeviceIdForQr'                               ],
+        'qr_code_device_update'                    => ['post',     'payments/single_stack/device/update',            'QrCodeController@UpdateSingleStackDevice'                               ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -7010,7 +7011,8 @@ class Route
         'create_sqr_for_single_stack',
         'internal_clear_unsettled_txns',
         'create_sqr_for_single_stack',
-        'acquirer_fetch'
+        'acquirer_fetch',
+        'qr_code_device_update'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17621,7 +17623,7 @@ class Route
             'payment_fetch_refund_by_id',
             'create_qr_for_single_stack',
             'create_sqr_for_single_stack',
-            'acquirer_fetch'
+            'acquirer_fetch',
         ],
 
         'billme' => [
@@ -18103,6 +18105,7 @@ class Route
             'irctc_settlement_batch_service',
             'payouts_bas_process_post_recon',
             'merchant_save_org_defined_merchant_fields',
+            'qr_code_device_update'
         ],
 
         'stork' => [
@@ -18227,7 +18230,7 @@ class Route
             'internal_merchant_details_fetch',
             'payment_fetch_by_id_internal',
             'qr_code_device_id_unmap',
-            'set_qr_code_device'
+            'set_qr_code_device',
         ],
 
         'spinnaker' => [

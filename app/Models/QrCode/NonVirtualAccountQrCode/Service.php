@@ -29,6 +29,8 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrCodeEntity;
 use RZP\Trace\Tracer;
+use function PHPUnit\Framework\isEmpty;
+use function Symfony\Component\String\u;
 
 class Service extends QrCode\Service
 {
@@ -432,6 +434,133 @@ class Service extends QrCode\Service
         return $qrCreateReq;
     }
 
+    public function UpdateSingleStackDevice(array $input)
+    {
+        $this->trace->info(TraceCode::QR_CODES_SET_DEVICE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        (new Validator())->validateInput('mapingDeviceWithSqr',$input);
+
+        $response = [];
+
+        try
+        {
+            $qrCode = (new Core)->fetchQrCodeFromQrStringOrDeviceId($input);
+
+            if(empty($input['map_identifiers']) === false)
+            {
+                $payload = [
+                    "device_id" => $input[Entity::DEVICE_ID],
+                    "merchant_id" => $qrCode->merchant->getId(),
+                    "selfSignUp" =>  "true"
+                ];
+
+                $mapInput['identifier']['qr_code_id'] = $qrCode->getId();
+                $mapInput['device_id'] = $input[Entity::DEVICE_ID];
+
+                $isValidated = $this->validateDeviceMapingUpdateRequest($mapInput);
+
+                if(is_null($isValidated) === false)
+                {
+                    $this->trace->info(TraceCode::QR_CODE_UNMAP_DEVICE_REQUEST_FAILED,$isValidated);
+
+                    $response = [
+                        'success' => false,
+                        'error_message' => $isValidated['error']['description'],
+                        'error_code' => $isValidated['error']['code'],
+                    ];
+                    return $response;
+                }
+
+                $externalResponse = (new Core)->sendEzetapRequest($payload,'update_org_code_url');
+
+                $this->trace->info(TraceCode::EZETAP_SERVICE_RESPONSE,$externalResponse);
+
+                $response = $this->setDeviceIdForQr($mapInput);
+                if(empty($response['error']) === false)
+                {
+                    $response = [
+                        'success' => false,
+                        'error_message' => $response['error']['description'],
+                        'error_code' => $response['error']['code'],
+                    ];
+                    return $response;
+                }
+                else
+                {
+                    $response = array_merge($response,['success' => true]);
+                }
+            }
+
+            if(empty($input['unmap_identifiers']) === false)
+            {
+                if((new Core)->isTrue($input['unmap_identifiers']['unmap_from_merchant']) === true)
+                {
+                    $isValidated = $this->validateDeviceUnMapingUpdateRequest($input);
+
+                    if(is_null($isValidated) === false)
+                    {
+                        $this->trace->info(TraceCode::QR_CODE_UNMAP_DEVICE_REQUEST_FAILED,$isValidated);
+
+                        $response = [
+                            'success' => false,
+                            'error_message' => $isValidated['error']['description'],
+                            'error_code' => $isValidated['error']['code'],
+                        ];
+                        return $response;
+                    }
+
+                    $payload =  [
+                        "device_id" => $input[Entity::DEVICE_ID]
+                    ];
+
+                    $externalResponse = (new Core)->sendEzetapRequest($payload,'remove_org_code_url');
+
+                    $this->trace->info(TraceCode::EZETAP_SERVICE_RESPONSE,$externalResponse);
+                }
+
+                if((new Core)->isTrue($input['unmap_identifiers']['unmap_from_qr'])  === true)
+                {
+                    $unmapInput[Entity::DEVICE_ID] = $input[Entity::DEVICE_ID];
+                    $response = $this->unMapDeviceIdForQr($unmapInput);
+                    if(empty($reponse['error']) === false)
+                    {
+                        $response = [
+                            'success' => false,
+                            'error_message' => $response['error']['description'],
+                            'error_code' => $response['error']['code'],
+                        ];
+                        return $response;
+                    }
+                    else
+                    {
+                        $response = array_merge($response,['success' => true]);
+                    }
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::QR_CODE_SET_DEVICE_REQUEST_FAILED, [
+                'input' => $input,
+                'error_code' => $ex->getCode(),
+                'error_message' => $ex->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error_code' => $ex->getCode(),
+                'error_message' => $ex->getMessage()
+            ];
+        }
+
+
+        return $response;
+    }
+
+
     public function setDeviceIdForQr(array $input)
     {
         $this->trace->info(TraceCode::QR_CODES_SET_DEVICE_REQUEST,
@@ -443,7 +572,6 @@ class Service extends QrCode\Service
         $id           = $input['identifier']['qr_code_id'] ?? null;
         $referenceID  = $input['identifier']['trId'] ?? null;
         $deviceId     = $input['device_id'];
-//        $merchantId   = $input['identifier']['merchant_id'] ?? null;
         try
         {
             $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
@@ -456,11 +584,6 @@ class Service extends QrCode\Service
                     'message' => 'BAD_REQUEST_IDENTIFIER_NOT_FOUND',
                     'id' => $id,
                 ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::BAD_REQUEST_IDENTIFIER_NOT_FOUND,
-//                    data       : ['error'=>['metadata' => $input]],
-//                    description: "No Identifier Found in the Request Body"
-//                );
                 return [
                     "error"=>[
                         "code"=>ErrorCode::BAD_REQUEST_IDENTIFIER_NOT_FOUND,
@@ -477,108 +600,12 @@ class Service extends QrCode\Service
                     ? (new Repository())->findByTrId($referenceID) ?? null
                     : $this->repo->qr_code->find(Entity::silentlyStripSign($id));
 
-            if (empty($qrCode) === true)
+            $response = $this->validateDeviceMapingUpdateRequest($input);
+
+            if(is_null($response) === false)
             {
-                $this->trace->info(TraceCode::QR_CODE_NOT_FOUND, [
-                    'message' => 'QR_CODE_NOT_FOUND',
-                    '$id'  => $id,
-                ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND,
-//                    data       : ['error'=>['metadata' => $input]],
-//                    description: "QR Entity Not Found"
-//                );
-                return [
-                    "error"=>[
-                        "code"=>ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND,
-                        "description"=>"QR Entity Not Found",
-                        "source"=>"ezetap",
-                        "step"=>"qr_code_device_id_mapping",
-                        "reason"=>"entity_not_found",
-                        "metadata"=>$input
-                    ]
-                ];
+                return $response;
             }
-
-            //check if the device id is already mapped to any qr code
-            $qrCodeExists = (new Repository())->findByDeviceId($deviceId);
-//            $qrCodeExists = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
-            if ($qrCodeExists->count()>=1)
-            {
-                $this->trace->info(TraceCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED, [
-                    'message' => 'BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED',
-                    'id' => $id,
-                ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED,
-//                    data       : ['error'=>['metadata' => $input]],
-//                    description: "Device Already Mapped to another QR"
-//                );
-                return [
-                    "error"=>[
-                        "code"=>ErrorCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED,
-                        "description"=>"Device Already Mapped to another QR",
-                        "source"=>"ezetap",
-                        "step"=>"qr_code_device_id_mapping",
-                        "reason"=>"device_already_mapped_to_qr",
-                        "metadata"=>$input
-                    ]
-                ];
-            }
-
-            //check for the QR if the device id is already set if set then return exception
-            if ($qrCode->getDeviceId() !== null)
-            {
-                $this->trace->info(TraceCode::BAD_REQUEST_QR_ALREADY_MAPPED, [
-                    'message' => 'BAD_REQUEST_QR_ALREADY_MAPPED',
-                    'id'  => $id,
-                ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::BAD_REQUEST_QR_ALREADY_MAPPED,
-//                    data       : [
-//                                   'error' => [
-//                                     'metadata' => $input +  [ 'oldDeviceId' => $qrCode->getDeviceId() ]
-//                                   ]
-//                                 ],
-//                    description: "QR Entity Already Mapped to a Device"
-//                );
-                return [
-                    "error"=>[
-                        "code"=>ErrorCode::BAD_REQUEST_QR_ALREADY_MAPPED,
-                        "description"=>"QR Entity Already Mapped to a Device",
-                        "source"=>"ezetap",
-                        "step"=>"qr_code_device_id_mapping",
-                        "reason"=>"entity_already_mapped",
-                        "metadata"=>$input+['oldDeviceId'=>$qrCode->getDeviceId()]
-                    ]
-                ];
-            }
-
-            //check if the qr code is mapped to any device id and again trying to map to the same device id
-            if($qrCode->getDeviceId() === $deviceId)
-            {
-                $this->trace->info(TraceCode::BAD_REQUEST_DUPLICATE_REQUEST, [
-                    'message' => 'BAD_REQUEST_DUPLICATE_REQUEST',
-                    'id'  => $id,
-                ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
-//                    data       : ['error'=>['metadata' => $input]],
-//                    description: "QR Entity Mapping Device Duplicate Request"
-//                );
-                return [
-                    "error"=>[
-                        "code"=>ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
-                        "description"=>"QR Entity Mapping Device Duplicate Request",
-                        "source"=>"ezetap",
-                        "step"=>"qr_code_device_id_mapping",
-                        "reason"=>"entity_duplicate_request",
-                        "metadata"=>$input
-                    ]
-                ];
-
-            }
-
 
             $this->trace->info(TraceCode::QR_CODES_SET_DEVICE_DETAILS,
                                [
@@ -622,6 +649,148 @@ class Service extends QrCode\Service
         return $response;
     }
 
+    public function validateDeviceUnMapingUpdateRequest(array $input)
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+        $this->mode            = Mode::LIVE;
+
+        $qrCodes =(new Repository())->findByDeviceId($input['device_id']);
+
+        if($qrCodes->isEmpty())
+        {
+            $this->trace->info(TraceCode::QR_CODE_NOT_FOUND, [
+                'message' => 'QR_CODE_NOT_FOUND',
+                'device_id'  => $input['device_id'],
+            ]);
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND,
+                    "description"=>"QR Entity Not Found",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_unmapping",
+                    "reason"=>"entity_not_found",
+                    "metadata"=>$input
+                ]
+            ];
+        }
+
+
+        // get the count of qr codes mapped to the device id, if >1 then throw an exception for unmapping failed
+        if ($qrCodes->count() > 1) {
+            $this->trace->info(TraceCode::MULTIPLE_QR_CODES_MAPPED_ERROR, [
+                'message' => 'MULTIPLE_QR_CODES_MAPPED_ERROR',
+                'device_id' => $input['device_id'],
+            ]);
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::MULTIPLE_QR_CODES_MAPPED_ERROR,
+                    "description"=>"QR Entity Mapped to Multiple QR Codes",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_unmapping",
+                    "reason"=>"entity_multiple_mapped",
+                    "metadata"=>$input
+                ]
+            ];
+        }
+
+        return null;
+    }
+
+    public function validateDeviceMapingUpdateRequest(array $input)
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+        $this->mode            = Mode::LIVE;
+        $id           = $input['identifier']['qr_code_id'] ?? null;
+        $referenceID  = $input['identifier']['trId'] ?? null;
+        $deviceId     = $input['device_id'];
+
+        $qrCode = empty($id)
+            ? (new Repository())->findByTrId($referenceID) ?? null
+            : $this->repo->qr_code->find(Entity::silentlyStripSign($id));
+
+
+        if (empty($qrCode) === true)
+        {
+            $this->trace->info(TraceCode::QR_CODE_NOT_FOUND, [
+                'message' => 'QR_CODE_NOT_FOUND',
+                '$id'  => $id,
+            ]);
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND,
+                    "description"=>"QR Entity Not Found",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_mapping",
+                    "reason"=>"entity_not_found",
+                    "metadata"=>$input
+                ]
+            ];
+        }
+
+        //check if the device id is already mapped to any qr code
+        $qrCodeExists = (new Repository())->findByDeviceId($deviceId);
+        if ($qrCodeExists->count()>=1)
+        {
+            $this->trace->info(TraceCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED, [
+                'message' => 'BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED',
+                'id' => $id,
+            ]);
+
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_DEVICE_ID_ALREADY_MAPPED,
+                    "description"=>"Device Already Mapped to another QR",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_mapping",
+                    "reason"=>"device_already_mapped_to_qr",
+                    "metadata"=>$input
+                ]
+            ];
+        }
+
+        //check for the QR if the device id is already set if set then return exception
+        if ($qrCode->getDeviceId() !== null)
+        {
+            $this->trace->info(TraceCode::BAD_REQUEST_QR_ALREADY_MAPPED, [
+                'message' => 'BAD_REQUEST_QR_ALREADY_MAPPED',
+                'id'  => $id,
+            ]);
+
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_QR_ALREADY_MAPPED,
+                    "description"=>"QR Entity Already Mapped to a Device",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_mapping",
+                    "reason"=>"entity_already_mapped",
+                    "metadata"=>$input+['oldDeviceId'=>$qrCode->getDeviceId()]
+                ]
+            ];
+        }
+
+        //check if the qr code is mapped to any device id and again trying to map to the same device id
+        if($qrCode->getDeviceId() === $deviceId)
+        {
+            $this->trace->info(TraceCode::BAD_REQUEST_DUPLICATE_REQUEST, [
+                'message' => 'BAD_REQUEST_DUPLICATE_REQUEST',
+                'id'  => $id,
+            ]);
+
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
+                    "description"=>"QR Entity Mapping Device Duplicate Request",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_mapping",
+                    "reason"=>"entity_duplicate_request",
+                    "metadata"=>$input
+                ]
+            ];
+
+        }
+        return null;
+    }
+
 
     public function unMapDeviceIdForQr(array $input)
     {
@@ -630,85 +799,31 @@ class Service extends QrCode\Service
                 'input' => $input
             ]);
         $deviceId = $input['device_id'];
-//        $merchantId  = $input['merchant_id'];
         $exception=null;
         try{
-
-            //check if device id is present else throw an exception
-//            if(empty($deviceId))
-//            {
-//                $this->trace->info(TraceCode::BAD_REQUEST_DEVICE_ID_NOT_FOUND, [
-//                    'message' => 'BAD_REQUEST_DEVICE_ID_NOT_FOUND',
-//                    'device_id' => $deviceId,
-//                ]);
-//                throw new BadRequestException(ErrorCode::BAD_REQUEST_DEVICE_ID_NOT_FOUND);
-//            }
-
             $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
             $this->mode            = Mode::LIVE;
 
-                        $qrCodes =(new Repository())->findByDeviceId($deviceId);
-//            $qrCodes = (new Repository())->findByMerchantAndDeviceId($merchantId,$deviceId);
+            $qrCodes =(new Repository())->findByDeviceId($deviceId);
 
             //check if device_id is mapped to any qr code
-            if($qrCodes->isEmpty())
+            $response = $this->validateDeviceUnMapingUpdateRequest($input);
+
+            if(is_null($response) === false)
             {
-                $this->trace->info(TraceCode::QR_CODE_NOT_FOUND, [
-                    'message' => 'QR_CODE_NOT_FOUND',
-                    'device_id'  => $deviceId,
-                ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND,
-//                    data       : ['error'=>['metadata' => $input]],
-//                    description: "QR Entity Not Found"
-//                );
-                return [
-                    "error"=>[
-                        "code"=>ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND,
-                        "description"=>"QR Entity Not Found",
-                        "source"=>"ezetap",
-                        "step"=>"qr_code_device_id_unmapping",
-                        "reason"=>"entity_not_found",
-                        "metadata"=>$input
-                    ]
-                ];
+                return $response;
             }
 
+            //get the qr code and unmap the device id
+            $qrCode=$qrCodes->first();
 
-            // get the count of qr codes mapped to the device id, if >1 then throw an exception for unmapping failed
-            if ($qrCodes->count() > 1) {
-                $this->trace->info(TraceCode::MULTIPLE_QR_CODES_MAPPED_ERROR, [
-                    'message' => 'MULTIPLE_QR_CODES_MAPPED_ERROR',
-                    'device_id' => $deviceId,
-                ]);
-//                throw new BadRequestException(
-//                    code       : ErrorCode::MULTIPLE_QR_CODES_MAPPED_ERROR,
-//                    data       : ['error'=>['metadata' => $input]],
-//                    description: "QR Entity Mapped to Multiple QR Codes"
-//                );
-                return [
-                    "error"=>[
-                        "code"=>ErrorCode::MULTIPLE_QR_CODES_MAPPED_ERROR,
-                        "description"=>"QR Entity Mapped to Multiple QR Codes",
-                        "source"=>"ezetap",
-                        "step"=>"qr_code_device_id_unmapping",
-                        "reason"=>"entity_multiple_mapped",
-                        "metadata"=>$input
-                    ]
-                ];
-            }
+            (new Core)->setDeviceIdForQr($qrCode, null);
 
-
-              //get the qr code and unmap the device id
-               $qrCode=$qrCodes->first();
-
-                (new Core)->setDeviceIdForQr($qrCode, null);
-
-                $this->trace->info(TraceCode::QR_CODES_UNMAP_DEVICE_PROCESSED,
-                [
-                    'device_id' => $deviceId,
-                    'qr_code_id' =>$qrCode->getId()
-                ]);
+            $this->trace->info(TraceCode::QR_CODES_UNMAP_DEVICE_PROCESSED,
+            [
+                'device_id' => $deviceId,
+                'qr_code_id' =>$qrCode->getId()
+            ]);
 
         }catch (\Exception $ex) {
             $this->trace->traceException(
@@ -1678,4 +1793,6 @@ class Service extends QrCode\Service
             (new Core())->dispatchQrCodeToStatusCheckQueue($id, $qrCode->getRequestSource());
         }
     }
+
+
 }

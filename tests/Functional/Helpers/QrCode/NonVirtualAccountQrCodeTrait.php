@@ -1416,6 +1416,10 @@ trait NonVirtualAccountQrCodeTrait
         {
             $ezetapNotificationMock->shouldReceive('sendEzetapRequest')
                                    ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+
+            $ezetapNotificationMock->shouldReceive('sendEzetapRawRequest')
+                ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+
         }
         else
         {
@@ -1426,6 +1430,12 @@ trait NonVirtualAccountQrCodeTrait
                                        array_push($eventList,$event->event);
                                        return null;
                                    });
+
+            $ezetapNotificationMock->shouldReceive('sendEzetapRawRequest')
+                ->andReturnUsing(function($event) use (&$actualCallCount, &$eventList) {
+                    $actualCallCount++;
+                    return json_encode(["success" => true]);
+                });
 
         }
     }

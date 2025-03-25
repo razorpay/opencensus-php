@@ -2794,4 +2794,56 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $order->reload();
         $this->assertEquals($order['status'],'attempted');
     }
+
+    public function testBatchServiceMapDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount =0 ;
+        $eventList =[] ;
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount,$eventList);
+
+
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ],'live','LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code','live');
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'randomDeviceId',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        $this->assertEquals(true,$response['success']);
+        $this->assertEquals('qr_'.$qrCode['id'],$response['id']);
+        $this->assertEquals('randomDeviceId',$response['device_id']);
+
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'randomDeviceId',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => true,
+                    'unmap_from_qr' => true
+                ],
+            ]
+        ]);
+
+        $qrCode->reload();
+
+        $this->assertEquals(true,$response['success']);
+        $this->assertEquals($qrCode['id'],$response['id']);
+        $this->assertNull($qrCode->getDeviceId());
+
+    }
 }

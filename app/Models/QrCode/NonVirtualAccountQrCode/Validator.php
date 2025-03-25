@@ -36,6 +36,16 @@ class Validator extends QrCode\Validator
         Entity::ORDER_ID       => 'sometimes|public_id|size:20',
     ];
 
+    protected static $mapingDeviceWithSqrRules = [
+        'device_id'                             => 'required|string',
+        'map_identifiers'                       => 'sometimes|array|custom',
+        'map_identifiers.qr_string'             => 'required_if:map_identifiers,array|string',
+        'map_identifiers.epn_merchant_type'     => 'required_if:map_identifiers,array|sometimes|string',
+        'unmap_identifiers'                     => 'sometimes|array',
+        'unmap_identifiers.unmap_from_merchant' => 'required_if:unmap_identifiers,array|sometimes',
+        'unmap_identifiers.unmap_from_qr'       => 'required_if:unmap_identifiers,array|sometimes',
+    ];
+
     protected static $createQrForSingleStackRules = [
         Entity::VPA            => 'required|string',
         Entity::DEVICE_ID      => 'required|string',
@@ -154,4 +164,16 @@ class Validator extends QrCode\Validator
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }
+
+    public function validateMapIdentifiers($attribute, $value)
+    {
+        $request = request()->all();  // Get all request data
+
+        if (isset($request['map_identifiers']) && isset($request['unmap_identifiers'])) {
+
+            $message = 'Either map_identifiers or unmap_identifiers should be present, but not both.';
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
 }
