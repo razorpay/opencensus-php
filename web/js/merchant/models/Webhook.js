@@ -30,7 +30,7 @@ export default class Webhook extends GenericEntity {
     }
 
     if (prop === 'active') {
-      return normalizeBoolean(this[prop]);
+      return normalizeBoolean(this[prop] ?? prop);
     }
 
     return super.serializeProperty(prop);
