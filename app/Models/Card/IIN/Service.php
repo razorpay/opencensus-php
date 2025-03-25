@@ -1140,20 +1140,7 @@ class Service extends Base\Service
 
     public function shouldReadFromBinServiceInShadowMode() : bool
     {
-        if (Environment::isTestingEnvironment($this->app['env']) === true ||
-            Environment::isEnvironmentQA($this->app['env']) === true ||
-            Environment::isEnvironmentItf($this->app['env']) === true )
-        {
-            return false;
-        }
-
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ALLOW_BIN_SERVICE_SHADOW_READS, $this->mode);
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
+        // razorx experiment is terminated so always returning false
         return false;
     }
 

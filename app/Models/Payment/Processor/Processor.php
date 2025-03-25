@@ -4871,18 +4871,8 @@ class Processor
             return;
         }
 
-        $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            RazorxTreatment::NON_TWO_DECIMAL_CURRENCY_VALIDATION,
-            $this->app['rzp.mode']);
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
 
-        if ($variantFlag === "on"  ||
-            ($variantFlag === "invoice_on" && $isInvoicePayment === true) ||
-            ($variantFlag === "plugin_on" && $isPluginFlowPayment === true)
-        )
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
-        }
     }
 
     public function validateCardRecurringAutoPayment($input)
@@ -9963,12 +9953,9 @@ class Processor
 
         $merchant = $payment->merchant;
 
-        $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            RazorxTreatment::SEND_DCC_INDICATOR,
-            $this->app['rzp.mode']);
         $data['merchant'] = [
             'is_vas_merchant' => $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VAS_MERCHANT),
-            'send_dcc_compliance' => $variantFlag === "on" ? true : false,
+            'send_dcc_compliance' => true,
         ];
 
 

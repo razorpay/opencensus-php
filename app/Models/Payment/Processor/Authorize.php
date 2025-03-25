@@ -14824,15 +14824,6 @@ trait Authorize
         {
             return;
         }
-
-        // check the experiment
-        $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-            RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $this->mode);
-        if (strtolower($variant) !== 'on')
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, 'currency');
-        }
     }
 
     protected function validateAddressIfPresent(Payment\Entity $payment, array $input)

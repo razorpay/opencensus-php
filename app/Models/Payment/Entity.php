@@ -5581,19 +5581,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
             $merchant = $this->merchant;
-            $app = \App::getFacadeRoot();
-            $variantFlag = $app['razorx']->getTreatment($this->merchant->getId(),
-                RazorxTreatment::SEND_DCC_INDICATOR,
-                $app['rzp.mode']);
-            if($variantFlag === "on"){
-                $data['dcc'] = $this->isDCC();
 
-                // the field 'merchant_currency' is added so that router service can select terminals
-                // based on INR instead of user card currency
-                // this case is valid in case of hitachi where the terminal has to be in the currency of the merchant
-                // valid in case of international payments dcc payments and dcc over mcc payments.
-                $data['merchant_pay_amount'] = $this->getAmount(); // amount to be settled to merchant in his home currency
-            }
+            $data['dcc'] = $this->isDCC();
+            // the field 'merchant_currency' is added so that router service can select terminals
+            // based on INR instead of user card currency
+            // this case is valid in case of hitachi where the terminal has to be in the currency of the merchant
+            // valid in case of international payments dcc payments and dcc over mcc payments.
+            $data['merchant_pay_amount'] = $this->getAmount(); // amount to be settled to merchant in his home currency
 
             // Fields to be passed cybersource gateway for DCC payment.
             if ($this->isDCC() and $merchant->isFeatureEnabled(Feature\Constants::DYNAMIC_CURRENCY_CONVERSION_CYBS))

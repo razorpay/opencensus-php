@@ -1343,7 +1343,6 @@ trait ReverseShadowTrait
 
         // currently, international cases are blocked on this flow, so we can cleanly just have the fee set for non CFB cases.
         // TODO on this will be to start flowing cross borded payments and have the fee set for them for CFB use cases too.
-        ;
         if (($payment->isFeeBearerCustomer() === false) or (($payment->isFeeBearerCustomer() === true) and
                 (($payment->isInternational() === true) or
                 ($payment->merchant->isLRSFlowEnabled() === true) or

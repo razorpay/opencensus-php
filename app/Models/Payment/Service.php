@@ -3641,16 +3641,15 @@ class Service extends Base\Service
     {
         $dccInfo = [];
 
-        $isZeroExponentCurrencySupported = $this->isZeroExponentCurrencySupported($merchantID);
         if($this->canFetchRatesThroughRearch() === true)
         {
-            (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $isZeroExponentCurrencySupported, $dccInfo);
+            (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $dccInfo);
         }
         else {
             try {
                 $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-                $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method, $isZeroExponentCurrencySupported);
+                $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method);
 
                 $dccInfo['currency_request_id'] = $currencyRequestId;
                 $this->trace->count(Metric::GET_DCC_INFO_COUNT, [
@@ -3666,27 +3665,6 @@ class Service extends Base\Service
         }
 
         return $dccInfo;
-    }
-
-    protected function isZeroExponentCurrencySupported($merchantID)
-    {
-        $mode = $this->mode ?? Mode::LIVE;
-        try {
-            // check the experiment
-            $variant = $this->app['razorx']->getTreatment($merchantID,
-                RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $mode);
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-        } catch (\Exception $e) {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::ZERO_EXPONENT_CURRENCY_SUPPORT_RAZORX_ERROR
-            );
-        }
-        return false;
     }
 
     public function getPaymentFlowsPrivate(array $input)

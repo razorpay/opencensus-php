@@ -429,17 +429,9 @@ class Core extends Base\Core
      * amount, code, symbol and exponent
      * @return array|null
      */
-    public function getSupportedCurrenciesDetails($isZeroExponentCurrencySupported=true)
+    public function getSupportedCurrenciesDetails()
     {
         $details = Currency::getDetails();
-
-        if(!$isZeroExponentCurrencySupported)
-        {
-            foreach (Currency::ZERO_DECIMAL_CURRENCIES as $currency)
-            {
-                unset($details[$currency]);
-            }
-        }
 
         return $details;
     }

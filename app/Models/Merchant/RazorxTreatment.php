@@ -983,15 +983,6 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
-    /*
-     * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
-     */
-    const NON_TWO_DECIMAL_CURRENCY_VALIDATION   = 'non_two_decimal_currency_validation';
-
-    /*
-     * Razorx flag to send dcc indicator value to gateway
-     */
-    const SEND_DCC_INDICATOR                    = 'send_dcc_indicator';
 
     const QR_CODE_BLOCK_PAYMENT = 'qr_code_block_payment';
 
@@ -1011,7 +1002,6 @@ final class RazorxTreatment
 
     const TERMINALS_TIDB_QUERIES_MIGRATION = 'terminals_tidb_queries_migration';
 
-    const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
     // Razorx for checkout 2.0
     const HDFC_CHECKOUT_2 = 'hdfc_checkout_2';
