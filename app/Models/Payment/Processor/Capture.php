@@ -191,6 +191,19 @@ trait Capture
         try
         {
             $this->capturePayment($payment, $amount, $currency);
+            
+            $this->trace->info(
+                TraceCode::PAYMENT_AUTO_CAPTURE_SUCCESS,
+                [
+                    'should_auto_capture'   => true,
+                    'payment_id'            => $payment->getPublicId(),
+                    'payment_method'        => $payment->getMethod(),
+                    'payment_status'        => $payment->getStatus(),
+                    'auto_capture_status'   => "success",
+                ]);
+            
+            $this->emitAutoCaptureMetrics($payment, "");
+
         }
         catch (Exception\BaseException $e)
         {
@@ -199,9 +212,14 @@ trait Capture
                 Trace::ERROR,
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 [
-                    'auto_capture' => true,
-                    'payment_id'   => $payment->getPublicId(),
+                    'should_auto_capture'   => true,
+                    'payment_id'            => $payment->getPublicId(),
+                    'payment_method'        => $payment->getMethod(),
+                    'payment_status'        => $payment->getStatus(),
+                    'auto_capture_status'   => "failed",
                 ]);
+
+            $this->emitAutoCaptureMetrics($payment, $e->getCode());
 
             $customProperties = [
                 'error' => $e->getError(),
@@ -224,6 +242,54 @@ trait Capture
                     'method'         => $payment->getMethod()
                 ]);
         }
+    }
+
+    protected function evaluateSplitzExperimentForAutoCaptureResult($merchantId)
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $app['config']->get('app.auto_capture_result'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'enabled')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED
+            );
+        }
+
+        return false;
+    }
+
+    public function emitAutoCaptureMetrics ( $payment, $errorMessage ) {
+
+        $is_experiment_enabled = $this->evaluateSplitzExperimentForAutoCaptureResult($payment->getMerchantId());
+
+        if($is_experiment_enabled)
+        {
+            (new Payment\Metric)->pushAutoCaptureResultMetrics($payment,$errorMessage );
+        }
+                
     }
 
     /**

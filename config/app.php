@@ -1392,5 +1392,7 @@ return array(
 
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
 
+    'auto_capture_result'   => env('AUTO_CAPTURE_RESULT'),
+  
     'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT')
 );
