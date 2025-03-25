@@ -39,6 +39,7 @@ import {
   SparklesIcon,
   MagicKonnectIcon,
   BillMeIcon,
+  ShieldIcon,
 } from '@razorpay/blade/components';
 import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 
@@ -215,6 +216,12 @@ export const PRODUCTS_DATA = {
     image: magicKonnectLogo,
     additionalCondition: (user: any, extraConfig: ExtraConfig) =>
       user.isMagicKonnectEnabled && isExperimentEnabled(extraConfig?.abExperiments?.magic_konnect),
+  },
+  customer_trust: {
+    bladeIcon: ShieldIcon,
+    icon: 'i-customer-trust',
+    additionalCondition: (user: any, extraConfig: ExtraConfig) =>
+      isExperimentEnabled(extraConfig?.abExperiments?.customer_trust),
   },
   smart_collect: {
     bladeIcon: BankIcon,

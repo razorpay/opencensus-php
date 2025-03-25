@@ -42,6 +42,7 @@ function MerchantNavLinks(props) {
 
   const { abExperiments } = useSplitzService();
   const showMagicKonnectTab = abExperiments?.magic_konnect?.variables?.result === 'on';
+  const showCustomerTrustTab = abExperiments?.customer_trust?.variables?.result === 'on';
   const showMyDevicesTab = abExperiments?.my_devices?.variables?.result === 'on';
   const isOmniJkFlow = isJKOfflineMerchant(org, user);
   useEffect(() => {
@@ -186,6 +187,14 @@ function MerchantNavLinks(props) {
           additionalCondition={(currentUser) =>
             currentUser.isMagicKonnectEnabled && showMagicKonnectTab
           }
+        />
+        <MainNavLink
+          label="Customer Trust"
+          type="product"
+          icon="i i-customer-trust text-primary"
+          to={routes.customerTrust}
+          isNew={true}
+          additionalCondition={() => showCustomerTrustTab}
         />
 
         <MainNavLink

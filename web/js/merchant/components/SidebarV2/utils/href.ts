@@ -22,6 +22,7 @@ export const ROUTE_REG = {
   partner: /^\/(submerchants(\/(applications|settings))?|commissions)/,
   magic_checkout: /^\/magic(\/|$)/,
   magic_konnect: /^\/magic-konnect(\/|$)/,
+  customer_trust: /^\/customer-trust(\/|$)/,
   optimizer: /^\/optimizer(\/(add-provider|create-rule|update-rule|rules))?/,
   smart_collect: /^\/(smartcollect|virtualaccounts)/,
   qr_codes: /^\/qr_codes(\/(payments))?/,
@@ -66,6 +67,7 @@ export const BASE_ROUTES = {
   optimizer: '/optimizer',
   bbps: '/bbps',
   magic_checkout: '/magic',
+  customer_trust: '/customer-trust',
   magic_konnect: '/magic-konnect',
   smart_collect: '/smartcollect/virtualaccounts',
   qr_codes: '/qr_codes',
@@ -146,6 +148,8 @@ export const initializeRoutes = (location, user) => {
     routes.magic_checkout = pathname.match(ROUTE_REG.magic_checkout)[0];
   } else if (ROUTE_REG.magic_konnect.test(pathname)) {
     routes.magic_konnect = pathname.match(ROUTE_REG.magic_konnect)[0];
+  } else if (ROUTE_REG.customer_trust.test(pathname)) {
+    routes.customer_trust = pathname.match(ROUTE_REG.customer_trust)[0];
   } else if (ROUTE_REG.wallet.test(pathname)) {
     routes.wallet = pathname.match(ROUTE_REG.wallet)[0];
   } else if (ROUTE_REG.internationalPaymentsBtn.test(pathname)) {

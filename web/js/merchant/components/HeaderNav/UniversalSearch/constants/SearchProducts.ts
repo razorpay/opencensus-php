@@ -70,6 +70,7 @@ const {
   cash_advance,
   magic_checkout,
   magic_konnect,
+  customer_trust,
   riskAndFraud,
   bill_me,
 } = PRODUCTS_DATA;
@@ -1247,6 +1248,15 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     icon: magic_checkout.icon,
     additionalCondition: ({ user }: EligibleProductsTypes, extraConfig): boolean =>
       magic_konnect.additionalCondition(user, extraConfig?.abExperiments),
+    apiCondition: false,
+  },
+  {
+    title: SEARCH_PRODUCTS_TITLES.customer_trust,
+    url: SEARCH_PRODUCTS_URL.customer_trust,
+    tags: [{ value: 'customer_trust' }],
+    icon: customer_trust.icon,
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig): boolean =>
+      customer_trust.additionalCondition(user, extraConfig?.abExperiments),
     apiCondition: false,
   },
   {

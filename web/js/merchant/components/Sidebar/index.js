@@ -45,6 +45,7 @@ const SUBSCRIPTIONS_ROUTES_REGEX =
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 const MAGIC_CHECKOUT_REGEX = /^\/(magic)/;
 const MAGIC_KONNECT_REGEX = /^\/magic-konnect(\/|$)/;
+const CUSTOMER_TRUST_REGEX = /^\/customer-trust(\/|$)/;
 const POS_SALES = /^\/pos-sales(\/.*)?$/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
@@ -69,6 +70,7 @@ export const BASE_ROUTES = {
   bbps: '/bbps',
   magicCheckout: '/magic',
   magicKonnect: '/magic-konnect',
+  customerTrust: '/customer-trust',
   stores: '/stores/products',
   developersApis: '/developers/apis',
   developersWebhooks: '/developers/webhooks',
@@ -173,6 +175,9 @@ class Sidebar extends Component {
     } else if (MAGIC_KONNECT_REGEX.test(pathname)) {
       routes.magicKonnect = pathname.match(MAGIC_KONNECT_REGEX)[0];
       this.prevRoute = 'magicKonnect';
+    } else if (CUSTOMER_TRUST_REGEX.test(pathname)) {
+      routes.customerTrust = pathname.match(CUSTOMER_TRUST_REGEX)[0];
+      this.prevRoute = 'customerTrust';
     } else if (POS_SALES.test(pathname)) {
       routes.posSales = pathname.match(POS_SALES)[0];
       this.prevRoute = 'posSales';

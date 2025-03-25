@@ -102,6 +102,12 @@ export const FALLBACK_PRODUCTS = [
         tags: [],
       },
       {
+        title: SIDEEBAR_PRODUCTS_TITLES.customer_trust,
+        product_id: 'customer_trust',
+        category: '',
+        tags: [],
+      },
+      {
         title: SIDEEBAR_PRODUCTS_TITLES.optimizer,
         product_id: 'optimizer',
         category: '',

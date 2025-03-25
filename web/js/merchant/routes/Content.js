@@ -59,6 +59,7 @@ import AssistedFinancing from 'merchant/views/Affordability/AssistedFinancing';
 import { isExperimentEnabled } from 'common/splitz/utils';
 
 import MagicKonnect from 'merchant/views/MagicKonnect';
+import CustomerTrust from 'merchant/views/CustomerTrust';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
@@ -1426,6 +1427,19 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={(user) => user.isMagicKonnectEnabled}>
                 <MagicKonnect />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="customer-trust/*"
+            element={
+              <RouteGuard
+                additionalCondition={() =>
+                  isExperimentEnabled(this.props.splitz?.abExperiments.customer_trust)
+                }
+              >
+                <CustomerTrust />
               </RouteGuard>
             }
           />

@@ -44,6 +44,7 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   route: 'Route',
   checkout_rewards: 'Checkout Rewards',
   magic_checkout: 'Magic Checkout',
+  customer_trust: 'Customer Trust',
   magic_konnect: 'Konnect',
   optimizer: 'Optimizer',
   stores: 'Stores',

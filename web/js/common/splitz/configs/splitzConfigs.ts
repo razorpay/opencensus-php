@@ -646,6 +646,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'customer_trust',
+        experimentId: {
+          beta: 'Q1461Fm3v1dgWh',
+          production: 'Q1479mpAV4VT7M',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'diwali_report_banner',
         experimentId: {
           beta: 'Nntc2jFOd01hHO',

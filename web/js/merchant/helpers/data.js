@@ -153,6 +153,7 @@ export const RZPFeatures = {
   QR_CODES: 'qr_codes',
   MAGIC_CHECKOUT: 'magic_checkout',
   MAGIC_KONNECT: 'magic_konnect',
+  CUSTOMER_TRUST: 'customer_trust',
   STORES: 'stores',
   RAZORPAYX: 'razorpayx',
   OPTIMIZER: 'optimizer',
