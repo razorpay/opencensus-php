@@ -8,6 +8,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { mockMainPageUrl } from './mocks/fixtures';
 import BusinessWebsiteDetails from '../Wrapper';
 import { WebsiteSubmitModalSteps } from '../types';
+import { FINAL_STEP_CONFIG } from '@dashboards/payments/views/Capital/CashAdvanceV2/constants';
 
 const openModalSpy = jest.spyOn(ModalActions, 'openModal');
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
@@ -107,12 +108,13 @@ describe('Business website automation', () => {
     ).toBeInTheDocument();
   });
 
-  it('should show CTA for first time website add', async () => {
+  it('should show CTA for first time website add or is a KLA merchant', async () => {
     renderApp({
       user: {
         business_website: undefined,
         isAdminOrOwner: true,
         isOwner: true,
+        has_key_access: false,
       },
     });
     const button = screen.getByRole('button', { name: 'Add website/app details' });
@@ -125,12 +127,13 @@ describe('Business website automation', () => {
     });
   });
 
-  it('should show CTA for additional website add when user already has business website', async () => {
+  it('should show CTA for additional website add when user already has business website and is not a kla merchant', async () => {
     renderApp({
       user: {
         business_website: mockMainPageUrl,
         isAdminOrOwner: true,
         isOwner: true,
+        has_key_access: true,
       },
     });
     const button = screen.getByRole('button', { name: 'Add additional website/app details' });

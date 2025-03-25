@@ -50,9 +50,11 @@ export const getCTACondition = ({
   user,
 }: GetCtaConditionArgs): GetCtaConditionData => {
   let ctaDisabledReason = 'Your updation request is in progress';
-  const ctaText = !Boolean(user.business_website)
-    ? 'Add website/app details'
-    : 'Add additional website/app details';
+  const isKLA = !user.has_key_access;
+  const ctaText =
+    isKLA || !Boolean(user.business_website)
+      ? 'Add website/app details'
+      : 'Add additional website/app details';
 
   const isBvsFlowInProgress =
     websiteUpdateData?.current_status &&
@@ -115,7 +117,7 @@ export const getCTACondition = ({
   const isAddActionAllowed = isMainWebsiteEditActionAllowed || isAdditionalWebsiteActionAllowed;
 
   // if flow is first time main website add or adding the additional website
-  const isAddFirstWebsiteAllowed = !user.business_website && user.isOwner;
+  const isAddFirstWebsiteAllowed = isKLA || (!user.business_website && user.isOwner);
 
   if (Boolean(user.business_website) && !isAdditionalWebsitedActionAllowedOld && isLimitReached) {
     ctaDisabledReason = 'You have reached the limit of 5 additional websites';
