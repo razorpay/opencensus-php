@@ -7825,6 +7825,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 
     const PRICING_RULE_ALREADY_DEFINED                          = 'PRICING_RULE_ALREADY_DEFINED';
+    const INVALID_FEE_BEARER                                    = 'INVALID_FEE_BEARER';
     const RULE_LEVEL_FEE_MODEL_FAILURE                          = 'RULE_LEVEL_FEE_MODEL_FAILURE';
     const RULE_LEVEL_FEE_MODEL                                  = 'RULE_LEVEL_FEE_MODEL';
 
