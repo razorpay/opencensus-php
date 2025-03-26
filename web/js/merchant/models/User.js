@@ -2114,7 +2114,7 @@ export default class User {
   }
 
   get isProductTourScreenHidden() {
-    return this.isFeatureEnabled('hide_product_tour_screens');
+    return this.isOrgFeatureEnabled('hide_product_tour_screens');
   }
 }
 
