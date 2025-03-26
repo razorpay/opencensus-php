@@ -32,6 +32,7 @@ class Core extends Base\Core
 {
     const BATCH_SIZE = 50000;
     const OVERRIDDEN_BATCH_SIZE = 5000;
+    const TIME_BATCH_IN_SECONDS = 28800; //8hrs in seconds.
 
     const BULK_INSERT_SIZE = 1000;
 
@@ -557,9 +558,19 @@ class Core extends Base\Core
             'process_fee_recovery_' . $balance->getId(),
             function() use ($balance, $startTimestamp, $endTimestamp)
         {
-            list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
-                                                                                                            $startTimestamp,
-                                                                                                            $endTimestamp);
+
+            $properties = ['id' => $balance->getId(),
+                'experiment_id' => 'fee_recovery_fetch_batching',
+                'request_data'  => json_encode(['id' => $balance->getId()])
+            ];
+            $feeRecoveryBatchingEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
+
+            if($feeRecoveryBatchingEnabled){
+                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimestamp, $endTimestamp);
+            } else {
+                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimestamp, $endTimestamp);
+            }
+
             // fetch fee recoveries
             list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($payouts->getIds(), $failedPayouts->getIds(), $reversals->getIds());
 
@@ -733,7 +744,7 @@ class Core extends Base\Core
         $merchant = $balance->merchant;
         $merchantId = $merchant->getId();
         $balanceId = $balance->getId();
-        $batchSize = 3600; // 1 hour in seconds
+        $batchSize = self::TIME_BATCH_IN_SECONDS;
 
         $this->trace->info(
             TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_INITIATED,
@@ -749,7 +760,7 @@ class Core extends Base\Core
         $allReversals = new Base\PublicCollection();
 
 
-        for ($batchStart = $startTimestamp; $batchStart < $endTimestamp; $batchStart += $batchSize) {
+        for ($batchStart = $startTimestamp; $batchStart < $endTimestamp; $batchStart += ($batchSize+1)) {
             $batchEnd = min($batchStart + $batchSize, $endTimestamp);
 
             // Fetch payouts for the current batch
@@ -2006,7 +2017,7 @@ class Core extends Base\Core
                 $totalCorrectionsFailed = 0;
 
                 $properties = ['id' => $balance->getId(),
-                    'experiment_id' => 'fee_recovery_fetch_batching',
+                    'experiment_id' => 'fee_recovery_data_correction_fetch_batching',
                     'request_data'  => json_encode(['id' => $balance->getId()])
                 ];
                 $feeRecoveryBatchingEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
