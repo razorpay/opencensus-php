@@ -332,12 +332,12 @@ class PaymentPagesV3Entity extends React.Component {
               <i className="i i-arrow-back" />
               {isBatchPaymentPages ? 'All Batch Payment Pages' : 'All Payment Pages'}
             </Link>
-            <i className="i i-chevron-right" /> {title}
+            <i className="i i-chevron-right" /> {decodeHTMLEntities(title)}
           </div>
 
           <div className="panel panel-default">
             <div className="panel-heading">
-              <div className="text">{title}</div>
+              <div className="text">{decodeHTMLEntities(title)}</div>
               <div className="btn-toolbar">
                 {isBatchPaymentPages && (
                   <Link to={`/paymentpages/batchuploads/${id}/${title}`}>

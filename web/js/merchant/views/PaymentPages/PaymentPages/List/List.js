@@ -105,7 +105,7 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                         }`}
                         onClick={trackTitleClick}
                       >
-                        {title}
+                        {decodeHTMLEntities(title)}
                       </NavLink>
                     </HideItem>
                     <ShowItem>

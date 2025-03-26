@@ -578,7 +578,7 @@ function _track() {
     },
     uploadSocialHandleThumbnail: (extraProperties) => {
       sendToSegment(
-        'Upload custom social handle thumbnail',
+        'upload custom social handle thumbnail',
         'clicked',
         'create storefront page',
         {
@@ -586,6 +586,18 @@ function _track() {
           product_page,
         },
         'upload custom social handle thumbnail modal',
+      );
+    },
+    deleteSocialHandleThumbnail: (extraProperties) => {
+      sendToSegment(
+        'delete custom social handle thumbnail',
+        'clicked',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'delete custom social handle thumbnail modal',
       );
     },
     confirmSocialLinkClicked: (extraProperties) => {
@@ -610,6 +622,18 @@ function _track() {
           product_page,
         },
         'edit social handle confirm modal',
+      );
+    },
+    alertRendered: (extraProperties) => {
+      sendToSegment(
+        'alert',
+        'rendered',
+        'create storefront page',
+        {
+          ...extraProperties,
+          product_page,
+        },
+        'add social handles modal alert',
       );
     },
     deleteSocialLinkClicked: (platform, extraProperties) => {

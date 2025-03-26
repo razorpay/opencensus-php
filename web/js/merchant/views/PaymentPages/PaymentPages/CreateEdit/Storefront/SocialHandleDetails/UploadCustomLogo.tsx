@@ -48,7 +48,8 @@ const UploadCustomLogo: React.FC<UploadCustomLogoProps> = ({
       storefrontId: storefrontId,
       isNewStorefront: Boolean(!storefrontId),
       socialHandle: {
-        name: PLATFORM_NAMES.CUSTOM,
+        platform: PLATFORM_NAMES.CUSTOM,
+        fileName: file?.name,
       },
     });
   };
@@ -57,6 +58,13 @@ const UploadCustomLogo: React.FC<UploadCustomLogoProps> = ({
     setUploadedFile(null);
     setUploadedLogo('');
     setLocalFile(null);
+    track.deleteSocialHandleThumbnail({
+      storefrontId: storefrontId,
+      isNewStorefront: Boolean(!storefrontId),
+      socialHandle: {
+        platform: PLATFORM_NAMES.CUSTOM,
+      },
+    });
   };
 
   return (

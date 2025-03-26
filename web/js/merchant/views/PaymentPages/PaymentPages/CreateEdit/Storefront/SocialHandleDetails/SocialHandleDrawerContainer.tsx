@@ -160,6 +160,9 @@ const SocialHandleDrawerContainer: React.FC<SocialHandleDrawerProps> = ({
         type: 'error',
         message: "You've reached the handles limit. Delete existing handles to add new ones.",
       });
+      track.alertRendered({
+        alertMessage: "You've reached the handles limit. Delete existing handles to add new ones.",
+      });
       return;
     }
     setShowSelectModal(true);
