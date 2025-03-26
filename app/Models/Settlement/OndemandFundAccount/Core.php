@@ -170,7 +170,6 @@ class Core extends Base\Core
             $fundAccount = $this->getFundAccountByMerchantId($merchantId);
             if ($fundAccount !== null && $this->isFundAccountMigrated('dual_write') === true) {
                 // The action here will be dual_write because this method will only be called in the dual write flow
-                // The API called will be createFundAccount because this API enables us to invalidate the existing fund account id
                 $this->app['capital_early_settlements']->invalidateAndCreateFundAccount($merchantId, true);
             }
         });

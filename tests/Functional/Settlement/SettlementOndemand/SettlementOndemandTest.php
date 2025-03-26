@@ -1627,60 +1627,6 @@ class SettlementOndemandTest extends TestCase
 
     }
 
-    public function testFundAccountCreationOnEsOndemandAssigning()
-    {
-        $this->ba->adminAuth(MODE::TEST);
-
-        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
-        $this->app->instance('razorpayXClient', $payoutsMock);
-        $payoutsMock->allows('createContact')
-            ->andReturns(['id'=>'contact_1234567890']);
-        $payoutsMock->allows('createFundAccount')
-            ->andReturns(['id'=>'fundacc_1234567890']);
-
-        $splitzResp = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        ["key" => "dual_write", "value" => "off"],
-                        ["key" => "read", "value"=>"off"]
-                    ]
-                ]
-            ]
-        ];
-
-        $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
-        $splitzMock->allows('evaluateRequest')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))
-            ->andReturns($splitzResp);
-
-        $this->startTest();
-
-        $fundAccountTestMode = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, true, Mode::TEST);
-        $fundAccountLiveMode = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, true, Mode::LIVE);
-
-        $this->assertNotEmpty($fundAccountTestMode['fund_account_id']);
-        $this->assertNotEmpty($fundAccountTestMode['contact_id']);
-
-        $this->assertNotEmpty($fundAccountLiveMode['fund_account_id']);
-        $this->assertNotEmpty($fundAccountLiveMode['contact_id']);
-
-        $this->assertArraySelectiveEquals([
-            'merchant_id'      => '10000000000000',
-            'contact_id'       => 'contact_1234567890',
-            'fund_account_id'  => 'fundacc_1234567890',
-        ], $fundAccountTestMode);
-
-        $this->assertArraySelectiveEquals([
-            'merchant_id'      => '10000000000000',
-            'contact_id'       => 'contact_1234567890',
-            'fund_account_id'  => 'fundacc_1234567890',
-        ], $fundAccountLiveMode);
-    }
-
     public function testFundAccountUpdationOnBankAccountEdit()
     {
         $this->ba->adminAuth(MODE::TEST);
@@ -4934,14 +4880,14 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                    => '10000000000000',
             'user_id'                        => null,
             'amount'                         => 1000000,
-            'total_amount_settled'           => 0,
+            'total_amount_settled'           => 1000000,
             'total_fees'                     => 0,
             'total_tax'                      => 0,
             'total_amount_reversed'          => 0,
-            'total_amount_pending'           => 1000000,
+            'total_amount_pending'           => 0,
             'max_balance'                    => false,
             'currency'                       => 'INR',
-            'status'                         => 'initiated',
+            'status'                         => 'processed',
             'transaction_type'               => 'transaction',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
@@ -5081,14 +5027,14 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                    => '10000000000000',
             'user_id'                        => null,
             'amount'                         => 1000000,
-            'total_amount_settled'           => 0,
+            'total_amount_settled'           => 1000000,
             'total_fees'                     => 0,
             'total_tax'                      => 0,
             'total_amount_reversed'          => 0,
-            'total_amount_pending'           => 1000000,
+            'total_amount_pending'           => 0,
             'max_balance'                    => false,
             'currency'                       => 'INR',
-            'status'                         => 'initiated',
+            'status'                         => 'processed',
             'transaction_type'               => 'transaction',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
@@ -6251,6 +6197,99 @@ class SettlementOndemandTest extends TestCase
 
         $fundAccount = $this->getDbLastEntity('settlement.ondemand_fund_account');
         $this->assertNull($fundAccount->fund_account_id);
+    }
+
+    public function testMakePayoutRequest()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $odsPayout = $this->getDbLastEntity('settlement.ondemand_payout', Mode::LIVE);
+
+        $this->fixtures->create('settlement.ondemand_fund_account',
+            ['contact_id' => 'cont_1234567890', 'merchant_id'=>$this->merchantDetail['merchant_id'], 'fund_account_id'  => null]);
+
+        $splitzResp = [
+            "response" => ["variant" => ["variables" => [["key" => "read", "value" => "off"], ["key" => "dual_write", "value" => "off"], ["key"=>"write", "value"=>"off"]]]]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
+        $this->app->instance('razorpayXClient', $payoutsMock);
+
+        $payoutsMock->allows('createContact')
+            ->andReturns(['id'=>'cont_1234567890']);
+
+        $payoutsMock->allows('createFundAccount')
+            ->andReturns(['id'=>'fundacc_1234567890']);
+
+        $payoutsMock->allows('makePayoutRequest')
+            ->andReturns(['id'=>'pout_1234567890']);
+
+        [,$payoutId,] = (new OndemandPayout\Core)->makePayoutRequest($odsPayout->getId(), "INR");
+
+        $this->assertEquals('pout_1234567890', $payoutId);
+
+        $fundAccount = $this->getDbLastEntity('settlement.ondemand_fund_account', Mode::LIVE);
+        $this->assertEquals('fundacc_1234567890', $fundAccount->fund_account_id);
+        $this->assertEquals('cont_1234567890', $fundAccount->contact_id);
+    }
+
+    public function testMakePayoutRequest_FundAccountExists()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $odsPayout = $this->getDbLastEntity('settlement.ondemand_payout', Mode::LIVE);
+
+        $this->fixtures->create('settlement.ondemand_fund_account', [
+            'merchant_id'=> $this->merchantDetail['merchant_id'],
+        ]);
+
+        $splitzResp = [
+            "response" => ["variant" => ["variables" => [["key" => "read", "value" => "off"], ["key" => "dual_write", "value" => "off"], ["key"=>"write", "value"=>"off"]]]]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
+        $this->app->instance('razorpayXClient', $payoutsMock);
+
+        $payoutsMock->allows('makePayoutRequest')
+            ->andReturns(['id'=>'pout_1234567890']);
+
+        [,$payoutId,] = (new OndemandPayout\Core)->makePayoutRequest($odsPayout->getId(), "INR");
+
+        $this->assertEquals('pout_1234567890', $payoutId);
     }
 
     private function mockGetFeatureConfigCallFromCapitalEs($enabled = true)
