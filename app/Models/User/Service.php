@@ -3745,19 +3745,46 @@ class Service extends Base\Service
      */
     public function verifyEmailWithOtp(array $input): array
     {
-        if ($this->user->getConfirmedAttribute() === false)
+        $user = $this->user;
+
+        $userRole = $this->auth->getUserRole();
+
+        // If the actual user accessing this API is POS sales agent then override the user to the owner of the merchant
+        // This is done to ensure that the OTP verification happens for the correct user
+        if ($userRole === User\Role::RAZORPAY_SALES)
         {
-            $this->user->getValidator()->validateVerifyEmailWithOtpOperation($input);
+            $salesUserId = $user->getId();
+
+            $merchantId = $this->app['basicauth']->getMerchantId();
+
+            $merchantUser = $this->repo->merchant_user->findByRolesAndMerchantId([User\Role::OWNER], $merchantId)->first();
+
+            $user = $this->repo->user->findOrFail($merchantUser->user_id);
+
+            $this->trace->info(
+                TraceCode::VERIFY_EMAIL_WITH_OTP_OVERRIDE_USER_FOR_RAZORPAY_SALES_ROLE,
+                [
+                    'merchant_id'       => $merchantId,
+                    'user_id'           => $merchantUser->user_id,
+                    'rzp_sales_user_id' => $salesUserId
+                ]
+            );
+        }
+
+        if ($user->getConfirmedAttribute() === false)
+        {
+            $user->getValidator()->validateVerifyEmailWithOtpOperation($input);
 
             $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
             $action = ($requestOriginProduct === Product::BANKING) ? 'x_verify_email' : 'verify_email';
 
-            $this->core()->verifyEmailWithOtp($input, $this->user, $this->merchant, $action);
+            $this->core()->verifyEmailWithOtp($input, $user, $this->merchant, $action);
 
-            LoginSignupRateLimit::resetKey($this->user->getId(), Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
+            LoginSignupRateLimit::resetKey($user->getId(), Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
         }
-        $response['user'] = $this->user->toArrayPublic();
+
+        $response['user'] = $user->toArrayPublic();
 
         return $response;
     }

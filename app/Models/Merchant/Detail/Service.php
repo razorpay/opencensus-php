@@ -545,9 +545,31 @@ class Service extends Base\Service
 
         $user = $this->user;
 
+        $userRole = $this->auth->getUserRole();
+
         $merchant = $this->app['basicauth']->getMerchant();
 
         $merchantId = $merchant->getId();
+
+        // If the actual user accessing this API is POS sales agent then override the user to the owner of the merchant
+        // This is done to ensure that the OTP is sent to the owner of the merchant
+        if ($userRole === User\Role::RAZORPAY_SALES)
+        {
+            $salesUserId = $user->getId();
+
+            $merchantUser = $this->repo->merchant_user->findByRolesAndMerchantId([User\Role::OWNER], $merchantId)->first();
+
+            $user = $this->repo->user->findOrFail($merchantUser->user_id);
+
+            $this->trace->info(
+                TraceCode::OTP_SEND_VIA_EMAIL_OVERRIDE_USER_FOR_RAZORPAY_SALES_ROLE,
+                [
+                    'merchant_id'       => $merchantId,
+                    'user_id'           => $merchantUser->user_id,
+                    'rzp_sales_user_id' => $salesUserId
+                ]
+            );
+        }
 
         try
         {
@@ -565,7 +587,8 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
         }
 
-        try {
+        try
+        {
             // check if merchant has onboarded via PGOS and route request accordingly.
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
@@ -586,9 +609,9 @@ class Service extends Base\Service
 
                 return $response;
             }
-
         }
-        catch (\Throwable $exception) {
+        catch (\Throwable $exception)
+        {
             // this should not introduce error counts as it is running in shadow mode
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
@@ -597,7 +620,6 @@ class Service extends Base\Service
             throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
             ]);
-
         }
 
         $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
@@ -613,7 +635,8 @@ class Service extends Base\Service
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
         $signupCampaign   = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
-        if($isExpEnabledForUnverifiedEmailCheck === true and DDConstants::EASY_ONBOARDING === $signupCampaign){
+        if($isExpEnabledForUnverifiedEmailCheck === true and DDConstants::EASY_ONBOARDING === $signupCampaign)
+        {
             $skipStoringUnverifiedEmail = true;
         }
 

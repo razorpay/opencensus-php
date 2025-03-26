@@ -8962,5 +8962,24 @@ return [
             'content'   =>  [
             ],
         ],
-    ]
+    ],
+    'testVerifyEmailWithCallForRazorpaySalesUser' => [
+    'request'  => [
+        'url'     => '/users/verify_email',
+        'method'  => 'POST',
+        'content' => [
+            'otp'            => '0007',
+            'token'          => 'BUIj3m2Nx2VvVj',
+            'email'          => 'abc@rzp.com',
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'user' => [
+                'id'        => '10000000000004',
+                'email'     => 'udittest@rzp.com'
+            ]
+        ],
+    ],
+]
 ];

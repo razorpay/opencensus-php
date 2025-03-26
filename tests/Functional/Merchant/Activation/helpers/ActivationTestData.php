@@ -4053,6 +4053,21 @@ return [
         'status_code' => 200
     ],
 
+    'testMerchantOtpSendBySalesAgent'  => [
+        'request'  => [
+            'url'     => '/merchant/activation/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'token'                 => 'MOCK_TOKEN1234'
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+        'status_code' => 200
+    ],
+
     'testInstantActivationWithInvalidActivationFormMilestone' => [
         'request'     => [
             'method'  => 'POST',

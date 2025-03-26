@@ -5317,6 +5317,27 @@ class Core extends Base\Core
                 'variables'
             );
 
+            $userRole = $this->app['basicauth']->getUserRole();
+
+            // Update email in merchant & merchant_detail if user is POS sales agent in the assisted onboarding flow or
+            // if user is in easy onboarding flow
+            if (($userRole ===  User\Role::RAZORPAY_SALES && $signupCampaign === DDConstants::ASSISTED_ONBOARDING) ||
+                $signupCampaign ==  DDConstants::EASY_ONBOARDING)
+            {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input)
+                {
+                    $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchant);
+                });
+
+                $merchantDetails = $this->merchant->merchantDetail;
+
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input)
+                {
+                    $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchantDetails);
+                });
+            }
 
             if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
             {
