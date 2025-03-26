@@ -3537,8 +3537,14 @@ class Processor
     {
         try
         {
+            if ($input[Payment\Entity::METHOD] !== Payment\METHOD::NETBANKING)
+            {
+               return false;
+               
+            }
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
+
 
             // test mode payments are not supported
             if ((app()->isEnvironmentProduction() === true) and
@@ -4165,7 +4171,7 @@ class Processor
 
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
-            $routeViaReArch = true;
+            $routeViaReArch = false;
             $dimensions[5] = 1;
         }
 
@@ -4245,12 +4251,13 @@ class Processor
             $library = $input['_']['library'];
         }
 
-        if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS )
+        if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS)
         {
-        // Add experiment based on library to rampup traffic
-          $routeViaReArch = false;
-          $dimensions[17] = 1;
-
+            $library = strtolower($library);
+            if ($this->isLibrarySupportedForNbplusRearch($library) === false){
+                    $routeViaReArch = false;
+                    $dimensions[17] = 1;
+                }
         }
 
       if (empty($input[Payment\Entity::ORDER_ID]) === false)
@@ -14863,6 +14870,32 @@ public function isNBPlusRearchTpv($merchant): bool
     ]);
 
     return $variant === 'variant_on';
+}
+
+public function isLibrarySupportedForNbplusRearch($library): bool
+{
+    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'_library';
+
+    $properties = [
+        'id'            => $library,
+        'experiment_id' => $featureFlag,
+        'request_data'  => json_encode(['library' => $library, 'mode' => $this->mode]),
+    ];
+    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+    $variant = $response['response']['variant']['name'] ?? 'control';
+
+     // Log the feature variant for debugging
+     $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_LIBRARY_PAYMENT_SPLITZ_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'feature'     => $featureFlag,
+        'response'    => $response,
+    ]);
+
+    return $variant === 'variant_on';
+
 }
 
 /**
