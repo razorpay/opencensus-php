@@ -800,17 +800,17 @@ class PaymentFetchTest extends TestCase
         $paymentArray = $this->getDefaultPaymentArray();
 
         //create 3 dummy payments
-        $this->doAuthAndCapturePayment($paymentArray);
+        $p1 = $this->doAuthAndCapturePayment($paymentArray);
 
-        $this->doAuthAndCapturePayment($paymentArray);
+        $p2 = $this->doAuthAndCapturePayment($paymentArray);
 
-        $this->doAuthAndGetPayment($paymentArray);
+        $p3 = $this->doAuthAndGetPayment($paymentArray);
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['to'] = Carbon::now()->getTimestamp() + 20;
+        $testData['request']['content']['to'] = $p3['created_at'] + 40;
 
-        $testData['request']['content']['from'] = Carbon::now()->getTimestamp() - 20;
+        $testData['request']['content']['from'] = $p1['created_at'] - 40;
 
         $this->fixtures->merchant->addFeatures([Feature::PAYMENT_STATUS_AGGREGATE]);
 
@@ -932,7 +932,7 @@ class PaymentFetchTest extends TestCase
                             [
                                 'disputed'  => 1,
                                 'fee'       => 0,
-                                'email'     => 'abc@email.com',
+                                'email'     => 'abc@email.com'
                             ]);
 
         $this->fixtures->times(2)->create('dispute', ['payment_id' => $payment->getId()]);
@@ -2480,9 +2480,64 @@ class PaymentFetchTest extends TestCase
     public function testProxyAuthFetchPaymentOnTerminalId()
     {
         $payment = $this->fixtures->create('payment:authorized', []);
-
         $this->testData[__FUNCTION__]['request']['content']['terminal_id'] = $payment['terminal_id'];
 
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthFetchPaymentOnStoreId()
+    {
+        $payment1 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore1']);
+        $payment2 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore2']);
+        $payment3 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore3']);
+        $storeServiceMock = Mockery::mock(Payment\Store\Api::class)->makePartial();
+        $this->app->instance('store_service', $storeServiceMock);
+
+        $storeServiceMock->shouldReceive('fetchStores')->andReturn(['TestStore1','TestStore2']);
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthFetchPaymentOnWithoutStoreId()
+    {
+        $payment1 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore1']);
+        $payment2 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore2']);
+        $payment3 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore3']);
+        $storeServiceMock = Mockery::mock(Payment\Store\Api::class)->makePartial();
+        $this->app->instance('store_service', $storeServiceMock);
+
+        $storeServiceMock->shouldReceive('fetchStores')->andReturn([]);
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthFetchPaymentOnWithoutStoreId_2()
+    {
+        $payment1 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore1']);
+        $payment2 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore2']);
+        $payment3 = $this->fixtures->create('payment:authorized', []);
+        $storeServiceMock = Mockery::mock(Payment\Store\Api::class)->makePartial();
+        $this->app->instance('store_service', $storeServiceMock);
+
+        $storeServiceMock->shouldReceive('fetchStores')->andReturn([]);
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthFetchPaymentOnWithConflictingStoreId()
+    {
+        $payment1 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore1']);
+        $payment2 = $this->fixtures->create('payment:authorized', ['store_id'     => 'TestStore2']);
+        $payment3 = $this->fixtures->create('payment:authorized', []);
+        $storeServiceMock = Mockery::mock(Payment\Store\Api::class)->makePartial();
+        $this->app->instance('store_service', $storeServiceMock);
+
+        $storeServiceMock->shouldReceive('fetchStores')->andReturn(['TestStore1']);
         $this->ba->proxyAuth();
 
         $this->startTest();

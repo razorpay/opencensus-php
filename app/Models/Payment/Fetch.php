@@ -68,7 +68,9 @@ class Fetch extends BaseFetch
                 'filled|string|in:card,emi,sender_address,emi_plan,disputes,transfer,token,transfer.recipient_settlement,transaction,transaction.settlement|custom:expand',
             Entity::METHOD    => 'sometimes|string|required_with:flow',
             Entity::ORDER_ID  => 'sometimes|string|size:20',
-            Entity::FLOW      => 'sometimes|string|in:in_app,intent,collect'
+            Entity::FLOW      => 'sometimes|string|in:in_app,intent,collect',
+            Entity::STORE_IDS => 'sometimes|array|min:1|max:10',
+            Entity::STORE_IDS.'.*' => 'required|string|max:20'
         ],
         AuthType::ADMIN_AUTH => [
             Entity::NOTES       => 'sometimes|notes_fetch',

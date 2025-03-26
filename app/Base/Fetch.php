@@ -55,6 +55,7 @@ class Fetch
     const FIELD_SUBSCRIPTION_ID     = 'subscription_id';
     const FIELD_REFUND_ID           = 'refund_id';
     const FIELD_NOTES               = 'notes';
+    const STORE_IDS                 = 'store_ids';
 
     /**
      * Key for list of rules specific for restricted orgs like SBI,
@@ -148,7 +149,9 @@ class Fetch
             self::CHANNEL,
         ],
 
-        BasicAuth\Type::PROXY_AUTH     => [],
+        BasicAuth\Type::PROXY_AUTH     => [
+            self::STORE_IDS     => 'sometimes|array|min:1|max:10'
+        ],
 
         BasicAuth\Type::PRIVILEGE_AUTH => [
             self::COUNT         => 'filled|integer|min:1|max:1000',

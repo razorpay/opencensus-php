@@ -298,6 +298,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const WALLET_USER_ID = 'wallet_user_id';
     const SPLIT_AMOUNT = 'split_amount';
     const FLOW         = 'flow';
+    const STORE_IDS        = 'store_ids';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;

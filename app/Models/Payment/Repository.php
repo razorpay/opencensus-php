@@ -2873,6 +2873,15 @@ EOT;
         $query->whereIn($statusColumn, $status);
     }
 
+    protected function addQueryParamStoreIds($query, $params)
+    {
+        $storeIds = $params[Entity::STORE_IDS];
+
+        $storeIdColumn = $this->dbColumn(Entity::STORE_ID);
+
+        $query->whereIn($storeIdColumn, $storeIds);
+    }
+
     protected function addWDAQueryParamStatus($wdaQueryBuilder, $params)
     {
         $status = $params[Entity::STATUS];

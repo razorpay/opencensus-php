@@ -2361,6 +2361,7 @@ class ErrorCode
 
     const SERVER_ERROR_EZETAP_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_EZETAP_SERVICE_TIMEOUT';
     const SERVER_ERROR_EZETAP_SERVICE_ERROR                                         = 'SERVER_ERROR_EZETAP_SERVICE_ERROR';
+    const SERVER_ERROR_STORE_SERVICE_ERROR                                         = 'SERVER_ERROR_STORE_SERVICE_ERROR';
     const SERVER_ERROR_EZETAP_INTEGRATION_ERROR                                     = 'SERVER_ERROR_EZETAP_INTEGRATION_ERROR';
 
     // Fund transfer service

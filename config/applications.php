@@ -1873,6 +1873,12 @@ return [
         'splitz_fallback_to_asv_db' => env('ASV_SPLITZ_FALLBACK_TO_ASV_DB', ''),
     ],
 
+    //Store Service Integration
+    'store_service' => [
+        'url' =>  env('STORE_SERVICE_HOST'),
+        "mock" => env('STORE_SERVICE_MOCK', false)
+    ],
+
     'recon'         => [
         'api_key'               => env('RECON_SERVICE_API_AUTH_KEY'),
         'api_secret'            => env('RECON_SERVICE_API_AUTH_SECRET'),

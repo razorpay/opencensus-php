@@ -9,6 +9,7 @@ use Crypt;
 use Config;
 use Monolog\Logger;
 use RZP\Constants\Metric as Metrics;
+use RZP\Http\RequestHeader;
 use RZP\Jobs\OrderPaymentsParity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Admin;
@@ -2461,6 +2462,13 @@ class Service extends Base\Service
         $isExpEnable = $this->isExpEnableEsSearchOnCreatedAtAndThenOnScore($merchantId, $input);
 
         $customTxnEnabled = $this->fetchCustomTxnEnabledAndSubmerchants();
+
+        //Add storeIds for filtering (proxy auth only)
+        if ($this->app['basicauth']->isProxyAuth()===true)
+        {
+            $this->modifyInputForUserStores($input);
+        }
+
 
         if($customTxnEnabled['custom_txn_enabled'] === true)
         {
@@ -9547,5 +9555,22 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    private function modifyInputForUserStores(&$input): void
+    {
+
+        $storeIds = $input['store_ids'] ?? [];
+
+        $userStores = $this->app['store_service']->fetchStores();
+
+        if (empty($userStores)){
+            unset($input['store_ids']);
+            return;
+        }
+
+        $filteredStores = array_intersect($userStores, $storeIds);
+
+        $input['store_ids'] = $filteredStores;
     }
 }
