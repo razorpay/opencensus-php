@@ -713,6 +713,7 @@ return [
             ],
         ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
+        'migrationDefaultCountryCodes' => env('SETTLEMENTS_MIGRATION_DEFAULT_COUNTRY_CODES', 'IN,MY'),
     ],
 
     'einvoice' => [

@@ -2299,7 +2299,16 @@ class Service extends Base\Service
 
         $offsetID = (isset($input['offset_id']) === false)? $cached_merchant_id : $input['offset_id'];
 
-        $allMerchants=$this->repo->merchant->fetchAllMids($offsetID, $limit);
+        $countryCode = $input['country_code'] ?? null;
+
+        if (empty($countryCode) === false)
+        {
+            $allMerchants=$this->repo->merchant->fetchAllMidsByCountryCode($offsetID, $limit, $countryCode);
+        }
+        else
+        {
+            $allMerchants=$this->repo->merchant->fetchAllMids($offsetID, $limit);
+        }
 
         $merchantsToMigrate=$this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, $allMerchants);
 

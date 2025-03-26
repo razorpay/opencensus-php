@@ -2853,8 +2853,15 @@ class Repository extends Base\Repository
 
     public function fetchAllMids($offsetID,$limit)
     {
+
+        // fetch default country codes from env
+        $settlementsConfig = $this->app['config']->get('applications.settlements_service');
+
+        $defaultCountryCodes = explode(',', $settlementsConfig['migrationDefaultCountryCodes']);
+
         $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->select(Entity::ID)
+                    ->whereIn(Entity::COUNTRY_CODE, $defaultCountryCodes)
                     ->orderBy(Entity::CREATED_AT,'asc');
 
         if ($offsetID!=null)
@@ -2866,6 +2873,28 @@ class Repository extends Base\Repository
                      ->get()
                      ->pluck(Entity::ID)
                      ->toArray();
+    }
+
+    public function fetchAllMidsByCountryCode($offsetID,$limit,$countryCode)
+    {
+        $query=$this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->select(Entity::ID)
+            ->orderBy(Entity::CREATED_AT,'asc');
+
+        if ($countryCode!=null)
+        {
+            $query=$query->where(Entity::COUNTRY_CODE, '=', $countryCode);
+        }
+
+        if ($offsetID!=null)
+        {
+            $query=$query->where(Entity::ID, '>', $offsetID);
+        }
+
+        return $query->limit($limit)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     /**
