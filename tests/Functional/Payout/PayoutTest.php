@@ -4121,6 +4121,7 @@ class PayoutTest extends OAuthTestCase
                 'transaction_date' => 12345
             ]
         ];
+        $this->expectWebhookEventOneTime('payout.reversed');
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -4163,6 +4164,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($payout->reversal->getTransactionId());
 
         $this->ba->payoutInternalAppAuth();
+
+        $this->dontExpectAnyWebhookEvent();
 
         $request = [
             'url'     => '/banking_account_statement/payout_update',

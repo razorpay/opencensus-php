@@ -9201,6 +9201,9 @@ class Core extends Base\Core
                         null,
                         $reversal,
                         true);
+
+                    $this->app->events->dispatch('api.payout.reversed', $reversal->entity);
+
                 }
                 else
                 {
