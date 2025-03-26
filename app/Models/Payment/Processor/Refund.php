@@ -314,14 +314,14 @@ trait Refund
         {
             $input['batch_id'] = (empty($batch) === false) ? $batch->getId() : '';
 
-            $input['admin_batch_upload'] = true;
-
             $this->trace->info(
                 TraceCode::REFUND_FROM_BATCH_UPLOAD_SCROOGE,
                 [
                     'payment_id' => $payment->getId(),
                     'input'      => $input,
                 ]);
+
+            $input['admin_batch_upload'] = true;
 
             // this v2 refund request has payment with transfers, which would need reversals
             // this is required till experiment is ramped up fully
@@ -877,18 +877,18 @@ trait Refund
         // this param will help identify the authorized refund flow
         $input[RefundConstants::REFUND_AUTHORIZED_PAYMENT] = true;
 
-         if ($this->isNonMerchantRefundRequestV1_1($payment) === true)
-         {
-             $this->trace->info(
-             TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
-             [
-                 'payment_id' => $payment->getId(),
-                 'input'      => $input,
-             ]);
+        if ($this->isNonMerchantRefundRequestV1_1($payment) === true)
+        {
+            $this->trace->info(
+                TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'input'      => $input,
+                ]);
 
-             // Route refund creation to scrooge
-             return $this->newRefundV2Flow($payment, $input);
-         }
+            // Route refund creation to scrooge
+            return $this->newRefundV2Flow($payment, $input);
+        }
 
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
@@ -4693,42 +4693,17 @@ trait Refund
             return true;
         }
 
-        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
-            'variant'   => $v2Variant,
-            'paymentId' => $payment->getId(),
-            'merchantId'=> $merchantId,
-        ]);
-
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
+        if ((!$this->isProdEnv()) and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
 
-        $transferVariant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS_MID,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
-            'variant'   => $transferVariant,
-            'paymentId' => $payment->getId(),
-        ]);
-
-        if ($transferVariant !== 'on' and ($payment->isTransferred() === true))
+        if ((!$this->isProdEnv()) and ($payment->isTransferred() === true))
         {
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $payment->getId(),
-            Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
-            $this->mode
-        );
-
-        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+        return ($this->isProdEnv());
     }
 
     public function isBatchRefundRequestV1_1(Payment\Entity $payment): bool
@@ -4737,41 +4712,17 @@ trait Refund
             return true;
         }
 
-        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
-            'variant'   => $v2Variant,
-            'paymentId' => $payment->getId(),
-        ]);
-
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
+        if ((!$this->isProdEnv()) and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
 
-        $transferVariant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS_MID,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
-            'variant'   => $transferVariant,
-            'paymentId' => $payment->getId(),
-        ]);
-
-        if ($transferVariant !== 'on' and ($payment->isTransferred() === true))
+        if ((!$this->isProdEnv()) and ($payment->isTransferred() === true))
         {
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $payment->getId(),
-            Merchant\RazorxTreatment::BATCH_REFUND_CREATE_V_1_1,
-            $this->mode
-        );
-
-        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+        return ($this->isProdEnv());
     }
 
     public function isNonMerchantRefundRequestV1_1(Payment\Entity $payment): bool
@@ -4780,41 +4731,17 @@ trait Refund
             return true;
         }
 
-        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
-            'variant'   => $v2Variant,
-            'paymentId' => $payment->getId(),
-        ]);
-
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
+        if ((!$this->isProdEnv()) and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
 
-        $transferVariant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_WITH_TRANSFERS_MID,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_WITH_TRANSFERS, [
-            'variant'   => $transferVariant,
-            'paymentId' => $payment->getId(),
-        ]);
-
-        if ($transferVariant !== 'on' and ($payment->isTransferred() === true))
+        if ((!$this->isProdEnv()) and ($payment->isTransferred() === true))
         {
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $payment->getId(),
-            Merchant\RazorxTreatment::NON_MERCHANT_REFUND_CREATE_V_1_1,
-            $this->mode
-        );
-
-        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+        return ($this->isProdEnv());
     }
 
     public function isTransferCustomerRefundRequestV1_1(Payment\Entity $payment): bool
@@ -4823,32 +4750,24 @@ trait Refund
             return true;
         }
 
-        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
-            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
-            $this->mode);
-
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_INTERNATIONAL_REFUND, [
-            'variant'   => $v2Variant,
-            'paymentId' => $payment->getId(),
-        ]);
-
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
+        if ((!$this->isProdEnv()) and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $payment->getMerchantId(),
-            Merchant\RazorxTreatment::SCROOGE_REFUND_LA_TRANSFER_REVERSALS_MID,
-            $this->mode
-        );
+        return ($this->isProdEnv());
+    }
 
-        $this->trace->info(TraceCode::RAZORX_SCROOGE_REFUND_LA_TRANSFER_REVERSALS, [
-            'variant'   => $variant,
-            'paymentId' => $payment->getId(),
-        ]);
+    public function isProdEnv(): bool
+    {
+        $env = $this->app->environment();
 
-        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+        if ($env === Environment::PRODUCTION)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function pushRefundMessageForDCCEInvoiceCreation($refund, $id)

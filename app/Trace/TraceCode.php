@@ -1054,6 +1054,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SEGMENT_JOB_REQUEST                                   = 'SEGMENT_JOB_REQUEST';
     const SKIP_SEGMENT_JOB_REQUEST                              = 'SKIP_SEGMENT_JOB_REQUEST';
 
+    const SETL_FETCH_BY_ID_FROM_NSS_SHADOW                      = 'SETL_FETCH_BY_ID_FROM_NSS_SHADOW';
+
+    const SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW                   = 'SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW';
+
+    const SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW             = 'SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW';
+
     const DASHBOARD_JOB_ERROR                                   = 'DASHBOARD_JOB_ERROR';
 
     const NODAL_BEN_ADD_REQUEST                                 = 'NODAL_BEN_ADD_REQUEST';

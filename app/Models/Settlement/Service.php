@@ -316,12 +316,7 @@ class Service extends Base\Service
 
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
-        $shadow = $this->app->razorx->getTreatment($experimentVariable,
-            Settlement\Constants::RAZORX_SETL_FETCH_BY_ID_FROM_NSS_SHADOW,
-            $this->mode
-        );
-
-        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
+        if ($this->isSetlFetchByIdFromNssShadowEnabled($experimentVariable))
         {
             $nssResponse = app('settlements_dashboard')->settlementFetchById($id);
 
@@ -343,6 +338,37 @@ class Service extends Base\Service
         }
 
         return $this->fetchOld($id);
+    }
+
+    private function isSetlFetchByIdFromNssShadowEnabled($experimentVariable): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_by_id_from_nss_shadow_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SETL_FETCH_BY_ID_FROM_NSS_SHADOW, [
+                'merchant_id'   => $experimentVariable,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_by_id_from_nss_shadow_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
     public function fetchOld($id)
@@ -432,12 +458,7 @@ class Service extends Base\Service
 
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
-        $shadow = $this->app->razorx->getTreatment($experimentVariable,
-            Settlement\Constants::RAZORX_SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW,
-            $this->mode
-        );
-
-        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON && $this->includeDsSettlementTransactions() === false)
+        if ($this->isSetlFetchMultipleFromNssShadowEnabled($experimentVariable) && $this->includeDsSettlementTransactions() === false)
         {
             $nssResponse = app('settlements_dashboard')->settlementFetchMultiple($input);
 
@@ -459,6 +480,37 @@ class Service extends Base\Service
         }
 
         return $this->fetchMultipleOld($input);
+    }
+
+    private function isSetlFetchMultipleFromNssShadowEnabled($experimentVariable): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_multiple_from_nss_shadow_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW, [
+                'merchant_id'   => $experimentVariable,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_multiple_from_nss_shadow_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
     public function fetchMultipleOld($input)
@@ -1094,12 +1146,7 @@ class Service extends Base\Service
 
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
-        $shadow = $this->app->razorx->getTreatment($experimentVariable,
-            Settlement\Constants::RAZORX_SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW,
-            $this->mode
-        );
-
-        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON) {
+        if ($this->isSetlFetchSourceDetailsFromNssShadowEnabled($experimentVariable)) {
             $nssResponse = app('settlements_dashboard')->settlementTransactionsSourceDetails($id, $input);
 
             $experimentVariable = UniqueIdEntity::generateUniqueId();
@@ -1119,6 +1166,37 @@ class Service extends Base\Service
         }
 
         return $this->getSettlementTransactionsSourceDetailsOld($id, $input);
+    }
+
+    private function isSetlFetchSourceDetailsFromNssShadowEnabled($experimentVariable): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_source_details_from_nss_shadow_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW, [
+                'merchant_id'   => $experimentVariable,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_source_details_from_nss_shadow_exp_id') ?? null
+            ]);
+
+            return false;
+        }
     }
 
     public function getSettlementTransactionsSourceDetailsOld($id, $input)

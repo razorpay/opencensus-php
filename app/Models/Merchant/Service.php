@@ -7565,13 +7565,9 @@ class Service extends Base\Service
 
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::HARVESTER_REFUND_FILTER,
-            $this->app['basicauth']->getMode() ?? "live"
-        );
+        $env = $this->app->environment();
 
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        if ($env === Environment::PRODUCTION)
         {
             $input = $this->addRefundFilterToQueryIfApplicable($input);
         }

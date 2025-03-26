@@ -433,27 +433,14 @@ class Core extends Base\Core
         string $balanceType = Type::PRIMARY,
         bool $useClsBalance = false) : bool
     {
-
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app->razorx->getTreatment(
-            $merchant->getId(), RazorxTreatment::REFUND_CREDITS_WITH_LOCK, $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_FETCH_REFUND_CREDITS_WITH_LOCK,
-            [
-                'result' => $result,
-                'mode' => $mode,
-                'merchant_id' => $merchant->getId(),
-            ]);
-
         if ($useClsBalance === true && $merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW))
         {
             $refundCredits = $this->getClsBalanceForFundAccountType($merchant->getId(),Constants::MERCHANT_REFUND_CREDITS);
         }
         else
         {
-            if(strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON)
+            $rfnd = new Payment\Refund\Entity();
+            if((new RefundTransactionProcessor($rfnd))->isRefundCreditsWithLockEnabled($merchant->getId()))
             {
                 $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
             }
