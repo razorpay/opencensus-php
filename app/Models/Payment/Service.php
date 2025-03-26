@@ -2852,6 +2852,13 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
+        if (isset($entity['upi']) and
+            ($payment->isRoutedThroughPaymentsUpiPaymentService() === true ||
+             $payment->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)
+        ) {
+            $entity['upi']['flow'] = $payment->getFlow();
+        }
+
         if (isset($entity['card']) and
            ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
         )

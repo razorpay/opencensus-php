@@ -739,6 +739,8 @@ return array(
 
     'new_commission_logic_exp_id'           => env('NEW_COMMISSION_LOGIC_EXP_ID'),
 
+    'flow_in_payment_response_id'             => env('FLOW_IN_PAYMENT_RESPONSE_ID'),
+
     'commission_invoice_events_to_kafka_exp_id'  => env('COMMISSION_INVOICE_EVENTS_TO_KAFKA_EXP_ID'),
 
     'commission_reversal_for_refund_exp_id' => env('COMMISSION_REVERSAL_FOR_REFUNDS_EXP_ID'),

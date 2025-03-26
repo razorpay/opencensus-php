@@ -469,6 +469,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STORE_ID, // Added here to support store management feature for pos.
         self::SOURCE_CHANNEL,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
+        self::FLOW,
     ];
 
     protected $visible = [
@@ -575,6 +576,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD_ID,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
         self::REFUND_UNEXPECTED_PAYMENT,
+        self::FLOW,
     ];
 
     protected $public = [
@@ -637,6 +639,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD,
         self::REWARD_ID,
         self::AMOUNT_CAPTURED,
+        self::FLOW,
     ];
 
     protected $webhook = [
@@ -3407,6 +3410,41 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $e,
                 null,
                 TraceCode::CC_ON_UPI_PRICING_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
+    public function shouldPopulateFlowForMerchant(): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $merchantId=$this->getMerchantId();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get('app.flow_in_payment_response_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? 'variant_off';
+
+            $app['trace']->info(TraceCode::FLOW_IN_PAYMENT_RESPONSE_SPLITZ_RESPONSE, [
+                'properties'    => $properties,
+                'merchant_id'   => $merchantId,
+                'variant'       => $variant,
+            ]);
+
+            return $variant === 'variant_on';
+
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::OFFER_ON_UPS_REARCH_SPLITZ_ERROR);
         }
 
         return false;
@@ -7315,6 +7353,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $app = App::getFacadeRoot();
 
+        if ($this->getCpsRoute() === Payment\Entity::API && $this->shouldPopulateFlowForMerchant() === true) {
+
+        // Allow populating Flow in UPI block for all payments
+        $upiMetadata = $this->getUpiMetadata();
+
+        if (isset($upiMetadata) === true)
+            {
+                $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
+            }
+        }
+
         /*
          * Adding if block to return upi flow attribute for the Merchant and Admin dashboard
          * So, we are adding basic auth check on querying the upi_metadata table.
@@ -7325,6 +7374,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             or $app['basicauth']->isPrivateAuth() === true
             or $action === Constants::WEBHOOK)
         {
+
             $upiMetadata = $this->getUpiMetadata();
 
             if (isset($upiMetadata) === false or $upiMetadata->getFlow() !== Flow::IN_APP)
@@ -7332,7 +7382,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return;
             }
 
-            $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
             $reference17 = json_decode($this->getReference17(), true) ?? [];
 
             if ((empty($reference17['payer']) === true) or
@@ -8007,6 +8056,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isSodexoPayment(): bool
     {
         return $this->isCard() && $this->getProvider() === self::SODEXO;
+    }
+
+    public function getFlow()
+    {
+        return $this->getAttribute(self::FLOW);
     }
 
     public function isOptimizerWalletLinkAndPaySupported($gatewayInput=null): bool
