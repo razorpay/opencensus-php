@@ -787,6 +787,10 @@ return array(
 
     'cross_border_cfb_non_inr_experiment_id' => env('CROSS_BORDER_CFB_NON_INR_EXPERIMENT_ID'),
 
+    'cross_border_dfb_inr_experiment_id' => env('CROSS_BORDER_DFB_INR_EXPERIMENT_ID'),
+
+    'cross_border_dfb_non_inr_experiment_id' => env('CROSS_BORDER_DFB_NON_INR_EXPERIMENT_ID'),
+
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
@@ -1403,6 +1407,6 @@ return array(
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
 
     'auto_capture_result'   => env('AUTO_CAPTURE_RESULT'),
-  
+
     'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT')
 );

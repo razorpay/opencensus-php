@@ -876,10 +876,15 @@ class Processor
             return false;
         }
 
-        if ($merchant->isFeeBearerCustomerOrDynamic() === true){
+        if ($merchant->isFeeBearerDynamic() === true) {
+            if ($this->inputCurrencyNotINR($input)) {
+                return $this->evaluateSplitzExperimentforNonINRDFBRearch($merchant);
+            }
+            return $this->evaluateSplitzExperimentforINRDFBRearch($merchant);
+        }
+        if ($merchant->isFeeBearerCustomer() === true){
             if ($this->inputCurrencyNotINR($input)) {
                 return $this->evaluateSplitzExperimentforNonINRCFBRearch($merchant);
-
             }
             return $this->evaluateSplitzExperimentforINRCFBRearch($merchant);
         }
@@ -1028,6 +1033,78 @@ class Processor
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.cross_border_cfb_non_inr_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforINRDFBRearch ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dfb_inr_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforNonINRDFBRearch ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dfb_non_inr_experiment_id'),
                 'request_data'  => json_encode(
                     [
                         'merchant_id' => $merchant->getId(),
