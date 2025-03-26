@@ -2379,7 +2379,7 @@ class Service extends Base\Service
         {
 
             $properties = [
-                'id'            => $merchantId,
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get($experimentName),
                 'request_data'  => json_encode(['mids' => $merchantId]),
             ];
