@@ -547,8 +547,6 @@ class Processor
      */
     const BLOCK_MERCHANTS_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
 
-    const ENABLE_REARCH_PAYMENTS_FLOW = 'enable_rearch_payments_flow';
-
     const ENABLE_REARCH_EMI_PAYMENTS_FLOW = 'enable_rearch_emi_payments_flow';
 
     const ENABLE_REARCH_CARD_RECURRING_FLOW = 'enable_rearch_card_recurring_flow';
@@ -1853,21 +1851,6 @@ class Processor
             $result = '';
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
-
-            if (Environment::isTestingEnvironment($this->app['env']) === false)
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_PAYMENTS_FLOW, $this->mode);
-
-                if ($result === 'on')
-                {
-                    $this->trace->info(TraceCode::FORCE_ROUTE_THROUGH_REARCH, [
-                        'reason' => "whitelisted merchant",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-
-                    return true;
-                }
-            }
 
             if ($merchant->getCountry() === 'MY')
             {
