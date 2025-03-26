@@ -7485,14 +7485,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
          Network::getFullName(Network::DICL),
         ];
 
-        $app = \App::getFacadeRoot();
-
-        $app['trace']->debug(TraceCode::HDFC_VAS_RAZORX_RESULT, [
-            'merchantId' => $this->merchant->getId(),
-            'paymentId' => $this->getId(),
-            'razorXResult' => 'on',
-        ]);
-
         if ((in_array($network, $validNetworks, true) === true) and
              ($this->isFeeBearerCustomer() === true) and
              ($this->isDirectSettlement() === true))
@@ -7539,22 +7531,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             Network::getFullName(Network::DICL),
         ];
 
-        $app = \App::getFacadeRoot();
-
-        $experimentResult = $app['razorx']->getTreatment($this->merchant->getId(),
-            'hdfc_vas_surcharge_2', $app['rzp.mode']);
-
-        $app['trace']->debug(TraceCode::HDFC_VAS_RAZORX_RESULT, [
-            'merchantId' => $this->merchant->getId(),
-            'paymentId' => $this->getId(),
-            'razorXResult' => $experimentResult,
-        ]);
-
         if (
             (in_array($network, $validNetworks, true) === true) and
             ($this->isFeeBearerCustomer() === true) and
-            ($this->isDirectSettlement() === false) and
-            ($experimentResult === 'on'))
+            ($this->isDirectSettlement() === false))
         {
             return true;
         }
