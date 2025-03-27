@@ -85,6 +85,7 @@ class Validator extends Base\Validator
         Fields::PROMOTIONS_DESCRIPTION  => 'sometimes|string|max:512',
         Fields::PROMOTIONS_SOURCE       => 'sometimes|string|max:512',
         Fields::PROMOTIONS_FIELDS       => 'sometimes',
+        Fields::PROMOTIONS_IS_FREEBIE   => 'sometimes|boolean',
     ];
 
 
