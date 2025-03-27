@@ -52,6 +52,7 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
                     "gateway_merchant_id"   => "AIRT231ed4o5fd",
                 ],
                 "gateway" => $payment->getGateway(),
+                "source"  => 'art',
             ],
         ];
 
@@ -102,10 +103,13 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
                     "gateway_merchant_id"   => "AIRT231ed4o5fd",
                 ],
                 "gateway" => $payment->getGateway(),
+                "source"  => 'art',
             ],
         ];
 
         $response = $this->makeRequestAndGetContent($request);
+        $paymentEntity = $this->getDbLastPayment();
+        $this->assertNotNull($paymentEntity->getRefundAt());
         $this->assertNotNull($response);
         $this->assertEquals("API_UNEXPECTED", $response["data"]["type"]);
         $this->assertNotNull($response["data"]["response"]);
@@ -152,6 +156,7 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
                     "gateway_merchant_id"   => "AIRT231ed4o5fd",
                 ],
                 "gateway" => $payment->getGateway(),
+                "source" => 'art',
             ],
         ];
 
@@ -188,6 +193,7 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
                     "gateway_merchant_id"   => "AIRT231ed4o5fd",
                 ],
                 "gateway" => $payment->getGateway(),
+                "source" => 'art',
             ],
         ];
 
@@ -242,6 +248,7 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
                     "gateway_merchant_id"   => 'razorpayupi',
                 ],
                 "gateway" => 'upi_yesbank',
+                "source" => 'art',
             ],
         ];
 
@@ -316,6 +323,7 @@ class UpiPaymentServiceActionUnexpectedPreprocessTest extends UpiPaymentServiceT
                     "gateway_merchant_id"   => 'razorpayupi',
                 ],
                 "gateway" => 'upi_yesbank',
+                "source" => 'art',
             ],
         ];
 
