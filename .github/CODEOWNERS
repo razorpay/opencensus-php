@@ -67,6 +67,7 @@ web/js/merchant/views/Optimizer                                          @parth-
 web/js/merchant/views/Marketplace/OptimizerAccounts                      @parth-p-ui @ravid7000 @sanchit-razorpay
 
 web/js/merchant/views/AccountAndSettings/PaymentMethods/Tabs/International @parth-p-ui @ravid7000
+web/js/merchant/views/AccountAndSettings/InternationalSettings           @parth-p-ui @ravid7000
 
 # Disabled E2Es - Requires PR approval from dashboard deploy leads
 web/e2e/suites/partnerDashboard/pos/partnerAgent/inviteFlows.spec.js     @razorpay/deploy-leads-dashboard
