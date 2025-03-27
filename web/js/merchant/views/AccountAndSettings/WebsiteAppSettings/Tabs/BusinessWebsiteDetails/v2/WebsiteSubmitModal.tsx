@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { Environments, ShowNotificationType, User as UserType } from 'common/typings';
-import { noop } from 'common/utils/rzp-utils';
+import { isExperimentActive, noop } from 'common/utils/rzp-utils';
 import User from 'merchant/models/User';
 import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
@@ -52,6 +52,7 @@ import {
 } from './utils';
 import { getInitialPolicyPagesFormState } from './components/utils';
 import { defaultPolicyPageCreationFormField } from './components/constants';
+import { useSplitzService } from '@libs/web-nexus/common/splitz';
 
 interface WebsiteSubmitModalProps {
   isOpen: boolean;
@@ -76,6 +77,11 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
 }) => {
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
+  const {
+    abExperiments: { merchant_kla_same_website_bypass },
+  } = useSplitzService();
+  const bypassSameWebsiteCheckForKLA = isExperimentActive(merchant_kla_same_website_bypass);
+
   const {
     currentStep,
     setCurrentStep,
@@ -149,10 +155,14 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   }
 
   const handleMainPageSubmit = async (formState) => {
-    const [isInputValid, inputValidationError] = isMainPageSubmitPayloadValid(
+    const { has_key_access: hasKeyAccess, business_website, isActivated } = user;
+    const isKLAMerchant = !Boolean(hasKeyAccess);
+    const [isInputValid, inputValidationError] = isMainPageSubmitPayloadValid({
       formState,
-      user.business_website,
-    );
+      userBusinessWebsite: business_website,
+      isKLAMerchant,
+      bypassSameWebsiteCheckForKLA,
+    });
     if (!isInputValid) {
       showNotification({
         type: 'error',
@@ -160,8 +170,6 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       });
       return;
     }
-
-    const { has_key_access: hasKeyAccess, business_website, isActivated } = user;
 
     // old first time add flow => here it is being used for non activated user for app and website submit
     const shouldUseNonActivatedAPI = formState.platform.value === Platform.WEBSITE && !isActivated;

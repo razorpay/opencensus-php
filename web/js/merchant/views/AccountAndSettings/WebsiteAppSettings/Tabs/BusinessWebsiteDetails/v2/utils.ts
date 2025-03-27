@@ -236,9 +236,18 @@ export const policyPageFormCreationValidator = (
   return { isValid: !hasError, formState: newFormState };
 };
 
-export const isMainPageSubmitPayloadValid = (formState, userBusinessWebsite): [boolean, string] => {
+export const isMainPageSubmitPayloadValid = ({
+  formState,
+  userBusinessWebsite,
+  isKLAMerchant,
+  bypassSameWebsiteCheckForKLA,
+}): [boolean, string] => {
   if (!mainPageFormValidator(formState)) {
     return [false, 'Please enter valid inputs.'];
+  }
+
+  if (bypassSameWebsiteCheckForKLA && isKLAMerchant) {
+    return [true, ''];
   }
 
   if (autoPrefixUrls(formState.url.value, true) === userBusinessWebsite) {

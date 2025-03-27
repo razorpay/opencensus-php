@@ -30,7 +30,7 @@ function CreditsList(props) {
       },
     });
 
-    loadCheckout(window.api_host);
+    loadCheckout(window.checkout_api_host);
   }, []);
 
   const handleManageAlert = () => {

@@ -65,7 +65,7 @@ export const makeLink = (key: string, params: Record<string, any> = {}) => {
       return params.refund_id
         ? `/refunds/${params.refund_id}`
         : areParamsAvailable
-        ? `/refund?${getParamsString(params)}`
+        ? `/refunds?${getParamsString(params)}`
         : '/refunds';
     case 'payment_failed':
       return `/failed-payments${areParamsAvailable ? `?${getParamsString(params)}` : ''}`;

@@ -100,6 +100,10 @@ jest.mock(
   },
 );
 
+jest.mock('@libs/web-nexus/common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: {} }),
+}));
+
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 const defaultProps = {
   isOpen: true,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { API_URL } from '@apps/shell/src/env';
+import { CHECKOUT_API_URL } from '@apps/shell/src/env';
 import { PAYMENT_LINKS_CUSTOM_NOTES } from './constants/custom-notes';
 import {
   PL_EXTRA_FORM_FIELDS,
@@ -25,7 +25,7 @@ export const generateRzpBEControllerScripts = (
   // ).getNotifications();
 
   // TODO: [IMP] Verify this flow, something related to checkout.
-  const apiHost = API_URL;
+  const checkoutApiHost = CHECKOUT_API_URL;
 
   // Duplicated from BE, payment links
   const customNotes = PAYMENT_LINKS_CUSTOM_NOTES[currentMerchantId] || [];
@@ -47,7 +47,7 @@ export const generateRzpBEControllerScripts = (
           Boolean(appLocals.clientTemplate === 'one-dashboard'),
         )};
         window.rzp_org = ${JSON.stringify(org)};
-        window.api_host = ${JSON.stringify(apiHost)};
+        window.checkout_api_host = ${JSON.stringify(checkoutApiHost)};
         window.custom_notes = ${JSON.stringify(customNotes)};
         window.pl_expiry_in_hrs = ${JSON.stringify(plExpiryInHrs)};
         window.pl_extra_fields = ${JSON.stringify(plExtraFields)};

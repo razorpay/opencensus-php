@@ -34,7 +34,7 @@ export const loadCheckout = apiURL => {
 };
 
 export default (currentUser, onSuccess, onError) => {
-  loadCheckout(window.api_host);
+  loadCheckout(window.checkout_api_host);
   fetchKeys(currentUser)
     .then(onSuccess)
     .catch(onError);

@@ -73,7 +73,7 @@ class AddFundsContainer extends Component {
     this.props.getTicketStatus();
 
     // Loads checkout.js //
-    loadCheckout(window.api_host);
+    loadCheckout(window.checkout_api_host);
   }
 
   addFunds = (transaction, type) => {

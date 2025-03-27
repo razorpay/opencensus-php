@@ -27,6 +27,7 @@ export const DASHBOARD_MICROAPPS = process.env['DASHBOARD_MICROAPPS'];
 
 // To be used in window obj
 export const API_URL = process.env['API_URL'];
+export const CHECKOUT_API_URL = process.env['CHECKOUT_API_URL'];
 export const LUMBERJACK_API_URL = process.env['LUMBERJACK_API_URL'];
 export const SEGMENT_API_KEY = process.env['SEGMENT_API_KEY'];
 export const WEBSITE_SEGMENT_API_KEY = process.env['WEBSITE_SEGMENT_API_KEY'];
