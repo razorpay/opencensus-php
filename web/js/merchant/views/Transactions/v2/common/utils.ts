@@ -185,23 +185,23 @@ export const getDefaultSearchByValueAndOption = ({
 
 export const onSearch =
   (history: RouteComponentProps['history']) =>
-  (args: Record<string, unknown>): void => {
-    args = encodeSensitiveFields(args);
-    const { pathname, hash, state } = history.location;
-    history.replace({
-      pathname,
-      hash,
-      search: stringifyQueryParams(args),
-      state,
-    });
-  };
+    (args: Record<string, unknown>): void => {
+      args = encodeSensitiveFields(args);
+      const { pathname, hash, state } = history.location;
+      history.replace({
+        pathname,
+        hash,
+        search: stringifyQueryParams(args),
+        state,
+      });
+    };
 
 export const onPaginate =
   (paginate: Paginate) =>
-  (params: Record<string, unknown>): void => {
-    const searchParams = qs.parse(window.location.search);
-    paginate({ ...searchParams, ...params });
-  };
+    (params: Record<string, unknown>): void => {
+      const searchParams = qs.parse(window.location.search);
+      paginate({ ...searchParams, ...params });
+    };
 
 export const getCreatedOnTime = ({ created_at }: { created_at: number }): string => {
   const format = getDateFormat(created_at);
@@ -304,7 +304,7 @@ export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: str
 };
 
 export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
-  // Hide analytics overview for JnK Omni merchant.
+  // Hide analytics overview for JnK Omni merchant
   if (user.isJnKOmniEnabled) {
     return true;
   }
