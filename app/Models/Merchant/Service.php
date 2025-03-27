@@ -10167,19 +10167,23 @@ class Service extends Base\Service
         }
     }
 
-    public function isEasyKycAccessReferralEnabledForPartner(Merchant\Entity $merchant): bool
-    {
-        if($merchant->isResellerPartner() === false)
-        {
-            return false;
+    public function isEasyKycAccessReferralEnabledForPartner(Merchant\Entity $merchant): bool {
+        $isEnabled = false;
+
+        if($merchant->isResellerPartner()) {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.easy_kyc_access_referral_experiment_id'),
+            ];
+
+            $isEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
         }
 
-        $properties = [
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.easy_kyc_access_referral_experiment_id'),
-        ];
+        else if ($merchant->isAggregatorPartner()) {
+            $isEnabled = (new Referral\Core())->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'));
+        }
 
-        return  $this->core()->isSplitzExperimentEnable($properties, 'enable');
+        return $isEnabled;
     }
 
     public function isReadFromTiDBExpEnabled($merchantId): bool

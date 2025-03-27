@@ -835,6 +835,10 @@ return array(
 
     'easy_kyc_access_referral_experiment_id' => env('EASY_KYC_ACCESS_REFERRAL_EXP_ID'),
 
+    'mkyc_reseller_experiment_id' => env('MKYC_RESELLER_EXPERIMENT_ID'),
+
+    'mkyc_aggregator_experiment_id' => env('MKYC_AGGREGATOR_EXPERIMENT_ID'),
+
     'read_from_ti_db_experiment_id' => env('READ_FROM_TI_DB_EXPERIMENT_ID'),
 
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),

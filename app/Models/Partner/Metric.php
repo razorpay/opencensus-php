@@ -130,5 +130,4 @@ final class Metric
     const SWITCH_OVER_PARTNERSHIPS_EXPERIMENT_FAILURE='switch_over_partnerships_experiment_failure';
 
     const SWITCH_OVER_PARTNERSHIPS_MERCHANT_APPLICATION_UNKNOWN_ENTITY='switch_over_partnerships_merchant_unknown_entity';
-
 }
