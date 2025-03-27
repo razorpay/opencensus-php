@@ -127,6 +127,7 @@ class Entity extends Base\PublicEntity
     const ENABLED_BANKS                 = 'enabled_banks';
     const ENABLED_APPS                  = 'enabled_apps';
     const ENABLED_WALLETS               = 'enabled_wallets';
+    const ENABLED_PAYLATERS             = 'enabled_paylaters';
 
     // used for direct settlements.
     const ACCOUNT_NUMBER                = 'account_number';
@@ -230,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED_BANKS,
         self::ENABLED_APPS,
         self::ENABLED_WALLETS,
+        self::ENABLED_PAYLATERS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::CARDLESS_EMI,
@@ -310,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED_BANKS,
         self::ENABLED_APPS,
         self::ENABLED_WALLETS,
+        self::ENABLED_PAYLATERS,
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::VIRTUAL_UPI_ROOT,

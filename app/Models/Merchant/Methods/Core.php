@@ -1763,6 +1763,14 @@ class Core extends Base\Core
 
             $providers = array_merge($providers, $enabledProviders);
 
+            $enabledPaylater = (array_column($terminals, 'enabled_paylaters'));
+            $enabledPaylater = array_unique(array_flatten($enabledPaylater));
+            $enabledPaylater = array_filter($enabledPaylater);
+
+            $enabledProviders = array_map('strtolower', $enabledPaylater);
+
+            $providers = array_merge($providers, $enabledProviders);
+
             $paylaterProviders = $methods->getEnabledPaylaterProviders();
 
             if (in_array(PaylaterProvider::GETSIMPLOPTIMIZER, $providers) and isset($paylaterProviders[PaylaterProvider::GETSIMPL]) === true and
@@ -1851,7 +1859,23 @@ class Core extends Base\Core
         if (isset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]) === true and
         $provider[PaylaterProvider::GETSIMPLOPTIMIZER] === true) {
             unset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]);
-            $provider[PaylaterProvider::GETSIMPL]=true;
+            $terminals = array_filter($terminals, function($terminal) {
+                return $terminal['gateway_acquirer'] === PaylaterProvider::GETSIMPLOPTIMIZER;
+            });
+
+            $enabledPaylater = (array_column($terminals, 'enabled_paylaters'));
+            $enabledPaylater = array_unique(array_flatten($enabledPaylater));
+            $enabledPaylater = array_filter($enabledPaylater);
+
+            foreach ($enabledPaylater as $providerName)
+            {
+                $provider[$providerName] = true;
+            }
+            // If no paylater found then default  simpl and simpl pay in 3 enabled for backward compatibility
+            if (count($enabledPaylater) === 0) {
+                $provider[PaylaterProvider::GETSIMPL]=true;
+                $provider[PaylaterProvider::SIMPL_PAY_IN_3]=true;
+            }
         }
 
         return $provider;
