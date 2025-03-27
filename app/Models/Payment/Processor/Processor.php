@@ -401,11 +401,6 @@ class Processor
     /**
      * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
      */
-    const BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER = 'banking_org_id_card_payments_via_pg_router';
-
-    /**
-     * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
-     */
     const BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER = 'banking_org_id_MOTO_payments_via_pg_router';
 
 
@@ -2110,19 +2105,6 @@ class Processor
                 }
 
                 $routeMotoToRearch = true;
-            }
-
-            // check if eligible banking org id to redirect to card's re-arch
-            if ($merchant->isRazorpayOrgId() === false) {
-                $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER, $this->mode);
-                if ($result !== 'on') {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "Banking_Org_Id",
-                        'merchant_id' => $merchant->getId(),
-                        'banking_org_id' => $merchant->getOrgId(),
-                    ]);
-                    return false;
-                }
             }
 
             $order = null;
