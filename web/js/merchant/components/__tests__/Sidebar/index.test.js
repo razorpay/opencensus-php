@@ -10,6 +10,7 @@ const defaultProps = {
       abcd: { name: 'abcd', id: '12345' },
     },
     isPartner: () => false,
+    isFeatureEnabled: () => false,
   },
 };
 

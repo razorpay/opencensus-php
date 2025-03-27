@@ -24,7 +24,7 @@ const defaultProps = {
     developersWebhooks: 'developersWebhooks',
     settings: 'settings',
   },
-  user: { isPaymentButtonEnabledByRazorX: false },
+  user: { isPaymentButtonEnabledByRazorX: false, isFeatureEnabled: () => false },
   isChargeAtWillEnabled: false,
 };
 

@@ -145,6 +145,10 @@ const NavLinkItem = ({
 
   const isActive = activeTab === product_id;
 
+  if (title === 'Optimizer' && user?.isFeatureEnabled('optimizer_hosted')) {
+    title = 'Hosted Optimizer';
+  }
+
   return (
     <ShowWhen additionalCondition={(user) => additionalCondition(user, extraConfig)}>
       {type === 'linkButton' ? (

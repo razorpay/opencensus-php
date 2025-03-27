@@ -391,7 +391,7 @@ function MerchantNavLinks(props) {
         />
 
         <MainNavLink
-          label="Optimizer"
+          label={user.isFeatureEnabled('optimizer_hosted') ? "Hosted Optimizer" : "Optimizer"}
           type="product"
           icon="i i-routing text-warm temp-icon-style"
           to="/optimizer"

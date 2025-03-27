@@ -223,3 +223,19 @@ export const LOYALTY_PRODUCTS_SECTION = {
     },
   ],
 };
+
+// This is required as for Optimizer there will be 2 different products based on the feature flag
+// TODO: Remove this once we return FALLBACK_PRODUCTS from a function that accepts user
+export const getFallbackProductsForConnectedNav = (user) => {
+  const paymentProductOptions = FALLBACK_PRODUCTS[0].product_options.map((product) => {
+    if (product.product_id === 'optimizer' && user.isFeatureEnabled('optimizer_hosted')) {
+      product.title = 'Hosted Optimizer';
+    }
+    return product;
+  });
+  const paymentProductsSection = {
+    ...FALLBACK_PRODUCTS[0],
+    product_options: paymentProductOptions,
+  };
+  return [paymentProductsSection, ...FALLBACK_PRODUCTS.slice(1)];
+};

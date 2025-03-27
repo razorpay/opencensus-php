@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import {
-  FALLBACK_PRODUCTS,
+  getFallbackProductsForConnectedNav,
   LOYALTY_PRODUCTS_SECTION,
 } from 'merchant/components/SidebarV2/utils/Fallback';
 import {
@@ -18,9 +18,6 @@ import { useStore } from '@federated/apps/shell/commonStore';
 import { initializeRoutes, ROUTE_REG } from 'merchant/components/SidebarV2/utils/href';
 import SidebarFooter from './components/SidebarFooter';
 import ActivationProgress from './components/ActivationProgress';
-
-const [PAYMENTS_PRODUCTS_SECTION, BANKING_PRODUCTS_SECTION, GIFTS_CARD_PRODUCTS_SECTION] =
-  FALLBACK_PRODUCTS; // v2 fallback products
 
 export const accountsAndSettingsIds = new Set(['settings', 'accountsettings', 'my_account']);
 
@@ -53,13 +50,6 @@ export const CUSTOMERS_PRODUCTS_SECTION = {
   section_id: 'customer_products',
   product_options: CUSTOMERS_PRODUCTS,
 };
-
-const listItemsV2 = [
-  PAYMENTS_PRODUCTS_SECTION,
-  BANKING_PRODUCTS_SECTION,
-  GIFTS_CARD_PRODUCTS_SECTION,
-  LOYALTY_PRODUCTS_SECTION,
-];
 
 const FOOTER_PRODUCTS_SECTION = {
   section_name: '',
@@ -120,6 +110,16 @@ const useSideNavHook = () => {
   const user = useStore((state) => state.session.user);
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
+
+  const [PAYMENTS_PRODUCTS_SECTION, BANKING_PRODUCTS_SECTION, GIFTS_CARD_PRODUCTS_SECTION] =
+    getFallbackProductsForConnectedNav(user); // v2 fallback products
+
+  const listItemsV2 = [
+    PAYMENTS_PRODUCTS_SECTION,
+    BANKING_PRODUCTS_SECTION,
+    GIFTS_CARD_PRODUCTS_SECTION,
+    LOYALTY_PRODUCTS_SECTION,
+  ];
 
   const sideNavListItems = useMemo(
     () => [COMMON_SECTION, ...listItemsV2, CUSTOMERS_PRODUCTS_SECTION],

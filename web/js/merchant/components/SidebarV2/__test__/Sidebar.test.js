@@ -324,6 +324,7 @@ describe('SidebarV2 -> Blade designs', () => {
             isAllowedMultiple: () => true,
             findTag: () => false,
             isConfigTagEnabled: () => true,
+            isFeatureEnabled: () => false,
           },
           isTagsLoaded: true,
         },
