@@ -13,7 +13,8 @@ class Authorized extends Base
     // @todo : This logic should be refactored and moved to the templating service by creating use case specific templates
     protected array $storkWhitelistedOrgs = [
         Org::RAZORPAY_ORG_ID,
-        Org::CURLEC_ORG_ID
+        Org::CURLEC_ORG_ID,
+        Org::AXIS_ORG_ID
     ];
 
     protected function addHtmlView()

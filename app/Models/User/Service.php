@@ -143,7 +143,16 @@ class Service extends Base\Service
             $orgId = Org\Entity::RAZORPAY_ORG_ID;
         }
 
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        // Validate and process org ID
+        try {
+            Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::ORG_ID_VERIFICATION_FAILED, [
+                "orgId" => $orgId,
+                "error" => $e->getMessage(),
+            ]);
+            return false;
+        }
 
         if (in_array($orgId, $allowedOrgIds)) {
             $this->trace->info(TraceCode::USER_ORG_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP, [
@@ -3071,6 +3080,9 @@ class Service extends Base\Service
                     switch ($extractedOrgId) {
                         case env('CURLEC_ORG_ID'):
                             $unified_hostname = env('CURLEC_ACCOUNTS_URL');
+                            break;
+                        case env('AXIS_ORG_ID'):
+                            $unified_hostname = env('AXIS_ACCOUNTS_URL');
                             break;
                         case env('RAZORPAY_ORG_ID'):
                             $unified_hostname = env('RAZORPAY_ACCOUNTS_URL');

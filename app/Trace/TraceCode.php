@@ -13010,6 +13010,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH         = 'CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH';
     const CROSS_BORDER_IMPORT_API_CITI_LRS_VALIDATIONS_MISMATCH         = 'CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH';
     const API_JPMC_VALIDATION_ERROR                                 = 'API_JPMC_VALIDATION_ERROR';
+    const ORG_ID_VERIFICATION_FAILED                                = 'ORG_ID_VERIFICATION_FAILED';
     const API_CITI_LRS_VALIDATION_ERROR                                 = 'API_CITI_LRS_VALIDATION_ERROR';
     const LRS_TRAVEL_CITI_CARD_PAYMENT_REARCH_EXPERIMENT_SPILTZ_ERROR       = 'LRS_TRAVEL_CITI_CARD_PAYMENT_REARCH_EXPERIMENT_SPILTZ_ERROR';
     const IMPORT_PAYMENT_REARCH_ERROR                                       = 'IMPORT_PAYMENT_REARCH_ERROR';
@@ -13255,7 +13256,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                            => 'Trace log after admin update',
         self::ADMIN_ORG_PERMISSIONS_REPLICATIONS                             => 'admin org permission replicated successfully',
         self::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE                          => 'Firing Transaction.Created Webhook synchronously',
-        self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously '
+        self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously',
+        self:: ORG_ID_VERIFICATION_FAILED                                    => 'Org Id verify and strip sign failure '
     ];
 
     // IRCTC RDS balance update trace codes

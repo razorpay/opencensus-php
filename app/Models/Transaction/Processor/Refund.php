@@ -16,6 +16,7 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Credits;
+use Razorpay\Trace\Logger as Trace;
 
 class Refund extends Base
 {
