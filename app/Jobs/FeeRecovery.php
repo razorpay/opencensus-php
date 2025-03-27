@@ -22,8 +22,8 @@ class FeeRecovery extends Job
 
     const DELAY = 300;
 
-    // Overriding timeout with 300 for the time being, since we don't know how much time the process will take.
-    public $timeout = 600;
+    // Overriding timeout with 900 for the time being, since we don't know how much time the process will take.
+    public $timeout = 900;
 
     protected $trace;
 
@@ -79,6 +79,7 @@ class FeeRecovery extends Job
 
     public function handle()
     {
+        $startTime = microtime(true);
         parent::handle();
 
         if ($this->feeRecoveryPayoutId !== null)
@@ -90,6 +91,14 @@ class FeeRecovery extends Job
             $this->feeRecoveryHandle();
         }
 
+        $endTime = microtime(true);
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_JOB_TIME_TAKEN,
+            [
+                'balance_id' => $this->balanceId,
+                'time_taken' => $endTime - $startTime,
+            ]
+        );
     }
 
     protected function feeRecoveryHandle()

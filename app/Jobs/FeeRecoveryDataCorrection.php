@@ -27,6 +27,9 @@ class FeeRecoveryDataCorrection extends Job
      */
     protected $endTimeStamp;
 
+    // Overriding timeout with 600 for the time being, since we don't know how much time the process will take.
+    public $timeout = 600;
+
     public function __construct(string $mode,
                                 string $balanceId = null,
                                 int $startTimeStamp = null,
@@ -40,6 +43,7 @@ class FeeRecoveryDataCorrection extends Job
 
     public function handle()
     {
+        $startTime = microtime(true);
         parent::handle();
 
         $isBalanceIdEnabledForFeeRecoveryDataCorrection = $this->isBalanceIdEligibleForFeeRecoveryDataCorrection();
@@ -50,6 +54,7 @@ class FeeRecoveryDataCorrection extends Job
 
         $this->trace->count(Metric::FEE_RECOVERY_DATA_CORRECTION_JOB, [Metric::STATUS => Metric::INITIATED]);
         try {
+
             $feeRecoveryCore = new FeeRecoveryCore();
             $data = [
                 'balance_id' => $this->balanceId,
@@ -65,6 +70,16 @@ class FeeRecoveryDataCorrection extends Job
                 ]
             );
             $this->trace->count(Metric::FEE_RECOVERY_DATA_CORRECTION_JOB, [Metric::STATUS => Metric::SUCCESS]);
+            $endTime = microtime(true);
+
+            // trace the time taken by the job
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_DATA_CORRECTION_JOB_TIME_TAKEN,
+                [
+                    'balance_id' => $this->balanceId,
+                    'time_taken' => $endTime - $startTime,
+                ]
+            );
 
             $this->delete();
             return $response;
