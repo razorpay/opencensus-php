@@ -14934,11 +14934,9 @@ public function isLibrarySupportedForNbplusRearch($library): bool
         // If the feature flag "banking_upi_rearch" and the razorx experiment for the merchant ID are enabled,
         // route the UPI traffic of that org via rearch as part of API decomposition.
 
-        $razorxResult = $this->app->razorx->getTreatment($this->merchant->getId(), Features::BANKING_UPI_REARCH, $this->mode);
-
         $featureResult = $this->merchant->org->isFeatureEnabled(Features::BANKING_UPI_REARCH);
 
-        if (($razorxResult === 'on') and ($featureResult === true))
+        if ($featureResult === true)
         {
             return true;
         }
