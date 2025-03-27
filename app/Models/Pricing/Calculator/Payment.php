@@ -809,7 +809,16 @@ class Payment extends Base
 
         $bank = $payment->getBank();
 
-        $authType = $payment->getGlobalOrLocalTokenEntity()->getAuthType();
+        $authType = $payment->getAuthType();
+
+        if($authType===null)
+        {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+            if($token==!null)
+            {
+                $authType = $token->getAuthType();
+            }
+        }
 
         $recurringType = $payment->getRecurringType();
 
