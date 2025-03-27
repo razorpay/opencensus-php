@@ -6,6 +6,8 @@ import useOnboardingContext from './providers/useOnboardingContext';
 import OnboardingStepCard from 'apps/pos/src/app/components/OnboardingStepCard/OnboardingStepCard';
 import OnboardingHeader from 'apps/pos/src/app/components/OnboardingHeader';
 import { trackEvent } from 'apps/pos/src/services/analytics';
+import { PricingNcStatus } from 'apps/pos/src/app/types/PaymentsAndService';
+import { AllBadgeTypes } from 'apps/pos/src/app/types/common';
 
 interface HandleStepCardClickProps {
   step: OnboardingStep;
@@ -48,12 +50,16 @@ const MerchantOnboardingLanding = (): JSX.Element => {
         const { slug, title, description, icon, getStatus, checkIfDisabled, clickAnalytics } = step;
         return (
           <OnboardingStepCard
+            pricingNcStatus={
+              (states.merchantDetails?.activation.posPricingNcStatus?.toLocaleLowerCase() as PricingNcStatus) ??
+              null
+            }
             key={slug}
             slug={slug}
             title={`${index + 1}. ${title}`}
             description={description}
             icon={icon}
-            status={getStatus({ values, states })}
+            status={getStatus({ values, states }) as AllBadgeTypes}
             isDisabled={checkIfDisabled({ values, states })}
             onClick={() => handleOnStepCardClick({ step, analytics: clickAnalytics })}
           />

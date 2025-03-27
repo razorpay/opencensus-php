@@ -1,15 +1,18 @@
 import React, { ReactElement } from 'react';
 import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
-import StatusBadge from '../StatusBadge';
+import StatusBadge from 'apps/pos/src/app/components/StatusBadge/StatusBadge';
 import { StyledCard } from './styled';
+import { PricingNcStatus } from 'apps/pos/src/app/types/PaymentsAndService';
+import { AllBadgeTypes } from 'apps/pos/src/app/types/common';
 
 interface OnboardingStepCardProps {
   slug: string;
   title: string;
   description: string;
   icon: ReactElement;
-  status: string;
+  status: AllBadgeTypes;
   isDisabled: boolean;
+  pricingNcStatus?: PricingNcStatus | null;
   onClick?: () => void;
 }
 
@@ -20,11 +23,16 @@ const OnboardingStepCard = ({
   status,
   isDisabled,
   onClick,
+  pricingNcStatus,
+  slug,
 }: OnboardingStepCardProps): JSX.Element => {
   const iconComponent = React.cloneElement(icon, {
     size: 'large',
     color: isDisabled ? 'interactive.icon.primary.disabled' : 'surface.icon.onCloud.onSubtle',
   });
+
+  const shouldShowPricingNcBadge =
+    pricingNcStatus === 'pending_agent_action' && slug === 'paymentMethods';
 
   return (
     <StyledCard
@@ -78,8 +86,19 @@ const OnboardingStepCard = ({
               </Box>
             </Box>
             {!isDisabled ? (
-              <Box position={{ base: 'absolute', l: 'static' }} top="0px" right="0px">
-                <StatusBadge type={status} size="medium" />
+              <Box
+                display="flex"
+                flexDirection={'column'}
+                gap={'spacing.3'}
+                alignItems={'flex-end'}
+                position={{ base: 'absolute', l: 'static' }}
+                top="0px"
+                right="0px"
+              >
+                {!shouldShowPricingNcBadge && <StatusBadge type={status} size="medium" />}
+                {shouldShowPricingNcBadge && (
+                  <StatusBadge type={'pending_agent_action'} size="medium" />
+                )}
               </Box>
             ) : null}
           </Box>

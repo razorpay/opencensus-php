@@ -52,6 +52,7 @@ export const enum PaymentMethodsFieldKeyNames {
   EMI_PLUS_DC_RATE_FIELD = 'emi_plus_dc_rate_field',
   BRAND_EMI_RATE_ENABLED_FIELD = 'brand_emi_rate_enabled_field',
   EMI_PLUS_RATE_ENABLED_FIELD = 'emi_plus_rate_enabled_field',
+  PRICING_NC_COMMENT_FIELD = 'pricing_nc_comment_field',
 }
 
 export enum PricingStepComponents {
@@ -100,3 +101,17 @@ export enum MODULAR_PRICING_FIELDS {
   ACQUISITION_MODEL_FIELD = 'acquisition_model_field',
   MODULAR_CALLBACK = 'modular_callback',
 }
+
+export const pricingNcStatusMap = {
+  approved: 'approved',
+  closed: 'closed',
+  pending: 'pending',
+  pending_agent_action: 'pending_agent_action',
+} as const;
+
+export type PricingNcStatus = keyof typeof pricingNcStatusMap;
+
+export type PricingNcComment = {
+  title: string;
+  value: string;
+};

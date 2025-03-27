@@ -1800,4 +1800,5 @@ export type { DashboardGraphQLMerchantModularOnboardingDetailsSuccessResponseRes
 export type { DashboardGraphQLMerchantModularOnboardingDetailsUpdateResponseResolvers } from './DashboardGraphQLMerchantModularOnboardingDetailsUpdateResponseResolvers';
 export type { DashboardGraphQLUserOtpResponseResolvers } from './DashboardGraphQLUserOtpResponseResolvers';
 export type { DashboardGraphQLResolvers } from './DashboardGraphQLResolvers';
-export type {DashboardGraphQLErrorResponse} from "./DashboardGraphQLErrorResponse";
+export type { DashboardGraphQLErrorResponse } from './DashboardGraphQLErrorResponse';
+export type { DashboardGraphQLMerchantPosPricingNeedsClarificationStatusEnum } from './DashboardGraphQLMerchantPosPricingNeedsClarificationStatusEnum';

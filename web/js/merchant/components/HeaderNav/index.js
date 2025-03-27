@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unsafe */
-import { Box, Button, MenuIcon, RefreshIcon, Spinner, Text } from '@razorpay/blade/components';
+import { Box, MenuIcon } from '@razorpay/blade/components';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
@@ -127,10 +127,6 @@ class HeaderNav extends Component {
     this.props.toggleMobileMenu();
   }
 
-  handleOnRefreshClick = () => {
-    this.setState({ isRefreshLoading: true });
-    window.location.reload();
-  };
 
   goToNCOnEasy = () => {
     const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
@@ -354,24 +350,6 @@ class HeaderNav extends Component {
                 </React.Fragment>
               ) : (
                 <ul className="nav navbar-nav navbar-right">
-                  {isMobileDevice() ? (
-                    <Button
-                      variant="tertiary"
-                      onClick={this.handleOnRefreshClick}
-                      isDisabled={isRefreshLoading}
-                    >
-                      <Box display="flex" alignItems="center">
-                        <Text color="surface.text.staticWhite.normal" marginRight="spacing.3">
-                          Refresh
-                        </Text>
-                        {isRefreshLoading ? (
-                          <Spinner color="white" accessibilityLabel="pos-sales-refresh-loader" />
-                        ) : (
-                          <RefreshIcon color="interactive.icon.onPrimary.normal" />
-                        )}
-                      </Box>
-                    </Button>
-                  ) : null}
                   <li id="profile-dropdown">
                     <ProfileDropdown
                       analytics={analytics}

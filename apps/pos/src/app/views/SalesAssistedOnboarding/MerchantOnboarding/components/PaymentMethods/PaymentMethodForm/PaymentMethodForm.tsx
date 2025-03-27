@@ -10,6 +10,8 @@ import {
   ArrowRightIcon,
   useToast,
   Text,
+  Alert,
+  AlertCircleIcon,
 } from '@razorpay/blade/components';
 import { useParams } from 'react-router-dom';
 import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
@@ -20,6 +22,7 @@ import {
   PaymentMethodFormStringValue,
   PaymentMethodFormType,
   PaymentMethodsFieldKeyNames,
+  PricingNcComment,
 } from 'apps/pos/src/app/types/PaymentsAndService';
 import {
   AggregatorModelFormKeys,
@@ -36,6 +39,7 @@ import {
   handleMdrEditAnalytics,
   handleVasEditAnalytics,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
+import PricingNcAlert from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/PaymentMethods/PaymentMethodForm/PricingNcAlert';
 
 export type PaymentMethodForm = {
   type: PaymentMethodFormType;
@@ -53,6 +57,8 @@ export interface PaymentMethodFormProps {
   handleViewBrandEMIForm: () => void;
   hasAddedBrandEMIData: boolean;
   isBrandEmiEnabled?: boolean;
+  pricingNcCommentField: PricingNcComment | null;
+  isPricingNcRaised: boolean;
 }
 
 const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
@@ -65,6 +71,8 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
   handleViewBrandEMIForm,
   hasAddedBrandEMIData,
   isBrandEmiEnabled,
+  pricingNcCommentField,
+  isPricingNcRaised,
 }) => {
   const { form } = methodForm;
   const toast = useToast();
@@ -173,6 +181,7 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
           </Link>
         ) : null}
       </Box>
+      {isPricingNcRaised && <PricingNcAlert pricingNcCommentDetails={pricingNcCommentField} />}
       {Object.keys(form).filter((key) =>
         [PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].includes(
           key as PaymentMethodsFieldKeyNames,

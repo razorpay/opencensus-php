@@ -1,3 +1,7 @@
+import { DevicePaymentStatus } from "apps/pos/src/app/types/DeviceSelection";
+import { PricingNcStatus } from "apps/pos/src/app/types/PaymentsAndService";
+import { STATUS_FILTERS } from "apps/pos/src/app/types/SalesAssistedOnboarding";
+
 export type APIResponse<SuccessReseponse, ErrorResponse> = {
   status_code: number;
   success: boolean;
@@ -111,7 +115,8 @@ export type ActivationStatusKeys =
   | 'needsClarification'
   | 'kycQualifiedStb'
   | 'pending'
-  | 'underReview';
+  | 'underReview'
+  | 'pricingNeedsClarification';
 
 export enum MODULES {
   SALES_DASHBOARD = 'Sales Dashboard',
@@ -125,3 +130,5 @@ export enum MODULES {
   ADDITIONAL_DETAILS = 'Additional Details',
   DEVICE_DEPLOYMENT = 'Device Deployment',
 }
+
+export type AllBadgeTypes = DevicePaymentStatus | PricingNcStatus| STATUS_FILTERS | 'completed' | 'kyc_completed';

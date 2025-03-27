@@ -23,16 +23,17 @@ export const salesOnboardedMerchantsMock = {
   __typename: 'SalesOnboardedMerchants',
   limit: 10,
   offset: 0,
-  total: 50,
+  total: 33,
   hasMore: true,
-  totalMerchantsOnboarded: 50,
+  totalMerchantsOnboarded: 33,
   statusCounts: {
-    activated: 0,
-    rejected: 0,
-    needsClarification: 0,
-    kycQualifiedStb: 0,
+    activated: 1,
+    rejected: 2,
+    needsClarification: 3,
+    kycQualifiedStb: 4,
     pending: 10,
-    underReview: 0,
+    underReview: 6,
+    pricingNeedsClarification: 7,
   },
   merchants: [
     {
@@ -42,6 +43,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340679',
@@ -50,6 +52,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340674',
@@ -58,6 +61,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340668',
@@ -65,7 +69,8 @@ export const salesOnboardedMerchantsMock = {
       merchantName: '',
       merchantMobile: '',
       progressCompletion: '0',
-      status: 'PENDING',
+      status: 'UNDER_REVIEW',
+      pricingNcStatus: 'pending_agent_action',
     },
     {
       createdAt: '1725340663',
@@ -74,6 +79,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340659',
@@ -82,6 +88,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340653',
@@ -90,6 +97,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340649',
@@ -98,6 +106,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340646',
@@ -106,6 +115,7 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
     },
     {
       createdAt: '1725340633',
@@ -114,6 +124,74 @@ export const salesOnboardedMerchantsMock = {
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
+      pricingNcStatus: '',
+    },
+  ],
+};
+
+export const salesActivatedMerchantsMock = {
+  __typename: 'SalesOnboardedMerchants',
+  limit: 10,
+  offset: 0,
+  total: 33,
+  hasMore: true,
+  totalMerchantsOnboarded: 33,
+  statusCounts: {
+    activated: 2,
+    rejected: 2,
+    needsClarification: 3,
+    kycQualifiedStb: 4,
+    pending: 10,
+    underReview: 6,
+    pricingNeedsClarification: 7,
+  },
+  merchants: [
+    {
+      createdAt: '1725340683',
+      merchantId: 'OsZjP3fjbIskDI',
+      merchantName: '',
+      merchantMobile: '',
+      progressCompletion: '0',
+      status: 'ACTIVATED',
+      pricingNcStatus: '',
+    },
+    {
+      createdAt: '1725340668',
+      merchantId: 'OsZj7mow3GcMTb',
+      merchantName: '',
+      merchantMobile: '',
+      progressCompletion: '0',
+      status: 'ACTIVATED',
+      pricingNcStatus: '',
+    },
+  ],
+};
+
+export const PastSevenDaysMerchantsMock = {
+  __typename: 'SalesOnboardedMerchants',
+  limit: 10,
+  offset: 0,
+  total: 33,
+  hasMore: true,
+  totalMerchantsOnboarded: 33,
+  statusCounts: {
+    activated: 1,
+    rejected: 2,
+    needsClarification: 3,
+    kycQualifiedStb: 4,
+    pending: 10,
+    underReview: 6,
+    pricingNeedsClarification: 7,
+  },
+  merchants: [
+    {
+      createdAt: '1725340683',
+      merchantId: 'OsZjP3fjbIsxyz',
+      merchantName: '',
+      merchantMobile: '',
+      progressCompletion: '0',
+      status: 'ACTIVATED',
+      pricingNcStatus: '',
     },
   ],
 };

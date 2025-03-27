@@ -1,6 +1,7 @@
 import React from 'react';
 import OnboardingStepCard from '../OnboardingStepCard';
 import { render, screen, userEvent } from 'apps/pos/src/services/test/test-utils';
+import { pricingNcStatusMap } from 'apps/pos/src/app/types/PaymentsAndService';
 
 describe('OnboardingStepCard', () => {
   const defaultProps = {
@@ -11,6 +12,7 @@ describe('OnboardingStepCard', () => {
     status: 'under_review',
     isDisabled: false,
     onClick: jest.fn(),
+    pricingNcStatus: pricingNcStatusMap.approved,
   };
 
   const renderComponent = (props = {}) => {
@@ -39,5 +41,9 @@ describe('OnboardingStepCard', () => {
   test('should render StatusBadge with correct status', () => {
     renderComponent();
     expect(screen.getByText('Under Review')).toBeInTheDocument();
+  });
+  test('should render StatusBadge with correct pricing needs clarification status', () => {
+    renderComponent({ pricingNcStatus: 'pending_agent_action', slug: 'paymentMethods' });
+    expect(screen.getByText('Pricing Needs Clarification')).toBeInTheDocument();
   });
 });

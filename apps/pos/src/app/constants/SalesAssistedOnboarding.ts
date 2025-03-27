@@ -24,7 +24,6 @@ export const StatusTiles: StatusTile[] = [
     name: 'Pending',
     key: 'pending',
   },
-
   {
     name: 'Under Review',
     key: 'underReview',
@@ -33,14 +32,17 @@ export const StatusTiles: StatusTile[] = [
     name: 'Activated',
     key: 'activated',
   },
-
-  {
-    name: 'Needs Clarification',
-    key: 'needsClarification',
-  },
   {
     name: 'Rejected',
     key: 'rejected',
+  },
+  {
+    name: 'KYC Needs Clarification',
+    key: 'needsClarification',
+  },
+  {
+    name: 'Pricing Needs Clarification',
+    key: 'pricingNeedsClarification',
   },
 ];
 

@@ -345,23 +345,4 @@ describe('test for HeaderNav component', () => {
       expect(screen.queryByText(text)).toBeInTheDocument();
     });
   });
-
-  test('should render refresh button for sales agent', async () => {
-    const props = { ...defaultProps };
-    isMobileDevice.mockImplementation(() => true);
-    jest.spyOn(posAgentUtils, 'checkIfPosSalesAgent').mockReturnValue({
-      isEnabled: true,
-      isPosSalesAgent: true,
-    });
-    const updatedState = updateStore({
-      user: {
-        name: 'test',
-      },
-      role: 'partner_agent',
-    });
-
-    renderApp({ props, updatedState });
-    await userEvent.click(screen.getByText('Refresh'));
-    expect(mockWindowReload).toHaveBeenCalledWith();
-  });
 });

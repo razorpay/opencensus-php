@@ -1,10 +1,11 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import {
   Badge,
   Box,
   Button,
-  CloseIcon,
+  DatePicker,
   Heading,
+  Link,
   PlusIcon,
   Text,
   useToast,
@@ -16,14 +17,11 @@ import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
 import SalesTable from './SalesTable';
-import StatusFilter from './StatusFilter';
-import SalesDashboardStatusCounts from './SalesDashboardStatusCounts';
 import { SALES_ONBOARDED_MERCHANTS } from 'apps/pos/src/services/queries/SalesDashboard';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import {
   SalesOnboardedMerchants,
-  STATUS_FILTERS,
-  StatusCounts,
+  TableFilter,
 } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { GraphQLErrorResponseType } from 'apps/pos/src/app/types/common';
 import useOnboardingStore from 'apps/pos/src/bootstrap/Store/index';
@@ -32,52 +30,66 @@ import {
   PARTNER_ASSISTED_ONBOARDING,
 } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
-
-const DateRangePickerField = lazy(
-  () =>
-    import(
-      /* webpackChunkName: 'DateRangePicker' */ '@libs/web-nexus/common/ui/Forms/DateRangePickerField'
-    ),
-);
-
-interface Filters {
-  status: STATUS_FILTERS;
-}
+import StatusFilter from 'apps/pos/src/app/views/SalesAssistedOnboarding/SalesDashboard/StatusFilter';
 
 interface Range {
   startDate: number;
   endDate: number;
 }
-
-interface DatePickerRange {
-  from: number;
-  to: number;
-}
-
 const DEFAULT_RANGE: Range = {
   startDate: moment().subtract(10, 'days').startOf('day').unix(),
   endDate: moment().endOf('day').unix(),
 };
-
-const DEFAULT_FILTERS: Filters = {
-  status: 'all',
+const DEFAULT_FILTERS: TableFilter = {
+  activationStatus: 'all',
+  dateRange: DEFAULT_RANGE,
 };
 
 const PAGE_SIZE = 10;
 const QUERY_KEY = 'salesTable';
+const DATE_PRESETS = [
+  {
+    label: 'Past 3 days',
+    value: () => [
+      moment().subtract(3, 'days').startOf('day').toDate(), // this includes current date also, so end result will include 4 days data
+      moment().endOf('day').toDate(),
+    ],
+  },
+  {
+    label: 'Past 7 days',
+    value: () => [
+      moment().subtract(7, 'days').startOf('day').toDate(),
+      moment().endOf('day').toDate(),
+    ],
+  },
+  {
+    label: 'Past 30 days',
+    value: () => [
+      moment().subtract(30, 'days').startOf('day').toDate(),
+      moment().endOf('day').toDate(),
+    ],
+  },
+  {
+    label: 'Past 90 days',
+    value: () => [
+      moment().subtract(90, 'days').startOf('day').toDate(),
+      moment().endOf('day').toDate(),
+    ],
+  },
+];
 
 const SalesDashboard = (): JSX.Element => {
   const { isMobile } = useScreen();
-  console.log('JOEL', isMobile);
-  const [range, setRange] = useState<Range>(DEFAULT_RANGE);
-  const [filters, setFilter] = useState<Filters>({ ...DEFAULT_FILTERS });
   const [page, setPage] = useState(0);
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const queryCache = useQueryClient();
   const toast = useToast();
   const navigate = useNavigate();
-  const { isPosEkycAgent } = useOnboardingStore();
-
+  const { isPosEkycAgent, filters, setFilters } = useOnboardingStore();
+  const [dateRangeFilter, setDateRangeFilter] = useState<{
+    startDate: number | null;
+    endDate: number | null;
+  }>(filters.dateRange);
   const handleError = (response: GraphQLErrorResponseType): void => {
     toast.show({
       color: 'negative',
@@ -97,8 +109,14 @@ const SalesDashboard = (): JSX.Element => {
     SalesOnboardedMerchants | null,
     GraphQLErrorResponseType
   >({
-    queryKey: [QUERY_KEY, isPosEkycAgent],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryKey: [
+      QUERY_KEY,
+      isPosEkycAgent,
+      filters.dateRange.startDate,
+      filters.dateRange.endDate,
+      filters.activationStatus,
+    ],
+    queryFn: async ({ pageParam = 0, queryKey }) => {
       const { salesOnboardedMerchants: response } = await graphqlRequest<
         'salesOnboardedMerchants',
         SalesOnboardedMerchants,
@@ -108,9 +126,9 @@ const SalesDashboard = (): JSX.Element => {
         variables: {
           limit: PAGE_SIZE,
           offset: pageParam * PAGE_SIZE,
-          startDate: range?.startDate,
-          endDate: range?.endDate,
-          status: filters.status,
+          startDate: queryKey[2],
+          endDate: queryKey[3],
+          status: queryKey[4],
           signupCampaign: isPosEkycAgent ? PARTNER_ASSISTED_ONBOARDING : ASSISTED_ONBOARDING,
         },
       });
@@ -138,32 +156,32 @@ const SalesDashboard = (): JSX.Element => {
   });
 
   const pages = (data?.pages ?? []).map((item) => item).filter((item) => item !== null);
-  const { totalMerchantsOnboarded, statusCounts } = pages[pages.length - 1] ?? {};
+  const { totalMerchantsOnboarded, statusCounts, total } = pages[pages.length - 1] ?? {};
 
-  const handleOnApplyFilter = () => {
+  const handleOnApplyFilter = (filters?: TableFilter) => {
+    if (!filters) setFilters(DEFAULT_FILTERS);
+    else
+      setFilters({
+        ...filters,
+        dateRange: {
+          startDate: filters.dateRange.startDate,
+          endDate: filters.dateRange.endDate,
+        },
+      });
     void queryCache.removeQueries({ queryKey: [QUERY_KEY, isPosEkycAgent] });
     setPage(0);
-    void fetchNextPage({ pageParam: 0 });
-  };
-
-  const resetAllFilters = (): void => {
-    setFilter({ ...DEFAULT_FILTERS });
-    handleOnApplyFilter();
-  };
-
-  const handleOnDateChange = (dates: DatePickerRange): void => {
-    const { from, to } = dates;
-    setRange({
-      startDate: moment.unix(from).startOf('day').unix(),
-      endDate: moment.unix(to).endOf('day').unix(),
+    void fetchNextPage({
+      pageParam: 0,
     });
   };
 
-  const handleStatusFilterChange = (status: STATUS_FILTERS): void => {
-    setFilter({ ...filters, status });
+  const resetAllFilters = (): void => {
+    setFilters({ ...filters, dateRange: DEFAULT_RANGE, activationStatus: 'all' });
+    setDateRangeFilter(DEFAULT_RANGE);
+    handleOnApplyFilter();
   };
 
-  const handlePageChange = async ({ page: nextPage }) => {
+  const handlePageChange = async ({ page: nextPage }: { page: number }) => {
     if (page !== nextPage) {
       setPage(nextPage as number);
       if (!pages?.[nextPage]) void fetchNextPage({ pageParam: nextPage }); //would fetch the already fetched from cache
@@ -187,10 +205,29 @@ const SalesDashboard = (): JSX.Element => {
     navigate('onboarding/new');
   };
 
-  useEffect(() => {
-    handleOnApplyFilter();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  const onDateApplyHandler = (date) => {
+    const startDate = moment(date[0]).unix();
+    const endDate = moment(date[1]).unix();
+    if (startDate && endDate) {
+      handleOnApplyFilter({
+        dateRange: {
+          startDate: startDate,
+          endDate: endDate,
+        },
+        activationStatus: filters.activationStatus,
+      });
+      setDateRangeFilter({
+        startDate: startDate,
+        endDate: endDate,
+      });
+    } else {
+      setDateRangeFilter(DEFAULT_RANGE);
+      handleOnApplyFilter({
+        dateRange: DEFAULT_RANGE,
+        activationStatus: filters.activationStatus,
+      });
+    }
+  };
 
   useEffect(() => {
     trackEvent({
@@ -213,7 +250,7 @@ const SalesDashboard = (): JSX.Element => {
 
   return (
     <Box display="flex" flexDirection="column" width="100%">
-      <Box margin="spacing.5">
+      <Box margin="spacing.5" marginTop={'spacing.2'}>
         <Box
           display="flex"
           flexDirection="row"
@@ -222,16 +259,19 @@ const SalesDashboard = (): JSX.Element => {
           marginBottom="spacing.5"
           alignItems="center"
         >
-          <Box display="flex" alignItems="center">
-            <Heading color="surface.text.gray.normal" size="xlarge" marginRight="spacing.3">
-              Merchant Details
-            </Heading>
-            {totalMerchantsOnboarded ? (
-              <Badge size="medium" color="neutral">
-                {String(totalMerchantsOnboarded)}
-              </Badge>
-            ) : null}
-          </Box>
+          {
+            !isMobile &&
+            <Box display="flex" alignItems="center">
+              <Heading color="surface.text.gray.normal" size="xlarge" marginRight="spacing.3">
+                Merchant Details
+              </Heading>
+              {totalMerchantsOnboarded ? (
+                <Badge size="medium" color="neutral">
+                  {String(totalMerchantsOnboarded)}
+                </Badge>
+              ) : null}
+            </Box>
+          }
           <Box
             display="flex"
             justifyContent="center"
@@ -257,45 +297,63 @@ const SalesDashboard = (): JSX.Element => {
           </Box>
         </Box>
         <Suspense fallback={null}>
-          <Box
-            display="flex"
-            alignItems="flex-start"
-            flexWrap="wrap"
-            marginBottom={{ base: 'spacing.4', l: 'spacing.0' }}
-          >
-            <Box
-              display="flex"
-              alignItems="center"
-              marginRight="spacing.3"
-              marginBottom="spacing.4"
-            >
-              <Suspense fallback={<></>}>
-                <DateRangePickerField
-                  onDatesChange={(dates: DatePickerRange) => handleOnDateChange(dates)}
-                  startDate={moment.unix(range.startDate)}
-                  endDate={moment.unix(range.endDate)}
-                  numberOfMonths={isMobile ? 1 : 2}
-                />
-              </Suspense>
+          <Box>
+            <Box maxWidth={{ m: '400px' }} marginBottom="spacing.7">
+              <DatePicker
+                // @ts-ignore
+                label={{
+                  end: 'End Date',
+                  start: 'Start Date',
+                }}
+                allowSingleDateInRange
+                value={[
+                  dateRangeFilter.startDate
+                    ? new Date(
+                        moment(dateRangeFilter.startDate * 1000).format(
+                          'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                        ),
+                      )
+                    : null,
+                  dateRangeFilter.endDate
+                    ? new Date(
+                        moment(dateRangeFilter.endDate * 1000).format(
+                          'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                        ),
+                      )
+                    : null,
+                ]}
+                onChange={(date: Array<Date | null>) => {
+                  setDateRangeFilter({
+                    startDate: date[0] ? moment(date[0]).unix() : null,
+                    endDate: date[1] ? moment(date[1]).endOf('day').unix() : null,
+                  });
+                }}
+                defaultValue={[
+                  moment(filters.dateRange.startDate * 1000).format(
+                    'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                  ),
+                  moment(filters.dateRange.endDate * 1000).format(
+                    'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                  ),
+                ]}
+                onApply={(date) => onDateApplyHandler(date)}
+                // @ts-ignore
+                selectionType="range"
+                presets={DATE_PRESETS}
+              />
             </Box>
-            <Box display="flex">
-              <Button marginRight="spacing.4" isLoading={isLoading} onClick={handleOnApplyFilter}>
-                Apply
-              </Button>
-              <Button
-                variant="tertiary"
-                icon={CloseIcon}
-                onClick={resetAllFilters}
-                display={{ base: 'none', l: 'block' }}
-              >
-                Clear all filters
-              </Button>
+            <StatusFilter
+              defaultValue={filters.activationStatus}
+              value={filters.activationStatus}
+              statusCounts={statusCounts}
+            />
+            <Box>
+              <Link onClick={resetAllFilters} variant="button">
+                Clear Filters
+              </Link>
             </Box>
           </Box>
         </Suspense>
-        {filters.status === 'all' ? (
-          <SalesDashboardStatusCounts statusCounts={statusCounts as StatusCounts} />
-        ) : null}
       </Box>
       <Box
         padding="spacing.5"
@@ -304,21 +362,9 @@ const SalesDashboard = (): JSX.Element => {
         marginX={{ base: 'spacing.0', l: 'spacing.5' }}
         marginBottom={{ base: 'spacing.0', l: 'spacing.5' }}
       >
-        <Box display={{ base: 'block', l: 'flex' }} marginBottom="spacing.5" alignItems="flex-end">
-          <Box
-            width={{ base: '100%', l: '200px' }}
-            marginBottom={{ base: 'spacing.5', l: 'spacing.0' }}
-            marginRight={{ base: 'spacing.0', l: 'spacing.5' }}
-          >
-            <StatusFilter
-              defaultValue={DEFAULT_FILTERS.status}
-              value={filters.status}
-              onChange={handleStatusFilterChange}
-            />
-          </Box>
-        </Box>
         <Box testID="sales-table">
           <SalesTable
+            totalMerchants={total}
             pages={pages as SalesOnboardedMerchants[]}
             page={page}
             size={PAGE_SIZE}

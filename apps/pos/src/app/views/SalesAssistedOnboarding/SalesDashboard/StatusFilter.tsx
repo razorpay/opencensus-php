@@ -1,17 +1,13 @@
 import React from 'react';
-
+import { Box, ChipGroup, Chip } from '@razorpay/blade/components';
 import {
-  Dropdown,
-  DropdownOverlay,
-  SelectInput,
-  ActionList,
-  ActionListItem,
-  BottomSheetBody,
-  BottomSheet,
-  BottomSheetHeader,
-} from '@razorpay/blade/components';
-import { STATUS_FILTERS as STATUS_FILTERS_TYPE } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
-import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
+  STATUS_FILTERS as STATUS_FILTERS_TYPE,
+  StatusCounts,
+} from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import { StatusTiles } from 'apps/pos/src/app/constants/SalesAssistedOnboarding';
+import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
+import { ActivationStatusKeys } from 'apps/pos/src/app/types/common';
+import { useMobile } from '@libs/shared-utils';
 
 interface StatusFilter {
   label: string;
@@ -22,71 +18,44 @@ interface StatusFilter {
 interface StatusFilterProps {
   defaultValue: STATUS_FILTERS_TYPE;
   value: STATUS_FILTERS_TYPE;
-  onChange: (status: STATUS_FILTERS_TYPE) => void;
+  statusCounts: StatusCounts;
+  onChange?: (status: STATUS_FILTERS_TYPE) => void;
 }
 
-const STATUS_FILTERS: StatusFilter[] = [
-  {
-    label: 'All',
-    value: 'all',
-  },
-  {
-    label: 'Activated',
-    value: 'activated',
-  },
-  {
-    label: 'KYC Qualified',
-    value: 'kyc_qualified_stb',
-  },
-  {
-    label: 'Under Review',
-    value: 'under_review',
-  },
-  {
-    label: 'Pending',
-    value: 'pending',
-  },
-  {
-    label: 'Rejected',
-    value: 'rejected',
-  },
-  {
-    label: 'Needs Clarification',
-    value: 'needs_clarification',
-  },
-];
+const filterMap: Record<ActivationStatusKeys, STATUS_FILTERS_TYPE> = {
+  activated: 'activated',
+  kycQualifiedStb: 'kyc_qualified_stb',
+  underReview: 'under_review',
+  pending: 'pending',
+  rejected: 'rejected',
+  needsClarification: 'needs_clarification',
+  pricingNeedsClarification: 'pricing_needs_clarification',
+};
 
-const StatusFilter = ({ defaultValue, value, onChange }: StatusFilterProps): JSX.Element => {
-  const { isMobile } = useScreen();
-
-  const renderBody = () => (
-    <ActionList>
-      {STATUS_FILTERS.map(({ label, value }) => (
-        <ActionListItem key={value} title={label} value={value} />
-      ))}
-    </ActionList>
-  );
-
+const StatusFilter = ({ defaultValue, value, statusCounts }: StatusFilterProps): JSX.Element => {
+  const { filters, setFilters } = useOnboardingStore();
+  const isMobile = useMobile();
   return (
-    <Dropdown testID="sales-dashboard-filters">
-      <SelectInput
-        label="Status"
-        name="status"
+    <Box marginBottom="spacing.3">
+      <ChipGroup
+        accessibilityLabel="KYC activation status chips"
+        onChange={(data) => {
+          setFilters({ ...filters, activationStatus: data.values[0] as STATUS_FILTERS_TYPE });
+        }}
+        selectionType="single"
+        size={isMobile ? 'xsmall' : 'small'}
         value={value}
         defaultValue={defaultValue}
-        onChange={({ values }) => {
-          onChange?.(values[0] as STATUS_FILTERS_TYPE);
-        }}
-      />
-      {isMobile ? (
-        <BottomSheet snapPoints={[0.5, 0.8, 1]}>
-          <BottomSheetHeader title="Status" />
-          <BottomSheetBody>{renderBody()}</BottomSheetBody>
-        </BottomSheet>
-      ) : (
-        <DropdownOverlay>{renderBody()}</DropdownOverlay>
-      )}
-    </Dropdown>
+      >
+        {StatusTiles.map(({ name, key }) => (
+          <Box key={key} testID={`${key}-sales-count-field`}>
+            <Chip testID={key} value={filterMap[key]}>
+              {name} - {statusCounts?.[key] ?? 0}
+            </Chip>
+          </Box>
+        ))}
+      </ChipGroup>
+    </Box>
   );
 };
 

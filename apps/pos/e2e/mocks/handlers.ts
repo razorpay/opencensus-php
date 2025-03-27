@@ -8,6 +8,8 @@ import {
   emptySalesOnboardedMerchantsMock,
   incompleteSalesOnboardingDetailsDirectModelMock,
   MerchantVerifyMobileOtpResponse,
+  salesActivatedMerchantsMock,
+  PastSevenDaysMerchantsMock,
 } from './fixtures';
 import {
   completedAdditionalDetailsAggregatorModelMock,
@@ -38,6 +40,20 @@ export const queryMocks = {
     return HttpResponse.json({
       data: {
         salesOnboardedMerchants: salesOnboardedMerchantsMock,
+      },
+    });
+  }),
+  ActivatedSalesOnboardedMerchants: graphql.query('SalesOnboardedMerchants', () => {
+    return HttpResponse.json({
+      data: {
+        salesOnboardedMerchants: salesActivatedMerchantsMock,
+      },
+    });
+  }),
+  PastSevenDaysMerchants: graphql.query('SalesOnboardedMerchants', () => {
+    return HttpResponse.json({
+      data: {
+        salesOnboardedMerchants: PastSevenDaysMerchantsMock,
       },
     });
   }),

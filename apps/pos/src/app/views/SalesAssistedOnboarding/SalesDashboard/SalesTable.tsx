@@ -18,7 +18,10 @@ import {
 } from '@razorpay/blade/components';
 import moment from 'moment';
 import EmptyScreen from './EmptyScreen';
-import { SalesOnboardedMerchants } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
+import {
+  SalesMerchantPricingNcStatusEnum,
+  SalesOnboardedMerchants,
+} from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import StatusBadge from 'apps/pos/src/app/components/StatusBadge/StatusBadge';
 import { ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
@@ -27,6 +30,7 @@ interface DashboardTableProps {
   pages: SalesOnboardedMerchants[];
   page: number;
   size: number;
+  totalMerchants: number;
   isLoading: boolean;
   isFetching: boolean;
   handlePageChange: ({ page }: { page: number }) => void;
@@ -35,6 +39,7 @@ interface DashboardTableProps {
 const SalesTable: React.FC<DashboardTableProps> = ({
   pages,
   page,
+  totalMerchants,
   size,
   isLoading,
   isFetching,
@@ -90,7 +95,19 @@ const SalesTable: React.FC<DashboardTableProps> = ({
             ) : (
               <TableHeaderRow>
                 <TableHeaderCell>
-                  <Heading>Merchant Onboarding Status</Heading>
+                  <Box
+                    width="100%"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexWrap="wrap"
+                    gap="spacing.3"
+                  >
+                    <Heading>Merchant Onboarding Status</Heading>
+                    <Text size="small" color="surface.text.gray.subtle">
+                      {totalMerchants} merchants
+                    </Text>
+                  </Box>
                 </TableHeaderCell>
               </TableHeaderRow>
             )}
@@ -111,11 +128,26 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                     </TableCell>
                     <TableCell>{tableItem.merchantMobile || 'Unavailable'}</TableCell>
                     <TableCell>
-                      <Box display="flex" alignItems="center" height="auto">
+                      <Box
+                        display="flex"
+                        alignItems="center"
+                        height="auto"
+                        gap="spacing.4"
+                        flexWrap="wrap"
+                        paddingTop='spacing.3'
+                        paddingBottom='spacing.3'
+                      >
                         <StatusBadge
                           type={String(tableItem.status).toLocaleLowerCase()}
                           size="large"
                         />
+                        {tableItem.pricingNcStatus ===
+                          SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION && (
+                          <StatusBadge
+                            type={SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION.toLocaleLowerCase()}
+                            size="large"
+                          />
+                        )}
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -142,10 +174,19 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                       paddingY="spacing.5"
                     >
                       <Box>
-                        <StatusBadge
-                          type={String(tableItem.status).toLocaleLowerCase()}
-                          size="medium"
-                        />
+                        <Box display="flex" gap="spacing.3" flexDirection="column">
+                          <StatusBadge
+                            type={String(tableItem.status).toLocaleLowerCase()}
+                            size="medium"
+                          />
+                          {tableItem.pricingNcStatus ===
+                            SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION && (
+                            <StatusBadge
+                              type={SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION.toLocaleLowerCase()}
+                              size="medium"
+                            />
+                          )}
+                        </Box>
                         <Text marginY="spacing.3">{tableItem.merchantName || 'Unavailable'}</Text>
                         <Text size="small" marginY="spacing.3">
                           {tableItem.merchantMobile || 'Unavailable'}

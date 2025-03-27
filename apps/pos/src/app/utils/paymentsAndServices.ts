@@ -465,3 +465,18 @@ export const updateValuesForUncheckedRates = (formValues: Record<string, unknown
   }
   return formValuesCopy;
 };
+
+export const parseHtmlString = (input?: string): { from: string; comment: string } => {
+  if (!input) return { from: '', comment: '' };
+  const index = input.indexOf(':');
+  const parser = new DOMParser();
+  if (index === -1) {
+    const doc = parser.parseFromString(input, 'text/html');
+    const comment = doc.body?.textContent?.trim() ?? '';
+    return { from: '', comment };
+  }
+  const doc = parser.parseFromString(input.slice(index + 1).trim(), 'text/html');
+  const comment = doc.body?.textContent?.trim() ?? '';
+  const from = input.slice(0, index).trim();
+  return { from, comment };
+};

@@ -1,4 +1,16 @@
-import { DashboardGraphQLMerchantActivationStatusEnum, DashboardGraphQLMaybe, DashboardGraphQLMerchantPosActivationStatusEnum, DashboardGraphQLScalars, DashboardGraphQLMerchantActivationDedupe, DashboardGraphQLMerchantFeeBasedGating, DashboardGraphQLMerchantActivationFlow, DashboardGraphQLMerchantEscalations, DashboardGraphQLMerchantActivationMilestoneEnum, DashboardGraphQLMerchantActivationFlowEnum } from './index';
+import {
+  DashboardGraphQLMerchantActivationStatusEnum,
+  DashboardGraphQLMaybe,
+  DashboardGraphQLMerchantPosActivationStatusEnum,
+  DashboardGraphQLScalars,
+  DashboardGraphQLMerchantActivationDedupe,
+  DashboardGraphQLMerchantFeeBasedGating,
+  DashboardGraphQLMerchantActivationFlow,
+  DashboardGraphQLMerchantEscalations,
+  DashboardGraphQLMerchantActivationMilestoneEnum,
+  DashboardGraphQLMerchantActivationFlowEnum,
+  DashboardGraphQLMerchantPosPricingNeedsClarificationStatusEnum,
+} from './index';
 export type DashboardGraphQLMerchantActivation = {
   __typename?: 'DashboardGraphQLMerchantActivation';
   activationStatusChangeLogs: Array<DashboardGraphQLMerchantActivationStatusEnum>;
@@ -22,9 +34,12 @@ export type DashboardGraphQLMerchantActivation = {
   merchantEscalations: DashboardGraphQLMerchantEscalations;
   milestone?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationMilestoneEnum>;
   paymentsActivatedAt?: DashboardGraphQLMaybe<DashboardGraphQLScalars['DateTime']>;
+  posPricingNcStatus?: DashboardGraphQLMaybe<DashboardGraphQLMerchantPosPricingNeedsClarificationStatusEnum>;
   posActivationFlow?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationFlowEnum>;
   posActivationStatus?: DashboardGraphQLMaybe<DashboardGraphQLMerchantPosActivationStatusEnum>;
-  posActivationStatusChangeLogs: Array<DashboardGraphQLMaybe<DashboardGraphQLMerchantPosActivationStatusEnum>>;
+  posActivationStatusChangeLogs: Array<
+    DashboardGraphQLMaybe<DashboardGraphQLMerchantPosActivationStatusEnum>
+  >;
   posDetailsSubmitted: DashboardGraphQLScalars['Boolean'];
   progressPercent: DashboardGraphQLScalars['NonNegativeInt'];
   status?: DashboardGraphQLMaybe<DashboardGraphQLMerchantActivationStatusEnum>;

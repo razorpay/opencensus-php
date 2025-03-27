@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AlertCircleIcon,
   Badge,
@@ -5,10 +6,10 @@ import {
   ClockIcon,
   CloseIcon,
 } from '@razorpay/blade/components';
-import React from 'react';
+import { AllBadgeTypes } from 'apps/pos/src/app/types/common';
 
 interface StatusBadgeProps {
-  type: string;
+  type: AllBadgeTypes;
   size?: 'large' | 'small' | 'medium';
 }
 
@@ -74,6 +75,12 @@ const StatusBadge = ({ type, size = 'medium' }: StatusBadgeProps): JSX.Element |
       return (
         <Badge icon={AlertCircleIcon} color="notice" size={size}>
           Needs Clarification
+        </Badge>
+      );
+    case 'pending_agent_action':
+      return (
+        <Badge icon={AlertCircleIcon} color="notice" size={size}>
+          Pricing Needs Clarification
         </Badge>
       );
     default:

@@ -32,7 +32,6 @@ describe('Test POS payment link method screen', () => {
     renderApp(props);
     expect(screen.getByText(/payment link created & shared/i)).toBeInTheDocument();
     expect(screen.getByText(/Thu, 19th dec’24 \| 6:16am/i)).toBeInTheDocument();
-    screen.logTestingPlaygroundURL();
     expect(screen.getByText(/amount to be paid:/i)).toBeInTheDocument();
     expect(screen.getByText(/100/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /re-send link/i })).toBeInTheDocument();

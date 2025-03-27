@@ -80,7 +80,6 @@ describe('<BrandEMIForm/>', () => {
       ],
     };
     renderApp(props);
-    screen.logTestingPlaygroundURL();
     expect(screen.getAllByLabelText(/Type of store/i)).toHaveLength(2);
     expect(screen.getAllByLabelText(/Brand name/i)).toHaveLength(2);
     expect(screen.getAllByText(/\*/i)).toHaveLength(3); // 2 for type-of-store + brand-name dropdown and 1 for gst-field since dealer-code is optional

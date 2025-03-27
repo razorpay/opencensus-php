@@ -31,6 +31,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
           kycQualifiedStb
           pending
           underReview
+          pricingNeedsClarification
         }
         merchants {
           createdAt
@@ -38,6 +39,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
           merchantName
           merchantMobile
           progressCompletion
+          pricingNcStatus
           status
         }
       }
@@ -523,6 +525,7 @@ export const MERCHANT_DETAILS = gql`
       createdAt
       id
       activation {
+        posPricingNcStatus
         posActivationStatus
         posActivationFlow
         status

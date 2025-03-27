@@ -44,7 +44,6 @@ describe('<AgreementSigning/>', () => {
     await waitFor(() => {
       expect(screen.getByRole('radio', { name: /online/i })).toBeChecked();
       expect(screen.getByRole('radio', { name: /offline/i })).toBeInTheDocument();
-      screen.logTestingPlaygroundURL();
       expect(screen.getByRole('button', { name: /send-link-btn/i })).toBeInTheDocument();
     });
   });
@@ -151,7 +150,6 @@ describe('<AgreementSigning/>', () => {
       expect(screen.getByRole('radio', { name: /offline/i })).toBeInTheDocument();
     });
     expect(screen.getByText(/agreement sent/i)).toBeInTheDocument();
-    screen.logTestingPlaygroundURL();
     expect(screen.getByText(/Mon, 29th Jul’24 \| 6:07pm/i)).toBeInTheDocument();
     expect(screen.getByText(/action pending/i)).toBeInTheDocument();
     expect(screen.getByText(/signing confirmation/i)).toBeInTheDocument();

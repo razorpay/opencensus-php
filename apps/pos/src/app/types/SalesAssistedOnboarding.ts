@@ -90,6 +90,7 @@ export type STATUS_FILTERS =
   | 'activated'
   | 'rejected'
   | 'needs_clarification'
+  | 'pricing_needs_clarification'
   | 'pending'
   | 'kyc_qualified_stb';
 
@@ -98,13 +99,20 @@ export enum OnboardingWorkflowProduct {
   ASSISTED_ONBOARDING = 'ASSISTED_ONBOARDING',
 }
 
+export interface TableFilter {
+  dateRange: { startDate: number; endDate: number };
+  activationStatus: STATUS_FILTERS;
+}
+
 export type OnboardingStoreState = {
   workflowProduct: OnboardingWorkflowProduct;
   isPosEkycAgent: boolean;
   pwaPrompt: BeforeInstallPromptEvent | null;
+  filters: TableFilter;
   setWorkflowProduct: (workflowProduct: OnboardingWorkflowProduct) => void;
   setIsPosEkycAgent: (isPosEkycAgent: boolean) => void;
   setPwaPrompt: (pwaPrompt: BeforeInstallPromptEvent | null) => void;
+  setFilters: (filters: TableFilter) => void;
 };
 
 export interface AddressField {
@@ -139,6 +147,13 @@ export enum SalesMerchantActivationStatusEnum {
   UNDER_REVIEW = 'UNDER_REVIEW',
 }
 
+export enum SalesMerchantPricingNcStatusEnum {
+  PENDING_AGENT_ACTION = 'PENDING_AGENT_ACTION',
+  APPROVED = 'APPROVED',
+  CLOSED = 'CLOSED',
+  PENDING = 'PENDING',
+}
+
 export interface SalesOnboardedMerchant {
   createdAt: string;
   merchantId: string;
@@ -146,6 +161,7 @@ export interface SalesOnboardedMerchant {
   merchantName?: string;
   progressCompletion: string;
   status?: SalesMerchantActivationStatusEnum;
+  pricingNcStatus?: SalesMerchantPricingNcStatusEnum;
 }
 
 export interface StatusCounts {
@@ -156,6 +172,7 @@ export interface StatusCounts {
   pending: number | null;
   rejected: number | null;
   underReview: number | null;
+  pricingNeedsClarification: number | null;
 }
 
 export interface SalesOnboardedMerchants {

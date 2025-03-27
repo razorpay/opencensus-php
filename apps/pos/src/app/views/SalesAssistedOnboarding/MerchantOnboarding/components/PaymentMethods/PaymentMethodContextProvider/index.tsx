@@ -38,6 +38,8 @@ import {
   PaymentMethodFormStringValue,
   PaymentMethodFormType,
   PaymentMethodsFieldKeyNames,
+  PricingNcComment,
+  pricingNcStatusMap,
   PricingStepComponents,
 } from 'apps/pos/src/app/types/PaymentsAndService';
 import {
@@ -346,6 +348,23 @@ const deriveMethodTypeFromModularConfig = (
   return { paymentMethodType: PaymentMethodFormType.AGGREGATOR, aquisitionModelFields: null };
 };
 
+const getPricingNcDetails = (
+  modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
+): PricingNcComment | null => {
+  if (!modularConfig) return null;
+  const pricingNcField = getFieldFromComponent({
+    modularConfig,
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.MDR_VAS_RATES_COMPONENT,
+    fieldName: PaymentMethodsFieldKeyNames.PRICING_NC_COMMENT_FIELD,
+  });
+  if (!pricingNcField) return null;
+  return {
+    title: pricingNcField.meta?.title ?? '',
+    value: isStringValue(pricingNcField) ? pricingNcField.stringValue : '',
+  };
+};
+
 const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }): JSX.Element => {
   const toast = useToast();
   const navigate = useNavigate();
@@ -355,6 +374,8 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
     states;
   const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
+  const isPricingNcRaised =
+    merchantDetails?.activation?.posPricingNcStatus?.toLowerCase() === pricingNcStatusMap.pending_agent_action;
 
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,
@@ -683,6 +704,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
       }),
     });
   };
+
   const contextValue = {
     // props for form
     isBrandEmiEnabled,
@@ -695,7 +717,8 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     isFormDisabled,
     handleViewBrandEMIForm,
     hasAddedBrandEMIData: !!brandEmiForm.brand_details_field.length,
-
+    pricingNcCommentField: getPricingNcDetails(modularConfig),
+    isPricingNcRaised,
     // props for NACH
     onNachTextAreaChange,
     onNachFileUploadChange,

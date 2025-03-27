@@ -11,6 +11,8 @@ export const SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE = {
       underReview: 1,
       rejected: 21,
       kycQualifiedStb: 35,
+      pricingNeedsClarification: 1,
+      needsClarification: 7,
     },
     merchants: [
       {
@@ -19,6 +21,7 @@ export const SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE = {
         merchantName: 'CHIZRINZ INFOWAY PRIVATE LIMITED',
         merchantMobile: '+916171928192',
         progressCompletion: '65',
+        pricingNcStatus: '',
         status: 'PENDING',
       },
       {
@@ -27,6 +30,16 @@ export const SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE = {
         merchantName: 'Raju Body Building',
         merchantMobile: '+916817163743',
         progressCompletion: '65',
+        pricingNcStatus: '',
+        status: 'UNDER_REVIEW',
+      },
+      {
+        createdAt: '1718210755',
+        merchantId: 'OLv6zpwrhtTk7E',
+        merchantName: 'Raju Body Building',
+        merchantMobile: '+916817163743',
+        progressCompletion: '65',
+        pricingNcStatus: 'pending_agent_action',
         status: 'UNDER_REVIEW',
       },
     ],

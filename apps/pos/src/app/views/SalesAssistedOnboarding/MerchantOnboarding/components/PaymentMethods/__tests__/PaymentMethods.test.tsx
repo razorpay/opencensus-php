@@ -151,6 +151,8 @@ describe('<PaymentMethodForm/>', () => {
         isFormDisabled={false}
         handleViewBrandEMIForm={jest.fn()}
         hasAddedBrandEMIData={false}
+        isPricingNcRaised={false}
+        pricingNcCommentField={null}
       />,
     );
     expect(screen.getByRole('heading', { name: /^mdr rates$/i, exact: true })).toBeInTheDocument();
@@ -182,6 +184,8 @@ describe('<PaymentMethodForm/>', () => {
         isFormDisabled={false}
         hasAddedBrandEMIData={false}
         handleViewBrandEMIForm={jest.fn()}
+        isPricingNcRaised={false}
+        pricingNcCommentField={null}
       />,
     );
     expect(screen.queryByText(/mdr rates/i)).not.toBeInTheDocument();
@@ -205,6 +209,77 @@ describe('<PaymentMethodForm/>', () => {
     expect(mdrEditBtn).toHaveTextContent(/save changes/i);
     const submitFormBtn = screen.getByRole('button', { name: /save & continue/i });
     expect(submitFormBtn).toBeDisabled();
+  });
+
+  test('should show pricing nc alert when pricing nc is raised and pricing nc comment field is available', async () => {
+    server.use(
+      getModularConfig({
+        type: 'success',
+        data: {
+          acquisition_model_field: 'aggregator',
+        },
+      }),
+      updateModularConfig({
+        type: 'success',
+        data: {
+          acquisition_model_field: 'aggregator',
+        },
+      }),
+    );
+    render(
+      <PaymentMethodFormComponent
+        methodForm={props.aggregatorMethodForm}
+        onFieldCheckboxChange={props.onFieldCheckboxChange}
+        onFieldInputChange={props.onFieldInputChange}
+        onFormSubmitClick={props.onFormSubmitClick}
+        onFileUploadChange={props.onFileUploadChange}
+        isFormDisabled={false}
+        handleViewBrandEMIForm={jest.fn()}
+        hasAddedBrandEMIData={false}
+        isPricingNcRaised={true}
+        pricingNcCommentField={{
+          title: 'Pricing Needs Clarification',
+          value: 'Please add correct custom proof',
+        }}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Pricing Needs Clarification');
+    expect(screen.getByRole('alert')).toHaveTextContent('Please add correct custom proof');
+  });
+
+  test('should not show pricing nc alert when pricing nc is not raised', async () => {
+    server.use(
+      getModularConfig({
+        type: 'success',
+        data: {
+          acquisition_model_field: 'aggregator',
+        },
+      }),
+      updateModularConfig({
+        type: 'success',
+        data: {
+          acquisition_model_field: 'aggregator',
+        },
+      }),
+    );
+    render(
+      <PaymentMethodFormComponent
+        methodForm={props.aggregatorMethodForm}
+        onFieldCheckboxChange={props.onFieldCheckboxChange}
+        onFieldInputChange={props.onFieldInputChange}
+        onFormSubmitClick={props.onFormSubmitClick}
+        onFileUploadChange={props.onFileUploadChange}
+        isFormDisabled={false}
+        handleViewBrandEMIForm={jest.fn()}
+        hasAddedBrandEMIData={false}
+        isPricingNcRaised={false}
+        pricingNcCommentField={{
+          title: 'Pricing Needs Clarification',
+          value: 'Please add correct custom proof',
+        }}
+      />,
+    );
+    expect(screen.queryByTestId('pricing-nc-alert')).not.toBeInTheDocument();
   });
 });
 
