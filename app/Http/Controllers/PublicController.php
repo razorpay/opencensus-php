@@ -284,7 +284,8 @@ class PublicController extends Controller
             }
             $merchantID = $order['merchant_id'];
             $merchant = $this->repo->merchant->findOrFail($merchantID);
-            $isCheckout2FeatureEnabled = $merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2);
+            $isCheckout2FeatureEnabled = ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) OR
+                ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)));
             $app = \App::getFacadeRoot();
 
             $app['trace']->info(TraceCode::RENDER_CHECKOUT_HOSTED, [
@@ -292,16 +293,10 @@ class PublicController extends Controller
                 'orderID' => $orderID,
                 'merchantID' => $merchantID,
                 'order' => $order,
-                'isCheckout2FeatureEnabled' => $isCheckout2FeatureEnabled
+                'isCheckout2FeatureEnabled' => $isCheckout2FeatureEnabled,
             ]);
 
-            // check the experiment
-            $variant = $this->app['razorx']->getTreatment($merchantID,
-                RazorxTreatment::HDFC_CHECKOUT_2, $mode);
-            if (strtolower($variant) === 'on')
-            {
-                return $isCheckout2FeatureEnabled;
-            }
+            return $isCheckout2FeatureEnabled;
         } catch (\Exception $e)
         {
             $this->app['trace']->traceException(
@@ -325,7 +320,6 @@ class PublicController extends Controller
                 'script'       => $script,
                 'urls'         => "{}"
             ];
-
         return View::make('public.embedded', $options);
     }
     public function renderCheckoutHosted()
