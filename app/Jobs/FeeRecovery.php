@@ -129,7 +129,7 @@ class FeeRecovery extends Job
                 ]
             );
 
-            $feeRecoveryCore->updateNextRunAndLastRunForFeeRecoveryTasks($this->task);
+            $feeRecoveryCore->updateNextRunAndLastRunForFeeRecoveryTasks($this->task, $data);
 
             $this->repoManager->saveOrFail($this->task);
 
@@ -168,6 +168,7 @@ class FeeRecovery extends Job
                     TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
                     $data);
                 if(in_array($ex->getCode(), $this->WHITELISTED_ERROR_CODES_FOR_DATA_CORRECTION)) {
+                    $this->trace->info(TraceCode::PUSHED_TO_FEE_RECOVERY_DATA_CORRECTION, $data);
                     FeeRecoveryDataCorrection::dispatch($this->mode, $this->balanceId, $this->startTimeStamp, $this->endTimeStamp);
                 }
             }
