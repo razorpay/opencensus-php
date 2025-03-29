@@ -36,6 +36,7 @@ use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
+use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
@@ -45,6 +46,7 @@ use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 
 class Service extends Base\Service
 {
+    use UpiUnexpectedPaymentRefundHandler;
     use VirtualAccountUnexpectedPaymentRefundHandler;
 
     /**
