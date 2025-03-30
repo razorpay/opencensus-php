@@ -247,14 +247,16 @@ export class ShellRedirectionService {
     const originHost = this.getRequestOriginHost();
     const requestHost = this.getRequestHost();
 
-    if (shouldUseBankingOriginRequestV2) {
-      const bankingUrls = (process.env[AppConstants.BANKING_SERVICE_URL_V2_KEY] || '').split(',');
-      return bankingUrls.some(
-        (url) =>
-          this.getHostFromUrl(url.trim()) === originHost ||
-          this.getHostFromUrl(url.trim()) === requestHost,
-      );
-    }
+      if (shouldUseBankingOriginRequestV2) {
+          const bankingUrls = (process.env[AppConstants.BANKING_SERVICE_URL_V2_KEY] || '').split(',');
+          if (bankingUrls.some(
+              (url) =>
+                  this.getHostFromUrl(url.trim()) === originHost ||
+                  this.getHostFromUrl(url.trim()) === requestHost,
+          )) {
+              return true;
+          }
+      }
 
     const bankingHost = this.getHostFromUrl(
       process.env[AppConstants.BANKING_SERVICE_URL_KEY] || '',
