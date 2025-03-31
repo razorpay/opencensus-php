@@ -1415,9 +1415,16 @@ return array(
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
 
     'enable_fee_check_before_registration' => env('ENABLE_FEE_CHECK_BEFORE_REGISTER'),
-  
+
     'auto_capture_result'   => env('AUTO_CAPTURE_RESULT'),
 
-    'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT')
+    'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT'),
 
+    'skip_upi_icici_callback_bt' => env('SKIP_UPI_ICICI_CALLBACK_BT'),
+
+    'use_merchant_reference_for_unexpected_payment' => env('USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT'),
+
+    'enable_validate_vpa_on_ups_experiment_id' => env('ENABLE_VALIDATE_VPA_ON_UPS_EXPERIMENT_ID'),
+
+    'block_merchants_on_ups_experiment_id' => env('BLOCK_MERCHANTS_ON_UPS_EXPERIMENT_ID')
 );

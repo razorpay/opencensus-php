@@ -14,6 +14,15 @@ use RZP\Models\Merchant\Account;
 class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 {
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+    }
+
     public function testSbiWithApiPreProcess()
     {
         $this->gateway = 'upi_mozart';

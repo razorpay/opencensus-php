@@ -3522,7 +3522,7 @@ class Processor
             if ($input[Payment\Entity::METHOD] !== Payment\METHOD::NETBANKING)
             {
                return false;
-               
+
             }
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
@@ -3716,9 +3716,7 @@ class Processor
             }
 
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from UPS re-arch traffic
-            $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_UPS,
-                $this->mode);
-            if ($result === 'on') {
+            if ($this->shouldBlockMerchantsOnUPS($merchant->getId()) === true) {
                 return false;
             }
 
@@ -14755,17 +14753,7 @@ class Processor
 
         }
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
-            self::ALLOW_CFB_MERCHANTS_ON_REARCH_UPS, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_CFB_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant' => $variant,
-            'mode'    => $this->mode,
-            'feature' => self::ALLOW_CFB_MERCHANTS_ON_REARCH_UPS,
-        ]);
-
-        return $variant === 'on';
+        return true;
     }
 
     /**
@@ -14941,21 +14929,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
             return true;
         }
 
-        $orgId = $this->merchant->getMerchantOrgId();
-
-        $feature = self::ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS . '_org_' . $orgId;
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_NON_RZP_ORG_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'org_id'      => $orgId,
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+        return true;
     }
 
     /**
@@ -15762,6 +15736,42 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 $e,
                 null,
                 TraceCode::POS_PAYMENTS_REFERENCE13_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
+    /** Splitz to check if merchant needs to be blocked
+     * @param $merchantID
+     * @return bool
+     */
+    private function shouldBlockMerchantsOnUPS($merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.block_merchants_on_ups_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::BLOCK_MERCHANTS_ON_UPS_SPLITZ_RESULT, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::BLOCK_MERCHANTS_ON_UPS_SPLITZ_FAILED);
         }
 
         return false;

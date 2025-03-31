@@ -767,7 +767,7 @@ class Service extends UpiPaymentService
         $responseError = [];
         if ($gateway === 'upi_rzpapb')
         {
-            $responseData['amount_authorized'] = (string) ($payment['amount_authorized'] / 100);
+            $responseData['amount_authorized'] = (string) ($payment['amount_authorized']);
 
             if (empty($content['data']['data']['error']) === false)
             {
@@ -795,7 +795,7 @@ class Service extends UpiPaymentService
         }
         else if ($gateway === 'upi_rzprbl')
         {
-            $responseData['amount_authorized'] = (string) ($payment['amount_authorized'] / 100);
+            $responseData['amount_authorized'] = (string) ($payment['amount_authorized']);
 
             if (empty($content['data']['data']['error']) === false)
             {
@@ -823,7 +823,7 @@ class Service extends UpiPaymentService
         }
         else if ($gateway === 'upi_kotak')
         {
-            $responseData['amount_authorized'] = (string) ($payment['amount_authorized'] / 100);
+            $responseData['amount_authorized'] = (string) ($payment['amount_authorized']);
 
             if (empty($content['data']['data']['error']) === false)
             {

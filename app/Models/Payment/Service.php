@@ -5002,13 +5002,37 @@ class Service extends Base\Service
      */
     protected function shouldRouteValidateVpaRequestToUps($merchant): bool
     {
-        $mode = $this->mode ?? Mode::LIVE;
-
         $merchantId = optional($merchant)->getId() ?? 'default';
 
-        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::VALIDATE_VPA_REARCH_UPS, $mode);
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_validate_vpa_on_ups_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
 
-        return str_starts_with(strtolower($variant), 'on') === true;
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     public function mandateUpdate($id, $token, $input)
@@ -9125,19 +9149,31 @@ class Service extends Base\Service
      */
     private function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
     {
-        $variant = $this->app->razorx->getTreatment($gateway, Merchant\RazorxTreatment::USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT, Mode::LIVE);
+        try{
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.use_merchant_reference_for_unexpected_payment'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::UPI_UNEXPECTED_PAYMENT_IDENTIFIER_RAZORX_VARIANT,
-            [
-                'gateway'           => $gateway,
-                'variant'           => $variant
-            ]
-        );
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'       => $gateway,
+                'response'     => $response
+            ]);
 
-        if (strtolower($variant) === 'on')
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
         {
-            return true;
+            $this->app['trace']->traceException(
+            $e,
+            null,
+            TraceCode::UPI_UNEXPECTED_PAYMENT_IDENTIFIER_SPLITZ_FAILED
+            );
         }
 
         return false;
