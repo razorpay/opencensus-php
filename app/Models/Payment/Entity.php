@@ -6953,8 +6953,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         try
         {
-            if ($this->isCardMandateRecurringInitialPayment() === true) {
-                $app = \App::getFacadeRoot();
+            $app = \App::getFacadeRoot();
+
+            if (($this->isCardMandateRecurringInitialPayment() === true)
+                and ($app['rzp.mode'] === Mode::LIVE)) {
 
                 $experimentId = $app['config']->get('app.recurring_tokenisation_unhappy_flow_handling');
 
