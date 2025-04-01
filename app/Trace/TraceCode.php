@@ -12690,6 +12690,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AMEX_INTERNATIONAL_PRICING_ERROR                     = "AMEX_INTERNATIONAL_PRICING_ERROR";
 
     const IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED       = 'IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED';
+    const IN_APP_AUTOPAY_SUBTYPE_ENABLED_CHECK_FAILED          = 'IN_APP_AUTOPAY_SUBTYPE_ENABLED_CHECK_FAILED';
+    const UNIDENTIFIED_IN_APP_SUBTYPE                          = 'UNIDENTIFIED_IN_APP_SUBTYPE';
     const BIN_SERVICE_REQUEST                                  = 'BIN_SERVICE_REQUEST';
 
     const BIN_SERVICE_ERROR                                     = 'BIN_SERVICE_ERROR';

@@ -86,6 +86,7 @@ class Entity extends Base\PublicEntity
 
     const IN_APP             = 'in_app';
     const IN_APP_CREDIT_CARD = 'in_app_credit_card';
+    const IN_APP_AUTOPAY = "in_app_autopay";
     const IN_APP_CREDIT_LINE = 'in_app_credit_line';
     const CC_ON_UPI         = 'cc_on_upi';
     const WALLET_ON_UPI     = 'wallet_on_upi';
@@ -246,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::IN_APP_CREDIT_CARD,
+        self::IN_APP_AUTOPAY,
         self::CC_ON_UPI,
         self::WALLET_ON_UPI,
         self::CREDITLINE_ON_UPI,
@@ -323,6 +325,7 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::IN_APP_CREDIT_CARD,
+        self::IN_APP_AUTOPAY,
         self::CC_ON_UPI,
         self::WALLET_ON_UPI,
         self::CREDITLINE_ON_UPI,
@@ -354,6 +357,7 @@ class Entity extends Base\PublicEntity
         self::CITIBANKREWARDS,
         self::IN_APP,
         self::IN_APP_CREDIT_CARD,
+        self::IN_APP_AUTOPAY,
         self::CC_ON_UPI,
         self::WALLET_ON_UPI,
         self::CREDITLINE_ON_UPI,
@@ -558,6 +562,7 @@ class Entity extends Base\PublicEntity
         self::UPI => [
             self::IN_APP,
             self::IN_APP_CREDIT_CARD,
+            self::IN_APP_AUTOPAY,
             self::CC_ON_UPI,
             self::WALLET_ON_UPI,
             self::CREDITLINE_ON_UPI,
@@ -1173,6 +1178,18 @@ class Entity extends Base\PublicEntity
         return $this->isInAppEnabled(self::CREDIT_CARD);
     }
 
+    public function isInAppAutopayEnabled()
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        return (
+            (empty($addonMethods) === false) and
+            (empty($addonMethods[self::UPI]) === false) and
+            (empty($addonMethods[self::UPI][self::IN_APP_AUTOPAY]) === false) and
+            ($addonMethods[self::UPI][self::IN_APP_AUTOPAY] === 1)
+        );
+    }
+
     public function isInAppCreditLineEnabled()
     {
         return $this->isInAppEnabled(self::CREDIT_LINE);
@@ -1575,6 +1592,17 @@ class Entity extends Base\PublicEntity
         return $this->getInAppCreditCard();
     }
 
+    public function getInAppAutopay()
+    {
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+
+        if (isset($addonMethods[self::UPI]) and isset($addonMethods[self::UPI][self::IN_APP_AUTOPAY])) {
+            return $addonMethods[self::UPI][self::IN_APP_AUTOPAY];
+        }
+
+        return 0;
+    }
+
     public function getInAppCreditLine()
     {
         $addonMethods = $this->getAttribute(self::ADDON_METHODS);
@@ -1585,6 +1613,11 @@ class Entity extends Base\PublicEntity
         }
 
         return 0;
+    }
+
+    public function getInAppAutopayAttribute()
+    {
+        return $this->getInAppAutopay();
     }
 
     public function getInAppCreditLineAttribute()

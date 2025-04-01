@@ -475,6 +475,9 @@ class Processor extends Base\Processor
         $features[Constants::SUPPORTED_PAYER_ACCOUNT_TYPES]
             = $this->getSupportedPayerAccountTypesForMerchant();
 
+        $features[Constants::AUTOPAY_ENABLED]
+            = $this->getAutopayEnabledFeatureFlagForMerchant();
+
         $preferencesResponse[Constants::FEATURES] = $features;
     }
 
@@ -556,6 +559,31 @@ class Processor extends Base\Processor
         return $supportedPayerAccountTypes;
     }
 
+    private function getAutopayEnabledFeatureFlagForMerchant(): bool
+    {
+        $autopayEnabledFeatureFlag = Constants::getDefaultAutopayEnabledFeatureFlag();
+
+        try
+        {
+            $merchantMethods = $this->context()->getMerchant()->getMethods();
+
+            if ($merchantMethods->isInAppAutopayEnabled())
+            {
+                $autopayEnabledFeatureFlag = true;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace()->traceException(
+                $exception,
+                Logger::ERROR,
+                TraceCode::IN_APP_AUTOPAY_SUBTYPE_ENABLED_CHECK_FAILED
+            );
+        }
+
+        return $autopayEnabledFeatureFlag;
+    }
+
     private function setFundsourceMetaDataInResponse(&$preferencesResponse)
     {
         // Check if 'features' and 'supported_payer_account_types' are set and contain 'SOD'
@@ -568,5 +596,4 @@ class Processor extends Base\Processor
             $preferencesResponse[Constants::FUNDSOURCE_METADATA] = $fundSourceProviderMetaData;
         }
     }
-
 }
