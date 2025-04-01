@@ -106,6 +106,9 @@ final class Metric
     const PARTNER_KYC_REQUEST_EMAIL_FAILED   = 'partner_kyc_request_email_failed';
     const PARTNER_KYC_REQUEST_SMS_FAILED   = 'partner_kyc_request_sms_failed';
 
+    const PKAS_DUAL_WRITE_TOTAL = 'pkas_dual_write_total';
+    const PKAS_DUAL_WRITE_ACCESS_MAP_NOT_FOUND = 'pkas_dual_write_access_map_not_found';
+
     const PARTNER_CALLBACK_EVENTS_RECEIVED_TOTAL = 'partner_callback_events_received_total';
     const PARTNER_CALLBACK_EVENTS_RECEIVED_FAILURE_TOTAL = 'partner_callback_events_received_failure_total';
 
@@ -114,6 +117,7 @@ final class Metric
     const TRANSACTION_ISOLATION_SPLITZ_FAILURE = 'transaction_isolation_splitz_failure';
     const REVERSE_SHADOW_COMMISSION_CREATE_LAG   = 'reverse_shadow_commission_create_lag';
     const REVERSE_SHADOW_COMMISSION_INVOICE_CREATE_LAG = 'reverse_shadow_commission_INVOICE_create_lag';
+    const REVERSE_SHADOW_KYC_ACCESS_UPSERT_LAG = 'reverse_shadow_kyc_access_upsert_lag';
 
     const MASK_PII_FIELDS_FAILED_TOTAL  = 'mask_pii_fields_failed_total';
     const MASK_PII_FIELDS_SUCCESS_TOTAL = 'mask_pii_fields_success_total';

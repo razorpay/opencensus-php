@@ -5,21 +5,16 @@ namespace RZP\Models\Partner\KycAccessState;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BaseException;
-use RZP\Http\RequestHeader;
-use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\Partner as PartnerEmail;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -28,6 +23,9 @@ use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
 class Core extends Base\Core
 {
+    const KYC_ACCESS_MUTEX_TIMEOUT = 300; // in seconds
+    const PRTS_DUAL_WRITE_MUTEX_KEY = 'kyc_access_state_dual_write';
+
     public function accessRequestExistHandle(Base\PublicCollection $accessRequest)
     {
         $kycAccessState = $accessRequest->first();
@@ -371,6 +369,129 @@ class Core extends Base\Core
         return $subMerchantKycAccess;
     }
 
+    public function upsertFromPRTS(array $input): array
+    {
+        try
+        {
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $kycAccessStateId = $payload['partner_kyc_access_state']['id'];
+
+            $resource = self::PRTS_DUAL_WRITE_MUTEX_KEY . '_' . $kycAccessStateId;
+
+            $merchantAccessMapId = null;
+            if (isset($payload['merchant_access_map']) === true)
+            {
+                $merchantAccessMapId = $payload['merchant_access_map']['id'] ?? null;
+            }
+
+            $this->app['api.mutex']->acquireAndRelease(
+                $resource, function() use ($input, $payload, $kycAccessStateId, $merchantAccessMapId) {
+                $kycAccessState = $this->getPKASEntityByIdForDualWrite($kycAccessStateId, $input[Entity::ID]);
+
+                $isKYCAccessGranted = (isset($payload['merchant_access_map']['has_kyc_access']) && $payload['merchant_access_map']['has_kyc_access']);
+                $merchantAccessMap = $this->getUpdatedMerchantAccessMapEntityByIdForDualWrite($input[Entity::ID], $isKYCAccessGranted, $merchantAccessMapId);
+
+                $kycAccessState->fillSelectAttributes($payload['partner_kyc_access_state'], Entity::$prtsFillable);
+
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap) {
+                    $this->repo->saveOrFail($kycAccessState);
+                    if (isset($merchantAccessMap) === true)
+                    {
+                        $this->repo->saveOrFail($merchantAccessMap);
+                    }
+                });
+
+                $timeNow = millitime();
+                $lag = $timeNow - $input[Entity::CREATED_AT];
+                $this->trace->histogram(PartnerMetric::REVERSE_SHADOW_KYC_ACCESS_UPSERT_LAG, $lag);
+                return $kycAccessState;
+            },
+                self::KYC_ACCESS_MUTEX_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+            );
+
+            $dimensions = $this->getDimensionsForKYCAccessStateDualWriteMetrics(true);
+            $this->trace->count(PartnerMetric::PKAS_DUAL_WRITE_TOTAL, $dimensions);
+
+            return $this->buildAckResponse(['upserted' => true, 'id' => $kycAccessStateId], null, $input[Entity::ID], $input[Entity::CREATED_AT]);
+        }
+        catch (\Throwable $e)
+        {
+            return $this->handleExceptionForDualWriteFromPRTS($e, $input);
+        }
+    }
+
+    private function handleExceptionForDualWriteFromPRTS(\Throwable $exception, array $input)
+    {
+        $this->trace->traceException(
+            $exception,
+            Trace::ERROR,
+            TraceCode::PRTS_KYC_ACCESS_STATE_DUAL_WRITE_FAILED,
+            [
+                'input' => $input,
+            ]
+        );
+        $error = $this->buildError($exception->getCode(), $exception->getMessage());
+
+        $dimensions = $this->getDimensionsForKYCAccessStateDualWriteMetrics(false);
+        $this->trace->count(PartnerMetric::PKAS_DUAL_WRITE_TOTAL, $dimensions);
+
+        return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Entity::CREATED_AT]);
+    }
+
+    private function getPKASEntityByIdForDualWrite(string $kycAccessStateId, string $outBoxId)
+    {
+        $kycAccessState = $this->repo->partner_kyc_access_state->find($kycAccessStateId);
+        if (isset($kycAccessState) === true)
+        {
+            return $kycAccessState;
+        }
+
+        $this->trace->info(
+            TraceCode::PRTS_KYC_ACCESS_STATE_ENTRY_NOT_FOUND,
+            [
+                'kyc_access_id' => $kycAccessStateId,
+                'outbox_id' => $outBoxId,
+            ]
+        );
+
+        return new Entity;
+    }
+
+    private function getUpdatedMerchantAccessMapEntityByIdForDualWrite(string $outBoxId, bool $isKYCAccessGranted, string $merchantAccessMapId = null)
+    {
+        if (isset($merchantAccessMapId) === false) {
+            return null;
+        }
+
+        $merchantAccessMap = $this->repo->merchant_access_map->find($merchantAccessMapId);
+
+        if (isset($merchantAccessMap) === false)
+        {
+            $this->trace->debug(
+                TraceCode::PRTS_KYC_ACCESS_STATE_ENTRY_NOT_FOUND,
+                [
+                    'merchant_access_map_id' => $merchantAccessMapId,
+                    'outbox_id'              => $outBoxId,
+                ]
+            );
+
+            $this->trace->count(PartnerMetric::PKAS_DUAL_WRITE_ACCESS_MAP_NOT_FOUND, [
+                'route' => $this->app['worker.ctx']->getJobName() ?? $this->app['request.ctx']->getRoute(),
+            ]);
+            return null;
+        }
+        if ($isKYCAccessGranted) {
+            $merchantAccessMap->setHasKycAccess();
+        }
+        else {
+            $merchantAccessMap->removeKycAccess();
+        }
+        return $merchantAccessMap;
+    }
+
     public function createOrGetKycRequestForEasySubMerchantKyc(array $input)
     {
         $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID]);
@@ -489,5 +610,32 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    private function getDimensionsForKYCAccessStateDualWriteMetrics(bool $success): array
+    {
+        $route = $this->app['worker.ctx']->getJobName() ?? $this->app['request.ctx']->getRoute();
+        return [
+            'route'   => $route,
+            'success' => $success,
+        ];
+    }
+
+    private function buildAckResponse(?array $response = null, ?array $error = null, ?string $id = null, ?int $createdAt = null): array
+    {
+        return [
+            "id"         => $id ?? null,
+            "response"   => $response ?? null,
+            "created_at" => $createdAt ?? null,
+            "error"      => $error ?? null,
+        ];
+    }
+
+    private function buildError(string $code, string $message): array
+    {
+        return [
+            "code"    => $code,
+            "message" => $message,
+        ];
     }
 }

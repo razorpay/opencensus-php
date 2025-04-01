@@ -485,6 +485,197 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
     }
 
+    public function testDualWriteUpsertPartnerKycAccess()
+    {
+        $testData = $this->testData['testDualWritePartnerKycAccess'];
+
+        $this->ba->partnershipServiceAuth();
+        $this->startTest($testData);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+        $this->assertNotNull($kycAccess);
+        $this->assertEquals($kycAccess->getId(), 'PO3w64D80mebv6');
+        $this->assertEquals($kycAccess->getState(), 'pending_approval');
+    }
+
+    public function testDualWriteCreatePartnerKycAccessWhenEntryExists()
+    {
+        $partnerKycAccessState = $this->fixtures->create('partner_kyc_access_state', ['state' => 'pending_approval']);
+
+        $testData = $this->testData['testDualWritePartnerKycAccess'];
+
+        $payloadArray['partner_kyc_access_state']['id'] = $partnerKycAccessState->getId();
+
+        $testData['request']['content']['payload'] = json_encode($payloadArray);
+        $testData['response']['content']['response']['id'] = $partnerKycAccessState->getId();
+
+        $this->ba->partnershipServiceAuth();
+        $this->startTest($testData);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+        $this->assertNotNull($kycAccess);
+        $this->assertEquals($kycAccess->getId(), $partnerKycAccessState->getId());
+    }
+
+    public function testDualWriteUpsertPartnerKycAccessWhenEntryExists()
+    {
+        $partnerKycAccessState = $this->fixtures->create('partner_kyc_access_state', ['state' => 'pending_approval']);
+
+        $testData = $this->testData['testDualWritePartnerKycAccess'];
+
+        $testData['request']['content']['payload'] = json_encode([
+            'partner_kyc_access_state' => [
+                'id'    => $partnerKycAccessState->getId(),
+                "entity_id" => $partnerKycAccessState->getEntityId(),
+                "entity_type" => "merchant",
+                "partner_id" => $partnerKycAccessState->getPartnerId(),
+                "state" => "approved",
+                "approve_token" => null,
+                "reject_token" => null,
+                "token_expiry" => 1732388399,
+                "created_at" => $partnerKycAccessState->getCreatedAt(),
+                "updated_at" => $partnerKycAccessState->getUpdatedAt() + 1000,
+            ]
+        ]);
+
+        $testData['response']['content']['response']['id'] = $partnerKycAccessState->getId();
+
+        $this->ba->partnershipServiceAuth();
+        $this->startTest($testData);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+        $this->assertNotNull($kycAccess);
+        $this->assertEquals($kycAccess->getId(), $partnerKycAccessState->getId());
+        $this->assertEquals($kycAccess->getState(), 'approved');
+        $this->assertNull($kycAccess->getApprovedToken());
+        $this->assertNull($kycAccess->getRejectToken());
+    }
+
+    public function testDualWriteCreatePartnerKycAccessWhenKycAccessGranted()
+    {
+        $accessMap = $this->fixtures->create('merchant_access_map', ['id' => 'PO3w64D80mebv7', 'has_kyc_access' => false]);
+
+        $testData = $this->testData['testDualWritePartnerKycAccess'];
+
+        $testData['request']['content']['payload'] = json_encode([
+            'partner_kyc_access_state' => [
+                "id" => "PO3w64D80mebv6",
+                "entity_id" => "PMdY4x5ihqPnTg",
+                "entity_type" => "merchant",
+                "partner_id" => "PC3utyhOxFd9lI",
+                "state" => "approved",
+                "approve_token" => null,
+                "reject_token" => null,
+                "token_expiry" => 1732388399,
+                "created_at" => 1732388391,
+                "updated_at" => 1732388392,
+            ],
+            'merchant_access_map' => [
+                "id" => $accessMap->getId(),
+                "has_kyc_access" => true,
+            ]
+        ]);
+
+        $testData['response']['content']['response']['id'] = 'PO3w64D80mebv6';
+
+        $this->ba->partnershipServiceAuth('live');
+        $this->startTest($testData);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+        $this->assertNotNull($kycAccess);
+        $this->assertEquals($kycAccess->getId(), 'PO3w64D80mebv6');
+        $this->assertEquals($kycAccess->getState(), 'approved');
+        $this->assertNull($kycAccess->getApprovedToken());
+        $this->assertNull($kycAccess->getRejectToken());
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'live');
+        $this->assertNotNull($accessMapEntity);
+        $this->assertTrue($accessMapEntity->hasKycAccess());
+    }
+
+    public function testDualWriteUpdatePartnerKycAccessWhenAccessRejected()
+    {
+        $accessMap = $this->fixtures->create('merchant_access_map', ['id' => 'PO3w64D80mebv7', 'has_kyc_access' => true]);
+
+        $testData = $this->testData['testDualWritePartnerKycAccess'];
+
+        $testData['request']['content']['payload'] = json_encode([
+            'partner_kyc_access_state' => [
+                "id" => "PO3w64D80mebv6",
+                "entity_id" => "PMdY4x5ihqPnTg",
+                "entity_type" => "merchant",
+                "partner_id" => "PC3utyhOxFd9lI",
+                "state" => "rejected",
+                "approve_token" => null,
+                "reject_token" => null,
+                "token_expiry" => 1732388399,
+                "created_at" => 1732388391,
+                "updated_at" => 1732388392,
+            ],
+            'merchant_access_map' => [
+                "id" => $accessMap->getId(),
+            ]
+        ]);
+
+        $testData['response']['content']['response']['id'] = 'PO3w64D80mebv6';
+
+        $this->ba->partnershipServiceAuth('live');
+        $this->startTest($testData);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+        $this->assertNotNull($kycAccess);
+        $this->assertEquals($kycAccess->getId(), 'PO3w64D80mebv6');
+        $this->assertEquals($kycAccess->getState(), 'rejected');
+        $this->assertNull($kycAccess->getApprovedToken());
+        $this->assertNull($kycAccess->getRejectToken());
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'live');
+        $this->assertNotNull($accessMapEntity);
+        $this->assertFalse($accessMapEntity->hasKycAccess());
+    }
+
+    public function testDualWriteUpdatePartnerKycAccessWhenAccessGranted()
+    {
+        $accessMap = $this->fixtures->create('merchant_access_map', ['id' => 'PO3w64D80mebv7', 'has_kyc_access' => false]);
+
+        $testData = $this->testData['testDualWritePartnerKycAccess'];
+
+        $testData['request']['content']['payload'] = json_encode([
+            'partner_kyc_access_state' => [
+                "id" => "PO3w64D80mebv6",
+                "entity_id" => "PMdY4x5ihqPnTg",
+                "entity_type" => "merchant",
+                "partner_id" => "PC3utyhOxFd9lI",
+                "state" => "approved",
+                "approve_token" => null,
+                "reject_token" => null,
+                "token_expiry" => 1732388399,
+                "created_at" => 1732388391,
+                "updated_at" => 1732388392,
+            ],
+            'merchant_access_map' => [
+                "id" => $accessMap->getId(),
+                "has_kyc_access" => true,
+            ]
+        ]);
+
+        $testData['response']['content']['response']['id'] = 'PO3w64D80mebv6';
+
+        $this->ba->partnershipServiceAuth('live');
+        $this->startTest($testData);
+
+        $kycAccess = $this->getDbLastEntity('partner_kyc_access_state');
+        $this->assertNotNull($kycAccess);
+        $this->assertEquals($kycAccess->getId(), 'PO3w64D80mebv6');
+        $this->assertEquals($kycAccess->getState(), 'approved');
+        $this->assertNull($kycAccess->getApprovedToken());
+        $this->assertNull($kycAccess->getRejectToken());
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'live');
+        $this->assertNotNull($accessMapEntity);
+        $this->assertTrue($accessMapEntity->hasKycAccess());
+    }
+
     //Validate that partner_agent user could do proxy auth impersonation request with partner user session for the subM onboarding
     public function testSubmerchantPresignUpByPartnerAgent()
     {

@@ -69,6 +69,20 @@ class Entity extends Base\PublicEntity
         self::REJECTION_COUNT,
     ];
 
+    public static array $prtsFillable = [
+        self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::PARTNER_ID,
+        self::STATE,
+        self::APPROVE_TOKEN,
+        self::REJECT_TOKEN,
+        self::TOKEN_EXPIRY,
+        self::REJECTION_COUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);

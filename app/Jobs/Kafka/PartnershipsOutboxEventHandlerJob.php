@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Services\Workflow;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
+use RZP\Models\Partner\KycAccessState;
 
 class PartnershipsOutboxEventHandlerJob extends Job
 {
@@ -46,6 +47,7 @@ class PartnershipsOutboxEventHandlerJob extends Job
         $action = $data['action'];
         $core   = new Commission\Core;
         $invoiceCore = new Invoice\Core;
+        $kycAccessStateCore = new KycAccessState\Core;
 
         $response = null;
 
@@ -79,6 +81,10 @@ class PartnershipsOutboxEventHandlerJob extends Job
 
             case Invoice\Constants::SETTLEMENT:
                 $response = $invoiceCore->settlementTDSFromPRTS($data);
+                break;
+
+            case KycAccessState\Constants::UPSERT_KYC_ACCESS_STATE:
+                $response = $kycAccessStateCore->upsertFromPRTS($data);
                 break;
 
             default:

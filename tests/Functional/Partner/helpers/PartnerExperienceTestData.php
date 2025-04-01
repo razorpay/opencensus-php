@@ -198,6 +198,29 @@ return [
         ],
     ],
 
+    'testDualWritePartnerKycAccess' => [
+        'request'  => [
+            'url'     => '/internal/partner_kyc_access',
+            'method'  => 'POST',
+            'content' => [
+                "id" => "Nazh0bq30sJVmu",
+                "payload" => "{\"partner_kyc_access_state\":{\"id\":\"PO3w64D80mebv6\",\"entity_id\":\"PMdY4x5ihqPnTg\",\"entity_type\":\"merchant\",\"partner_id\":\"PC3utyhOxFd9lI\",\"state\":\"pending_approval\",\"approve_token\":\"43040404419f102713fad2da695762f5\",\"reject_token\":\"24922d29cd486fbc0f31a5f5cca527b3\",\"token_expiry\":1732388399}}",
+                "created_at" => 1732388391,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "id" => "Nazh0bq30sJVmu",
+                "created_at" => 1732388391,
+                "response" => [
+                    "upserted" => true,
+                    "id"      => "PO3w64D80mebv6",
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testConfirmKycAccessRequestAgain' => [
         'request'  => [
             'url'     => '/partner/kyc_approve_reject',

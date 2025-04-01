@@ -3711,6 +3711,7 @@ class Route
         'partner_kyc_revoke_access'               => ['post',     'partner/kyc_revoke_access',                      'PartnerKycAccessController@revokeKycAccess'                         ],
         'partner_kyc_access_consent'              => ['post',     'partner/kyc_access',                             'PartnerKycAccessController@CreateAndUpdateKycAccess'                ],
         'get_partner_kyc_access_status'           => ['get',      'partner/kyc_access',                             'PartnerKycAccessController@getKycAccessStatus'                      ],
+        'internal_upsert_partner_kyc_access'      => ['post',     'internal/partner_kyc_access',                    'PartnerKycAccessController@upsertFromPRTS'                          ],
 
         'nc_notifications_opt_out'                => ['post',     'partner/nc_notifications/opt_out',               'PartnerController@updateNcOptOutForPartner'                         ],
 
@@ -6884,6 +6885,7 @@ class Route
         'internal_capture_commission',
         'internal_entity_origin_fetch',
         'internal_process_commissions_invoice',
+        'internal_upsert_partner_kyc_access',
 
         'create_ledger_journal_batch',
 
@@ -18165,6 +18167,7 @@ class Route
             'internal_capture_commission',
             'internal_process_commissions_invoice',
             'payment_fetch_by_id_internal',
+            'internal_upsert_partner_kyc_access',
             'internal_clear_unsettled_txns'
         ],
 

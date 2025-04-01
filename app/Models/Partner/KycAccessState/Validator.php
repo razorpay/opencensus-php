@@ -38,6 +38,12 @@ class Validator extends Base\Validator
         'status'          => 'required|string|in:approved,rejected',
     ];
 
+    protected static $upsertFromPrtsRules          = [
+        Entity::CREATED_AT => 'required',
+        Constants::PAYLOAD    => 'required|string',
+        Entity::ID            => 'required|string|size:14',
+    ];
+
     public function validateMerchantReferredByPartner($partnerId, $submerchantId)
     {
         if ((new MerchantCore)->isMerchantReferredByPartner($submerchantId, $partnerId) === false)
