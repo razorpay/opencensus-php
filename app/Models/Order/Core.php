@@ -33,6 +33,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\OrderOutbox\Constants as OrderOutboxConstants;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\EMandate\Constants as EmandateConstants;
 
 class Core extends Base\Core
 {
@@ -523,6 +524,11 @@ class Core extends Base\Core
 
                 if(empty($data[Entity::BANK]) === false)
                 {
+                    if(isset(EmandateConstants::EMANDATE_GATEWAY_ACCEPTED_BANK_CODE_MAPPINGS[$data[Entity::BANK]]))
+                    {
+                        $data[Entity::BANK] = EmandateConstants::EMANDATE_GATEWAY_ACCEPTED_BANK_CODE_MAPPINGS[$data[Entity::BANK]];
+                    }
+
                     $mappedBank = Payment\Gateway::ENACH_NPCI_BANKS_WITH_DIFFERENT_IFSC_CODE_MAPPING[$data[Entity::BANK]] ?? null;
 
                     if ($mappedBank !== null)
