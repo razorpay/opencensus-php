@@ -364,7 +364,15 @@ class PublicController extends Controller
             return View::make('public.embedded', $data);
         } else {
             $key = $params['checkout']['key'];
-            $requestOptions     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
+
+            $checkoutParams = $params['checkout'];
+
+            if (isset($checkoutParams['prefill']['email']) === true)
+            {
+                $checkoutParams['prefill']['email'] = mask_email($checkoutParams['prefill']['email']);
+            }
+
+            $requestOptions     = json_encode($checkoutParams, JSON_FORCE_OBJECT);
 
             $app = \App::getFacadeRoot();
 
