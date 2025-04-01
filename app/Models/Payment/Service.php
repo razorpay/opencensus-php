@@ -7600,6 +7600,8 @@ class Service extends Base\Service
             // to send force_authorize call to cps
             if ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
             {
+                //adding this only for force_authorise_card route
+                $payment["original_cps_route"] = Payment\Entity::REARCH_CARD_PAYMENT_SERVICE;
                 $payment->enableCardPaymentService();
             }
 

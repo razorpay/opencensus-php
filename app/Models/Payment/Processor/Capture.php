@@ -1073,7 +1073,10 @@ trait Capture
             {
                 $discount = $this->getDiscountIfApplicableForLedger($payment);
 
-                [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+                if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                {
+                    [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+                }
 
                 $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
                     LedgerConstants::PAYMENT_ID       =>  $payment->getId(),

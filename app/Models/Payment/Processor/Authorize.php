@@ -12681,7 +12681,10 @@ trait Authorize
                             ]);
                     }
 
-                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+                    if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                    {
+                       $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+                    }
 
                 } else {
 
