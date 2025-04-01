@@ -347,7 +347,7 @@ class Core extends Base\Core
                 $cardMandate = $this->repo->card_mandate->findByMandateId($mandateId);
                 $merchantID = $cardMandate->merchant->getId();
 
-                if (!is_null($input) && ($this->app['razorx']->getTreatment($merchantID, Merchant\RazorxTreatment::RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED, $this->mode) === 'on')) {
+                if (!is_null($input) && ($merchantID === '8TgNt9DVrJB0bl')) {
                     // Update status of token & end webhook to merchant only if experiment is turned on for MID
                     $this->updateMandateFromCallbackResponse($mandate);
                 }
