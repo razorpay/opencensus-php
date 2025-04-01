@@ -130,4 +130,8 @@ final class Metric
     const SWITCH_OVER_PARTNERSHIPS_EXPERIMENT_FAILURE='switch_over_partnerships_experiment_failure';
 
     const SWITCH_OVER_PARTNERSHIPS_MERCHANT_APPLICATION_UNKNOWN_ENTITY='switch_over_partnerships_merchant_unknown_entity';
+  
+    const PARTNER_KYC_ACCESS_STATE_SYNC_SKIPPED  = 'partner_kyc_access_state_sync_skipped';
+
+    const PARTNER_KYC_ACCESS_STATE_SYNC_TOTAL_REQUESTS = 'partner_kyc_access_state_sync_total_requests';
 }

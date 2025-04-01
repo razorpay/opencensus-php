@@ -425,6 +425,8 @@ return array(
 
     'partner_entities_partnership_service_sync' => env('PARTNER_ENTITIES_PARTNERSHIP_SERVICE_SYNC'),
 
+    'partner_kyc_access_state_partnership_service_sync' => env('PARTNER_KYC_ACCESS_STATE_PARTNERSHIP_SERVICE_SYNC'),
+
     'sub_merchant_activation_auto_approval_checker' => env('SUB_MERCHANT_ACTIVATION_AUTO_APPROVAL_CHECKER'),
 
     'partner_weekly_activation_summary_datalake_exp_id' => env('PARTNER_WEEKLY_ACTIVATION_SUMMARY_DATALAKE_EXP_ID'),

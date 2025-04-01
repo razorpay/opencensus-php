@@ -51,6 +51,12 @@ class Entity extends Base\PublicEntity
         self::REJECTION_COUNT => 0,
     ];
 
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert and update both.
+        'saved'   => EventSaved::class,
+        'deleted' => EventDeleted::class,
+    ];
+
     protected $public = [
         self::ID,
         self::ENTITY_ID,

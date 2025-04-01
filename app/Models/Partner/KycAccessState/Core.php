@@ -274,10 +274,12 @@ class Core extends Base\Core
         {
             $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIdAndToken($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID], 'approve_token', $input[Entity::APPROVE_TOKEN]);
         }
+        
         elseif (isset($input[Entity::REJECT_TOKEN]) === true)
         {
             $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIdAndToken($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID], 'reject_token', $input[Entity::REJECT_TOKEN]);
         }
+
 
         if ($accessRequest->isEmpty() === true)
         {
@@ -294,6 +296,8 @@ class Core extends Base\Core
         ];
 
         $this->mode= Mode::LIVE;
+
+
 
         if (isset($input[Entity::APPROVE_TOKEN]) === true)
         {
