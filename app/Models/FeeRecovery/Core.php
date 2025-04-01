@@ -276,6 +276,7 @@ class Core extends Base\Core
         $startTimeStamp = $input[Entity::FROM];
 
         $endTimeStamp = $input[Entity::TO];
+        $this->validateBalanceIdExistsInNegativeFeeRecoveryAmountExclusionList($balanceId, $input);
 
         $balance = $this->repo->balance->findOrFailById($balanceId);
 
@@ -466,10 +467,11 @@ class Core extends Base\Core
             $refTime = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
 
             $nextRunAt = $refTime->copy()->addDay()->timestamp;
+            $fetchPayoutWithMerchantAndCreatedAtIndex = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fetch_payout_with_merchant_and_created_at_index');
 
             list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
                 $lastRunAt + 1,
-                $nextRunAt);
+                $nextRunAt, $fetchPayoutWithMerchantAndCreatedAtIndex);
 
             $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
             $this->trace->info(TraceCode::FEE_RECOVERY_NEGATIVE_FEES, [
@@ -480,7 +482,7 @@ class Core extends Base\Core
                 'time_taken' => microtime(true) - $iteration_time
             ]);
         }
-        while($nextRunAt < $currentTimeStamp and $amount < 0);
+        while($nextRunAt < $currentTimeStamp and $amount < 100);
 
         $task->setNextRunAt($nextRunAt);
         $this->trace->info(TraceCode::FEE_RECOVERY_NEGATIVE_FEES, [
@@ -589,16 +591,13 @@ class Core extends Base\Core
 
             $startTime = microtime(true);
 
-            $properties = ['id' => $balance->getId(),
-                'experiment_id' => 'fee_recovery_fetch_batching',
-                'request_data'  => json_encode(['id' => $balance->getId()])
-            ];
-            $feeRecoveryBatchingEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
-            $this->trace->info(TraceCode::PROCESS_FEE_RECOVERY, ['fee_recovery_batching_enabled' => $feeRecoveryBatchingEnabled]);
+            $feeRecoveryBatchingEnabled = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fee_recovery_fetch_batching');
+            $fetchPayoutWithMerchantAndCreatedAtIndex = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fetch_payout_with_merchant_and_created_at_index');
+
             if($feeRecoveryBatchingEnabled){
-                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimestamp, $endTimestamp);
+                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimestamp, $endTimestamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
             } else {
-                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimestamp, $endTimestamp);
+                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimestamp, $endTimestamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
             }
 
             $this->trace->info(TraceCode::PROCESS_FEE_RECOVERY, [
@@ -717,7 +716,8 @@ class Core extends Base\Core
 
     protected function getPayoutAndReversalEntitiesForFeeRecovery(Balance\Entity $balance,
                                                                   int $startTimestamp,
-                                                                  int $endTimestamp)
+                                                                  int $endTimestamp,
+                                                                  bool $useMerchantAndCreatedAtIndex=false)
     {
         $merchant = $balance->merchant;
         $merchantId = $merchant->getId();
@@ -771,21 +771,23 @@ class Core extends Base\Core
                 $merchantId,
                 $balanceId,
                 $startTimestamp,
-                $endTimestamp
+                $endTimestamp,
+                $useMerchantAndCreatedAtIndex
             );
 
             $failedPayouts = $this->repo->payout->fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
                 $merchantId,
                 $balanceId,
                 $startTimestamp,
-                $endTimestamp
+                $endTimestamp,
+                $useMerchantAndCreatedAtIndex
             );
 
             $reversals = $this->repo->reversal->fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod(
                 $merchantId,
                 $balanceId,
                 $startTimestamp,
-                $endTimestamp
+                $endTimestamp,
             );
         }
 
@@ -804,8 +806,9 @@ class Core extends Base\Core
 
 
     protected function getPayoutAndReversalEntitiesForFeeRecoveryViaBatching(Balance\Entity $balance,
-                                                                  int $startTimestamp,
-                                                                  int $endTimestamp) : array
+                                                                             int $startTimestamp,
+                                                                             int $endTimestamp,
+                                                                             bool $useMerchantAndCreatedAtIndex=false) : array
     {
         $merchant = $balance->merchant;
         $merchantId = $merchant->getId();
@@ -834,7 +837,8 @@ class Core extends Base\Core
                 $merchantId,
                 $balanceId,
                 $batchStart,
-                $batchEnd
+                $batchEnd,
+                $useMerchantAndCreatedAtIndex
             );
 
             // Fetch failed payouts for the current batch
@@ -842,7 +846,8 @@ class Core extends Base\Core
                 $merchantId,
                 $balanceId,
                 $batchStart,
-                $batchEnd
+                $batchEnd,
+                $useMerchantAndCreatedAtIndex
             );
 
             // Fetch reversals for the current batch
@@ -965,7 +970,7 @@ class Core extends Base\Core
                         'time_taken' => microtime(true) - $startTime
                     ]);
 
-                $this->updateFeesRecoveryStatus($payoutIds, $failedPayoutIds, $reversalIds, $feeRecoveryPayout);
+                $this->updateFeesRecoveryStatus($balance, $payoutIds, $failedPayoutIds, $reversalIds, $feeRecoveryPayout);
 
                 $this->trace->info(TraceCode::UPDATE_FEE_RECOVERY_STATUS, [
                     'balance_id' => $balance->getId(),
@@ -1140,11 +1145,10 @@ class Core extends Base\Core
                                                                    $type,
                                                                    $feeRecoveryPayoutId,
                                                                    $status,
-                                                                   $currentAttemptNumber)
+                                                                   $currentAttemptNumber,
+                                                                   $batch = self::BATCH_SIZE)
     {
         $left = 0;
-
-        $batch = self::BATCH_SIZE;
 
         $updatedEntitiesCount = 0;
 
@@ -1189,7 +1193,8 @@ class Core extends Base\Core
         return $updatedEntitiesCount;
     }
 
-    protected function updateFeesRecoveryStatus($payoutIds,
+    protected function updateFeesRecoveryStatus($balance,
+                                                $payoutIds,
                                                 $failedPayoutIds,
                                                 $reversalIds,
                                                 $feeRecoveryPayout,
@@ -1201,26 +1206,31 @@ class Core extends Base\Core
                 'fee_recovery_payout_id' => $feeRecoveryPayout->getPublicId(),
             ]);
 
+        $batchingEnabled = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fee_recovery_fetch_batching');
+        $batchSize = $batchingEnabled ? self::BATCH_SIZE : self::OVERRIDDEN_BATCH_SIZE;
         $updatedPayoutsCount = $this->updateBulkStatusAndRecoveryPayoutIdViaBatching($payoutIds,
                                                                                 Entity::PAYOUT,
                                                                                 Type::DEBIT,
                                                                                 $feeRecoveryPayout->getId(),
                                                                                 Status::PROCESSING,
-                                                                                $currentAttemptNumber);
+                                                                                $currentAttemptNumber,
+                                                                                $batchSize);
 
         $updatedFailedPayoutsCount = $this->updateBulkStatusAndRecoveryPayoutIdViaBatching($failedPayoutIds,
                                                                                       Entity::PAYOUT,
                                                                                       Type::CREDIT,
                                                                                       $feeRecoveryPayout->getId(),
                                                                                       Status::PROCESSING,
-                                                                                      $currentAttemptNumber);
+                                                                                      $currentAttemptNumber,
+                                                                                      $batchSize);
 
         $updatedReversalsCount = $this->updateBulkStatusAndRecoveryPayoutIdViaBatching($reversalIds,
                                                                                   Entity::REVERSAL,
                                                                                   Type::CREDIT,
                                                                                   $feeRecoveryPayout->getId(),
                                                                                   Status::PROCESSING,
-                                                                                  $currentAttemptNumber);
+                                                                                  $currentAttemptNumber,
+                                                                                  $batchSize);
 
         if (($updatedPayoutsCount !== count($payoutIds)) or
             ($updatedFailedPayoutsCount !== count($failedPayoutIds)) or
@@ -2087,22 +2097,32 @@ class Core extends Base\Core
             'fee_recovery_data_correction_' . $balance->getId(),
             function() use ($balance, $startTimeStamp, $endTimeStamp)
             {
+                $startTime = microtime(true);
+
                 $totalCorrections = 0;
                 $totalCorrectionsFailed = 0;
 
-                $properties = ['id' => $balance->getId(),
-                    'experiment_id' => 'fee_recovery_data_correction_fetch_batching',
-                    'request_data'  => json_encode(['id' => $balance->getId()])
-                ];
-                $feeRecoveryBatchingEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
+                $feeRecoveryBatchingEnabled = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fee_recovery_data_correction_fetch_batching');
+                $fetchPayoutWithMerchantAndCreatedAtIndex = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fetch_payout_with_merchant_and_created_at_index');
 
                 if($feeRecoveryBatchingEnabled){
-                    list ($initiatedPayouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimeStamp, $endTimeStamp);
+                    list ($initiatedPayouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimeStamp, $endTimeStamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
                     list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($initiatedPayouts->getIds(), $failedPayouts->getIds(), $reversals->getIds(), self::OVERRIDDEN_BATCH_SIZE);
                 } else {
-                    list ($initiatedPayouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimeStamp, $endTimeStamp);
+                    list ($initiatedPayouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimeStamp, $endTimeStamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
                     list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($initiatedPayouts->getIds(), $failedPayouts->getIds(), $reversals->getIds());
                 }
+
+                $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                    'message'   => "FETCH PAYOUTS, REVERSALS AND RECOVERIES",
+                    'payouts_count' => count($initiatedPayouts),
+                    'failed_payouts_count' => count($failedPayouts),
+                    'reversals_count' => count($reversals),
+                    'feeRecoveryPayouts' => count($feeRecoveryPayouts),
+                    'feeRecoveryFailedPayouts' => count($feeRecoveryFailedPayouts),
+                    'feeRecoveryReversals' => count($feeRecoveryReversals),
+                    'time_taken' => microtime(true) - $startTime
+                ]);
 
                 $initiatedPayoutCountDiff = count($initiatedPayouts) - count($feeRecoveryPayouts);
                 $failedCountDiff = count($failedPayouts) - count($feeRecoveryFailedPayouts);
@@ -2115,7 +2135,8 @@ class Core extends Base\Core
                     "failedPayouts" => count($failedPayouts),
                     "feeRecoveryFailedPayouts" => count($feeRecoveryFailedPayouts),
                     "reversals" => count($reversals),
-                    "feeRecoveryReversals" => count($feeRecoveryReversals)
+                    "feeRecoveryReversals" => count($feeRecoveryReversals),
+                    'time_taken' => microtime(true) - $startTime
                 ]);
 
                 if($initiatedPayoutCountDiff == 0 && $failedCountDiff == 0 && $reversalCountDiff == 0){
@@ -2214,6 +2235,7 @@ class Core extends Base\Core
         $left = 0;
 
         $feeRecoveryEntities = [];
+        $batchResult = [];
 
         $this->trace->info(
             TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
@@ -2234,7 +2256,11 @@ class Core extends Base\Core
 
             $left += $batch;
 
-            $feeRecoveryEntities += $this->repo->fee_recovery->fetchFeeRecoveries($currentSlice, $entityType, $type)->toArrayWithItems()["items"];
+            $batchResult += $this->repo->fee_recovery->fetchFeeRecoveries($currentSlice, $entityType, $type)->toArrayWithItems()["items"];
+
+            if (!empty($batchResult)) {
+                $feeRecoveryEntities = array_merge($feeRecoveryEntities, $batchResult);
+            }
 
             $this->trace->info(
                 TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
@@ -2243,11 +2269,11 @@ class Core extends Base\Core
                     'operation'              => self::FETCH,
                     'start'                  => $left,
                     'batch_size'             => $batch,
+                    'batch_count'            => count($batchResult),
                     'fee_recovery_count'      => count($feeRecoveryEntities),
                     'total_entity_count'     => count($entityIdList),
                     'current_slice_count'    => count($currentSlice),
                 ]);
-
         }
 
         return new Base\PublicCollection($feeRecoveryEntities);
@@ -2302,12 +2328,8 @@ class Core extends Base\Core
 
     private function getFeeRecoveryMissingPayouts(array $payouts, array $feeRecoveryPayouts): array
     {
-        $feeRecoveryIds = array_column($feeRecoveryPayouts, 'entity_id');
-        $missingPayouts = array_filter($payouts, function ($payout) use ($feeRecoveryIds) {
-            return !in_array($payout['id'], $feeRecoveryIds);
-        });
-
-        return array_values($missingPayouts);
+        $feeRecoveryIds = array_flip(array_column($feeRecoveryPayouts, 'entity_id'));
+        return array_values(array_filter($payouts, fn($payout) => !isset($feeRecoveryIds[$payout['id']])));
     }
 
     /**
@@ -2363,6 +2385,46 @@ class Core extends Base\Core
         } else {
             $this->trace->count(Metric::FEE_RECOVERY_ISSUE, [Metric::STATUS => Metric::UNRESOLVED]);
             return false;
+        }
+    }
+
+    /**
+     * @param Balance\Entity $balance
+     * @return bool
+     */
+    function getSplitzExperimentEnableStatus(string $id, string $experimentId): bool
+    {
+        $properties = ['id' => $id,
+            'experiment_id' => $experimentId,
+            'request_data' => json_encode(['id' => $id])
+        ];
+        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['request' => $properties]);
+        $experimentResult = $this->isSplitzExperimentEnable($properties, 'enable');
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, ['request' => $properties, 'result' => $experimentResult]);
+        return $experimentResult;
+    }
+
+    /**
+     * @param mixed $balanceId
+     * @param array $input
+     * @return void
+     * @throws BadRequestException
+     */
+    public function validateBalanceIdExistsInNegativeFeeRecoveryAmountExclusionList(mixed $balanceId, array $input): void
+    {
+        if ($this->getSplitzExperimentEnableStatus($balanceId, '')) {
+
+            $msg = "Blacklisted the balanceId to avoid computation of fee recovery as it has amount to be collected.";
+            $this->trace->error(TraceCode::FEE_RECOVERY_INITIATED, [
+                'message' => $msg,
+                'input' => $input
+            ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT,
+                null,
+                $input,
+                $msg
+            );
         }
     }
 

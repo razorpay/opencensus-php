@@ -144,6 +144,16 @@ class FeeRecovery extends Job
                 FeeRecoveryMetrics::CODE => $ex->getCode()
             ]);
 
+            if ($ex->getCode() === ErrorCode::BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
+                    $data);
+                $this->delete();
+                return;
+            }
+
             if ($ex->getCode() === ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING) {
 
                 $this->trace->traceException(
@@ -154,7 +164,6 @@ class FeeRecovery extends Job
 
                 FeeRecoveryDataCorrection::dispatch($this->mode, $this->balanceId, $this->startTimeStamp, $this->endTimeStamp);
                 $this->delete();
-
                 return;
             }
 
@@ -175,6 +184,11 @@ class FeeRecovery extends Job
             else
             {
                 if ($ex->getCode() === ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_INSUFFICIENT)
+                {
+                    $feeRecoveryCore->updateNextRunAtForNegativeFees($this->task, $this->balanceId);
+                }
+
+                if ($ex->getCode() === ErrorCode::BAD_REQUEST_VALIDATION_FAILURE and $ex->getMessage() === 'Minimum transaction amount should be 100 paise')
                 {
                     $feeRecoveryCore->updateNextRunAtForNegativeFees($this->task, $this->balanceId);
                 }
