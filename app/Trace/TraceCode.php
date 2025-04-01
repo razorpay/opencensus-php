@@ -1213,6 +1213,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_TOKEN_PAUSE                                  = 'CUSTOMER_TOKEN_PAUSE';
     const CUSTOMER_TOKEN_RESUME                                 = 'CUSTOMER_TOKEN_RESUME';
     const CUSTOMER_TOKEN_CANCEL                                 = 'CUSTOMER_TOKEN_CANCEL';
+    const CUSTOMER_TOKEN_CANCELLATION_INITIATED                 = 'CUSTOMER_TOKEN_CANCELLATION_INITIATED';
+    const UPI_AUTOPAY_CANCEL_TOKEN                              = 'UPI_AUTOPAY_CANCEL_TOKEN';
     const CUSTOMER_TOKEN_COMPLETE                               = 'CUSTOMER_TOKEN_COMPLETE';
     const CUSTOMER_TOKEN_ACTION_ASYNC                           = 'CUSTOMER_TOKEN_ACTION_ASYNC';
     const CUSTOMER_TOKEN_EDIT                                   = 'CUSTOMER_TOKEN_EDIT';

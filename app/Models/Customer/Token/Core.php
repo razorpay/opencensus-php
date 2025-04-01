@@ -1252,6 +1252,39 @@ class Core extends Base\Core
         return (new Token\Repository())->fetchByEntityId($dualTokenMapperId);
     }
 
+    public function cancellationInitiatedTokenEvent($tokenId, $customerId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CANCELLATION_INITIATED,
+            [
+                'token_id'    => $tokenId,
+                'customer_id' => $customerId,
+            ]);
+
+        $token = $this->repo->token->findByPublicId('token_' . $tokenId);
+
+        $oldRecurringStatus = $token->getRecurringStatus();
+
+        if ($oldRecurringStatus !== RecurringStatus::CANCELLED)
+        {
+            $token->setRecurringStatus(RecurringStatus::CANCELLATION_INITIATED);
+        }
+
+        $token->saveOrFail();
+
+        if(($token->getMethod() === Method::UPI) and ($token->isRecurring() === true))
+        {
+            $this->trace->count(Metrics::UPI_AUTOPAY_TOKEN_CANCELLATION_INITIATED, [
+                'method' => $token->getMethod(),
+                'is_tpv' => $token->merchant->isTPVRequired()
+            ]);
+        }
+
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLATION_INITIATED);
+    }
+
     /**
      * Fetches global tokens associated with a global customer.
      *

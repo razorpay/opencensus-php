@@ -1261,6 +1261,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onTokenCancellationInitiated($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onSettlementProcessed($settlement)
     {
         $payload = $this->getSettlementPayload($settlement);
