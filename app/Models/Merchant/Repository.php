@@ -2877,14 +2877,44 @@ class Repository extends Base\Repository
 
     public function fetchAllMidsByCountryCode($offsetID,$limit,$countryCode)
     {
+        $nowMinus30Min = Carbon::today(Timezone::IST)->subMinutes(30)->getTimestamp();
+
         $query=$this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->select(Entity::ID)
+            ->where(Entity::CREATED_AT, '<=', $nowMinus30Min)
             ->orderBy(Entity::CREATED_AT,'asc');
 
         if ($countryCode!=null)
         {
             $query=$query->where(Entity::COUNTRY_CODE, '=', $countryCode);
         }
+
+        if ($offsetID!=null)
+        {
+            $query=$query->where(Entity::ID, '>', $offsetID);
+        }
+
+        return $query->limit($limit)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
+    /**
+     * find MIDs created before last 30 minutes
+     * @param $offsetID
+     * @param $limit
+     * @return mixed
+     *
+     */
+    public function fetchAllMidsWithPast30MinBuffer($offsetID,$limit)
+    {
+        $nowMinus30Min = Carbon::today(Timezone::IST)->subMinutes(30)->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+                        ->select(Entity::ID)
+                        ->where(Entity::CREATED_AT, '<=', $nowMinus30Min)
+                        ->orderBy(Entity::CREATED_AT,'asc');
 
         if ($offsetID!=null)
         {

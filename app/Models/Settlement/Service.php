@@ -2307,7 +2307,7 @@ class Service extends Base\Service
         }
         else
         {
-            $allMerchants=$this->repo->merchant->fetchAllMids($offsetID, $limit);
+            $allMerchants=$this->repo->merchant->fetchAllMidsWithPast30MinBuffer($offsetID, $limit);
         }
 
         $merchantsToMigrate=$this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, $allMerchants);
