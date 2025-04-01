@@ -12856,6 +12856,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORG_ADMIN_NOT_FOUND                                    = 'ORG_ADMIN_NOT_FOUND';
     const ORG_ADMIN_UPDATE_SERVICE_MODEL                         = 'ORG_ADMIN_UPDATE_SERVICE_MODEL';
     const BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                    = 'BANKING_ADMIN_UPDATE_REQUEST_ORG_ID';
+    const ORG_ADMIN_UPDATE_REQUEST                               = 'ORG_ADMIN_UPDATE_REQUEST';
+    const ORG_ADMIN_UPDATE_RESPONSE                              = 'ORG_ADMIN_UPDATE_RESPONSE';
+    const ORG_ADMIN_UPDATE_FAILURE                               = 'ORG_ADMIN_UPDATE_FAILURE';
+    const BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED                 = 'BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED';
 
     const ONBOARDING_API_CATEGORY_ACTIVATION_STATUS            = 'ONBOARDING_API_CATEGORY_ACTIVATION_STATUS';
     const PAYMENT_NOTES_WITH_OPTIMIZER_PROVIDER_NAME_UPDATE_FAILED = 'PAYMENT_NOTES_WITH_OPTIMIZER_PROVIDER_NAME_UPDATE_FAILED';
@@ -13297,6 +13301,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_ADMIN_FETCH_REQUEST                                        => 'Request for fetching org admin',
         self::ORG_ADMIN_FETCH_SUCCESS                                        => 'Org admin fetched successfully',
         self::ORG_ADMIN_NOT_FOUND                                            => 'Org admin not found',
+        self::ORG_ADMIN_UPDATE_REQUEST                                       => 'Request for updating org admin',
+        self::ORG_ADMIN_UPDATE_RESPONSE                                      => 'Response for updating org admin',
+        self::ORG_ADMIN_UPDATE_FAILURE                                       => 'Org admin updation failed',
         self::BANKING_ADMIN_UPDATE_REQUEST_ORG_ID                            => 'Trace log after admin update',
         self::ADMIN_ORG_PERMISSIONS_REPLICATIONS                             => 'admin org permission replicated successfully',
         self::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE                          => 'Firing Transaction.Created Webhook synchronously',

@@ -3242,6 +3242,9 @@ class ErrorCode
     const BAD_REQUEST_ADMIN_NOT_FOUND                                               = 'BAD_REQUEST_ADMIN_NOT_FOUND';
     const BAD_REQUEST_IDAM_ORG_NOT_FOUND                                            = 'BAD_REQUEST_IDAM_ORG_NOT_FOUND';
     const BAD_REQUEST_INVALID_DATE_RANGE                                            = 'BAD_REQUEST_INVALID_DATE_RANGE';
+    const BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED                                    = 'BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED';
+    const BAD_REQUEST_ADMIN_DISABLED                                                = 'BAD_REQUEST_ADMIN_DISABLED';
+    const BAD_REQUEST_ADMIN_DISABLED_BY_DORMANCY                                    = 'BAD_REQUEST_ADMIN_DISABLED_BY_DORMANCY';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID                              = 'BAD_REQUEST_BATCH_FILE_DUPLICATE_MERCHANT_ID';
 
     // Smart Routing Rules

@@ -42,6 +42,9 @@ return new class extends Migration {
                 ->unsigned()
                 ->nullable();
 
+            $table->string(AdminsMeta::DISABLED_REASON)
+                ->nullable();
+
             $table->index(AdminsMeta::UNIQUE_IDENTIFIER);
             $table->index(AdminsMeta::UPDATED_AT);
         });

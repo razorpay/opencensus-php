@@ -649,6 +649,7 @@
             <file>./tests/Functional/Payment/BankingUpiTest.php</file>
             <file>./tests/Unit/Models/Merchant/Detail/BankingCoreTest.php</file>
             <file>./tests/Functional/Admin/BankingAdminLeadTest.php</file>
+            <file>./tests/Functional/Admin/BankingAdminTest.php</file>
             <file>./tests/Functional/VirtualAccount/VirtualAccountTest.php</file>
             <file>./tests/Functional/VirtualAccount/VirtualAccountForOrderTestBanking.php</file>
             <file>./tests/Functional/Merchant/MerchantDetailsTestBanking.php</file>

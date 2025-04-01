@@ -1862,6 +1862,9 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_DATE_RANGE                                            = 'Date range is invalid. Please ensure that the range is within 31 days.';
 
     const BAD_REQUEST_IDAM_ORG_NOT_FOUND                                            = 'IDAM Org not found.';
+    const BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED                                    = 'Admin disabled cron failed.';
+    const BAD_REQUEST_ADMIN_DISABLED                                                = 'Admin account is disabled.';
+    const BAD_REQUEST_ADMIN_DISABLED_BY_DORMANCY                                    = 'Admin account is disabled due to inactivity.';
 
     const BAD_REQUEST_CIN_MISMATCH            = 'The given CIN does not belong to your selected business type. Please provide a different CIN';
     const BAD_REQUEST_PAN_MISMATCH            = 'The given PAN does not belong to your selected business type. Please provide a different PAN';

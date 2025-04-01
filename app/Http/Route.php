@@ -1976,7 +1976,7 @@ class Route
         'org_admin_update'                         => ['put',      'org/admins/{unique_identifier}',                 'OrganizationController@updateOrgAdmin'                             ],
         'org_admin_get'                            => ['get',      'org/admins/{id}',                                'OrganizationController@getOrgAdmin'                                ],
         'org_admin_get_multiple'                   => ['get',      'org/admins',                                     'OrganizationController@getMultipleOrgAdmins'                       ],
-
+        'org_admin_disable_cron'                   => ['post',     'org/admins/disable/{id}',                        'OrganizationController@editAdmin'                                  ],
         // Admin Org Replications
         'admin_org_replications'                   => ['post',     'admin/org/replications',                         'OrganizationController@adminOrgReplications'                       ],
 
@@ -7015,7 +7015,8 @@ class Route
         'internal_clear_unsettled_txns',
         'create_sqr_for_single_stack',
         'acquirer_fetch',
-        'qr_code_device_update'
+        'qr_code_device_update',
+        'org_admin_disable_cron'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17536,6 +17537,7 @@ class Route
 
             'expire_amount_credits',
             'pg_ledger_balance_analysis',
+            'org_admin_disable_cron'
         ],
 
         'subscriptions' => [
@@ -20483,6 +20485,7 @@ class Route
         'get_all_country_dashboard_config'                  => HeartBeatLagChecker::MASTER,
         'get_country_dashboard_config'                      => HeartBeatLagChecker::MASTER,
         'edit_country_dashboard_config'                     => HeartBeatLagChecker::MASTER,
+        'org_admin_disable_cron'                            => HeartBeatLagChecker::SLAVE,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [
