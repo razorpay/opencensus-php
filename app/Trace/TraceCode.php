@@ -4323,6 +4323,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_DEVICE_DETAIL_SAVE_FAILED                        = 'USER_DEVICE_DETAIL_SAVE_FAILED';
     const USER_DEVICE_CREATE_DETAIL_REQUEST                     = 'USER_DEVICE_CREATE_DETAIL_REQUEST';
 
+    const DASHBOARD_HOMEPAGE_REDIRECTION_EXPERIMENT = 'DASHBOARD_HOMEPAGE_REDIRECTION_EXPERIMENT';
+
     //Trace codes for PGOS service
 
     const PGOS_PROXY_REQUEST                        = "PGOS_PROXY_REQUEST";

@@ -1420,6 +1420,8 @@ return array(
 
     'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT'),
 
+    'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED' => env('DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED'),
+
     'skip_upi_icici_callback_bt' => env('SKIP_UPI_ICICI_CALLBACK_BT'),
 
     'use_merchant_reference_for_unexpected_payment' => env('USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT'),
