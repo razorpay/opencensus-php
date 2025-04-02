@@ -401,8 +401,7 @@ class Processor
     /**
      * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
      */
-    const BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER = 'banking_org_id_MOTO_payments_via_pg_router';
-
+    const BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER = 'banking_org_id_card_payments_via_pg_router';
 
     /**
      * Razorx flag to block merchants from re-arch flow
@@ -2050,10 +2049,10 @@ class Processor
 
                 $offerMethod = $offer->getPaymentMethod();
 
-                if ($offerMethod === Payment\Method::CARD)
+                if ($offerMethod === Payment\Method::CARD || $offerMethod === Offer\Entity::MULTIPLE)
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "card_offer_payment_blocked",
+                        'reason' => "card_or_multiple_offer_payment_blocked",
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -2092,9 +2091,9 @@ class Processor
 
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
-                $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                if($result !== 'on')
+                $experimentName = 'app.banking_org_id_moto_payments_via_pg_router';
+                $result = (new Payment\Service())->getSplitzExperimentResponseForBankingMotoRearch($merchant->getOrgId(),$experimentName);
+                if ($result !== 'enable')
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "MOTO_Payment",

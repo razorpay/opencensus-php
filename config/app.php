@@ -1432,5 +1432,9 @@ return array(
 
     'enable_validate_vpa_on_ups_experiment_id' => env('ENABLE_VALIDATE_VPA_ON_UPS_EXPERIMENT_ID'),
 
-    'block_merchants_on_ups_experiment_id' => env('BLOCK_MERCHANTS_ON_UPS_EXPERIMENT_ID')
+    'block_merchants_on_ups_experiment_id' => env('BLOCK_MERCHANTS_ON_UPS_EXPERIMENT_ID'),
+
+    'delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum' => env('DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM'),
+
+    'banking_org_id_moto_payments_via_pg_router' => env('BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER')
 );

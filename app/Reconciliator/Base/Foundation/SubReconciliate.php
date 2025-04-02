@@ -9,6 +9,7 @@ use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Jobs\Ledger\ReconNFCToCLS;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
 use RZP\Models\OfflinePayment\Mode;
 use RZP\Models\Payment;
@@ -774,7 +775,8 @@ class SubReconciliate extends Base\Core
 
                 if($entity->getGateway() ===  Payment\Gateway::PAYSECURE or $entity->getGateway() ===  Payment\Gateway::FULCRUM )
                 {
-                    $variant = $this->app['razorx']->getTreatment($entity->getId(), RazorxTreatment::DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM, $this->app['rzp.mode'] ?? 'live');
+                    $experimentId = $this->app['config']->get('app.delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum');
+                    $variant = $this->evaluateSplitzVariant($entity->getId(), $experimentId);
                 }
                 else
                 {
@@ -813,6 +815,40 @@ class SubReconciliate extends Base\Core
                 ]);
         }
 
+    }
+
+    private function evaluateSplitzVariant($entityId, $experimentId): string
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'entity_id' => $entityId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return 'on';
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM_SPLITZ_ERROR
+            );
+        }
+
+        return 'off';
     }
 
     protected function getSummary()

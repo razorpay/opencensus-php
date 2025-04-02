@@ -77,7 +77,7 @@ class Repository extends Base\Repository
         //
         // retrieve iin details
         //
-        return Card\IIN\Entity::find($iin);
+        return (new IIN\Repository)->find($iin);
     }
 
     public function getByParams($params, $relations = [], $limit = 1)

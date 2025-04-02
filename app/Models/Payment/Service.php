@@ -2404,6 +2404,36 @@ class Service extends Base\Service
         return $response['response']['variant']['name'] ?? '';
     }
 
+    public function getSplitzExperimentResponseForBankingMotoRearch(string $orgId, string $experimentName)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get($experimentName),
+                'request_data'  => json_encode(['org_id' => $orgId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'org_id'            => $orgId,
+                'experimentName'    => $experimentName,
+                'request'           => $properties,
+                'result'            => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'org_id'   => $orgId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     public function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
     {
         $variant = $this->getSplitzResponse($merchantId, $experimentName);
