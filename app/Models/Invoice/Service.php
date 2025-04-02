@@ -181,9 +181,16 @@ class Service extends Base\Service
     {
         if (in_array('payments', $expands) === true)
         {
-            $payments = $this->repo->payment->getPaymentsForInvoice(Entity::stripDefaultSign($invoiceArray[Entity::ORDER_ID]));
+            $orderId = Entity::stripDefaultSign($invoiceArray[Entity::ORDER_ID] ?? '');
 
-            $invoiceArray['payments'] = $payments->toArrayPublic();
+            if (!empty($orderId)) {
+                $payments = $this->repo->payment->getPaymentsForInvoice($orderId);
+                $invoiceArray['payments'] = $payments->toArrayPublic();
+            }
+            else
+            {
+                $invoiceArray['payments'] = [];
+            }
         }
 
         return $invoiceArray;
