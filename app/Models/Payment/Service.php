@@ -7504,8 +7504,6 @@ class Service extends Base\Service
             'amount'                => $payment->getAmount(),
             'status'                => $payment->getStatus(),
             'rrn'                   => $payment->getReference16(),
-            'gateway_fee'           => $paymentRecon->getPaymentTransaction() ? $paymentRecon->getPaymentTransaction()->getGatewayFee() : null,
-            'gateway_service_tax'   => $paymentRecon->getPaymentTransaction() ? $paymentRecon->getPaymentTransaction()->getGatewayServiceTax() : null,
             'art_request_id'        => $input['meta']['art_request_id'],
            ];
         }
