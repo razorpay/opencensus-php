@@ -78,7 +78,8 @@ class Kotak extends NetbankingBase
     }
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+        ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway']['bank_transaction_id']; // payment through nbplus service
         }
@@ -87,7 +88,8 @@ class Kotak extends NetbankingBase
     }
     protected function fetchBankGatewayCode($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+        ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['terminal']['gateway_merchant_id']; // payment through nbplus service
         }
@@ -95,7 +97,8 @@ class Kotak extends NetbankingBase
     }
     protected function fetchBankGatewayId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+        ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['payment']['id']; // payment through nbplus service
         }
