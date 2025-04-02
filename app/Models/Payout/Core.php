@@ -11216,18 +11216,24 @@ class Core extends Base\Core
          */
         $accountDetailsMap = [];
 
+        //  Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = 0;
+
         // Count of valid Direct Accounts for Smart Routing
         $validDirectAccounts = 0;
 
         $this->fetchValidDirectAccountsForSmartRouting(
             $accountDetailsMap, $validDirectAccounts, $input, $merchant, $fundAccountType);
 
-        // Fetch Lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+        // Fetch Lite balances only if payouts via lite is not blocked
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUTS_BLOCKED_ON_LITE) === false)
+        {
+            $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+                $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
 
-        // Count of valid Lite Accounts for Smart Routing
-        $validLiteAccounts = count($liteBalances);
+            // Count of valid Lite Accounts for Smart Routing
+            $validLiteAccounts = count($liteBalances);
+        }
 
         $this->trace->info(TraceCode::PAYOUT_SMART_ROUTING_ACCOUNTS, [
             'active_direct_accounts' => $validDirectAccounts,
@@ -11934,13 +11940,23 @@ class Core extends Base\Core
         return $ftsRequest;
     }
 
-    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array {
+    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array
+    {
         $channelShared = strtoupper(Balance\AccountType::SHARED);
 
-        // Fetching lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
-        $validLiteAccounts = count($liteBalances);
+        $merchant = $this->repo->merchant->findOrFail($merchantID);
+
+        //  Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = 0;
+
+        // Fetching lite balances if merchant is not blocked for lite payouts
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUTS_BLOCKED_ON_LITE) === false)
+        {
+            $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+                $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+            
+            $validLiteAccounts = count($liteBalances);
+        }
 
         // Fetch Active BasDetails
         $activeBasDetails = $this->repo->banking_account_statement_details->getActiveDirectAccountsForMerchantId($merchantID);
