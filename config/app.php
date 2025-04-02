@@ -1416,6 +1416,8 @@ return array(
 
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
 
+
+    'payment_status_revert_api_via_scrooge_experiment' => env('PAYMENT_STATUS_REFUND_VIA_SCROOGE_EXPERIMENT'),
     'enable_fee_check_before_registration' => env('ENABLE_FEE_CHECK_BEFORE_REGISTER'),
 
     'auto_capture_result'   => env('AUTO_CAPTURE_RESULT'),

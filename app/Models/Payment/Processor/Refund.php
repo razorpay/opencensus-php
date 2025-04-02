@@ -4688,7 +4688,7 @@ trait Refund
      * @throws Exception\BadRequestException
      */
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
-    {
+    {   
         if ($this->app['env'] === Environment::PRODUCTION){
             return true;
         }

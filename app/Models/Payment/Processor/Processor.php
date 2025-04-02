@@ -13554,7 +13554,7 @@ class Processor
     }
 
     protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)
-    {
+    {        
         // If total amount refund is 0, setting payment's refund status to null
         if ($payment->getAmountRefunded() === 0)
         {
@@ -13566,7 +13566,15 @@ class Processor
             $payment->setRefundStatus(Payment\RefundStatus::PARTIAL);
         }
 
-        $payment->setStatus(Payment\Status::CAPTURED);
+        // Payment status transitions: CAPTURED > REFUNDED or AUTHORIZED > REFUNDED
+        // Note: REFUNDED status can only follow AUTHORIZED or CAPTURED statuses.
+        // If captured_at is null, the payment transitioned to REFUNDED from AUTHORIZED. So revert of payment status happen accordingly
+        if ($this->evaluateExeperimentForPaymentStatusRevertFromRefunded($payment->getMerchantId()) && $payment->getCapturedAt() === null) {
+            $payment->setStatus(Payment\Status::AUTHORIZED);
+            } else {
+                $payment->setStatus(Payment\Status::CAPTURED);
+            }
+
     }
 
     protected function getUpiStatus(string $id)
@@ -15740,7 +15748,50 @@ public function isLibrarySupportedForNbplusRearch($library): bool
 
         return false;
     }
+    /**
+     * evaluateExeperimentForPaymentStatusRevertFromRefunded checks if payment_status_revert_api_via_scrooge_experiment splitz is enabled
+     *
+     * @param string $merchantId
+     * @return boolean
+     */
+    public function evaluateExeperimentForPaymentStatusRevertFromRefunded ($merchantId)
+    {  
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.payment_status_revert_api_via_scrooge_experiment'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId
+                    ])
+            ];
 
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+        
+            $variant = $response['response']['variant']['name'] ?? '';
+            $this->trace->info(TraceCode::PAYMENT_STATUS_REVERT_EXPERIMENT_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'variant' => $variant ,
+                'response' => $response,
+                'experiment_id' => $this->app['config']->get('app.payment_status_revert_api_via_scrooge_experiment')
+            ]);
+
+            if ($variant === 'variant_on')
+            {   
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_STATUS_REVERT_EXPERIMENT_ERROR
+            );
+        }
+        return false;
+    }
     /** Splitz to check if merchant needs to be blocked
      * @param $merchantID
      * @return bool
