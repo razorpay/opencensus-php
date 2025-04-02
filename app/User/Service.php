@@ -4653,10 +4653,10 @@ class Service extends Base\Service
                 return false;
             }
 
-            //Redirection for billme and payroll is excluded
-            if ($this->hasBillmeOrPayroll() === true) {
+            //Redirection for payroll is excluded
+            if ($this->hasPayroll() === true) {
                 $this->trace->info(TraceCode::USL_REDIRECTION, [
-                    'isBillmeOrpayroll'              => true,
+                    'isPayroll'              => true,
                 ]);
                 return false;
             }
@@ -4703,7 +4703,7 @@ class Service extends Base\Service
         return $uuid;
     }
 
-    private function hasBillmeOrPayroll(): bool {
+    private function hasPayroll(): bool {
 
         $requestUrl = request()->fullUrl();
 
@@ -4711,7 +4711,7 @@ class Service extends Base\Service
         $decodedUrl = rawurldecode($requestUrl); // Use rawurldecode instead of urldecode
         $normalizedUrl = strtolower(trim($decodedUrl));
 
-        return preg_match('/\bbillme|payroll\b/i', $normalizedUrl);
+        return preg_match('/\bpayroll\b/i', $normalizedUrl);
     }
 
     private function canCookieSetForEasyOnboardingPostL1Submit($details): bool

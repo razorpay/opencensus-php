@@ -10,7 +10,6 @@ import {
   isInstantBankTransferActivatedTests,
 } from './mocks/fixtures';
 
-// test suite
 describe('Tests for isInstantBankTransferActivated - UnlockMoreMethods', () => {
   test.each(isInstantBankTransferActivatedTests)(
     'should return %p when leafInstrument is %p',

@@ -2551,7 +2551,7 @@ class UserController extends Controller
 
         // Check if the URL contains only the 'next' query parameter
         if (count($queryParams) === 1 && isset($queryParams['next'])) {
-            $redirectUrl = 'https://' . $baseHost . urldecode($queryParams['next']);
+            $redirectUrl = 'https://' . $baseHost . '/' . ltrim(urldecode($queryParams['next']), '/');
         } else {
             $redirectUrl = $currentUrl; // Keep original URL if condition isn't met
         }
