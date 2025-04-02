@@ -8042,8 +8042,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return
             (
                 ($this->merchant !== null) and
-                (in_array($this->merchant->getId(),self::FEE_MODEL_OVERRIDE_MERCHANT_IDS) === true) and
-                (empty($this->transaction) === false)
+                (in_array($this->merchant->getId(),self::FEE_MODEL_OVERRIDE_MERCHANT_IDS) === true)
             );
     }
 

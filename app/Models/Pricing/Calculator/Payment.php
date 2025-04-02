@@ -1203,9 +1203,7 @@ class Payment extends Base
                             'fee_model' => $feeModel,
                             'merchant_id' => $payment->getMerchantId(),
                             'payment_id' => $payment->getId(),
-                            'transaction_id' => $payment->transaction->getId(),
                         ]);
-                    $payment->transaction->setFeeModel($feeModel);
                 }
             }
         } catch (\Throwable $e){
