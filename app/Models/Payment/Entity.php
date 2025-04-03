@@ -3616,18 +3616,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return $this->skipCvvCheckFlag;
         }
 
-        $app = \App::getFacadeRoot();
-
-        $experimentResult = $app['razorx']->getTreatment($this->merchant->getOrgId(),
-            'skip_cvv', $app['rzp.mode']);
-
-        $app['trace']->debug(TraceCode::SKIP_CVV_CHECK_RESULT, [
-            'paymentId' => $this->getId(),
-            'razorXResult' => $experimentResult,
-        ]);
-
         $this->skipCvvCheckFlag =  (($this->isCard()) and
-            ($experimentResult == "skip") and
             (isset($this->input[self::CARD]) === true) and
             (isset($this->input[self::CARD][Card\Entity::CVV]) === false) and
             ($this->merchant->isFeatureEnabled(Feature\Constants::SKIP_CVV) === true));
