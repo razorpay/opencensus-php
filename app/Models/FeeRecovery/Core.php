@@ -2253,13 +2253,14 @@ class Core extends Base\Core
         while ($left < count($entityIdList))
         {
             $currentSlice = array_slice($entityIdList, $left, $batch, true);
-
             $left += $batch;
 
-            $batchResult += $this->repo->fee_recovery->fetchFeeRecoveries($currentSlice, $entityType, $type)->toArrayWithItems()["items"];
+            if(!empty($currentSlice)) {
+                $batchResult = $this->repo->fee_recovery->fetchFeeRecoveries($currentSlice, $entityType, $type)->toArrayWithItems()["items"];
 
-            if (!empty($batchResult)) {
-                $feeRecoveryEntities = array_merge($feeRecoveryEntities, $batchResult);
+                if (!empty($batchResult)) {
+                    $feeRecoveryEntities = array_merge($feeRecoveryEntities, $batchResult);
+                }
             }
 
             $this->trace->info(
@@ -2412,7 +2413,7 @@ class Core extends Base\Core
      */
     public function validateBalanceIdExistsInNegativeFeeRecoveryAmountExclusionList(mixed $balanceId, array $input): void
     {
-        if ($this->getSplitzExperimentEnableStatus($balanceId, '')) {
+        if ($this->getSplitzExperimentEnableStatus($balanceId, 'negative_fee_recovery_amount_balance_id_exclusion_list')) {
 
             $msg = "Blacklisted the balanceId to avoid computation of fee recovery as it has amount to be collected.";
             $this->trace->error(TraceCode::FEE_RECOVERY_INITIATED, [
