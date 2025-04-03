@@ -4223,7 +4223,8 @@ class Core extends Base\Core
         }
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
-            $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED)
+            $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED or
+            $input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING)
         {
             // to check website validations for the merchant while fully activating or moving to KQU
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
@@ -14037,5 +14038,5 @@ class Core extends Base\Core
             $ncCount === 0
         );
     }
-    
+
 }
