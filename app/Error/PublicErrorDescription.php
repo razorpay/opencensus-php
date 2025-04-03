@@ -1200,7 +1200,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE_TYPE                       = 'Only Direct-Banking type balance is allowed';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED     = 'Manual recovery for rzp_fees type payouts is not supported';
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
-
+    const BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING = 'There are cases where fee recovery debit or credit entities are missing, So couldn\'t recover fee for the time range provided.';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                              = 'Request failed as contact mobile already taken';
 
     const BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED                              = 'No owner accounts associated with this contact mobile';

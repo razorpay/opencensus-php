@@ -715,7 +715,7 @@ return [
                 "error" => [
                     "code"=> "BAD_REQUEST_ERROR",
                     "description" => "The user id field is required.",
-                    "source" => "business",
+                    "source" => "internal",
                     "step" => "payment_initiation",
                     "reason" => "input_validation_failed",
                     "metadata" => [],
@@ -744,7 +744,7 @@ return [
                 "error" => [
                     "code"=> "BAD_REQUEST_ERROR",
                     "description" => "The org id field is required.",
-                    "source" => "business",
+                    "source" => "internal",
                     "step" => "payment_initiation",
                     "reason" => "input_validation_failed",
                     "metadata" => [],

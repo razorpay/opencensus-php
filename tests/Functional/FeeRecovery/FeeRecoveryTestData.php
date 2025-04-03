@@ -626,8 +626,8 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => null,
-                    'description' => PublicErrorDescription::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING,
                 ],
             ],
             'status_code' => 400,

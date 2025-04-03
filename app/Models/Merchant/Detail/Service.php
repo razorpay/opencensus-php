@@ -2091,12 +2091,27 @@ class Service extends Base\Service
 
     public function updatePosActivationStatusOfMerchant(string $merchantId, array $input): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleUpdatePosActivationStatusOfMerchant($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+        } else {
+            return $this->handleUpdatePosActivationStatusOfMerchant($merchantId, $input);
+        }
+    }
+
+    private function handleUpdatePosActivationStatusOfMerchant(string $merchantId, array $input) : array {
         $admin = $this->app['basicauth']->getAdmin();
-
-        $merchantDetails = (new Core)->updatePosActivationStatusOfMerchant($merchant, $input,$admin);
-
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantDetails = $this->core->updatePosActivationStatusOfMerchant($merchant, $input,$admin);
         return $merchantDetails->toArrayPublic();
     }
     /**
@@ -2176,7 +2191,23 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
-    public function updatePosActivationStatusInternal(string $merchantId, array $input): array
+    public function updatePosActivationStatusInternal(string $merchantId, array $input): array {
+        if(!empty($merchantId) and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleUpdatePosActivationStatusInternal($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+        } else {
+            return $this->handleUpdatePosActivationStatusInternal($merchantId, $input);
+        }
+    }
+    public function handleUpdatePosActivationStatusInternal(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
