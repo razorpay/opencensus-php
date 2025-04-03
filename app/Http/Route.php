@@ -4796,6 +4796,8 @@ class Route
 
         // network tokenization
         'token_create'                            => ['post',        'tokens',                                                   'TokenController@create'                                   ],
+        // this api is getting used for migrating Juspay tokens only
+        'token_create_internal_for_continuity'    => ['post',        'internal/tokens/continuity',                                'TokenController@create'                                   ],
         'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
         'token_fetch_cryptogram'                  => ['post',        'tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGram'                          ],
         'token_fetch_cryptogram_internal'         => ['post',        'internal/tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGramInternal'         ],
@@ -7015,6 +7017,7 @@ class Route
         'internal_clear_unsettled_txns',
         'create_sqr_for_single_stack',
         'acquirer_fetch',
+        'token_create_internal_for_continuity',
         'qr_code_device_update',
         'org_admin_disable_cron'
     ];
@@ -18281,7 +18284,8 @@ class Route
             'internal_recurring_method_details_fetch',
             'internal_token_create',
             'update_token_on_authorized',
-            'internal_transactions'
+            'internal_transactions',
+            'token_create_internal_for_continuity'
         ],
 
         'otpelf' => [

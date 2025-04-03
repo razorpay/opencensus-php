@@ -1138,9 +1138,27 @@ class Service extends Base\Service
     public function createNetworkToken($input, $merchantPushProvisioning = null)
     {
         $startTime = microtime(true);
-
+        $isTokenContinuityFlow = false;
         try
         {
+            if(empty($input['merchant_id']) === false)
+            {
+                $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+                $isTokenContinuityFlow = $merchant->isTokenContinuityEnabled();
+
+                if ($isTokenContinuityFlow === true)
+                {
+                    $merchantPushProvisioning = $merchant;
+                    if(empty($input['card']['token_iin']) === false)
+                    {
+                        $tokenIinNumber  = $input['card']['token_iin'];
+                        $tokenIin = $this->repo->tokenised_iin->findbyTokenIin($tokenIinNumber);
+                        $iinNumber = $tokenIin['iin'];
+                        $input['card']['number'] = $iinNumber . substr($input['card']['number'], strlen($iinNumber));
+                        $input['card']['iin'] = $iinNumber;
+                    }
+                }
+            }
 
             if($merchantPushProvisioning !== null) {
                 $this->merchant = $merchantPushProvisioning;
@@ -1152,9 +1170,9 @@ class Service extends Base\Service
 
             $this->decryptCardNumberIfApplicable($input['card']);
 
-            if ($this->merchant->isTokenizationEnabled() === true)
+            if ($this->merchant->isTokenizationEnabled() === true || $isTokenContinuityFlow === true)
             {
-                list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input, $merchantPushProvisioning);
+                list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input, $merchantPushProvisioning, $isTokenContinuityFlow);
 
                 (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CREATE);
 

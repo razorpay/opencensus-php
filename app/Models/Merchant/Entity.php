@@ -3531,6 +3531,12 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) || $this->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE);
     }
 
+    public function isTokenContinuityEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::TOKEN_CONTINUITY);
+    }
+
+
     /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant
