@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Offer;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Offer;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Account;
@@ -1224,4 +1225,472 @@ class OffersPaymentTest extends TestCase
                 ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => false,
             ]);
     }
+
+    function getOffersEngineConvertedResponse($response)
+    {
+        if (empty($response) === false)
+        {
+            $response[Offer\Constants::PUBLISH] = $response[Offer\Constants::OFFER_PUBLISHERS][0];
+
+            return (new Offer\OffersEngine())->
+            convertOffersEngineResponseToEntityOffer($response)[Offer\Constants::OFFER];
+        }
+
+        return null;
+    }
+
+    public function testValidateOffersBeforeCheckoutForExternalOffers()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.")
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => true,
+            ]);
+
+        $offer1 = $this->fixtures->create('offer',
+                                          ['type' => 'instant', 'current_offer_usage' => 2, 'max_offer_usage' => 5]);
+        $offer2 = $this->fixtures->create('offer',
+                                          ['type' => 'instant', 'current_offer_usage' => 1, 'max_offer_usage' => 10]);
+
+        $offerResponse1 = [
+            'offer'            => [
+                'metadata' => [
+                    'offer_id'      => $offer1->getPublicId(),
+                    'name'          => 'Test Offer',
+                    'display_name'  => 'Test Offer',
+                    'advertiser_id' => 'rzp.merchant.10000000000000',
+                    'created_by'    => 'rzp_merchant',
+                    'state'         => 'STATE_CREATED',
+                    'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                    'currency'      => 'INR',
+                    'schedules'     => [
+                        'starts_at' => 1514764800,
+                        'ends_at'   => 1546300800,
+                    ],
+                ],
+                'spec'     => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding'          => [
+                        'type'  => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value'  => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types'   => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups'      => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on'    => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on'    => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'usage_limits'     => [
+                        [
+                            'on'            => 'LIMIT_ON_OFFER',
+                            'maximum_value' => 2,
+                        ],
+                    ],
+                ],
+            ],
+            'offer_publishers' => [
+                [
+                    'continue_txn_on_failure' => 0,
+                    'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                    'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                    'total_usage'             => 200,
+                ]
+            ]
+        ];
+
+        $offerResponse2 = [
+            'offer'            => [
+                'metadata' => [
+                    'offer_id'      => $offer2->getPublicId(),
+                    'name'          => 'Test Offer',
+                    'display_name'  => 'Test Offer',
+                    'advertiser_id' => 'rzp.merchant.10000000000000',
+                    'created_by'    => 'rzp_merchant',
+                    'state'         => 'STATE_CREATED',
+                    'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                    'currency'      => 'INR',
+                    'schedules'     => [
+                        'starts_at' => 1514764800,
+                        'ends_at'   => 1546300800,
+                    ],
+                ],
+                'spec'     => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding'          => [
+                        'type'  => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value'  => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types'   => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups'      => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on'    => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on'    => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'usage_limits'     => [
+                        [
+                            'on'            => 'LIMIT_ON_OFFER',
+                            'maximum_value' => 2,
+                        ],
+                    ],
+                ],
+            ],
+            'offer_publishers' => [
+                [
+                    'continue_txn_on_failure' => 0,
+                    'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                    'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                    'total_usage'             => 200,
+                ]
+            ]
+        ];
+
+        $OffersEngineMock = Mockery::mock(OffersEngine::class, [$this->app])
+                                   ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $OffersEngineMock->shouldReceive('fetchBulk')
+                         ->andReturnUsing(function(
+                             string $merchantId,
+                             array  $ids = [],
+                             array  $input = []
+                         ) use ($offerResponse1, $offerResponse2) {
+                             $offers = [
+                                 $this->getOffersEngineConvertedResponse($offerResponse1),
+                                 $this->getOffersEngineConvertedResponse($offerResponse2)
+                             ];
+
+                             return $offers;
+                         })->times(1);
+
+        $OffersEngineMock->shouldReceive('validateOffer')
+                         ->andReturnUsing(function(string $merchantId, $input) use ($offer1) {
+                             return [
+                                 'offer_id'            => $offer1->getPublicId(),
+                                 'offer_benefits'      => [
+                                     "cashback" => [
+                                         [
+                                             "discount" => 21200,
+                                         ],
+                                     ],
+                                 ],
+                                 'calculated_benefits' => [
+                                     "cashback" => [
+                                         [
+                                             "discount" => 21200,
+                                         ],
+                                     ],
+                                 ],
+                             ];
+                         })->times(1);
+
+        $OffersEngineMock->shouldReceive('validateOffer')
+                         ->andReturnUsing(function(string $merchantId, $input) use ($offer2) {
+                             return [
+                                 'offer_id' => $offer2->getPublicId(),
+                             ];
+                         })->times(1);
+
+        $this->app->instance('offers_engine', $OffersEngineMock);
+        $order = $this->fixtures->create('order');
+
+        $content = [
+            'order_id' => 'order_' . $order->getId(),
+            'amount'   => '6000',
+            'method'   => 'card',
+            'card'     => [
+                'number' => '411111',
+            ],
+            'offers'   => [
+                $offer1->getPublicId(),
+                $offer2->getPublicId(),
+            ],
+        ];
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/validate/checkout/offers',
+            'content' => $content
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->mockCardVaultWithCryptogram(null, true);
+        $response = $this->makeRequestAndGetContent($request, $callback);
+
+        $this->assertContains($offer1->getPublicId(), $response);
+        $this->assertNotContains($offer2->getPublicId(), $response);
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => false,
+            ]);
+    }
+
+    /*
+     * In this test scenario, API offer would indicate that offer usage
+     * has been exhausted but since we are having OE Offer as the source of truth
+     * which indicates usage being within limits, we increment offers engine usage limit
+     * as well as API Usage limit.
+     */
+    public function testUsageLimitsOfExternalOfferWithExhaustedAPIOffer()
+    {
+        $this->markTestSkipped("marking this as skipped due to concurrency issues with config keys.")
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => true,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => true,
+            ]
+        );
+
+        $offer = $this->fixtures->create('offer', [
+            'max_offer_usage'     => 100,
+            'current_offer_usage' => 100
+        ]);
+
+        $offerResponse = $this->getOfferWithLimitsResponseMock($offer, 98, 100);
+
+        $OffersEngineMock = Mockery::mock(OffersEngine::class, [$this->app])
+                                   ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $OffersEngineMock->shouldReceive('fetch')
+                         ->andReturnUsing(function(
+                             string $entity,
+                             string $id,
+                             string $merchantId,
+                             array  $input
+                         ) use ($offerResponse) {
+                             self::assertEquals('offer', $entity);
+
+                             return $this->getOffersEngineConvertedResponse($offerResponse);
+                         })->times(3);
+
+        $OffersEngineMock->shouldReceive('validateOffer')
+                         ->andReturnUsing(function(string $merchantId, $input) use ($offer) {
+                             return [
+                                 'offer_id'            => $offer->getPublicId(),
+                                 'offer_benefits'      => [
+                                     "cashback" => [
+                                         [
+                                             "discount" => 21200,
+                                         ],
+                                     ],
+                                 ],
+                                 'calculated_benefits' => [
+                                     "cashback" => [
+                                         [
+                                             "discount" => 21200,
+                                         ],
+                                     ],
+                                 ],
+                             ];
+                         })->times(1);
+
+        $OffersEngineMock->shouldReceive('avail')
+                         ->andReturnUsing(function(string $merchantId, $input) {
+                             return [];
+                         })->times(1);
+
+        $OffersEngineMock->shouldReceive('redeem')
+                         ->andReturnUsing(function(string $merchantId, $input) {
+                             return [];
+                         })->times(1);
+
+        $this->app->instance('offers_engine', $OffersEngineMock);
+
+        $this->mockCardVaultWithCryptogram();
+
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 90000]);
+
+        $payment = $this->getOfferPaymentArray($order, $offer);
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 90000);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(90000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offerAfterProcessing = $this->getLastEntity('offer');
+        $this->assertEquals(101, $offerAfterProcessing['current_offer_usage']);
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => false,
+                ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => false,
+            ]
+        );
+    }
+
+    private function getOfferWithLimitsResponseMock($offer, int $totalUsage, int $maxUsageLimit): array
+    {
+        return [
+            'offer'            => [
+                'metadata' => [
+                    'offer_id'      => $offer->getPublicId(),
+                    'name'          => 'Test Offer',
+                    'display_name'  => 'Test Offer',
+                    'advertiser_id' => 'rzp.merchant.10000000000000',
+                    'created_by'    => 'rzp_merchant',
+                    'state'         => 'STATE_CREATED',
+                    'offer_on'      => 'BENEFICIARY_TYPE_SELF',
+                    'currency'      => 'INR',
+                    'schedules'     => [
+                        'starts_at' => 1514764800,
+                        'ends_at'   => 1546300800,
+                    ],
+                ],
+                'spec'     => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding'          => [
+                        'type'  => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type'   => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value'  => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types'   => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups'      => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on'    => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL'    => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == "card" && PaymentInstrument.CardType == "credit" && PaymentInstrument.CardNetwork == "VISA" && PaymentInstrument.Issuer == "HDFC"',
+                                    'then'            => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on'    => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'usage_limits'     => [
+                        [
+                            'on'            => 'LIMIT_ON_OFFER',
+                            'maximum_value' => $maxUsageLimit,
+                        ],
+                    ],
+                ],
+            ],
+            'offer_publishers' => [
+                [
+                    'continue_txn_on_failure' => 0,
+                    'offer_type'              => 'OFFER_TYPE_STAGE_REGULAR',
+                    'channel_name'            => 'CHANNEL_RZP_CHECKOUT',
+                    'total_usage'             => $totalUsage,
+                ]
+            ]
+        ];
+    }
+
 }

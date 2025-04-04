@@ -312,7 +312,8 @@ class UfhService
                                              string $storageFileName,
                                              string $type,
                                              $entity,
-                                             array $metadata = []): array
+                                             array $metadata = [],
+                                             string $merchantId = null): array
     {
         $ext = strtolower($file->getClientOriginalExtension());
 
@@ -373,6 +374,10 @@ class UfhService
         if($type === \RZP\Models\Invoice\Type::DCC_INV . '_file' || $type === \RZP\Models\Invoice\Type::DCC_CRN . '_file')
         {
             $this->merchantId = $entity->getMerchantId();
+        }
+
+        if(empty($merchantId) === false){
+            $this->merchantId = $merchantId;
         }
 
         $this->ufhClient = $this->createUfhClient();

@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
@@ -92,7 +93,8 @@ class Core extends Base\Core
 
     public function attemptToCreateMissingRefundTransaction(Refund\Entity $refund)
     {
-        $paymentTransaction = $refund->payment->transaction;
+
+        $paymentTransaction = $this->repo->transaction->fetchByIdFromTiDB($refund->payment->getTransactionId());
 
         if ($paymentTransaction === null)
         {
@@ -157,11 +159,9 @@ class Core extends Base\Core
 
         $txn = $processor->createTransactionForRefund($refund, $refund->payment);
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
-            RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
-            $this->app['rzp.mode']);
-        if ($variantFlag !== 'on')
+        $env = $this->app->environment();
+
+        if ($env !== Environment::PRODUCTION)
         {
             // This is required to save the association of the transaction with the refund.
             $this->repo->saveOrFail($refund);

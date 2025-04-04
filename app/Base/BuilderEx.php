@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\Acs\SyncEventManager;
+use RZP\Models\Offer\Core as OfferCore;
 
 class BuilderEx extends \Razorpay\Spine\BuilderEx
 {
@@ -117,11 +118,16 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
     protected function eagerLoadRelation(array $models, $name, Closure $constraints)
     {
         // Define the valid relation names
-        $migratedEagerLoadRelations = ['merchant', 'merchantDetail', 'maker', 'emails', 'org', 'features', 'primaryBalance'];
+        $migratedEagerLoadRelations = ['merchant', 'merchantDetail', 'maker', 'emails', 'org', 'features', 'primaryBalance', 'offers'];
 
         // Call parent method for relations not in the valid list
         if (!in_array($name, $migratedEagerLoadRelations, true)) {
             return parent::eagerLoadRelation($models, $name, $constraints);
+        }
+
+        if ($name === "offers")
+        {
+            return $this->eagerLoadRelationsForOffer($models, $name, $constraints);
         }
 
         try {
@@ -130,6 +136,25 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
             }
         } catch (\Exception $ex) {
             app('trace')->traceException($ex, Trace::ERROR, TraceCode::ASV_EAGER_LOAD_EXCEPTION, []);
+        }
+
+        return parent::eagerLoadRelation($models, $name, $constraints);
+    }
+
+    protected function eagerLoadRelationsForOffer($models, $name, $constraints)
+    {
+        try
+        {
+            if ((new OfferCore())->shouldEagerLoadOffersFromOE() === true)
+            {
+                return $this->loadRelation($models, $name, $constraints);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException($ex, Trace::ERROR, TraceCode::OFFERS_EAGER_LOAD_EXCEPTION, [
+                'route_name' => app('api.route')->getCurrentRouteName(),
+            ]);
         }
 
         return parent::eagerLoadRelation($models, $name, $constraints);

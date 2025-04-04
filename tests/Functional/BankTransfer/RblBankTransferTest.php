@@ -5,7 +5,9 @@ namespace Functional\BankTransfer;
 use DB;
 use Mail;
 use Cache;
+use Mockery;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Terminal\Type;
 use RZP\Services\RazorXClient;
@@ -99,6 +101,31 @@ class RblBankTransferTest extends TestCase
         $this->fixtures->on('live')->create('terminal:vpa_shared_terminal_icici');
 
         $this->fixtures->on('test');
+    }
+
+    protected function ValidateExceptionThrownDuringCollectxBankTransferProcessing($errorMessage, &$isSuccess): void
+    {
+        $factoryMock = Mockery::mock('alias:\RZP\Models\BankTransfer\Collectx\Processor\Factory');
+
+        $factoryMock->shouldReceive('getCollectxTransferProcessor')
+            ->andReturnUsing(function($input, $provider, $requestPayload) use($errorMessage, &$isSuccess)
+            {
+                $processorMock = Mockery::mock(\RZP\Models\BankTransfer\Collectx\Processor\BankTransfer::class, [$input, $provider, $requestPayload])
+                    ->makePartial();
+
+                $processorMock->shouldAllowMockingProtectedMethods();
+
+                $processorMock->shouldReceive('traceExceptionAndPushUnexpectedPaymentMetric')
+                    ->andReturnUsing(function($ex, array $input, string $provider, $method) use ($errorMessage, &$isSuccess) {
+                        if ($ex->getMessage() === $errorMessage)
+                        {
+                            $isSuccess = true;
+                        }
+                    }
+                    )->once();
+
+                return $processorMock;
+            });
     }
 
     public function testBankTransferProcess()
@@ -1405,6 +1432,8 @@ class RblBankTransferTest extends TestCase
 
     public function testRblCallbackForCollectx_DuplicateBankTransfer()
     {
+        Mockery::close();
+
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
         $testData = $this->testData['testBankTransferRblCollectx'];
@@ -1436,13 +1465,29 @@ class RblBankTransferTest extends TestCase
             id: $merchantID,
             requestData: ['id' => $merchantID]);
 
+//        $isSuccess = false;
+//
+//        $this->ValidateExceptionThrownDuringCollectxBankTransferProcessing(ErrorCode::BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK, $isSuccess);
+
         $response = $this->startTest();
 
         $this->assertEquals('Failure.', $response['Status']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertFalse($bankTransferRequest['is_created']);
+
+        $this->assertEquals(ErrorCode::BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK ,$bankTransferRequest['error_message']);
+
+//        $this->assertTrue($isSuccess);
+
+        Mockery::close();
     }
 
     public function testRblCallbackForCollectx_ClosedVaBankTransferTransfer()
     {
+        Mockery::close();
+
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
         $testData = $this->testData['testBankTransferRblCollectx'];
@@ -1472,13 +1517,29 @@ class RblBankTransferTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
+//        $isSuccess = false;
+//
+//        $this->ValidateExceptionThrownDuringCollectxBankTransferProcessing(ErrorCode::COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA, $isSuccess);
+
         $response = $this->startTest();
 
         $this->assertEquals('Failure.', $response['Status']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertFalse($bankTransferRequest['is_created']);
+
+        $this->assertEquals(ErrorCode::COLLECTX_UNEXPECTED_PAYMENT_ON_CLOSED_VA ,$bankTransferRequest['error_message']);
+
+//        $this->assertTrue($isSuccess);
+
+        Mockery::close();
     }
 
     public function testRblCallbackForCollectx_VaNotFound()
     {
+        Mockery::close();
+
         // skipping as the rbl nodal account is closed
         $this->markTestSkipped();
 
@@ -1494,6 +1555,10 @@ class RblBankTransferTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
+//        $isSuccess = false;
+//
+//        $this->ValidateExceptionThrownDuringCollectxBankTransferProcessing(ErrorCode::COLLECTX_VIRTUAL_ACCOUNT_NOT_FOUND, $isSuccess);
+
         $response = $this->startTest();
 
         $this->assertEquals('Success', $response['Status']);
@@ -1503,6 +1568,16 @@ class RblBankTransferTest extends TestCase
         $this->assertFalse($bankTransferRequest['is_created']);
 
         $this->assertNotNull($bankTransferRequest['payee_account']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertFalse($bankTransferRequest['is_created']);
+
+        $this->assertEquals(ErrorCode::COLLECTX_VIRTUAL_ACCOUNT_NOT_FOUND ,$bankTransferRequest['error_message']);
+
+//        $this->assertTrue($isSuccess);
+
+        Mockery::close();
     }
 
     public function testRblCallbackForCollectx_MigratedVABankTransfer()

@@ -4057,8 +4057,6 @@ class PaymentCreateTest extends TestCase
     {
         $this->mockCardVault();
 
-        $this->mockRazorxWith(
-            "skip_cvv", 'skip');
         $payment = $this->getDefaultPaymentArray();
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'skip_cvv']);
@@ -11804,7 +11802,7 @@ class PaymentCreateTest extends TestCase
         }
     }
 
-    public function testPaymentOnOAuthWithEmailAsNilForPartnerWithExpEnabled()
+    public function testPaymentOnOAuthWithEmailAsNilForWhitelistedPartner()
     {
         $client = $this->createPartnerApplicationAndGetClientByEnv(
             'dev',
@@ -11839,15 +11837,7 @@ class PaymentCreateTest extends TestCase
                                                                     'scopes'        => ['read_write'],
                                                                     'mode'          => Mode::TEST], $client);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
 
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
 
         $response = $this->doS2sUpiPaymentWithOAuthToken(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $payment, null, $accessToken->toString());
 
@@ -11856,7 +11846,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
     }
 
-    public function testPaymentOnOAuthWithEmailAsNilForPartnerWithExpDisabled()
+    public function testPaymentOnOAuthWithEmailAsNilForPartnerNotWhitelisted()
     {
         $client = $this->createPartnerApplicationAndGetClientByEnv(
             'dev',
@@ -11866,7 +11856,7 @@ class PaymentCreateTest extends TestCase
                 'partner_type'=>'pure_platform',
             ]);
 
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+        $this->fixtures->create('merchant', ['id' => '10000000000001', 'partner_type' => 'pure_platform']);
 
         $sub = $this->fixtures->merchant->createWithBalance();
 
@@ -11890,16 +11880,6 @@ class PaymentCreateTest extends TestCase
                                                                     'merchant_id'   => $sub->getId(),
                                                                     'scopes'        => ['read_write'],
                                                                     'mode'          => Mode::TEST], $client);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('control');
 
         try
         {

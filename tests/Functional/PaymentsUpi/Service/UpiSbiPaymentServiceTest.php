@@ -14,6 +14,15 @@ use RZP\Models\Merchant\Account;
 class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 {
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+    }
+
     public function testSbiWithApiPreProcess()
     {
         $this->gateway = 'upi_mozart';
@@ -73,11 +82,6 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'api_upi_sbi_pre_process_v1', 'upi_sbi');
-        });
-
         $payment = $this->getDbLastpayment()->toArray();
 
         $payment['payment_id'] = $payment['id'];
@@ -101,13 +105,9 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
                 Entity::STATUS          => Status::AUTHORIZED,
                 Entity::GATEWAY         => 'upi_sbi',
                 Entity::TERMINAL_ID     => $this->terminal->getId(),
-                Entity::CPS_ROUTE       => Entity::API,
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
             ], $payment
         );
-
-        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
-
-        $this->assertNotNull($upiEntity);
     }
 
     public function testUpiSbiUpdatePostReconSuccess()

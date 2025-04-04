@@ -1,11 +1,11 @@
 # Stage - Build & Test
-FROM --platform=linux/amd64 golang:1.21
+FROM c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-golang-1.23
 ARG GIT_USERNAME
 ENV CGO_ENABLED 0
 
 WORKDIR /go/src/github.com/razorpay/api/slit
 
-RUN apt-get install git
+RUN apk add git
 
 # Avoid copying the whole source code first since that will invalidate
 # cache for all further layers
@@ -28,8 +28,8 @@ RUN cd /go/pkg/mod/github.com/razorpay/goutils/itf@v0.2.0/cmd/reporter && go ins
 
 # install sonar plugin
 # install helper commands
-RUN apt-get update && apt-get install zip -y
-RUN apt-get install wget -y
+RUN apk add zip
+RUN apk add wget
 #download sonarscanner
 
 ENV SONAR_RUNNER_HOME=sonar-scanner

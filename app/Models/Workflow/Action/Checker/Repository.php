@@ -47,6 +47,13 @@ class Repository extends Base\Repository
                     ->count();
     }
 
+    public function fetchCountByActionId($actionId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ACTION_ID, '=', $actionId)
+            ->count();
+    }
+
     public function fetchApprovedCountByActionIdAndStepIds(string $actionId, array $stepIds)
     {
         $countRaw = DB::raw('count(*) as total');

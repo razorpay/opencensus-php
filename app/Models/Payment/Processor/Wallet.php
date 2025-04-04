@@ -40,11 +40,34 @@ class Wallet
     const TOUCHNGO = 'touchngo';
     const GRABPAY  = 'grabpay';
 
+    //PPRO APM Wallet
+    const GOPAY         = 'gopay';
+    const ALIPAY        = 'alipay';
+    const LINKAJA       = 'linkaja';
+    const DOKU          = 'doku';
+    const OVO           = 'ovo';
+
+    const KLARNA        = 'klarna';
+
+    const ZIP           = 'zip';
+
+    const PROVIDER       = 'provider';
+
     public static $supportedWalletsForRearch = array(
         self::MCASH,
         self::TOUCHNGO,
         self::GRABPAY,
         self::BOOST
+    );
+
+    public static $supportedInternationalAPMForRearch = array(
+        self::DOKU,
+        self::LINKAJA,
+        self::OVO,
+        self::ALIPAY,
+        self::GOPAY,
+        self::KLARNA,
+        self::ZIP
     );
 
     public static $fullName = array(
@@ -73,7 +96,12 @@ class Wallet
         self::MCASH             => 'MCash',
         self::BOOST             => 'Boost',
         self::TOUCHNGO          => 'TouchNGo',
-        self::GRABPAY           => 'GrabPay'
+        self::GRABPAY           => 'GrabPay',
+        self::ALIPAY            => 'Alipay',
+        self::DOKU              => 'Doku',
+        self::LINKAJA           => 'LinkAja',
+        self::GOPAY             => 'GoPay',
+        self::OVO               => 'OVO'
     );
 
     public static $emailRequiredWallets = array(

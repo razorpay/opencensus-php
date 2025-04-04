@@ -459,6 +459,13 @@ class Service extends Base\Service
         $taxDetails = $value[OrderOneCCFields::TAX_DETAILS] ?? [];
 
         $promotions =  isset($orderMetaInput[OrderOneCCFields::PROMOTIONS]) ? $orderMetaInput[OrderOneCCFields::PROMOTIONS] : $existingPromotions;
+
+        $this->trace->info(TraceCode::UPDATE_1CC_ORDER_PROMOTION_UPDATE, [
+            'orderId' => $orderId,
+            'existingPromotion' => $existingPromotions,
+            'promotions' => $promotions,
+        ]);
+
         $discount = (new CommonUtils())->getAppliedCouponValue($promotions);
 
         $lineItemsTotal = $value[OrderOneCCFields::LINE_ITEMS_TOTAL];

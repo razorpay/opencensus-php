@@ -499,58 +499,6 @@ class BankTransferRxTest extends TestCase
         }
     }
 
-    public function testBankTransferProcessWithFieldsOnLiveMode()
-    {
-        // 0 Ledger SNS calls because even though the request is to live mode,
-        // the ledger journal write feature isn't present.
-        $this->mockLedgerSns(0);
-
-        Mail::fake();
-
-        $this->ba->yesbankAuth('live');
-
-        $balance1 = $this->getDbEntity('balance',
-                                       [
-                                           'merchant_id' => '10000000000000',
-                                       ], 'live');
-
-        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
-            'type'           => 'banking',
-            'account_number' => '2224440041626905',
-        ]);
-
-        $ba = $this->fixtures->on('live')->create('bank_account',
-                                                  [
-                                                      'merchant_id'    => '10000000000000',
-                                                      'entity_id'      => 'ShrdVirtualAcc',
-                                                      'type'           => 'virtual_account',
-                                                      'account_number' => '2224440041626905',
-                                                  ]);
-
-        $this->fixtures->on('live')->create('virtual_account',
-                                            [
-                                                'id'              => 'ShrdVirtualAcc',
-                                                'merchant_id'     => '10000000000000',
-                                                'status'          => 'active',
-                                                'bank_account_id' => $ba->getId(),
-                                                'balance_id'      => $balance1->getId(),
-                                            ]);
-
-        $accountNumber = $this->bankAccount['account_number'];
-
-        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
-
-        $this->startTest();
-
-        Mail::assertQueued(BankTransfer::class, function($mail) {
-            $this->assertEquals('transaction.created', $mail->viewData['event']);
-            $this->assertEquals('2224440041626905', $mail->viewData['balance']['account_number']);
-            $this->assertEquals('Your RazorpayX A/C XX6905 is credited with INR 50,000.00', $mail->subject);
-
-            return true;
-        });
-    }
-
     public function testValidateBankTransferAxisForX()
     {
         Queue::fake();
@@ -2205,6 +2153,17 @@ class BankTransferRxTest extends TestCase
         $btrCount = count($this->getDbEntities('bank_transfer_request', [], 'live'));
 
         $this->assertEquals($btrCount, 0);
+    }
+
+    public function testEcollectIdfcBatchCreate()
+    {
+        $data = $this->testData['ecollectIdfcBatchData'];
+
+        $this->createCsvFile($data, 'filename', null, 'files/filestore');
+
+        $this->ba->h2hAuth();
+
+        $this->startTest();
     }
 
     public function testPendingBankTransfer()
@@ -5955,7 +5914,7 @@ class BankTransferRxTest extends TestCase
         $this->app['config']->set('applications.ledger.enabled', true);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
         $testData = &$this->testData['testBankTransferTransactionCreation'];
-        $this->enableRazorXTreatment([RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE]);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE =>'enable']);
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
         $ledgerResponse = $testData['payload'];

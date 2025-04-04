@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
@@ -209,7 +210,7 @@ class BankingAccountStatementProcessor extends Job
             'mode'       => $this->getMode() ?? '',
         ]);
 
-        parent::beforeJobKillCleanUp($variant);
+        parent::beforeJobKillCleanUp(RazorxTreatment::RAZORX_VARIANT_ON);
 
         $this->handleWorkerTimeoutGracefully();
 

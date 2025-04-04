@@ -21,6 +21,7 @@ use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Models\LinkedNumber;
 use RZP\Models\WalletAccount;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
@@ -163,6 +164,10 @@ class Core extends Base\Core
             ($merchant->getId() === Merchant\Account::OKCREDIT))
         {
             $this->modifyRequestForBackwardCompatibility($input);
+        }
+
+        if ($input[Entity::ACCOUNT_TYPE] === Entity::MOBILE) {
+            $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input);
         }
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
@@ -372,11 +377,15 @@ class Core extends Base\Core
         $mode = $this->mode ?? Mode::LIVE;
 
         // Check if razorx enabled
-        $razorxResponse = $this->app['razorx']->getTreatment($merchant->getId(),
-                                                             Merchant\RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE,
-                                                             $mode);
+        $requestPayload = [
+            "id" => $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE,
+            'request_data'  => json_encode(['id' => $merchant->getId()])
+        ];
 
-        if ($razorxResponse !== Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled !== true)
         {
             return;
         }
@@ -1666,9 +1675,9 @@ class Core extends Base\Core
         return false;
     }
 
-    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId)
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId, Merchant\Entity $merchant)
     {
-        return $this->repo->fund_account->fetchBySourceTypeAndId($sourceType, $sourceId);
+        return $this->repo->fund_account->fetchBySourceTypeAndId($sourceType, $sourceId, $merchant->getId());
     }
 
     protected function updateFundAccountIfPresent(array $input, Merchant\Entity $merchant)
@@ -1751,4 +1760,36 @@ class Core extends Base\Core
 
         return false;
     }
+
+    /*
+    This function will change the input for fund account creation
+    For UPI Number Payouts because underline payment instrument is VPA
+     */
+    private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input): void
+    {
+        $mobileNumber = $input[Entity::MOBILE][Entity::NUMBER] ?? '';
+        $accountHolderName = $input[Entity::MOBILE][Entity::ACCOUNT_HOLDER_NAME] ?? '';
+
+        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName);
+
+        $input = array_merge($input, [
+            Entity::LINKED_NUMBER => $mobileNumber,
+            Entity::CUSTOMER_NAME => $mappedVpa[Entity::CUSTOMER_NAME] ?? '',
+            Entity::ACCOUNT_TYPE  => Entity::VPA,
+            Entity::VPA           => [
+                Vpa\Entity::ADDRESS => $mappedVpa[Entity::VPA] ?? '',
+            ],
+        ]);
+
+        unset($input[Entity::MOBILE]);
+
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_CREATE_INPUT_FOR_LINKED_NUMBER,
+            [
+                Entity::MOBILE => $mobileNumber,
+                'input'        => $input,
+            ]
+        );
+    }
+
 }

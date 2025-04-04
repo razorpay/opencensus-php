@@ -52,6 +52,15 @@ class EzetapNotification extends BaseEzetapNotification
         return null;
     }
 
+    public function sendEzetapRawRequest(
+        array $input,
+              $urlName,
+        int $timeout = self::TIMEOUT,
+        int $connectTimeout = self::CONNECT_TIMEOUT,
+    ){
+        return json_encode(["success" => true]);
+    }
+
     public function actualCall(Entity $event)
     {
         return null;

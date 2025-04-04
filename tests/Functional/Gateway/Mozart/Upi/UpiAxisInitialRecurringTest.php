@@ -10,6 +10,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\UpiMandate\Entity;
 use RZP\Models\UpiMandate\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -48,7 +49,10 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->mockSplitzTreatmentForAutopayPricing('variant_on');
+        $this->setAutopayPricing();
+
+        $this->mockSplitzTreatmentForAutopayRearch('variant_off');
+
     }
 
     public function testRecurringMandateValidateVPA()
@@ -1475,6 +1479,66 @@ class UpiAxisInitialRecurringTest extends TestCase
         ]);
     }
 
+    public function testRecurringOneTimeMultipleMandateCreateFailedOnSameOrder()
+    {
+        $this->testRecurringOneTimeMandateCreate();
+
+        $order = $this->getDbLastOrder();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => $order->getId(),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::STATUS          => Status::CONFIRMED,
+            Entity::USED_COUNT      => 1,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = $order->getPublicId();
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        try {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+            $this->fail('Expected exception ' . BadRequestException::class . ' was not thrown');
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Your payment has been declined as the One-time mandate is already created with the order. Please initiate the payment with a new order for new mandate creation.", $e->getMessage());
+        }
+    }
+
+    public function testRecurringOneTimeMultipleMandateCreateFailedOnSameOrderAfterExpired()
+    {
+        $this->testRecurringOneTimeMandateExecute();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'one_time',
+            Entity::STATUS          => Status::EXPIRED,
+            Entity::USED_COUNT      => 2,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = 'order_'.$upiMandate['order_id'];
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        try
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+            $this->fail('Expected exception ' . BadRequestException::class . ' was not thrown');
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Your payment has been declined as the One-time mandate is already created with the order. Please initiate the payment with a new order for new mandate creation.", $e->getMessage());
+        }
+    }
+
     /** all mock callbacks */
     protected function mandateCreateCallback($payment)
     {
@@ -1510,4 +1574,116 @@ class UpiAxisInitialRecurringTest extends TestCase
 
         $this->makeS2sCallbackAndGetContent($content, 'upi_axis', true);
     }
+
+    public function setAutopayPricing()
+    {
+        $this->ba->adminAuth();
+
+        $upiAutopayPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'payment_method_subtype' => 'initial',
+            'feature'                => 'payment',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 100,
+            'fixed_rate'             => 200,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $planId = $this->createPricingPlan($upiAutopayPlan)['id'];
+
+        $upiPricingPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'feature'                => 'payment',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 100,
+            'fixed_rate'             => 100,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $recurringPricingPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'feature'                => 'recurring',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 300,
+            'fixed_rate'             => 300,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $upiAutoAutopayPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'payment_method_subtype' => 'auto',
+            'feature'                => 'payment',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 100,
+            'fixed_rate'             => 600,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $this->addPricingPlanRule($planId, $upiPricingPlan);
+
+        $this->addPricingPlanRule($planId, $upiAutoAutopayPlan);
+
+        $this->addPricingPlanRule($planId, $recurringPricingPlan);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+    }
+
+    protected function addPricingPlanRule($id, $rule = [])
+    {
+        $defaultRule = [
+            'payment_method' => 'card',
+            'payment_method_type'  => 'credit',
+            'payment_network' => 'MAES',
+            'payment_issuer' => 'HDFC',
+            'percent_rate' => 1000,
+            'international' => 0,
+            'amount_range_active' => '0',
+            'amount_range_min' => null,
+            'amount_range_max' => null,
+        ];
+
+        $rule = array_merge($defaultRule, $rule);
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/pricing/'.$id.'/rule',
+            'content' => $rule);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
 }

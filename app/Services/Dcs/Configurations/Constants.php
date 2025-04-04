@@ -42,6 +42,8 @@ class Constants
 
     const RectangularLogoUrl = 'rectangular_logo_url';
 
+    const DormancyPeriod = 'dormancy_period';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -63,6 +65,7 @@ class Constants
         self::PaymentNotesKeyColumns         => "rzp/pg/merchant/dashboard/banking_program/UIControls",
         self::RectangularLogoUrl             => "rzp/pg/merchant/onboarding/banking_program/MerchantConfigDetails",
         self::DisabledCurrencies             => "rzp/pg/org/cross_border/Currency",
+        self::DormancyPeriod                 => "rzp/pg/org/dashboard/banking_program/DormancyPeriodConfig",
     ];
 
 }

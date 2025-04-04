@@ -748,6 +748,7 @@ EOT;
             // The variant is used for switching between tidb admin / merchant -> slave
             // and also for reverting back to ES and slave in case admin tibd is not able
             // to support queries
+            //hardcoding response for this as true for MERCHANT_TIDB_EXPERIMENT in isExperimentEnabled
             if (($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true) or
                 (app()->isEnvironmentProduction() === false))
             {
@@ -1210,6 +1211,7 @@ EOT;
             // The variant is used for switching between tidb admin / merchant -> slave
             // and also for reverting back to ES and slave in case admin tibd is not able
             // to support queries
+            //hardcoding response for this as true for MERCHANT_TIDB_EXPERIMENT in isExperimentEnabled
             if (($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true) or
                 (app()->isEnvironmentProduction() === false))
             {
@@ -2869,6 +2871,15 @@ EOT;
         Payment\Validator::validateStatusArray($status);
 
         $query->whereIn($statusColumn, $status);
+    }
+
+    protected function addQueryParamStoreIds($query, $params)
+    {
+        $storeIds = $params[Entity::STORE_IDS];
+
+        $storeIdColumn = $this->dbColumn(Entity::STORE_ID);
+
+        $query->whereIn($storeIdColumn, $storeIds);
     }
 
     protected function addWDAQueryParamStatus($wdaQueryBuilder, $params)
@@ -4842,26 +4853,6 @@ GROUP BY
         return null;
     }
 
-    public function fetchBySubscriptionId(string $subscriptionId)
-    {
-        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
-
-        $payment = $this->newQuery()
-                        ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                        ->first();
-
-        if (empty($payment) === false)
-        {
-            return $payment;
-        }
-
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-        return $this->newQueryWithConnection($connectionType)
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->first();
-    }
-
     public function fetchSubscriptionIdAndRecurringType(string $subscriptionId, string $tokenId, $recurringTypes, $paymentStatuses)
     {
         $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
@@ -4915,24 +4906,6 @@ GROUP BY
                         ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                         ->findOrFailPublic($paymentId);
         }
-    }
-
-    public function fetchBySubscriptionIdEmailAndContactNotNull(string $subscriptionId)
-    {
-        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
-
-        $query = $this->newQuery();
-
-        return $query
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->whereNotNull(Entity::EMAIL)
-                    ->whereNotNull(Entity::CONTACT)
-                    ->where(function ($query) {
-                        $query->where(Entity::RECURRING_TYPE, '=', 'initial')
-                              ->orWhere(Entity::RECURRING_TYPE, '=', 'card_change');
-                        })
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->first();
     }
 
     public function fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
@@ -5133,13 +5106,6 @@ GROUP BY
 
             $this->trace->histogram(Metric::TIDB_QUERY_HAS_MERCHANT_TRANSACTED_PROCESSING_TIME, $tidbQueryDuration);
 
-            $this->trace->info(TraceCode::TIDB_QUERY_DURATION,
-                [
-                    'time_taken_tidb' => $tidbQueryDuration,
-                    'result_query' => $result,
-                ]
-            );
-
             if (empty($result) === true)
             {
                 return false;
@@ -5171,40 +5137,55 @@ GROUP BY
     {
        if ($payment->isExternal() === false)
        {
-           if ($payment->isUpi() === true
-               and $payment->localToken !== null
-               and $payment->localToken->isExternal() === true)
-           {
-               $payment->setTokenRelations();
-           }
+           return $this->saveInternalEntity($payment, $options);
+       }
 
-           if ($payment->isUpi() === true
-               and $payment->globalToken !== null
-               and $payment->globalToken->isExternal() === true)
-           {
-               $payment->removeGlobalTokenRelations();
-           }
+        $this->saveExternalEntity($payment);
+    }
+
+    public function saveInternalEntity($payment, array $options = array())
+    {
+        if ($payment->isUpi() === true
+            and $payment->localToken !== null
+            and $payment->localToken->isExternal() === true)
+        {
+            $payment->setTokenRelations();
+        }
+
+        if ($payment->isUpi() === true
+            and $payment->globalToken !== null
+            and $payment->globalToken->isExternal() === true)
+        {
+            $payment->removeGlobalTokenRelations();
+        }
 
 
-          $emiPlan = $this->stripEmiRelation($payment);
+        $emiPlan = $this->stripEmiRelation($payment);
 
-           // Source Channel column is introduced by omni channel team in harvester replica,
-           // which is noty present in master, unsetting so that it doesn't break insert on archived
-           // payments
-          unset($payment['source_channel']);
+        // Source Channel column is introduced by omni channel team in harvester replica,
+        // which is noty present in master, unsetting so that it doesn't break insert on archived
+        // payments
+        unset($payment['source_channel']);
 
-          unset($payment['_transaction_updated_at']);
+        unset($payment['_transaction_updated_at']);
 
 //          unset($payment['device_id']);
 
-          parent::saveOrFail($payment, $options);
+        parent::saveOrFail($payment, $options);
 
-          $this->addEmiRelationIfApplicable($payment, $emiPlan);
+        $this->addEmiRelationIfApplicable($payment, $emiPlan);
 
-          return $payment;
+        return $payment;
+    }
+
+    public function saveOrFailWithoutFetch($payment, array $options = array())
+    {
+        if ($payment->isExternal() === false)
+        {
+            return $this->saveInternalEntity($payment, $options);
         }
 
-        $this->saveExternalEntity($payment);
+        $this->saveExternalEntityWithoutFetch($payment);
     }
 
     public function save($payment, array $options = array())
@@ -5440,6 +5421,17 @@ GROUP BY
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit)
             ->get();
+    }
+
+    public function getPaymentsDuplicateReferenceId($gateway, $merchantId, $referenceId, $statuses, $from, $to)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::GATEWAY, $gateway)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereBetween(Payment\Entity::CREATED_AT, array($from, $to))
+            ->whereNotIn(Entity::STATUS, $statuses)
+            ->where(Entity::REFERENCE1, $referenceId)
+            ->count();
     }
 
     public function getPaymentsWithoutReferenceId($gateway,

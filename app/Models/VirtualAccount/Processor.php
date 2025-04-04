@@ -277,6 +277,26 @@ abstract class Processor extends Base\Core
             return false;
         }
 
+        // if the total amount paid and received exceeds the expected amount, refund the amount.
+        if ($entity->getGateway() === Payment\Gateway::BT_IBL and ($this->virtualAccount->hasAmountExpected() === true))
+        {
+            $expectedAmount = $this->virtualAccount->getAmountExpected();
+            $amountReceived = $entity->getAmount();
+            $merchant = $this->virtualAccount->merchant;
+            if($merchant->isFeeBearerCustomerOrDynamic() === true)
+            {
+                $fee = (new BankTransferCore)->getFeesForBankTransfer($entity, $merchant);
+                $amountReceived -= $fee;
+            }
+            $amountPaid     = $this->virtualAccount->getAmountPaid();
+            $amountTotal    = $amountPaid + $amountReceived;
+
+            if ($amountTotal > $expectedAmount)
+            {
+                return true;
+            }
+        }
+
         // If Virtual Account has an Order but Bank Transfer/BharatQR Payment
         // doesn't have an order then this is probably because
         // Validations on Order are failing and Payment is created

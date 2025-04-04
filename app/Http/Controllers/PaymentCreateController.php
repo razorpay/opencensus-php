@@ -2612,32 +2612,7 @@ class PaymentCreateController extends Controller
 
     protected function isNpciFeedbackPopupAllowed()
     {
-        try
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $variantFlag = $this->app['razorx']->getTreatment($merchant->getId(),
-                RazorxTreatment::ALLOW_NPCI_FEEDBACK_POPUP,
-                $this->app['rzp.mode']);
-
-            $this->trace->info(
-                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_SUCCESS,
-                [
-                    'variant' => $variantFlag
-                ]);
-
-            return $variantFlag;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_FAILURE,
-                [
-                    'error' => $e,
-                ]);
-
-            return 'control';
-        }
+        return 'control';
     }
 
     /**

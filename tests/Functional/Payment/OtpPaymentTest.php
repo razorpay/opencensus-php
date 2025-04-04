@@ -1471,15 +1471,7 @@ class OtpPaymentTest extends TestCase
 
         TerminalOptions::setTestChance(500);
 
-        $this->app->razorx->method('getTreatment')
-                        ->will($this->returnCallback(
-                            function ($mid, $feature, $mode) {
-                                if ($feature === 'redirect_terminal_cache')
-                                {
-                                    return 'on';
-                                }
-                                return 'off';
-                            }));
+
 
         $this->fixtures->merchant->addFeatures(['s2s', 'otp_auth_default']);
         $this->mockCardVault();
@@ -2399,15 +2391,6 @@ class OtpPaymentTest extends TestCase
 
         TerminalOptions::setTestChance(500);
 
-        $this->app->razorx->method('getTreatment')
-                        ->will($this->returnCallback(
-                            function ($mid, $feature, $mode) {
-                                if ($feature === 'redirect_terminal_cache')
-                                {
-                                    return 'on';
-                                }
-                                return 'off';
-                            }));
 
         $this->fixtures->merchant->addFeatures(['s2s', 'otp_auth_default']);
         $this->mockCardVault();

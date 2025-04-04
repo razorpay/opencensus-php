@@ -1,4 +1,4 @@
-ARG NGINX_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:nginx-alpine-3.12
+ARG NGINX_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-nginx1.26
 
 FROM ${NGINX_IMAGE}
 

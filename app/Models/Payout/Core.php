@@ -114,6 +114,7 @@ use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Jobs\FundManagementPayouts\FundManagementPayoutCheck;
 use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
+use RZP\Models\Payout\BankingAccount as PayoutsBankingAccount;
 use RZP\Jobs\FundManagementPayouts\FundManagementPayoutInitiate;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
@@ -245,6 +246,8 @@ class Core extends Base\Core
 
     const DUAL_WRITE_META_NAME = 'dual_write';
 
+    const DUAL_WRITE_RETRY_EXHAUST = 'dual_write_retry_exhaust';
+
     /**
      * @var Mutex
      */
@@ -330,6 +333,8 @@ class Core extends Base\Core
 
     /** @var TdsProcessor\Processor*/
     protected $tdsProcessor;
+
+    protected $isQueuedFeeRecoveryNewFlowSplitzEnabled = false;
 
     public function __construct()
     {
@@ -499,6 +504,8 @@ class Core extends Base\Core
         if ($payout->getIsPayoutService() === false)
         {
             $this->postCreationForPayouts($payout);
+
+            $this->pushPayoutEventToBalanceService($payout);
         }
 
         return $payout;
@@ -1238,8 +1245,15 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -1768,19 +1782,32 @@ class Core extends Base\Core
                     $feeRecoveryQueuedPayoutIds[] = $feeRecoveryQueuedPayout->getId();
                 }
 
-                $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
 
-                foreach ($queuedPayouts as $queuedPayout)
-                {
+                // Check is Fee Recovery Queued Payout Flag is Unset Splitz Experiment is enabled
+                $this->isQueuedFeeRecoveryNewFlowSplitzEnabled = false;
+                if ((new Core())->isFeeRecoveryQueuedPayoutNewFlowSplitzExperimentEnable($balanceId)) {
+                    $this->isQueuedFeeRecoveryNewFlowSplitzEnabled = true;
+                }
 
-                    if (count($queuedPayoutsToProcess) === Repository::QUEUED_PAYOUTS_FETCH_LIMIT)
-                    {
-                        break;
-                    }
+                //
+                // If there are any Queued Fee Recovery Payout for the Balance Id we skip picking the other payouts of that balance id in the
+                // current cron execution, In the next cron execution these skipped payouts will be picked and dispatched for processing.
+                // These Payouts once dispatched will processed if the previous Fee Recovery Payout was Successful, or else will get queued again.
+                //
+                if (sizeof($feeRecoveryQueuedPayoutIds) === 0 or
+                    $this->isQueuedFeeRecoveryNewFlowSplitzEnabled === false) {
 
-                    if (in_array($queuedPayout->getID(), $feeRecoveryQueuedPayoutIds) === false)
-                    {
-                        $queuedPayoutsToProcess->add($queuedPayout);
+                    $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
+
+                    foreach ($queuedPayouts as $queuedPayout) {
+
+                        if (count($queuedPayoutsToProcess) === Repository::QUEUED_PAYOUTS_FETCH_LIMIT) {
+                            break;
+                        }
+
+                        if (in_array($queuedPayout->getID(), $feeRecoveryQueuedPayoutIds) === false) {
+                            $queuedPayoutsToProcess->add($queuedPayout);
+                        }
                     }
                 }
 
@@ -1808,7 +1835,7 @@ class Core extends Base\Core
 
                 $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
 
-                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayoutsToProcess , $balanceEntity);
+                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayoutsToProcess, $balanceEntity);
 
                 $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
 
@@ -1858,8 +1885,15 @@ class Core extends Base\Core
                 //
                 // We also have to handle the fund transfer destination while processing the queued payout.
                 //
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -1959,8 +1993,15 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2030,8 +2071,15 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2085,8 +2133,15 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2343,8 +2398,15 @@ class Core extends Base\Core
                     }
                 }
 
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2438,8 +2500,15 @@ class Core extends Base\Core
         //
         // this is the only case where we Migration redis lock before payout lock .
         // its a rare scenario bcz cancel payout is manual
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             return $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2558,8 +2627,15 @@ class Core extends Base\Core
         // else process via api workflow system
         if ($this->shouldCallWorkflowService($payout) === true)
         {
-            if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                             $payout->getMerchantId()) === true)
+            $requestPayload = [
+                "id" => $payout->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+            if($isExperimentEnabled === true)
             {
                 $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2631,8 +2707,15 @@ class Core extends Base\Core
             function() use ($payout, $approve, $input)
             {
                 // Reload $payout here if needed.
-                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                              $payout->getMerchantId()) === true)
+                $requestPayload = [
+                    "id" => $payout->getMerchantId(),
+                    "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                    'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                ];
+
+                $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                if($isExperimentEnabled === true)
                 {
                     return $this->mutex->acquireAndRelease(
                         PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -2996,8 +3079,15 @@ class Core extends Base\Core
     {
         $workflowAction = null;
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3057,8 +3147,15 @@ class Core extends Base\Core
 
         $response = null;
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $response = $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3120,8 +3217,13 @@ class Core extends Base\Core
         // have enough balance for that payout
         $rzpFeesRecoverySucceeded = true;
 
-        $experimentEnabled = $this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                   $balance->getMerchantId());
+        $requestPayload = [
+            "id" => $balance->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $balance->getMerchantId()])
+        ];
+
+        $experimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         foreach ($payouts as $key => $payout)
         {
@@ -3175,6 +3277,14 @@ class Core extends Base\Core
             }
         }
 
+        if ((new Processor\Base)->getQueuedFeeRecoveryPayoutsFlag($payout)) {
+            // Metrics for Non Fee Recovery Payouts getting Dispatched repeatedly while Queue Fee Recovery Flag is set.
+            $dimenstions = [
+                'balance_id' => $balance->getId(),
+            ];
+            $this->trace->count(Metric::PAYOUTS_DISPATCHED_WHILE_FEE_RECOVERY_QUEUED_FLAG_SET, $dimenstions);
+        }
+
         // If fee_recovery payout does not get processed, we will not process any other queued payout either
         if ($rzpFeesRecoverySucceeded === false)
         {
@@ -3184,7 +3294,14 @@ class Core extends Base\Core
             ];
         }
 
-        (new Processor\Base)->unsetQueuedFeeRecoveryPayoutsFlag($balance->getId(), $balance->getMerchantId());
+        // If fee_recovery_queued_payout_flag_unset is enable, we dont unset the Queued Fee Recovery Flag here,
+        // Instead we unset it after Fee Recovery Payout is processed.
+
+        if ($this->isQueuedFeeRecoveryNewFlowSplitzEnabled === false) {
+
+            (new Processor\Base)->unsetQueuedFeeRecoveryPayoutsFlag($balance->getId(), $balance->getMerchantId());
+
+        }
 
         // We are going to get the count of Free Payouts here but we shall not be incrementing or decrementing the
         // count at this point. Increments/Decrements should ideally reside in the same flow.
@@ -3257,8 +3374,15 @@ class Core extends Base\Core
 
         foreach ($scheduledPayouts as $scheduledPayout)
         {
-            if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                          $scheduledPayout->getMerchantId()) === true)
+            $requestPayload = [
+                "id" => $scheduledPayout->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $scheduledPayout->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+            if($isExperimentEnabled === true)
             {
                 list($count, $amount, $noCount) = $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $scheduledPayout->getId(),
@@ -3498,8 +3622,15 @@ class Core extends Base\Core
 
                     if ($isBeneDown === false)
                     {
-                        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                                      $payout->getMerchantId()) === true)
+                        $requestPayload = [
+                            "id" => $payout->getMerchantId(),
+                            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                        ];
+
+                        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                        if($isExperimentEnabled === true)
                         {
                             return $this->mutex->acquireAndRelease(
                                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3638,8 +3769,15 @@ class Core extends Base\Core
                             return null;
                         }
 
-                        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                                      $payout->getMerchantId()) === true)
+                        $requestPayload = [
+                            "id" => $payout->getMerchantId(),
+                            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                        ];
+
+                        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+                        if($isExperimentEnabled === true)
                         {
                             return $this->mutex->acquireAndRelease(
                                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -3948,8 +4086,15 @@ class Core extends Base\Core
                 ]);
         }
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -4862,8 +5007,15 @@ class Core extends Base\Core
                                          array $ftsSourceAccountInformation = [],
                                          string $ftaStatus = null)
     {
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -5155,8 +5307,15 @@ class Core extends Base\Core
 
         $currentStatus = $payout->getStatus();
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -5355,17 +5514,6 @@ class Core extends Base\Core
         if ($payout->balance->isAccountTypeShared() === true)
         {
             return;
-        }
-
-        if (($payout->getIsPayoutService() === true) and
-            ($payout->balance->isAccountTypeDirect() === true))
-        {
-            $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-                RazorxTreatment::ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE, Constants\Mode::LIVE);
-
-            if ($variant != 'on') {
-                return;
-            }
         }
 
         $bas = null;
@@ -6206,12 +6354,23 @@ class Core extends Base\Core
 
             $payout->setChannel($ftsChannel);
 
-            $transaction = $payout->transaction;
-
-            if (empty($transaction) === false)
+            try
             {
-                $transaction->setChannel($ftsChannel);
-                $this->repo->saveOrFail($transaction);
+                $transaction = $payout->transaction;
+
+                if (empty($transaction) === false)
+                {
+                    $transaction->setChannel($ftsChannel);
+                    $this->repo->saveOrFail($transaction);
+                }
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TXN_CHANNEL_UPDATE_FAILED, [
+                    'message' => $t->getMessage(),
+                    'balance_account_type' => $payout->getBalanceAccountType(),
+                    'payout_id' => $payout->getId(),
+                ]);
             }
         }
     }
@@ -6270,8 +6429,15 @@ class Core extends Base\Core
                 'input'     => $input,
             ]);
 
-        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                      $payout->getMerchantId()) === true)
+        $requestPayload = [
+            "id" => $payout->getMerchantId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+            'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if($isExperimentEnabled === true)
         {
             return $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
@@ -6453,7 +6619,7 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) &&
+        if (((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId)) &&
             ($balance->isAccountTypeShared() === true))
         {
             return $this->payoutGetApiServiceClient->getFreePayoutAttributesViaMicroservice($balanceId);
@@ -6549,7 +6715,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId, string $accountType)
+    public function freePayoutMigrationFeatureChecks(string $action, string $merchantId, string $accountType, string $balanceId)
     {
         /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->find($merchantId);
@@ -6580,8 +6746,11 @@ class Core extends Base\Core
                         ]);
                 }
 
-                // If merchant is already migrated to payout service then we don't process it again.
-                if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === true)
+                /**
+                 * Here we check If Merchant is migrated to Payout Service by Feature Flag and
+                 * also Merhant's balance Id is migrated on Payout Service or not by checking in Payout Service Banking Account
+                 */
+                if ((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceIdAdminAction($merchantId, $balanceId))
                 {
                     $this->trace->error(TraceCode::PAYOUT_SERVICE_ENABLED_FEATURE_EXISTS, [
                         Entity::MERCHANT_ID     => $merchant->getId(),
@@ -6615,7 +6784,7 @@ class Core extends Base\Core
                         ]);
                 }
 
-                if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === false)
+                if (!(new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceIdAdminAction($merchantId, $balanceId))
                 {
                     $this->trace->error(TraceCode::PAYOUT_SERVICE_NOT_ENABLED_FOR_THE_MERCHANT, [
                         Entity::MERCHANT_ID     => $merchant->getId(),
@@ -6698,7 +6867,7 @@ class Core extends Base\Core
         $balance = $this->repo->balance->findOrFailById($balanceId);
         $accountType = $balance->getAccountType();
 
-        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId(), $accountType);
+        $this->freePayoutMigrationFeatureChecks(EntityConstant::DISABLE, $merchant->getId(), $accountType, $balanceId);
 
         $balance = (new Balance\Service)->getBankingTypeBalanceEntity($balanceId);
 
@@ -6716,7 +6885,7 @@ class Core extends Base\Core
 
                 $this->rollbackFreePayoutsCountAndSupportedModes($balance, $request);
 
-                $this->deletePayoutServiceEnabledFeature($merchant->getId());
+                $this->deletePayoutServiceEnabledFeature($merchant->getId(), $balance->getId());
 
                 return [
                     Entity::BALANCE_ID                => $balance->getId(),
@@ -6792,7 +6961,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function deletePayoutServiceEnabledFeature($merchantId)
+    protected function deletePayoutServiceEnabledFeature($merchantId, string $balanceId)
     {
         $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
             EntityConstant::MERCHANT,
@@ -6813,7 +6982,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        (new Feature\Core)->disablePayoutService($feature);
+        (new Feature\Core)->disablePayoutService($feature , $balanceId);
     }
 
     public function rejectWorkflowViaWorkflowService(Entity $payout, array $input)
@@ -8236,8 +8405,9 @@ class Core extends Base\Core
 
         Note: In case of point 2, we should ensure merchant is not on ledger shadow mode via API<>Ledger integration
         */
+        /** @var Entity $payout */
         $featureChecks = (($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
-                          ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === true));
 
         if ($featureChecks and
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
@@ -8953,6 +9123,20 @@ class Core extends Base\Core
                 $input
             );
         }
+        else if (array_key_exists('entity_type', $input) === true && ($input['entity_type'] == 'accounts_bas'))
+        {
+            $response = (new BankingAccountStatement\Details\Core())->updateStatementLastFetchedData($input);
+
+            $this->trace->info(
+                TraceCode::ACCOUNTS_DUAL_WRITE_COMPLETE,
+                [
+                    'input'    => $input,
+                    'response' => $response
+                ]
+            );
+
+            return $response;
+        }
         else
         {
             PayoutServiceDualWrite::dispatch($this->mode, $input);
@@ -9017,6 +9201,9 @@ class Core extends Base\Core
                         null,
                         $reversal,
                         true);
+
+                    $this->app->events->dispatch('api.payout.reversed', $reversal->entity);
+
                 }
                 else
                 {
@@ -9142,16 +9329,6 @@ class Core extends Base\Core
             return;
         }
 
-        if (($payout->getIsPayoutService() === true) and
-            ($payout->balance->isAccountTypeDirect() === true))
-        {
-            $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
-                RazorxTreatment::ENABLE_BAS_CHECK_FOR_PAYOUTS_SERVICE, Constants\Mode::LIVE);
-
-            if ($variant != 'on') {
-                return;
-            }
-        }
 
         $this->trace->info(
             TraceCode::MODIFY_STATUS_FOR_CURRENT_ACCOUNT_CHECK_START,
@@ -9436,9 +9613,9 @@ class Core extends Base\Core
         $this->upsertMetaDataInPayoutServiceForDualWrite($payoutId, $currentTime, $metadata);
     }
 
-    public function getMetaDataFromPayoutServiceForDualWrite($payoutId)
+    public function getMetaDataFromPayoutServiceForDualWrite($payoutId, string $metaName = 'dual_write')
     {
-        $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId);
+        $metadata = $this->repo->payout->getPayoutServicePayoutMetaDataForDualWrite($payoutId, $metaName);
 
         if (count($metadata) === 0)
         {
@@ -9492,6 +9669,52 @@ class Core extends Base\Core
             );
 
             $this->repo->payout->updateInPayoutServiceDB($tableName, $id, $data);
+        }
+    }
+
+    /*
+     * This updates meta data in payouts service which will be used by
+     * cron to retry dual write for payouts which failed due to some reason.
+     * This will be called for only payouts dual write failure and not for bas/fav.
+     */
+    public function upsertMetaDataInPayoutServiceForDualWriteRetryExhaust(array $input)
+    {
+        $payoutId = $input[PayoutConstants::ENTITY_ID];
+
+        $metadata = $this->getMetaDataFromPayoutServiceForDualWrite($payoutId, self::DUAL_WRITE_RETRY_EXHAUST);
+
+        $tableName = self::PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        if (empty($metadata) === true)
+        {
+            $data = [
+                Entity::ID         => Entity::generateUniqueId(),
+                Entity::PAYOUT_ID  => $payoutId,
+                'meta_name'        => self::DUAL_WRITE_RETRY_EXHAUST,
+                'meta_value'       => json_encode([
+                    'retry_count' => 0,
+                ]),
+                Entity::CREATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+                Entity::UPDATED_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_RETRY_EXHAUST_INSERT_METADATA,
+                $data
+            );
+
+            $this->repo->payout->insertIntoPayoutServiceDB($tableName, $data);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_RETRY_EXHAUST_INSERT_METADATA_SKIPPED
+            );
         }
     }
 
@@ -10993,18 +11216,24 @@ class Core extends Base\Core
          */
         $accountDetailsMap = [];
 
+        //  Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = 0;
+
         // Count of valid Direct Accounts for Smart Routing
         $validDirectAccounts = 0;
 
         $this->fetchValidDirectAccountsForSmartRouting(
             $accountDetailsMap, $validDirectAccounts, $input, $merchant, $fundAccountType);
 
-        // Fetch Lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+        // Fetch Lite balances only if payouts via lite is not blocked
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUTS_BLOCKED_ON_LITE) === false)
+        {
+            $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+                $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
 
-        // Count of valid Lite Accounts for Smart Routing
-        $validLiteAccounts = count($liteBalances);
+            // Count of valid Lite Accounts for Smart Routing
+            $validLiteAccounts = count($liteBalances);
+        }
 
         $this->trace->info(TraceCode::PAYOUT_SMART_ROUTING_ACCOUNTS, [
             'active_direct_accounts' => $validDirectAccounts,
@@ -11711,13 +11940,23 @@ class Core extends Base\Core
         return $ftsRequest;
     }
 
-    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array {
+    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array
+    {
         $channelShared = strtoupper(Balance\AccountType::SHARED);
 
-        // Fetching lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
-        $validLiteAccounts = count($liteBalances);
+        $merchant = $this->repo->merchant->findOrFail($merchantID);
+
+        //  Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = 0;
+
+        // Fetching lite balances if merchant is not blocked for lite payouts
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUTS_BLOCKED_ON_LITE) === false)
+        {
+            $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+                $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+            
+            $validLiteAccounts = count($liteBalances);
+        }
 
         // Fetch Active BasDetails
         $activeBasDetails = $this->repo->banking_account_statement_details->getActiveDirectAccountsForMerchantId($merchantID);
@@ -12426,5 +12665,57 @@ class Core extends Base\Core
 
         return $eventPayload;
 
+    }
+
+    public function isFeeRecoveryQueuedPayoutNewFlowSplitzExperimentEnable($balanceId)
+    {
+        $app = App::getFacadeRoot();
+
+        $eventExperimentName = 'fee_recovery_queued_payout_flag_unset';
+        $eventExperimentIdConfigKey = 'app.' . $eventExperimentName . '_id';
+
+        $properties = [
+            'id' => $balanceId,
+            'experiment_id' => $app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['balance_id' => $balanceId])
+        ];
+
+        return $this->isSplitzExperimentEnable($properties, 'enable', TraceCode::FEE_RECOVERY_QUEUED_PAYOUT_FLAG_UNSET_ERROR);
+    }
+
+    public function pushPayoutEventToBalanceService(Entity $payout): void
+    {
+        try
+        {
+            $balance = $payout->balance;
+
+            $properties = [
+                'id'            => $balance->getId(),
+                'experiment_id' => 'x_balances_payout_event',
+                'request_data'  => json_encode(['balance_id' => $balance->getId()])
+            ];
+            $expResult  = $this->isSplitzExperimentEnable($properties, 'enabled');
+
+            if ($expResult == true && $payout->balance->isAccountTypeDirect())
+            {
+                $pushData = [
+                    'entity_id'           => $payout->getId(),
+                    'event_creation_time' => $payout->getCreatedAt(),
+                    'merchant_id'         => $payout->getMerchantId(),
+                    'balance_id'          => $payout->getBalanceId()
+                ];
+
+                $queueName = $this->app['config']->get('queue.x_balances_payout_event.' . $this->mode);
+
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($pushData), $queueName);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::X_BALANCES_PAYOUT_EVENT_PUSH_ERROR, [
+                'payout_id' => $payout->getId(),
+                'error'     => $e->getMessage()
+            ]);
+        }
     }
 }

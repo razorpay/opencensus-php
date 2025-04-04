@@ -38,6 +38,7 @@ class Provider
     const AXIS      = 'axis';
     const IDFC      = 'idfc';
     const AXIS_RTPL = 'axis_rtpl';
+    const INDUSIND  = 'indusind';
     const BANK_ACCOUNT_RTPL_PREFIX = '2213';
 
     const UPI_ICICI = 'upi_icici';
@@ -65,13 +66,16 @@ class Provider
         self::RBL_JSW   => 'RATN0000001',
         self::AXIS      => 'UTIB000RAZP',
         self::AXIS_RTPL => 'UTIB0RTPLTD',
-        self::IDFC      => 'IDFB0020101'
+        self::IDFC      => 'IDFB0020101',
+        self::INDUSIND  => 'INDB0000098',
     ];
 
     const AXIS_COMMON_IFSC = 'UTIB0CCH274'; // THIS IS PAYROLL VA ifsc
 
     const IDFC_COMMON_IFSC ='IDFB0020101'; // THIS IS PAYROLL VA ifsc
-    const IDFC_VA_PREFIX = '3141';
+    const IDFC_VA_PREFIX = ['3141','5678'];
+
+    const PAYROLL_VA_PREFIX = '3141';
 
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.
@@ -108,6 +112,9 @@ class Provider
         ],
         self::AXIS_RTPL => [
             BankAccount::IFSC_CODE => self::IFSC[self::AXIS_RTPL],
+        ],
+        self::INDUSIND => [
+            BankAccount::IFSC_CODE => self::IFSC[self::INDUSIND],
         ]
     ];
 
@@ -122,6 +129,7 @@ class Provider
         self::RBL,
         self::AXIS,
         self::IDFC,
+        self::INDUSIND
     ];
 
     const TEST_PROVIDERS = [
@@ -149,6 +157,9 @@ class Provider
             '*'
         ],
         self::RBL => [
+            '*',
+        ],
+        self::INDUSIND => [
             '*',
         ],
         self::HDFC_ECMS => [

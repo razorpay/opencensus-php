@@ -7,6 +7,7 @@ use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ReflectionClass;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Batch;
@@ -363,6 +364,11 @@ class Service extends Base\Service
         return $this->app['terminals_service']->godModeEditTerminalV3($terminalId, $input);
     }
 
+    public function reassignMerchantV3($terminalId, $input)
+    {
+        return $this->app['terminals_service']->reassignMerchantV3($terminalId, $input);
+    }
+
     public function getEditableFields()
     {
         $response = [];
@@ -522,8 +528,35 @@ class Service extends Base\Service
         return $terminal->toArrayAdmin();
     }
 
+    public function addSubmerchantToTerminalV3($terminalId, $merchantId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        if ($terminal->getGateway() === Gateway::CHECKOUT_DOT_COM)
+        {
+            $payload = [
+                'mode' => $this->mode,
+                'action' => CrossBorderCommonUseCases::DISABLE_ON_DEMAND_SETTLEMENT,
+                'merchant_id' => $merchantId
+            ];
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+        }
+
+        return $this->app['terminals_service']->addSubmerchantsToTerminalV3($terminalId, $merchantId);
+    }
+
+    public function removeSubmerchantFromTerminal($terminalId, $merchantId)
+    {
+        return $this->app['terminals_service']->removeSubmerchantsFromTerminalV3($terminalId, $merchantId);
+    }
+
     public function toggleTerminal($id, $input)
     {
+        if($this->isSplitzEnabled('toggle_terminal') === true){
+            return $this->app['terminals_service']->toggleTerminalV3($id, $input);
+        }
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->getById($id);
@@ -628,6 +661,10 @@ class Service extends Base\Service
 
     public function setBanks(string $id, array $input): array
     {
+        if($this->isSplitzEnabled('set_banks') === true){
+            return $this->app['terminals_service']->setBanksForTerminalV3($id, $input);
+        }
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->getById($id);
@@ -635,6 +672,7 @@ class Service extends Base\Service
         $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
 
         $syncInstruments = false;
+
         if( isset($input[Constants::SYNC_INSTRUMENTS]) )
         {
             $syncInstruments = $input[Constants::SYNC_INSTRUMENTS];
@@ -647,13 +685,15 @@ class Service extends Base\Service
             Constants::SYNC_INSTRUMENTS => $syncInstruments
         ];
 
-        $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
-
-        return $banks;
+        return $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
     }
 
     public function setWallets(string $id, array $input): array
     {
+        if($this->isSplitzEnabled('set_wallets') === true){
+            return $this->app['terminals_service']->setWalletsForTerminalV3($id, $input);
+        }
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->getById($id);
@@ -665,11 +705,8 @@ class Service extends Base\Service
             'bulk_update' => false,
         ];
 
-        $banks = $this->core()->setWalletsForTerminal($terminal, $walletsToEnable, $option);
-
-        return $banks;
+        return $this->core()->setWalletsForTerminal($terminal, $walletsToEnable, $option);
     }
-
 
     /**
      * update enabled_banks for multiple terminal
@@ -2259,4 +2296,41 @@ class Service extends Base\Service
 
         $this->trace->error(TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
     }
+
+    public function isSplitzEnabled(string $action): bool {
+        $properties = [
+            'action'   => $action,
+            'experiment_id' => $this->app['config']->get('app.api_migration_v3'),
+        ];
+
+        return $this->isSplitzExperimentEnabled($properties, 'enable');
+    }
+
+    public function isSplitzExperimentEnabled(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
+    }
+
 }

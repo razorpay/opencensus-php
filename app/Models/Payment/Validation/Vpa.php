@@ -81,12 +81,6 @@ class Vpa extends Base
      */
     protected function shouldRouteValidateAccountRequestToUps(): bool
     {
-        $mode = $this->mode ?? Mode::LIVE;
-
-        $merchantId = optional($this->merchant)->getId() ?? 'default';
-
-        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::VALIDATE_ACCOUNT_REARCH_UPS, $mode);
-
-        return str_starts_with(strtolower($variant), 'on') === true;
+        return true;
     }
 }

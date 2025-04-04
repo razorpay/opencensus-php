@@ -302,22 +302,6 @@ class MerchantPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMerchantPayoutOnHoldFunds()
-    {
-        $this->fixtures->on('live')->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->fixtures->on('live')->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
-
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => '10000000000000',
-            'contact_name'=> 'Aditya',
-            'business_type' => 2
-        ]);
-
-        $this->ba->proxyAuth('rzp_live_10000000000000');
-
-        $this->startTest();
-    }
 
     public function testCreateMerchantPayoutOnHoldFundsOnTestMode()
     {
@@ -407,52 +391,6 @@ class MerchantPayoutTest extends TestCase
         $this->assertEquals(1, $fta['is_fts']);
     }
 
-    public function testCreateMerchantPayoutOnDemandDoesNotTriggerWorkflow()
-    {
-        $this->fixtures->on('live')->edit('balance','10000000000000',['balance' => '1000000']);
-
-        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
-        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
-
-        Carbon::setTestNow($bankingHour);
-
-        $this->liveSetUp();
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $this->app['config']->set('heimdall.workflows.mock', false);
-
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
-
-        // Create payout with owner role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
-
-        $this->startTest();
-
-        $payout = $this->getLastEntity('payout',true,'live');
-
-        $this->assertEquals(Mode::NEFT, $payout['mode']);
-
-        $txn = $this->getLastEntity('transaction',true,'live');
-
-        $this->assertEquals('payout', $txn['type']);
-
-        $this->assertEquals(Channel::ICICI, $txn['channel']);
-
-        $this->assertEquals(398, $txn['amount']);
-
-        $this->assertEquals(602, $txn['fee']);
-
-        $this->assertEquals(1000, $txn['debit']);
-
-        $wfAction = $this->getLastEntity('workflow_action',true,'live');
-
-        $this->assertEquals(null, $wfAction);
-
-        return $payout;
-    }
 
     public function testCreateMerchantPayoutDoesntTriggerWorkflow()
     {

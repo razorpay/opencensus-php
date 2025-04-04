@@ -3194,4 +3194,51 @@ class Repository extends Base\Repository
             ->pluck(Entity::ENTITY_ID)
             ->toArray();
     }
+
+    public function fetchOnHoldCommissionTransactions(
+        string $partnerId,
+        int $from,
+        int $to,
+        $limit = 2500,
+        $offset = null,
+    ): array
+    {
+        $txnFetchStartTime = microtime(true);
+        $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connection)
+            ->select(Entity::ID)
+            ->where(Entity::MERCHANT_ID, $partnerId)
+            ->where(Entity::TYPE, E::COMMISSION)
+            ->where(Entity::ON_HOLD, 1)
+            ->where(Entity::SETTLED, 0)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->orderBy(Entity::ID)
+            ->take($limit);
+
+        if (!empty($offset)) {
+            $query->where(Entity::ID, '>', $offset);
+        }
+
+        $result = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+        $this->trace->info(
+            TraceCode::COMMISSION_TRANSACTION_FETCH_TIME_TAKEN,
+            [
+                'partner_id' => $partnerId,
+                'limit'      => $limit,
+                'offset'   => $offset,
+                'time_taken' => $txnFetchTimeTaken,
+                'txn_count'  => $result->count(),
+            ]);
+
+        $transactionIds = $result->pluck(Entity::ID)->toArray();
+        $offset = end($transactionIds);
+
+        return [
+            'transaction_ids' => $transactionIds,
+            'offset' => $offset,
+        ];
+    }
 }

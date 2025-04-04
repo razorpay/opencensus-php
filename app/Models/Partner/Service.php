@@ -25,6 +25,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Jobs\SubmerchantFirstTransactionEvent;
+use RZP\Models\Partner\KycAccessState;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Http\Controllers\PartnerPGOSProxyController;
@@ -33,6 +34,8 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
+use RZP\Models\User\Service as UserService;
+use RZP\Models\Partner\KycAccessState\Core as KycAccessCore;
 
 class Service extends Base\Service
 {
@@ -404,13 +407,13 @@ class Service extends Base\Service
         ];
 
         $expEnabled = $this->merchantCore->isSplitzExperimentEnable($properties, 'enable',
-                                                                    TraceCode::REGENERATE_REFERRAL_LINKS_SPLITZ_ERROR);
+            TraceCode::REGENERATE_REFERRAL_LINKS_SPLITZ_ERROR);
 
         if ($expEnabled === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
-                                          null, $input,
-                                          "Not authorized to regenerate partner referral links");
+                null, $input,
+                "Not authorized to regenerate partner referral links");
         }
 
         $partnerIds = $input['partner_ids'];
@@ -478,8 +481,8 @@ class Service extends Base\Service
         {
             $this->trace->error(TraceCode::PRTS_PARTNER_MIGRATION_REQUEST_ERROR, $partnershipsResponse['response']);
             throw new Exception\ServerErrorException(
-            'Error completing the request',
-            ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE);
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE);
         }
     }
 
@@ -901,5 +904,36 @@ class Service extends Base\Service
         }
 
         return $partnerMerchant->isFeatureEnabled(FeatureConstants::PACB_EXPORT_PARTNER_FLOW);
+    }
+
+    public function processReferralCode(array $input): array {
+        try {
+            // skip merchant_user creation for master kyc flow
+            \Request::instance()->request->add([Merchant\Entity::ALLOW_USER_CREATION => false]);
+
+            $referral = (new UserService())->processReferralCode($this->merchant->getId(), $input['referral_code'], false);
+            if ((!empty($referral)) and $input['kyc_access'] == true) {
+                // create kyc access state
+                $data = [
+                    KycAccessState\Entity::PARTNER_ID => $referral['merchant_id'],
+                    KycAccessState\Entity::ENTITY_ID => $this->merchant->getId(),
+                ];
+                $accessState = (new KycAccessCore)->createOrGetKycRequestForEasySubMerchantKyc($data);
+            }
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PROCESS_REFERRAL_CODE_FAILURE,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'inout'       => $input,
+                    'message'     => 'Error occurred while applying referral code',
+                ]
+            );
+            return ['success' => false];
+        }
+
+        return ['success' => true];
     }
 }

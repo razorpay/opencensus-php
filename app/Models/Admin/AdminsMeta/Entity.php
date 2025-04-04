@@ -13,6 +13,8 @@ class Entity extends Base\Entity
     const ADMIN_ID             = 'admin_id';
     const AUTH_MODE            = 'auth_mode';
     const USER_DISABLED_AT     = 'user_disabled_at';
+    // Admin deactivation reason is stored in disabled_reason.
+    const DISABLED_REASON      = 'disabled_reason';
 
     protected $entity = 'admins_meta';
 
@@ -22,7 +24,8 @@ class Entity extends Base\Entity
         self::UNIQUE_IDENTIFIER,
         self::ADMIN_ID,
         self::AUTH_MODE,
-        self::USER_DISABLED_AT
+        self::USER_DISABLED_AT,
+        self::DISABLED_REASON,
     ];
 
     protected $public = [
@@ -32,7 +35,8 @@ class Entity extends Base\Entity
         self::AUTH_MODE,
         self::USER_DISABLED_AT,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::DISABLED_REASON,
     ];
 
     protected $visible = [
@@ -42,7 +46,8 @@ class Entity extends Base\Entity
         self::AUTH_MODE,
         self::USER_DISABLED_AT,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::DISABLED_REASON,
     ];
 
     protected $defaults = [
@@ -66,6 +71,11 @@ class Entity extends Base\Entity
     public function getInputFields()
     {
         return $this->fillable;
+    }
+
+    public function getDisabledReason()
+    {
+        return $this->getAttribute(self::DISABLED_REASON);
     }
 
 }

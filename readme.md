@@ -121,7 +121,7 @@ TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testin
 * Consider commenting out the ones you don't actually need with `crontab -e`.
 
 ### Redis-cluster setup
-if you pull master, api will now need redis-cluster to run locally.
+If you pull master, api will now need redis-cluster to run locally.
 * if you use docker setup, and run everything inside  docker, no change is needed.
   just run make build like you always do.
 * if you use non-docker setup, then run make redis-cluster to start redis-cluster. (port :7000)

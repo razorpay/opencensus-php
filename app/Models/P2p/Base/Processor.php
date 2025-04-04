@@ -234,6 +234,11 @@ class Processor
         return $this->context()->getHandle()->getAcquirer();
     }
 
+    protected function getActiveHandle()
+    {
+        return $this->context()->getHandle()->getCode();
+    }
+
     protected function getEntity()
     {
         $action = strtr(static::class, ['RZP\Models\P2p\\' => '', '\Processor' => '']);

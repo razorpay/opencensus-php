@@ -367,6 +367,18 @@ class Api extends Base
         return $this->makeRequest(self::FILE_GENERATION_TRIGGER, $input, self::SERVICE_API);
     }
 
+    /**
+     * trigger file generation for GEFU
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function triggerGefuFileGeneration(array $input) : array
+    {
+        return $this->makeRequest(self::GEFU_FILE_GENERATION_TRIGGER, $input, self::SERVICE_API);
+    }
+
     public function updateSchedule(array $input) : array
     {
         return $this->makeRequest(self::UPDATE_SCHDEULE, $input, self::SERVICE_API);

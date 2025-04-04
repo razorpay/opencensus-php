@@ -272,7 +272,7 @@ return [
         'exception' => [
             'class'               => RZP\Exception\LogicException::class,
             'internal_error_code' => ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
-            'message'             => 'Balance at channel does not match with our balance',
+            'message'             => 'Statement record balance is not in correct order',
         ],
     ],
 
@@ -1341,5 +1341,50 @@ return [
                 'status' => 'success'
             ]
         ]
+    ],
+
+    'testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/dual_write',
+            'content' => [
+                'entity_type' => 'accounts_bas',
+                'input'       => [
+                    'id'                        => "xba00000000007",
+                    'last_statement_attempt_at' => 1000000000,
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
+    'testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataValidationError' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/dual_write',
+            'content' => [
+                'entity_type' => 'accounts_bas',
+                'input'       => [
+                    'id' => "xba00000000007",
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The input.last statement attempt at field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Rzp\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 ];

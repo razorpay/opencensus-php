@@ -287,6 +287,7 @@ class Tracing
             'payment_callback_with_key_get',
             'payment_page_update',
             'payment_page_notify',
+            'payment_page_notify_nca',
             'payment_page_expire_cron',
             'payment_page_deactivate',
             'payment_page_activate',

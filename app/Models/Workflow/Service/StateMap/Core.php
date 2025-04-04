@@ -63,9 +63,16 @@ class Core extends Base\Core
 
             $response = null;
 
+            $requestPayload = [
+                "id" => $workflowEntityMap->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $workflowEntityMap->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
             if (($this->auth->isPayoutService() === true) ||
-                ($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                            $workflowEntityMap->getMerchantId()) === false))
+                ($isExperimentEnabled === false))
             {
                 $response = $this->createStateMap($workflowEntityMap, $input);
             }
@@ -147,9 +154,16 @@ class Core extends Base\Core
         {
             $workflowEntityMap = $this->getWorkflowEntityMap($input[Entity::REQUEST_WORKFLOW_ID]);
 
+            $requestPayload = [
+                "id" => $workflowEntityMap->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $workflowEntityMap->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
             if (($this->auth->isPayoutService() === true) ||
-                ($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
-                                            $workflowEntityMap->getMerchantId()) === false))
+                ($isExperimentEnabled === false))
             {
                 return $this->updateStateMap($stateMap, $input[Entity::REQUEST_STATUS]);
             }

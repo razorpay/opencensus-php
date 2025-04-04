@@ -925,6 +925,235 @@ return [
         ],
     ],
 
+    'testMigrateAuthz'  => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/cac_migrate_authz',
+            'content'   => [
+                'role_ids'  => ['100customRole2']
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'success'   => true,
+            ]
+        ]
+    ],
+
+    'testFetchRolesWithStandardRolesCACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/cac/roles?type=standard',
+            'content' => [
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'standard' => [
+                    [
+                        'id' => 'admin',
+                        'merchant_id' => '100000razorpay',
+                        'name' => 'Admin',
+                        'description' => 'Perform all tasks except for team management',
+                        'type' => 'standard',
+                        'copy_disable' => true,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                    [
+                        'id' => 'finance',
+                        'merchant_id' => '100000razorpay',
+                        'name' => 'Finance',
+                        'description' => 'Create and issue payouts and contacts',
+                        'type' => 'standard',
+                        'copy_disable' => false,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                    [
+                        'id' => 'operations',
+                        'merchant_id' => '100000razorpay',
+                        'name' => 'Operations',
+                        'description' => 'Create and manage Payout Links',
+                        'type' => 'standard',
+                        'copy_disable' => false,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchRoleMapCACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/cac/role_map',
+            'content' => [
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'custom' => [
+                    [
+                        'id' => '100customRole1',
+                        'merchant_id' => '10000000000000',
+                        'name' => 'CAC 1',
+                        'description' => 'Test custom role',
+                        'type' => 'custom',
+                        'copy_disable' => false,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                    [
+                        'id' => '100customRole2',
+                        'merchant_id' => '10000000000000',
+                        'name' => 'CAC 2',
+                        'description' => 'Test custom role',
+                        'type' => 'custom',
+                        'copy_disable' => false,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                ],
+                'standard' => [
+                    [
+                        'id' => 'admin',
+                        'merchant_id' => '100000razorpay',
+                        'name' => 'Admin',
+                        'description' => 'Perform all tasks except for team management',
+                        'type' => 'standard',
+                        'copy_disable' => true,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                    [
+                        'id' => 'finance',
+                        'merchant_id' => '100000razorpay',
+                        'name' => 'Finance',
+                        'description' => 'Create and issue payouts and contacts',
+                        'type' => 'standard',
+                        'copy_disable' => false,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                    [
+                        'id' => 'operations',
+                        'merchant_id' => '100000razorpay',
+                        'name' => 'Operations',
+                        'description' => 'Create and manage Payout Links',
+                        'type' => 'standard',
+                        'copy_disable' => false,
+                        'members' => 0,
+                        'created_by' => 'MerchantUser01',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchRoleMapAdminCACMigration' => [
+        'request' => [
+            'url'    => '/cac/admin/role_map',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'id' => 'admin',
+                    'merchant_id' => '100000razorpay',
+                    'name' => 'Admin',
+                    'description' => 'Perform all tasks except for team management',
+                    'type' => 'standard',
+                    'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3',],
+                    'created_by' => 'MerchantUser01',
+                ],
+                [
+                    'id' => 'finance',
+                    'merchant_id' => '100000razorpay',
+                    'name' => 'Finance',
+                    'description' => 'Create and issue payouts and contacts',
+                    'type' => 'standard',
+                    'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6',],
+                    'created_by' => 'MerchantUser01',
+                ],
+                [
+                    'id' => 'operations',
+                    'merchant_id' => '100000razorpay',
+                    'name' => 'Operations',
+                    'description' => 'Create and manage Payout Links',
+                    'type' => 'standard',
+                    'child_ids' => ['authz_roles_7', 'authz_roles_8', 'authz_roles_9',],
+                    'created_by' => 'MerchantUser01',
+                ],
+                [
+                    'id' => '100customRole1',
+                    'merchant_id' => '10000000000000',
+                    'name' => 'CAC 1',
+                    'description' => 'Test custom role',
+                    'type' => 'custom',
+                    'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3',],
+                    'created_by' => 'MerchantUser01',
+                ],
+                [
+                    'id' => '100customRole2',
+                    'merchant_id' => '10000000000000',
+                    'name' => 'CAC 2',
+                    'description' => 'Test custom role',
+                    'type' => 'custom',
+                    'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6',],
+                    'created_by' => 'MerchantUser01',
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testMigrateApi'  => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/cac_migrate_api',
+            'content'   => [
+                [
+                    'id'                => '100customRole2',
+                    'merchant_id'       => '100000merchant',
+                    'name'              => 'CAC 2',
+                    'type'              => 'custom',
+                    'description'       => 'Test custom role',
+                    'created_by'        => '100000merchant',
+                    'updated_by'        => '100000merchant',
+                    'org_id'            => '100000razorpay',
+                    'product'           => 'banking',
+                    'access_policy_ids' => ['accessPolicy10']
+                ],
+                [
+                    'id'                => '100customRole3',
+                    'merchant_id'       => '100000merchant',
+                    'name'              => 'CAC 3',
+                    'type'              => 'custom',
+                    'description'       => 'Test custom role (updated)',
+                    'created_by'        => '100000merchant',
+                    'updated_by'        => '100000merchant',
+                    'org_id'            => '100000razorpay',
+                    'product'           => 'banking',
+                    'access_policy_ids' => ['accessPolicy10']
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                '100customRole2' => 'success',
+                '100customRole3' => 'success',
+            ]
+        ]
+    ],
+
     'testUpdateRoleAccessPolicyMap' => [
         'request'  => [
             'method'  => 'POST',
@@ -934,6 +1163,72 @@ return [
         'response' => [
             'content' => [
                 'success'   => true,
+            ]
+        ],
+    ],
+
+    'testFetchRoleByIdCustomRoleCACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/role',
+            'content'   => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '100customRole1',
+                'name' => 'custom role',
+                'description' => 'this is a custom role',
+                'type' => 'custom',
+                'merchant_id' => '10000000000000',
+                'members' => 0,
+                'created_by' => 'MerchantUser01',
+            ]
+        ],
+    ],
+
+    'testFetchRoleByIdRoleFinanceL1CACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/role',
+            'content'   => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'finance_l1',
+                'name' => 'Finance L1',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'members' => 0,
+                'created_by' => '10000000system',
+            ]
+        ],
+    ],
+
+    'testFetchSelfRoleCACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/self/role',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'owner',
+                'name' => 'Owner',
+                'description' => 'Perform all tasks',
+                'type' => 'standard',
+                'merchant_id' => '10000000000000',
+                'child_ids' => null,
+                'members' => 1,
+                'created_by' => 'MerchantUser01',
             ]
         ],
     ],

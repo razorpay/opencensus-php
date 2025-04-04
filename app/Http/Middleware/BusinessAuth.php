@@ -69,7 +69,8 @@ class BusinessAuth
         'merchant_website_section_page_load',
         'payment_handle_get',
         'merchant_activation_business_categories_v2',
-
+        'onboarding_get',
+        'onboarding_save'
     ];
 
     public array $whitelistRoutesForSubmerchantOnboarding = [
@@ -290,8 +291,8 @@ class BusinessAuth
     private function canSkipWorkflowToAccessSubmerchantKyc(string $route, Merchant\Entity $account): bool
     {
         // https://razorpay.slack.com/archives/C012ZGQQFDJ/p1687252415363649
-        if ((in_array($route, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
-            ($this->merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->ba->authCreds->getMerchant(), $account) === true))
+        if (((in_array($route, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
+            ($this->merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->ba->authCreds->getMerchant(), $account) === true)))
         {
             $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT, [
                     'route_name'     => $route,

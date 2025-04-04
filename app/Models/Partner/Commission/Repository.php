@@ -12,6 +12,8 @@ use RZP\Models\Base\Repository as BaseRepository;
 use Carbon\Carbon;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Base\ConnectionType;
+use RZP\Trace\TraceCode;
 
 class Repository extends BaseRepository
 {
@@ -250,5 +252,52 @@ class Repository extends BaseRepository
                     ->where(Entity::SOURCE_ID, $sourceId)
                     ->where(Entity::TYPE, $commissionType)
                     ->first();
+    }
+
+    public function getTransactionIDFromCommissions(
+        string $partnerId,
+        int $from,
+        int $to,
+        $limit = null,
+        $offset = null
+    ): array
+    {
+        $txnFetchStartTime = microtime(true);
+        $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connection)
+            ->select(Entity::ID, Entity::TRANSACTION_ID)
+            ->where(Entity::PARTNER_ID, $partnerId)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->orderBy(Entity::ID);
+
+        if ($offset !== null) {
+            $query->where(Entity::ID, '>', $offset);
+        }
+
+        if ($limit !== null) {
+            $query->take($limit);
+        }
+
+        $result = $query->get();
+        $transactionIds = $result->pluck(Entity::TRANSACTION_ID)->toArray();
+        $afterId = end($result->pluck(Entity::ID)->toArray());
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(
+            TraceCode::COMMISSION_TRANSACTION_FETCH_TIME_TAKEN,
+            [
+                'partner_id' => $partnerId,
+                'time_taken' => $txnFetchTimeTaken,
+                'txn_count'  => $result->count(),
+                'after_id'   => $afterId,
+                'limit'      => $limit,
+            ]);
+
+        return [
+            'transaction_ids' => $transactionIds,
+            'after_id' => $afterId
+        ];
     }
 }

@@ -7,10 +7,11 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Type
 {
-    const VPA            = Entity::VPA;
-    const BANK_ACCOUNT   = Entity::BANK_ACCOUNT;
-    const CARD           = Entity::CARD;
-    const WALLET_ACCOUNT = Entity::WALLET_ACCOUNT;
+    const VPA               = Entity::VPA;
+    const BANK_ACCOUNT      = Entity::BANK_ACCOUNT;
+    const CARD              = Entity::CARD;
+    const WALLET_ACCOUNT    = Entity::WALLET_ACCOUNT;
+    const MOBILE            = Entity::MOBILE;
 
     // Public facing account type for wallet_accounts
     const WALLET         = Entity::WALLET;

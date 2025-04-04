@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
+use RZP\Models\LinkedNumber;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankingAccount\AccountType;
@@ -63,8 +64,17 @@ class Entity extends Base\PublicEntity
     // Wallet_account is basically publicly exposed underlying account
     // when account type is wallet
     const WALLET        = 'wallet';
+    // UPI_NUMBER is basically publicly exposed underlying account
+    // when account type is upi_number
+    const LINKED_NUMBER       = 'linked_number';
+    const MOBILE              = 'mobile';
 
     const NAME          = 'name';
+    // Payouts to Phone Number attributes
+    const NUMBER               = 'number';
+    const BANK_IFSC            = 'bank_ifsc';
+    const CUSTOMER_NAME        = 'customer_name';
+    const ACCOUNT_HOLDER_NAME = 'account_holder_name';
 
     const PAN_VERIFICATION_STATUS = 'pan_verification_status';
     const GSTIN_VERIFICATION_STATUS = 'gstin_verification_status';
@@ -138,11 +148,15 @@ class Entity extends Base\PublicEntity
     protected $ignoredRelations = [
         // Required as customer entity will be created via CMS and may not be present in API DB
         ConstantsEntity::CUSTOMER,
+        'source'
     ];
 
     protected $fillable = [
         self::ACTIVE,
         self::IDEMPOTENCY_KEY,
+        self::LINKED_NUMBER,
+        self::CUSTOMER_NAME,
+        self::BANK_IFSC
     ];
 
     protected $public = [
@@ -265,6 +279,10 @@ class Entity extends Base\PublicEntity
                     mask_except_last4($this->account->getAccountNumber()) : $this->account->getAccountNumber();
 
             case Type::VPA:
+                // We don't have to send VPA in case of UPI Number Fund Account
+                if (!is_null($this->getLinkedNumber())) {
+                    return $this->getLinkedNumber();
+                }
                 return $this->account->getAddress();
 
             case Type::CARD:
@@ -272,6 +290,9 @@ class Entity extends Base\PublicEntity
 
             case Type::WALLET_ACCOUNT:
                 return $this->account->getPhone();
+
+            default:
+                return '';
         }
     }
 
@@ -280,6 +301,10 @@ class Entity extends Base\PublicEntity
         switch ($this->getAccountType())
         {
             case Type::VPA:
+                // We don't have to send VPA in case of Linked Number Fund Account
+                if (!is_null($this->getLinkedNumber())) {
+                    return ucfirst(str_replace('_', ' ', self::LINKED_NUMBER));
+                }
                 return 'VPA';
 
             // Generic format for all other types, but be explicit.
@@ -287,12 +312,24 @@ class Entity extends Base\PublicEntity
             case Type::WALLET_ACCOUNT:
             case Type::CARD:
                 return ucfirst(str_replace('_', ' ', $this->getAccountType()));
+            default:
+                return '';
         }
     }
 
     public function getUniqueHash()
     {
         return $this->getAttribute(self::UNIQUE_HASH);
+    }
+
+    public function getLinkedNumber()
+    {
+        return $this->getAttribute(self::LINKED_NUMBER);
+    }
+
+    public function getCustomerName()
+    {
+        return $this->getAttribute(self::CUSTOMER_NAME);
     }
 
     // ------------- End Getters -------------

@@ -17,6 +17,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Jobs\DCS\AssignFeatures;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Jobs\DCS\EnableDisableReadFromDCS;
 use RZP\Jobs\DCS\ValidateFeaturesAPIAndDCS;
 use RZP\Constants\Entity as EntityConstants;
@@ -42,7 +43,8 @@ class Service extends Base\Service
         'loc',
         'magic_checkout_service',
         'payment_links',
-        'pgos'
+        'pgos',
+        'no_code_apps'
     ];
 
     public function addFeatures(
@@ -271,7 +273,7 @@ class Service extends Base\Service
                         //As payout_service_enabled is dependent on ledger_reverse_shadow so we can't remove it blindly
                         //before removing payout_service_enabled otherwise it will lead to inconsistency.
                         if ((empty($merchant) === false) and
-                            ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true))
+                            ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($merchant->getId())))
                         {
                             throw new Exception\ServerErrorException(
                                 'ledger_reverse_shadow can not be removed if payout_service_enabled is assigned to the merchant.',

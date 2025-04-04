@@ -8,6 +8,10 @@ class UpiRzprblPaymentServiceTest extends UpiPaymentServiceBase
     {
         parent::setUp();
 
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_rzprbl';
 
         $this->terminal = $this->fixtures->create('terminal:upi_rzprbl_terminal');

@@ -17,6 +17,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\Workflow\Action\State\Entity as ActionStateEntity;
+use RZP\Models\Workflow\Traits\WorkflowGuardRepository;
 
 class Repository extends Base\Repository
 {
@@ -405,6 +406,8 @@ class Repository extends Base\Repository
             return $action;
         }
 
+        $this->app['config']['workflow_guard.current_workflow_id'] = $actionEntity->getWorkflowId();
+
         $relations = [
             'workflow.steps' => function ($query) use ($actionEntity)
             {
@@ -458,6 +461,8 @@ class Repository extends Base\Repository
                 $actionWithRelations->maker;
             }
         }
+
+        $this->appendWfgEntityData($actionsWithRelations->first(), $id);
 
         return $actionsWithRelations;
     }
@@ -613,5 +618,10 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::ENTITY_ID)
             ->toarray();
+    }
+
+    public function getEntityName(): string
+    {
+        return $this->entity;
     }
 }

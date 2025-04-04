@@ -98,8 +98,28 @@ class Core extends Base\Core
             $diff = $esResponse[0]['_source'][Entity::DIFF];
         }
 
-        $diff['old'] = $this->transformFileIdsToUrls($diff['old'], $merchantId);
-        $diff['new'] = $this->transformFileIdsToUrls($diff['new'], $merchantId);
+        $this->trace->info(TraceCode::WORKFLOW_MAKER_AND_CHECKER, $esResponse[0]['_source']);
+
+        if ((array_key_exists(Entity::OPERATION_TYPE, $esResponse[0]['_source']) === true) and
+            $esResponse[0]['_source'][Entity::OPERATION_TYPE] === Action\OperationType::BULK)
+        {
+            $oldDiff = $diff['old'];
+            $newDiff = $diff['new'];
+
+            foreach($oldDiff as $key => $value)
+            {
+                $diff['old'][$key] = $this->transformFileIdsToUrls($value, $merchantId);
+            }
+            foreach($newDiff as $key => $value)
+            {
+                $diff['new'][$key] = $this->transformFileIdsToUrls($value, $merchantId);
+            }
+        }
+        else
+        {
+            $diff['old'] = $this->transformFileIdsToUrls($diff['old'], $merchantId);
+            $diff['new'] = $this->transformFileIdsToUrls($diff['new'], $merchantId);
+        }
 
         return $diff;
     }
@@ -465,6 +485,100 @@ class Core extends Base\Core
             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
 
         return $esResponse;
+    }
+
+    public function updatePayloadInEs(string $actionId, $payload)
+    {
+        $documents = $this->getDocumentsFromEs($actionId);
+
+        s($documents);
+
+        if (empty($documents) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        $document = current($documents);
+
+        $documentId = $document['_id'];
+
+//        (new Service())->performActionOnObserver($actionId, $state);
+
+        $esResponse = $this->esDao->updateActionPayload(
+            strtolower($this->baseIndex), self::ES_TYPE, $documentId, $payload);
+
+        return $esResponse;
+    }
+
+    public function updateDiffInEs(string $actionId, $diff)
+    {
+        $documents = $this->getDocumentsFromEs($actionId);
+
+        if (empty($documents) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        $document = current($documents);
+
+        $documentId = $document['_id'];
+
+        $esResponse = $this->esDao->updateActionDiff(
+            strtolower($this->baseIndex), self::ES_TYPE, $documentId, $diff);
+
+        return $esResponse;
+    }
+
+    public function updatePayloadAndDiffInEs(string $actionId,Entity $differInput)
+    {
+        $documents = $this->getDocumentsFromEs($actionId);
+
+        if (empty($documents) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        $document = current($documents);
+
+        $documentId = $document['_id'];
+
+        $payloads = $document['_source']['payload'];
+        $diffs = $document['_source']['diff'];
+
+        $payloadArray = $differInput->getPayload();
+        foreach ($payloadArray as $singlePayload)
+        {
+            $payloads[]= $singlePayload;
+        }
+        $currentDiff = $differInput->getDiff();
+        $oldDiff = $currentDiff['old'];
+        $newDiff = $currentDiff['new'];
+
+        foreach($oldDiff as $id => $diff)
+        {
+            $diffs['old'][$id] = $diff;
+        }
+        foreach($newDiff as $id => $diff)
+        {
+            $diffs['new'][$id] = $diff;
+        }
+
+        $esResponse = $this->esDao->updateActionPayload(
+             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $payloads);
+
+        $esResponse = $this->esDao->updateActionDiff(
+            strtolower($this->baseIndex), self::ES_TYPE, $documentId, $diffs);
+
+        return $esResponse;
+    }
+
+    // Helper function to check if the array is associative
+    protected function isAssociativeArray($array) {
+        if (!is_array($array)) return false;
+        return array_keys($array) !== range(0, count($array) - 1);
     }
 
     public function updateObserverDataForActionId(string $actionId, array $observerData)

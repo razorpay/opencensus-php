@@ -77,6 +77,10 @@ class TokenController extends Controller
     {
         $input = Request::all();
 
+        if( $input['requester']=='wibmo'){
+            $data = $this->service()->hdfcPushProvTokens($input);
+            return ApiResponse::json($data);
+        }
         $data = $this->service()->tokensPush($input);
 
         return ApiResponse::json($data);
@@ -102,6 +106,15 @@ class TokenController extends Controller
     public function tokensPushFetch($id)
     {
         $data = $this->service()->tokensPushFetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function vcppTokensPush()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->vcppTokensPush($input);
 
         return ApiResponse::json($data);
     }

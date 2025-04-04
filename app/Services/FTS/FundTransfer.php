@@ -7,9 +7,11 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\RuntimeException;
+use RZP\Models\Card\Repository;
 use RZP\Services\Mutex;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -27,6 +29,7 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\FundTransfer\Redaction;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Card\Entity as CardVault;
@@ -339,6 +342,11 @@ class FundTransfer extends Base
             default:
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
+
+        $this->trace->info(TraceCode::FTS_REQUEST_ACCOUNT_DETAILS, [
+            'account_type' => $this->accountType,
+            'account_details' =>  (new Redaction())->redactData($request[Constants::ACCOUNT])
+        ]);
 
         $request = $this->addMerchantCategory($request);
 
@@ -857,7 +865,7 @@ class FundTransfer extends Base
                 Constants::CARD => [
                         Constants::ISSUER_BANK  => $this->fta->card->getIssuer(),
                         Constants::VAULT_TOKEN  => $this->getCardVaultToken($this->fta->card),
-                        Constants::NAME         => $this->fta->card->getName() ?? "",
+                        Constants::NAME         => $this->getCardName(),
                         Constants::NETWORK_CODE => $this->fta->card->getNetworkCode(),
                 ],
         ];
@@ -891,6 +899,56 @@ class FundTransfer extends Base
         }
 
         return $request;
+    }
+
+    private function getCardName(): string
+    {
+        $cardName = $this->fta->card->getName();
+
+        if (empty($cardName)) {
+            $cachedCardMetaData = $this->getCardMetaDataFromCache();
+            if (!empty($cachedCardMetaData) && isset($cachedCardMetaData[CardVault::NAME])) {
+                $cardName = $cachedCardMetaData[CardVault::NAME];
+            } else {
+                $cardName = CardVault::DUMMY_CARD;
+                $this->trace->info(TraceCode::SET_DUMMY_CARD_NAME, [
+                    'fta_id' => $this->fta->getId(),
+                    'card_id' => $this->fta->card->getId(),
+                ]);
+            }
+        }
+
+        return $cardName;
+    }
+
+    private function getCardMetaDataFromCache(): array
+    {
+        $cacheKey = Repository::CARD_META_DATA_CACHE_KEY_PREFIX . $this->fta->card->getId();
+        $metaData = [];
+
+        try {
+
+            $metaData = $this->app['cache']->get($cacheKey) ?? [];
+            $this->trace->info(TraceCode::FTS_CARD_METADATA_CACHE_FETCH_SUCCESS,[
+                'fta_id' => $this->fta->getId(),
+                'card_id' => $this->fta->card->getId(),
+                'cache_key' => $cacheKey,
+            ]);
+
+        } catch (\Throwable $exception) {
+
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                ErrorCode::SERVER_ERROR_CARD_METADATA_CACHE_FETCH_FAILED,
+                [
+                    'fta_id' => $this->fta->getId(),
+                    'card_id' => $this->fta->card->getId(),
+                ]
+            );
+        }
+
+        return $metaData;
     }
 
     private function isNonRzpTokenisedCard(CardVault $card): bool
@@ -1048,8 +1106,16 @@ class FundTransfer extends Base
 
         if ($fta->getStatus() === FundTransferAttempt\Status::INITIATED)
         {
+            $requestPayload = [
+                "id" => $fta->getMerchantId(),
+                "experiment_name" =>  Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                'request_data'  => json_encode(['id' => $fta->getMerchantId()])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
             if ($fta->getSourceType() === Type::PAYOUT and
-                $this->isExperimentEnabled(RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,$fta) === true)
+                $isExperimentEnabled === true)
             {
                 $this->mutex->acquireAndRelease(
                     PayoutConstants::MIGRATION_REDIS_SUFFIX . $source->getId(),

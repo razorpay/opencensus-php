@@ -11116,12 +11116,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "6b437a1c59f34cca37d1490ae247a03ea0b8f22e"
+                "reference": "e15bb7a5b57964e06a1dedb26b2dcd01e0ca2085"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/6b437a1c59f34cca37d1490ae247a03ea0b8f22e",
-                "reference": "6b437a1c59f34cca37d1490ae247a03ea0b8f22e",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/e15bb7a5b57964e06a1dedb26b2dcd01e0ca2085",
+                "reference": "e15bb7a5b57964e06a1dedb26b2dcd01e0ca2085",
                 "shasum": ""
             },
             "require": {
@@ -11147,7 +11147,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2025-01-15T08:00:06+00:00"
+            "time": "2025-03-18T12:00:23+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -11336,16 +11336,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "v2.0.38",
+            "version": "v2.0.42",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "47b61f9fddc6406276f5b1e8ee465f6d8e99c92b"
+                "reference": "2b1ecddbb9f1e554c84d36610ea442515c3fe390"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/47b61f9fddc6406276f5b1e8ee465f6d8e99c92b",
-                "reference": "47b61f9fddc6406276f5b1e8ee465f6d8e99c92b",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/2b1ecddbb9f1e554c84d36610ea442515c3fe390",
+                "reference": "2b1ecddbb9f1e554c84d36610ea442515c3fe390",
                 "shasum": ""
             },
             "require": {
@@ -11381,7 +11381,7 @@
             "description": "Razorpay IFSC Codes Library",
             "support": {
                 "issues": "https://github.com/razorpay/ifsc/issues",
-                "source": "https://github.com/razorpay/ifsc/tree/v2.0.38"
+                "source": "https://github.com/razorpay/ifsc/tree/v2.0.42"
             },
             "time": "2024-12-09T13:48:02+00:00"
         },

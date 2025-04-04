@@ -95,6 +95,9 @@ class WorkflowTest extends TestCase
 
         $attributes['permissions'] = array_slice($this->workflowPermissionIds, 0, 2);
 
+        $this->app['config']['workflow_guard.mock.canary_enabled']    = $this->testData[__FUNCTION__]['response']['content']['canary_enabled'];
+        $this->app['config']['workflow_guard.mock.canary_percentage'] = $this->testData[__FUNCTION__]['response']['content']['canary_percentage'];
+
         $this->testData[__FUNCTION__]['request']['content'] = $attributes;
 
         $this->startTest();
@@ -190,6 +193,10 @@ class WorkflowTest extends TestCase
 
         $attributes['name'] = 'just changing name';
 
+        $attributes['canary_percentage'] = 5;
+
+        $attributes['canary_enabled'] = true;
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID);
@@ -200,6 +207,9 @@ class WorkflowTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'] = $attributes;
 
         $this->testData[__FUNCTION__]['response']['content']['name'] = $attributes['name'];
+
+        $this->app['config']['workflow_guard.mock.canary_enabled']    = $this->testData[__FUNCTION__]['response']['content']['canary_enabled'];
+        $this->app['config']['workflow_guard.mock.canary_percentage'] = $this->testData[__FUNCTION__]['response']['content']['canary_percentage'];
 
         $this->startTest();
     }
@@ -407,9 +417,9 @@ class WorkflowTest extends TestCase
                 'org_id'          => '100000razorpay',
             ]);
 
-        $success = false;
+        $success = true;
 
-        $this->mockNonTerminalExperiment($success);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING =>'enable']);
 
         $this -> mockPayoutServiceWorkflow('created', $success);
 
@@ -477,9 +487,9 @@ class WorkflowTest extends TestCase
                 "type"              => "checker"
             ]);
 
-        $success = false;
+        $success = true;
 
-        $this->mockNonTerminalExperiment($success);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING =>'enable']);
 
         $this -> mockPayoutServiceWorkflow('processed', $success);
 

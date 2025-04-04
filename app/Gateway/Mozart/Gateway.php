@@ -1299,6 +1299,8 @@ class Gateway extends Base\Gateway
                 return $response;
             case Payment\Gateway::NETBANKING_KVB:
                 return $this->preProcessServerCallbackForKvb($input, $mode);
+            case Payment\Gateway::BT_IBL:
+                return $this->preProcessServerCallbackForBtIbl($input);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
@@ -2165,6 +2167,10 @@ class Gateway extends Base\Gateway
             $url = $baseUrl . 'cardPayments/' . $input['gateway'] . '/v4/' . $this->action;
         }
         if ($gateway === Payment\Gateway::BT_RBL)
+        {
+            $url = $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
+        }
+        if ($gateway === Payment\Gateway::BT_IBL)
         {
             $url = $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
         }
@@ -4009,6 +4015,50 @@ class Gateway extends Base\Gateway
         return $this->getVirtualAccountResponseArray($response);
     }
 
+    public function preProcessServerCallbackForBtIbl($input, $handleException = true) {
+
+        parent::action($input, Action::PRE_PROCESS);
+
+        $url = $this->getUrlForMozartRequest($input, 'payments', $this->app['rzp.mode']);
+
+        $request = $this->getAuthenticatedMozartRequestArray($url, $input, $this->app['rzp.mode']);
+
+        $this->trace->info(
+            TraceCode::MOZART_SERVICE_REQUEST_BT_IBL,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::MOZART_SERVICE_RESPONSE_BT_IBL,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway
+            ]);
+
+        if ($response['success'] !== true )
+        {
+            if($response['data']['error']['code'] === 'BAD_REQUEST_VALIDATION_FAILURE')
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    $response['data']['error']['message'], $input);
+            }
+
+            throw new Exception\GatewayErrorException(
+                $response['error']['code'] ?? 'BAD_REQUEST_VALIDATION_FAILURE',
+                $response['error']['code'] ?? 'gateway_error_code',
+                $response['error']['message'] ?? 'gateway_error_desc',
+            );
+        }
+
+        return $response['data']['input'];
+    }
+
+
+
     public function deactivateVirtualAccount($input, $handleException = true)
     {
         parent::action($input, Action::DEACTIVATE_VIRTUAL_ACCOUNT);
@@ -4077,5 +4127,29 @@ class Gateway extends Base\Gateway
         $url = $this->getUrlForMozartRequest($input, 'razorpayx');
 
         return $this->getAuthenticatedMozartRequestArray($url, $input);
+    }
+
+    public function deactivateVirtualAccountCollectX($input, $handleException = true)
+    {
+        parent::action($input, Action::DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX);
+
+        $request = $this->getVirtualAccountMozartRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::DEACTIVATE_VIRTUAL_ACCOUNT_MOZART_REQUEST,
+            [
+                'url'      => $request['url'],
+                'gateway'  => $this->gateway,
+                'content'  => $request['content'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        if ($handleException === true)
+        {
+            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+        }
+
+        return $this->getVirtualAccountResponseArray($response);
     }
 }

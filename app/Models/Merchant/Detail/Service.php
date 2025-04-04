@@ -391,6 +391,16 @@ class Service extends Base\Service
         {
             $response[DetailConstants::CATEGORY_MODULE_PLACEMENT] = $pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT];
         }
+        //adding pg_conboarding_for_ca keys from pgos
+        if (isset($pgosFetchInternalResponse[DetailConstants::PG_ONBOARDING_CA]) === true)
+        {
+            $response[DetailConstants::PG_ONBOARDING_CA] = $pgosFetchInternalResponse[DetailConstants::PG_ONBOARDING_CA];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::OFFER_PRICE_FOR_CA]) === true)
+        {
+            $response[DetailConstants::OFFER_PRICE_FOR_CA] = $pgosFetchInternalResponse[DetailConstants::OFFER_PRICE_FOR_CA];
+        }
 
         // adding pg competitors keys coming from pgos
         if (isset($pgosFetchInternalResponse[DetailConstants::ONBOARDED_TO_COMPETITORS_PREVIOUSLY]) === true)
@@ -535,9 +545,31 @@ class Service extends Base\Service
 
         $user = $this->user;
 
+        $userRole = $this->auth->getUserRole();
+
         $merchant = $this->app['basicauth']->getMerchant();
 
         $merchantId = $merchant->getId();
+
+        // If the actual user accessing this API is POS sales agent then override the user to the owner of the merchant
+        // This is done to ensure that the OTP is sent to the owner of the merchant
+        if ($userRole === User\Role::RAZORPAY_SALES)
+        {
+            $salesUserId = $user->getId();
+
+            $merchantUser = $this->repo->merchant_user->findByRolesAndMerchantId([User\Role::OWNER], $merchantId)->first();
+
+            $user = $this->repo->user->findOrFail($merchantUser->user_id);
+
+            $this->trace->info(
+                TraceCode::OTP_SEND_VIA_EMAIL_OVERRIDE_USER_FOR_RAZORPAY_SALES_ROLE,
+                [
+                    'merchant_id'       => $merchantId,
+                    'user_id'           => $merchantUser->user_id,
+                    'rzp_sales_user_id' => $salesUserId
+                ]
+            );
+        }
 
         try
         {
@@ -555,7 +587,8 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
         }
 
-        try {
+        try
+        {
             // check if merchant has onboarded via PGOS and route request accordingly.
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
@@ -576,9 +609,9 @@ class Service extends Base\Service
 
                 return $response;
             }
-
         }
-        catch (\Throwable $exception) {
+        catch (\Throwable $exception)
+        {
             // this should not introduce error counts as it is running in shadow mode
             $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
                 'error_message' => $exception->getMessage()
@@ -587,7 +620,6 @@ class Service extends Base\Service
             throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
                 'error description' => 'submitted data could not be processed'
             ]);
-
         }
 
         $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
@@ -603,7 +635,8 @@ class Service extends Base\Service
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
         $signupCampaign   = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 
-        if($isExpEnabledForUnverifiedEmailCheck === true and DDConstants::EASY_ONBOARDING === $signupCampaign){
+        if($isExpEnabledForUnverifiedEmailCheck === true and DDConstants::EASY_ONBOARDING === $signupCampaign)
+        {
             $skipStoringUnverifiedEmail = true;
         }
 
@@ -693,6 +726,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        if ($merchant->isLinkedAccount())
+        {
+            $this->blockAccountUpdateWithout2FaForLinkedAccount($this->merchant, $input);
+        }
+
         $this->allowEditingOfBusinessNameAndDBAKYC($merchant, $input);
 
         Entity::modifyConvertEmptyStringsToNull($input);
@@ -750,7 +788,7 @@ class Service extends Base\Service
             {
                 $input['merchantId'] = $merchantId;
 
-                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
+                $pgosResponse =  $this->app['MerchantOnboardingProxyController']->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
 
                 $pgosResponse['activation_response'][DEConstants::IS_POS_DETAILS_SUBMITTED] = $isPosDetailsSubmitted;
 
@@ -2053,12 +2091,27 @@ class Service extends Base\Service
 
     public function updatePosActivationStatusOfMerchant(string $merchantId, array $input): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleUpdatePosActivationStatusOfMerchant($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+        } else {
+            return $this->handleUpdatePosActivationStatusOfMerchant($merchantId, $input);
+        }
+    }
+
+    private function handleUpdatePosActivationStatusOfMerchant(string $merchantId, array $input) : array {
         $admin = $this->app['basicauth']->getAdmin();
-
-        $merchantDetails = (new Core)->updatePosActivationStatusOfMerchant($merchant, $input,$admin);
-
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantDetails = $this->core->updatePosActivationStatusOfMerchant($merchant, $input,$admin);
         return $merchantDetails->toArrayPublic();
     }
     /**
@@ -2138,7 +2191,23 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
-    public function updatePosActivationStatusInternal(string $merchantId, array $input): array
+    public function updatePosActivationStatusInternal(string $merchantId, array $input): array {
+        if(!empty($merchantId) and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+                function() use ($merchantId, $input)
+                {
+                    return $this->handleUpdatePosActivationStatusInternal($merchantId, $input);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+        } else {
+            return $this->handleUpdatePosActivationStatusInternal($merchantId, $input);
+        }
+    }
+    public function handleUpdatePosActivationStatusInternal(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -2303,7 +2372,7 @@ class Service extends Base\Service
 
     public function getBusinessCategoriesVasMerchant(): array
     {
-        $businessCategoriesMap = BusinessCategoriesV2\BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
         $businessCategories    = [];
 
         foreach ($businessCategoriesMap as $businessCategory => $subCategories)
@@ -3799,6 +3868,7 @@ class Service extends Base\Service
         $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_INITIATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED;
 
         $this->trace->info($traceCode, [
+            DetailConstants::VERSION => $version,
             Entity::GSTIN => $input[Entity::GSTIN]
         ]);
 
@@ -5388,7 +5458,7 @@ class Service extends Base\Service
                                     'new_activation_status' => $newActivationStatus,
                                 ]);
 
-                                $this->core->prefillSystemUrlsInAdminWebisteDetails($merchant->merchantDetail);
+                                $this->core->prefillSystemUrlsInAdminWebsiteDetails($merchant->merchantDetail);
                             }
 
                         }
@@ -5414,6 +5484,24 @@ class Service extends Base\Service
                     if (empty($this->app['basicauth']->getMerchant()) === true)
                     {
                         $this->app['basicauth']->setMerchant($merchant);
+                    }
+
+                    $activationStatus = $input[Entity::ACTIVATION_STATUS];
+
+                    if ($activationStatus === Status::ACTIVATED)
+                    {
+                        $this->trace->info(TraceCode::PREFILLING_ADMIN_WEBSITE_DETAILS, [
+                            'merchant_id' => $merchantId,
+                            'new_activation_status' => $activationStatus,
+                        ]);
+
+                        /*
+                         *  Prefilling system urls for India PG modular merchants in admin website details as this is a
+                         *  necessary check during merchant activation in validateMerchantActivation
+                         *  https://razorpay.slack.com/archives/C043K5N223F/p1737367042676009?thread_ts=1736917359.986569&cid=C043K5N223F
+                        */
+
+                        $this->core->prefillSystemUrlsInAdminWebsiteDetails($merchant->merchantDetail);
                     }
                 }
 
@@ -5969,5 +6057,48 @@ class Service extends Base\Service
         return (($isPosDetailsSubmitted === '1') or
             ($isPosDetailsSubmitted === 1) or
             ($isPosDetailsSubmitted === true));
+    }
+
+    private function blockAccountUpdateWithout2FaForLinkedAccount($merchant, &$input)
+    {
+        if (($this->app['basicauth']?->isDashboardApp() ?? false) === false)
+        {
+            return;
+        }
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getParentId(),
+                'experiment_id' => $this->app['config']->get('app.block_account_update_for_linked_account_exp_id'),
+            ],
+            'variant'
+        );
+
+        $this->trace->info(TraceCode::BLOCK_BANK_ACCOUNT_UPDATE_FOR_LA_EXP_RESULT, [
+            'linked_account_id' => $merchant->getId(),
+            'parent_id'         => $merchant->getParentId(),
+            'is_enabled'        => $isExpEnabled,
+        ]);
+
+        if($isExpEnabled === false)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::BANK_ACCOUNT_NUMBER]) || isset($input[Entity::BANK_BRANCH_IFSC]))
+        {
+            if (!isset($input['type']) || $input['type'] !== 'linked_account')
+            {
+                $this->trace->error(TraceCode::INVALID_TYPE_FOR_BA_UPDATE_WITH_2FA, [
+                    'linked_account_id' => $merchant->getId(),
+                    'parent_id'         => $merchant->getParentId(),
+                    'type'              => $input['type'] ?? '',
+                ]);
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATE_BLOCKED_WITHOUT_2FA);
+            }
+        }
+
+        unset($input['type']);
     }
 }

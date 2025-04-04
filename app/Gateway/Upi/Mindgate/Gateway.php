@@ -1933,7 +1933,9 @@ class Gateway extends Base\Gateway
     {
         $version = $response['data']['version'] ?? '';
 
-        if ($version === 'v2')
+        if (($version === 'v2') and
+            (isset($response['data']['upi']['merchant_reference']) === true) and
+            ($response['data']['upi']['merchant_reference'] !== null))
         {
             return $this->upiPaymentIdFromServerCallback($response);
         }
@@ -1953,6 +1955,13 @@ class Gateway extends Base\Gateway
         if (isset($response['requestInfo']['pspRefNo']) === true)
         {
             return $response['requestInfo']['pspRefNo'];
+        }
+
+        if((isset($response['success']) === true) and
+            (isset($response['data']['upi']['merchant_reference']) === true) and
+            ($response['data']['upi']['merchant_reference'] !== null))
+        {
+            return $response['data']['upi']['merchant_reference'];
         }
 
         $paymentId = $response[ResponseFields::PAYMENT_ID];

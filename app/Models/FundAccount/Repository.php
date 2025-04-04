@@ -537,11 +537,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId)
+    public function fetchBySourceTypeAndId(string $sourceType, string $sourceId, string $merchantId)
     {
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->where(Entity::SOURCE_TYPE, $sourceType)
-                    ->where(Entity::SOURCE_ID, $sourceId)
-                    ->get();
+                    ->where(Entity::SOURCE_ID, $sourceId);
+
+        if (empty($merchantId) === false) {
+            $query->merchantId($merchantId);
+        }
+
+        return $query->get();
     }
 }

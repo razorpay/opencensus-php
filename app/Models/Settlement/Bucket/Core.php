@@ -817,8 +817,6 @@ class Core extends Base\Core
                 $metaSource = $txnSource;
         }
 
-        $sourceSettledRemovalExpEnabled = $this->isSourceSettledRemovalExperimentEnabled($txn->getMerchantId());
-
         $meta = [
             'source_type'       => $metaSource->getEntity(),
             'source_id'         => $metaSource->getId(),
@@ -1109,16 +1107,5 @@ class Core extends Base\Core
         }
 
         return ['success' => false];
-    }
-
-    private function isSourceSettledRemovalExperimentEnabled($merchantId)
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchantId,
-            self::SOURCE_SETTLED_REMOVAL_EXP,
-            $this->mode
-        );
-
-        return $variant === 'on';
     }
 }

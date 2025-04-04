@@ -81,6 +81,9 @@ class Repository extends Base\Repository
                             $query->whereNull(Token\Entity::USED_AT)
                                   ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
                         }
+                        $query->orwhereNull(Token\Entity::USED_AT)
+                            ->where(Token\Entity::FREQUENCY, '=', Token\Constants::ONE_TIME_FREQUENCY)
+                            ->where(Token\Entity::RECURRING_STATUS, '!=', Token\RecurringStatus::INITIATED);
                         $query->orWhereNotNull(Token\Entity::USED_AT);
                     })
                     ->where(function($query)
@@ -365,7 +368,8 @@ class Repository extends Base\Repository
                               RecurringStatus::REJECTED,
                               RecurringStatus::INITIATED,
                               RecurringStatus::PAUSED,
-                              RecurringStatus::CANCELLED
+                              RecurringStatus::CANCELLED,
+                              RecurringStatus::CANCELLATION_INITIATED
                           ]);
 
         // entity_type has subscription and null as values at the moment
@@ -390,16 +394,7 @@ class Repository extends Base\Repository
     {
         try
         {
-            $variant = $this->app['razorx']->getTreatment(
-                $from,
-                Merchant\RazorxTreatment::FETCH_PENDING_EMANDATE_REGISTRATION_FROM_WDA,
-                $this->app['rzp.mode']
-            );
-
-            if($variant === 'on')
-            {
-                return $this->fetchPendingEmandateRegistrationFromWDA($gateway, $from, $to);
-            }
+            return $this->fetchPendingEmandateRegistrationFromWDA($gateway, $from, $to);
         }
         catch(\Throwable $ex)
         {
@@ -1225,4 +1220,11 @@ EOT;
         return $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
     }
 
+    public function fetchByEntityId($entityId)
+    {
+
+        $tokenEntityId = $this->repo->token->dbColumn(Token\Entity::ENTITY_ID);
+
+        return $this->newQuery()->where($tokenEntityId, '=', $entityId)->get();
+    }
 }

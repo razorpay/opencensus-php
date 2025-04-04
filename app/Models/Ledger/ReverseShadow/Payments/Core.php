@@ -64,13 +64,13 @@ class Core extends Base\Core
         {
             [$moneyParams, $dynamicMoneyParams] = $this->generateMoneyParamsForDSPayment($payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $feesSplit);
 
-            $additionalParams = $this->fetchRulesForDSPaymentCredits($payment, $merchantAccountBalances, $fee);
+            $additionalParams = $this->fetchRulesForDSPaymentCredits($payment, $merchantAccountBalances, $fee, $feesSplit);
         }
         else
         {
             [$moneyParams, $dynamicMoneyParams] = $this->generateMoneyParamsForNormalPayment($payment, $merchantAccountBalances, $amountCreditsAccounts, $fee, $tax, $discount, $feesSplit);
 
-            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]));
+            $additionalParams = $this->fetchRulesForPaymentCredits($payment, $merchantAccountBalances, $fee, intval($moneyParams[Constants::BASE_AMOUNT]), $feesSplit);
         }
 
         $transactorId = $payment->getPublicId();
@@ -276,7 +276,7 @@ class Core extends Base\Core
             $moneyParams[Constants::GATEWAY_ACQUIRER_AMOUNT]    = strval($commission+$tax);
             $moneyParams = array_merge($moneyParams, $this->getMoneyParamsForFeeBreakupAndTax($feesSplit, $commission, $tax));
         }
-        else if($this->isPostpaid($payment) === true)
+        else if($this->isPostpaid($payment, $feesSplit) === true)
         {
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $commission);
             $moneyParams = array_merge($moneyParams, $this->getMoneyParamsForFeeBreakupAndTax($feesSplit, $commission, $tax));
@@ -303,7 +303,7 @@ class Core extends Base\Core
         return [$moneyParams, $dynamicMoneyParams];
     }
 
-    protected function fetchRulesForDSPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee): array
+    protected function fetchRulesForDSPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $feesSplit): array
     {
         $feeCredits = $merchantAccountBalances[Constants::MERCHANT_FEE_CREDITS];
 
@@ -323,7 +323,7 @@ class Core extends Base\Core
         {
             $rule[Constants::ACCOUNTING] = Constants::HDFC_VAS_DS_CFB_SURCHARGE_FLOW;
         }
-        else if($this->isPostpaid($payment) === true)
+        else if($this->isPostpaid($payment, $feesSplit) === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }
@@ -392,7 +392,7 @@ class Core extends Base\Core
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
         }
-        else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant))
+        else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant, $feesSplit))
         {
             $customerFeeAndGstArray = $payment->getCustomerFeeAndCustomerFeeGst();
 
@@ -404,7 +404,7 @@ class Core extends Base\Core
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $commission - ($customerFee + $customerTax));
             $moneyParams = array_merge($moneyParams, $this->getMoneyParamsForFeeBreakupAndTax($feesSplit, $commission, $tax));
         }
-        else if($this->isPrepaidDynamicFeeBearerFlag($payment))
+        else if($this->isPrepaidDynamicFeeBearerFlag($payment, $feesSplit))
         {
             $customerFeeAndGstArray = $payment->getCustomerFeeAndCustomerFeeGst();
 
@@ -449,7 +449,7 @@ class Core extends Base\Core
                 $moneyParams = array_merge($moneyParams, $this->getMoneyParamsForFeeBreakupAndTax($feesSplit, $commission, $tax));
             }
         }
-        else if($this->isPostpaid($payment) === true)
+        else if($this->isPostpaid($payment, $feesSplit) === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
@@ -504,7 +504,7 @@ class Core extends Base\Core
         return [$moneyParams, $dynamicMoneyParams];
     }
 
-    protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount): array
+    protected function fetchRulesForPaymentCredits(Payment\Entity $payment, $merchantAccountBalances, $fee, $amount, $feesSplit): array
     {
         $rule = [];
 
@@ -526,11 +526,11 @@ class Core extends Base\Core
              $rule[Constants::ACCOUNTING] = Constants::HDFC_NON_DS_SURCHARGE_FLOW;
              $isCommissionApplicable = false;
         }
-        else if($this->isPostpaid($payment) === true)
+        else if($this->isPostpaid($payment, $feesSplit) === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }
-        else if($this->isPrepaidDynamicFeeBearerFlag($payment) && $this->isGratis($amountCredits, $amount) and ($this->shouldDisableAmountCredits($payment) === false))
+        else if($this->isPrepaidDynamicFeeBearerFlag($payment, $feesSplit) && $this->isGratis($amountCredits, $amount) and ($this->shouldDisableAmountCredits($payment) === false))
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::DFB_AMOUNT_CREDITS_V2;
             $isCommissionApplicable = false;

@@ -39,7 +39,16 @@ class Service extends Transaction\Service
         $dimension = $this->getDimensions();
 
         $isLatestBalanceRequest = false;
-        if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
+
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === true)
         {
             if ((empty($input['count']) === false) and $input['count'] == 1)
             {
@@ -53,12 +62,9 @@ class Service extends Transaction\Service
         {
             // This is to ensure addQueryParamBalanceId is not used thus skipping balance join
             // The above method is dynamically called if input has the param balance id
-            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE) === true)
+            if (isset($input['balance_id']) === true)
             {
-                if (isset($input['balance_id']) === true)
-                {
-                    unset($input['balance_id']);
-                }
+                unset($input['balance_id']);
             }
 
             $startTime = millitime();
@@ -101,6 +107,12 @@ class Service extends Transaction\Service
                 ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE)->toArrayPublic();
         }
 
+        $this->trace->info(TraceCode::TRANSACTION_STATEMENT_FETCH_MULTIPLE_FALLBACK_FLOW,
+            [
+                'input' => $input,
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+
         /** @var PublicCollection $transactions */
         $transactions = $this->repo->statement->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
@@ -128,6 +140,8 @@ class Service extends Transaction\Service
                 ->toArrayPublic();
         }
 
+        $ledgerFlow = false;
+
         // In case feature flag is added to the merchant, only in that case ledger service will be called.
         // Since here depending on the transaction, we cannot find whether this transaction is for VA or CA,
         // without depending on the transaction table, so only merchant feature flag check is enough.
@@ -145,7 +159,15 @@ class Service extends Transaction\Service
                     ]);
                 return $ledgerTransaction;
             }
+            $ledgerFlow = true;
         }
+
+        $this->trace->info(TraceCode::TRANSACTION_STATEMENT_FETCH_FALLBACK_FLOW,
+            [
+                'id' => $id,
+                'ledger_flow' => $ledgerFlow,
+                'merchant_id' => $this->merchant->getId(),
+            ]);
 
         /** @var Entity $transaction */
         $transaction = $this->repo
@@ -169,7 +191,15 @@ class Service extends Transaction\Service
         $dimension = $this->getDimensions();
 
         $isLatestBalanceRequest = false;
-        if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === true)
         {
             if ((empty($input['count']) === false) and $input['count'] == 1)
             {
@@ -187,12 +217,9 @@ class Service extends Transaction\Service
 
             // This is to ensure addQueryParamBalanceId is not used thus skipping balance join
             // The above method is dynamically called if input has the param balance id
-            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE) === true)
+            if (isset($input['balance_id']) === true)
             {
-                if (isset($input['balance_id']) === true)
-                {
-                    unset($input['balance_id']);
-                }
+                unset($input['balance_id']);
             }
 
             $ledger = $this->repo->ledger_statement->fetch($input,

@@ -20,6 +20,11 @@ class Validator extends Base\Validator
         Entity::REVERSAL,
     ];
 
+    const VALID_FEE_RECOVERY_TYPES = [
+        Type::CREDIT,
+        Type::DEBIT
+    ];
+
     protected static $createFeeRecoveryRetryPayoutsRules = [
         Entity::PREVIOUS_RECOVERY_PAYOUT_ID         => 'required|string|size:14'
     ];
@@ -80,6 +85,11 @@ class Validator extends Base\Validator
         return self::ALLOWED_SOURCE_ENTITIES;
     }
 
+    public static function getValidFeeRecoveryTypes()
+    {
+        return self::VALID_FEE_RECOVERY_TYPES;
+    }
+
     public function validateBalanceTypeAndTimeStamps(Balance\Entity $balance,
                                                      $startTimeStamp,
                                                      $endTimeStamp)
@@ -127,6 +137,24 @@ class Validator extends Base\Validator
                 [
                     'entity_name'   => $entityName,
                     'entity_id'     => $entity->getId(),
+                ]);
+        }
+    }
+
+    /**
+     * @param string $type
+     *
+     * @throws BadRequestException
+     */
+    public static function validateFeeRecoveryType(string $type): void
+    {
+        if (in_array($type, self::getValidFeeRecoveryTypes(), true) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FEE_RECOVERY_INVALID_TYPE,
+                null,
+                [
+                    'type'   => $type,
                 ]);
         }
     }

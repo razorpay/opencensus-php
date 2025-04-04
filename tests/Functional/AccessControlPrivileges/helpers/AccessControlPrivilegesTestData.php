@@ -360,4 +360,123 @@ return [
             )
         ],
     ],
+
+    'testFetchAllPrivilegesCACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/cac/privileges',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'privilege_data' => [
+                    [
+                        'id' => 'JqqlbJ1rC3b15x',
+                        'name' => 'Payouts',
+                        'description' => 'Single, bulk, tally payouts, payout links, payouts on invoices, contacts & fund accounts',
+                        'label' => 'payouts',
+                        'view_position' => 200,
+                        'parent_id' => null,
+                        'actions' => [
+                            'view' => [
+                                'id' => 'JqqlbnvU4qTC96',
+                                'description' => 'View and download payouts',
+                                'label' => 'View',
+                                'tooltip' => 'View by default on access to create, mark as paid',
+                                'privilege_id' => 'JqqlbJ1rC3b15x',
+                                'role_ids' => ['authz_roles_2_1', 'authz_roles_2_2', 'authz_roles_2_3'],
+                            ],
+                        ],
+                        'privilege_data' => null,
+                    ],
+                    [
+                        'id' => 'JqqlbH4S5QzvPt',
+                        'name' => 'Account Statement & Balance',
+                        'description' => 'All transactions from RazorpayX (Payouts, Payroll etc.) and outside (via bank portal)',
+                        'label' => 'accountStatement',
+                        'view_position' => 300,
+                        'parent_id' => null,
+                        'actions' => [
+                            'view' => [
+                                'id' => 'JqqlbkKtqdfGbd',
+                                'description' => 'View account statement and balance',
+                                'label' => 'View',
+                                'tooltip' => '',
+                                'privilege_id' => 'JqqlbH4S5QzvPt',
+                                'role_ids' => ['authz_roles_1_1', 'authz_roles_1_2', 'authz_roles_1_3'],
+                            ],
+                        ],
+                        'privilege_data' => null,
+                    ],
+                    [
+                        'id' => 'JqqlbH4S5QzvPz',
+                        'name' => 'Petty Cash',
+                        'description' => 'Manage petty cash transactions',
+                        'label' => 'pettyCash',
+                        'view_position' => 900,
+                        'parent_id' => null,
+                        'actions' => [],
+                        'privilege_data' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAllPrivilegesWithParentCACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/cac/privileges',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'privilege_data' => [
+                    [
+                        'id' => 'JqqlbJ1rC3b15x',
+                        'name' => 'Payouts',
+                        'description' => 'Single, bulk, tally payouts, payout links, payouts on invoices, contacts & fund accounts',
+                        'label' => 'payouts',
+                        'view_position' => 200,
+                        'parent_id' => null,
+                        'actions' => [
+                            'view' => [
+                                'id' => 'JqqlbnvU4qTC96',
+                                'description' => 'View and download payouts',
+                                'label' => 'View',
+                                'tooltip' => 'View by default on access to create, mark as paid',
+                                'privilege_id' => 'JqqlbJ1rC3b15x',
+                                'role_ids' => ['authz_roles_2_1', 'authz_roles_2_2', 'authz_roles_2_3'],
+                            ],
+                        ],
+                        'privilege_data' => [
+                            [
+                                'id' => 'JqqlbH4S5QzvPt',
+                                'name' => 'Account Statement & Balance',
+                                'description' => 'All transactions from RazorpayX (Payouts, Payroll etc.) and outside (via bank portal)',
+                                'label' => 'accountStatement',
+                                'view_position' => 300,
+                                'parent_id' => 'JqqlbJ1rC3b15x',
+                                'actions' => [
+                                    'view' => [
+                                        'id' => 'JqqlbkKtqdfGbd',
+                                        'description' => 'View account statement and balance',
+                                        'label' => 'View',
+                                        'tooltip' => '',
+                                        'privilege_id' => 'JqqlbH4S5QzvPt',
+                                        'role_ids' => ['authz_roles_1_1', 'authz_roles_1_2', 'authz_roles_1_3'],
+                                    ],
+                                ],
+                                'privilege_data' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

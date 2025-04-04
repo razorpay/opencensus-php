@@ -1191,7 +1191,6 @@ class PurposeCodeList
     const GNIE_CODES = [
         self::S1201,
         self::S1202,
-        self::P1201,
         self::P1203,
     ];
 
@@ -1328,7 +1327,6 @@ class PurposeCodeList
         self::S1410,
         self::S1411,
         self::S1412,
-        self::P1401,
         self::P1403,
         self::P1405,
         self::P1408,
@@ -1347,7 +1345,6 @@ class PurposeCodeList
         self::S1306,
         self::S1307,
         self::P1301,
-        self::P1302,
         self::P1303,
         self::P1304,
         self::P1306,
@@ -1498,6 +1495,7 @@ class PurposeCodeList
         self::S1007,
         self::S1008,
         self::S1009,
+        self::S1099,
         self::S1013,
         self::S1014,
         self::S1015,

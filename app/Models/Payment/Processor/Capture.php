@@ -57,6 +57,7 @@ use RZP\Jobs\MerchantBasedBalanceUpdateV2;
 use RZP\Jobs\MerchantBasedBalanceUpdateV3;
 use RZP\Jobs\MerchantBalanceUpdateReverseShadowQueue;
 use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
+use RZP\Models\Transfer\Payment\Core as TransferPaymentCore;
 
 trait Capture
 {
@@ -190,6 +191,19 @@ trait Capture
         try
         {
             $this->capturePayment($payment, $amount, $currency);
+            
+            $this->trace->info(
+                TraceCode::PAYMENT_AUTO_CAPTURE_SUCCESS,
+                [
+                    'should_auto_capture'   => true,
+                    'payment_id'            => $payment->getPublicId(),
+                    'payment_method'        => $payment->getMethod(),
+                    'payment_status'        => $payment->getStatus(),
+                    'auto_capture_status'   => "success",
+                ]);
+            
+            $this->emitAutoCaptureMetrics($payment, "");
+
         }
         catch (Exception\BaseException $e)
         {
@@ -198,9 +212,14 @@ trait Capture
                 Trace::ERROR,
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 [
-                    'auto_capture' => true,
-                    'payment_id'   => $payment->getPublicId(),
+                    'should_auto_capture'   => true,
+                    'payment_id'            => $payment->getPublicId(),
+                    'payment_method'        => $payment->getMethod(),
+                    'payment_status'        => $payment->getStatus(),
+                    'auto_capture_status'   => "failed",
                 ]);
+
+            $this->emitAutoCaptureMetrics($payment, $e->getCode());
 
             $customProperties = [
                 'error' => $e->getError(),
@@ -223,6 +242,54 @@ trait Capture
                     'method'         => $payment->getMethod()
                 ]);
         }
+    }
+
+    protected function evaluateSplitzExperimentForAutoCaptureResult($merchantId)
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $app['config']->get('app.auto_capture_result'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'enabled')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED
+            );
+        }
+
+        return false;
+    }
+
+    public function emitAutoCaptureMetrics ( $payment, $errorMessage ) {
+
+        $is_experiment_enabled = $this->evaluateSplitzExperimentForAutoCaptureResult($payment->getMerchantId());
+
+        if($is_experiment_enabled)
+        {
+            (new Payment\Metric)->pushAutoCaptureResultMetrics($payment,$errorMessage );
+        }
+                
     }
 
     /**
@@ -619,10 +686,17 @@ trait Capture
             return;
         }
 
-        $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+        if (($payment->getOffer() !== null) and
+            ($discount->getAttribute(Entity::OFFER_ID) === $payment->getOffer()->getId()))
+        {
+            $offer = $payment->getOffer();
+        }
+        else
+        {
+            $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
+        }
 
         $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
-
     }
 
     /**
@@ -710,7 +784,7 @@ trait Capture
             if (($this->payment->getGateway() ===  Payment\Gateway::PAYSECURE or $this->payment->getGateway() ===  Payment\Gateway::FULCRUM)
                 && $this->payment->isGatewayCaptured() === false){
                 //Adding 2 days and 5.5 hours UTC timestamp to handle edge cases of last 5.5 hours of the day.
-                $maxTimestampOfTheDay = $this->payment->getCreatedAt() + PaymentConstants::MAX_ALLOWED_CAPTURE_TIME;
+                $maxTimestampOfTheDay = $this->payment->getAuthorizeTimestamp() + PaymentConstants::MAX_ALLOWED_CAPTURE_TIME;
 
                 $dateTime = new DateTime();
                 $dateTime->setTimestamp($maxTimestampOfTheDay);
@@ -999,7 +1073,10 @@ trait Capture
             {
                 $discount = $this->getDiscountIfApplicableForLedger($payment);
 
-                [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+                if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                {
+                    [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+                }
 
                 $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
                     LedgerConstants::PAYMENT_ID       =>  $payment->getId(),
@@ -2026,11 +2103,25 @@ trait Capture
 
             $orderId = $payment->getApiOrderId();
 
-            $transfersCount = Tracer::inSpan(['name' => 'order.transfer.update_status'], function() use ($orderId)
+            $transfersCount = Tracer::inSpan(['name' => 'order.transfer.update_status'], function() use ($payment, $orderId)
             {
-                return $this->repo
-                            ->transfer
-                            ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+                $count = $this->repo->transaction(function() use ($payment, $orderId)
+                {
+                    $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled(
+                        $payment->getId(), $this->merchant->getId());
+
+                    if ($isAmountTransferredExpEnabled)
+                    {
+                        // create transfer payment during order payment capture itself
+                        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+                    }
+
+                    return $this->repo
+                        ->transfer
+                        ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+                });
+
+                return $count;
             });
 
             $input = [
@@ -2067,6 +2158,7 @@ trait Capture
                     'payment_id' => $payment->getId(),
                     'message'    => $e->getMessage(),
                 ]);
+            throw $e;
         }
     }
 

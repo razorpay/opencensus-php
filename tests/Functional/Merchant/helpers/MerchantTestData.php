@@ -15417,9 +15417,9 @@ return [
         ]
     ],
 
-    'testGetBalancesV2' => [
+    'testGetBankingBalances' => [
         'request' => [
-            'url' => '/v2/balances',
+            'url' => '/banking_balances',
             'method' => 'GET',
         ],
         'response' => [
@@ -15430,9 +15430,9 @@ return [
         ],
     ],
 
-    'testGetBalancesV2InputValidationError' => [
+    'testGetBankingBalancesInputValidationError' => [
         'request' => [
-            'url' => '/v2/balances?type=primary',
+            'url' => '/banking_balances?type=primary',
             'method' => 'GET',
         ],
         'response' => [

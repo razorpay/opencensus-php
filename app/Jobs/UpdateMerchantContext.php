@@ -189,7 +189,7 @@ class UpdateMerchantContext extends Job
             {
                 // prefill bvs policy urls and hosted policies to admin website details
                 // these urls are used in validateMerchantActivation for activating merchant
-                (new DetailCore())->prefillSystemUrlsInAdminWebisteDetails($merchantDetail);
+                (new DetailCore())->prefillSystemUrlsInAdminWebsiteDetails($merchantDetail);
                 // save category & subcategory
                 $businessDetailsInput = [
                     BusinessDetail\Entity::METADATA => [

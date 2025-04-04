@@ -37,18 +37,22 @@ class XSegmentClient extends SegmentAnalyticsClient
 
             if (empty($user) === false and empty($merchant) === false) {
 
-                $result = 'on';
+                $isExperimentEnabled = false;
 
                 if($eventName === SegmentEvent::CONTACT_CREATED or $eventName === SegmentEvent::CA_PAYOUT_PROCESSED
                     or $eventName === SegmentEvent::VA_PAYOUT_PROCESSED or $eventName === SegmentEvent::FUND_ACCOUNT_ADDED){
-                    $variant = $this->app['razorx']->getTreatment($merchant->getId(),
-                        Merchant\RazorxTreatment::SEND_EVENTS_TO_SEGMENT,
-                        $this->mode
-                    );
-                    $result = $variant;
+
+                    $requestPayload = [
+                        "id" =>$merchant->getId(),
+                        "experiment_name" =>  Merchant\RazorxTreatment::SEND_EVENTS_TO_SEGMENT,
+                        'request_data'  => json_encode(['id' => $merchant->getId()])
+                    ];
+
+                    $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
                 }
 
-                if($result != 'off') {
+                if($isExperimentEnabled !== true) {
                     $this->pushIdentifyandTrackEvent($merchant, $properties, $eventName);
                 }
             }

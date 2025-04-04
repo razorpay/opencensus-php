@@ -25,6 +25,11 @@ class UpiAxisOlivePaymentServiceTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_axisolive';
     }
 
@@ -38,7 +43,7 @@ class UpiAxisOlivePaymentServiceTest extends UpiPaymentServiceTest
         $order = $this->createTpvOrder();
 
         $preferences = $this->getTurboPreferences($order[Entity::ID], '');
-        
+
         $this->assertArrayHasKey('tpv', $preferences);
 
         $this->assertArrayHasKey('restrict_bank_accounts', $preferences["tpv"]);

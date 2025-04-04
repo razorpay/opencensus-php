@@ -21,12 +21,12 @@ class CBInvoiceWorkflow
         $input = [];
         $input[Constants::WORKFLOW][Constants::CONFIG_ID] =  $this->config->get('applications.workflows.cross_border.invoice_verification_config_id');
         $input[Constants::WORKFLOW][Constants::CONFIG_VERSION] = Constants::CONFIG_VERSION_VALUE;
-        $input[Constants::WORKFLOW][Constants::ORG_ID] = str_replace("org_", "", $this->ba->getOrgId());
+        $input[Constants::WORKFLOW][Constants::ORG_ID] = $payment->merchant->getOrgId();
         $input[Constants::WORKFLOW][Constants::ENTITY_ID] = $payment->getId();
         $input[Constants::WORKFLOW][Constants::ENTITY_TYPE] = Constants::Payment;
         $input[Constants::WORKFLOW][Constants::OWNER_ID] = Constants::OWNER_ID_VALUE;
         $input[Constants::WORKFLOW][Constants::OWNER_TYPE] = Constants::MERCHANT;
-        $input[Constants::WORKFLOW][Constants::SERVICE] = Constants::SERVICE_RX . $this->ba->getMode();
+        $input[Constants::WORKFLOW][Constants::SERVICE] = Constants::SERVICE_RX . $this->app['rzp.mode'];
 
         $input[Constants::WORKFLOW][Constants::TITLE] = Constants::CB_INVOICE_WORKFLOW_TITLE_VALUE.$payment->getId();
         $input[Constants::WORKFLOW][Constants::DESCRIPTION] = Constants::CB_INVOICE_WORKFLOW_DESCRIPTION_VALUE;
@@ -58,7 +58,7 @@ class CBInvoiceWorkflow
                         Constants::APPROVED => [
                             Constants::TYPE => Constants::BASIC,
                             Constants::METHOD => Constants::POST,
-                            Constants::SERVICE => Constants::SERVICE_RX . $this->ba->getMode(),
+                            Constants::SERVICE => Constants::SERVICE_RX . $this->app['rzp.mode'],
                             Constants::URL_PATH => Constants::CB_WORKFLOW_CALLBACK_ROUTE,
                             Constants::HEADERS => json_decode ("{}"),
                             Constants::PAYLOAD => [
@@ -75,7 +75,7 @@ class CBInvoiceWorkflow
                         Constants::REJECTED => [
                             Constants::TYPE => Constants::BASIC,
                             Constants::METHOD => Constants::POST,
-                            Constants::SERVICE => Constants::SERVICE_RX . $this->ba->getMode(),
+                            Constants::SERVICE => Constants::SERVICE_RX . $this->app['rzp.mode'],
                             Constants::URL_PATH => Constants::CB_WORKFLOW_CALLBACK_ROUTE,
                             Constants::HEADERS => json_decode ("{}"),
                             Constants::PAYLOAD => [

@@ -29,7 +29,18 @@ class Core extends Base\Core
         // preprocess for gift cards if any. Disable if the merchant is not set.
         if (!empty($this->merchant))
         {
+            $orderMetaInputPromotion = $orderMetaInput[OrderOneCCFields::PROMOTIONS] ?? [];
+            $this->trace->info(TraceCode::UPDATE_1CC_ORDER_PROMOTION_UPDATE, [
+                'orderId' => $orderId,
+                'orderMetaInputPromotion' => $orderMetaInputPromotion
+            ]);
+
             $updatedPromotions = (new MerchantGiftCardPromotionService())->preProcessGiftCards($orderId, $orderMetaInput, $mockResponse);
+
+            $this->trace->info(TraceCode::UPDATE_1CC_ORDER_PROMOTION_UPDATE, [
+                'orderId' => $orderId,
+                'updatedPromotion' => $updatedPromotions
+            ]);
 
             $orderMetaInput = array_merge($orderMetaInput,
                 [

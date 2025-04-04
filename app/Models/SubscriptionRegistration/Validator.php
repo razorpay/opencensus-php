@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
+use RZP\Models\UpiMandate\Frequency;
 use RZP\Error\PublicErrorDescription;
 use Carbon\Carbon;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -302,7 +303,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($input[CustomerEntity::CONTACT]) === true)
+        if (empty($input[CustomerEntity::CONTACT]) === true and
+            $merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL) === false)
         {
 
             $this->getTrace()->count(
@@ -558,7 +560,7 @@ class Validator extends Base\Validator
         }
 
         $maxAmount = empty($input[Entity::MAX_AMOUNT]) ?
-            Entity::getDefaultMaxAmountForMethod($method) : $input[Entity::MAX_AMOUNT];
+            Entity::getDefaultMaxAmountForMethod($method, $mcc = null, $merchantID = null) : $input[Entity::MAX_AMOUNT];
 
         $firstPaymentAmount = empty($input[Entity::FIRST_PAYMENT_AMOUNT]) ?
             0 : $input[Entity::FIRST_PAYMENT_AMOUNT];
@@ -757,12 +759,27 @@ class Validator extends Base\Validator
 
             if($input[Entity::METHOD] === Method::UPI)
             {
-                $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
-                if ($input[Entity::EXPIRE_AT] > $validationTime)
-                {
-                    throw new BadRequestValidationFailureException(
-                        'expire_at cannot be more than 30 years for upi'
-                    );
+                switch ($input[Entity::FREQUENCY]) {
+                    case Frequency::ONETIME:
+                    {
+                        $validationTime = Carbon::now()->addDays(60)->addMinutes(1)->timestamp;
+                        if ($input[Entity::EXPIRE_AT] > $validationTime)
+                        {
+                            throw new BadRequestValidationFailureException(
+                                'Subscription expiry cannot be greater than 60 days for one time mandate.'
+                            );
+                        }
+                        break;
+                    }
+                    default: {
+                        $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+                        if ($input[Entity::EXPIRE_AT] > $validationTime)
+                        {
+                            throw new BadRequestValidationFailureException(
+                                'expire_at cannot be more than 30 years for upi'
+                            );
+                        }
+                    }
                 }
             }
 

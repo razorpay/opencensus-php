@@ -12,8 +12,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::DISPLAY_NAME                    => 'required|string|max:255',
         Entity::BUSINESS_NAME                   => 'required|string|max:255',
-        Hostname\Entity::HOSTNAME               => 'sometimes|string',
-        Entity::EMAIL                           => 'required|email',
+        Hostname\Entity::HOSTNAME               => 'sometimes|string|regex:/^[a-zA-Z0-9]+\.razorpay\.com$/',
+        Entity::EMAIL                           => 'required|email|unique:orgs,email',
         Entity::EMAIL_DOMAINS                   => 'required|custom',
         Entity::ALLOW_SIGN_UP                   => 'sometimes|boolean',
         Entity::AUTH_TYPE                       => 'required|string|max:255|in:password,google_auth,adfs',
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_APPS_LOGO_URL           => 'sometimes|url',
         Entity::PAYMENT_BTN_LOGO_URL            => 'sometimes|url',
         Entity::ADMIN                           => 'required|array',
-        Entity::CUSTOM_CODE                     => 'required',
+        Entity::CUSTOM_CODE                     => 'required|unique:orgs,custom_code',
         Entity::FROM_EMAIL                      => 'sometimes|email',
         Entity::SIGNATURE_EMAIL                 => 'sometimes|email',
         Entity::PERMISSIONS                     => 'required|array',
@@ -40,8 +40,9 @@ class Validator extends Base\Validator
         Entity::ADMIN_MAX_WRONG_2FA_ATTEMPTS    => 'sometimes|numeric',
         Entity::SECOND_FACTOR_AUTH_MODE         => 'sometimes|string|in:sms,email,sms_and_email',
         Entity::EXTERNAL_REDIRECT_URL           => 'sometimes|url',
-        Entity::EXTERNAL_REDIRECT_URL_TEXT      => 'sometimes|string'
-
+        Entity::EXTERNAL_REDIRECT_URL_TEXT      => 'sometimes|string',
+        Entity::ADMIN_NAME                      => 'required|string|regex:/^\S+$/',
+        Entity::ADMIN_USERNAME                  => 'required|string|regex:/^\S+$/'
     ];
 
     protected static $editRules = [

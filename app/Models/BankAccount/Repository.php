@@ -657,7 +657,7 @@ class Repository extends Base\Repository
 
     public function fetchBankAccountsWithTypeDeleted($merchantIds, $ifscCode, $limit)
     {
-        return $this->newQueryOnSlave()
+        return $this->newQuery()
             ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::VIRTUAL_ACCOUNT)
             ->where(Entity::IFSC_CODE,'=', $ifscCode)
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
@@ -681,12 +681,15 @@ class Repository extends Base\Repository
 
     public function getDeactivationBankAccounts($fromTime, $toTime, $limit, $merchantIds, $ifscCode)
     {
-        $query = $this->newQueryOnSlave();
+        $query = $this->newQuery();
 
         $query
             ->withTrashed()
             ->where(Entity::IFSC_CODE, '=', $ifscCode)
-            ->where(Entity::GATEWAY_SYNC, '!=', 2)
+            ->where(function ($q): void {
+                $q->whereNull(Entity::GATEWAY_SYNC)
+                  ->orWhere(Entity::GATEWAY_SYNC, '!=', 2);
+            })
             ->where(Entity::TYPE, '=', 'virtual_account')
             ->whereNotNull(Entity::DELETED_AT)
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)

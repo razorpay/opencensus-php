@@ -41,7 +41,7 @@ class TerminalCreation extends Base
         $gatewayMerchantId2 = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2];
         $gatewayTerminalId  = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_TERMINAL_ID];
         $gatewayAccessCode  = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_ACCESS_CODE];
-        $plan_name          = $entry[Batch\Header::TERMINAL_CREATION_PLAN_NAME];
+        $plan_id          = $entry[Batch\Header::TERMINAL_CREATION_PLAN_ID];
 
         $gatewayTerminalPassword  = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD];
         $gatewayTerminalPassword2 = $entry[Batch\Header::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2];
@@ -83,7 +83,7 @@ class TerminalCreation extends Base
 
         $currency = empty($currency) ? null : explode(', ', trim($currency));
 
-        $plan_name = blank($plan_name) ? null : $plan_name;
+        $plan_id = blank($plan_id) ? null : $plan_id;
 
         $type = $this->getTerminalTypeParam($entry[Batch\Header::TERMINAL_CREATION_TYPE]);
 
@@ -131,7 +131,7 @@ class TerminalCreation extends Base
             Terminal\Entity::ENABLED                    => $enabled,
             Terminal\Entity::STATUS                     => empty($status) ? "activated" : $status,
             Terminal\Entity::CAPABILITY                 => $capability,
-            Terminal\Entity::PLAN_NAME                  => $plan_name,
+            Terminal\Entity::PLAN_ID                    => $plan_id,
             TerminalConstants::SYNC_INSTRUMENTS         => true
 
         ];

@@ -9,13 +9,11 @@
     <br/><br/>
     It was necessary to do so because of a risk alert for non-compliance with regulatory guidelines as set by one of our partner banks.
     <br/><br/>
-    There will be a hold on your settlements that are due for 120 days.
+    If you have any questions and wish to reach out to us with urgency, please call <b style="color: #3b6790 !important;">08068838200</b>, using your ongoing ticket ID as the PIN. Our team is available daily from 10 AM to 7 PM.
     <br/><br/>
-    If you believe there has been an error, please reply to this email and we will review your case.
+    Thank you for your prompt attention to this matter.
     <br/><br/>
-    Stay safe.
-    <br/><br/>
-    Thanks,
+    Sincerely,
     <br/>
     Team Razorpay
 @endsection

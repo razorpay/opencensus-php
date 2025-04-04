@@ -1274,9 +1274,7 @@ class Repository extends Base\Repository
 
     public function findManyWithRelations($ids, $relations, $columns = array('*'), $useWarehouse = false)
     {
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::REFUND_FIND_MANY_RELATIONS, $mode);
-        if ($useWarehouse === true && $variant === 'on')
+        if ($useWarehouse === true && $this->isProdEnv() === true)
         {
             return $this->repo->refund_tidb->findManyWithRelations($ids, $relations, $columns, true);
         }

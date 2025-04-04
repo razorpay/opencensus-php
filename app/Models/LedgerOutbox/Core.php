@@ -5,6 +5,7 @@ namespace RZP\Models\LedgerOutbox;
 use App;
 use Exception;
 use Carbon\Carbon;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 use RZP\Services\KafkaProducer;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
@@ -985,8 +986,12 @@ class Core extends Base\Core
                     return $item['id'] === $creditJournalId;
                 });
 
-                $txn = $this->transformJournalResponseToTransactionEntityBase($filteredCreditJournal);
+                $creditJournal = reset($filteredCreditJournal);
+
+                $txn = $this->transformJournalResponseToTransactionEntityBase($creditJournal);
                 $txn->accountBalance()->associate($balance);
+
+                $adjustment->setAttribute(AdjustmentEntity::TRANSACTION_ID, $creditJournalId);
 
                 $adjustment->setStatus(Status::PROCESSED);
 

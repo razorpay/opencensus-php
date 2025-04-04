@@ -22,6 +22,10 @@ class ApiKeyGetRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool not_expired = 2;</code>
      */
     protected $not_expired = null;
+    /**
+     * Generated from protobuf field <code>bool include_secret = 3;</code>
+     */
+    protected $include_secret = false;
 
     /**
      * Constructor.
@@ -31,6 +35,7 @@ class ApiKeyGetRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type string $id
      *     @type bool $not_expired
+     *     @type bool $include_secret
      * }
      */
     public function __construct($data = NULL) {
@@ -88,6 +93,28 @@ class ApiKeyGetRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->not_expired = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool include_secret = 3;</code>
+     * @return bool
+     */
+    public function getIncludeSecret()
+    {
+        return $this->include_secret;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool include_secret = 3;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setIncludeSecret($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->include_secret = $var;
 
         return $this;
     }

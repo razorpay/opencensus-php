@@ -7,17 +7,18 @@ use Exception;
 use RZP\Constants\Mode;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Models\Merchant\Acs\Traits\AsvCacheKeys;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
-use function PHPUnit\Framework\isEmpty;
+use Cache;
 
 class Repository extends Base\Repository
 {
 
     use CacheQueries;
+
 
     protected $entity = 'key';
 
@@ -29,15 +30,56 @@ class Repository extends Base\Repository
     {
         $cacheTtl = $this->getCacheTtl();
 
+        $app = App::getFacadeRoot();
         $prefix = Pricing\Repository::getQueryCachePrefixForDistributingLoad();
+        $mode = $app['rzp.mode'] ?? null;
 
+        $store =  ($mode === Mode::TEST) ? 'query_cache_test' : 'query_cache_live';
+        $tag = $prefix . '_' . $this->entity . '_' . $id;
+        $routeName = $this->app['request.ctx']->getRoute();
+        $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($id, $mode, $routeName, 'findKey' , "find_read");
         $query = (empty($connectionType) === true) ?
             $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+        $apiKey = $query
+            ->remember($cacheTtl)
+            ->cacheTags($prefix . '_' . $this->entity . '_' . $id)
+            ->find($id, $columns);
+        if(!$enabled) {
+            return $apiKey;
+        } else {
+            $keyArray = Cache::store($store)
+                ->tags($tag)
+                ->remember(
+                    $this->getCacheKey($id, $columns, $connectionType),
+                    $cacheTtl,
+                    function () use ($id, $apiKey, $routeName, $tag) {
+                        $this->trace->count(Metric::KEY_API_DB_RETRIEVAL_COUNT, ['function' => 'find']);
+                        $key = $this->findV2($id, $apiKey, $routeName, $tag);
+                        return $this->buildArrayAttributeMapFromKey($key);
+                    }
+                );
+            $hydratedItems = \RZP\Models\Key\Entity::hydrate($keyArray->all());
+            return $hydratedItems->first();
+        }
 
-        return $query
-                    ->remember($cacheTtl)
-                    ->cacheTags($prefix . '_' . $this->entity . '_' . $id)
-                    ->find($id, $columns);
+    }
+
+    public function findV2($id, $apiKey, $routeName, $tag){
+        $mode = $this->app['request.ctx']->getMode();
+        try {
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED, [['id' => $id], ['tag' => $tag]]);
+            $credcaseKey = $this->app[Constants::CREDCASE_API]->findById($id, true, true);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiKey);
+        } catch (Exception $e) {
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['id' => $id], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'findKey',
+                ]
+            );
+            return $apiKey;
+        }
     }
 
     public function getKeysForMerchant($merchantId, $mode, $expired = false)
@@ -71,14 +113,14 @@ class Repository extends Base\Repository
             $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
                     'route_name' => $routeName,
                     'mode' => $mode,
-                    'function' => 'getFirstActiveKeyForMerchant',
+                    'function' => 'getKeysForMerchant',
                 ]
             );
             return $apiKeys;
         }
     }
 
-    public function getFirstActiveKeyForMerchant(string $merchantId)
+    public function getFirstActiveKeyForMerchant(string $merchantId, bool $includeSecret = false)
     {
         $mode = $this->app['rzp.mode'];
         $routeName = $this->app['request.ctx']->getRoute();
@@ -86,11 +128,11 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->notExpired()
                     ->first();
-        return $this->getFirstActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey);
+        return $this->getFirstActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey, $includeSecret);
     }
 
 
-    public function getFirstActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey) {
+    public function getFirstActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey, bool $includeSecret = false) {
         $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($merchantId, $mode, $routeName, 'getFirstActiveKeyForMerchant', "admin_read");
         $this->logKeysRepoCall($mode, $routeName, 'getFirstActiveKeyForMerchant', $enabled);
         if(!$enabled) {
@@ -98,8 +140,11 @@ class Repository extends Base\Repository
         }
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
-            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false);
-            $credcaseKey = isEmpty($credcaseKeys->getItems()) ? null : $credcaseKeys->getItems()->offsetGet(0);
+            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false, $includeSecret);
+            $credcaseKey = null;
+            if($credcaseKeys->getCount() > 0){
+                $credcaseKey = $credcaseKeys->getItems()->offsetGet(0);
+            }
             return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
@@ -139,7 +184,7 @@ class Repository extends Base\Repository
         }
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
-            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants($merchantIds, $mode, count($merchantIds), $expired);
+            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants($merchantIds, $mode, count($merchantIds), $expired, false);
             return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiDBKeys);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantIds], ["exception" => $e]]);
@@ -158,7 +203,7 @@ class Repository extends Base\Repository
      * @param string $merchantId
      * @return Entity|null
      */
-    public function getLatestActiveKeyForMerchant(string $merchantId)
+    public function getLatestActiveKeyForMerchant(string $merchantId, bool $includeSecret = false)
     {
         $mode = $this->app['rzp.mode'];
         $routeName = $this->app['request.ctx']->getRoute();
@@ -167,10 +212,10 @@ class Repository extends Base\Repository
                     ->notExpired()
                     ->latest()
                     ->first();
-        return $this->getLatestActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey);
+        return $this->getLatestActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey, $includeSecret);
     }
 
-    public function getLatestActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey) {
+    public function getLatestActiveKeyForMerchantV2($merchantId, $mode, $routeName, $apiDBKey, bool $includeSecret = false) {
         $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($merchantId, $mode, $routeName, 'getLatestActiveKeyForMerchant', "admin_read");
         $this->logKeysRepoCall($mode, $routeName, 'getLatestActiveKeyForMerchant', $enabled);
         if(!$enabled) {
@@ -178,8 +223,11 @@ class Repository extends Base\Repository
         }
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
-            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false);
-            $credcaseKey = isEmpty($credcaseKeys->getItems()) ? null : $credcaseKeys->getItems()->offsetGet(0);
+            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 1, false, $includeSecret);
+            $credcaseKey = null;
+            if($credcaseKeys->getCount() > 0){
+                $credcaseKey = $credcaseKeys->getItems()->offsetGet(0);
+            }
             return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiDBKey);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
@@ -193,9 +241,37 @@ class Repository extends Base\Repository
         }
     }
 
-    public function findNotExpired($keyId)
+    public function findNotExpired($keyId, $includeApiResponse = false)
     {
-        return $this->newQuery()->notExpired()->find($keyId);
+        $apiKey = $this->newQuery()->notExpired()->find($keyId);
+        if($includeApiResponse) {
+            return $apiKey;
+        }
+        return $this->findNotExpiredV2($keyId, $apiKey, false);
+    }
+
+    public function findNotExpiredV2($id, $apiKey, $includeExpired){
+        $routeName = $this->app['request.ctx']->getRoute();
+        try {
+            $mode = $this->app['rzp.mode'];
+            $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($id, $mode, $routeName, 'findNotExpired', "find_read_v2");
+            $this->logKeysRepoCall($mode, $routeName, 'findNotExpired', $enabled);
+            if(!$enabled) {
+                return $apiKey;
+            }
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
+            $credcaseKey = $this->app[Constants::CREDCASE_API]->findById($id, $includeExpired, true);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiKey);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['keyId' => $id], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'findNotExpired',
+                ]
+            );
+            return $apiKey;
+        }
     }
 
     public function findByMerchantIdAndKeyId($merchantId, $keyId)
@@ -250,7 +326,7 @@ class Repository extends Base\Repository
         }
         try {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
-            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 10, $expired);
+            $credcaseKeys = $this->app[Constants::CREDCASE_API]->getKeysForMerchants(array($merchantId), $mode, 10, $expired, false);
             return $this->app[Constants::CREDCASE_SERVICE]->fetchKeys($routeName, $credcaseKeys, $apiDBKeys);
         } catch (\Exception $e) {
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['merchantId' => $merchantId], ["exception" => $e]]);
@@ -270,5 +346,23 @@ class Repository extends Base\Repository
         } catch (\Exception $e) {
             $this->trace->error(TraceCode::API_KEY_TRACE_ERROR, ['exception' => $e, 'route' => $routeName, 'function' => $functionName, 'mode' => $mode]);
         }
+    }
+
+    private function buildArrayAttributeMapFromKey(?Entity $key): \Illuminate\Support\Collection
+    {
+        if(empty($key)){
+            return collect([]);
+        }
+        $keyMap = $key->attributesToArray();
+        $keyMap[Entity::SECRET] = $key->getSecret();
+        return collect([$keyMap]);
+    }
+
+    public function getCacheKey($id, $columns, string $connectionType = null)
+    {
+        $tag              = 'credcase:{' . strtolower($this->entity) . '_' . $id . '}';
+        $columnsString    = md5(serialize($columns));
+        $connectionSuffix = $connectionType ? ':' . $connectionType : '';
+        return "tag:{$tag}:{$columnsString}{$connectionSuffix}:key";
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'createVAWithAllowedPayer' => [
@@ -537,5 +538,65 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_ALLOWED_PAYER_ID,
         ],
     ],
+    'testPayerAdditionForRbl'=>[
+        'request'  => [
+            'url'     => '/virtual_accounts/{va_id}/allowed_payers',
+            'method'  => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'HDFC0000053',
+                    'account_number' => '765432123456789'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_NOT_ALLOWED_RBL,
+        ],
+    ],
+    'testPayerAdditionForNonRbl'=>[
+        'request'  => [
+            'url'     => '/virtual_accounts/{va_id}/allowed_payers',
+            'method'  => 'post',
+            'content' => [
+                'type'         => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'HDFC0000053',
+                    'account_number' => '765432123456789'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'           => 'Test virtual account',
+                'entity'         => 'virtual_account',
+                'status'         => 'active',
+                'description'    => 'VA for tests',
+                'receivers'      => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc'   => 'RATN0VAAPIS',
+                        'name'   => 'Test virtual account'
+                    ],
+                ],
+                'allowed_payers' => [
+                    [
+                        'type'         => 'bank_account',
+                        'bank_account' => [
+                            'ifsc'           => 'HDFC0000053',
+                            'account_number' => '765432123456789'
+                        ]
+                    ],
+
+                ],
+            ],
+        ],
+    ]
 ];
 

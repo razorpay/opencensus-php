@@ -104,6 +104,7 @@ use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
@@ -152,6 +153,7 @@ class MerchantTest extends TestCase
     use WorkflowTrait;
     use TestsWebhookEvents;
     use EventsTrait;
+    use MocksSplitz;
     use TestsBusinessBanking;
     use CustomBrandingTrait;
     use MocksRedisTrait;
@@ -19515,30 +19517,6 @@ The same has been enabled for the account.
         $this->assertEquals('shared', $response['items'][0]['account_type']);
         $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
     }
-
-    public function testGetBalancesTypeBankingCachedFalseExpOff()
-    {
-        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
-
-        $this->setUpMerchantForGetBalances();
-
-        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
-
-        $response = $this->startTest();
-
-        $this->assertEquals(2, $response['count']);
-        $this->assertEquals('banking', $response['items'][0]['type']);
-        $this->assertEquals('banking', $response['items'][1]['type']);
-        $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
-        $this->assertEquals('100abc000abc00', $response['items'][1]['id']);
-        $this->assertEquals('shared', $response['items'][0]['account_type']);
-        $this->assertEquals('direct', $response['items'][1]['account_type']);
-    }
-
     public function testGetBalancesTypeBankingCachedFalseExpOn()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
@@ -19609,29 +19587,6 @@ The same has been enabled for the account.
         $this->assertEquals('direct', $response['items'][0]['account_type']);
         $this->assertEquals(23000, $response['items'][0]['balance']);
         $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
-    }
-
-    public function testGetBalancesTypeBankingCachedFalseCABalanceIdExpOff()
-    {
-        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
-
-        $this->setUpMerchantForGetBalances();
-
-        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
-
-        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
-
-        $response = $this->startTest();
-        $this->assertEquals(100, $balance->getBalance());
-        $this->assertEquals(1, $response['count']);
-        $this->assertEquals('banking', $response['items'][0]['type']);
-        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
-        $this->assertEquals('direct', $response['items'][0]['account_type']);
-        $this->assertEquals(100, $response['items'][0]['balance']);
     }
 
     // CA balance will be returned . it is applicable when merchant's last
@@ -20261,7 +20216,7 @@ The same has been enabled for the account.
 
     public function testCreateIpConfigWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $user = $this->getDbLastEntity('user');
 
@@ -21349,7 +21304,7 @@ The same has been enabled for the account.
 
     }
 
-    public function testGetBalancesV2()
+    public function testGetBankingBalances()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21424,28 +21379,27 @@ The same has been enabled for the account.
 
         $response = $this->startTest();
 
-        $expectedResponse = [
-            [
-                "id"                => "100abc000abc01",
-                "currency"          => "INR",
-                "balance"           => 100,
-                "account_number"    => "XXXXXXXXXXXX6906",
-                "account_type"      => "direct",
-                "bank"              => 'rbl',
-                "last_refreshed"    => 1672398841,
-                "entity"            => "balance",
-                "available_balance" => 100
+            $expectedResponse = [[
+                    'currency' => 'INR',
+                    'amount' => 100,
+                    'account_number' => '2224440041626906',
+                    'account_type' => 'current_account',
+                    'entity' => 'banking_balance',
+                    'bank_code' => 'RATN',
+                    'bank_name' => 'RBL Bank',
+                    'available_amount' => 100,
+                    'refreshed_at' => 1672398841
             ],
             [
-                "id"                => "100abc000abc00",
-                "currency"          => "INR",
-                "balance"           => 0,
-                "account_number"    => "XXXXXXXXXXXX6905",
-                "account_type"      => "shared",
-                "bank"              => null,
-                "last_refreshed"    => null,
-                "entity"            => "balance",
-                "available_balance" => 0
+                'currency' => 'INR',
+                'amount' => 0,
+                'account_number' => '2224440041626905',
+                'account_type' => 'razorpayx_lite',
+                'entity' => 'banking_balance',
+                'bank_code' => null,
+                'bank_name' => null,
+                'available_amount' => 0,
+                'refreshed_at' => null,
             ]
         ];
 
@@ -21454,7 +21408,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2ForAccountTypeShared()
+    public function testGetBankingBalancesForAccountTypeShared()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21527,23 +21481,23 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?account_type=shared';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?account_type=razorpayx_lite';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
         $expectedResponse = [
             [
-                "id"                => "100abc000abc00",
-                "currency"          => "INR",
-                "balance"           => 0,
-                "account_number"    => "XXXXXXXXXXXX6905",
-                "account_type"      => "shared",
-                "bank"              => null,
-                "last_refreshed"    => null,
-                "entity"            => "balance",
-                "available_balance" => 0
+                'currency' => 'INR',
+                'amount' => 0,
+                'account_number' => '2224440041626905',
+                'account_type' => 'razorpayx_lite',
+                'entity' => 'banking_balance',
+                'bank_code' => null,
+                'bank_name' => null,
+                'available_amount' => 0,
+                'refreshed_at' => null,
             ]
         ];
 
@@ -21551,7 +21505,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2ForAccountTypeDirect()
+    public function testGetBankingBalancesForAccountTypeDirect()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21624,23 +21578,23 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?account_type=direct';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?account_type=current_account';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
         $expectedResponse = [
             [
-                "id"                => "100abc000abc01",
-                "currency"          => "INR",
-                "balance"           => 100,
-                "account_number"    => "XXXXXXXXXXXX6906",
-                "account_type"      => "direct",
-                "bank"              => 'rbl',
-                "last_refreshed"    => 1672398841,
-                "entity"            => "balance",
-                "available_balance" => 100
+                'currency' => 'INR',
+                'amount' => 100,
+                'account_number' => '2224440041626906',
+                'account_type' => 'current_account',
+                'entity' => 'banking_balance',
+                'bank_code' => 'RATN',
+                'bank_name' => 'RBL Bank',
+                'available_amount' => 100,
+                'refreshed_at' => 1672398841,
             ]
         ];
 
@@ -21648,7 +21602,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2ForBank()
+    public function testGetBalancesForBankCode()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21721,31 +21675,29 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?bank=rbl';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?bank_code=RATN';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
-        $expectedResponse = [
-            [
-                "id"                => "100abc000abc01",
-                "currency"          => "INR",
-                "balance"           => 100,
-                "account_number"    => "XXXXXXXXXXXX6906",
-                "account_type"      => "direct",
-                "bank"              => 'rbl',
-                "last_refreshed"    => 1672398841,
-                "entity"            => "balance",
-                "available_balance" => 100
-            ]
-        ];
+        $expectedResponse = [[
+            'currency' => 'INR',
+            'amount' => 100,
+            'account_number' => '2224440041626906',
+            'account_type' => 'current_account',
+            'entity' => 'banking_balance',
+            'bank_code' => 'RATN',
+            'bank_name' => 'RBL Bank',
+            'available_amount' => 100,
+            'refreshed_at' => 1672398841,
+        ]];
 
         $this->assertEquals(1, sizeof($response['items']));
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2UsingCountAndSkipFilter()
+    public function testGetBankingBalancesUsingCountAndSkipFilter()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
@@ -21818,23 +21770,23 @@ The same has been enabled for the account.
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBalancesV2'];
-        $this->testData[__FUNCTION__]['request']['url']               = '/v2/balances?count=1&skip=1';
+        $this->testData[__FUNCTION__]                                 = $this->testData['testGetBankingBalances'];
+        $this->testData[__FUNCTION__]['request']['url']               = '/banking_balances?count=1&skip=1';
         $this->testData[__FUNCTION__]['response']['content']['count'] = 1;
 
         $response = $this->startTest();
 
         $expectedResponse = [
             [
-                "id"                => "100abc000abc00",
-                "currency"          => "INR",
-                "balance"           => 0,
-                "account_number"    => "XXXXXXXXXXXX6905",
-                "account_type"      => "shared",
-                "bank"              => null,
-                "last_refreshed"    => null,
-                "entity"            => "balance",
-                "available_balance" => 0
+                'currency' => 'INR',
+                'amount' => 0,
+                'account_number' => '2224440041626905',
+                'account_type' => 'razorpayx_lite',
+                'entity' => 'banking_balance',
+                'bank_code' => null,
+                'bank_name' => null,
+                'available_amount' => 0,
+                'refreshed_at' => null,
             ]
         ];
 
@@ -21842,7 +21794,7 @@ The same has been enabled for the account.
         $this->assertEquals($expectedResponse, $response['items']);
     }
 
-    public function testGetBalancesV2InputValidationError()
+    public function testGetBankingBalancesInputValidationError()
     {
         $this->ba->privateAuth();
 

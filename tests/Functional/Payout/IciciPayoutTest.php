@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -24,7 +25,7 @@ class IciciPayoutTest extends TestCase
 
         parent::setUp();
 
-        $this->mockRazorxTreatment('icici');
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER=>'enable']);
 
         $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
 

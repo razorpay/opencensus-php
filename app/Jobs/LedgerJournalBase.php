@@ -6,6 +6,7 @@ use App;
 
 use Razorpay\Trace\Logger;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -78,7 +79,14 @@ class LedgerJournalBase extends Job
 
             app('worker.ctx')->setLedgerDualWriteFlow(true);
 
-            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE) === true)
+            $experimentName =Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE;
+
+            if($this->mode === Mode::TEST)
+            {
+                $experimentName = Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE_TEST;
+            }
+
+            if ($this->isExperimentEnabled($experimentName) === true)
             {
                 $this->trace->info(TraceCode::LEDGER_JOURNAL_QUEUE_JOB_TRANSACTION_DUAL_WRITE_SKIPPED, [
                     self::MERCHANT_ID => $this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID],
@@ -282,10 +290,15 @@ class LedgerJournalBase extends Job
             (empty($this->ledgerResponse[self::LEDGER_ENTRY][0]) === false) and
             (empty($this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID]) === false))
         {
-            $variant = $this->razorx->getTreatment($this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID],
-                $experiment, $this->mode);
+            $merchantId = $this->ledgerResponse[self::LEDGER_ENTRY][0][self::MERCHANT_ID];
 
-            return (strtolower($variant) === 'on');
+            $requestPayload = [
+                "id" =>$merchantId,
+                "experiment_name" =>  $experiment,
+                'request_data'  => json_encode(['id' => $merchantId])
+            ];
+
+            return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
         }
 
         return false;

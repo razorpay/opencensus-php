@@ -4,6 +4,7 @@ namespace RZP\Models\Key;
 
 use App;
 use RZP\Constants\Metric;
+use Rzp\Credcase\Apikey\V1\ApiKeyResponse;
 use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 
@@ -56,22 +57,28 @@ class CredcaseService
 
         // Compare only the extracted fields
         if ($this->compareKeys($filteredCredcaseItems, $filteredQueryItems)) {
+            $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
+                'route_name' => $routeName,
+            ]);
             return $credcaseItems;
         }
 
         // Log metric if there is a mismatch
-        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH, $filteredCredcaseItems, $filteredQueryItems);
         return $queryResults;
     }
 
 
-    public function fetchKey($routeName, $credcaseResponse, $queryResult)
+    public function fetchKey($routeName, ?ApiKeyResponse $credcaseResponse, $queryResult)
     {
         if(!isset($credcaseResponse) && !isset($queryResult)){
+            $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
+                'route_name' => $routeName,
+            ]);
             return $credcaseResponse;
         }
         if(!isset($credcaseResponse) || !isset($queryResult)) {
-            $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+            $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH, array(), array());
             return $queryResult;
         }
         $credcaseItem = $this->buildKeyFromCredcaseResponse($credcaseResponse);
@@ -79,14 +86,16 @@ class CredcaseService
         // Extract relevant fields for comparison (id, merchant_id, expired_at)
         $filteredCredcaseItems = $this->extractFields(new PublicCollection(array($credcaseItem)));
         $filteredQueryItems = $this->extractFields(new PublicCollection(array($queryResult)));
-
         // Compare only the extracted fields
         if ($this->compareKeys($filteredCredcaseItems, $filteredQueryItems)) {
+            $this->trace->count(Metric::CREDCASE_READ_RESPONSE_MATCH,  [
+                'route_name' => $routeName,
+            ]);
             return $credcaseItem;
         }
 
         // Log metric if there is a mismatch
-        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH);
+        $this->logCredcaseError($routeName, TraceCode::CREDCASE_READ_RESPONSE_MISMATCH, Metric::CREDCASE_READ_RESPONSE_MISMATCH, $filteredCredcaseItems, $filteredQueryItems);
         return $queryResult;
     }
 
@@ -127,10 +136,12 @@ class CredcaseService
      * @param $traceCode
      * @param $metric
      */
-    public function logCredcaseError($routeName, $traceCode, $metric): void
+    public function logCredcaseError($routeName, $traceCode, $metric, $credcaseItems, $apiDBItems, ): void
     {
         $this->trace->info($traceCode, [
             'route_name' => $routeName,
+            'credcase_items' => $credcaseItems,
+            'api_items' => $apiDBItems
         ]);
         $this->trace->count($metric, [
                 'route_name' => $routeName,
@@ -138,15 +149,22 @@ class CredcaseService
         );
     }
 
-    private function buildKeyFromCredcaseResponse($credcaseKeyResponse) {
+    private function buildKeyFromCredcaseResponse(ApiKeyResponse $credcaseKeyResponse) {
         $key = new Entity;
         $id = $credcaseKeyResponse->getId();
-        Entity::stripSign($id);
+        $strip = Entity::stripSign($id);
+        if(!$strip) {
+            $id = substr($id, -14);
+        }
         $key->setId($id);
         $key->setMerchantId($credcaseKeyResponse->getOwnerId());
         $key->setCreatedAt(empty($credcaseKeyResponse->getCreatedAt()) ? null : $credcaseKeyResponse->getCreatedAt());
         $key->setUpdatedAt(empty($credcaseKeyResponse->getUpdatedAt()) ? null : $credcaseKeyResponse->getUpdatedAt());
         $key->setExpiredAt(empty($credcaseKeyResponse->getExpiredAt()) ? null : $credcaseKeyResponse->getExpiredAt());
+        $secret = $credcaseKeyResponse->getSecret();
+        if(!empty($secret) && strlen($secret) === Entity::SECRET_LENGTH){
+            $key->encryptAndSetSecret($credcaseKeyResponse->getSecret());
+        }
         return $key;
     }
 }

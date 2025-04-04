@@ -7,6 +7,7 @@ use Mail;
 use Event;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Gateway\Ebs\Channel;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -21,6 +22,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\NetbankingConfig;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Traits\MocksRazorx;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
@@ -51,6 +53,7 @@ use function Clue\StreamFilter\fun;
 
 class FeaturesTest extends OAuthTestCase
 {
+    use MocksSplitz;
     use MocksRazorx;
     use FileUploadTrait;
     use DbEntityFetchTrait;
@@ -60,7 +63,6 @@ class FeaturesTest extends OAuthTestCase
     use TestsBusinessBanking;
     use WorkflowTrait;
     use HeimdallTrait;
-
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -373,6 +375,13 @@ class FeaturesTest extends OAuthTestCase
                     "type" => "string",
                     "short_key" => DcsConfigConst::RectangularLogoUrl,
                     "description" => "Rectangular logo URLs will be stored here when the custom_merchant_upi_qr feature flag is enabled for the merchant."
+                ],
+            ],
+            "rzp/pg/org/dashboard/banking_program/DormancyPeriodConfig" => [
+                DcsConfigConst::DormancyPeriod => [
+                    "type" => "int",
+                    "short_key" => DcsConfigConst::DormancyPeriod,
+                    "description" => "Dormancy period will be stored (in days) to determine user inactivity and auto-disable inactive admin users."
                 ],
             ],
         ];
@@ -980,6 +989,8 @@ class FeaturesTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->mockSplitzForFundAccountsMigration();
+
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
 
         Mail::assertQueued(FullESMail::class, 0);
@@ -989,12 +1000,46 @@ class FeaturesTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->mockSplitzForFundAccountsMigration();
+
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
 
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND], 'merchant', '10000000000000');
 
         Mail::assertNotQueued(EsEligibleMail::class);
+    }
+
+    private function mockSplitzForFundAccountsMigration($expStatus = "off")
+    {
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "read",
+                            "value" => $expStatus,
+                        ],
+                        [
+                            "key" => "write",
+                            "value" => $expStatus,
+                        ],
+                        [
+                            "key" => "dual_write",
+                            "value" => $expStatus,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
     }
 
     /*
@@ -3069,15 +3114,7 @@ Regards,
 
         $this->app->instance('razorx', $razorx);
 
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if ($featureFlag === (RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE))
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
+        $this->setMockSplitzTreatmnt([RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE =>'enable']);
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
@@ -3094,17 +3131,7 @@ Regards,
     {
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
 
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
+        $this->setMockSplitzTreatmnt([RazorxTreatment::SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE=>'enable']);
 
         $this->startTest();
     }
@@ -3252,6 +3279,7 @@ Regards,
 
         $this->assertContains($featureToBeChecked, $features);
     }
+
 
     /**
      * Get all features, check if disable collect consent feature is present with false
@@ -3403,7 +3431,26 @@ Regards,
 
         $this->ba->appAuth();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $testData = $this->testData[__FUNCTION__];
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => '10000000000000',
+            'balance_id'   => 'random',
+            'channel' => 'yesbank',
+            'status'    => 'active',
+            'account_number' => '2224440041626905',
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->startTest($testData);
 

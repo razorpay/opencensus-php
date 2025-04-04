@@ -491,6 +491,111 @@ class Plan extends PublicCollection
         return false;
     }
 
+    public function getBankingSharedAccountFreePayoutPricingRules($orgId): Plan
+    {
+        $rules = [];
+        /** @var Entity $rule */
+        foreach($this->items as $rule) {
+            if(($rule->isBankingProduct()) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeShared() === true) and
+                (Entity::stripDefaultSign($rule->getOrgId()) === $orgId) and
+                ($rule->getType() == Type::PRICING) and
+                ($rule->getAppName() == null) and
+                ($rule->getPayoutsFilter() ==  Payout\Entity::FREE_PAYOUT)) {
+                $rules[] = $rule;
+            }
+        }
+        return new Plan($rules);
+    }
+
+    public function getBankingSharedAccountNonFreePayoutPricingRules($orgId): Plan
+    {
+        $rules = [];
+        /** @var Entity $rule */
+        foreach($this->items as $rule) {
+            if(($rule->isBankingProduct()) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeShared() === true) and
+                (Entity::stripDefaultSign($rule->getOrgId()) === $orgId) and
+                ($rule->getType() == Type::PRICING) and
+                ($rule->getAppName() == null) and
+                ($rule->getPayoutsFilter() == null)) {
+                $rules[] = $rule;
+            }
+        }
+        return new Plan($rules);
+    }
+
+    public function getBankingDirectAccountFreePayoutPricingRules($orgId): Plan
+    {
+        $rules = [];
+        /** @var Entity $rule */
+        foreach($this->items as $rule) {
+            if(($rule->isBankingProduct()) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeDirect() === true) and
+                (Entity::stripDefaultSign($rule->getOrgId())  === $orgId) and
+                ($rule->getType() == Type::PRICING) and
+                ($rule->getAppName() == null) and
+                ($rule->getPayoutsFilter() ==  Payout\Entity::FREE_PAYOUT)) {
+                $rules[] = $rule;
+            }
+        }
+        return new Plan($rules);
+    }
+
+    public function getBankingDirectAccountNonFreePayoutPricingRules($orgId, $channels): Plan
+    {
+        $rules = [];
+        /** @var Entity $rule */
+        foreach($this->items as $rule) {
+            if(($rule->isBankingProduct()) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAccountTypeDirect() === true) and
+                (Entity::stripDefaultSign($rule->getOrgId())  === $orgId) and
+                ($rule->getType() == Type::PRICING) and
+                ($rule->getAppName() == null) and
+                ($rule->getPayoutsFilter() == null) and
+                (in_array($rule->getChannel(), $channels))){
+                $rules[] = $rule;
+            }
+        }
+        return new Plan($rules);
+    }
+
+    public function getBankingAccountRzpFeesRule($orgId): Plan
+    {
+        $rules = [];
+        /** @var Entity $rule */
+        foreach($this->items as $rule) {
+            if(($rule->isBankingProduct()) and
+                ($rule->isAccountTypeDirect() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                (Entity::stripDefaultSign($rule->getOrgId())  === $orgId) and
+                ($rule->getType() == Type::PRICING) and
+                ($rule->getPayoutsFilter() ==  Payout\Purpose::RZP_FEES)) {
+                $rules[] = $rule;
+            }
+        }
+        return new Plan($rules);
+    }
+
+    public function getAppPayoutPricingRules($orgId) {
+        $rules = [];
+        /** @var Entity $rule */
+        foreach($this->items as $rule) {
+            if(($rule->isBankingProduct()) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->isAppPayoutPricingRule() === true) and
+                (Entity::stripDefaultSign($rule->getOrgId()) === $orgId) and
+                ($rule->getType() == Type::PRICING)) {
+                $rules[] = $rule;
+            }
+        }
+        return new Plan($rules);
+    }
+
     public function hasBankingDirectAccountFreePayoutRule(): bool
     {
         /** @var Entity $rule */

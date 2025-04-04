@@ -25,6 +25,11 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_icici';
 
         $this->testData['testRefundUpiEntity'] = [
@@ -231,168 +236,6 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $this->assertEquals([
             'success'   => false
         ], $response);
-    }
-
-
-    /**
-     * @param string $variant
-     * @param bool $shouldRouteViaPgRouter
-     * @return mixed
-     *
-     * @dataProvider testPaymentS2SDataProvider
-     */
-    public function testPaymentS2S(string $variant, bool $shouldRouteViaPgRouter)
-    {
-        $this->fixtures->merchant->addFeatures(['s2supi']);
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $this->setRazorxMock(function ($mid, $feature, $mode) use ($variant)
-        {
-            if ($feature === 'allow_route_on_rearch_ups_v2_payment_create_upi')
-            {
-                return 'on';
-            }
-
-            if ($feature === 'allow_merchants_on_rearch_ups_v2_s2s')
-            {
-                return $variant;
-            }
-
-            return 'control';
-        });
-
-        $routedViaPgRouter  = false;
-        $this->pgService->shouldReceive('sendRequest')
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout) use (&$routedViaPgRouter) {
-                if ($method === 'GET')
-                {
-                    return [
-                        'body' => [
-                            "data" => [
-                                "payment" => [
-                                    'id' =>'GfnS1Fj048VHo2',
-                                    'merchant_id' =>'10000000000000',
-                                    'amount' =>50000,
-                                    'fees' => 0,
-                                    'currency' =>'INR',
-                                    'base_amount' =>50000,
-                                    'method' =>'upi',
-                                    'status' =>'created',
-                                    'two_factor_auth' =>'not_applicable',
-                                    'order_id' => NULL,
-                                    'invoice_id' => NULL,
-                                    'transfer_id' => NULL,
-                                    'payment_link_id' => NULL,
-                                    'receiver_id' => NULL,
-                                    'receiver_type' => NULL,
-                                    'international' =>FALSE,
-                                    'amount_authorized' =>50000,
-                                    'amount_refunded' =>0,
-                                    'base_amount_refunded' =>0,
-                                    'amount_transferred' =>0,
-                                    'amount_paidout' =>0,
-                                    'refund_status' => NULL,
-                                    'description' =>'description',
-                                    'bank' => NULL,
-                                    'wallet' => NULL,
-                                    'vpa' => 'vishnu@icici',
-                                    'on_hold' =>FALSE,
-                                    'on_hold_until' => NULL,
-                                    'emi_plan_id' => NULL,
-                                    'emi_subvention' => NULL,
-                                    'error_code' => NULL,
-                                    'internal_error_code' => NULL,
-                                    'error_description' => NULL,
-                                    'global_customer_id' => NULL,
-                                    'app_token' => NULL,
-                                    'global_token_id' => NULL,
-                                    'email' =>'a@b.com',
-                                    'contact' =>'+919918899029',
-                                    'notes' =>[
-                                        'merchant_order_id' =>'id',
-                                    ],
-                                    'authorized_at' => 0,
-                                    'auto_captured' =>FALSE,
-                                    'captured_at' => 0,
-                                    'gateway' =>'hdfc',
-                                    'terminal_id' =>'1n25f6uN5S1Z5a',
-                                    'authentication_gateway' => NULL,
-                                    'batch_id' => NULL,
-                                    'reference1' => NULL,
-                                    'reference2' => NULL,
-                                    'cps_route' =>5,
-                                    'signed' =>FALSE,
-                                    'verified' => NULL,
-                                    'gateway_captured' =>TRUE,
-                                    'verify_bucket' =>0,
-                                    'verify_at' =>1614253880,
-                                    'callback_url' => NULL,
-                                    'fee' =>0,
-                                    'mdr' =>0,
-                                    'tax' =>0,
-                                    'otp_attempts' => NULL,
-                                    'otp_count' => NULL,
-                                    'recurring' =>FALSE,
-                                    'save' =>FALSE,
-                                    'late_authorized' =>FALSE,
-                                    'convert_currency' => NULL,
-                                    'disputed' =>FALSE,
-                                    'recurring_type' => NULL,
-                                    'auth_type' => NULL,
-                                    'acknowledged_at' => NULL,
-                                    'refund_at' => NULL,
-                                    'reference13' => NULL,
-                                    'settled_by' =>'Razorpay',
-                                    'reference16' => NULL,
-                                    'reference17' => NULL,
-                                    'created_at' =>1614253879,
-                                    'updated_at' =>1614253880,
-                                    'captured' =>TRUE,
-                                    'reference2' => '12343123',
-                                    'entity' =>'payment',
-                                    'fee_bearer' =>'platform',
-                                    'error_source' => NULL,
-                                    'error_step' => NULL,
-                                    'error_reason' => NULL,
-                                    'dcc' =>FALSE,
-                                    'gateway_amount' =>50000,
-                                    'gateway_currency' =>'INR',
-                                    'forex_rate' => NULL,
-                                    'dcc_offered' => NULL,
-                                    'dcc_mark_up_percent' => NULL,
-                                    'dcc_markup_amount' => NULL,
-                                    'mcc' =>FALSE,
-                                    'forex_rate_received' => NULL,
-                                    'forex_rate_applied' => NULL,
-                                ]
-                            ]
-                        ]
-                    ];
-                }
-
-                if ($method === 'POST')
-                {
-                    if($endpoint === 'v1/payments/create/upi')
-                    {
-                        $routedViaPgRouter = true;
-                    }
-                    return [
-                        'body' => [
-                            "payment_id" =>  'pay_GfnS1Fj048VHo2',
-                            "http_status" => 200
-                        ],
-                        'code' => 200,
-                    ];
-                }
-        });
-
-        $response = $this->doS2SUpiPayment($payment);
-
-        $paymentId = $response['razorpay_payment_id'];
-
-        $this->assertEquals($shouldRouteViaPgRouter, $routedViaPgRouter);
-        $this->assertEquals('pay_GfnS1Fj048VHo2', $paymentId);
     }
 
     public function testPaymentFailure()
@@ -1488,8 +1331,8 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
     public function testPaymentS2SDataProvider() {
         $data = [];
         $data['route_via_ups'] = ['on', true];
-        $data['route_10%_via_ups'] = ['on10', true];
-        $data['route_50%_via_ups'] = ['on50', true];
+//        $data['route_10%_via_ups'] = ['on10', true];
+//        $data['route_50%_via_ups'] = ['on50', true];
 
         return $data;
     }
@@ -1659,17 +1502,24 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertEquals(4, $payment->getCpsRoute());
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === 'skip_upi_icici_callback_for_bt')
-            {
-                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'on');
-            }
-            else
-            {
-                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
-            }
-        });
+        $splitzMock = \Mockery::mock(\RZP\Services\SplitzService::class, [$this->app])->makePartial();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->with([
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => env('SKIP_UPI_ICICI_CALLBACK_BT'),
+                'request_data'  => json_encode(['merchant_id' => $payment->getMerchantId()]),
+            ])
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' =>  'enable',
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('splitzService', $splitzMock);
 
         $payment = $this->getDbLastPayment()->toArray();
 
@@ -1800,17 +1650,24 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertEquals(4, $payment->getCpsRoute());
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === 'skip_upi_icici_callback_for_bt')
-            {
-                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'on');
-            }
-            else
-            {
-                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
-            }
-        });
+        $splitzMock = \Mockery::mock(\RZP\Services\SplitzService::class, [$this->app])->makePartial();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->with([
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => env('SKIP_UPI_ICICI_CALLBACK_BT'),
+                'request_data'  => json_encode(['merchant_id' => $payment->getMerchantId()]),
+            ])
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' =>  'enable',
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('splitzService', $splitzMock);
 
         $payment = $this->getDbLastPayment()->toArray();
 

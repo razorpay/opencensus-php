@@ -11,7 +11,7 @@ use RZP\Models\Feature;
 
 class EmailHelper
 {
-    // check stork migration 
+    // check stork migration
     // userID = user ID or merchant ID
     // orgID = org id
     // razorX = experiment name
@@ -57,7 +57,7 @@ class EmailHelper
 
         return false;
     }
-    
+
     //    check wether certain template is migrated to stork using splitz
     //    to get id of experiment will be prefixed with banking_mail_ and suffixed with _exp_id
     //    example : $experiment = test
@@ -132,5 +132,4 @@ class EmailHelper
 
         return $response['response']['variant']['name'] ?? '';
     }
-
 }

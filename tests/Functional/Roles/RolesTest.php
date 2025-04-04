@@ -4,21 +4,30 @@ namespace RZP\Tests\Functional\Roles;
 
 use DB;
 use Mail;
+use Cache;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Roles\Entity;
+use RZP\Models\Roles\Constants;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Roles\Service as RolesService;
+use AuthzAdmin\Client\Model as AuthzAdminModel;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\RazorpayX\RolePermissionChange;
+use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class RolesTest extends TestCase
 {
     use DbEntityFetchTrait;
     use HeimdallTrait;
+    use PrivateMethodTrait;
 
+    const DEFAULT_MERCHANT_ID = '10000000000000';
     const DEFAULT_X_MERCHANT_ID = '100000merchant';
     const EXISTING_MERCHANT_FOR_INVITED_USER_ID = '10000000000001';
 
@@ -42,6 +51,8 @@ class RolesTest extends TestCase
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->proxyAuth();
+
+        $this->mockCACMigrationExperiment('inactive');
     }
 
     public function testFetchRolesWithNoExistingFinanceUser()
@@ -623,6 +634,726 @@ class RolesTest extends TestCase
         $this->startTest();
     }
 
+    public function testMigrateAuthz()
+    {
+        // 1. create entities
+        $this->fixtures->create('roles', [
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'type'          => 'custom',
+            'merchant_id'   => self::DEFAULT_X_MERCHANT_ID,
+            'created_by'    => '1000000000user',
+            'updated_by'    => '1000000000user',
+            'description'   => 'this is a custom role',
+        ]);
+
+
+        $this->fixtures->create('role_access_policy_map', [
+            'role_id'           => '100customRole2',
+            'authz_roles'       => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            'access_policy_ids' => ['accessPolicy10', 'accessPolicy11', 'accessPolicy13'],
+        ]);
+
+        // 2. set mocks
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIMigrateRole')
+                ->withArgs(function($req){
+                    $expectedReq = new AuthzAdminModel\V1MigrateRoleRequest([
+                        'roles'     => [
+                            new AuthzAdminModel\V1MigrateRole([
+                                'id'            => '100customRole2',
+                                'name'          => 'custom role',
+                                'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                                'owner_type'    => 'merchant',
+                                'owner_id'      => self::DEFAULT_X_MERCHANT_ID,
+                                'child_names'   => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                                'created_by'    => '1000000000user',
+                                'updated_by'    => '1000000000user',
+                                'description'   => 'this is a custom role',
+                            ])
+                        ],
+                        'org_id'    => 'razorpayx'
+                    ]);
+
+                    $this->assertEquals($expectedReq, $req);
+
+                    return true;
+                })
+                ->once()
+                ->andReturn(new AuthzAdminModel\V1MigrateRoleResponse([
+            'success'   => true,
+        ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        // 3. execute test
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMigrateApi()
+    {
+        /**
+         * Migrate 2 roles in this test.
+         * 1. Role#1 does not exist in DB so it should get created
+         * 2. Role#2 exists in DB so it should get updated
+         */
+
+        // 1. create dependent entities
+        $this->fixtures->create('access_policy_authz_roles_map', [
+            'id'            => 'accessPolicy10',
+            'privilege_id'  => '1000privilege1',
+            'action'        => 'view',
+            'authz_roles'   => ['authz_roles_1'],
+        ]);
+
+        $this->fixtures->create('access_policy_authz_roles_map', [
+            'id'            => 'accessPolicy20',
+            'privilege_id'  => '1000privilege1',
+            'action'        => 'create',
+            'authz_roles'   => ['authz_roles_2'],
+        ]);
+
+        // 2. create entities for test
+        $this->fixtures->create('roles', [
+            'id'                => '100customRole3',
+            'merchant_id'       => '100000merchant',
+            'name'              => 'CAC 3',
+            'type'              => 'standard', // should be updated in the test
+            'description'       => 'Test custom role (original)', // should be updated in the test
+            'created_by'        => '100000merchant',
+            'updated_by'        => '100000merchant',
+            'org_id'            => '100000razorpay',
+            'product'           => 'banking',
+        ]);
+
+        $this->fixtures->create('role_access_policy_map', [ // should be updated in the test
+            'role_id'           => '100customRole3',
+            'authz_roles'       => ['authz_roles_1', 'authz_roles_2'],
+            'access_policy_ids' => ['accessPolicy10', 'accessPolicy20'],
+        ]);
+
+        // 3. execute test & assert response
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $roleRepo = new \RZP\Models\Roles\Repository();
+
+        $roleMapRepo = new \RZP\Models\RoleAccessPolicyMap\Repository();
+
+        $role1 = $roleRepo->fetchRole('100customRole2');
+
+        $role2 = $roleRepo->fetchRole('100customRole3');
+
+        $roleMap1 = $roleMapRepo->findByRoleId('100customRole2');
+
+        $roleMap2 = $roleMapRepo->findByRoleId('100customRole3');
+
+        // assertions for role1 created
+        $this->assertArraySelectiveEquals([
+            'id'                => '100customRole2',
+            'merchant_id'       => '100000merchant',
+            'name'              => 'CAC 2',
+            'type'              => 'custom',
+            'description'       => 'Test custom role',
+            'created_by'        => '100000merchant',
+            'updated_by'        => '100000merchant',
+        ], $role1->toArray());
+        $this->assertEquals(['authz_roles_1'], $roleMap1->getAuthzRoles());
+        $this->assertEquals(['accessPolicy10'], $roleMap1->getAccessPolicyIds());
+
+        // assertions for role2 updated
+        $this->assertArraySelectiveEquals([
+            'id'                => '100customRole3',
+            'merchant_id'       => '100000merchant',
+            'name'              => 'CAC 3',
+            'type'              => 'custom',
+            'description'       => 'Test custom role (updated)',
+            'created_by'        => '100000merchant',
+            'updated_by'        => '100000merchant',
+        ], $role2->toArray());
+        $this->assertEquals(['authz_roles_1'], $roleMap2->getAuthzRoles());
+        $this->assertEquals(['accessPolicy10'], $roleMap2->getAccessPolicyIds());
+    }
+
+    public function testCreateRoleOnAuthz()
+    {
+        // 1. prepare test data
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/cac/role',
+            'content' => [
+                'name'          => 'custom role',
+                'description'   => 'this is a custom role',
+                'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ];
+
+        // 2. set mocks
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // mock is required to pass the basic auth check
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPICreateRole')
+        ->withArgs(function($req, $passport){
+            $expectedReq = new AuthzAdminModel\V1Role([
+                'id'            => null,
+                'name'          => 'custom role',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'this is a custom role',
+            ]);
+
+            $this->assertEquals($expectedReq, $req);
+            $this->assertNotNull($passport);
+
+            return true;
+        })
+        ->once()
+        ->andReturn(new AuthzAdminModel\V1Role([
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'org_id'        => 'razorpayx',
+            'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+            'owner_type'    => 'merchant',
+            'owner_id'      => self::DEFAULT_MERCHANT_ID,
+            'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            'created_by'    => 'MerchantUser01',
+            'children'      => null,
+            'description'   => 'this is a custom role',
+        ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals([
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'type'          => 'custom',
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            'created_by'    => 'MerchantUser01',
+            'description'   => 'this is a custom role',
+        ], $response);
+    }
+
+    public function testUpdateStandardRoleOnAuthz()
+    {
+        // 1. prepare test data
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'patch',
+            'url'     => '/cac/role/owner',
+            'content' => [
+                'name'          => 'custom role',
+                'description'   => 'this is a custom role',
+                'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ];
+
+        // 2. set mocks
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldNotReceive('adminAPIUpdateRole');
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['error']['description'], "Can't Edit Standard Roles");
+    }
+
+    public function testUpdateCustomRoleOnAuthz()
+    {
+        // 1. prepare test data
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'patch',
+            'url'     => '/cac/role/100customRole2',
+            'content' => [
+                'name'          => 'custom role',
+                'description'   => 'this is a custom role',
+                'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ];
+
+        // 2. set mocks
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIUpdateRole')
+        ->withArgs(function($req, $passport){
+            $expectedReq = new AuthzAdminModel\V1Role([
+                'id'            => '100customRole2',
+                'name'          => 'custom role',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'this is a custom role',
+            ]);
+
+            $this->assertEquals($expectedReq, $req);
+            $this->assertNotNull($passport);
+
+            return true;
+        })
+        ->once()
+        ->andReturn(new AuthzAdminModel\V1Role([
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'org_id'        => 'razorpayx',
+            'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+            'owner_type'    => 'merchant',
+            'owner_id'      => self::DEFAULT_MERCHANT_ID,
+            'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            'created_by'    => 'MerchantUser01',
+            'children'      => null,
+            'description'   => 'this is a custom role',
+        ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals([
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'type'          => 'custom',
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            'created_by'    => 'MerchantUser01',
+            'description'   => 'this is a custom role',
+        ], $response);
+    }
+
+    private function mockCACMigrationExperiment($result, $merchantId = null)
+    {
+        $splitzMock = \Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+        $input = [
+            'id'            => $merchantId ?? self::DEFAULT_X_MERCHANT_ID,
+            'experiment_id' => env('CAC_MIGRATION_SPLITZ_EXPERIMENT_ID'),
+        ];
+
+        $response = [
+            'response' => [
+                'variant' => [
+                    'name' => $result,
+                ]
+            ]
+        ];
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with($input)
+            ->andReturn($response);
+
+        $this->app->instance('splitzService', $splitzMock);
+    }
+
+    public function testFetchRolesWithStandardRolesCACMigration()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // mock is required to pass the basic auth check
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals([Entity::ORG_ID_FOR_ROLES], $ownerIds);
+                $this->assertEquals(null, $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals(['ROLE_POLICY_TYPE_STANDARD'], $types);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Admin',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks except for team management',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole2',
+                        'name' => 'Finance',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Create and issue payouts and contacts',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole3',
+                        'name' => 'Operations',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_7', 'authz_roles_8', 'authz_roles_9'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Create and manage Payout Links',
+                    ]),
+                ]
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $response = $this->startTest();
+    }
+
+    public function testFetchRoleMapCACMigration()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // mock is required to pass the basic auth check
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals([self::DEFAULT_MERCHANT_ID, Entity::ORG_ID_FOR_ROLES], $ownerIds);
+                $this->assertEquals(null, $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals(['ROLE_POLICY_TYPE_CUSTOM', 'ROLE_POLICY_TYPE_STANDARD'], $types);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Admin',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks except for team management',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole2',
+                        'name' => 'Finance',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Create and issue payouts and contacts',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole3',
+                        'name' => 'Operations',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_7', 'authz_roles_8', 'authz_roles_9'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Create and manage Payout Links',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100customRole1',
+                        'name' => 'CAC 1',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                        'owner_type' => 'merchant',
+                        'owner_id' => self::DEFAULT_MERCHANT_ID,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Test custom role',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100customRole2',
+                        'name' => 'CAC 2',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                        'owner_type' => 'merchant',
+                        'owner_id' => self::DEFAULT_MERCHANT_ID,
+                        'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Test custom role',
+                    ]),
+                ]
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $response = $this->startTest();
+    }
+
+    public function testFetchRoleMapAdminCACMigration()
+    {
+        $merchant = $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID]);
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_X_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type, $types)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals([self::DEFAULT_X_MERCHANT_ID, Entity::ORG_ID_FOR_ROLES], $ownerIds);
+                $this->assertEquals(null, $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals(['ROLE_POLICY_TYPE_CUSTOM', 'ROLE_POLICY_TYPE_STANDARD'], $types);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Admin',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Perform all tasks except for team management',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole2',
+                        'name' => 'Finance',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Create and issue payouts and contacts',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole3',
+                        'name' => 'Operations',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_7', 'authz_roles_8', 'authz_roles_9'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Create and manage Payout Links',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100customRole1',
+                        'name' => 'CAC 1',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                        'owner_type' => 'merchant',
+                        'owner_id' => self::DEFAULT_MERCHANT_ID,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Test custom role',
+                    ]),
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100customRole2',
+                        'name' => 'CAC 2',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                        'owner_type' => 'merchant',
+                        'owner_id' => self::DEFAULT_MERCHANT_ID,
+                        'child_ids' => ['authz_roles_4', 'authz_roles_5', 'authz_roles_6'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => 'Test custom role',
+                    ]),
+                ]
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = '100000merchant';
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $response = $this->startTest();
+    }
+
     public function testUpdateRoleAccessPolicyMap()
     {
         // 1. create dependencies
@@ -692,5 +1423,909 @@ class RolesTest extends TestCase
 
         $this->assertEquals(['XaccessPolicy1'], $updatedCustomRole2->getAccessPolicyIds());
         $this->assertEquals(['authz_roles_1'], $updatedCustomRole2->getAuthzRoles());
+    }
+
+    public function testLocateRoleUsingExperiment_MxInBA_ExpOn()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'name'          => 'CAC 2',
+            'id'            => '100customRole2',
+            'org_id'        => '100000razorpay',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(true, true, true);
+
+        // 3. execute test & assert response
+        $method = $this->getPrivateMethod(RolesService::class, 'locateRoleUsingExperiment');
+        $res = $method->invokeArgs(new RolesService(), [$role['id']]);
+
+        $this->assertEquals([
+            'location'      => 'authz',
+            'merchant_id'   => $merchant['id']
+        ], $res);
+    }
+
+    public function testLocateRoleUsingExperiment_MxInBA_ExpOff()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'name'          => 'CAC 2',
+            'id'            => '100customRole2',
+            'org_id'        => '100000razorpay',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(true, true, false);
+
+        // 3. execute test & assert response
+        $method = $this->getPrivateMethod(RolesService::class, 'locateRoleUsingExperiment');
+        $res = $method->invokeArgs(new RolesService(), [$role['id']]);
+
+        $this->assertEquals([
+            'location'      => 'api',
+            'merchant_id'   => $merchant['id'],
+            'role'          => null,
+        ], $res);
+    }
+
+    public function testLocateRoleUsingExperiment_MxNotInBA_RoleNotInAPI()
+    {
+        // 1. create dependencies
+        // nothing to create
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, false, false);
+
+        // 3. execute test & assert response
+        $method = $this->getPrivateMethod(RolesService::class, 'locateRoleUsingExperiment');
+        $res = $method->invokeArgs(new RolesService(), ['100customRole9']);
+
+        $this->assertEquals([
+            'location'      => 'authz',
+            'merchant_id'   => null
+        ], $res);
+    }
+
+    public function testLocateRoleUsingExperiment_MxNotInBA_RoleInAPI_ExpOn()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'name'          => 'CAC 2',
+            'id'            => '100customRole2',
+            'org_id'        => '100000razorpay',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, true, true);
+
+        // 3. execute test & assert response
+        $method = $this->getPrivateMethod(RolesService::class, 'locateRoleUsingExperiment');
+        $res = $method->invokeArgs(new RolesService(), [$role['id']]);
+
+        $this->assertEquals([
+            'location'      => 'authz',
+            'merchant_id'   => $merchant['id']
+        ], $res);
+    }
+
+    public function testLocateRoleUsingExperiment_MxNotInBA_RoleInAPI_ExpOff()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'name'          => 'CAC 2',
+            'id'            => '100customRole2',
+            'org_id'        => '100000razorpay',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, true, false);
+
+        // 3. execute test & assert response
+        $method = $this->getPrivateMethod(RolesService::class, 'locateRoleUsingExperiment');
+        $res = $method->invokeArgs(new RolesService(), [$role['id']]);
+
+        $this->assertArraySelectiveEquals([
+            'location'      => 'api',
+            'merchant_id'   => $merchant['id']
+        ], $res);
+
+        $this->assertEquals($role['id'], $res['role']->getId());
+    }
+
+    private function setMocksForLocateRoleUsingExperiment($mockBasicAuth, $shouldCallSplitz, $migrationExperimentEnabled)
+    {
+        // 1. set basicAuth mock
+        if ($mockBasicAuth)
+        {
+            $merchant = (new \RZP\Models\Merchant\Repository())->find(self::DEFAULT_X_MERCHANT_ID);
+
+            $basicAuthMock = \Mockery::mock(\RZP\Http\BasicAuth\BasicAuth::class, [$this->app])->makePartial();
+
+            $basicAuthMock->shouldReceive('getMerchant')
+                ->zeroOrMoreTimes()
+                ->andReturn($merchant);
+
+            $this->app->instance('basicauth', $basicAuthMock);
+        }
+
+        // 2. set splitz mock
+        if ($shouldCallSplitz)
+        {
+            $splitzMock = \Mockery::mock(\RZP\Services\SplitzService::class, [$this->app])->makePartial();
+
+            $splitzMock->shouldReceive('evaluateRequest')
+                ->once()
+                ->with([
+                    'id'            => self::DEFAULT_X_MERCHANT_ID,
+                    'experiment_id' => env('CAC_MIGRATION_SPLITZ_EXPERIMENT_ID'),
+                ])
+                ->andReturn([
+                    'response' => [
+                        'variant' => [
+                            'name' => $migrationExperimentEnabled ? 'active' : 'control',
+                        ]
+                    ]
+                ]);
+
+            $this->app->instance('splitzService', $splitzMock);
+        }
+    }
+
+    public function testGetRoleUsingExperiment_API_Read()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'id'            => '100customRole2',
+            'name'          => 'CAC 2',
+            'org_id'        => '100000razorpay',
+            'type'          => 'custom',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, true, false);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldNotReceive('adminAPIGetRole');
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRoleUsingExperiment($role['id']);
+
+        $this->assertArraySelectiveEquals([
+            'id'            => '100customRole2',
+            'name'          => 'CAC 2',
+            'merchant_id'   => '100000merchant',
+            'type'          => 'custom',
+        ], $res->toArray());
+    }
+
+    public function testGetRoleUsingExperiment_Authz_Read_RoleExistsOnAPI()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'id'            => '100customRole2',
+            'name'          => 'CAC 2',
+            'org_id'        => '100000razorpay',
+            'type'          => 'custom',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, true, true);
+
+        $this->mockAuthzAdminForGetRoleUsingExperiment();
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRoleUsingExperiment('100customRole2');
+
+        $this->assertArraySelectiveEquals([
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'type'          => 'custom',
+            'merchant_id'   => self::DEFAULT_X_MERCHANT_ID,
+            'description'   => 'this is a custom role',
+        ], $res->toArray());
+    }
+
+    public function testGetRoleUsingExperiment_Authz_Read_RoleDoesNotExistOnAPI()
+    {
+        // 1. create dependencies
+        // nothing to create
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $this->mockAuthzAdminForGetRoleUsingExperiment(false, null);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRoleUsingExperiment('100customRole2');
+
+        $this->assertArraySelectiveEquals([
+            'id'            => '100customRole2',
+            'name'          => 'custom role',
+            'type'          => 'custom',
+            'merchant_id'   => self::DEFAULT_X_MERCHANT_ID,
+            'description'   => 'this is a custom role',
+        ], $res->toArray());
+    }
+
+    public function testGetRoleNameUsingExperiment()
+    {
+        // 1. create dependencies
+        // nothing to create
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $this->mockAuthzAdminForGetRoleUsingExperiment(false, null);
+
+        $cacheKey = Constants::CACHE_KEY_ROLE_NAME . '100customRole2';
+
+        Cache::store('redis');
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with($cacheKey)
+            ->andReturn(null);
+
+        Cache::shouldReceive('put')
+            ->once()
+            ->with($cacheKey, 'custom role', Constants::ROLE_NAME_TTL)
+            ->andReturn(null);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRoleNameUsingExperiment('100customRole2');
+
+        $this->assertEquals('custom role', $res);
+    }
+
+    public function testGetRoleNameUsingExperimentNullRole()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(true, true, false);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRoleNameUsingExperiment('100customRole2');
+
+        $this->assertNull($res);
+    }
+
+    public function testGetRoleNameUsingExperimentCacheHit()
+    {
+        // 1. create dependencies
+        // nothing to create
+
+        // 2. set mocks
+        $cacheKey = Constants::CACHE_KEY_ROLE_NAME . '100customRole2';
+
+        Cache::store('redis');
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with($cacheKey)
+            ->andReturn('custom role');
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRoleNameUsingExperiment('100customRole2');
+
+        $this->assertEquals('custom role', $res);
+    }
+
+    public function testGetAuthzRolesUsingExperiment_API_Read()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'id'            => '100customRole2',
+            'name'          => 'CAC 2',
+            'org_id'        => '100000razorpay',
+            'type'          => 'custom',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        $this->fixtures->create('role_access_policy_map',
+        [
+            'role_id'           => '100customRole2',
+            'authz_roles'       => ['authz_roles_1'],
+            'access_policy_ids' => ['accessPolicy10'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, true, false);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldNotReceive('adminAPIGetRole');
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getAuthzRolesUsingExperiment($role['id']);
+
+        $this->assertEquals(['authz_roles_1'], $res);
+    }
+
+    public function testGetAuthzRolesUsingExperiment_Authz_Read_RoleExistOnAPI()
+    {
+        // 1. create dependencies
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => self::DEFAULT_X_MERCHANT_ID
+        ]);
+
+        $role = $this->fixtures->create('roles',[
+            'id'            => '100customRole2',
+            'name'          => 'CAC 2',
+            'org_id'        => '100000razorpay',
+            'type'          => 'custom',
+            'merchant_id'   => $merchant['id'],
+        ]);
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, true, true);
+
+        $this->mockAuthzAdminForGetRoleUsingExperiment(true);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getAuthzRolesUsingExperiment($role['id']);
+
+        $this->assertEquals(['authz_role_name_1'], $res);
+    }
+
+    public function testGetAuthzRolesUsingExperiment_Authz_Read_RoleDoesNotExistOnAPI()
+    {
+        // 1. create dependencies
+        // nothing to create
+
+        // 2. set mocks
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $this->mockAuthzAdminForGetRoleUsingExperiment(true, null);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getAuthzRolesUsingExperiment('100customRole2');
+
+        $this->assertEquals(['authz_role_name_1'], $res);
+    }
+
+    public function testAdminAPIGetRole_RoleNotFound()
+    {
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->andThrow(new \AuthzAdmin\Client\ApiException('sql: no rows in result set', 404));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $res = (new \RZP\Models\AuthzAdmin\Service())->adminAPIGetRole('100customRole2', self::DEFAULT_X_MERCHANT_ID, false);
+
+        $this->assertEquals([], $res);
+    }
+
+    private function mockAuthzAdminForGetRoleUsingExperiment($shouldExpandChildren = false, $merchantId = self::DEFAULT_X_MERCHANT_ID)
+    {
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        if ($shouldExpandChildren)
+        {
+            $authzResponse = new AuthzAdminModel\V1Role([
+                'children'  => [
+                    [
+                        'id'    => 'authz_role_id_1',
+                        'name'  => 'authz_role_name_1',
+                    ]
+                ]
+            ]);
+        }
+        else
+        {
+            $authzResponse = new AuthzAdminModel\V1Role([
+                'id'            => '100customRole2',
+                'name'          => 'custom role',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_X_MERCHANT_ID,
+                'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'this is a custom role',
+            ]);
+        }
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+        ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren) use ($shouldExpandChildren, $merchantId) {
+
+            $this->assertEquals('100customRole2', $roleId);
+            $this->assertEquals('razorpayx', $orgId);
+            $this->assertEquals($merchantId, $ownerId);
+            $this->assertEquals($shouldExpandChildren, $expandChildren);
+
+            return true;
+        })
+        ->once()
+        ->andReturn($authzResponse);
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+    }
+
+    public function testFetchRoleByIdCustomRoleCACMigration()
+    {
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/role_100customRole1';
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // mock is required to pass the basic auth check
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('100customRole1', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertFalse($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100customRole1',
+                'name'          => 'custom role',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'this is a custom role',
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $this->startTest();
+    }
+
+    public function testFetchRoleByIdRoleFinanceL1CACMigration()
+    {
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/role_finance_l1';
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // mock is required to pass the basic auth check
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Finance L1', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertFalse($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole9',
+                'name'          => 'Finance L1',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => Entity::ORG_ID_FOR_ROLES,
+                'created_by'    => '10000000system',
+                'children'      => null,
+                'description'   => 'this is a standard role',
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $this->startTest();
+    }
+
+    public function testAdminAPIGetRoleForStandardRoles()
+    {
+        $this->ba->proxyAuth();
+
+        $roles = [
+            'role_owner' => [
+                'id' => 'owner',
+                'name' => 'Owner',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_vendor' => [
+                'id' => 'vendor',
+                'name' => 'Vendor',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance_l2' => [
+                'id' => 'finance_l2',
+                'name' => 'Finance L2',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_view_only' => [
+                'id' => 'view_only',
+                'name' => 'View Only',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_operations' => [
+                'id' => 'operations',
+                'name' => 'Operations',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance_l3' => [
+                'id' => 'finance_l3',
+                'name' => 'Finance L3',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_admin' => [
+                'id' => 'admin',
+                'name' => 'Admin',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_chartered_accountant' => [
+                'id' => 'chartered_accountant',
+                'name' => 'Chartered Accountant',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance_l1' => [
+                'id' => 'finance_l1',
+                'name' => 'Finance L1',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance' => [
+                'id' => 'finance',
+                'name' => 'Finance',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_petty_cash_employee' => [
+                'id' => 'petty_cash_employee',
+                'name' => 'Petty Cash Employee',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_banking_readonly' => [
+                'id' => 'banking_readonly',
+                'name' => 'Owner - Read Only',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+        ];
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        foreach ($roles as $roleKey => $expectedResponse) {
+            $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+                ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren) use ($expectedResponse) {
+                    $this->assertEquals($expectedResponse['name'], $roleId);
+                    $this->assertEquals('razorpayx', $orgId);
+                    $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                    $this->assertFalse($expandChildren);
+
+                    return true;
+                })
+                ->once()
+                ->andReturn(new AuthzAdminModel\V1Role([
+                    'id'            => '100standardRole1',
+                    'name'          => $expectedResponse['name'],
+                    'org_id'        => 'razorpayx',
+                    'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                    'owner_type'    => 'merchant',
+                    'owner_id'      => Entity::ORG_ID_FOR_ROLES,
+                    'created_by'    => '10000000system',
+                    'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                    'children'      => null,
+                    'description'   => 'this is a standard role',
+                ]));
+
+            $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+            $response = (new \RZP\Models\AuthzAdmin\Service())->adminAPIGetRole($expectedResponse['id'], self::DEFAULT_MERCHANT_ID, false);
+
+            $this->assertEquals($expectedResponse, $response);
+        }
+    }
+
+    public function testFetchSelfRoleCACMigration()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => '100000razorpay',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertFalse($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => '100000razorpay',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $this->startTest();
+    }
+
+    public function testGetRolesUsingExperiment()
+    {
+        // 1. create dependencies
+        $apiRole = $this->fixtures->create('roles', [
+            'id'        => '100customRole2',
+            'name'      => 'CAC 2',
+            'org_id'    => '100000razorpay'
+        ]);
+
+        // 2. set mocks
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // 2.1. mock for standard role
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(['owner'], $roleNames);
+                $this->assertEquals(null, $roleIds);
+                $this->assertEquals(AuthzAdminModel\V1RolePolicyType::STANDARD, $type);
+
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100standardRole1',
+                        'name' => 'Owner',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                        'owner_type' => 'merchant',
+                        'owner_id' => Entity::ORG_ID_FOR_ROLES,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => '',
+                    ]),
+                ]
+            ]));
+
+        // 2.2. mock for custom role
+        $authzAdminClientMock->shouldReceive('adminAPIListRole')
+            ->once()
+            ->withArgs(function($paginationToken, $roleNamePrefix, $roleNames, $roleIds, $orgId, $keyId, $keyOwnerType, $keyOwnerId, $ownerIds, $type)
+            {
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(null, $roleNames);
+                $this->assertEquals(['100customRole1', '100customRole2'], $roleIds);
+                $this->assertEquals(AuthzAdminModel\V1RolePolicyType::CUSTOM, $type);
+                return true;
+            })
+            ->andReturn(new AuthzAdminModel\V1ListRoleResponse([
+                'items' => [
+                    new AuthzAdminModel\V1Role([
+                        'id' => '100customRole1',
+                        'name' => 'CAC 1',
+                        'org_id' => '100000razorpay',
+                        'type' => AuthzAdminModel\V1RolePolicyType::CUSTOM,
+                        'owner_type' => 'merchant',
+                        'owner_id' => self::DEFAULT_X_MERCHANT_ID,
+                        'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                        'created_by' => 'MerchantUser01',
+                        'children' => null,
+                        'description' => '',
+                    ]),
+                ]
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        // 3. execute test & assert response
+        $res = (new RolesService())->getRolesUsingExperiment([
+            'owner',
+            '100customRole1',
+            '100customRole2'
+        ]);
+
+        $this->assertEquals([
+            [
+                'id' => 'owner',
+                'name' => 'Owner',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => 'MerchantUser01',
+                'description' => '',
+            ],
+            [
+                'id' => '100customRole1',
+                'name' => 'CAC 1',
+                'type' => 'custom',
+                'merchant_id' => '100000merchant',
+                'created_by' => 'MerchantUser01',
+                'description' => '',
+            ],
+            [
+                'id' => '100customRole2',
+                'merchant_id' => '100000merchant',
+                'name' => 'CAC 2',
+                'description' => 'Test custom role',
+                'type' => 'custom',
+                'created_by' => 'test@razorpay.com',
+            ],
+        ], $res);
     }
 }

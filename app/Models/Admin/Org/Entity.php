@@ -54,6 +54,8 @@ class Entity extends Base\Entity
     const EXTERNAL_REDIRECT_URL_TEXT      = 'external_redirect_url_text';
     const MERCHANT_SESSION_TIMEOUT_IN_SECONDS = 'merchant_session_timeout_in_seconds';
     const SECURITY_BRANDING_LOGO = 'security_branding_logo';
+    const ADMIN_NAME                      = 'admin.name';
+    const ADMIN_USERNAME                  = 'admin.username';
 
     /**
      * Org level features
@@ -85,6 +87,7 @@ class Entity extends Base\Entity
     const BAJAJ_ORG_SIGNED_ID   = 'org_CerI5wCZlnyN1Q';
     const CURLEC_ORG_ID         = 'KjWRtYXwpK6VfK';
     const HDFC_COLLECT_ORG_ID   = 'ISCBolfdHQnhj4';
+    const YES_ORG_ID            = 'IoHRQpwZ67N8jw';
 
     /**
      * Org Id list on which Merchant on boarding escalation has to be triggered.

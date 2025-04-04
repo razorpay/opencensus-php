@@ -95,6 +95,10 @@ return [
         'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
         'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_LIVE_QUEUE'),
     ],
+    'payout_service_dual_write_direct_push' => [
+        'test'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE'),
+        'live'       => env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE'),
+    ],
     'account_statement_dual_write' => [
         'test'       => env('AWS_ACCOUNT_STATEMENT_DUAL_WRITE_LIVE_QUEUE'),
         'live'       => env('AWS_ACCOUNT_STATEMENT_DUAL_WRITE_LIVE_QUEUE'),
@@ -208,6 +212,9 @@ return [
     ],
     'account_statements_source_event' => [
         'live'       => env('AWS_ACCOUNT_STATEMENTS_SOURCE_EVENT_LIVE_QUEUE'),
+    ],
+    'x_balances_payout_event' => [
+        'live'       => env('AWS_X_BALANCES_PAYOUT_EVENT_LIVE_QUEUE'),
     ],
     'terminal_batch' => [
         'test'       => env('AWS_TERMINAL_BATCH_QUEUE'),
@@ -658,6 +665,11 @@ return [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_UPDATE_LIVE_QUEUE'),
     ],
 
+    'x_balance_dual_write' => [
+        'test'       => env('AWS_X_BALANCE_DUAL_WRITE_TEST_QUEUE'),
+        'live'       => env('AWS_X_BALANCE_DUAL_WRITE_LIVE_QUEUE'),
+    ],
+
     'banking_account_statement_source_linking' => [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING_LIVE_QUEUE'),
     ],
@@ -876,6 +888,8 @@ return [
 
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_TEST_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_LIVE_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
+
+        env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE') => 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush',
     ],
 
     'fifo_sqs_mappings'=>[

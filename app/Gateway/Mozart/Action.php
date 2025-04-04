@@ -66,14 +66,20 @@ class Action
     const CREATE_VIRTUAL_ACCOUNT_FOR_BANKING = 'create_virtual_account_for_banking';
 
     const CLOSE_VIRTUAL_ACCOUNT_FOR_BANKING = 'close_virtual_account_for_banking';
-    
+
     const DEACTIVATE_VIRTUAL_ACCOUNT = 'deactivate_virtual_account';
+
+    const DEACTIVATE_VIRTUAL_ACCOUNT_COLLECTX = 'deactivate_virtual_account_collectX';
 
     const UPDATE_TOKEN          = 'update_token';
 
     const CHECK_BIN             = 'check_bin';
 
     const VALIDATE_VPA          = 'validate_vpa';
+
+    const GATEWAY_SESSION       = 'gateway_session';
+
+    const GATEWAY_AUTH          = 'gateway_auth';
 
     const MANDATE_VERIFY        = 'mandate_verify';
 }

@@ -10,6 +10,7 @@ class PaylaterProvider
     const DEFAULT_PAYLATER_PROVIDERS = 0;
 
     const GETSIMPL = 'getsimpl';
+    const SIMPL_PAY_IN_3 = 'simpl_pay_in_3';
     const GETSIMPLOPTIMIZER = 'getsimpl_optimizer';
     const LAZYPAY = 'lazypay';
     const ICIC = 'icic';
@@ -18,6 +19,10 @@ class PaylaterProvider
     const RZPXPOSTPAID = 'rzpx_postpaid';
     const PAYLATER = 'paylater';
     const ATOME = 'atome';
+
+    //PPRO APM Paylater
+    const KLARNA = 'klarna';
+    const ZIP = 'zip';
 
 
     protected static $providers = [
@@ -28,7 +33,9 @@ class PaylaterProvider
         self::AMAZONPAY,
         self::RZPXPOSTPAID,
         self::ATOME,
-        self::GETSIMPLOPTIMIZER
+        self::GETSIMPLOPTIMIZER,
+        self::KLARNA,
+        self::ZIP
     ];
 
     public static $disabledInstruments = [

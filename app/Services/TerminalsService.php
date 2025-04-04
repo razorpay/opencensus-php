@@ -46,6 +46,8 @@ class TerminalsService
 
     protected $request;
 
+    protected $repo;
+
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
     const X_RZP_TESTCASE_ID         = 'X-RZP-TESTCASE-ID';
     const X_DASHBOARD_MERCHANT_ID   = 'X-Dashboard-Merchant-Id';
@@ -107,9 +109,19 @@ class TerminalsService
     const DELETE_TERMINAL_V3            = 'delete_terminal_v3';
 
     const VALIDATE_DELETE_TERMINAL_V3   = 'validate_delete_terminal_v3';
+
+    const REASSIGN_MERCHANT_V3          = 'reassign_merchant_v3';
+
+    const ADD_SUBMERCHANT_TO_TERMINAL_V3 = 'add_submerchant_to_terminal_v3';
+
+    const REMOVE_SUBMERCHANT_FROM_TERMINAL_V3 = 'remove_submerchant_from_terminal_v3';
+
     const CREATE_TERMINAL_V3          = 'create_terminal_v3';
     const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
+    const TOGGLE_TERMINAL_V3          = 'toggle_terminal_v3';
 
+    const SET_BANKS_TERMINAL_V3       = 'set_banks_terminal_v3';
+    const SET_WALLETS_TERMINAL_V3   = 'set_wallets_terminal_v3';
 
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
@@ -228,6 +240,30 @@ class TerminalsService
             self::PATH   => 'v3/terminals/%s',
             self::METHOD => Requests::DELETE
         ],
+        self::ADD_SUBMERCHANT_TO_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/merchants/%s',
+            self::METHOD => Requests::POST
+        ],
+        self::REMOVE_SUBMERCHANT_FROM_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/merchants/%s',
+            self::METHOD => Requests::DELETE
+        ],
+        self::REASSIGN_MERCHANT_V3 => [
+            self::PATH   => 'v3/terminals/reassign_merchant/%s',
+            self::METHOD => Requests::PATCH
+        ],
+        self::SET_BANKS_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/banks',
+            self::METHOD => Requests::PATCH
+        ],
+        self::SET_WALLETS_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/wallets',
+            self::METHOD => Requests::PATCH
+        ],
+        self::TOGGLE_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/toggle',
+            self::METHOD => Requests::PUT
+        ]
     ];
 
     protected array $terminal_admin_dashboard_routes = [
@@ -270,6 +306,8 @@ class TerminalsService
         $this->auth = $this->app['basicauth'];
 
         $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+
+        $this->repo = $this->app['repo'];
     }
 
     public function migrateTerminal(Terminal\Entity $terminal, array $additionalOptions = array()): array
@@ -588,6 +626,26 @@ class TerminalsService
         $response = $this->sendRequest($path, $content, $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
+    }
+
+    public function fetchMerchantByGatewayTerminalId(string $gateway_terminal_id, $additionalParams=null){
+        $params = self::PARAMS[self::FETCH_TOKENISATION_TERMINALS];
+
+        $content = [
+            Terminal\Entity::IDENTIFIERS => [
+                Terminal\Entity::GATEWAY_TERMINAL_ID => $gateway_terminal_id,
+            ]
+        ];
+
+        if($additionalParams!==null){
+            $content = array_merge($content,$additionalParams);
+        }
+
+        $data = json_encode($content,JSON_PRETTY_PRINT);
+
+        $response = $this->sendRequest($params[self::PATH], $data, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, $features = null, array $currency = [], array $otherInputs = []): array
@@ -1466,5 +1524,118 @@ class TerminalsService
         $this->throwSyncMethodInstrumentsWarning($parsedResponse);
 
         return $parsedResponse;
+    }
+
+    public function reassignMerchantV3($terminalId, $input): array
+    {
+        Entity::verifyIdAndSilentlyStripSign($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $mid = $input[Entity::MERCHANT_ID];
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([Entity::MERCHANT_ID => $terminal->getMerchantId()],[Entity::MERCHANT_ID => $mid]);
+
+        $params = self::PARAMS[self::REASSIGN_MERCHANT_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+    }
+
+    /**
+     * @throws MethodInstrumentsTerminalsSyncException
+     */
+    public function setBanksForTerminalV3($terminalId, $input): array
+    {
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
+
+        $params = self::PARAMS[self::SET_BANKS_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function toggleTerminalV3($terminalId, $input) {
+
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $enabled = $terminal->isEnabled();
+        list($original, $dirty) = [
+            ['terminal_enable' => $enabled],
+            ['terminal_enable' => !$enabled],
+        ];
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle($original, $dirty);
+
+        $params = self::PARAMS[self::TOGGLE_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    /**
+     * @throws MethodInstrumentsTerminalsSyncException
+     */
+    public function setWalletsForTerminalV3($terminalId, $input): array
+    {
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $walletsToEnable = $input[Entity::ENABLED_WALLETS] ?? [];
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([Entity::ENABLED_WALLETS => $terminal->getEnabledWallets()], [Entity::ENABLED_WALLETS => $walletsToEnable]);
+
+        $params = self::PARAMS[self::SET_WALLETS_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $parsedResponse = $this->proxyTerminalService($input, $params[self::METHOD], $path);
+
+        $this->throwSyncMethodInstrumentsWarning($parsedResponse);
+
+        return $parsedResponse;
+    }
+
+    public function addSubmerchantsToTerminalV3($terminalId, $merchantId)
+    {
+        $params = self::PARAMS[self::ADD_SUBMERCHANT_TO_TERMINAL_V3];
+        $path = sprintf( $params[self::PATH], $terminalId, $merchantId);
+
+        return $this->proxyTerminalService('', $params[self::METHOD], $path);
+    }
+
+    public function removeSubmerchantsFromTerminalV3($terminalId, $merchantId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle(["merchant_id" => $merchantId], []);
+
+        $params = self::PARAMS[self::REMOVE_SUBMERCHANT_FROM_TERMINAL_V3];
+        $path = sprintf( $params[self::PATH], $terminalId, $merchantId);
+
+        return $this->proxyTerminalService('', $params[self::METHOD], $path);
     }
 }

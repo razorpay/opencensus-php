@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
@@ -124,16 +125,13 @@ trait UpiRecurring
         $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
 
         if (empty($testCaseId) === true) {
-            $variant = $this->app['razorx']->getTreatment(
-                $payment->merchant->getId(),
-                RazorxTreatment::ALLOW_OPTIMIZER_UPI_RECURRING,
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on') {
+            $merchantID = $payment->merchant->getId();
+            $response = (new Merchant\Detail\Core())->getSplitzResponse($merchantID, 'upi_recurring_optimizer_experiment_id');
+            if (strtolower($response) !== 'enabled') {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
             }
         }
+
 
         $notifyInput = [];
 
@@ -414,8 +412,16 @@ trait UpiRecurring
 
         $gatewayResponse = null;
 
-        $this->mutex->acquireAndRelease($this->getMandateUpdateMutexResource($upiMandate),
-            function() use ($gatewayData, $action, $gateway, $tokenTerminal, $upiMandate) {
+        $isCancelTokenV1FeatureEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::CANCEL_TOKEN_V1);
+
+        $this->trace->info(TraceCode::UPI_AUTOPAY_CANCEL_TOKEN, [
+            'is_cancel_token_v1_feature_enabled' => $isCancelTokenV1FeatureEnabled,
+            'token_id' => $token['id'],
+            'merchant_id' => $this->merchant->getId(),
+        ]);
+
+        $response = $this->mutex->acquireAndRelease($this->getMandateUpdateMutexResource($upiMandate),
+            function() use ($gatewayData, $action, $gateway, $tokenTerminal, $upiMandate, $token, $isCancelTokenV1FeatureEnabled) {
                 try
                 {
 
@@ -435,20 +441,29 @@ trait UpiRecurring
                             $tokenTerminal);
                     }
 
-                    $upiMandate->setStatus(UpiMandate\Status::REVOKED);
+                    if ($isCancelTokenV1FeatureEnabled === true) {
+                        $upiMandate->setStatus(UpiMandate\Status::REVOKED);
 
-                    (new UpiMandate\Core)->update($upiMandate);
+                        (new UpiMandate\Core)->update($upiMandate);
 
-                    $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_REVOKED, [
-                        'gateway' => $gateway,
-                        'is_tpv'  => $this->merchant->isTPVRequired()
-                    ]);
+                        $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_REVOKED, [
+                            'gateway' => $gateway,
+                            'is_tpv' => $this->merchant->isTPVRequired()
+                        ]);
 
-                    (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+                        (new Token\Core)->cancelTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
+
+                        return
+                            [
+                                'success' => true,
+                            ];
+                    }
+
+                    (new Token\Core)->cancellationInitiatedTokenEvent($upiMandate->getTokenId(), $upiMandate->getCustomerId());
 
                     return
                         [
-                            'success' => true,
+                            'status' => Token\RecurringStatus::CANCELLATION_INITIATED
                         ];
                 }
                 catch (Exception\GatewayErrorException $exception)
@@ -461,6 +476,10 @@ trait UpiRecurring
             20,
             1000,
             2000);
+
+        if ($isCancelTokenV1FeatureEnabled === false) {
+            return $response;
+        }
     }
 
     public function mandatePause($input, $upiMandate, $gateway)

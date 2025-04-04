@@ -3121,5 +3121,138 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'gateway_currency'     => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'             => 100,
+                'amount_deducted'    => 0,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'under_review',
+                'reason_code'        => 'KFRER_R',
+            ],
+        ],
+    ],
+    'testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailFraudFailure' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'fraud',
+                'gateway_currency'     => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => null,
+                    'description' => 'Payment made less than 5 days ago with a BSE-registered merchant, please wait until the 5 working day period has passed to dispute.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailRetrievalFailure' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'retrieval',
+                'gateway_currency'     => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => null,
+                    'description' => 'Payment made less than 5 days ago with a BSE-registered merchant, please wait until the 5 working day period has passed to dispute.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailArbitrationFailure' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'arbitration',
+                'gateway_currency'     => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => null,
+                    'description' => 'Payment made less than 5 days ago with a BSE-registered merchant, please wait until the 5 working day period has passed to dispute.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailPreArbitrationFailure' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'pre_arbitration',
+                'gateway_currency'     => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => null,
+                    'description' => 'Payment made less than 5 days ago with a BSE-registered merchant, please wait until the 5 working day period has passed to dispute.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ]
 ];
 

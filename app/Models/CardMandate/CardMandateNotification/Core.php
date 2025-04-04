@@ -4,6 +4,7 @@ namespace RZP\Models\CardMandate\CardMandateNotification;
 
 use Carbon\Carbon;
 
+use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Timezone;
 use RZP\Exception;
@@ -391,7 +392,7 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
-    public function updateNotificationFromCallbackResponse(CardMandate\MandateHubs\Notification $notification): Entity
+    public function updateNotificationFromCallbackResponse(CardMandate\MandateHubs\Notification $notification, $input = [])
     {
         $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_PROCESS_CALL_BACK, [
             'notification_id' => $notification->getId(),
@@ -414,7 +415,12 @@ class Core extends Base\Core
 
         if ($cardMandateNotification === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            $this->trace->info(TraceCode::CARD_RECURRING_REARCH_NOTIFICATION_CALLBACK, [
+                'notification_id' => $notification->getId(),
+            ]);
+
+            $this->app['card.payments']->handleMandateHQCallback($input);
+            return [];
         }
 
         $this->app['basicauth']->setMerchant($cardMandateNotification->merchant);
@@ -552,7 +558,20 @@ class Core extends Base\Core
 
     protected function getDebitTime($input, CardMandate\Entity $cardMandate)
     {
+        $merchant = $cardMandate->merchant;
+        $mcc = $merchant?->getCategory();
+        $merchantId = $merchant?->getMerchantId();
         $time = Carbon::now();
+        $app = App::getFacadeRoot();
+        $experimentName = $app['config']->get('app.afa_splitz');
+
+        if (self::getSplitzResponse($merchantId, $experimentName) === 'enable') {
+            if (in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS)) {
+                $withoutAfaAmountLimit = Constants::WITHOUT_AFA_AMOUNT_LIMIT_FOR_SPECIAL_MCC;
+            }
+        }else {
+            $withoutAfaAmountLimit = Constants::WITHOUT_AFA_AMOUNT_LIMIT;
+        }
 
         if ($cardMandate->getMandateHub() === MandateHubs\MandateHubs::BILLDESK_SIHUB) {
             $time->addDay();
@@ -560,7 +579,7 @@ class Core extends Base\Core
             // as per payu docs it is 48 hrs before. But 24hrs should be fine for card mandates
             $time->addDay();
         } else {
-            if ($input[Payment\Entity::AMOUNT] > Constants::WITHOUT_AFA_AMOUNT_LIMIT) {
+            if ($input[Payment\Entity::AMOUNT] > $withoutAfaAmountLimit) {
                 $time->addDays(3);
             } else {
                 $time->addDay();

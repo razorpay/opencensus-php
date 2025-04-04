@@ -16,6 +16,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Pricing\Calculator\Tax\Base;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -30,6 +31,7 @@ use RZP\Models\Pricing\Calculator\Tax\SG\Calculator as SGcalculator;
 
 class TransactionTest extends TestCase
 {
+    use MocksSplitz;
     use PaymentTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
@@ -2086,23 +2088,7 @@ class TransactionTest extends TestCase
 
     public function testFindPayoutTransactionFromLedgerExternalFetchEnabledReturnDisabled()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        // ledger shadow experiment is NOT enabled
-        $this->app->razorx->method('getTreatment')
-            ->willReturnCallback(static function ($mid, $feature, $mode) {
-                if ($feature === RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER)
-                {
-                    return 'on';
-                }
-
-                return 'control';
-            });
+        $this->setMockSplitzTreatmnt([RazorxTreatment::RX_TRANSACTION_LOAD_FROM_LEDGER => 'enable']);
 
         $this->app['config']->set('applications.ledger.enabled', true);
 

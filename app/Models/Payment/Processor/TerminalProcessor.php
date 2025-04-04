@@ -302,6 +302,12 @@ class TerminalProcessor extends Base\Core
 
         $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway, $terminalMerchantIds);
 
+        $this->trace->info(
+            TraceCode::TERMINALS_FETCHED_FOR_MERCHANT, [
+                'terminal_ids' => $terminals->getIds()
+            ]
+        );
+
         return $this->getTerminalForBankAccount($gateway, $terminals, $bankTransfer->getPayeeAccount(), $log, $isCollectxBankTransferPayment);
     }
 
@@ -486,7 +492,7 @@ class TerminalProcessor extends Base\Core
 
     protected function isTerminalValid(Terminal\Entity $terminal, string $accountNumber, string $gateway = "", bool $isCollectxBankTransfer = false)
     {
-        $prefix = Provider::getRoot($terminal) . Provider::getHandle($terminal);
+        $prefix = ($terminal->getGateway() === Payment\Gateway::BT_IBL) ? Provider::getRoot($terminal) : Provider::getRoot($terminal) . Provider::getHandle($terminal);
 
         $merchant = $terminal->merchant;
 

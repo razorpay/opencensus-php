@@ -31,6 +31,8 @@ class RoleAccessTest extends TestCase
         parent::setUp();
 
         $this->routePermissions = Route::$bankingRoutePermissions;
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
     }
 
     public function testGrantAccessWhenExperimentOff()
@@ -133,7 +135,11 @@ class RoleAccessTest extends TestCase
 
         foreach ($legacyRoles as $role)
         {
-            $userId = $this->createMerchantUser($role);
+            $merchantUserMap = $this->createMerchantUser($role);
+
+            $userId = $merchantUserMap['user_id'];
+
+            $this->mockSplitzDisableCAC($merchantUserMap['merchant_id']);
 
             $testData = & $this->testData[__FUNCTION__];
 
@@ -180,7 +186,10 @@ class RoleAccessTest extends TestCase
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
-        return $user->getId();
+        return [
+            'user_id'       => $user['id'],
+            'merchant_id'   => $merchant['id'],
+        ];
     }
 
     protected function validateAccesses(string $role)
@@ -208,10 +217,10 @@ class RoleAccessTest extends TestCase
         }
     }
 
-    protected function mockSplitzDisableCAC()
+    protected function mockSplitzDisableCAC($merchantId = null)
     {
         $this->mockSplitzTreatment([
-            'id'            => '10000000000000',
+            'id'            => $merchantId ?? '10000000000000',
             'experiment_id' => env('CAC_BLACKLIST_EXP_ID'),
         ], [
             'response' => [

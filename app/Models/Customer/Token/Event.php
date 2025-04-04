@@ -228,6 +228,11 @@ class Event extends Base\Core
             'async'                     => isset($input['async']) ? $input['async'] : null,
         ];
 
+        //added this for pushprov events
+        if(isset($input['via_push_provisioning']) && $input['via_push_provisioning']){
+            $eventData += ['pushProv' => true];
+        }
+
         if (isset($input['merchant']))
         {
             $eventData += ['merchant_id' => $input['merchant']['id'],];

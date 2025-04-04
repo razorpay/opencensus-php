@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Exception\LogicException;
+use RZP\Exception\RuntimeException;
 use RZP\Http\Route;
 
 use RZP\Models\Vpa;
@@ -28,6 +29,7 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
+use RZP\Models\LinkedNumber;
 use RZP\Models\PayoutOutbox;
 use RZP\Error\ErrorCode;
 use RZP\Services\UfhService;
@@ -55,6 +57,7 @@ use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\User\Core as UserCore;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
@@ -72,6 +75,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\PayoutsDetails as PayoutDetails;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
+use RZP\Http\Controllers\BankTransferController;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
@@ -172,6 +176,11 @@ class Service extends Base\Service
     protected $payoutServiceUpdateFailureProcessingCronClient;
 
     /**
+     * @var PayoutService\PayoutsDualWriteFailureProcessingCron
+     */
+    protected $payoutsDualWriteFailureProcessingCronClient;
+
+    /**
      * @var PayoutService\OnHoldSLAUpdate
      */
     protected $payoutServiceOnHoldSLAUpdateClient;
@@ -204,6 +213,8 @@ class Service extends Base\Service
         $this->payoutServiceCreateFailureProcessingCronClient = $this->app[PayoutService\PayoutsCreateFailureProcessingCron::PAYOUTS_CREATE_FAILURE_PROCESSING_CRON];
 
         $this->payoutServiceUpdateFailureProcessingCronClient = $this->app[PayoutService\PayoutsUpdateFailureProcessingCron::PAYOUTS_UPDATE_FAILURE_PROCESSING_CRON];
+
+        $this->payoutsDualWriteFailureProcessingCronClient = $this->app[PayoutService\PayoutsDualWriteFailureProcessingCron::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON];
 
         $this->payoutServiceOnHoldSLAUpdateClient = $this->app[PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE];
 
@@ -550,6 +561,34 @@ class Service extends Base\Service
 
         (new Validator)->validateAndUpdateCardMode($input);
 
+        $isMobileNumberPayout = $this->isMobileNumberPayout($input);
+        $mobileNumber = null;
+
+        if ($isMobileNumberPayout) {
+            $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT);
+
+            $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
+
+            $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO,
+                [
+                    FundAccount\Entity::LINKED_NUMBER => $mobileNumber,
+                ]);
+
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isPayoutsToPhoneNumberEnabled = $this->core->isSplitzExperimentEnable($properties, 'enable', TraceCode::PAYOUTS_TO_PHONE_NUMBER_SPLITZ_ERROR);
+
+            if (!$isPayoutsToPhoneNumberEnabled) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED,
+                    null);
+            }
+            (new Validator)->validateMobileNumberPayout($input);
+        }
+
         $isCompositePayout = false;
 
         if (isset($input[Entity::FUND_ACCOUNT]) === true)
@@ -693,12 +732,19 @@ class Service extends Base\Service
                 'response_time' => $responseTime - $requestTime
             ]);
 
-        if ($payout->getIsPayoutService() === true)
-        {
-            return $payout->payoutServiceResponse;
+        if ($payout->getIsPayoutService() === true) {
+            $payoutArray = $payout->payoutServiceResponse;
+        } else {
+            $payoutArray = $payout->toArrayPublic();
         }
 
-        return $payout->toArrayPublic();
+        if ($isMobileNumberPayout) {
+            $fundAccount = $payout->fundAccount;
+            $this->sanitizeResponseForMobileNumberPayout($payoutArray, $fundAccount);
+            $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT);
+        }
+
+        return $payoutArray;
     }
 
     /**
@@ -944,7 +990,7 @@ class Service extends Base\Service
             ($this->auth->isChargeCollectionsApp() === false) and
             ($this->auth->isCapitalCollectionsApp() === false) and
             ($this->auth->isFTSApp() === false) and
-            ($this->auth->isXperienceApp() === false) and 
+            ($this->auth->isXperienceApp() === false) and
             ($this->auth->isCrossBorderImportApp() === false)
         );
     }
@@ -1052,12 +1098,15 @@ class Service extends Base\Service
         {
             $merchantId = $this->merchant->getId();
 
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
-                $this->mode,
-                Payout\Entity::RAZORX_RETRY_COUNT
-            );
+            $requestPayload = [
+                "id" =>  $merchantId,
+                "experiment_name" => RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
+                'request_data'  => json_encode(['id' =>  $merchantId])
+            ];
+
+            $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+            $variant = ($isExperimentEnabled === true) ? RazorxTreatment::VARIANT_ENABLE : RazorxTreatment::VARIANT_DISABLE;
 
             $this->trace->info(
                 TraceCode::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
@@ -1067,7 +1116,7 @@ class Service extends Base\Service
                     'merchant_id'   => $merchantId,
                 ]);
 
-            if (strtolower($variant) === 'on')
+            if($variant === 'enable')
             {
                 $this->dualWritePayout($payoutId);
 
@@ -1142,8 +1191,7 @@ class Service extends Base\Service
 
         if ($this->schedulePayoutProcessingForP2PIfApplicable($payout) === false)
         {
-            if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId()))
-            {
+            if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId())) {
                 $payload = [
                     'input' => $input,
                     'payout_id' => $id,
@@ -1160,6 +1208,7 @@ class Service extends Base\Service
             {
                 $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
             }
+
         }
 
         return $payout->toArrayPublic();
@@ -1802,14 +1851,18 @@ class Service extends Base\Service
             return false;
         }
 
-        $undoPayoutExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
-            Constants\Mode::LIVE);
+        //only active for test mode
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         $isUndoPayoutPreferenceEnabled = $this->fetchUserPreferenceForUndoPayouts();
 
-        return ((strtolower($undoPayoutExperimentVariant) === 'on') && ($isUndoPayoutPreferenceEnabled));
+        return ((($this->mode === Constants\Mode::TEST) && ($isExperimentEnabled === true)) && ($isUndoPayoutPreferenceEnabled));
     }
 
     private function fetchUserPreferenceForUndoPayouts() {
@@ -1905,35 +1958,16 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
-        $payout = null;
-
-        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true)
-        {
-            try
-            {
-                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
-            }
-
-            catch (\Exception $e)
-            {
-                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID)
-                {
-                    throw $e;
-                }
-            }
+        $merchantId = $this->merchant->getId();
+        $requestPayload = [
+            'id' => $merchantId,
+            'experiment_name' => RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
+        if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE)){
+            return $this->getPayoutDetailsWithDBFirst($id, $input);
         }
-
-        if (empty($payout) === true)
-        {
-            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
-
-            //tracking slack app related events
-            $this->trackPayoutsFetchEvent($input, $payout);
-
-            return $payout->toArrayPublic();
-        }
-
-        return $payout;
+        return $this->getPayoutDetailWithPSFirst($id, $input);
     }
 
     public function fetchSourceEventInfo(string $id): array
@@ -2042,22 +2076,25 @@ class Service extends Base\Service
 
     public function shouldSkipPayrollEntries()
     {
-        $skipPayrollPayoutsExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_SKIP_PAYROLL_PAYOUTS,
-            $this->mode);
-
-        return strtolower($skipPayrollPayoutsExperimentVariant) === 'on';
+        $hideRxPayrollPayouts = $this->merchant->isFeatureEnabled(Features::HIDE_RX_PAYROLL_PAYOUTS);
+        $this->trace->info(
+            TraceCode::HIDE_RX_PAYROLL_PAYOUTS_FEATURE_FLAG_RESPONSE,
+            [
+                Entity::MERCHANT_ID       => $this->merchant->getId(),
+                'hideRxPayrollPayouts'    => $hideRxPayrollPayouts
+            ]);
+        return $hideRxPayrollPayouts === true;
     }
 
     public function shouldUnsetAccountNUmber()
     {
-        $unsetAccountNumberExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER,
-            $this->mode);
+        $requestPayload = [
+            "id" =>  $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::RX_UNSET_ACCOUNT_NUMBER,
+            'request_data'  => json_encode(['id' =>  $this->merchant->getId()])
+        ];
 
-        return strtolower($unsetAccountNumberExperimentVariant) === 'on';
+        return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload, RazorxTreatment::VARIANT_ENABLE);
     }
 
     public function processReversedPayout(string $id)
@@ -2515,7 +2552,7 @@ class Service extends Base\Service
                 'input' => $input
             ]);
 
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === false)
+        if (!(new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($this->merchant->getId()))
         {
             return $this->createBulkPayoutForAPI($input);
         }
@@ -2523,62 +2560,13 @@ class Service extends Base\Service
         {
             $merchantID = $this->merchant->getId();
 
-            // Bulk Payout Creation for Current Account Merchant onboarded on Payout Service
-            $variant = $this->app->razorx->getTreatment(
-                $merchantID,
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE,
-                $this->mode);
+            /**
+             * Bulk Payout Creation Via Payout Service whose Balance Id migrated to Payout Service and
+             * and Non migrated balance Id will be processed via API.
+             */
 
-            if (strtolower($variant) === 'on')
-            {
-                return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
-            }
+            return $this->handleBulkCreationForPayoutServiceEnabledCurrentAccountMerchant($input, $merchantID);
 
-            $variant = $this->app->razorx->getTreatment(
-                $merchantID,
-                RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE,
-                $this->mode,
-                Payout\Entity::RAZORX_RETRY_COUNT
-            );
-
-            $this->trace->info(
-                TraceCode::BULK_PAYOUT_CA_EXPERIMENT_VALUE,
-                [
-                    'variant'     => $variant,
-                    'mode'        => $this->mode,
-                    'merchant_id' => $merchantID,
-                ]);
-
-            if (strtolower($variant) === 'on')
-            {
-                // Merchant onboarded on both CA and VA
-                return $this->handleBulkCreationForPSEnabledMerchant($input, $merchantID);
-            }
-            else
-            {
-                $merchantEnabledOnCA = $this->checkIfMerchantIsEnabledOnDirectAccount($merchantID);
-
-                if ($merchantEnabledOnCA === true)
-                {
-                    $this->trace->error(TraceCode::CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW,
-                                        [
-                                            'input'   => $input,
-                                            'variant' => $variant,
-                                        ]);
-
-                    throw new ServerErrorException(
-                        'CA merchant should not come into Bulk Payout VA flow',
-                        ErrorCode::SERVER_ERROR_CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW,
-                        [
-                            'input'   => $input,
-                            'variant' => $variant,
-                        ]
-                    );
-                }
-
-                // Merchant onboarded only on VA
-                return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
-            }
         }
     }
 
@@ -3277,16 +3265,7 @@ class Service extends Base\Service
 
         $response = $this->app->batchService->processBatch($batchId, $input, $this->merchant);
 
-        $batchPayoutSummaryEmailVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::BATCH_PAYOUTS_SUMMARY_EMAIL,
-            $this->mode);
-
-        if (strtolower($batchPayoutSummaryEmailVariant) == 'on')
-        {
-            $this->createBatchPayoutEmailSummaryReminder($response);
-        }
-
+        $this->createBatchPayoutEmailSummaryReminder($response);
 
         return $response;
     }
@@ -3566,7 +3545,7 @@ class Service extends Base\Service
 
     public function getScheduleSlotsForPayouts()
     {
-        if ($this->merchant->isFeatureEnabled(FeatureConstant::PAYOUT_SERVICE_ENABLED))
+        if ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($this->merchant->getId()))
         {
             return $this->core->getScheduleTimeSlotsViaPayoutService();
         }
@@ -5244,12 +5223,15 @@ class Service extends Base\Service
 
     public function getPayoutStatusReasonMap(): array
     {
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::STATUS_REASON_MAP_VIA_PS,
-            $this->mode);
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::STATUS_REASON_MAP_VIA_PS,
+            'request_data'  => json_encode(['id' =>  $this->merchant->getId()])
+        ];
 
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) and strtolower($variant) === 'on')
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($this->merchant->getId()) and ($isExperimentEnabled === true))
         {
             return $this->payoutStatusReasonMapApiServiceClient->GetPayoutStatusReasonMapViaMicroService();
         }
@@ -5738,21 +5720,8 @@ class Service extends Base\Service
 
         if ($shouldSendEmail)
         {
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::PAYOUT_ATTACHMENT_EMAIL_VIA_SQS,
-                $this->mode
-            );
 
-            if (strtolower($variant) === 'on')
-            {
-                $this->pushMessageToSQS($receiverEmailIds, $zipFileId, $merchantId);
-            }
-            else
-            {
-                //push to metro
-                $this->pushMessageToMetro($receiverEmailIds, $zipFileId, $merchantId);
-            }
+            $this->pushMessageToSQS($receiverEmailIds, $zipFileId, $merchantId);
 
             return [PayoutConstants::ZIP_FILE_ID => ''];
         }
@@ -6220,12 +6189,13 @@ class Service extends Base\Service
 
     private function shouldProcessBulkApproveAsync(string $merchantId)
     {
-        $bulkApprovalAsyncExperimentVariant = $this->app->razorx->getTreatment(
-            $merchantId,
-            RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC,
-            Constants\Mode::LIVE);
+        $requestPayload = [
+            "id" =>  $merchantId,
+            "experiment_name" => RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
 
-        return (strtolower($bulkApprovalAsyncExperimentVariant) === 'on');
+        return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
     }
 
     private function generateRawQuery(string $rawQuery, $key): string
@@ -6654,6 +6624,21 @@ class Service extends Base\Service
 
         $finalResponse = new Base\PublicCollection;
 
+        /**
+         * TODO Proceed with Direct Account Payout creation if Payout Service creation fails
+         * JIRA Link: https://razorpay.atlassian.net/browse/XPE-644
+         *
+         * We don't want to proceed with direct account payout creation incase if PS
+         * doesn't send 2xx. Hence we return exception received from PS to batch service
+         * so that whole input will be retried.
+         */
+
+        /**
+         * Above Comment is from previous implementation. Previously Only
+         * Earlier, only merchants migrated to the Payout Service with a shared account had their payouts processed through the Payout Service.
+         * Now, payouts are processed through the Payout Service based on the Balance ID and Merchant ID migrated to the Payout Service.
+         */
+
         try
         {
             if (empty($psInput) === false)
@@ -6755,7 +6740,16 @@ class Service extends Base\Service
         {
             $accountNumber = $balance->getAccountNumber();
 
-            $accountNumbersAccountTypeMap[$accountNumber] = $balance->getAccountType();
+           if ( (new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantID, $balance->getId()) )
+           {
+               $accountNumbersAccountTypeMap[$accountNumber] = ENTITY::BALANCE_ID_ON_PAYOUT_SERVICE;
+           }
+           else
+           {
+               $accountNumbersAccountTypeMap[$accountNumber] = ENTITY::Balance_ID_ON_API_MONOLITH;
+           }
+
+
         }
 
         /**
@@ -6770,11 +6764,11 @@ class Service extends Base\Service
         {
             $accountNumber = trim($item[PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER]) ?? null;
 
-            if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::DIRECT)
+            if ($accountNumbersAccountTypeMap[$accountNumber] == ENTITY::BALANCE_ID_ON_PAYOUT_SERVICE)
             {
                 $psInput[] = $item;
             }
-            else if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::SHARED)
+            else if ($accountNumbersAccountTypeMap[$accountNumber] == ENTITY::Balance_ID_ON_API_MONOLITH)
             {
                 $apiInput[] = $item;
             }
@@ -6913,6 +6907,15 @@ class Service extends Base\Service
                     }, $bulk_input);
                     break;
 
+                case 'manual_smart_collect_entity_creation':
+                    $processFunction(function($input) use (&$successResponse) {
+                       $res = (new BankTransferController())->manualProcessBankTransferRequest($input);
+                       if($res)
+                           array_push($successResponse, $res);
+                    },$bulk_input);
+
+                    break;
+
                 default:
                     return ['status' => 'error', 'message' => 'Invalid action provided'];
 
@@ -7001,5 +7004,173 @@ class Service extends Base\Service
             );
 
         }
+    }
+
+    private function isMobileNumberPayout(array $input): bool {
+        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
+    }
+
+    private function sanitizeResponseForMobileNumberPayout(array &$payoutArray, FundAccount\Entity $fundAccount): void
+    {
+        $payoutArray[Entity::FUND_ACCOUNT][Entity::ACCOUNT_TYPE] = FundAccount\Entity::MOBILE;
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE] = [
+            FundAccount\Entity::NUMBER => $fundAccount->getLinkedNumber(),
+            FundAccount\Entity::ACCOUNT_HOLDER_NAME => $fundAccount->getCustomerName(),
+        ];
+
+        // Ensure existing VPA keys are not removed, only nullify ADDRESS and USERNAME
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] = array_merge(
+            $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] ?? [],
+            [
+                Vpa\Entity::ADDRESS => null,
+                Vpa\Entity::USERNAME => null,
+            ]
+        );
+    }
+
+
+    public function payoutsDualWriteFailureProcessingCron($input)
+    {
+        $this->trace->info
+        (
+            TraceCode::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
+        try
+        {
+            $this->payoutsDualWriteFailureProcessingCronClient->triggerDualWriteFailureProcessingViaMicroservice($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     * @throws Throwable
+     */
+    public function getPayoutDetailsWithDBFirst(string $id, array $input): array
+    {
+        $exceptionFromAPIDB = null;
+        try {
+            $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                Constants\Metric::LABEL_MESSAGE => "API_DB"
+            ]);
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
+
+            if (!empty($payout)) {
+                $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Fetched Payout from API DB",
+                    'id' => $id,
+                    'payout' => $payout->toArrayPublic()
+                ]);
+                return $payout->toArrayPublic();
+            }
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::FETCH_PAYOUT_BY_ID, [
+                'message' => "Exception Fetch Payout from API DB",
+                'id' => $id,
+                'payout' => $payout,
+                'exception' => $e
+            ]);
+            $exceptionFromAPIDB = $e;
+        }
+
+        $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+            Constants\Metric::LABEL_MESSAGE => "API_DB_FAIL"
+        ]);
+
+        //Check And Fetch from Payout Service
+        if ($this->isLiveTraffic()) {
+            try {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+                $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Fetch Payout from PS",
+                    'id' => $id,
+                    'payout' => $payout
+                ]);
+                $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                    Constants\Metric::LABEL_MESSAGE => "PS_CALL_SUCCESS"
+                ]);
+                return $payout;
+            } catch (\Throwable $e){
+                $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                    Constants\Metric::LABEL_MESSAGE => "PS_CALL_FAILURE",
+                    Constants\Metric::LABEL_ERROR_CODE => $e->getCode()
+                ]);
+                $this->trace->error(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Exception Fetch Payout from Payout Service",
+                    'id' => $id,
+                    'payout' => $payout,
+                    'exception' => $e
+                ]);
+                throw $e;
+            }
+        }
+        $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+            Constants\Metric::LABEL_MESSAGE => "PS_CALL_DISABLED"
+        ]);
+        throw $exceptionFromAPIDB ?? new RuntimeException("The id provided does not exist.", [
+            "id" => $id
+        ]);
+    }
+
+    /**
+     * @param array $input
+     * @param string $id
+     * @return array|null
+     * @throws \Exception
+     */
+    public function getPayoutDetailWithPSFirst(string $id, array $input): ?array
+    {
+        $payout = null;
+
+        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true) {
+            try {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+            } catch (\Exception $e) {
+                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID) {
+                    throw $e;
+                }
+            }
+        }
+
+        if (empty($payout) === true) {
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
+
+            return $payout->toArrayPublic();
+        }
+
+        return $payout;
+    }
+
+    /**
+     * @return true if mode is LIVE
+     */
+    protected function isLiveTraffic(): bool
+    {
+        return $this->mode == Constants\Mode::LIVE;
     }
 }

@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Pricing\Fee;
@@ -192,10 +193,14 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($settlementOndemand);
 
-        $this->trace->count(Metric::SETTLEMENT_ONDEMAND_STATUS_UPDATES, ['status' => Status::CREATED]);
-
         if(!$skipLedgerOutboxEntry) {
             $reverseShadowCapital->createLedgerEntryForSettlementOndemandProcessedInReverseShadow($settlementOndemand);
+
+            $this->trace->count(Metric::SETTLEMENT_ONDEMAND_STATUS_UPDATES, ['status' => Status::CREATED]);
+
+            foreach ($settlementOndemandPayouts as $settlementOndemandPayout) {
+                $this->trace->count(Metric::SETTLEMENT_ONDEMAND_PAYOUT_STATUS_UPDATES, ['status' => Status::CREATED, 'mode' => $settlementOndemandPayout->getMode()]);
+            }
         }
 
         return [$settlementOndemand, $settlementOndemandPayouts];
@@ -459,11 +464,29 @@ class Core extends Base\Core
 
             $pricingArray['update'] = true;
 
-            $inputArray = [];
+            $inputArray[] = $pricingArray;
 
-            array_push($inputArray, $pricingArray);
+            $result = (new Pricing\Service)->postAddBulkPricingRules($inputArray, $settlementOndemandPricing->getOrgId());
 
-            (new Pricing\Service)->postAddBulkPricingRules($inputArray, $settlementOndemandPricing->getOrgId());
+            foreach ($result['items'] as $item)
+            {
+                if ($item['idempotency_key'] === 'random' && $item['success'] === false) {
+                    throw new Exception\ServerErrorException(
+                        'Failed to update pricing rule',
+                        ErrorCode::SERVER_ERROR_PRICING_RULE_UPDATION_FAILURE,
+                        [
+                            'merchant_id' => $merchant->getId(),
+                            'pricing_feature' => $pricingFeature,
+                            'error' => $item['error']
+                        ]
+                    );
+                }
+            }
+
+            $this->trace->info(TraceCode::UPDATE_ONDEMAND_PRICING, [
+                'merchant_id'     => $merchant->getId(),
+                'pricing_feature' => $pricingFeature
+            ]);
         }
     }
 
@@ -575,6 +598,9 @@ class Core extends Base\Core
         return $merchantIdList;
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function addDefaultPricing($merchant, $percentRate, $pricingFeature = PricingFeature::SETTLEMENT_ONDEMAND, $pricingPercentScaleFactor = null)
     {
         if ($percentRate === null)
@@ -585,43 +611,48 @@ class Core extends Base\Core
         {
             $pricingPercentScaleFactor = 100;
         }
-        $pricingPlanId = $merchant->getPricingPlanId();
 
-        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchant, $pricingPlanId, $percentRate, $pricingPercentScaleFactor, $pricingFeature)
+        $settlementOndemandPricingRule = [
+            Pricing\Entity::MERCHANT_ID => $merchant->getId(),
+            'idempotency_key' => 'random',
+            'update' => true,
+            Pricing\Entity::PRODUCT => Product::PRIMARY,
+            Pricing\Entity::FEATURE => $pricingFeature,
+            Pricing\Entity::TYPE => Pricing\Type::PRICING,
+            Pricing\Entity::PAYMENT_METHOD => Payout\Method::FUND_TRANSFER,
+            Pricing\Entity::INTERNATIONAL => '0',
+            Pricing\Entity::PERCENT_RATE => $percentRate,
+            Pricing\Entity::PERCENT_RATE_SCALE_FACTOR => $pricingPercentScaleFactor,
+            Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
+            Pricing\Entity::AMOUNT_RANGE_MAX => 0,
+            Pricing\Entity::AMOUNT_RANGE_MIN => 0,
+            Pricing\Entity::FEE_BEARER => $merchant->getFeeBearer(),
+        ];
+
+        $inputArray[] = $settlementOndemandPricingRule;
+
+        $result = (new Pricing\Service)->postAddBulkPricingRules($inputArray);
+
+        foreach ($result['items'] as $item)
         {
-            $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
-
-            // Replicates plan for this merchant if it was shared
-            if ($this->repo->merchant->checkMerchantsCountWithPricingPlanIdNotEqualOne($pricingPlanId))
-            {
-                $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant, $pricingPlan);
-
-                $merchant->refresh();
-
-                $pricingPlanId = $newPlan->getId();
+            if ($item['idempotency_key'] === 'random' && $item['success'] === false) {
+                throw new Exception\ServerErrorException(
+                    'Failed to create pricing rule',
+                    ErrorCode::SERVER_ERROR_PRICING_RULE_CREATION_FAILURE,
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'pricing_feature' => $pricingFeature,
+                        'error' => $item['error']
+                    ]
+                );
             }
+        }
 
-            $settlementOndemandPricingRule = [
-                Pricing\Entity::PRODUCT => Product::PRIMARY,
-                Pricing\Entity::FEATURE => $pricingFeature,
-                Pricing\Entity::PAYMENT_METHOD => Payout\Method::FUND_TRANSFER,
-                Pricing\Entity::PERCENT_RATE => $percentRate,
-                Pricing\Entity::PERCENT_RATE_SCALE_FACTOR => $pricingPercentScaleFactor,
-                Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
-                Pricing\Entity::AMOUNT_RANGE_MAX => 0,
-                Pricing\Entity::AMOUNT_RANGE_MIN => 0,
-                Pricing\Entity::FEE_BEARER => $merchant->getFeeBearer(),
-            ];
-
-            $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule, $pricingPlan->getOrgId());
-
-            $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
-                'merchant_id'     => $merchant->getId(),
-                'pricing_type'    => 'settlement_ondemand',
-                'pricing_feature' => $pricingFeature
-            ]);
-
-        });
+        $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
+            'merchant_id'     => $merchant->getId(),
+            'pricing_type'    => 'settlement_ondemand',
+            'pricing_feature' => $pricingFeature
+        ]);
     }
 
     public function findFullESEligilbleMerchants()

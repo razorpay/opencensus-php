@@ -79,6 +79,35 @@ class BharatQrVpaExtracter
         }
     }
 
+    public static function getTr(string $qrString)
+    {
+        try {
+            self::$qrString = $qrString;
+
+            // Parse the QR string into TLVs
+            $tlvs = self::findTags(0);
+
+            // Search for Tr under tag "27"
+            $tr = self::getTrFromUpiTlv($tlvs);
+            return $tr;
+        }
+        catch (\Throwable $e)
+        {
+            $app = App::getFacadeRoot();
+            $trace = $app['trace'];
+            $trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::INVALID_BQR_STRING,
+                [
+                    "qrString" => $qrString
+                ]
+            );
+
+
+        }
+    }
+
     /**
      * Recursive method to parse the QR string into an array of TLV objects.
      * @param int $cursor - Current position in the QR string.
@@ -169,6 +198,27 @@ class BharatQrVpaExtracter
             }
         }
         // Return null if VPA not found
+        return null;
+    }
+
+    private static function getTrFromUpiTlv($tlvs)
+    {
+        foreach ($tlvs as $tlv)
+        {
+            if ($tlv->getTagNumber() == Tags::UPI_VPA_REFERENCE || $tlv->getTagNumber() == Tags::ADDITIONAL_DETAIL)
+            {
+                $subTlvs = self::findSubTags($tlv->getTagValue(), 0);
+                foreach ($subTlvs as $subTlv)
+                {
+                    if ($subTlv->getTagNumber() == Tags::UPI_VPA_REFERENCE_TR || $subTlv->getTagNumber() == Tags::ADDITIONAL_DETAIL_ID)
+                    {
+                        // Return the TR
+                        return $subTlv->getTagValue();
+                    }
+                }
+            }
+        }
+        // Return null if TR not found
         return null;
     }
 }

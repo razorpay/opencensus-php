@@ -24,6 +24,7 @@ use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Trace\TraceCode;
 
 class Gateway
 {
@@ -60,6 +61,7 @@ class Gateway
     const AXIS                   = 'axis';
     const IDFC                   = 'idfc';
     const YESBANK                = 'yesbank';
+    const JKBANK                 = 'jkbank';
 
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
@@ -128,6 +130,7 @@ class Gateway
     const UPI_SBI                = 'upi_sbi';
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_JKBANK             = 'upi_jkbank';
     const UPI_HULK               = 'upi_hulk';
     const UPI_RBL                = 'upi_rbl';
     const UPI_AXISOLIVE          = 'upi_axisolive';
@@ -218,6 +221,7 @@ class Gateway
     const BT_HDFC_ECMS       = 'bt_hdfc_ecms';
     const BT_AXIS            = 'bt_axis';
     const BT_IDFC            = 'bt_idfc';
+    const BT_IBL             = 'bt_ibl';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
@@ -447,6 +451,7 @@ class Gateway
         self::PAYTM                 => self::PAYTM,
         self::UPI_AXIS              => self::AXIS,
         self::UPI_ICICI             => self::ICICI,
+        self::UPI_JKBANK            => self::JKBANK,
         self::UPI_MINDGATE          => self::HDFC,
         self::WALLET_PAYPAL         => self::WALLET_PAYPAL,
         self::WORLDLINE             => [
@@ -491,6 +496,7 @@ class Gateway
         self::BT_YESBANK            => self::YESB,
         self::UPI_YESBANK           => self::YESB,
         self::BT_RBL                => self::RBL,
+        self::BT_IBL                => self::INDUSIND,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -854,6 +860,7 @@ class Gateway
         IFSC::AIRP,
         IFSC::APGB,
         IFSC::AUBL,
+        IFSC::BARB,
         Netbanking::BARB_R,
         IFSC::BDBL,
         IFSC::CBIN,
@@ -886,6 +893,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::NSPB,
         IFSC::PSIB,
+        IFSC::PUNB,
         Netbanking::PUNB_R,
         IFSC::PYTM,
         IFSC::RATN,
@@ -2072,6 +2080,7 @@ class Gateway
         IFSC::APGB,
         IFSC::AUBL,
         Netbanking::BARB_R,
+        IFSC::BARB,
         IFSC::BKID,
         IFSC::CBIN,
         IFSC::CGBX,
@@ -2107,6 +2116,7 @@ class Gateway
         IFSC::NCBL,
         IFSC::NSPB,
         IFSC::PSIB,
+        IFSC::PUNB,
         Netbanking::PUNB_R,
         IFSC::PYTM,
         IFSC::RATN,
@@ -2126,6 +2136,7 @@ class Gateway
         IFSC::UTKS,
         IFSC::YESB,
         IFSC::ZCBL,
+        IFSC::CIUB
     ];
 
     // disabled for all auth types
@@ -2810,6 +2821,7 @@ class Gateway
         IFSC::PTNX,
         IFSC::PTSX,
         IFSC::PUBX,
+        IFSC::PUNB,
         Netbanking::PUNB_R,
         IFSC::PVCX,
         IFSC::PYTM,
@@ -3391,6 +3403,7 @@ class Gateway
         Provider::AXIS      => self::BT_AXIS,
         Provider::AXIS_RTPL => self::BT_AXIS,
         Provider::IDFC       => self::BT_IDFC,
+        Provider::INDUSIND  => self::BT_IBL,
     ];
 
     //
@@ -3994,6 +4007,7 @@ class Gateway
         Gateway::PAYU,
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
+        Gateway::UPI_YESBANK,
     ];
 
     public static $cardMandateGateways = [
@@ -4011,6 +4025,8 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
+        Gateway::BILLDESK_OPTIMIZER,
+        Gateway::UPI_YESBANK,
     ];
 
     public static $recurringCardNetworks = [
@@ -4742,6 +4758,9 @@ class Gateway
     public static $s2sMandateCallbackGateways = [
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
+        Gateway::UPI_RZPAPB,
+        Gateway::UPI_YESBANK,
+        Gateway::UPI_AXIS,
     ];
 
     /**
@@ -5594,11 +5613,36 @@ class Gateway
         return (in_array($gateway, self::$createGatewayEntityForDebitPaymentDuringPaymentFlow) === true);
     }
 
-    public static function isSupportedEmandateBank($bank): bool
+    public static function isSupportedEmandateBank($bank, $merchantId): bool
     {
-        $banks = self::getAllEMandateBanks();
+        $app = App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.bank_data_via_npci_api_experiment');
+        if(self::getSplitzResponse($merchantId, $experimentId) === 'enable'){
+            $bankData = self::fetchBankDataFromApi();
+            $banks = array_keys($bankData);
+        }else{
+            $banks = self::getAllEMandateBanks();
+        }
 
         return (in_array($bank, $banks, true) === true);
+    }
+
+    public static function getSplitzResponse(string $id, string $experimentId)
+    {
+        $app = App::getFacadeRoot();
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public static function isSupportedEmandateDirectIntegrationGateway($gateway): bool
@@ -5650,7 +5694,7 @@ class Gateway
             $data = $data['bank_data'] ?? [];
 
             // Store the data in the cache
-            $app['cache']->put($cacheKey, $data, 86400); // Cache for 24 hour
+            $app['cache']->put($cacheKey, $data, 14400); // Cache for 4 hour
         } else {
             $data = $cachedData ?? [];
         }
@@ -5662,10 +5706,10 @@ class Gateway
     {
         $data = self::fetchBankDataFromApi();
 
-        foreach ($data as $ifsc => $bank) {
+        foreach ($data as $bankCode => $bank) {
             // Check if the bank supports any of the specified auth types
             if (array_intersect($authTypes, $bank[self::AUTH_TYPES])) {
-                $recurringData[self::EMANDATE][$ifsc] = $bank;
+                $recurringData[self::EMANDATE][$bankCode] = $bank;
             }
         }
         return $recurringData[self::EMANDATE];
@@ -5676,16 +5720,38 @@ class Gateway
     {
         $banks = [];
 
-        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+        $app = App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.bank_data_via_npci_api_experiment');
+        if (self::getSplitzResponse("enable_npci_banks", $experimentId) === 'enable') {
+            $bankData = self::fetchBankDataFromApi();
 
-        if (isset($emandateBanks[$authType]) === true)
-        {
-            $banks = $emandateBanks[$authType];
-        }
+            if ($authType === Payment\AuthType::AADHAAR) {
+                foreach ($bankData as $bankCode => $bank) {
+                    if (!in_array(Payment\AuthType::AADHAAR, $bank["auth_types"])) {
+                        unset($bankData[$bankCode]);
+                    }
+                }
+            }
 
-        if ($authType === Payment\AuthType::AADHAAR)
-        {
-            $banks = Payment\Gateway::removeAadhaarEmandateRegistrationDisabledBanks($banks);
+            if ($authType === "netbanking") {
+                foreach ($bankData as $bankCode => $bank) {
+                    if (!in_array("netbanking", $bank["auth_types"])) {
+                        unset($bankData[$bankCode]);
+                    }
+                }
+            }
+
+            $banks = array_keys($bankData);
+        }else {
+            $emandateBanks = self::getEmandateAuthTypeToBankMap();
+
+            if (isset($emandateBanks[$authType]) === true) {
+                $banks = $emandateBanks[$authType];
+            }
+
+            if ($authType === Payment\AuthType::AADHAAR) {
+                $banks = Payment\Gateway::removeAadhaarEmandateRegistrationDisabledBanks($banks);
+            }
         }
 
         return $banks;
@@ -6537,6 +6603,7 @@ class Gateway
             self::WALLET_PAYPAL,
             self::OPTIMIZER_RAZORPAY,
             self::WALLET_AIRTELMONEY,
+            self::MOBIKWIK,
             self::TNGD,
         ];
 
@@ -6708,6 +6775,10 @@ class Gateway
             self::UPI_ICICI,
             self::UPI_AXIS,
             self::ATOM,
+            self::UPI_SBI,
+            self::UPI_AIRTEL,
+            self::UPI_MINDGATE,
+            self::UPI_JUSPAY,
         ];
 
         return (in_array($gateway, $gateways, true));

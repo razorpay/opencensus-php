@@ -3,8 +3,10 @@
 namespace RZP\Models\User;
 use App;
 use Hash;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
+use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Base\PublicCollection;
@@ -27,6 +29,7 @@ use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Services\Dcs\Features\Type;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
+use RZP\Models\User\Core as UserCore;
 
 class Entity extends Base\PublicEntity
 {
@@ -297,8 +300,10 @@ class Entity extends Base\PublicEntity
     {
         $merchantUsers = [];
 
+        $userId = $this->getAttribute(self::ID);
+
         if ($defaultMerchantId !== null) {
-            $merchantUsers = (new MerchantUser\Repository)->returnMerchantUserForUserIdMerchantIdOrderByRole($this->getAttribute(self::ID), $defaultMerchantId)->where(Entity::PRODUCT, '!=', Product::BILLING);
+            $merchantUsers = (new MerchantUser\Repository)->returnMerchantUserForUserIdMerchantIdOrderByRole($userId, $defaultMerchantId)->where(Entity::PRODUCT, '!=', Product::BILLING);
 
             if (count($merchantUsers) === 0) {
                 app('trace')->warning(TraceCode::USER_DEFAULT_MERCHANT_NOT_FOUND, [
@@ -311,8 +316,22 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if (count($merchantUsers) === 0) {
-            $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($this->getAttribute(self::ID), $limit);
+        if (count($merchantUsers) === 0 && $userId != null) {
+
+            $origin  = app('request')->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
+
+            $splitzResponse = $this->getSplitzResponse($userId, Constants::DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED);
+
+            app('trace')->info(TraceCode::DASHBOARD_HOMEPAGE_REDIRECTION_EXPERIMENT, [
+                "origin"            => $origin,
+                "splitz_response"   => $splitzResponse,
+            ]);
+
+            if ($splitzResponse === "variables" && (new UserCore)->isUnifiedRequest($origin)) {
+                $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRoleForAllProducts($userId, $limit);
+            } else {
+                $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($userId, $limit);
+            }
         }
 
         $merchantIds    = [];
@@ -821,7 +840,7 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
-        $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
+        $attributes[self::ROLE_NAME] = (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($attributes[self::ROLE]);
 
         return $attributes;
     }
@@ -851,7 +870,7 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
-        $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
+        $attributes[self::ROLE_NAME] = (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($attributes[self::ROLE]);
 
         return $attributes;
     }
@@ -920,5 +939,39 @@ class Entity extends Base\PublicEntity
         {
             return null;
         }
+    }
+
+    private function getSplitzResponse(string $id, string $experimentName)
+    {
+        try
+        {
+            $experimentId = app('config')->get('app.'.$experimentName);
+
+            $response = app('splitzService')->evaluateRequest([
+                'id'            => $id,
+                'experiment_id' => $experimentId,
+            ]);
+
+            app('trace')->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $experimentId,
+                "response" => $response,
+            ]);
+
+            if (!empty($response['response']['variant']) && isset($response['response']['variant']['name'])) {
+                return $response['response']['variant']['name'];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'id'   => $id,
+                'experiment_id' => $app->config->get($experimentName) ?? null,
+                'experiment_name' => $experimentName
+            ]);
+
+            return '';
+        }
+
+        return '';
     }
 }

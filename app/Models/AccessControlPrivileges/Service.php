@@ -27,6 +27,11 @@ class Service extends Base\Service
 
     public function listDashboardPrivileges()
     {
+        if ($this->merchant->checkCACMigrationExperimentEnabled())
+        {
+            return $this->core->fetchPrivilegesFromAuthz();
+        }
+
         $input = [
             Entity::VISIBILITY => 1,
             'expand' => ['actions'],
@@ -49,5 +54,37 @@ class Service extends Base\Service
     public function addNewPrivilegeAndItsDependencies($input)
     {
         return $this->core->addNewPrivilegeAndItsDependencies($input);
+    }
+
+    public function addPrivilegeOnAuthz($input)
+    {
+        (new Validator())->validateInput(Validator::CREATE_ON_AUTHZ, $input);
+
+        return $this->core->addPrivilegeOnAuthz($input);
+    }
+
+    public function updatePrivilegeOnAuthz($id, $input)
+    {
+        $input[Entity::ID] = $id;
+
+        (new Validator())->validateInput(Validator::UPDATE_ON_AUTHZ, $input);
+
+        return $this->core->updatePrivilegeOnAuthz($input);
+    }
+
+    public function addPrivilegeRoleMappingOnAuthz($input)
+    {
+        (new Validator())->validateInput(Validator::CREATE_PRIVILEGE_ROLE_MAPPING_ON_AUTHZ, $input);
+
+        return $this->core->addPrivilegeRoleMappingOnAuthz($input);
+    }
+
+    public function updatePrivilegeRoleMappingOnAuthz($id, $input)
+    {
+        $input[Entity::ID] = $id;
+
+        (new Validator())->validateInput(Validator::UPDATE_PRIVILEGE_ROLE_MAPPING_ON_AUTHZ, $input);
+
+        return $this->core->updatePrivilegeRoleMappingOnAuthz($input);
     }
 }

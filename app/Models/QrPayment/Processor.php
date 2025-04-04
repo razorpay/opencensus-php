@@ -90,7 +90,7 @@ class Processor extends Base\Core
             $this->app['basicauth']->setMerchant($this->merchant);
             // 3.2 Fetch Key for this Merchant. It gets used in forming
             //     signature for payment authorize response
-            $key = $this->repo->key->getLatestActiveKeyForMerchant($this->merchant->getId());
+            $key = $this->repo->key->getLatestActiveKeyForMerchant($this->merchant->getId(), true);
             // 3.3 Set Key Entity in AuthCreds
             $this->app['basicauth']->authCreds->setKeyEntity($key);
         }
@@ -284,9 +284,7 @@ class Processor extends Base\Core
                 // Adding the order id mutex for solving multiple captured payment on same order
                 // If payment has order id then resource will contain order id else payment id
                 $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
-
                 $mutex = App::getFacadeRoot()['api.mutex'];
-
                 $mutex->acquireAndRelease($orderMutex,
                     function() use ($paymentProcessor, $payment)
                     {
@@ -400,6 +398,13 @@ class Processor extends Base\Core
         if($this->qrCode->getDeviceId() !== null and $qrPayment->isExpected() === true)
         {
             $paymentArray[Payment\Entity::DeviceId] = $this->qrCode->getDeviceId();
+        }
+
+        if (($paymentArray[Payment\Entity::SOURCE_CHANNEL] == QrConstants::PAYMENT_TYPE_IN_PERSON) and
+            (empty($this->qrCode->getStoreId()) === false) and
+            ($qrPayment->isExpected() === true))
+        {
+            $paymentArray[Payment\Entity::STORE_ID] = $this->qrCode->getStoreId();
         }
 
         // TODO: find a better method to do this. This is done in order to bypass validation

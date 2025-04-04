@@ -394,9 +394,42 @@ class Repository extends Base\Repository
         return $entity;
     }
 
+    public function getMerchantBalanceByTypeSlave(string $merchantId, string $balanceType)
+    {
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE));
+
+        $entity= $query->merchantIdAndType($merchantId, $balanceType)
+            ->first();
+
+        if ($entity !== null){
+            $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+            $entity->setConnection($mode);
+        }
+
+        return $entity;
+    }
+
     public function getMerchantBalanceByTypeTiDBOrFail(string $merchantId, string $balanceType)
     {
         $balance = $this->getMerchantBalanceByTypeTiDB($merchantId, $balanceType);
+        if ($balance === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchantId,
+                    Entity::TYPE => $balanceType,
+                ]);
+        }
+
+        return $balance;
+    }
+
+    public function getMerchantBalanceByTypeSlaveOrFail(string $merchantId, string $balanceType)
+    {
+        $balance = $this->getMerchantBalanceByTypeSlave($merchantId, $balanceType);
         if ($balance === null)
         {
             throw new BadRequestException(
@@ -589,6 +622,15 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::BALANCE, Entity::ID)
                     ->toArray();
+    }
+
+    public function getBalanceEntityForBalanceId(string $balanceId)
+    {
+        $idColumn        = $this->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+            ->where($idColumn, $balanceId)
+            ->firstOrFailPublic();
     }
 
     public function getBalancesForMerchantIds(array $merchantIds, $balanceType, string $connection = null)

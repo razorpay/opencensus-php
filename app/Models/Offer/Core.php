@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\CobrandingPartner;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -23,12 +24,13 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
 use RZP\Error\PublicErrorDescription;
-use Razorpay\Trace\Logger as Trace;
+use Monolog\Logger;
 use RZP\Error\Error;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Currency\Core as CurrencyCore;
+use RZP\Models\Offer\Constants as OfferConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use Throwable;
 
@@ -113,7 +115,7 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
+                if ($this->shouldRouteToOffersEngine() === true) {
 
                     $this->offersEngine->update($offer, $input);
 
@@ -159,7 +161,7 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($offer);
 
-                        if ($this->shouldRouteToOffersEngine($offer->getMerchantId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
+                        if ($this->shouldRouteToOffersEngine() === true) {
 
                             $this->offersEngine->update($offer, [Entity::ACTIVE => false]);
 
@@ -227,7 +229,7 @@ class Core extends Base\Core
 
     public function defaultOffersForMerchant(string $merchantId)
     {
-        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId);
+        $defaultOffers = $this->fetchDefaultOffersForMerchant($merchantId, true);
 
         $defaultOffersBool = false;
 
@@ -267,6 +269,10 @@ class Core extends Base\Core
         return $order;
     }
 
+    /**
+     * @deprecated this function shouldn't be used anymore, all validations should be carried
+     * out offers engine.
+     */
     public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
         $verbose = true;
@@ -468,9 +474,9 @@ class Core extends Base\Core
         return true;
     }
 
-    public function fetchDefaultOffersForMerchant(string $merchantId)
+    public function fetchDefaultOffersForMerchant(string $merchantId, $enableCache = false)
     {
-        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId);
+        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId, $enableCache);
 
         return $defaultOffers;
     }
@@ -621,6 +627,9 @@ class Core extends Base\Core
         return ($matchingDirectOfferPresent === false);
     }
 
+    /**
+     * @deprecated this method has been deprecated since we have moved the creation flow to offers engine
+     */
     protected function checkConflictingOffers(Entity $offer)
     {
         /**
@@ -763,14 +772,35 @@ class Core extends Base\Core
             return;
         }
 
+        $methods = [$input[Entity::PAYMENT_METHOD]];
+
+        if (in_array(Entity::MULTIPLE, $methods) === true)
+        {
+            if (empty($input[Entity::INSTRUMENTS]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Payment Instruments must not be empty");
+            }
+
+            $methods = [];
+            foreach ($input[Entity::INSTRUMENTS] as $instrument)
+            {
+                if (empty($instrument[OfferConstants::METHOD]) === false)
+                {
+                    $methods[] = $instrument[OfferConstants::METHOD];
+                }
+            }
+        }
+
         $merchantPaymentMethods = $merchant->methods;
 
-        $method = $input[Entity::PAYMENT_METHOD];
-
-        if ($merchantPaymentMethods->isMethodEnabled($method) === false)
+        foreach ($methods as $method)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
+            if ($merchantPaymentMethods->isMethodEnabled($method) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
+            }
         }
     }
 
@@ -802,60 +832,69 @@ class Core extends Base\Core
         return $this;
     }
 
-    //increment the offer usage count after failed payment for max offer validation.
+    /**
+     * @deprecated - currently, all offers reads have been migrated to offers engine, hence this function will just
+     * return the offer back without incrementing usage.
+     */
     public function lockIncrementCurrentOfferUsage(Entity $offer, $payment = null)
     {
         if ($offer !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer, $payment)
+            if ($offer->isExternalOfferWithGlobalLimits() === false)
             {
-                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+                $offer = $this->repo->transaction(function() use ($offer, $payment) {
+                    $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
-                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
-                    "offer_id"      => $offer->getId(),
-                    "current_usage" => $offer->getCurrentOfferUsage(),
-                    "new_usage"     => $offer->getCurrentOfferUsage() + 1,
-                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
-                    "payment_id"    => optional($payment)->getId(),
-                ]);
+                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_INCREMENT, [
+                        "offer_id"      => $offer->getId(),
+                        "current_usage" => $offer->getCurrentOfferUsage(),
+                        "new_usage"     => $offer->getCurrentOfferUsage() + 1,
+                        "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment_id"    => optional($payment)->getId(),
+                    ]);
 
-                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+                    $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
 
-                $this->repo->saveOrFail($offer);
+                    $this->repo->saveOrFail($offer);
 
-                // not handling this as part of decomp reads as it is part of payment flow and involves usage updates
-                return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
-            });
+                    return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
+                });
+            }
 
             return $offer;
         }
     }
 
-    //decrement the offer usage count after failed payment for max offer validation.
+    /**
+     * @deprecated - currently, all offers reads have been migrated to offers engine, hence this function will just
+     * return the offer back without decrementing usage.
+     */
     public function lockDecrementCurrentOfferUsage(Payment\Entity $payment)
     {
         $offer = $payment->getOffer();
 
         if ($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
-            $offer = $this->repo->transaction(function () use ($offer, $payment)
+            if ($offer->isExternalOfferWithGlobalLimits() === false)
             {
-                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+                $offer = $this->repo->transaction(function() use ($offer, $payment) {
+                    $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
-                app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
-                    "offer_id"      => $offer->getId(),
-                    "current_usage" => $offer->getCurrentOfferUsage(),
-                    "new_usage"     => $offer->getCurrentOfferUsage() - 1,
-                    "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
-                    "payment"       => optional($payment)->getId(),
-                ]);
+                    app('trace')->info(TraceCode::CURRENT_OFFER_USAGE_DECREMENT, [
+                        "offer_id"      => $offer->getId(),
+                        "current_usage" => $offer->getCurrentOfferUsage(),
+                        "new_usage"     => $offer->getCurrentOfferUsage() - 1,
+                        "route_name"    => $this->app['api.route']->getCurrentRouteName() ?? null,
+                        "payment"       => optional($payment)->getId(),
+                    ]);
 
-                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
+                    $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
 
-                $this->repo->saveOrFail($offer);
+                    $this->repo->saveOrFail($offer);
 
-                return $offer;
-            });
+                    return $offer;
+                });
+            }
 
             return $offer;
         }
@@ -1122,8 +1161,6 @@ class Core extends Base\Core
         if ($offerCreateReadsMigrationExpResult === false)
         {
             $this->validateMerchant($merchant, $input);
-
-            $this->checkConflictingOffers($offer);
         }
 
         $this->repo->transaction(
@@ -1139,8 +1176,7 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine(
-                    $merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP, true) === true)
+                if ($this->shouldRouteToOffersEngine() === true)
                 {
                     $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
                 }
@@ -1149,12 +1185,10 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function bulkCalltoSplitz(string $merchantId): array
+    public function bulkCalltoSplitz(): array
     {
         if ((app()->runningUnitTests() === true) or
-            ($this->env === 'bvt' or $this->env === 'automation' or
-             $this->env === 'func' or $this->env === 'availability' or
-             $this->env === 'perf' or $this->env === 'perf2'))
+            (app()->isEnvironmentQA() === true))
         {
             return [
                 Constants::OFFERS_ENGINE_VALIDATE_OFFER_EXP => false,
@@ -1168,17 +1202,40 @@ class Core extends Base\Core
         ];
     }
 
-    public function shouldRouteToOffersEngine(string $merchantId, $experiment, $throwError = false): bool
+    public function shouldRouteToOffersEngine(): bool
     {
         if ((app()->runningUnitTests() === true) or
-        ($this->env === 'bvt' or $this->env === 'automation' or
-         $this->env === 'func' or $this->env === 'availability' or
-         $this->env === 'perf' or $this->env === 'perf2'))
+        (app()->isEnvironmentQA() === true))
         {
             return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
         }
 
         return true;
+    }
+
+    public function shouldEagerLoadOffersFromOE()
+    {
+        $currentRouteName = app('api.route')->getCurrentRouteName();
+
+        $routesAllowedForEagerLoad = [
+            'payment_fetch_by_id',
+            'payment_fetch_multiple'
+        ];
+
+        if (in_array($currentRouteName, $routesAllowedForEagerLoad) === false)
+        {
+            return false;
+        }
+
+        $fetchExperimentEnabled = (new Core())->shouldRouteToOffersEngineForCreation(
+            UniqueIdEntity::generateUniqueId(), Constants::OFFERS_ENGINE_FETCH_EXP);
+
+        app('trace')->info(TraceCode::OFFERS_EAGER_LOAD_INFO, [
+            "experiment_enabled" => $fetchExperimentEnabled,
+            'route_name'         => $currentRouteName,
+        ]);
+
+        return $fetchExperimentEnabled;
     }
 
     public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool
@@ -1187,10 +1244,7 @@ class Core extends Base\Core
         {
             return (bool) ConfigKey::get(ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED, false);
         }
-        if (
-            ($this->env === 'bvt' or $this->env === 'automation' or
-             $this->env === 'func' or $this->env === 'availability' or
-             $this->env === 'perf' or $this->env === 'perf2'))
+        if (app()->isEnvironmentQA() === true)
         {
             return false;
         }
@@ -1203,6 +1257,44 @@ class Core extends Base\Core
                 "request_data"  => json_encode(
                     [
                         'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+
+        }
+
+        return false;
+    }
+
+    public function shouldIgnoreAPIFallback(string $functionName, $experiment): bool
+    {
+        if (app()->runningUnitTests() === true or app()->isEnvironmentQA() === true)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                "id"            => $functionName,
+                "experiment_id" => $this->app['config']->get($experiment),
+                "request_data"  => json_encode(
+                    [
+                        'function_name' => $functionName,
                     ]),
             ];
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -1357,8 +1449,8 @@ class Core extends Base\Core
         return $providerReferenceId;
     }
 
-    public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine,
-                                           Payment\Entity $payment, Order\Entity $order, Entity $offer, bool $isDummyPayment)
+    public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine, Payment\Entity $payment,
+                                           Order\Entity $order, Entity $offer, bool $isDummyPayment, $input = [])
     {
         if ($shouldValidateOnOffersEngine === false)
         {
@@ -1372,7 +1464,9 @@ class Core extends Base\Core
         // perform checks if we can call offers engine
         if ($payment->isMethodCardOrEmi() === true)
         {
-            $iin = $this->fetchCardIIN($payment);
+
+            $iin = $this->fetchIinForPayment($payment, $input , $isDummyPayment);
+
 
             if ($isDummyPayment === true)
             {
@@ -1446,5 +1540,92 @@ class Core extends Base\Core
                 'OE_RESPONSE' => $oeResp
             ]);
         }
+    }
+
+    public function extractCardIinForSavedCard($payment)
+    {
+
+        // search for card data if already saved card
+        $token        = $payment->getGlobalOrLocalTokenEntity();
+        $networkCard = $token->card;
+
+        if ((empty($networkCard) === false) and
+            ($networkCard->isNetworkTokenisedCard() === true))
+        {
+            $iin = Card\IIN\IIN::getTransactingIinforRange($networkCard->getTokenIin()) ?? substr($networkCard->getTokenIin(), 0, 6);
+        }
+        else
+        {
+            $iin = $networkCard->getIin();
+        }
+
+        return $iin;
+    }
+
+    public function fetchIinForPayment($payment, $input, $isDummyPayment)
+    {
+        $iin = $this->fetchCardIIN($payment);
+
+        if ($isDummyPayment === true)
+        {
+            return $iin;
+        }
+
+        try
+        {
+            $shouldFetchIinFromBinService = $this->shouldRouteToOffersEngineForCreation(
+                $payment->getMerchantId(), Constants::OE_FETCH_IIN_FROM_BIN);
+
+            if ($shouldFetchIinFromBinService === true)
+            {
+                if (empty($input['token']) === false)
+                {
+                    $iin = $this->extractCardIinForSavedCard($payment);
+
+                    $this->trace->info(TraceCode::OE_IIN_FETCHED_FROM_BIN_SERVICE_SAVED_CARD, [
+                        'iin' => $iin,
+                    ]);
+                }
+                else if (empty($input['card']['number']) === false)
+                {
+
+                    $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
+
+                    $trimmed_number = str_replace('-', '', $trimmed_number);
+
+                    if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true)
+                    {
+                        $iin_token = substr($trimmed_number, 0, 9);
+
+                        $iin = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? substr($iin_token,0,6);
+
+                        $iin = substr($trimmed_number, 0, 9);
+
+                        $this->trace->info(TraceCode::SENDING_IIN_TO_OE_THIRD_PARTY_TOKENIZATION, [
+                            'iin' => $iin,
+                        ]);
+                    }
+                    else
+                    {
+                        $iin = substr($trimmed_number, 0, 9);
+
+                        $this->trace->info(TraceCode::SENDING_IIN_TO_OE_AS_CARD_NUMBER, [
+                            'iin' => $iin,
+                        ]);
+                    }
+
+                }
+
+                return $iin;
+            }
+        }
+        catch (throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::OE_BIN_SERVICE_IIN_FETCH_FAILED, [
+                'iin' => $iin
+            ]);
+        }
+
+        return $iin;
     }
 }

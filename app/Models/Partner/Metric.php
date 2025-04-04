@@ -13,12 +13,14 @@ final class Metric
     const PAYMENT_COMMISSION_CREATE_FAILED       = 'payment_commission_create_failed';
 
     const OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_FAILED     = 'oauth_transaction_default_pricing_fetch_failed';
+    const OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH_METRICS     = 'oauth_transaction_custom_pricing_fetch_metrics';
 
     const COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED = 'commission_flush_to_kafka_topic_failed';
     const COMMISSION_FAILED_TOTAL = 'commission_failed_total';
     const COMMISSION_TRANSACTION_JOB_FAILED_TOTAL = 'commission_transaction_job_failed_total';
     const COMMISSION_TRANSACTION_JOB_EXHAUSTED_TOTAL = 'commission_transaction_job_exhausted_total';
     const COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED_TOTAL = 'commission_transaction_on_hold_clear_failed_total';
+    const COMMISSION_TRANSACTION_ON_HOLD_CLEAR_OLD_INVOICE_FAILED_TOTAL = 'commission_transaction_on_hold_clear_old_invoice_failed_total';
     const COMMISSION_INVOICE_GENERATE_JOB_FAILED_TOTAL = 'commission_invoice_generate_job_failed_total';
     const COMMISSION_INVOICE_GENERATE_RETRY_EXHAUSTED_TOTAL = 'commission_invoice_generate_retry_exhausted_total';
     const COMMISSION_TDS_SETTLEMENT_TOTAL = 'commission_tds_settlement_total';
@@ -32,6 +34,7 @@ final class Metric
     const PARTNER_KYC_NOTIFICATION_TOTAL = 'partner_kyc_notification_total';
 
     const COMMISSION_ON_HOLD_CLEAR_PROCESS_TIME_MS      = "commission_on_hold_clear_process_time_ms";
+    const COMMISSION_ON_HOLD_CLEAR_OLD_INVOICE_PROCESS_TIME_MS      = "commission_on_hold_clear_old_invoice_process_time_ms";
     const COMMISSION_TDS_SETTLEMENT_PROCESS_TIME_MS     = "commission_tds_settlement_process_time_ms";
     const COMMISSION_TDS_SETTLEMENT_JOB_FAILURE_TOTAL   = "commission_tds_settlement_job_failure_total";
     const SUBMERCHANT_INVITE_BATCH_DAILY_LIMIT_EXCEEDED = 'submerchant_invite_batch_daily_limit_exceeded';
@@ -103,6 +106,9 @@ final class Metric
     const PARTNER_KYC_REQUEST_EMAIL_FAILED   = 'partner_kyc_request_email_failed';
     const PARTNER_KYC_REQUEST_SMS_FAILED   = 'partner_kyc_request_sms_failed';
 
+    const PKAS_DUAL_WRITE_TOTAL = 'pkas_dual_write_total';
+    const PKAS_DUAL_WRITE_ACCESS_MAP_NOT_FOUND = 'pkas_dual_write_access_map_not_found';
+
     const PARTNER_CALLBACK_EVENTS_RECEIVED_TOTAL = 'partner_callback_events_received_total';
     const PARTNER_CALLBACK_EVENTS_RECEIVED_FAILURE_TOTAL = 'partner_callback_events_received_failure_total';
 
@@ -111,6 +117,7 @@ final class Metric
     const TRANSACTION_ISOLATION_SPLITZ_FAILURE = 'transaction_isolation_splitz_failure';
     const REVERSE_SHADOW_COMMISSION_CREATE_LAG   = 'reverse_shadow_commission_create_lag';
     const REVERSE_SHADOW_COMMISSION_INVOICE_CREATE_LAG = 'reverse_shadow_commission_INVOICE_create_lag';
+    const REVERSE_SHADOW_KYC_ACCESS_UPSERT_LAG = 'reverse_shadow_kyc_access_upsert_lag';
 
     const MASK_PII_FIELDS_FAILED_TOTAL  = 'mask_pii_fields_failed_total';
     const MASK_PII_FIELDS_SUCCESS_TOTAL = 'mask_pii_fields_success_total';
@@ -127,5 +134,8 @@ final class Metric
     const SWITCH_OVER_PARTNERSHIPS_EXPERIMENT_FAILURE='switch_over_partnerships_experiment_failure';
 
     const SWITCH_OVER_PARTNERSHIPS_MERCHANT_APPLICATION_UNKNOWN_ENTITY='switch_over_partnerships_merchant_unknown_entity';
+  
+    const PARTNER_KYC_ACCESS_STATE_SYNC_SKIPPED  = 'partner_kyc_access_state_sync_skipped';
 
+    const PARTNER_KYC_ACCESS_STATE_SYNC_TOTAL_REQUESTS = 'partner_kyc_access_state_sync_total_requests';
 }

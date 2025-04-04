@@ -791,7 +791,7 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
-        $bankingRole = (new Roles\Repository())->fetchRole($role);
+        $bankingRole = (new Roles\Service())->getRoleUsingExperiment($role);
 
         if ((Role::exists($role) === false) and
             (empty($bankingRole) === true) and

@@ -339,12 +339,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
-        self::MERCHANT_DOCUMENT_UPLOAD                  => 30,
+        self::MERCHANT_DOCUMENT_UPLOAD                  => 35,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,
         self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2        => 15,
         self::ONBOARDING_CREATE_OR_FETCH                => 30,
+        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION    => 35,
 
         // TODO: Revert back once the root cause for OBS latency is found and fixed.
         // This is temporarily being increased to unblock curlec signup flows.
@@ -407,6 +408,26 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_SIGN_UP,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP
     ];
+
+    // ROUTES_ENABLED_FOR_POS_FLOW contains the list of routes for which the PGOS call should be enabled.
+    const ROUTES_ENABLED_FOR_POS_FLOW = [
+        self::POST_MERCHANT_CONFIG,
+        self::MERCHANT_POS_STATE_LOGS,
+        self::FETCH_ACTION_STATE_COUNT,
+        self::UPDATE_ACTION_STATE,
+        self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS,
+        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS,
+        self::MERCHANT_FETCH_POS_ACTIVATION_FLOW,
+        self::MERCHANT_ACTIVATION_SAVE,
+        self::PGOS_FETCH_DEVICE_CONFIG,
+        self::PGOS_CREATE_DEVICE_ORDER,
+        self::PGOS_UPDATE_DEVICE_ORDER,
+        self::PGOS_FETCH_DEVICE_ORDER,
+        self::PGOS_FETCH_ALL_DEVICE_ORDER,
+        self::MERCHANT_POS_PAYMENT_CALLBACK,
+        self::MERCHANT_POS_FETCH_LATEST_ORDER,
+    ];
+
 
     public function __construct()
     {
@@ -669,7 +690,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $ignoreRoutingConditions = true;
         }
 
-        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()))
+        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()) or $this->isMerchantEnabledForPos($merchantId,$routeKey))
         {
             if ($mock === true)
             {
@@ -955,6 +976,36 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             return false;
         }
+    }
+    public function isMerchantEnabledForPos($merchantId,string $routeKey): bool
+    {
+
+        try {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $merchantDetails = $merchant->merchantDetail;
+
+            $properties = [
+                'id' => $merchantDetails->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.enable_pos_for_api_submerchants'),
+            ];
+
+            if ($merchantDetails->getActivationStatus() === DetailStatus::ACTIVATED && $merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID && in_array($routeKey, self::ROUTES_ENABLED_FOR_POS_FLOW)) {
+                $isExperimentEnabled = (new Core())->isSplitzExperimentEnable($properties, 'enable');
+                if ($isExperimentEnabled) {
+                    return true;
+                }
+            }
+        }
+        catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'pgos_proxy_request'     => true,
+                'error_function'         => 'isMerchantEnabledForPos',
+                'error_message'          => $e->getMessage()
+            ]);
+        }
+        return false;
     }
 
     public function isFieldsOwnedByPGOS($inputFields): bool

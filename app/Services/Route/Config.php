@@ -14,8 +14,9 @@ const REQUEST_TIMEOUT_KEY = 'request_timeout';
 
 const LOG_REQUEST_KEY = 'log_request';
 const LOG_RESPONSE_KEY = 'log_response';
-
 const NEW_PASSPORT_TOKEN = 'new_passport_token';
+const EXTERNAL_QUERY = 'external_query';
+
 
 class Config
 {
@@ -44,5 +45,10 @@ class Config
     public function shouldCreateNewPassportToken()
     {
         return $this->config[NEW_PASSPORT_TOKEN] ?? DEFAULT_TOKEN;
+    }
+
+    public function isExternalQueryEnabled($query)
+    {
+        return $this->config[EXTERNAL_QUERY][$query] ?? false;
     }
 }

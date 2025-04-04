@@ -87,6 +87,7 @@ class Validator extends Base\Validator
         ConfigKey::PG_ROUTER_SERVICE_ENABLED            => 'filled|boolean',
         ConfigKey::OFFERS_ENGINE_SERVICE_ENABLED        => 'filled|boolean',
         ConfigKey::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED => 'filled|boolean',
+        ConfigKey::FETCH_OFFERS_WITH_LIMITS_FROM_API    => 'filled|boolean',
         ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED       => 'filled|boolean',
         ConfigKey::PAYMENT_ARCHIVAL_EAGER_LOAD          => 'filled|boolean',
         ConfigKey::PAYMENT_ARCHIVAL_FALLBACK_ENABLED    => 'filled|boolean',
@@ -158,6 +159,8 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS                   => 'filled|boolean',
         ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX                => 'filled|array',
         ConfigKey::COLLECTX_SERIES_PREFIX                         => 'filled|array',
+        ConfigKey::RBL_VPA_VALIDATE_API_SESSION_TOKEN             => 'filled|string',
+        ConfigKey::RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN        => 'filled|string',
         ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS             => 'filled|array',
         ConfigKey::ENABLE_NB_KOTAK_ENCRYPTED_FLOW                 => 'filled|boolean', // Not used currently
         ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT                 => 'filled|integer',

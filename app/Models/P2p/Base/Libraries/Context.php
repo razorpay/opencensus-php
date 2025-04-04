@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Base\Libraries;
 
 use RZP\Constants\Mode;
+use RZP\Http\Controllers\P2p\Requests;
 use RZP\Models\Merchant;
 use RZP\Models\P2p\Device;
 use RZP\Models\P2p\Client;
@@ -198,25 +199,44 @@ class Context extends ArrayObject
      */
     public function setMerchant(Request $request,Merchant\Entity $merchant)
     {
+
         // If handle is not required for the api, only set the merchant and type and return
         if (in_array($request->route()->getName(), ContextMap::SKIP_HANDLE_VALIDATION_ROUTES, true) === true) {
             $this->type = self::MERCHANT;
 
             $this->merchant = $merchant;
-            return;
+            if($request->route()->getName() == Requests::P2P_CUSTOMER_CREATE_SESSION) {
+                return;
+            }
         }
 
-        $client = $this->handle->client(Client\Type::MERCHANT, $merchant->getId());
+        if (in_array($request->route()->getName(), ContextMap::SKIP_HANDLE_VALIDATION_ROUTES, true) === true) {
+            // Fetch p2p client for given merchantId
+            $client = app('repo')
+                ->p2p_client
+                ->connection($this->getMode())
+                ->findByClientId($merchant->getId());
 
-        if (($client instanceof Client\Entity) === false)
-        {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE);
+            // Fetch the handle entity for
+            // the client's handle
+            // TODO: Cover the corner case where one client can have multiple handle
+            $obtainedHandle = app('repo')
+                ->p2p_handle
+                ->connection($this->getMode())
+                ->find($client->getHandle());
+
+            $this->setHandle($obtainedHandle);
+        } else{
+            $client = $this->handle->client(Client\Type::MERCHANT, $merchant->getId());
+
+            if (($client instanceof Client\Entity) === false)
+            {
+                throw $this->badRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE);
+            }
         }
 
         $this->type = self::MERCHANT;
-
         $this->merchant = $merchant;
-
         $this->handle->setClient($client);
     }
 

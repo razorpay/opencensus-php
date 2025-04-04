@@ -190,8 +190,13 @@ class Service extends Base\Service
         return $order;
     }
 
-    public function checkForDefaultOffers(array & $input)
+    public function checkForDefaultOffers(array & $input, $merchant = null)
     {
+        if ($this->merchant === null)
+        {
+            $this->merchant = $merchant;
+        }
+
         $defaultOffers = (new Offer\Core())->fetchDefaultOffersForMerchant($this->merchant->getId());
 
         $offerCore = (new Offer\Core);
@@ -782,6 +787,10 @@ class Service extends Base\Service
 
         $isPrivateAuth = $this->app['basicauth']->isPrivateAuth();
 
+        $config  = $this->app['config']->get('applications.route');
+
+        $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
         $this->trace->count(Metric::API_DECOMP_AUTH_DISTRIBUTION, [
             'route_auth'       => $this->app['basicauth']->getAuthType(),
             'isPrivateAuth'   =>  $isPrivateAuth,
@@ -802,7 +811,13 @@ class Service extends Base\Service
 
             if ($this->checkSplitzForOrderPaymentsParity() === true)
             {
-                $this->pushPaymentsOrderForParity($response, ["order_id" => $orderId]);
+                $this->pushPaymentsOrderForParity($response,
+                    [
+                        "order_id" => $orderId,
+                        "passport" => $passport,
+                        "ip"       => $this->app['request']->getClientIp(),
+                    ]
+                );
             }
 
             return $response;
@@ -815,6 +830,9 @@ class Service extends Base\Service
 
         if ($this->checkSplitzForOrderPaymentsParity() === true)
         {
+            $input["passport"] = $passport;
+            $input["ip"]       = $this->app['request']->getClientIp();
+
             $this->pushPaymentsOrderForParity($response, $input);
         }
 

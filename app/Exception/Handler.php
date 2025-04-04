@@ -710,30 +710,7 @@ class Handler extends ExceptionHandler
 
     protected function isNpciFeedbackPopupAllowed($merchantId)
     {
-        try
-        {
-            $variantFlag = $this->app['razorx']->getTreatment($merchantId,
-                RazorxTreatment::ALLOW_NPCI_FEEDBACK_POPUP_EMANDATE_FAILURE,
-                $this->app['rzp.mode']);
-
-            $this->trace->info(
-                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_SUCCESS,
-                [
-                    'variant' => $variantFlag
-                ]);
-
-            return (strtolower($variantFlag) === 'on');
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_FAILURE,
-                [
-                    'error' => $e,
-                ]);
-
-            return false;
-        }
+        return false;
     }
 
     /**

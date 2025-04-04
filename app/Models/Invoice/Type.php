@@ -15,6 +15,8 @@ class Type
     const JPMC_INVOICE = 'jpmc_invoice';
     const OPGSP_AWB = 'opgsp_awb';
     const CITI_INVOICE = 'citi_invoice';
+    const NCA_INVOICE = 'nca_invoice';
+
 
     protected static $paymentLinkTypes = [
         self::LINK,
@@ -81,6 +83,7 @@ class Type
                 return 'Payment Link';
 
             case self::INVOICE:
+            case self::NCA_INVOICE:
                 return 'Invoice';
 
             case self::DCC_INV:

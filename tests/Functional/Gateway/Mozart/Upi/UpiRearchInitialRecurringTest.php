@@ -270,6 +270,8 @@ class UpiRearchInitialRecurringTest extends TestCase
     {
         $this->testRecurringMandateDebitSuccess();
 
+        $this->fixtures->merchant->addFeatures(['cancel_token_v1']);
+
         $mandate = $this->getDbLastEntity('upi_mandate');
 
         $mandate['description'] = 'mandate_revoke';
@@ -277,6 +279,41 @@ class UpiRearchInitialRecurringTest extends TestCase
         $token = $this->getDbLastEntity('token');
 
         $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::REVOKED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CANCELLED, $token['recurring_status']);
+    }
+
+    public function testRevokeMandateNewFlow()
+    {
+        $this->testRecurringMandateDebitSuccess();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $mandate['description'] = 'mandate_revoke';
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::CONFIRMED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CANCELLATION_INITIATED, $token['recurring_status']);
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $mandate['description'] = 'rearch_callback';
+
+        $this->mandateRevokeCallback($mandate);
 
         $mandate->reload();
 

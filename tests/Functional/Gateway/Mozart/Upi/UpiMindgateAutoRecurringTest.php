@@ -50,6 +50,9 @@ class UpiMindgateAutoRecurringTest extends TestCase
 
         // Enable UPI payment service in config
         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
+
+        $this->mockSplitzTreatmentForAutopayRearch('variant_off');
+
     }
 
     public function testAutoRecurringPreDebitInitiationSuccess()

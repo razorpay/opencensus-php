@@ -2,6 +2,7 @@
 
 namespace RZP\Models\ClarificationDetail;
 
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -73,7 +74,7 @@ class Service extends Base\Service
 
             $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true || $onboardingType === Constants::POS_ONBOARDING_TYPE) {
 
                 if ($onboardingType === Constants::POS_ONBOARDING_TYPE) {
                     $pgosInput[DEConstants::ONBOARDING_TYPE] = $onboardingType;
@@ -287,9 +288,11 @@ class Service extends Base\Service
 
             $isEligibleForRekycExperiment = $service->isEligibleForRekycExperiment($merchantId);
 
-            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true) {
+            $onboardingType = $input[DEConstants::ONBOARDING_TYPE];
 
-                $onboardingType = $input[DEConstants::ONBOARDING_TYPE];
+            if ($shouldMerchantOnboardViaPGOS === true || $isEligibleForRekycExperiment === true || $onboardingType === Constants::POS_ONBOARDING_TYPE) {
+
+
                 unset($input[DEConstants::ONBOARDING_TYPE]);
 
                 $pgosInput['data'] = $input;
@@ -700,6 +703,56 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchAndBuildCommunicationParams($merchantId)
+    {
+        try {
+            $response = (new Service)->getClarificationDetail($merchantId);
+
+            $this->trace->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
+                'response' => $response,
+            ]);
+
+            $communicationParams = [];
+
+            $commentLength = 0;
+
+            if (isset($response['clarification_details']['nc_count']) && $response['clarification_details']['nc_count'] > 0) {
+
+                foreach ($response['clarification_details'] as $key => $details) {
+
+                    if (!empty($details['comments'])) {
+
+                        $commentLength += count($details['comments']);
+
+                        $groupName = ucwords(str_replace("_", " ", $key));
+
+                        foreach ($details['comments'] as $comment) {
+
+                            if ($comment['message_from'] === 'admin' && $comment['comment_data']['type'] === 'predefined' && $comment['status'] === Constants::NEEDS_CLARIFICATION) {
+
+                                $communicationParams[$groupName] = $comment['comment_data']['text'];
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            return [
+                'communication_params'      => $communicationParams,
+                'has_clarification_details'  => $commentLength > 0
+            ];
+
+        } catch (\Exception $exception) {
+            $this->trace->error(TraceCode::FETCH_AND_BUILD_CLARIFICATION_DETAILS_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+
+            throw new Exception\ServerErrorException(PublicErrorDescription::SERVER_ERROR, PublicErrorDescription::SERVER_ERROR, [
+                'error description' => 'data could not be fetched'
+            ]);
+        }
+    }
     /**
      * buildUBOPayload updates UBO-related fields in the clarification reason if they are empty.
      *

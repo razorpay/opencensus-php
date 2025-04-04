@@ -72,6 +72,8 @@ class Constants
 
     const CROSS_BORDER_ONBOARDING = 'cross_border_onboarding';
 
+    const SUBMERCHANT_ONBOARDING = 'submerchant_onboarding';
+
     const PRODUCT_WORKFLOW_TYPE_TEMPLATE = '%s_workflow_type';
 
     const CURLEC_LINKED_ACCOUNT_ONBOARDING = "curlec_linked_account_onboarding";

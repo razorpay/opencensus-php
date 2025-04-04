@@ -38,6 +38,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Card\IIN\IIN;
@@ -915,6 +916,8 @@ class Service extends Base\Service
 
                         $data[Payment\Entity::GATEWAY_TXN_ID] = $payment->getGatewayTxnId();
 
+                        $data[Payment\Entity::InternalStatus] = $payment->getInternalStatus();
+
                         $data[RefundConstants::SOURCE_CHANNEL] = $payment->getSourceChannel();
                     }
 
@@ -996,6 +999,39 @@ class Service extends Base\Service
                                     $data = $entity->toArray();
                                 }
                             }
+                            else if ($key === Constants\Entity::BANK_TRANSFER){
+                                try{
+
+                                    $bankTransfer = $payment->bankTransfer;
+                                    if (empty($bankTransfer) === false)
+                                    {
+                                        $data[BankTransfer\Entity::MODE] = $bankTransfer->getMode();
+                                        $data[BankTransfer\Entity::PAYER_ACCOUNT] = $bankTransfer->getPayerAccount();
+                                        $data[BankTransfer\Entity::PAYER_IFSC] = $bankTransfer->getPayerIfsc();
+                                        $data[BankTransfer\Entity::PAYER_NAME] = $bankTransfer->getPayerName();
+                                        $data[BankTransfer\Entity::PAYEE_IFSC] = $bankTransfer->getPayeeIfsc();
+                                        $data[BankTransfer\Entity::PAYEE_ACCOUNT] = $bankTransfer->getPayeeAccount();
+                                    }
+                                }
+                                catch (\Throwable $ex)
+                                {
+                                    $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                                }
+                            }else if ($key === Constants\Entity::BANK_ACCOUNT) {
+                                try{
+
+                                    $merchantBankAccount = $payment->merchant->bankAccount;
+
+                                    if (empty($merchantBankAccount) === false) {
+                                        $data[BankAccount\Entity::ACCOUNT_NUMBER] = $merchantBankAccount->getAccountNumber();
+                                        $data[BankAccount\Entity::IFSC] = $merchantBankAccount->getIfscCode();
+                                    }
+                                }
+                                catch (\Throwable $ex)
+                                {
+                                    $error = RefundConstants::FETCH_ENTITIES_ERROR;
+                                }
+                            }
                             else if ($key === Constants\Entity::TOKEN)
                             {
                                 $data = $payment->getGlobalOrLocalTokenEntity();
@@ -1022,7 +1058,14 @@ class Service extends Base\Service
                                 $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
-                                $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                if ($this->shouldFetchBalanceFromSlave($merchant->getId()))
+                                {
+                                    $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromSlaveForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                }
+                                else
+                                {
+                                    $balance= (new ReverseShadowTransferCore())->getBalanceByTypeFromTiDBForMerchantWithFail($merchant, Balance\Type::PRIMARY);
+                                }
 
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
 
@@ -1318,39 +1361,7 @@ class Service extends Base\Service
             return $this->app['scrooge']->refundsFetchMultiple($input);
         }
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        // shadow mode experiment
-        $variant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
-            $this->mode
-        );
-
-        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return $this->fetchMultipleShadowMode($input);
-        }
-
-        // We are masking status for merchants
-        if ((($this->app['basicauth']->isProxyAuth() === true) or
-             ($this->app['basicauth']->isPrivateAuth() === true)) and
-            (isset($input[Entity::STATUS]) === true))
-        {
-            $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
-
-            unset($input[Entity::STATUS]);
-        }
-
-        $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
-
-        $refundsArray = $refunds->toArrayPublic();
-
-        // Showing public_status for all dashboard merchants
-        if ($this->app['basicauth']->isProxyAuth() === true)
-        {
-            $this->addPublicStatus($refundsArray, $input);
-        }
-
-        return $refundsArray;
+        return $this->fetchMultipleShadowMode($input);
     }
 
     public function fetchMultipleShadowMode($input)
@@ -1372,18 +1383,6 @@ class Service extends Base\Service
                 'route_name'    => $this->app['api.route']->getCurrentRouteName(),
                 'extra_trace'   => $this->app['basicauth']->getAuthType(),
             ]);
-        }
-
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        // shadow mode experiment
-        $variant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE_NOTES,
-            $this->mode
-        );
-
-        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return $scroogeRefundsArray;
         }
 
         try
@@ -4342,5 +4341,48 @@ class Service extends Base\Service
                 'event'  => $event
             ]);
         }
+    }
+
+    private function shouldFetchBalanceFromSlave(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.fetch_balance_from_slave_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::FETCH_BALANCE_FROM_SLAVE_SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key === 'result' && $value === 'on')
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::FETCH_BALANCE_FROM_SLAVE_SPLITZ_UNRECOGNIZED_ERROR
+            );
+        }
+        return false;
     }
 }

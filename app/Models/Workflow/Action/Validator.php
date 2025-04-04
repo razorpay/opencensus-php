@@ -20,7 +20,10 @@ class Validator extends Base\Validator
         Entity::MAKER_TYPE    => 'required|string|max:11|custom',
         Entity::WORKFLOW_ID   => 'required|string|max:14',
         Entity::PERMISSION_ID => 'required|string|max:14',
-        Entity::ORG_ID        => 'required|string|max:14'
+        Entity::ORG_ID        => 'required|string|max:14',
+        Entity::OPERATION_TYPE => 'required|string',
+        Entity::CANARY_PERCENTAGE => 'sometimes|int',
+        Entity::CANARY_ENABLED    => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -32,6 +35,7 @@ class Validator extends Base\Validator
         Entity::STATE_CHANGER_ID      => 'sometimes|nullable|string|max:14',
         Entity::STATE_CHANGER_TYPE    => 'required_with:state_changer_id|nullable|string|max:255',
         Entity::OWNER_ID              => 'sometimes|nullable|string|max:14',
+        Entity::CANARY_PERCENTAGE     => 'sometimes|int',
     ];
 
     protected static $needClarificationRules = [

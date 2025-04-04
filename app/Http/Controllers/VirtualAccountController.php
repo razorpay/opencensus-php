@@ -48,6 +48,10 @@ class VirtualAccountController extends Controller
 
     public function closeVirtualAccount(string $id)
     {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CLOSE_REQUEST, [
+            "virtual_account_id" => $id
+        ]);
+
         $response = $this->service()->closeVirtualAccount($id);
 
         return ApiResponse::json($response);

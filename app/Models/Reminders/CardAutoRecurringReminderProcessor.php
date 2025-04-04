@@ -184,56 +184,12 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
     public function isExperimentEnabledForTokenisedCard($merchantId): bool
     {
-        try
-        {
-            $variant = $this->app['razorx']->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::RECURRING_SUBSEQUENT_TOKENISATION_RAZORX_EXPERIMENT
-            );
-        }
-
-        return false;
+        return true;
     }
 
     public function shouldRecurringAutoPaymentGoThroughTokenisedCard($iin): bool
     {
-        try
-        {
-            $variant = $this->app['razorx']->getTreatment(
-                $iin,
-                Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::RECURRING_SUBSEQUENT_TOKENISATION_RAZORX_EXPERIMENT
-            );
-        }
-
-        return false;
+        return true;
     }
 
     protected function logPaymentRoutingInfo(Payment\Entity $payment,

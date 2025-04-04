@@ -7,7 +7,6 @@ use RZP\Constants\Product;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Merchant;
-use RZP\Models\Roles;
 use RZP\Models\User;
 use Lib\PhoneBook;
 
@@ -218,7 +217,7 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
             }
 
-            $roleEntity = (new Roles\Repository())->fetchRole($role);
+            $roleEntity = (new \RZP\Models\Roles\Service())->getRoleUsingExperiment($role);
 
             $dashboardRoles = ( empty($roleEntity) === false and !in_array($role, User\BankingRole::$rblBankCaManagementRoles)) ? [ $role ] : [];
         }

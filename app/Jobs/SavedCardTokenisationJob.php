@@ -13,6 +13,8 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Modules\Base;
+use RZP\Services\Mozart;
+use RZP\Services\Mozart as MozartBase;
 use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -116,7 +118,16 @@ class SavedCardTokenisationJob extends Job
 
             $card = $token->card;
 
-           $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
+            if($card!==null) {
+                $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
+
+                if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
+                {
+                    $this->traceTokenisationNotApplicable($card);
+                    $this->delete();
+                    return;
+                }
+            }
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
                 'tokenId'                   => $this->tokenId,
@@ -126,15 +137,11 @@ class SavedCardTokenisationJob extends Job
                 'tokenpan' => $this->callbackData,
             ]);
 
+            $cardInput = [];
 
-            if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
-            {
-                $this->traceTokenisationNotApplicable($card);
-                $this->delete();
-                return;
+            if($card!==null){
+                $cardInput = $this->tokenCore->buildCardInputForTokenisation($card);
             }
-
-            $cardInput = $this->tokenCore->buildCardInputForTokenisation($card);
 
             $startTime = millitime();
 
@@ -152,19 +159,23 @@ class SavedCardTokenisationJob extends Job
                 $payment = $this->repoManager->payment->findOrFail($this->paymentId);
             }
 
-            if($this->asyncTokenisationJobId === 'pushtokenmigrate'){
+            if(
+                $this->asyncTokenisationJobId === 'pushtokenmigrate' ||
+                $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate' ||
+                $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate' ||
+                $this->asyncTokenisationJobId === "visa_vcpp_token_provision"
+            ) {
                 $cardInput['via_push_provisioning'] = true;
             }
 
-            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue, $serviceProviderTokens, $card] = $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId, $this->callbackData);
 
             $tokenIIN = null;
             if(isset($tokenNumber)) {
                 $tokenIIN = substr($tokenNumber,0,9);
             }
 
-
-//            // Notify to mandateHQ for successful tokenisation
+            // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)
             {
                 try
@@ -193,7 +204,13 @@ class SavedCardTokenisationJob extends Job
 
 
 
-            if ($this->asyncTokenisationJobId === "paymentmigrate" || $this->asyncTokenisationJobId === 'pushtokenmigrate') {
+            if ($this->asyncTokenisationJobId === "paymentmigrate"
+                ||  $this->asyncTokenisationJobId === 'pushtokenmigrate'
+                ||  $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate'
+                ||  $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate'
+                ||  $this->asyncTokenisationJobId === "visa_vcpp_token_provision"
+            ) {
+
                 try {
                     $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
                 } catch(Throwable $e) {
@@ -351,14 +368,7 @@ class SavedCardTokenisationJob extends Job
     {
         $hub = $token->cardMandate->getMandateHub();
 
-        $app = App::getFacadeRoot();
-
-        $blockReportingToHubAfterAsyncRecurringTokenisationExperiment = $app['razorx']->getTreatment(
-            strtolower($hub),
-            RazorxTreatment::BLOCK_HUB_REPORT_AFTER_ASYNC_RECURRING_TOKENISATION,
-            $this->mode);
-
-        if((strtolower($blockReportingToHubAfterAsyncRecurringTokenisationExperiment) === 'on'))
+        if(strtolower($hub) === 'billdesk_sihub')
         {
             $this->trace->info(TraceCode::SKIPPED_REPORTING_TO_MANDATEHUB_AFTER_RECURRING_TOKENISATION, [
                 'tokenId'       => $this->tokenId ?? '',

@@ -39,6 +39,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY     = 'payout_post_create_process_low_priority';
     const PAYOUT_USAGE_EVENT_PROCESSING               = 'payout_usage_event_processing';
     const PAYOUT_SERVICE_DUAL_WRITE                   = 'payout_service_dual_write';
+    const PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH       = 'payout_service_dual_write_direct_push';
     const QUEUED_CREDIT_TRANSFER_REQUESTS             = 'queued_credit_transfer_requests';
     const BANKING_ACCOUNT_STATEMENT_UPDATE            = 'banking_account_statement_update';
     const BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO = 'banking_account_statement_recon_process_neo';
@@ -62,6 +63,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::PAYOUT_POST_CREATE_PROCESS,
         self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
         self::PAYOUT_SERVICE_DUAL_WRITE,
+        self::PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH,
         self::PAYOUT_USAGE_EVENT_PROCESSING,
         self::QUEUED_CREDIT_TRANSFER_REQUESTS,
         self::BANKING_ACCOUNT_STATEMENT_UPDATE,

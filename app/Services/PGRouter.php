@@ -179,7 +179,11 @@ class PGRouter
 
         $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
 
-        if ($this->mode == Mode::TEST && (app()->isEnvironmentProduction() === true)) {
+         if ($this->mode == Mode::TEST &&
+         (
+               app()->isEnvironmentProduction() === true ||
+               app()->isEnvironmentBeta() === true)
+         ){
             $this->config = $app['config']->get('applications.pg_router_test');
         } else {
             $this->config = $app['config']->get('applications.pg_router');

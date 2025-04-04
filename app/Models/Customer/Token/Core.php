@@ -9,10 +9,7 @@ use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Exception\LogicException;
-use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Models\Base;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
@@ -20,7 +17,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Jobs\TokenActionsHandler;
 use RZP\Models\Terminal;
-use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Exception;
@@ -343,6 +339,47 @@ class Core extends Base\Core
         $token->setSubscriptionId($subscriptionId);
 
         $token->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
+    }
+
+    public function createTokenForVCPP($input, $customer,  bool $validateExisting = true)
+    {
+
+        $token = new Token\Entity;
+
+        $token->build($input);
+
+        $token->setVCPPType();
+
+        $token->customer()->associate($customer);
+
+        $token->merchant()->associate($customer->merchant);
+
+        if ($validateExisting === true)
+        {
+            $startTime = millitime();
+
+            $existingToken = $this->validateExistingToken($token);
+
+            $this->trace->info(TraceCode::TOKEN_DEDUPE_CHECK_RESPONSE_TIME, [
+                'timeTaken'         => millitime() - $startTime,
+                'isGlobalCustomer'  => $customer->isGlobal(),
+                'tokenPresent'      => isset($existingToken),
+            ]);
+
+            //
+            // For vcpp, we check if there's already an existing
+            // token with the same customer, and simply return that
+            // instead of creating a new token altogether.
+            //
+            if ($existingToken !== null)
+            {
+                return $existingToken;
+            }
+        }
 
         $this->repo->saveOrFail($token);
 
@@ -1210,6 +1247,44 @@ class Core extends Base\Core
         return $existingToken;
     }
 
+    public function getTokenId($dualTokenMapperId)
+    {
+        return (new Token\Repository())->fetchByEntityId($dualTokenMapperId);
+    }
+
+    public function cancellationInitiatedTokenEvent($tokenId, $customerId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CANCELLATION_INITIATED,
+            [
+                'token_id'    => $tokenId,
+                'customer_id' => $customerId,
+            ]);
+
+        $token = $this->repo->token->findByPublicId('token_' . $tokenId);
+
+        $oldRecurringStatus = $token->getRecurringStatus();
+
+        if ($oldRecurringStatus !== RecurringStatus::CANCELLED)
+        {
+            $token->setRecurringStatus(RecurringStatus::CANCELLATION_INITIATED);
+        }
+
+        $token->saveOrFail();
+
+        if(($token->getMethod() === Method::UPI) and ($token->isRecurring() === true))
+        {
+            $this->trace->count(Metrics::UPI_AUTOPAY_TOKEN_CANCELLATION_INITIATED, [
+                'method' => $token->getMethod(),
+                'is_tpv' => $token->merchant->isTPVRequired()
+            ]);
+        }
+
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLATION_INITIATED);
+    }
+
     /**
      * Fetches global tokens associated with a global customer.
      *
@@ -1398,6 +1473,11 @@ class Core extends Base\Core
             return $this->validateExistingTokenUpi($token);
         }
 
+        if ($token->getEntityType() === Constants\Entity::VCPP)
+        {
+            return $this->validateExistingTokenVCPP($token);
+        }
+
         if ($customer !== null)
         {
             $existingTokens = $this->repo->token->getByMethodAndCustomerId(
@@ -1558,6 +1638,28 @@ class Core extends Base\Core
     }
 
     protected function validateExistingTokenUpi($newToken)
+    {
+        // If the token being created is for recurring payment, we want to create new token. But if the token is for
+        // saved vpa, we dont want to create a new token if a token already exists.
+        if ($newToken->isSaveVpaToken() === false)
+        {
+            $this->trace->info(
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message'           => 'saving and returning new token',
+                    'is_save_vpa_token' => 'false',
+                ]
+            );
+            return null;
+        }
+
+        $existingToken = $this->repo->token->getByMethodCustomerIdAndVpaId(
+            $newToken->getMethod(), $newToken->customer, $newToken->getVpaId());
+
+        return $existingToken;
+    }
+
+    protected function validateExistingTokenVCPP($newToken)
     {
         // If the token being created is for recurring payment, we want to create new token. But if the token is for
         // saved vpa, we dont want to create a new token if a token already exists.
@@ -2002,7 +2104,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createTokenAndTokenizedCard($input, $merchantPushProvisioning)
+    public function createTokenAndTokenizedCard($input, $merchantPushProvisioning, $isTokenContinuityFlow = false)
     {
         if($merchantPushProvisioning !== null) {
             $this->merchant = $merchantPushProvisioning;
@@ -2016,22 +2118,32 @@ class Core extends Base\Core
                 'authentication' => (isset($input['authentication']) === true) ? $input['authentication'] : null,
             ]);
 
-        (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
-
-        (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
-
-        if ($this->isNetworkRuPay($input[Entity::CARD]))
+        if($isTokenContinuityFlow === true)
         {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
-
+            //new validator for token continuity flow
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_CONTINUITY, $input);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_CONTINUITY_CARD, $input[Entity::CARD]);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL, $input['additional_detail']);
         }
-        else if ($this->isNetworkAmex($input[Entity::CARD]))
+        else
         {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AMEX, $input);
-        }
-        else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
-        {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
+
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
+
+            if ($this->isNetworkRuPay($input[Entity::CARD]))
+            {
+                (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
+
+            }
+            else if ($this->isNetworkAmex($input[Entity::CARD]))
+            {
+                (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AMEX, $input);
+            }
+            else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
+            {
+                (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
+            }
         }
 
         if (strlen($input[Entity::CARD]['expiry_year']) === 2)
@@ -2044,20 +2156,21 @@ class Core extends Base\Core
             $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
         }
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant);
 
-        return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $this->merchant, $customer, $input);
+        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant, $isTokenContinuityFlow);
+
+        return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $this->merchant, $customer, $input, $isTokenContinuityFlow);
     }
 
-    public function createTokenforTokenisedCard($card, $serviceProviderTokens, $merchant, $customer = null, $input = [])
+    public function createTokenforTokenisedCard($card, $serviceProviderTokens, $merchant, $customer = null, $input = [], $isTokenContinuityFlow = false)
     {
-        $this->trace->info(
-            TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
-        );
+        $this->trace->info(TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD);
+
+        if(empty($serviceProviderTokens) === true) $serviceProviderTokens = [];
 
         $token = new Token\Entity;
 
-        $noOfTokens = count($serviceProviderTokens);
+        $noOfTokens =  count($serviceProviderTokens);
 
         $tokenStatus = null;
 
@@ -2082,6 +2195,12 @@ class Core extends Base\Core
         $token->card()->associate($card);
 
         $token->setExpiredAt($card->getTokenExpiryTimestamp());
+
+        if($isTokenContinuityFlow ===  true)
+        {
+            $token->setStatus(Entity::ACTIVE);
+            $token->setUsedAt(Carbon::now()->getTimestamp());
+        }
 
         $token->merchant()->associate($merchant);
 
@@ -2198,7 +2317,7 @@ class Core extends Base\Core
         return $tokenStatus;
     }
 
-    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false, $asyncTokenisationJobId = null,$callbackdata=null)
+    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false, $asyncTokenisationJobId = null, &$callbackdata=null)
     {
         $cardInput += [
             'merchant_token' => $token->getId(),
@@ -2214,6 +2333,10 @@ class Core extends Base\Core
                    'provider_type' => $callbackdata["provider_type"],
                ];
            }
+
+           if(isset($callbackdata["vPanEnrollmentID"])){
+               $token->merchant->vpanEnrollmentID = $callbackdata['vPanEnrollmentID'];
+           }
         }
         if(!empty($callbackdata)){
             if(isset($callbackdata[Token\Entity::TOKEN_REFERENCE_ID]) && isset($callbackdata[Token\Entity::CONVERSATION_ID]) ){
@@ -2223,11 +2346,34 @@ class Core extends Base\Core
                 ];
             }
         }
+        if ($asyncTokenisationJobId==='hdfcPushProvIssuerTokenMigrate'
+            || $asyncTokenisationJobId==='hdfcPushProvNetworkTokenMigrate')
+        {
+            if ($callbackdata['vault_token']!==null){
+                $cardInput+=[
+                    'vault_token'                    => $callbackdata['vault_token'],
+                ];
+            }
+            $cardInput +=
+                [
+                'asyncTokenisationJobId'         => $asyncTokenisationJobId,
+                'pushProvisioningReceipt'        => $callbackdata['pushProvisioningReceipt'],
+                'merchantId'                     => $callbackdata['merchantId'],
+                'cardType'                       => $callbackdata['cardType'],
+                'clientReferenceId'              => $callbackdata['clientReferenceId'],
+                'userConsent'                    => 'Y',
+                'provider'                       => $callbackdata['provider'],
+                'iv'                             => $callbackdata['iv'],
+                'dualTokenMapperId'              =>$callbackdata['dualTokenMapperId'],
+                'merchantKey'                    => $callbackdata['merchantKey'],
+                'rzpMerchantId'                  => $callbackdata['rzpMerchantId'],
+            ];
+        }
+        $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
+            'messages'                   => $cardInput,
+        ]);
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId);
-
-        $this->trace->info(
-            TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
+        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId, $callbackdata);
 
         $noOfTokens = count($serviceProviderTokens);
         $tokenStatus = null;
@@ -2262,11 +2408,18 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($token);
 
+        $this->trace->info(
+            TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD, [
+            'message'=>'This is token and card which were created',
+            'tokens'=>$token,
+            'card'=>$card
+        ]);
+
         $tokenPanVaultToken = $serviceProviderTokens[0]['provider_data']['token_pan_vault_token'] ?? "";
         $tokenPan           = $serviceProviderTokens[0]['provider_data']['token_number'] ?? "";
         $cryptogramValue    = $serviceProviderTokens[0]['provider_data']['cryptogram_value'] ?? "";
 
-        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue, $serviceProviderTokens];
+        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue, $serviceProviderTokens, $card];
     }
 
     public function getIIN($input)
@@ -2476,7 +2629,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function fetchCardMerchantListByFingerprint($fingerprint, $account_ids)
+    public function fetchCardMerchantListByFingerprint($fingerprint, $account_ids, $status)
     {
 
         $this->trace->info(
@@ -2488,7 +2641,12 @@ class Core extends Base\Core
             $merchant_ids = Merchant\Account\Entity::verifyIdAndStripSignMultiple($account_ids);
 
             // find card entities by fingerprint
-            $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids);
+            if($status !== "") {
+                $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprintWithStatus(
+                    $fingerprint, $merchant_ids, $status);
+            } else {
+                $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids);
+            }
 
             return array_map(
                 function ($ele){
@@ -2499,7 +2657,10 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, []);
+            $this->trace->error(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, [
+                'trace' => $e->getTrace(),
+                'message' => $e->getMessage()
+            ]);
 
             return false;
         }
@@ -2652,6 +2813,15 @@ class Core extends Base\Core
                     'token_data' => $tokenData
                 ]);
             return null;
+        }
+        if (empty($tokenData[Entity::RECURRING_STATUS]) === false)
+        {
+            $token->setRecurringStatus($tokenData[Entity::RECURRING_STATUS]);
+            if (!empty($tokenData[Entity::RECURRING_FAILURE_REASON])) {
+                $token->setRecurringFailureReason($tokenData[Entity::RECURRING_FAILURE_REASON]);
+            }
+            $this->repo->saveOrFail($token);
+            return $token;
         }
         $token->setUsedAt(Carbon::now()->getTimestamp());
 

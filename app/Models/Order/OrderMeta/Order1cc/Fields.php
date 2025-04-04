@@ -53,6 +53,8 @@ class Fields
 
     const PROMOTIONS_FIELDS                 = 'fields';
 
+    const PROMOTIONS_IS_FREEBIE             = 'is_freebie';
+
     //Customer Details Fields
     const CUSTOMER_DETAILS_ID               = 'id';
     const CUSTOMER_DETAILS_NAME             = 'name';

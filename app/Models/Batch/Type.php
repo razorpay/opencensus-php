@@ -46,6 +46,9 @@ class Type
 
     const LINKED_ACCOUNT_CREATE     = 'linked_account_create';
 
+    const LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE     = 'linked_account_create_with_account_code';
+
+
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT      = 'virtual_bank_account';
 
@@ -118,6 +121,10 @@ class Type
 
     const TERMINAL_CREATION         = 'terminal_creation';
 
+    const DEVICE_TERMINAL_MAPPING    = 'device_terminal_mapping';
+    const QR_DEVICE_MAPPING         = 'qr_device_mapping';
+    const QR_DEVICE_UNMAPPING       = 'qr_device_unmapping';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -138,6 +145,8 @@ class Type
     const PGOS_RMDETAILS_BULK = 'pgos_rmdetails_bulk';
 
     const JAMMU_AND_KASHMIR_ONBOARDING = 'jammu_and_kashmir_onboarding';
+
+    const  HDFC_ONBOARDING  = 'hdfc_onboarding';
 
     const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
 
@@ -185,6 +194,8 @@ class Type
 
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement_ondemand_feature_config';
 
+    const SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 = 'settlement_ondemand_feature_config_v2';
+
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
 
     const MERCHANT_CAPITAL_TAGS = 'merchant_capital_tags';
@@ -201,7 +212,11 @@ class Type
 
     const ECOLLECT_AXIS         = 'ecollect_axis';
 
+    const ECOLLECT_AXIS_BANKING = 'ecollect_axis_banking';
+
     const ECOLLECT_YESBANK      = 'ecollect_yesbank';
+
+    const ECOLLECT_IDFC         = 'ecollect_idfc';
 
     const REPORT                = 'report';
 
@@ -317,6 +332,7 @@ class Type
 
     const UPDATE_ODS_MERCHANT_LIMITS = 'update_ods_merchant_limits';
 
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -328,6 +344,7 @@ class Type
     ];
 
     public static $appTypes = [
+        self::DEVICE_TERMINAL_MAPPING,
         self::INSTANT_ACTIVATION,
         self::RECONCILIATION,
         self::EMANDATE,
@@ -356,13 +373,16 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::ECOLLECT_AXIS,
+        self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
@@ -377,6 +397,7 @@ class Type
         self::NACH_MIGRATION,
         self::PGOS_RMDETAILS_BULK,
         self::JAMMU_AND_KASHMIR_ONBOARDING,
+        self::HDFC_ONBOARDING,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::SUBMERCHANT_LINK,
@@ -410,6 +431,8 @@ class Type
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
+        self::QR_DEVICE_MAPPING,
+        self::QR_DEVICE_UNMAPPING,
     ];
 
     /**
@@ -497,6 +520,7 @@ class Type
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
@@ -602,7 +626,9 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::ECOLLECT_AXIS,
+        self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::REPORT,
         self::ADMIN_BATCH,
         self::RECONCILIATION,
@@ -623,6 +649,7 @@ class Type
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
+        self::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
@@ -653,7 +680,8 @@ class Type
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
         self::UPDATE_GIFT_CARDS_EXPIRY,
-        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::ECOLLECT_IDFC,
     ];
 
     /**
@@ -662,6 +690,7 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
+        self::DEVICE_TERMINAL_MAPPING,
         self::TALLY_PAYOUT,
         self::PAYOUT_LINK_BULK,
         self::PAYOUT_LINK_BULK_V2,
@@ -675,6 +704,7 @@ class Type
         self::VIRTUAL_ACCOUNT_EDIT,
         self::PGOS_RMDETAILS_BULK,
         self::JAMMU_AND_KASHMIR_ONBOARDING,
+        self::HDFC_ONBOARDING,
         self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
@@ -682,6 +712,7 @@ class Type
         self::ADJUSTMENT,
         self::VENDOR_ONBOARDING,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
@@ -690,7 +721,9 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::ECOLLECT_AXIS,
+        self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
@@ -719,6 +752,7 @@ class Type
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
+        self::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
@@ -764,6 +798,9 @@ class Type
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
+        self::ECOLLECT_IDFC,
+        self::QR_DEVICE_MAPPING,
+        self::QR_DEVICE_UNMAPPING,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -776,6 +813,7 @@ class Type
 
     // map of type of batch -> permission
     public static $batchToAdminPermissionMapping = [
+        self::DEVICE_TERMINAL_MAPPING            => Name::EDIT_TERMINAL,
         self::ADJUSTMENT                         => Name::ADJUSTMENT_BATCH_UPLOAD,
         self::REPORT                             => Name::REPORTING_BATCH_UPLOAD,
         self::CREDIT                             => Name::CREDITS_BATCH_UPLOAD,
@@ -805,7 +843,6 @@ class Type
         self::HITACHI_CBK_MASTERCARD             => Name::BULK_HITACHI_CHARGEBACK,
         self::HITACHI_CBK_VISA                   => Name::BULK_HITACHI_CHARGEBACK,
         self::HITACHI_CBK_RUPAY                  => Name::BULK_HITACHI_CHARGEBACK,
-
         self::SUBMERCHANT_ASSIGN                 => Name::ADMIN_MANAGE_PARTNERS,
         self::SUBMERCHANT_LINK                   => Name::ADMIN_MANAGE_PARTNERS,
         self::SUBMERCHANT_DELINK                 => Name::ADMIN_MANAGE_PARTNERS,
@@ -816,7 +853,9 @@ class Type
         self::ECOLLECT_ICICI                     => Name::ECOLLECT_ICICI_BATCH_UPLOAD,
         self::ECOLLECT_RBL                       => Name::ECOLLECT_RBL_BATCH_UPLOAD,
         self::ECOLLECT_AXIS                      => Name::ECOLLECT_AXIS_BATCH_UPLOAD,
+        self::ECOLLECT_AXIS_BANKING              => Name::ECOLLECT_AXIS_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,
+        self::ECOLLECT_IDFC                      => Name::ECOLLECT_IDFC_BATCH_UPLOAD,
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
         self::BANK_TRANSFER                      => Name::BANK_TRANSFER_INSERT,
@@ -831,6 +870,7 @@ class Type
         self::WHITELISTED_DOMAIN                 => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
         self::PGOS_RMDETAILS_BULK                => Name::ADMIN_BATCH_CREATE,
         self::JAMMU_AND_KASHMIR_ONBOARDING       => Name::ADMIN_BATCH_CREATE,
+        self::HDFC_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
         self::EARLY_SETTLEMENT_TRIAL             => Name::ADMIN_BATCH_CREATE,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG=> Name::ADMIN_BATCH_CREATE,
         self::REWARDS                            => Name::ADMIN_BATCH_CREATE,
@@ -870,6 +910,9 @@ class Type
         self::S2P_USERS_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
         self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
         self::UPDATE_ODS_MERCHANT_LIMITS              => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2   => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::QR_DEVICE_MAPPING                       => Name::ADMIN_BATCH_CREATE,
+        self::QR_DEVICE_UNMAPPING                     => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

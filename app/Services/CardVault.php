@@ -443,7 +443,6 @@ class CardVault
             'content' => $data
         ];
 
-
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
             'url' => $request['url'],
             'namespace' => $this->namespace,
@@ -689,9 +688,9 @@ class CardVault
 
     public function migrateToTokenizedCard(array $input): array
     {
-        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN);
-
         $response = $this->sendRequest(Card\Constants::TOKENS_MIGRATE, 'post', $input);
+
+        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN);
 
         if ($response[self::SUCCESS] === false)
         {

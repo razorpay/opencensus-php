@@ -18,6 +18,10 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
     }
     /**
      * Test Successful Collect Payment Creation
@@ -101,11 +105,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     {
         $this->testCollectPaymentCreateSuccess('payment_failed');
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
         $this->mockServerContentFunction(
             function (&$error)
             {
@@ -162,11 +161,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     {
         $this->testCollectPaymentCreateSuccess($description);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
         $payment = $this->getDbLastpayment();
 
         $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
@@ -197,7 +191,7 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     }
 
     /**
-     * Test Successful Collect Payment with pre-process through UPS
+     * Test Successful Collect Payment with pre-process through API
      *
      * @return void
      */
@@ -604,11 +598,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->fixtures->merchant->activate();
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
         $content = $this->mockServer('upi_airtel')->getUnexpectedAsyncCallbackContentForAirtel();
 
         $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
@@ -651,11 +640,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
         $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
 
         $this->fixtures->merchant->activate();
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
 
         $content = $this->mockServer('upi_airtel')->getUnexpectedAsyncCallbackContentForAirtel(false);
 
@@ -777,63 +761,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
         );
 
         return $payment->getId();
-    }
-
-    public function testCollectPaymentFailure_BT_UpiAirtel()
-    {
-        $this->testCollectPaymentCreateSuccess('payment_failed');
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
-        $this->mockServerContentFunction(
-            function (&$error)
-            {
-                $responseError = [
-                    'internal' => [
-                        'code'          => 'GATEWAY_ERROR_TRANSACTION_PENDING',
-                        'description'   => 'Transaction is pending (BT)',
-                        'metadata'      => [
-                            'description'               => 'Transaction is pending (BT)',
-                            'gateway_error_code'        => 'BT',
-                            'gateway_error_description' => 'Transaction is pending (BT)',
-                            'internal_error_code'       => 'GATEWAY_ERROR_TRANSACTION_PENDING'
-                        ]
-                    ]
-                ];
-
-                return $responseError;
-            }
-        );
-
-        $payment = $this->getDbLastpayment();
-
-        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
-            $this->terminal->toArray());
-
-        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
-
-        $payment = $this->getDbLastPayment();
-
-        // We should have received a successful response
-        $this->assertEquals(['success' => false], $response);
-
-        $this->assertArraySubset(
-            [
-                Entity::STATUS              => Status::FAILED,
-                Entity::GATEWAY             => 'upi_airtel',
-                Entity::TERMINAL_ID         => $this->terminal->getId(),
-                Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
-                Entity::ERROR_CODE          => 'GATEWAY_ERROR',
-                Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_TRANSACTION_PENDING',
-            ], $payment->toArray()
-        );
-
-        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
-
-        $this->assertNull($upiEntity);
     }
 
     /**

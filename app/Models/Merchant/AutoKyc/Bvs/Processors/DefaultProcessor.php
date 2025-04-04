@@ -331,7 +331,7 @@ class DefaultProcessor implements Processor
 
         $experiment = $this->experimentMap[$this->configName];
 
-        $isRazorxExperimentEnabled = array_key_exists($experiment, $this->rampedUpRazorxExperiments);
+        $isRazorxExperimentEnabled = in_array($experiment, $this->rampedUpRazorxExperiments);
 
         $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, ["merchant_id" => $this->merchant->getMerchantId(),
                                                                  $experiment   => $isRazorxExperimentEnabled]);

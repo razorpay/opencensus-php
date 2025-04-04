@@ -96,6 +96,7 @@ class Validator extends Base\Validator
     const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please add another bank a/c or contact support.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
     const ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS       = 'Merchant cannot be activated when risk tags are assigned to the merchant';
+    const POS_ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS   = 'Merchant cannot be pos activated when risk tags are assigned to the merchant';
 
     // Constant representing operations for which Validation rules exists
     const BULK_EDIT                                     = 'bulkEdit';
@@ -373,7 +374,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
-//        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
+        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
         DetailConstants::CONSENT                => 'sometimes|filled|array',
     ];
@@ -2265,6 +2266,19 @@ class Validator extends Base\Validator
         )
         {
             throw new Exception\BadRequestValidationFailureException(self::ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS);
+        }
+    }
+
+    public function validateRiskTagsForPos($merchant)
+    {
+
+        if ((new Core())->hasRiskTags($merchant) === true )
+        {
+            $this->trace->info(TraceCode::MERCHANT_WITH_RISK_TAGS, [
+                'merchant_id'   => $merchant->getId(),
+            ]);
+
+            throw new Exception\BadRequestValidationFailureException(self::POS_ACTIVATION_NOT_SUPPORTED_WITH_RISK_TAGS);
         }
     }
     public function validateBusinessTypeForBankingMerchants(array &$input, MerchantEntity $merchant): void

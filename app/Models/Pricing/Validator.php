@@ -69,6 +69,18 @@ class Validator extends Base\Validator
         Entity::IS_BUY_PRICING_ALLOWED  => 'sometimes',
         Entity::FEE_MODEL               => 'sometimes|nullable|in:prepaid,postpaid',
         Entity::PERCENT_RATE_SCALE_FACTOR  => 'sometimes|integer|in:100,1000,10000,100000,1000000',
+        Entity::ORG_ID                  => 'sometimes|string|size:14',
+        Entity::CREATED_AT              => 'sometimes|epoch',
+        Entity::UPDATED_AT              => 'sometimes|epoch',
+    ];
+
+    protected static $validateHardDeletePlanRequestRules = [
+        Entity::PLAN_ID => 'required|string|size:14',
+    ];
+
+    protected static $validateHardRefreshPlanRequestRules = [
+        Entity::PLAN_ID => 'required|string|size:14',
+        'plan' => 'required|array',
     ];
 
     protected static $editPlanRuleRules = [
@@ -148,6 +160,7 @@ class Validator extends Base\Validator
     protected static $createBulkPricingRules = [
         Entity::PLAN_NAME   => 'required|string|max:255',
         Entity::RULES       => 'required|array|min:1',
+        Entity::ORG_ID      => 'sometimes|string|size:14'
     ];
 
     protected static $buyPricingCostRules = [
@@ -866,10 +879,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD && $input[Entity::PAYMENT_METHOD] !== Payment\Method::WALLET && $input[Entity::PAYMENT_METHOD] !== Payment\Method::PAYLATER)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'International pricing rule is only allowed for card method');
+                'International pricing rule is only allowed for card, wallet and payLater method');
         }
     }
 

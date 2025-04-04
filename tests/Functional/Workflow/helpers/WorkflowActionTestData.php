@@ -4,7 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
-    'testCreateWorkflowAction' => [
+    'testCreateWorkflowActionAdminUpdate' => [
         'request' => [
             'method'  => 'PUT',
             'url'     => '/admin/%s',
@@ -18,6 +18,144 @@ return [
                 'state'         => 'open',
                 'approved'      => false,
                 'current_level' => 1,
+            ]
+        ],
+    ],
+    'testCreateWorkflowActionBulkEntityMultiInput' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/w-actions',
+            'content' => [
+                'entity_id'       => 'FOGs9Hz3ZaAjsy',
+                'entity_type'     => 'batch',
+                'permission_name' => 'edit_activate_partner',
+                'original_data'   =>[[
+                    'id'                => 'FOGs9Hz3ZaAjsd',
+                    'activation_status' => 'under_review',
+                ]],
+                'dirty_data'      => [[
+                    'id'                => 'FOGs9Hz3ZaAjsd',
+                    'activation_status' => 'activated',
+                ]],
+                'maker_id'        => 'G2e32yhstxt6fR',
+                'operation_type'  => 'BULK',
+                'maker_type'      => 'admin',
+                'target'          => [
+                    'service'    => 'terminals',
+                    'route'      => 'terminals/bulk',
+                    'method'     => 'post',
+                    'bulk_size'  => 10,
+                    'retry'      => 3,
+                    'entity_refresh_route' => 'terminals/terminal/refresh',
+                    'primary_key_column'   => 'id',
+                ],
+                'payload' => [[
+                    'activation_status' => 'activated',
+                    'id' => 'FOGs9Hz3ZaAjsd',
+                ]],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'entity_name'   => 'batch',
+                    'state'         => 'open',
+                    'approved'      => false,
+                    'current_level' => 1,
+                    'operation_type' => 'BULK',
+                ],
+            ]
+        ],
+    ],
+
+    'testCreateWorkflowActionBulkEntitySingleInput' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/w-actions',
+            'content' => [
+                'entity_id'       => 'FOGs9Hz3ZaAjsy',
+                'entity_type'     => 'batch',
+                'permission_name' => 'edit_activate_partner',
+                'original_data'   =>[
+                    'id'                => 'FOGs9Hz3ZaAjsd',
+                    'activation_status' => 'under_review',
+                ],
+                'dirty_data'      => [
+                    'id'                => 'FOGs9Hz3ZaAjsd',
+                    'activation_status' => 'activated',
+                ],
+                'maker_id'        => 'G2e32yhstxt6fR',
+                'operation_type'  => 'BULK',
+                'maker_type'      => 'admin',
+                'target'          => [
+                    'service'    => 'terminals',
+                    'route'      => 'terminals/bulk',
+                    'method'     => 'post',
+                    'bulk_size'  => 10,
+                    'retry'      => 3,
+                    'entity_refresh_route' => 'terminals/terminal/refresh',
+                    'primary_key_column'   => 'id',
+                ],
+                'payload' => [
+                    'activation_status' => 'activated',
+                    'id' => 'FOGs9Hz3ZaAjsd',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'entity_name'   => 'batch',
+                    'state'         => 'open',
+                    'approved'      => false,
+                    'current_level' => 1,
+                    'operation_type' => 'BULK',
+                ],
+            ]
+        ],
+    ],
+    'testCreateWorkflowActionSingleEntity' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/w-actions',
+            'content' => [
+                'entity_id'       => 'FOGs9Hz3ZaAjsy',
+                'entity_type'     => 'batch',
+                'permission_name' => 'edit_activate_partner',
+                'original_data'   => [
+                    'id'                => 'FOGs9Hz3ZaAjsd',
+                    'activation_status' => 'under_review',
+                ],
+                'dirty_data'      => [
+                    'id'                => 'FOGs9Hz3ZaAjsd',
+                    'activation_status' => 'activated',
+                ],
+                'maker_id'        => 'G2e32yhstxt6fR',
+                'operation_type'  => 'SINGLE',
+                'maker_type'      => 'admin',
+                'target'          => [
+                    'service'    => 'terminals',
+                    'route'      => 'terminals/bulk',
+                    'method'     => 'post',
+                    'bulk_size'  => 10,
+                    'retry'      => 3,
+                    'entity_refresh_route' => 'terminals/terminal/refresh',
+                    'primary_key_column'   => 'id',
+                ],
+                'payload' => [
+                    'activation_status' => 'activated',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data'  => [
+                    'entity_name'   => 'batch',
+                    'state'         => 'open',
+                    'approved'      => false,
+                    'current_level' => 1,
+                    'operation_type' => 'SINGLE',
+                ],
             ]
         ],
     ],
@@ -95,6 +233,7 @@ return [
             'content' => [
                 'title'       => 'Test Workflow Action Title.',
                 'description' => 'Test Workflow Action description.',
+                'canary_percentage' => 5,
             ]
         ],
         'response' => [
@@ -102,6 +241,7 @@ return [
                 'title'         => 'Test Workflow Action Title.',
                 'description'   => 'Test Workflow Action description.',
                 'current_level' => 1,
+                'canary_percentage' => 5,
             ]
         ],
     ],

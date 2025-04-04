@@ -78,9 +78,7 @@ class InvitationNotificationToOwner extends Mailable
 
     private function getRoleName($role)
     {
-        $app = App::getFacadeRoot();
-
-        return $app['repo']->roles->fetchRoleName($role) ?? $role;
+        return (new \RZP\Models\Roles\Service())->getRoleNameUsingExperiment($role) ?? $role;
     }
 }
 

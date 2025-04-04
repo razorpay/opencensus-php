@@ -3,7 +3,7 @@
 namespace RZP\Models\SubscriptionRegistration;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Feature;
@@ -15,6 +15,8 @@ use RZP\Models\PaperMandate;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Customer\Token;
+use RZP\Trace\TraceCode;
 
 /**
  * @property PaperMandate\Entity   $paperMandate
@@ -91,6 +93,7 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_MAX_AMOUNT              = 9999900;
     const CARD_MANDATE_DEFAULT_MAX_AMOUNT = 1500000;
+    const SPECIAL_MCC_MAX_AMOUNT = 10000000;
 
     protected static $sign = 'subr';
 
@@ -339,20 +342,46 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
-    public static function getDefaultMaxAmountForMethod($method)
+    public static function getDefaultMaxAmountForMethod($method, $mcc = null, $merchantID = null)
     {
+        $app = App::getFacadeRoot();
         switch ($method)
         {
             case Method::NACH:
                 return PaperMandate\Entity::DEFAULT_AMOUNT;
 
             case Method::CARD:
+                $experimentName = $app['config']->get('app.afa_splitz');
+                if ((new Entity)->getSplitzResponse($merchantID, $experimentName) === 'enable') {
+                    if ($mcc != null && in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS)) {
+                        return self::SPECIAL_MCC_MAX_AMOUNT;
+                    }
+                }else {
+                    return self::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
+                }
             case null:
                 return self::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
 
             default:
                 return self::DEFAULT_MAX_AMOUNT;
         }
+    }
+
+    public function getSplitzResponse(string $id, string $experimentId)
+    {   $app = App::getFacadeRoot();
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     public function getAuthLinkStatus(Invoice\Entity $invoice, Order\Entity $order)
@@ -494,13 +523,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRE_AT, $expiry);
     }
 
-    public function build(array $input = array())
+    public function build(array $input = array(), $mcc = null, $merchantID = null)
     {
         $subscriptionRegistration = parent::build($input);
 
         if (empty($subscriptionRegistration->getMaxAmount()) === true)
         {
-            $maxAmount = Entity::getDefaultMaxAmountForMethod($subscriptionRegistration->getMethod());
+            $maxAmount = Entity::getDefaultMaxAmountForMethod($subscriptionRegistration->getMethod(),$mcc, $merchantID);
 
             if (empty($maxAmount) === false)
             {

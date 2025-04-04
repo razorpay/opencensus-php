@@ -3185,20 +3185,6 @@ class Core extends Base\Core
             return $merchant;
         }
 
-        if ($action === Constants::SUSPEND)
-        {
-            try
-            {
-                $this->expireKeysForSuspendedMerchant($merchant);
-            }
-            catch (\Throwable $exception)
-            {
-                $this->trace->error(TraceCode::EXPIRE_KEYS_FOR_SUSPENDED_MERCHANTS, [
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-        }
-
         $internationalProducts = array_key_exists(ProductInternationalMapper::INTERNATIONAL_PRODUCTS, $input) ?
             $input[ProductInternationalMapper::INTERNATIONAL_PRODUCTS] :
             null;
@@ -3218,6 +3204,19 @@ class Core extends Base\Core
             $internationalProducts,
             $riskAttributes
         ) {
+            if ($action === Constants::SUSPEND)
+            {
+                try
+                {
+                    $this->expireKeysForSuspendedMerchant($merchant);
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->error(TraceCode::EXPIRE_KEYS_FOR_SUSPENDED_MERCHANTS, [
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
+            }
             $this->handleInternationalAction($action, $merchant, $internationalProducts);
 
             $merchant->$function();
@@ -5731,7 +5730,7 @@ class Core extends Base\Core
     {
         // if merchant is not referred by partner, return false
         $mapping = (new AccessMap\Repository)->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $partner->getId());
-        if (empty($mapping) === true || in_array($partner->getPartnerType(),[Constants::RESELLER, Constants::PURE_PLATFORM]) == false )
+        if (empty($mapping) || $partner->getPartnerType() == Constants::FULLY_MANAGED )
         {
             return false;
         }
@@ -8469,6 +8468,10 @@ class Core extends Base\Core
         {
             $this->validateCode($input[Entity::CODE], $parentMerchant, $isLinkedAccount);
         }
+
+        if (isset($input[Entity::ACCOUNT_CODE]) === true) {
+            $this->validateCode($input[Entity::ACCOUNT_CODE], $parentMerchant, $isLinkedAccount);
+        }
     }
 
     protected function validateCode(string $code, Entity $parentMerchant, bool $isLinkedAccount)
@@ -9372,7 +9375,7 @@ class Core extends Base\Core
 
         $bankAccountCore = new BankAccount\Core();
 
-        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount->merchantDetail, true);
+        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount, true);
 
         $data = array_merge($data, $input);
 
@@ -9561,23 +9564,7 @@ class Core extends Base\Core
         {
             return false;
         }
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        $properties = [
-            'id'            => $merchantDetails->getMerchantId(),
-            'experiment_id' => $this->app['config']->get('app.enable_pos_for_api_submerchants'),
-        ];
-
-        $isExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
-
-        if ($isExperimentEnabled) {
-            if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED && $merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID)
-            {
-                return true;
-            }
-        }
-
+        
         if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
         {
             return false;
@@ -10950,12 +10937,39 @@ class Core extends Base\Core
 
     public function blockLinkedAccountCreationIfApplicable(Entity $merchant)
     {
-        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true) {
+        $routeName = $this->app['request.ctx']->getRoute() ?? '';
+
+        // - unblocking individual la creation from dashboard.
+        // - unblocking batch la creation from dashboard
+        // Ref: https://razorpay.slack.com/archives/C01QG1N4A82/p1672037321513599
+        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true &&
+            in_array($routeName, ['merchant_sub_create', 'linked_account_create_batch']) === false)
+        {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED,
                 null,
                 [
                     'parent_merchant_id' => $merchant->getId(),
+                ]
+            );
+        }
+
+        if ($merchant->org->isFeatureEnabled(FeatureConstants::ORG_BLOCK_ACCOUNT_UPDATE) === true)
+        {
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT,
+                [
+                    'parent_merchant_id' => $merchant->getId(),
+                    'org_id'             => $merchant->org->getId(),
+                ]
+            );
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT,
+                null,
+                [
+                    'parent_merchant_id' => $merchant->getId(),
+                    'org_id'             => $merchant->org->getId(),
                 ]
             );
         }
@@ -11743,7 +11757,6 @@ class Core extends Base\Core
             $resource,
             function () use ($input, $merchant) {
                 return $this->repo->transaction(function () use ($input, $merchant) {
-                    (new Merchant\Validator())->validateIfAmountForFundWithdrawalIsValid($input['amount'], $input, $merchant);
 
                     $input['amount'] = -1 * abs($input['amount']);
                     (new Adjustment\Core)->createAdjustment($input, $merchant);

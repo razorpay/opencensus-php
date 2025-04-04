@@ -215,7 +215,13 @@ class Leads extends Base
             ActivationDetail\Validator::PG_KAM                 => 'PG KAM',
             ActivationDetail\Validator::PG_DIRECT_SALES        => 'PG Direct Sales',
             ActivationDetail\Validator::SELF_SERVE             => 'Self Serve',
-            ActivationDetail\Validator::NIT_PARTNERSHIPS       => 'X NIT - Partnerships'
+            ActivationDetail\Validator::NIT_PARTNERSHIPS       => 'X NIT - Partnerships',
+            ActivationDetail\Validator::NIT_HUNTING            => 'X NIT Hunting',
+            ActivationDetail\Validator::NIT_CSM                => 'X NIT CSM',
+            ActivationDetail\Validator::MM_HUNTING             => 'X MM Hunting',
+            ActivationDetail\Validator::MM_CSM                 => 'X MM CSM',
+            ActivationDetail\Validator::SME_UNMANAGED          => 'X SME (Unmanaged)',
+            ActivationDetail\Validator::X_OTHERS               => 'X Others',
         ]
     ];
 
@@ -570,7 +576,7 @@ class Leads extends Base
             self::CUSTOMER_APPOINTMENT_BOOKING_DATE => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE)),
             self::CUSTOMER_ONBOARDING_TAT           => $customerOnboardingTat,
             self::LEAD_IR_STATUS                    => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_IR_STATUS),
-            
+
             // Used only for sorting
             BankingAccount\Entity::CREATED_AT       => $sentToBankTimestamp,
         ];
@@ -716,8 +722,8 @@ class Leads extends Base
     public function getFileInput()
     {
         [$bankingAccounts, $commentsMap, $sentToBankTimestampMap] = $this->getData();
-    
-        /** ============== PREPARE FILE INPUT ================ */ 
+
+        /** ============== PREPARE FILE INPUT ================ */
 
         $fileInput = [];
 
@@ -790,7 +796,7 @@ class Leads extends Base
         });
 
         // Remove created_at
-        for ($i=0; $i < count($fileInput); $i++) { 
+        for ($i=0; $i < count($fileInput); $i++) {
             unset($fileInput[$i][BankingAccount\Entity::CREATED_AT]);
         }
 

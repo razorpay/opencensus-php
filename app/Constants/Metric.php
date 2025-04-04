@@ -195,6 +195,10 @@ class Metric
 
     const DUPLICATE_PAYOUT_EVAlUATE_TIME_TAKEN = 'duplicate_payout_evaluate_time_taken';
 
+    const FETCH_MAPPED_VPA_FROM_PS_TIME_TAKEN               = 'fetch_mapped_vpa_from_ps_time_taken';
+
+    const PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LAG = 'payout_service_dual_write_direct_push_lag';
+
     // Order Outbox
     const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
     const ORDER_OUTBOX_CRON_RETRY_FAILURE                   = 'order_outbox_cron_retry_failure';
@@ -239,6 +243,7 @@ class Metric
     //ChargeCollections
     const CC_REQUEST_NOT_ROUTED                                 = 'cc_request_not_routed';
     const CC_REQUEST_ROUTED                                     = 'cc_request_routed';
+    const CC_BUY_PRICING_REQUEST                                = 'cc_buy_pricing_request';
     const CC_ROUTER_RESPONSE_MISMATCH                           = 'cc_router_response_mismatch';
     const CC_ROUTER_PRICING_LEGACY_CALL_TIME                    = 'cc_router_pricing_legacy_call_time';
     const CC_ROUTER_SPLITZ_RESPONSE_TIME                        = 'cc_router_splitz_response_time';
@@ -247,14 +252,30 @@ class Metric
 
 
     // External repo for Route
-    const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE                  = 'ext_trf_repo_fetch_failure_count';
-    const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE_TIME_TAKEN       = 'ext_trf_repo_fetch_failure_time_taken';
-    const EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS                  = 'ext_trf_repo_fetch_success_count';
-    const EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS_TIME_TAKEN       = 'ext_trf_repo_fetch_success_time_taken';
-    const EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE                = 'ext_la_pay_repo_fetch_failure_count';
-    const EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN     = 'ext_la_pay_repo_fetch_failure_time_taken';
-    const EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS                = 'ext_la_pay_repo_fetch_success_count';
-    const EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN     = 'ext_la_pay_repo_fetch_success_time_taken';
+    const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE                    = 'ext_trf_repo_fetch_failure_count';
+    const EXTERNAL_TRANSFER_REPO_FETCH_FAILURE_TIME_TAKEN         = 'ext_trf_repo_fetch_failure_time_taken';
+    const EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS                    = 'ext_trf_repo_fetch_success_count';
+    const EXTERNAL_TRANSFER_REPO_FETCH_SUCCESS_TIME_TAKEN         = 'ext_trf_repo_fetch_success_time_taken';
+    const EXTERNAL_TRANSFER_REPO_SAVE_FAILURE                     = 'ext_trf_repo_save_failure_count';
+    const EXTERNAL_TRANSFER_REPO_SAVE_FAILURE_TIME_TAKEN          = 'ext_trf_repo_save_failure_time_taken';
+    const EXTERNAL_TRANSFER_REPO_SAVE_SUCCESS                     = 'ext_trf_repo_save_success_count';
+    const EXTERNAL_TRANSFER_REPO_SAVE_SUCCESS_TIME_TAKEN          = 'ext_trf_repo_save_success_time_taken';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE                  = 'ext_la_pay_repo_fetch_failure_count';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN       = 'ext_la_pay_repo_fetch_failure_time_taken';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS                  = 'ext_la_pay_repo_fetch_success_count';
+    const EXTERNAL_LA_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN       = 'ext_la_pay_repo_fetch_success_time_taken';
+    const EXTERNAL_LA_PAYMENT_REPO_SAVE_FAILURE                   = 'ext_la_pay_repo_save_failure_count';
+    const EXTERNAL_LA_PAYMENT_REPO_SAVE_FAILURE_TIME_TAKEN        = 'ext_la_pay_repo_save_failure_time_taken';
+    const EXTERNAL_LA_PAYMENT_REPO_SAVE_SUCCESS                   = 'ext_la_pay_repo_save_success_count';
+    const EXTERNAL_LA_PAYMENT_REPO_SAVE_SUCCESS_TIME_TAKEN        = 'ext_la_pay_repo_save_success_time_taken';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_FETCH_FAILURE            = 'ext_trf_pay_repo_fetch_failure_count';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_FETCH_FAILURE_TIME_TAKEN = 'ext_trf_pay_repo_fetch_failure_time_taken';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_FETCH_SUCCESS            = 'ext_trf_pay_repo_fetch_success_count';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_FETCH_SUCCESS_TIME_TAKEN = 'ext_trf_pay_repo_fetch_success_time_taken';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_FAILURE             = 'ext_trf_pay_repo_save_failure_count';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_FAILURE_TIME_TAKEN  = 'ext_trf_pay_repo_save_failure_time_taken';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_SUCCESS             = 'ext_trf_pay_repo_save_success_count';
+    const EXTERNAL_TRANSFER_PAYMENT_REPO_SAVE_SUCCESS_TIME_TAKEN  = 'ext_trf_pay_repo_save_success_time_taken';
 
 
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS                 = 'kafka_adjustment_api_txn_push_success';
@@ -335,12 +356,21 @@ class Metric
     const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';
 
     const CREDCASE_READ_RESPONSE_MISMATCH = 'credcase_read_response_mismatch';
+    const CREDCASE_READ_RESPONSE_MATCH = 'credcase_read_response_match';
     const KEY_API_DB_RESPONSE_COUNT = 'keys_api_db_response_count';
+    const KEY_API_DB_RETRIEVAL_COUNT = 'keys_api_db_retrieval_count';
     const CREDCASE_KEY_READ_ROUTE_COUNT = 'credcase_key_read_count';
+    const CREDCASE_FIND_KEY_READ_ROUTE_COUNT = 'credcase_find_key_read_count';
+    const CREDCASE_FIND_KEY_MATCH = 'credcase_find_key_match';
 
-    const CREDCASE_REQUEST_FAILED = 'credcase_request_failed';
+    const CREDCASE_FIND_V2_REQUEST_FAILED_COUNT = 'credcase_find_v2_request_failed_count';
     const CREDCASE_REQUEST_LATENCY_MS = 'credcase_request_latency_milliseconds.histogram';
 
     const CMS_REQUEST_DURATION_MS = 'cms_request_duration_ms.histogram';
+    const PASSPORT_PRESENT_AND_SECRETS_FETCH_COUNT = "passport_present_and_secrets_fetch_count";
+
+    const SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE = 'subscriptions_payment_notify_failure';
+
+    const TOKEN_CONFIRM_REJECT_NOTIFY_ERROR = 'token_confirm_reject_notify_error';
 
 }

@@ -69,6 +69,8 @@ class Core extends Base\Core
 
         $input = $this->addDynamicQr($input);
 
+        $input = $this->addOptimizerRoute($input);
+
         $input = $this->addCcOrWalletOnUpiInNotesIfApplicable($input);
 
         $terminal = (new Entity)->build($input);
@@ -379,6 +381,8 @@ class Core extends Base\Core
             $input = $this->addStaticQr($input);
 
             $input = $this->addDynamicQr($input);
+
+            $input = $this->addOptimizerRoute($input);
 
             $input = $this->addCcOrWalletOnUpiInNotesIfApplicable($input);
 
@@ -1144,7 +1148,7 @@ class Core extends Base\Core
         $isMerchantEnabledForIDFCVA = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,'enable');
 
         if($isMerchantEnabledForIDFCVA === true){
-            return Provider::IDFC_VA_PREFIX;
+            return Provider::PAYROLL_VA_PREFIX;
         }
 
         $config = (new Admin\Service)->getConfigKey(
@@ -1315,6 +1319,26 @@ class Core extends Base\Core
         return $input;
     }
 
+    protected function addOptimizerRoute(&$input)
+    {
+        if(isset($input[Entity::OPTIMIZER_ROUTE]) === false)
+        {
+            return $input;
+        }
+
+        if(isset($input[Entity::NOTES]) === false)
+        {
+            $input[Entity::NOTES] = [];
+        }
+
+        $input[Entity::NOTES][Entity::OPTIMIZER_ROUTE] =  $input[Entity::OPTIMIZER_ROUTE];
+
+        $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
+
+        unset($input[Entity::OPTIMIZER_ROUTE]);
+
+        return $input;
+    }
     protected function addDynamicQr(&$input)
     {
         if(isset($input[Entity::DYNAMIC_QR]) === false)

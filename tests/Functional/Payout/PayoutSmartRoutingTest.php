@@ -605,6 +605,35 @@ class PayoutSmartRoutingTest extends TestCase
         $this->assertFalse($ftsSmartRoutingSuccess);
     }
 
+    public function testSmartRouting_CreatePayoutWithRoutingForMerchantBlockedOnLite()
+    {
+        $this->fixtures->merchant->addFeatures([Features::PAYOUTS_BLOCKED_ON_LITE]);
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $basDetails = $this->getDbEntity('banking_account_statement_details', [
+            'balance_id' => array_first($directBalances)->getId(),
+        ]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(), [
+            'status' => 'archived'
+        ]);
+
+        $ftsTransferSuccess = false;
+
+        $this->mockFtsTransfer($this->ftsMock, $ftsTransferSuccess, false, 0);
+
+        $ftsSmartRoutingSuccess = false;
+
+        $this->mockFtsSmartRouting($this->ftsMock, $ftsSmartRoutingSuccess, 0);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = array_first($directBalances)->getAccountNumber();
+
+        $this->startTest($this->testData['testSmartRouting_CreatePayoutWithNoValidAccountsForRouting']);
+    }
+
     /**
      * Active Accounts Config: Lite: 0, direct: 1
      * Smart Routing Verdict: SUCCESS. Picks direct account by default
@@ -1085,6 +1114,39 @@ class PayoutSmartRoutingTest extends TestCase
         $this->assertFalse($boolFailureMetricCaptured);
         $this->assertTrue($ftsTransferSuccess);
         $this->assertTrue($ftsSmartRoutingSuccess);
+    }
+
+    public function testSmartRouting_CreatePayoutWithRoutingBetweenMultipleAccountsForMerchantBlockedOnLite()
+    {
+        $this->fixtures->merchant->addFeatures([Features::PAYOUTS_BLOCKED_ON_LITE]);
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $ftsTransferSuccess = false;
+
+        $this->mockFtsSmartRouting($this->ftsMock, $ftsTransferSuccess, 0);
+
+        $this->mockFtsTransfer($this->ftsMock, $ftsTransferSuccess);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['account_number'] = array_first($directBalances)->getAccountNumber();
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        $response = $this->startTest($this->testData['testSmartRouting_WithRoutingChoosingDirectAccount']);
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        // Asserting that payout got created
+        $this->assertEquals(1, $finalPayoutCount - $initialPayoutCount);
+
+        $payout = $this->getDbEntity('payout', ['id' => PayoutEntity::verifyIdAndStripSign($response['id'])]);
+
+        $this->assertEquals(PayoutStatus::INITIATED, $payout->getStatus());
+        $this->assertEquals(array_first($directBalances)->getId(), $payout->getBalanceId());
+
+        $this->assertTrue($ftsTransferSuccess);
     }
 
     /**
@@ -2676,6 +2738,50 @@ class PayoutSmartRoutingTest extends TestCase
         $this->liveSetUp();
 
         $this->setupLiteAndDirectAccountsForMerchants(0, 2);
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::FTS_ROUTING_RULES_UPDATE]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->mockDcsConfigFetchAllowedUPIChannel(2);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsFetchSmartRoutingRulesSuccess = true;
+
+        $ftsSmartRoutingRulesMockedResponse = [
+            'priorities' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                ]
+            ]
+        ];
+
+        $this->mockFtsSmartRoutingRules($this->ftsMock, 'fetch', $ftsFetchSmartRoutingRulesSuccess, 1, $ftsSmartRoutingRulesMockedResponse);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsFetchSmartRoutingRulesSuccess);
+    }
+
+    public function testSmartRoutingRules_FetchRulesForMerchant_MerchantBlockedOnLiteAccountForPayout()
+    {
+        $this->liveSetUp();
+
+        $this->setupLiteAndDirectAccountsForMerchants(1, 2);
+
+        $this->fixtures->merchant->addFeatures([Features::PAYOUTS_BLOCKED_ON_LITE]);
 
         $this->ba->adminAuth();
 

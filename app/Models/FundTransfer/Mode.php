@@ -84,7 +84,10 @@ class Mode extends Core
             ],
             Type::WALLET_ACCOUNT => [
                 self::AMAZONPAY,
-            ]
+            ],
+            Type::MOBILE => [
+              self::UPI
+            ],
         ],
         Constants\Country::MY => [
             Type::BANK_ACCOUNT => [

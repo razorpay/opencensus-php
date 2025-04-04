@@ -214,12 +214,23 @@ class MerchantActionNotification
                 'group_id'        => (int) $groupIdMapping[$action],
                 'email_config_id' => (int) $emailConfigIdMapping[$action],
                 'custom_fields'   => [
-                    'cf_ticket_queue' => 'Merchant',
-                    'cf_category'     => $requestParams['category'] ?? 'Risk Report_Merchant',
-                    'cf_subcategory'  => Constants::FD_SUB_CATEGORY[$action] ?? ($requestParams['sub_category'] ?? Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD),
-                    'cf_product'      => 'Payment Gateway',
+                    'cf_ticket_queue'               =>  'Merchant',
+                    'cf_category'                   =>  $requestParams['category'] ?? 'Risk Report_Merchant',
+                    'cf_subcategory'                =>  Constants::FD_SUB_CATEGORY[$action] ?? ($requestParams['sub_category'] ?? Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD),
+                    'cf_product'                    =>  Constants::FD_CF_PRODUCT,
+                    'cf_new_category'               =>  Constants::FD_CF_NEW_CATEGORY,
+                    'cf_new_sub_category'           =>  Constants::FD_SUB_CATEGORY[$action] ?? ($requestParams['sub_category'] ?? Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD),
+                    'cf_risk_woc_category'          =>  Constants::FD_RISK_WOC_CATEGORY[$action] ?? ($requestParams['sub_category'] ?? Constants::FD_RISK_WOC_CATEGORY_FOH),
+                    "cf_new_requester_category"     =>  Constants::FD_NEW_RISK_CATEGORY,
+                    "cf_new_requester_sub_category" =>  Constants::FD_NEW_RISK_SUB_CATEGORY,
                 ],
             ];
+
+            $this->trace->info(TraceCode::MERCHANT_RISK_ACTIONS_EMAIL_CONFIGS,[
+                'tag'               => $tag,
+                'email request'     => $fdOutboundEmailRequest,
+                'request params'    => $requestParams
+            ]);
 
             if (empty($ccEmails) === false)
             {
@@ -240,6 +251,8 @@ class MerchantActionNotification
                 TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_EMAIL_SENT,
                 [
                     'merchant_id'        => $merchant->getId(),
+                    'merchant_email'     => $merchantEmail,
+                    'cc_emails'          => $ccEmails,
                 ]);
 
             return $fdTicketId;
@@ -251,6 +264,8 @@ class MerchantActionNotification
                                                 TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_EMAIL_FAILED,
                                                 [
                                                     'merchant_id'        => $merchant->getId(),
+                                                    'merchant_email'     => $merchantEmail,
+                                                    'cc_emails'          => $ccEmails,
                                                 ]
             );
         }
@@ -318,6 +333,14 @@ class MerchantActionNotification
             }
             else
             {
+                $this->app['trace']->info(
+                    TraceCode::MERCHANT_RISK_ACTIONS_SEND_EMAIL_START,
+                    [
+                        'params'        => $params,
+                        'action'        => $action,
+                        'requestParams' =>$requestParams
+                    ]
+                );
                 $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $action, $requestParams);
             }
 

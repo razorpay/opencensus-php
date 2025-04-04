@@ -161,6 +161,26 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountWithAccountCodeCreateBatch' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'linked_account_create_with_account_code',
+                'name'  => 'LA batch',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'batch',
+                'type'          => 'linked_account_create_with_account_code',
+                'name'          => 'LA batch',
+                'status'        => 'created',
+                'total_count'   => 2,
+            ],
+        ],
+    ],
+
     'testCreateLinkedAccountCreateBatchWithMissingOtpAnd2faEnabled' => [
         'request' => [
             'url' => '/batches',

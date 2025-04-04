@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -454,7 +455,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
     protected function persistReconciliationData(array $rowDetails)
     {
-        $refundTransaction = $this->refund->transaction;
+        $refundTransaction = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($this->refund->getId());
 
         if ($refundTransaction === null)
         {
@@ -905,12 +906,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             $refund->setStatusProcessed();
 
-            $experimentVariable = UniqueIdEntity::generateUniqueId();
-            $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
-                RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
-                $this->app['rzp.mode']);
+            $env = $this->app->environment();
 
-            if ($variantFlag !== 'on')
+            if ($env !== Environment::PRODUCTION)
             {
                 // This needs to be present here and not in the calling function,
                 // to ensure that if any failure happens, arn still gets saved.

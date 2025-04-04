@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Transfer;
 
 use App;
+use Carbon\Carbon;
 use Mail;
 use Mailgun\Exception;
 use Mockery;
@@ -4265,6 +4266,39 @@ class TransferTest extends TestCase
         $transfer = $this->createTransfer('account');
 
         $this->assertEquals('trf_P1aV1cjfsJuNf9', $transfer['id']);
+    }
+
+
+    public function testFetchOptimizerTransfers()
+    {
+        $order = $this->fixtures->create('order', ['status' => 'paid']);
+
+        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => 'AnyRandomID123',
+            'source_id'          => $payment['id'],
+            'source_type'        => 'payment',
+            'status'             => 'created',
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => 'optimizer_account',
+            'amount'             => 50000,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/transfers/trf_' . $dummyTransferData['id'] ;
+
+        $this->ba->privateAuth();
+
+        $this->startTest($data);
     }
 
     public function testTransferPricing()

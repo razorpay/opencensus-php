@@ -28,6 +28,7 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Payout\QueuedReasons;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
@@ -518,7 +519,7 @@ class Base extends FundAccountPayout\Base
         if (($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false) and
             ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_EGRESS) === false) and
             ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_INGRESS) === false) and
-            ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false))
+            (!((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($payout->merchant->getMerchantId(), $payout->balance->getId()))))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
         }

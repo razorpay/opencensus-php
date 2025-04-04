@@ -21,6 +21,8 @@ class Entity extends Base\Entity
     const ORG_ID      = 'org_id';
     const MERCHANT_ID = 'merchant_id';
     const DELETED_AT  = 'deleted_at';
+    const CANARY_ENABLED = 'canary_enabled';
+    const CANARY_PERCENTAGE = 'canary_percentage';
 
     const PERMISSIONS        = 'permissions';
     const STEPS              = 'steps';
@@ -42,6 +44,8 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::ID,
         self::NAME,
+        self::CANARY_ENABLED,
+        self::CANARY_PERCENTAGE,
     ];
 
     protected $visible = [
@@ -54,6 +58,8 @@ class Entity extends Base\Entity
         self::STEPS,
         self::PERMISSIONS,
         self::PAYOUT_AMOUNT_RULE,
+        self::CANARY_PERCENTAGE,
+        self::CANARY_ENABLED,
     ];
 
     protected $public = [
@@ -65,6 +71,8 @@ class Entity extends Base\Entity
         self::STEPS,
         self::PERMISSIONS,
         self::PAYOUT_AMOUNT_RULE,
+        self::CANARY_PERCENTAGE,
+        self::CANARY_ENABLED,
     ];
 
     protected $publicSetters = [
@@ -107,5 +115,15 @@ class Entity extends Base\Entity
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getCanaryPercentage()
+    {
+        return $this->getAttribute(self::CANARY_PERCENTAGE) ?? 0;
+    }
+
+    public function isCanaryEnabled()
+    {
+        return $this->getAttribute(self::CANARY_ENABLED) ?? false;
     }
 }

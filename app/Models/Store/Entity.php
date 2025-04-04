@@ -84,6 +84,12 @@ class Entity extends Base\PublicEntity
 
     protected static $sign        = 'store';
 
+    protected static function getNCASign(): string
+    {
+        return 'st';
+    }
+
+
     protected $entity             = 'payment_link';
 
     protected $generateIdOnCreate = true;

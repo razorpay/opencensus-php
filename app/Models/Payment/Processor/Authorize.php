@@ -771,15 +771,27 @@ trait Authorize
         $gatewayAndGatewayAcquirer = $gateway . "_" . $gatewayAcquirer;
 
         $vaiant = 'off';
+        $gatewayAndAcqForCvvLess = [
+            'cybersource_axis',
+            'hitachi_ratn',
+            'first_data_icic',
+            'cybersource_hdfc',
+            'hdfc_hdfc',
+            'card_fss_barb',
+            'fulcrum_ratn'
+        ];
 
         if ($payment->card->isMasterCard() === true)
         {
-            $variant = $this->app->razorx->getTreatment($gatewayAndGatewayAcquirer, Merchant\RazorxTreatment::CVV_LESS_NON_REARCH_MC, $this->mode);
+            if (in_array($gatewayAndGatewayAcquirer,$gatewayAndAcqForCvvLess) && $this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                $variant = 'on';
+            }
         }
         else {
             $networkCode = $payment->card->getNetworkCode();
-            $exp = Merchant\RazorxTreatment::CVV_LESS_NON_REARCH . '_' . $networkCode . '_'. $gatewayAndGatewayAcquirer;
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $exp, $this->mode);
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction() && $networkCode == 'DICL' && $gatewayAndGatewayAcquirer == 'hdfc_hdfc'){
+                $variant = 'on';
+            }
         }
 
 
@@ -1201,13 +1213,20 @@ trait Authorize
            {
                $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_RECURRING_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
 
-               $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+               $variant = 'off';
 
-               $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
-                   'payment_id' => $payment->getId(),
-                   'feature'    => $razorxFeature,
-                   'variant'    => $variant
-               ]);
+               if (in_array($razorxFeature, Merchant\RazorxTreatment::Allowed_alt_id_experiments, true)) {
+                   $variant = 'on';
+               } else {
+                   // To be removed in future after checking if we are still using razorx for any network, gateway and gateway acquirer combination
+                   $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+                   $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
+                       'payment_id' => $payment->getId(),
+                       'feature'    => $razorxFeature,
+                       'variant'    => $variant
+                   ]);
+               }
 
                return (strtolower($variant) === "on");
            }
@@ -1248,13 +1267,21 @@ trait Authorize
            if(!$skip || $payment->isInternational() === true){
                $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
 
-               $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+               $variant = 'off';
 
-               $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
-                  'payment_id' => $payment->getId(),
-                  'feature'    => $razorxFeature,
-                  'variant'    => $variant
-               ]);
+               if (in_array($razorxFeature, Merchant\RazorxTreatment::Allowed_alt_id_experiments, true)) {
+                   $variant = 'on';
+
+               } else {
+                   // To be removed in future after checking if we are still using razorx for any network, gateway and gateway acquirer combination
+                   $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+                   $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
+                       'payment_id' => $payment->getId(),
+                       'feature'    => $razorxFeature,
+                       'variant'    => $variant
+                   ]);
+               }
 
                   return (strtolower($variant) === "on");
                } else {
@@ -1657,6 +1684,11 @@ trait Authorize
         $payment = $this->payment;
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    public function processCapture(Payment\Entity $payment, array $data = []): array
+    {
+        return $this->postPaymentAuthorizeProcessing($payment);
     }
 
     protected function processNachPaymentCreated(Payment\Entity $payment)
@@ -2333,8 +2365,10 @@ trait Authorize
             ($payment->isMethodCardOrEmi() === true and
                 $payment->merchant->isRazorpayOrgId() === true))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS, $this->mode);
-
+            $variant = '';
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                $variant = 'on';
+            }
             $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
                 'payment_id'     => $payment->getId(),
                 'merchant_id'    => $payment->getMerchantId(),
@@ -2354,8 +2388,10 @@ trait Authorize
         if (($payment->isGatewayCaptured() === false) and
             ($payment->getGateway() === Payment\Gateway::FULCRUM))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_FULCRUM ,$this->mode);
-
+            $variant = '';
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
+                $variant = 'on';
+            }
             $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
                 'payment_id'     => $payment->getId(),
                 'merchant_id'    => $payment->getMerchantId(),
@@ -2592,7 +2628,7 @@ trait Authorize
 
             $this->validatePaCBDataIfApplicable($payment);
 
-            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->validateCitiLrsImportFlowDataInCrossBorderImportService($payment);
 
             $this->validateImportFlowDataIfApplicable($payment);
 
@@ -3490,13 +3526,34 @@ trait Authorize
         $bank = $payment->getBank();
 
         // TODO: Handle first recurring / second recurring based on token and route
-
+        $app = App::getFacadeRoot();
+        $experimentId = $app['config']->get('app.bank_data_via_npci_api_experiment');
         $supportedBanks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
 
-        if ($authType === "netbanking")
-        {
-            if (in_array($bank, Gateway::removeNetbankingEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
-            {
+        $merchantId = $payment->merchant->getId();
+
+        if (self::getSplitzResponseNPCI($merchantId, $experimentId) === 'enable') {
+            if (in_array($bank, $supportedBanks, true) === false) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                    Payment\Entity::BANK,
+                    [
+                        'payment' => $payment->toArray(),
+                    ]);
+            }
+        } else {
+            if ($authType === "netbanking") {
+                if (in_array($bank, Gateway::removeNetbankingEmandateRegistrationDisabledBanks($supportedBanks), true) === false) {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                        Payment\Entity::BANK,
+                        [
+                            'payment' => $payment->toArray(),
+                        ]);
+                }
+            }
+
+            if (in_array($bank, Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks), true) === false) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
                     Payment\Entity::BANK,
@@ -3505,17 +3562,6 @@ trait Authorize
                     ]);
             }
         }
-
-        if (in_array($bank, Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
-                Payment\Entity::BANK,
-                [
-                    'payment' => $payment->toArray(),
-                ]);
-        }
-
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
             throw new Exception\BadRequestException(
@@ -3526,6 +3572,24 @@ trait Authorize
                     'token'   => $input[Payment\Entity::TOKEN],
                 ]);
         }
+    }
+
+    public static function getSplitzResponseNPCI(string $id, string $experimentId)
+    {
+        $app = App::getFacadeRoot();
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     protected function validateInitialRecurringForNach(Payment\Entity $payment, array $input)
@@ -3735,8 +3799,21 @@ trait Authorize
                 ]);
         }
     }
+
+    /**
+     * @deprecated this function shouldn't be used anymore, all validations should be carried
+     * out offers engine. This functions returns if its production environment.
+     */
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
+        $isLowerEnvironment = ((app()->runningUnitTests() === true) or
+                               (app()->isEnvironmentQA() === true));
+
+        if ($isLowerEnvironment === false)
+        {
+            return;
+        }
+
         $offer = $this->offer;
 
         if ($offer !== null)
@@ -4589,8 +4666,9 @@ trait Authorize
         // validate if jpmc supported payment libraries
         // currently s2s
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
-
-        if(in_array($library, Analytics\Metadata::JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES) === false)
+        // handling for qr payments, as it is possible that no library is propagated for qr payments.
+        // QR payments recon and internal appAuth based QR payments use the library 'push'
+        if((in_array($library, Analytics\Metadata::JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES) === false) && !($payment->receiver instanceof \RZP\Models\QrCode\NonVirtualAccountQrCode\Entity))
         {
             $this->pushMetricForImportFlowPaymentValidation(
                 'jpmc',
@@ -4918,6 +4996,60 @@ trait Authorize
         }
     }
 
+    protected function validateCitiLrsImportFlowDataInCrossBorderImportService(Payment\Entity $payment){
+        if ($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
+        {
+            return;
+        }
+        $apiLrsTravelCitiValidationResult = null;
+        $shadowExperimentResult = $this->evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($payment->merchant->getId());
+
+        if($shadowExperimentResult){
+            try {
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                        'payment_id'  => $payment['payment_id'],
+                        'merchant_id' => $payment['merchant_id'],
+                    ]
+                );
+                //call to import service
+                $payment['flow']= 'lrs_travel_citi_flow';
+                $response = $this->app['cross_border_import_service']->validateImportPayment($payment);
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                        'response' => $response,
+                    ]
+                );
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+                );
+                $shadowExperimentResultCrossBorderImportService = $e->getMessage();
+            }
+        }
+        try
+        {
+            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::API_CITI_LRS_VALIDATION_ERROR,[
+                    'lrs_travel_citi_validation_response' => $e->getMessage()
+                ]
+            );
+            $apiLrsTravelCitiValidationResult = $e->getMessage();
+            $this->traceMismatchInResult($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+            throw $e;
+        }
+    }
+
     protected function traceMismatchInResult($apiResult, $crossBorderImportServiceResult)
     {
         if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
@@ -4925,6 +5057,18 @@ trait Authorize
         }
         $this->trace->error(
             TraceCode::CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH, [
+                'api_result' => $apiResult ?? 'success',
+                'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
+            ]
+        );
+    }
+    protected function traceMismatchInResultForLrsCiti($apiResult, $crossBorderImportServiceResult)
+    {
+        if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
+            return;
+        }
+        $this->trace->error(
+            TraceCode::CROSS_BORDER_IMPORT_API_CITI_LRS_VALIDATIONS_MISMATCH, [
                 'api_result' => $apiResult ?? 'success',
                 'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
             ]
@@ -5023,6 +5167,7 @@ trait Authorize
         }
 
         // validate if lrs travel citi supported payment libraries
+
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
         if(in_array($library, Analytics\Metadata::LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES) === false)
         {
@@ -5328,6 +5473,41 @@ trait Authorize
                 $e,
                 null,
                 TraceCode::CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+    private function evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_payment_shadow_citi_lrs'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_PAYMENT_CITI_SHADOW_EXPERIMENT_SPLITZ_ERROR
             );
         }
 
@@ -7557,7 +7737,22 @@ trait Authorize
     protected function createLocalCustomerForSubscription(
         Customer\Entity $customer)
     {
-        return (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
+        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
+
+        // Based on experiment, evaluate if update call should go to CMS or not
+        // Note that, we are reusing the same experiment that we are using for create override
+        $shouldCreateViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isCreateOverrideToCmsEnabled($this->subscription->merchant);
+        if ($shouldCreateViaCMS)
+        {
+            (new Customer\Core)->addGlobalCustomerIdViaCMS($this->subscription->merchant->getId(), $localCustomer, $customer->getId());
+        }
+        else
+        {
+            $localCustomer->globalCustomer()->associate($customer);
+            $this->repo->saveOrFail($localCustomer);
+        }
+
+        return $localCustomer;
     }
 
     protected function addCustomerIdToSubscriptionInput(array & $input)
@@ -8355,14 +8550,24 @@ trait Authorize
 
                     if ($maxAmount === null)
                     {
-                        if (($inn !== null) and
-                            (IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())))
-                        {
-                            $maxAmount =  SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
-                        }
-                        else
-                        {
-                            $maxAmount =  SubscriptionRegistration\Entity::DEFAULT_MAX_AMOUNT;
+                        $mcc = $payment->merchant->getCategory();
+                        $app = App::getFacadeRoot();
+                        $experimentName = $app['config']->get('app.afa_splitz');
+
+                        $merchantId = $payment->merchant->getMerchantId();
+                        $splitzResponse = $this->getSplitzResponseI($merchantId, $experimentName);
+                        $defaultMaxAmount = SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT;
+
+                        if ($inn !== null && IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())) {
+                            if ($splitzResponse === 'enable') {
+                                $maxAmount = in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS)
+                                    ? SubscriptionRegistration\Entity::SPECIAL_MCC_MAX_AMOUNT
+                                    : $defaultMaxAmount;
+                            } else {
+                                $maxAmount = $defaultMaxAmount;
+                            }
+                        } else {
+                            $maxAmount = SubscriptionRegistration\Entity::DEFAULT_MAX_AMOUNT;
                         }
                     }
 
@@ -8486,6 +8691,7 @@ trait Authorize
                 $saveMethodInput[Token\Entity::MAX_AMOUNT] = $this->upiMandate->getMaxAmount() ?? null;
                 $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->upiMandate->getEndTime() ?? null;
                 $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
+                $saveMethodInput[Token\Entity::FREQUENCY] = $this->upiMandate->getFrequency() ?? null;
             }
 
             if ($payment->isUpiRecurring() and
@@ -8561,6 +8767,22 @@ trait Authorize
             ]);
 
         return $token;
+    }
+    protected function getSplitzResponseI(string $id, string $experimentId)
+    {
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 
     protected function savePaymentMethodForSubscription(
@@ -9638,29 +9860,6 @@ trait Authorize
                 $core->updateTokenStatus($token->getId(), Token\Constants::FAILED, $errorCode);
 
                 return;
-            }
-
-            if (($payment->isRecurring() === true) and
-                ($token->getMethod() === Method::CARD) and
-                ($token->card->isRzpSavedCard() === true))
-            {
-                $variant = $this->app->razorx->getTreatment($token->merchant->getId(),
-                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                    $this->mode);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    return;
-                }
-
-                $variant = $this->app->razorx->getTreatment($token->card->getIin(),
-                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                    $this->mode);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    return;
-                }
             }
 
             if ($core->checkIfTokenisationApplicable($token) === false)
@@ -12482,7 +12681,10 @@ trait Authorize
                             ]);
                     }
 
-                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+                    if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                    {
+                       $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+                    }
 
                 } else {
 
@@ -14624,15 +14826,6 @@ trait Authorize
                 in_array($input['dcc_currency'], Currency\Currency::ZERO_DECIMAL_CURRENCIES, true) === false))
         {
             return;
-        }
-
-        // check the experiment
-        $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-            RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $this->mode);
-        if (strtolower($variant) !== 'on')
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, 'currency');
         }
     }
 

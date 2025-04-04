@@ -502,7 +502,7 @@ class CardVault extends Base\Core
     }
 
 
-    public function createTokenizedCard($tokenInput, $merchant, $iinInfo)
+    public function createTokenizedCard($tokenInput, $merchant, $iinInfo, $isTokenContinuityFlow = false)
     {
         $input['card']     = $tokenInput['card'];
         $input['iin']      = $iinInfo;
@@ -530,6 +530,22 @@ class CardVault extends Base\Core
             $input['customer_id'] = $tokenInput['customer_id'];
         }
 
+        if($isTokenContinuityFlow === true)
+        {
+            $input['provider']  = $tokenInput['provider'];
+            $input['additional_detail'] = [
+                "terminal_id" => $tokenInput['additional_detail']['terminal_id'] ?? "",
+                "provider_reference_id1" => $tokenInput['additional_detail']['provider_reference_id1'] ?? "",
+                "provider_reference_id2" => $tokenInput['additional_detail']['provider_reference_id2'] ?? "",
+                "par" => $tokenInput['card']['par'] ?? "",
+                "token_expiry_month" => $tokenInput['card']['token_expiry_month'] ?? "",
+                "token_expiry_year" => isset($tokenInput['card']['token_expiry_year'])
+                    ? substr($tokenInput['card']['token_expiry_year'], -2) : "",
+                "status" => "active",
+                "type" => "network"
+            ];
+        }
+
         return $this->app['card.cardVault']->createTokenizedCard($input);
     }
 
@@ -537,20 +553,14 @@ class CardVault extends Base\Core
     {
         if((new TokenCore)->isNetworkRuPay($input[Entity::CARD]))
         {
-            $variant = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::PANSOURCE_CHANGE_RUPAY, $this->mode);
-
             $this->trace->info(TraceCode::PANSOURCE_CHANGE_RAZORX_VARIANT, [
                 'authentication_data'     => $input['authentication'],
-                'razorx_variant' => $variant,
                 'mode' => $this->mode,
                 'merchant_id' => $merchant->getId(),
             ]);
-
-            if (strtolower($variant) === 'on')
-            {
+            if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
                 return true;
             }
-
             return false;
         }
     }
@@ -561,7 +571,11 @@ class CardVault extends Base\Core
         {
             return false;
         }
-            $variant = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::PANSOURCE_CHANGE_MIGRATION_RUPAY, $this->mode);
+            $variant = 'off';
+
+            if($this->mode===Mode::LIVE && app()->isProduction()){
+                $variant = 'on';
+            }
 
             $this->trace->info(TraceCode::PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT, [
                 'authentication_reference_number'     => $cardInput['authentication_reference_number'],
@@ -576,12 +590,18 @@ class CardVault extends Base\Core
 
     public function migrateToTokenizedCard($card, $merchant, $iinInfo, $cardInput)
     {
-        $input['card'] = [
-            'vault_token'                     => $card->getVaultToken(),
-            'expiry_month'                    => strval($card->getExpiryMonth()),
-            'expiry_year'                     => strval($card->getExpiryYear()),
-            'cvv'                             => strval($cardInput['cvv']),
-        ];
+        if(empty($cardInput['vcpp'])===false){
+            $input['vcpp'] = $cardInput['vcpp'];
+        }
+
+        if($card!==null){
+            $input['card'] = [
+                'vault_token'                     => $card->getVaultToken(),
+                'expiry_month'                    => strval($card->getExpiryMonth()),
+                'expiry_year'                     => strval($card->getExpiryYear()),
+                'cvv'                             => strval($cardInput['cvv']),
+            ];
+        }
 
         $input['async'] = isset($cardInput['async']) ? $cardInput['async'] : null;
 
@@ -592,7 +612,7 @@ class CardVault extends Base\Core
                 'authentication_reference_number' => $cardInput['authentication_reference_number'],
             ];
         }
-        if($card->isAmex() === true){
+        if($card!=null && $card->isAmex() === true){
             $input['authentication_data'] = [
                 'authentication_reference_number' => $cardInput['authentication_reference_number'],
             ];
@@ -659,6 +679,25 @@ class CardVault extends Base\Core
         $this->trace->info(TraceCode::DEBUG_LOGGING, [
             'VAULT INPUT DATA' => $input,
         ]);
+
+        if ($cardInput['hdfc_push_prov']===true)
+        {
+            $input['hdfcPushProvMetaData']  =
+                [
+                'asyncTokenisationJobId'           =>$cardInput['asyncTokenisationJobId'],
+                'hdfc_push_prov'                   => true,
+                'pushProvisioningReceipt'          =>$cardInput['pushProvisioningReceipt'],
+                'merchantId'                       =>$cardInput['merchantId'],
+                'cardType'                         => $cardInput['cardType'],
+                'clientReferenceId'                =>$cardInput['clientReferenceId'],
+                'userConsent'                      =>'Y',
+                'provider'                         =>$cardInput['provider'],
+                'iv'                               =>$cardInput['iv'],
+                'dualTokenMapperId'                =>$cardInput['dualTokenMapperId'],
+                'merchantKey'                      =>$cardInput['merchantKey'],
+                'rzpMerchantId'                    =>$cardInput['rzpMerchantId'],
+                ];
+        }
 
         return $this->app['card.cardVault']->migrateToTokenizedCard($input);
     }
@@ -743,6 +782,12 @@ class CardVault extends Base\Core
             'features'      => $merchant->getEnabledFeatures(),
             'business_name' => empty($merchant->merchantDetail) === false ? $merchant->merchantDetail->getBusinessName() : "Razorpay"
         ];
+
+        if($merchant->getVPanEnrollmentID()!==null){
+            $input['merchant']+= [
+                'vPanEnrollmentID' => $merchant->getVPanEnrollmentID(),
+            ];
+        }
 
         return $input;
     }

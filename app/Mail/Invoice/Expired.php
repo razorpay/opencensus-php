@@ -3,6 +3,7 @@
 namespace RZP\Mail\Invoice;
 
 use RZP\Models\Invoice\Type;
+use RZP\Trace\TraceCode;
 
 class Expired extends Base
 {
@@ -25,6 +26,15 @@ class Expired extends Base
     }
 
     protected function shouldSendEmailViaStork(): bool {
+        $app = \App::getFacadeRoot();
+
+        $traceData = [
+            'merchant_id' => $this->data['merchant']['id'],
+            'template_view' => $this->view,
+        ];
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_EXPIRED , $traceData);
+
         return true;
     }
 }

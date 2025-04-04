@@ -2,6 +2,7 @@
 
 namespace RZP\Services\UpiPayment;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -88,6 +89,21 @@ class Core extends Service
 
         if ($response['success'] === true)
         {
+            // Set refund at for api unexpected payments when source is art
+            // as the ART unexpected payment processing happens on UPS
+            if ($input['source'] === 'art' and $response['count'] === 1)
+            {
+                $entity = $response['entities'][0];
+
+                $paymentEntity = $this->app['repo']->payment->findOrFail($entity['payment_id']);
+
+                if (empty($paymentEntity->getRefundAt()) === true)
+                {
+                    $paymentEntity->setRefundAt(Carbon::now()->getTimestamp());
+
+                    $this->app['repo']->payment->saveOrFail($paymentEntity);
+                }
+            }
             return [
                 Constants::DATA => [
                     Constants::TYPE     => Constants::API_UNEXPECTED,

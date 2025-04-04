@@ -55,6 +55,7 @@ class ConfigKey
     const PG_ROUTER_SERVICE_ENABLED             = self::PREFIX . 'pg_router_service_enabled';
     const OFFERS_ENGINE_SERVICE_ENABLED         = self::PREFIX . 'offers_engine_service_enabled';
     const OFFERS_ENGINE_REVERSE_SHADOW_ENABLED  = self::PREFIX.  'offers_engine_reverse_shadow_enabled';
+    const FETCH_OFFERS_WITH_LIMITS_FROM_API     = self::PREFIX.  'fetch_offers_with_limits_from_api';
     const PAYMENTS_DUAL_WRITE                   = self::PREFIX . 'payments_dual_write';
     const UPI_DUAL_WRITE_ENABLED                = self::PREFIX . 'upi_dual_write_enabled';
     const CARD_ARCHIVAL_FALLBACK_ENABLED        = self::PREFIX . 'card_archival_fallback_enabled';
@@ -196,6 +197,10 @@ class ConfigKey
     const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
 
     const COLLECTX_SERIES_PREFIX = self::PREFIX . 'collectx_series_prefix';
+
+    const RBL_VPA_VALIDATE_API_SESSION_TOKEN      = self::PREFIX . 'rbl_vpa_validate_api_session_token';
+
+    const RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN = self::PREFIX . 'rbl_vpa_validate_api_gateway_auth_token';
 
     const PAYER_ACCOUNT_NUMBER_INVALID_REGEXES  = self::PREFIX . 'payer_account_number_invalid_regexes';
 
@@ -529,6 +534,7 @@ class ConfigKey
         self::PG_ROUTER_SERVICE_ENABLED,
         self::OFFERS_ENGINE_SERVICE_ENABLED,
         self::OFFERS_ENGINE_REVERSE_SHADOW_ENABLED,
+        self::FETCH_OFFERS_WITH_LIMITS_FROM_API,
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,

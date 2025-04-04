@@ -67,7 +67,8 @@ class Cbi extends Base
 
     protected function fetchBankAccountNumber($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway'][Netbanking::BANK_ACCOUNT_NUMBER];
         }

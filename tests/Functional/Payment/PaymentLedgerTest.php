@@ -7086,8 +7086,6 @@ class PaymentLedgerTest extends TestCase
 
         $org = $this->fixtures->org->createHdfcOrg();
 
-        $this->mockRazorxTreatmentV2('hdfc_vas_surcharge_2', 'on');
-
         $merchant = $this->fixtures->merchant->edit('10000000000000',
             [
                 'fee_bearer'  => 'customer',

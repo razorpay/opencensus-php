@@ -21,6 +21,9 @@ class Validator extends Base\Validator
 {
     const CREATE_DIRECT                                 = 'create_direct';
     const CREATE_NETWORK_TOKEN                          = 'create_network_token';
+    const CREATE_NETWORK_TOKEN_CONTINUITY               = 'create_network_token_continuity';
+    const CREATE_NETWORK_TOKEN_CONTINUITY_CARD          = 'create_network_token_continuity_card';
+    const CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL = 'create_network_token_continuity_additional_detail';
     const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
     const CREATE_NETWORK_TOKEN_AMEX                    = 'create_network_token_amex';
     const CREATE_NETWORK_CARD                           = 'create_network_card';
@@ -36,7 +39,10 @@ class Validator extends Base\Validator
     const FETCH_PAR_VALUE                               = 'fetch_par_value';
     const FETCH_MERCHANTS_WITH_TOKEN_PRESENT            = 'fetch_merchants_with_token_present';
     const TOKEN_PUSH                                    = 'token_push';
+    const  HDFC_PUSH_PROV                               = 'hdfc_Push_Prov';
     const RUPAY_PUSH_PROV                               = 'rupay_push_prov';
+
+    const VCPP_TOKEN_PUSH                                    = 'vcpp_token_push';
 
     /**
      * token epoch constrains :
@@ -62,6 +68,16 @@ class Validator extends Base\Validator
         Entity::TOKEN_REFERENCE_ID      => 'required|string',
         Entity::CONVERSATION_ID         => 'required|string',
         Entity::TOKEN_EXPIRY            => 'required|string'
+    ];
+
+    protected static $vcppTokenPushRules = [
+        'clientInformation'             => 'required',
+        'clientInformation.phoneNumber' => 'required|numeric|digits:10',
+        'merchants'                     => 'required|array',
+        'merchants.*.vPanEnrollmentId'  => 'required|string',
+        'merchants.*.merchantId'        => 'required|string',
+        'merchants.*.isAfaPerformed'    => 'sometimes|boolean',
+        'merchants.*.referenceId'       => 'required|string',
     ];
 
     protected static $fetchParValueRules = [
@@ -94,7 +110,7 @@ class Validator extends Base\Validator
         Entity::AADHAAR_VID         => 'sometimes|nullable|string|size:16',
         Entity::START_TIME          => 'sometimes_if:method,upi,nach,emandate',
         Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount,fixed_amount',
-        Entity::FREQUENCY           => 'required_if:auth_type,migrated|required_if:recurring,1|string|in:adhoc,daily,weekly,monthly,quarterly,yearly,as_presented',
+        Entity::FREQUENCY           => 'required_if:auth_type,migrated|required_if:recurring,1|string|in:adhoc,daily,weekly,monthly,quarterly,yearly,as_presented,one_time,fortnightly,bimonthly,half_yearly',
         Entity::STATUS              => 'sometimes|nullable',
         Entity::NOTES               => 'sometimes|notes'
     ];
@@ -119,6 +135,33 @@ class Validator extends Base\Validator
         Entity::AUTHENTICATION       => 'sometimes',
         Entity::NOTES                => 'sometimes|notes',
         'via_push_provisioning'      => 'sometimes|boolean'
+    ];
+
+    protected static $createNetworkTokenContinuityRules = [
+        Entity::MERCHANT_ID          => 'required',
+        Entity::CARD                 => 'required|array',
+        Entity::CUSTOMER_ID          => 'required|public_id',
+        'provider'                   => 'required|in:juspay',
+        'additional_detail'          => 'required|array',
+    ];
+
+    protected static $createNetworkTokenContinuityCardRules = [
+        'name'         => 'sometimes',
+        'number'       => 'required',
+        'expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'expiry_year'  => 'required|numeric|digits_between:2,4',
+        'token_iin' => 'required',
+        'iin' => 'required',
+        'par' => 'required',
+        'vault' => 'required',
+        'token_expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'token_expiry_year'  => 'required|numeric|digits_between:2,4',
+    ];
+
+    protected static $createNetworkTokenContinuityAdditionalDetailRules = [
+        'terminal_id'       => 'required',
+        'provider_reference_id1'       => 'required',
+        'provider_reference_id2'       => 'required',
     ];
 
     protected static $createNetworkTokenRupayRules = [
@@ -151,7 +194,8 @@ class Validator extends Base\Validator
         Entity::CARD                 => 'required|array',
         Entity::NOTES                => 'sometimes|notes',
         'account_ids'                => 'required|array|max:' . Entity::PUSH_PROVISIONING_FETCH_MERCHANTS_WITH_TOKEN_LIMIT,
-        'account_ids.*'              => 'sometimes|public_id'
+        'account_ids.*'              => 'sometimes|public_id',
+        'filter'                     => 'sometimes|string',
     ];
 
     protected static $createNetworkTokenAuthenticationDataRules = [
@@ -228,6 +272,18 @@ class Validator extends Base\Validator
         Card\Constants::TOKENS . '.*' => 'required_with:' . Card\Constants::TOKENS . '|string|size:14',
     ];
 
+    protected static $hdfcPushProvRules= [
+        'merchantId'                    => 'required|string',
+        'pushProvisioningReceipt'       => 'required|string',
+        'referenceId'                   => 'required|string',
+        'provider'                      => 'required|string',
+        'cardType'                      => 'required|string',
+        'clientReferenceId'             => 'required|string',
+        'mobile'                        => 'required|string',
+        'email'                         => 'sometimes|string',
+        'country'                       => 'sometimes|string',
+        'requester'                     => 'required|string',
+    ];
     protected static $validateGlobalCustomerLocalSavedCardAsyncTokenisationRules = [
         'batch_size' => 'sometimes|integer|max:100000'
     ];
@@ -320,7 +376,6 @@ class Validator extends Base\Validator
                 'Invalid bank name in input: '. $value);
         }
     }
-
     protected function validateWallet($attribute, $value)
     {
         if ((Wallet::exists($value) === false) and (PayLater::exists($value) === false))

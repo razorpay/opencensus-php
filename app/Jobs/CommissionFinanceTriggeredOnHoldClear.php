@@ -89,7 +89,7 @@ class CommissionFinanceTriggeredOnHoldClear extends Job
 
                 $afterId = $transactions->last()->getId();
 
-                CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds());
+                CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds(), $this->fromTimestamp);
 
                 foreach ($transactions as $transaction)
                 {

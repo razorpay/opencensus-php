@@ -2,6 +2,10 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use RZP\Exception\BadRequestException;
+use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Pricing\Fee;
 use View;
 use Queue;
 use RZP\Constants;
@@ -121,9 +125,48 @@ class Service extends Base\Service
                 ]);
         }
 
+        $result = $this->evaluateSplitzExperimentForFeeCheckBeforeRegistration($this->merchant);
+
+        if($result=== true && !empty($input['subscription_registration']) && $input['subscription_registration']['method']==='emandate' && !empty($input['subscription_registration']['first_payment_amount'])  && $input['subscription_registration']['first_payment_amount']>0)
+        {
+            try{
+                $fee = $this->checkMerchantFees($input);
+                $this->trace->info(
+                    TraceCode::CALCULATED_FEES_FOR_FIRST_PAYMENT_AMOUNT,
+                    $fee
+                );
+            }catch (\Exception $e)
+            {
+                throw $e;
+            }
+        }
+
         $invoice = $this->core->createAuthLink($input, $this->merchant,null, null, $batchId);
 
         return $invoice->toArrayPublic();
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws BadRequestException|Exception\InvalidArgumentException
+     */
+    public function checkMerchantFees(array $input) : array
+    {
+        // this is a dummy payment for calculating fee, not saving
+        $payment = new \RZP\Models\Payment\Entity();
+        $payment->merchant()->associate($this->merchant);
+        $payment->setAmount($input['subscription_registration']['first_payment_amount']);
+        $payment->setBaseAmount($input['subscription_registration']['first_payment_amount']);
+        $payment->setMethod($input['subscription_registration']['method']);
+        $payment->setAuthType($input['subscription_registration']['auth_type']);
+        $payment->setRecurringType("auto");
+        return $this->repo->useSlave(/**
+         * @throws BadRequestException
+         */ function () use ($payment)
+        {
+            $fee = new Fee();
+            return $fee->calculateMerchantFees($payment);
+        });
     }
 
     /*
@@ -978,7 +1021,7 @@ class Service extends Base\Service
         return $this->getSubscriptionRegistrationForInvoice($invoice->getPublicId());
     }
 
-    protected function getSubscriptionRegistrationForInvoice(string $invoiceId)
+    public function getSubscriptionRegistrationForInvoice(string $invoiceId)
     {
         $invoice = $this->repo
                         ->invoice
@@ -1085,5 +1128,43 @@ class Service extends Base\Service
         $TEMPLATE_FILE_NAME = 'auth_link.pnach_form';
 
         return View::make($TEMPLATE_FILE_NAME, [ 'image_uri' => $imageUri, ]);
+    }
+
+    private function evaluateSplitzExperimentForFeeCheckBeforeRegistration($merchant): bool
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_fee_check_before_registration');
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode([
+                    'merchant_id' => $merchant->getId(),
+                ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::FEE_CHECK_BEFORE_REGISTRATION_SPLITZ_ERROR
+            );
+        }
+        return false;
     }
 }

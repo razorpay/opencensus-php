@@ -36,6 +36,11 @@ class RecurringStatus
     const PAUSED         = 'paused';
 
     /**
+     * This status indicates that this cancellation has been initiated for this token
+     */
+    const CANCELLATION_INITIATED      = 'cancellation_initiated';
+
+    /**
      * This status indicates that this token has been cancel for future recurring payments
      */
     const CANCELLED      = 'cancelled';
@@ -49,6 +54,7 @@ class RecurringStatus
         self::CONFIRMED,
         self::REJECTED,
         self::PAUSED,
+        self::CANCELLATION_INITIATED,
         self::CANCELLED,
     ];
 

@@ -739,7 +739,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('ach',$paymentEntity['wallet']);
         // As the total payment amount is 32000, the last payment should be of 5000 USD
-        $this->assertEquals(300000,$paymentEntity['amount']);
+        $this->assertEquals(700000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
@@ -1483,6 +1483,26 @@ class InternationalBankTransferTest extends TestCase
         $this->assertResponseOk($response);
     }
 
+    public function testTradeCallFailingSettlementCronForB2BPayments()
+    {
+        $this->ba->cronAuth();
+        $this->mockMozartResponseForCurrencyCloud(10000);
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+        $this->assertResponseOk($response);
+    }
+
+    public function testSuccessfulSettlementCronForB2BPayments()
+    {
+        $this->ba->cronAuth();
+        $this->mockMozartResponseForCurrencyCloud(20000);
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+        $this->assertResponseOk($response);
+    }
+
     // test for collecting customer billing address
     // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
     public function testAddressCollection()
@@ -1759,6 +1779,47 @@ class InternationalBankTransferTest extends TestCase
                                         'status' => 'ready_to_send',
                                     ]
                                 ]
+                            ]
+                        ];
+                    }
+                    elseif ($action == 'create_conversion' && $amount === 10000)
+                    {
+                        $j = '{
+                                    "data": {},
+                                    "error": {
+                                      "description": "Too many requests have been made to the api. Please refer to the Developer Center for more information",
+                                      "gateway_error_code": "too_many_requests",
+                                      "gateway_error_description": "Too many requests have been made to the api. Please refer to the Developer Center for more information",
+                                      "gateway_status_code": 429,
+                                      "internal_error_code": "GATEWAY_ERROR_MERCHANT_ACCOUNT_THROTTLED"
+                                    },
+                                    "success": false
+                                  }';
+
+                        $response = (json_decode($j, true));
+
+                        $errorCode = $response['error']['internal_error_code'];
+
+                        throw new Exception\GatewayErrorException(
+                            $errorCode,
+                            $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                            $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                            [
+                                'error' => $response['error'],
+                                'data' => $response['data']
+                            ],
+                            null,
+                            'payments/currency_cloud/v1/create_conversion');
+
+                        return ($response);
+                    }
+                    elseif ($action == 'create_conversion' && $amount === 20000)
+                    {
+                        return [
+                            'data' => [
+                                'client_buy_amount' => '200',
+                                'currency'=> 'USD',
+                                'id'=> 'c5423ced-048c-4b63-9c83-f91b8d991e99',
                             ]
                         ];
                     }

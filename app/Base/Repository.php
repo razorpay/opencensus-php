@@ -66,10 +66,7 @@ class Repository extends \Razorpay\Spine\Repository
     const ADMIN_FETCH                    = "data_warehouse_admin_fetch";
     const MERCHANT_FETCH                 = "data_warehouse_merchant_fetch";
     const MERCHANT_TIDB_EXPERIMENT       = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
-    const ADMIN_TIDB_EXPERIMENT          = 'admin_tidb_experiment';
-    const TIDB_GATEWAY_FALLBACK          = 'tidb_gateway_fallback';
-    const PAYMENT_QUERIES_TIDB_MIGRATION = 'payment_queries_tidb_migration';
-    const PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB = 'payment_P0_queries_migration_from_tidb';
+
     const SETTLEMENT_TRANSACTION_READ_MIGRATION = 'settlement_transaction_read_migration';
 
     const TRANSACTION_READ_MIGRATION = 'transaction_read_migration';
@@ -1302,7 +1299,7 @@ class Repository extends \Razorpay\Spine\Repository
         // Removing Environment::BETA from the array list. Since we now have api db present on
         // stage mysql (stage-mysql.np.razorpay.vpc) which is acting like warehouse in beta/devserve environment.
         // Data warehouse connection configs should use DB_WAREHOUSE_HOST and other data warehouse configs
-        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true)
+        if ($this->app['env'] !== Environment::PRODUCTION)
         {
             return Config::get('database.default');
         }
@@ -1643,5 +1640,5 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return Connection::PAYMENT_FETCH_REPLICA_TEST;
-    } 
+    }
 }

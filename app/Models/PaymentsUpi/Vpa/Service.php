@@ -47,20 +47,6 @@ class Service extends Base\Service
             return;
         }
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            self::BLOCK_VALIDATE_VPA_DB_WRITES,
-            $this->app['rzp.mode'] ?? Mode::LIVE,
-            3,
-            [
-                'connect_timeout' => 1,
-                'timeout'         => 1,
-            ]);
-
-        if ($variant == 'on')
-        {
-            return;
-        }
-
         $success = array_pull($input, 'success');
 
         // We are starting with saving the valid VPA only

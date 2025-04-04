@@ -5,12 +5,14 @@ on:
       - 'master'
       - 'dark'
       - singapore_release
+      - us_release
   push:
     branches:
       - 'master'
       - 'hotfix**'
       - 'dark'
       - singapore_release
+      - us_release
   workflow_dispatch:
 
 concurrency:
@@ -25,7 +27,7 @@ jobs:
       - api-public
       - X64
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1
+      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-worker-v3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -40,7 +42,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v3.0.0"
+        uses: "actions/cache@v4"
         with:
           path: "/github/home/.composer/cache"
           key: "api-composer-${{ hashFiles('composer.lock') }}"
@@ -56,7 +58,7 @@ jobs:
       - api-public
       - X64
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1
+      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-php8.1-v3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -71,7 +73,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v3.0.0"
+        uses: "actions/cache@v4"
         with:
           path: "/github/home/.composer/cache"
           key: "api-composer-${{ hashFiles('composer.lock') }}"
@@ -112,8 +114,8 @@ jobs:
           push: true
           file: ./Dockerfile.fetchCredstash
           build-args: |
-            API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
-            CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
+            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-api-web-v3
+            CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v3
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -177,9 +179,9 @@ jobs:
             GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
-            API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
-            CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
-            OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-opencensus
+            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-api-web-v3
+            CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v3
+            OPENCENSUS_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-opencensus-v3
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -243,7 +245,7 @@ jobs:
             GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
             CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
-            API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-worker-v2
+            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-worker-v3
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -306,7 +308,7 @@ jobs:
           build-args: |
             GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
-            NGINX_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:nginx-alpine-3.12
+            NGINX_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-nginx1.26
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -474,7 +476,7 @@ jobs:
   #             "status": "Pending",
   #             "config_overrides": "{}"
   #           }
-            
+
   # trigger-e2e-execution-sc:
   #   name: Trigger E2E Execution for smart collect
   #   runs-on:

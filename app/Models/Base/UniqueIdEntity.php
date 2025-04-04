@@ -408,4 +408,34 @@ class UniqueIdEntity extends Entity
         return $this->generateIdOnCreate;
     }
 
+    // adding these to handle large hexadecimal numbers
+    public static function base62Manual($num)
+    {
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $base = '62';
+        $res = '';
+
+        while (bccomp($num, '0') > 0) {
+            $rem = bcmod($num, $base);
+            $res = $index[intval($rem)] . $res;
+            $num = bcdiv($num, $base);
+        }
+
+        return $res;
+    }
+
+    public static function hexToDecimal($hex)
+    {
+        $hex = strtolower($hex);
+        $dec = '0';
+        $base = '16';
+
+        for ($i = 0; $i < strlen($hex); $i++) {
+            $value = strval(hexdec($hex[$i]));
+            $dec = bcadd(bcmul($dec, $base), $value);
+        }
+
+        return $dec;
+    }
+
 }

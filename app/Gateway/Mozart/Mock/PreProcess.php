@@ -717,4 +717,34 @@ class PreProcess extends Base\Mock\Server
 
         return $response;
     }
+
+    public function bt_ibl(array $entities)
+    {
+        $response = [
+            'data' => [
+                '_raw' => '{"callback":{"payer_name":"ABCPvtLtd","payer_account":"910910910910910","transaction_id":"9332456789876584","mode":"neft","time":1731569583,"narration":"ABC124","payee_account":"ZBFLCT925038657591","amount":"49999.99","request_type":"notification","payer_ifsc":"HDFC0000522"}}',
+                'input' => [
+                    'amount' => '2.00',
+                    'description' => 'XYZ',
+                    'mode' => 'neft',
+                    'narration' => 'ABC124',
+                    'payee_account' => $entities['Bene_acc_no'],
+                    'payee_ifsc' => '',
+                    'payer_account' => '910910910910910',
+                    'payer_ifsc' => 'HDFC0000522',
+                    'payer_name' => 'ABC Pvt Ltd',
+                    'request_type' => 'notification',
+                    'time' => 1731569583,
+                    'transaction_id' => '9332456789876584'
+                ]
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
 }

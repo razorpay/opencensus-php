@@ -100,4 +100,31 @@ class CustomerOtpInternal extends Mailable
 
         return $this;
     }
+
+    public function shouldSendEmailViaStork():bool
+    {
+        return true;
+    }
+
+    public function getParamsForStork(): array
+    {
+        $merchant = $this->getMerchant();
+
+        $displayName = $merchant->getBillingLabel();
+
+        $data = [
+            'otp'                   => $this->otp,
+            'merchant_display_name' => $displayName,
+            'purpose'               => $this->purpose,
+            'logoUrl'               => $merchant->getFullLogoUrlWithSize(),
+            'primary_color'         => $merchant->getBrandColorElseDefault(),
+        ];
+
+        return [
+            'template_name' => self::EMAIL_TEMPLATE,
+            'template_namespace' => 'razorpayx_payouts_core',
+            'org_id' => $merchant->getOrgId(),
+            'params' => $data
+        ];
+    }
 }

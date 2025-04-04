@@ -104,12 +104,16 @@ abstract class Generator extends Base
         $balanceId = $this->repo->balance
                           ->getBalanceIdByAccountNumberOrFail($basDetails->getAccountNumber());
 
+        $properties = ['experiment_id' => 'x_statement_report_via_tidb', 'id'=>$basDetails->getMerchantId()];
+        $expResult = $this->isSplitzExperimentEnable($properties, "enabled");
+
         $bankAccountStatements = $this->repo
                                       ->statement
                                       ->getStatementsInRange($basDetails->getMerchantId(),
                                                              $balanceId,
                                                              $this->fromDate,
-                                                             $this->toDate);
+                                                             $this->toDate,
+                                                             $expResult);
 
         $transactions = [];
 
@@ -281,5 +285,25 @@ abstract class Generator extends Base
     protected function generateFileName(string $format)
     {
         return $this->accountNumber . '_' . $this->fromDate . '_' . $this->toDate . '.' . $format;
+    }
+
+    private function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
     }
 }

@@ -7,16 +7,16 @@
 <div>
 
       <div>
-        Dear Partner, 
+        Hey {{{$merchant['name']}}}, 
       </div>
 
       <br />
       
       <div>
-      We have received the KYC details of your affiliate {{{$merchant['name']}}} (MID: {{{$merchant['id']}}}) but we need some clarifications regarding the submitted information. 
-Please notify your merchant to fix these issues and resubmit the KYC. If you have the relevant information handy, you can re-submit merchant's KYC from the 
-<a class="link" href="https://dashboard.razorpay.com/app/partners/submerchants" style="text-decoration: none; color: #528FF0;">partner dashboard</a>
-itself.
+      We need additional information to verify KYC and activate your client's account, (MID: {{{$merchant['id']}}}) 
+
+      <br />
+      Assist in resolving the issues mentioned below by providing clarifications yourself or guide your client through the process to ensure activation.
       </div>
 
       <br />
@@ -74,17 +74,25 @@ itself.
 
       <br />
       <div>
-        If you have any queries, please reach out to us at
-        <a class="link" href="mailto:partners@razorpay.com" style="text-decoration: none;
-        color: #528FF0;">partners@razorpay.com</a>.
+
+        Note: Clients cannot collect payments or receive settlements until the details are updated.
+
+
+        If you're assisting your clients to respond to clarifications, here's a quick laydown of the steps
+        <ul>
+          <li>Log into your Partner Dashbord</li>
+          <li>Click on the 'Affiliate Accounts' section located in the left nav bar</li>
+          <li>Find the corresponding account using account ID search, click on resubmit KYC details under actions column</li>
+          <li>Submit the clarifications & you're good to go</li>
+        </ul>
       </div>
 
       <div>
         
       <br />
-      Cheers, 
+      Regards, 
       <br />
-      Razorpay Partnership Team
+      Team Razorpay
       </div>
     </div>
 </body>

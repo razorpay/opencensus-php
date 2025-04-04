@@ -57,4 +57,12 @@ final class Constants
     const TRANSACTIONS_CREDIT            = 'transactions_credit';
 
     const GENERATED_BY                   = 'generated_by';
+
+    const ENABLE                         = 'enable';
+
+    const ON                             = 'on';
+
+    const WALLET_ADMIN_ROLE              = 'wallet_report_admin';
+
+    const REP_SCHEDULER_FOR_ADMIN_DASHBOARD_EXP        = 'app.rep_scheduler_experiment_for_admin_dashboard_exp';
 }

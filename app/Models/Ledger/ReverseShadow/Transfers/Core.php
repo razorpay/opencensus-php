@@ -384,6 +384,17 @@ class Core extends Base\Core
 
     }
 
+    public function getBalanceByTypeFromSlaveForMerchantWithFail(Merchant\Entity $merchant, string $balanceType)
+    {
+        $this->trace->info(TraceCode::TRANSFER_BALANCE_CONFIG_EXPERIMENT_EVALUATION, [
+            'merchant_id' => $merchant->getId(),
+            'balance_type' => $balanceType,
+            'message'=> 'fetching merchant balance from slave'
+        ]);
+
+        return $this->repo->balance->getMerchantBalanceByTypeSlaveOrFail($merchant->getId(), $balanceType);
+    }
+
     public function getBalanceByTypeFromTiDBForMerchantWithoutFail(Merchant\Entity $merchant, string $balanceType)
     {
 

@@ -23,4 +23,11 @@ class Repository extends Base\Repository
                     ->where(Entity::CLIENT_ID, '=', $clientId)
                     ->first();
     }
+
+    public function findByClientId(string $clientId){
+        return $this->newQuery()
+            ->where(Entity::CLIENT_ID, '=', $clientId)
+            ->get()
+            ->last();
+    }
 }

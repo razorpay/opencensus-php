@@ -147,14 +147,14 @@ class TerminalController extends Controller
 
     public function addMerchant(string $id, string $mid)
     {
-        $data = $this->service()->addMerchantToTerminal($id, $mid);
+        $data = $this->service()->addSubmerchantToTerminalV3($id, $mid);
 
         return ApiResponse::json($data);
     }
 
     public function removeMerchant(string $id, string $mid)
     {
-        $data = $this->service()->removeMerchantFromTerminal($id, $mid);
+        $data = $this->service()->removeSubmerchantFromTerminal($id, $mid);
 
         return ApiResponse::json($data);
     }
@@ -163,7 +163,7 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->reassignMerchantForTerminal($id, $input);
+        $data = $this->service()->reassignMerchantV3($id, $input);
 
         return ApiResponse::json($data);
     }

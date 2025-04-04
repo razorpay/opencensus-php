@@ -475,7 +475,7 @@ class Core extends Base\Core
 
                     $response = $this->createResponse($merchantDetails);
 
-                    $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_RESPONSE, [
+-                    $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_RESPONSE, [
                         'merchant_id'                 => $merchant->getId(),
                         'start_time'                  => $startTime * 1000,
                         'overall_duration'            => (microtime(true) - $startTime) * 1000,
@@ -1781,10 +1781,10 @@ class Core extends Base\Core
             // prefill policy links in admin section at time activation by submitting l2 activation form.
             if (in_array($statusToBeUpdated, [Status::ACTIVATED, Status::ACTIVATED_MCC_PENDING, Status::KYC_QUALIFIED_UNACTIVATED]) === true)
             {
-                $this->prefillSystemUrlsInAdminWebisteDetails($merchantDetails);
+                $this->prefillSystemUrlsInAdminWebsiteDetails($merchantDetails);
             }
 
-            $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+            $this->updateActivationStatus($merchant, $activationStatusData, $merchant, true, false);
         }
 
         $eventAttributes = $merchant->toArrayEvent();
@@ -4166,7 +4166,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true): Entity
+    public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker, bool $triggerWorkflow = true, bool $triggerEddWorkflow = true): Entity
     {
         $startTime = microtime(true);
 
@@ -4223,7 +4223,8 @@ class Core extends Base\Core
         }
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
-            $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED)
+            $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED or
+            $input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING)
         {
             // to check website validations for the merchant while fully activating or moving to KQU
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
@@ -4344,6 +4345,7 @@ class Core extends Base\Core
         });
 
         $this->repo->transactionOnLiveAndTestAndAsv(function() use (
+            $triggerEddWorkflow,
             $rejectionOption,
             $merchantDetails,
             $oldMerchantDetails,
@@ -4437,24 +4439,34 @@ class Core extends Base\Core
             if (($input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING) and
                 ($merchant->isLinkedAccount() === false))
             {
-                $this->app['workflow']
-                    ->setEntity($merchantDetails->getEntity())
-                    ->setOriginal($oldMerchantDetails)
-                    ->setDirty($newMerchantDetails)
-                    ->handle();
+                if ($triggerEddWorkflow === true)
+                {
+                    $this->trace->info(TraceCode::WORKFLOW_CREATION_FOR_EDD_PENDING, [
+                        'activation_status' => $input[DEConstants::ACTIVATION_STATUS_FROM_PGOS],
+                    ]);
 
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+                    $this->app['workflow']
+                        ->setEntity($merchantDetails->getEntity())
+                        ->setOriginal($oldMerchantDetails)
+                        ->setDirty($newMerchantDetails)
+                        ->handle();
+                }
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($triggerEddWorkflow, $merchant) {
                     $this->triggerRequestToBvs($merchant, Status::EDD_PENDING);
 
                     // Adding changes for activation for cross border usecase
-                    if ($this->pgosProxyController->isCrossBorderIndiaModularMerchant($merchant) === true) {
+                    if ($this->pgosProxyController->isCrossBorderIndiaModularMerchant($merchant) === true)
+                    {
                         $payload = [
                             'action' => CrossBorderCommonUseCases::ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT,
                             'merchant_id' => $merchant->getMerchantId(),
                             'mode' =>  Mode::LIVE,
                         ];
                         CrossBorderCommonUseCases::dispatch($payload)->delay(10);
-                    } else {
+                    }
+                    else if ($triggerEddWorkflow === true)
+                    {
                         $pgosPayload = [
                             Entity::MERCHANT_ID => $merchant->getId(),
                             DeviceDetailConstants::PRODUCT => DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
@@ -4466,6 +4478,11 @@ class Core extends Base\Core
                                 DeviceDetailConstants::START_VKYC => true
                             ]
                         ];
+                        $this->trace->info(TraceCode::WORKFLOW_CREATION_FOR_EDD_PENDING, [
+                            'trigger_edd_workflow' => $triggerEddWorkflow,
+                            'info'=> 'triggering_onboarding_save_call',
+                            'payload' => $pgosPayload
+                        ]);
 
                         $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ONBOARDING_SAVE, $pgosPayload, $merchant, true);
                     }
@@ -5115,12 +5132,18 @@ class Core extends Base\Core
                         break;
                 }
 
+                if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+                {
+                    (new Validator())->validateRiskTagsForPos($merchant);
+                }
+
                 $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
                 if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
                 {
                     (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
                 }
+
                 //send mail
                 try
                 {
@@ -5329,12 +5352,17 @@ class Core extends Base\Core
 
             (new ClarificationDetailService())->updateClarificationDetails($merchant->getId(), $input[DEConstants::POS_ACTIVATION_STATUS]);
 
+            if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+            {
+                (new Validator())->validateRiskTagsForPos($merchant);
+            }
             $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS], $rejectionReasons, $rejectionOption);
 
             if($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
             {
                 (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchant->getId());
             }
+
             //send mail
             try
             {
@@ -6036,7 +6064,7 @@ class Core extends Base\Core
         $bankCore = (new BankAccount\Core);
 
         // Build the input array for the merchant's bank account creation
-        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant->merchantDetail);
+        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant);
 
         $bankCore->createOrChangeBankAccount($bankData, $merchant);
     }
@@ -6191,7 +6219,7 @@ class Core extends Base\Core
             $bankCore = (new BankAccount\Core);
 
             // Build the input array for the merchant's bank account creation
-            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails, true);
+            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchant, true);
 
             $bankCore->createOrChangeBankAccount($bankData, $merchant, false, false);
 
@@ -6574,6 +6602,13 @@ class Core extends Base\Core
                 }
             }
 
+            $response['cross_border_product_opted'] = null;
+            if (isset($additionalDetailsFromASV['cross_border_onboarding'])) {
+                $response['cross_border_product_opted'] = !empty($additionalDetailsFromASV['cross_border_onboarding']['selected_product'])
+                    ? $additionalDetailsFromASV['cross_border_onboarding']['selected_product']
+                    : 'moneysaver';
+            }
+
             return $response;
         });
 
@@ -6589,15 +6624,6 @@ class Core extends Base\Core
                 ->hasMerchantTransacted($merchant->getId());
 
             $response['isTransacted'] = $mtuTransacted;
-
-            $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::MTU_COUPON_CODE);
-
-            if ($isMtuCouponExperimentEnabled === true)
-            {
-                $response['showMtuPopup'] = $this->isEligibleForMtuPopup($merchant, $mtuTransacted);
-            }
 
             if ((new Merchant\Website\Service())->isMerchantTncApplicable($merchant) === true)
             {
@@ -7471,11 +7497,25 @@ class Core extends Base\Core
                     $activationStatusAutomation = Status::UNDER_REVIEW;
                 }
 
+                if (($activationStatusAutomation === Status::ACTIVATED_MCC_PENDING) and $merchantDetails->getActivationStatus() === Status::NEEDS_CLARIFICATION)
+                {
+                    $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                        'automation_activation_status'  => $activationStatusAutomation,
+                        'nc_to_ur'                      => 'true',
+                    ]);
+
+                    return Status::UNDER_REVIEW;
+                }
+
                 return $activationStatusAutomation;
             }
 
-            if ($this->blockMerchantActivations($merchantDetails->merchant) === false)
+            if ($this->blockMerchantActivations($merchantDetails->merchant) === false and $merchantDetails->getActivationStatus() != Status::NEEDS_CLARIFICATION)
             {
+                $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                    'automation_activation_exp_off'                      => 'true',
+                ]);
+
                 return Status::ACTIVATED_MCC_PENDING;
             }
 
@@ -11258,7 +11298,7 @@ class Core extends Base\Core
                     array_key_exists($businessType, BusinessType::$businessTypeExperiments))
                 {
                     $experimentName            = BusinessType::$businessTypeExperiments[$businessType];
-                    $isRazorxExperimentEnabled = array_key_exists($experimentName, BusinessType::$fullyRampedRazorxExp);
+                    $isRazorxExperimentEnabled = in_array($experimentName, BusinessType::$fullyRampedRazorxExp);
 
 
                     $this->trace->info(
@@ -11590,14 +11630,8 @@ class Core extends Base\Core
             "skip"  => 0
         ];
 
-        if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'getMerchantInfo') === true)
-        {
-            $response['transactions'] = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT)->toArrayPublic()['items'];
-        }
-        else
-        {
-            $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
-        }
+        $response['transactions'] = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT)->toArrayPublic()['items'];
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'Core/getMerchantInfo',
         ]);
@@ -12695,7 +12729,7 @@ class Core extends Base\Core
         }
     }
 
-    public function prefillSystemUrlsInAdminWebisteDetails(MerchantDetail $merchantDetail)
+    public function prefillSystemUrlsInAdminWebsiteDetails(MerchantDetail $merchantDetail)
     {
         // save website policy links
         $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
@@ -13250,9 +13284,7 @@ class Core extends Base\Core
 
         $isPosMerchant = $this->fetchPosActivationFlow($merchant) !== ActivationFlow::BLACKLIST;
 
-        $isPGOSMerchant = $this->isPGOSMerchant($merchant);
-        if ($isPGOSMerchant === true and
-            $isPosMerchant===true and
+        if ($isPosMerchant===true and
             $merchantPosActivationStatus != Detail\Status::ACTIVATED)
         {
             return true;
@@ -13573,6 +13605,20 @@ class Core extends Base\Core
         return (isset($vcipEntities) && !empty($vcipEntities)) ? $vcipEntities[0] : [];
     }
 
+    private function shouldCreateVCIPEntityForMkycMerchants(MerchantEntity $merchant) : bool {
+        $isExperimentEnabled = (new MerchantCore)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.vcip_for_mkyc_merchant_admin_dashboard')
+            ],
+            DetailConstants::ENABLE
+        );
+
+        $isModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
+
+        return ($isExperimentEnabled and $isModularMerchant);
+    }
+
     public function createVCIPEntity($input)
     {
         $actorDetails = $this->getActorDetails();
@@ -13589,6 +13635,23 @@ class Core extends Base\Core
         $service = new Merchant\Service();
         $merchantId = $input['merchant_id'];
         $isRekycMerchant = $service->isRekycMerchant($merchantId,$activationStatus);
+
+        if ($this->shouldCreateVCIPEntityForMkycMerchants($merchant) === true) {
+            $payload = [
+                Constants::ACTOR_DETAILS => $actorDetails,
+                Constants::MERCHANT_ID => $merchantId
+            ];
+
+            $this->trace->info(TraceCode::CREATE_VCIP_ENTITY_FOR_MKYC_MERCHANTS_PGOS_PROXY_REQUEST, [
+                Constants::ACTOR_DETAILS => $actorDetails,
+                Constants::MERCHANT_ID => $merchantId,
+            ]);
+
+            $result = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::GET_VCIP_LINK, $payload, $merchant);
+            $this->pgosProxyController->errorHandler($result);
+
+            return $result['data'];
+        }
 
         if($isRekycMerchant) {
             $details = $service->getAdditionalDetailsFromASV($merchantId);
@@ -13790,9 +13853,21 @@ class Core extends Base\Core
                                                                                                        'merchant_id' => $merchant->getId(),
                                                                                                    ]
             );
+
+            $this->trace->count( DetailMetric::ACTIVATION_FORM_SUBMIT_EVENT_FOR_CMMA_CASE_CREATION, [
+                "topic" => $activationFormSubmissionEventTopic,
+                "event_type"  => $eventType,
+                "status" => "success"
+            ]);
         }
         catch (\Throwable $ex)
         {
+            $this->trace->count( DetailMetric::ACTIVATION_FORM_SUBMIT_EVENT_FOR_CMMA_CASE_CREATION, [
+                "topic" => $activationFormSubmissionEventTopic,
+                "event_type"  => $eventType,
+                "status" => "failed"
+            ]);
+
             $this->trace->traceException(
                 $ex,
                 500,
@@ -13965,4 +14040,3 @@ class Core extends Base\Core
     }
 
 }
-

@@ -102,17 +102,7 @@ trait Vpa
                     return $response;
                 }
 
-                $mode = $this->mode ?? Mode::LIVE;
-
-                $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'numeric_mapper_encrypted_vpa', $mode);
-
-                if($variant === 'encrypted')
-                {
-                    return $this->getEncryptedVpaResponse($response);
-                }
-
-                return $response;
-
+                return $this->getEncryptedVpaResponse($response);
             }
             catch (Exception\GatewayErrorException $exception)
             {

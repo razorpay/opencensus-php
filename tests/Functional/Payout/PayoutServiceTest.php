@@ -31,6 +31,7 @@ use RZP\Models\PayoutsDetails;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Validator;
 use RZP\Models\Feature\Constants;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
@@ -47,7 +48,6 @@ use RZP\Services\PayoutService\BulkPayout;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
-use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\Payout\PayoutTest;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -79,6 +79,7 @@ use RZP\Services\PayoutService\Details as PayoutServiceDetails;
 use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
 use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
+use RZP\Services\PayoutService\PayoutsDualWriteFailureProcessingCron;
 use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
@@ -138,6 +139,8 @@ class PayoutServiceTest extends TestCase
         $this->setUpMerchantForBusinessBankingLive(false, 10000000);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
         $this->mockTaxPaymentsGetTdsCategories();
     }
@@ -1440,6 +1443,122 @@ class PayoutServiceTest extends TestCase
             $response->status_code = 200;
             $response->success = true;
         }
+        else if ($numberOfPayouts == 4)
+        {
+            $response->body = json_encode(
+                [
+                    'entity' => 'collection',
+                    'count'  => 4,
+                    'items'  => [
+                        [
+                            'entity'          => 'payout',
+                            'fund_account'    => [
+                                'entity'       => 'fund_account',
+                                'account_type' => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'HDFC0003780',
+                                    'bank_name'      => 'HDFC Bank',
+                                    'name'           => 'Vivek Karna',
+                                    'account_number' => '50100244702362',
+                                ],
+                                'active'       => true,
+                            ],
+                            'amount'          => 100,
+                            'currency'        => 'INR',
+                            'fees'            => 590,
+                            'tax'             => 90,
+                            'status'          => 'processing',
+                            'purpose'         => 'refund',
+                            'utr'             => null,
+                            'user_id'         => 'MerchantUser01',
+                            'mode'            => 'IMPS',
+                            'reference_id'    => null,
+                            'narration'       => '123',
+                            'idempotency_key' => 'batch_abc123'
+                        ],
+                        [
+                            'entity'          => 'payout',
+                            'fund_account'    => [
+                                'entity'       => 'fund_account',
+                                'account_type' => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'HDFC0003780',
+                                    'bank_name'      => 'HDFC Bank',
+                                    'name'           => 'Vivek Karna',
+                                    'account_number' => '50100244702362',
+                                ],
+                                'active'       => true,
+                            ],
+                            'amount'          => 100,
+                            'currency'        => 'INR',
+                            'fees'            => 590,
+                            'tax'             => 90,
+                            'status'          => 'processing',
+                            'purpose'         => 'refund',
+                            'utr'             => null,
+                            'user_id'         => 'MerchantUser01',
+                            'mode'            => 'IMPS',
+                            'reference_id'    => null,
+                            'narration'       => '123',
+                            'idempotency_key' => 'batch_abc1234'
+                        ],
+                        [
+                            'entity'          => 'payout',
+                            'fund_account'    => [
+                                'entity'       => 'fund_account',
+                                'account_type' => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'HDFC0003780',
+                                    'bank_name'      => 'HDFC Bank',
+                                    'name'           => 'Vivek Karna',
+                                    'account_number' => '50100244702362',
+                                ],
+                                'active'       => true,
+                            ],
+                            'amount'          => 200,
+                            'currency'        => 'INR',
+                            'fees'            => 590,
+                            'tax'             => 90,
+                            'status'          => 'processing',
+                            'purpose'         => 'refund',
+                            'utr'             => null,
+                            'user_id'         => 'MerchantUser01',
+                            'mode'            => 'IMPS',
+                            'reference_id'    => null,
+                            'narration'       => '123',
+                            'idempotency_key' => 'batch_abc1235'
+                        ],
+                        [
+                            'entity'          => 'payout',
+                            'fund_account'    => [
+                                'entity'       => 'fund_account',
+                                'account_type' => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'HDFC0003780',
+                                    'bank_name'      => 'HDFC Bank',
+                                    'name'           => 'Vivek Karna',
+                                    'account_number' => '50100244702362',
+                                ],
+                                'active'       => true,
+                            ],
+                            'amount'          => 200,
+                            'currency'        => 'INR',
+                            'fees'            => 590,
+                            'tax'             => 90,
+                            'status'          => 'processing',
+                            'purpose'         => 'refund',
+                            'utr'             => null,
+                            'user_id'         => 'MerchantUser01',
+                            'mode'            => 'IMPS',
+                            'reference_id'    => null,
+                            'narration'       => '123',
+                            'idempotency_key' => 'batch_abc1236'
+                        ],
+                    ]
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
+        }
 
         return $response;
     }
@@ -1671,6 +1790,92 @@ class PayoutServiceTest extends TestCase
 
         return $response;
     }
+
+    public function SharedBulkPayoutViaPayoutsServiceBankingAccountCreation()
+    {
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $this->bankingBalance->getId(),
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => $this->bankingBalance->getAccountType(),
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('test')->table('ps_banking_accounts')->insert($bankingAccount);
+
+    }
+
+    public function DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balanceId, $channel, $accountNumber)
+    {
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balanceId,
+            'channel' => $channel,
+            'status'    => 'active',
+            'account_number' => $accountNumber,
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('test')->table('ps_banking_accounts')->insert($bankingAccount);
+
+    }
+
+    public function DirectBulkPayoutViaPayoutsServiceBankingAccountCreation()
+    {
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $this->bankingBalance->getId(),
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('test')->table('ps_banking_accounts')->insert($bankingAccount);
+
+    }
+
+
+    public function SharedBulkPayoutViaPayoutsServiceBankingAccountCreationForBalanceId($balanceId, $accountNumber)
+    {
+
+        $bankingAccount = [
+            'id'          => 'randomid111122',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balanceId,
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $accountNumber,
+            'account_type' => $this->bankingBalance->getAccountType(),
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('test')->table('ps_banking_accounts')->insert($bankingAccount);
+
+    }
+
 
     // Check payout Create Entry func on processor base
     public function testCreatePayoutEntry($mode = 'IMPS',
@@ -2341,9 +2546,9 @@ class PayoutServiceTest extends TestCase
     }
 
     // Check payout Create fta func on processor base
-    public function testCreatePayoutServiceFtaCreation($mode = 'IMPS')
+    public function testCreatePayoutServiceFtaCreation($mode = 'IMPS', $migratePayoutToPS = false)
     {
-        $payout = $this->testCreatePayoutEntry($mode, false);
+        $payout = $this->testCreatePayoutEntry($mode, $migratePayoutToPS);
 
         $this->fixtures->edit('payout', $payout['id'], [
             'transaction_id' => 'randomtxnnnnnn',
@@ -2417,10 +2622,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutServiceFtaCreationWithFeeRecoveryCreation ($mode = 'IMPS')
     {
-
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
         $payout = $this->testCreatePayoutEntry($mode, false);
-        $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable'
+        ]);
 
         $this->fixtures->edit('payout', $payout['id'], [
             'transaction_id' => 'randomtxnnnnnn',
@@ -2967,6 +3174,9 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreate();
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $payout = $this->testCreatePayoutServiceFtaCreation();
 
@@ -3012,6 +3222,10 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutViaDashboard()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $assertionBody = [];
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
@@ -3036,6 +3250,10 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutWithAttachmentsViaDashboard()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $requestReceivedByMock = [];
         $this->mockPayoutServiceCreateForPayoutAttachments(false, [], $requestReceivedByMock);
 
@@ -3335,6 +3553,10 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutWithNewBankingError(): array
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
             'entity_id'   => 10000000000000,
@@ -3386,6 +3608,9 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutViaMicroserviceAndPassFundAccountInfo()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3447,6 +3672,9 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForCardViaMicroserviceAndPassFundAccountInfo()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3535,6 +3763,9 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForVpaViaMicroserviceAndPassFundAccountInfo()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3625,6 +3856,9 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForBankAccountViaMicroserviceAndPassVaToVaInfo()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
@@ -3741,6 +3975,8 @@ class PayoutServiceTest extends TestCase
     }
     public function testCreatePayoutForBankAccountViaMicroserviceAndPreCalculatePricingInfoToUpdatePayoutServiceRedis()
     {
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
             'entity_id'   => 10000000000000,
@@ -3779,14 +4015,9 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody,$actualPayload,false,false,$assertionBodyForPricing);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
-                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $fundAccountObject = $this->getDbEntities('fund_account',
             [
@@ -3903,6 +4134,9 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForBankAccountViaMicroserviceAndFailedAttemptToPreCalculatePricingInfoToUpdatePayoutServiceRedis()
     {
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
             'entity_id'   => 10000000000000,
@@ -3943,14 +4177,8 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceCreate(false, [], [], Status::PROCESSING, false, true, $assertionBody,$actualPayload,false,false,$assertionBodyForPricing);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD  => 'on',
-                RazorxTreatment::PAYOUT_SERVICE_VA_TO_VA_CONSUME_FROM_PAYLOAD => 'on',
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
-
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $fundAccountObject = $this->getDbEntities('fund_account',
             [
@@ -4068,6 +4296,11 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutForVpaViaMicroserviceAndPassVaToVaInfo()
     {
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::NEW_BANKING_ERROR,
             'entity_id'   => 10000000000000,
@@ -4184,6 +4417,10 @@ class PayoutServiceTest extends TestCase
     public function testCreateRzpFeesPayoutForBankAccountViaMicroserviceAndPassVaToVaInfo()
     {
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('contact', [
             'id'      => 'cont1000000000',
@@ -4338,6 +4575,11 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutViaDashboardViaMicroserviceAndPassFundAccountInfo()
     {
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $assertionBody = [];
 
         $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
@@ -4397,6 +4639,10 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForCardViaDashboardViaMicroserviceAndPassFundAccountInfo()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $card = $this->fixtures->on('live')->create('card', [
             'merchant_id'  => '10000000000000',
@@ -4480,6 +4726,11 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutForVpaViaDashboardViaMicroserviceAndPassFundAccountInfo()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('contact', [
             'id' => 'cont1000000000',
@@ -4565,6 +4816,10 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroServiceAndPassFundAccountInfo()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $assertionBody = [];
 
@@ -4626,6 +4881,11 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutForCardViaMicroServiceAndPassFundAccountInfo()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $card = $this->fixtures->on('live')->create('card', [
             'merchant_id'  => '10000000000000',
@@ -4710,6 +4970,11 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutForVpaViaMicroServiceAndPassFundAccountInfo()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('contact', [
             'id' => 'cont1000000000',
@@ -4797,6 +5062,11 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutInsufficientBalance()
     {
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->mockPayoutServiceCreate(false, [], [], 'created', true);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
@@ -4807,6 +5077,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroService()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $assertionBody = [];
 
 
@@ -4831,6 +5107,11 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroServiceWithUserIdInHeaders()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->mockRazorxDefault();
 
@@ -4857,6 +5138,8 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutWithFeeRewards(): array
     {
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
         $metadata = [
             'entity'          => 'payout',
             'amount'          => 100,
@@ -4866,6 +5149,8 @@ class PayoutServiceTest extends TestCase
             'tax'             => 0,
             'fees'            => 500,
         ];
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->mockPayoutServiceCreate(false, $metadata);
 
@@ -4918,6 +5203,11 @@ class PayoutServiceTest extends TestCase
     public function testCreatePayoutInternalContact()
     {
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $metadata = [
             'tax'             => 0,
             'fees'            => 0,
@@ -4947,6 +5237,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInternalContactWithoutWorkflowsFlag()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $metadata = [
             'tax'             => 0,
             'fees'            => 0,
@@ -4996,6 +5292,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutInternalContactWithWorkflows()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $metadata = [
             'tax'             => 0,
             'fees'            => 0,
@@ -5045,6 +5347,11 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutServiceFailure()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->mockPayoutServiceCreate(true);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
@@ -5054,6 +5361,11 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutServicePayoutAndBlockByShield()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $testData = $this->testData['testCreatePayoutServiceFailure'];
 
         $testData['response'] = [
@@ -5221,7 +5533,7 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceStatusWithChecks('processed',$success);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING => 'enable']);
 
         $this->ba->appAuthLive();
 
@@ -5269,38 +5581,38 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('initiated', $ftaForPayout->getStatus());
     }
 
-//    public function testUpdateFTAAndPayoutToFailed()
-//    {
-//        $payout = $this->testCreatePayout();
-//
-//        $payout = (new Core)->getAPIModelPayoutFromPayoutService(substr($payout['id'], 5));
-//
-//        $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
-//
-//        $this->mockPayoutServiceDetails();
-//
-//        $this->mockPayoutServiceStatus('failed');
-//
-//        $this->ba->appAuthLive();
-//
-//        $this->startTest();
-//
-//        // Assert that payout status didn't update
-//        $this->assertEquals('created', $payout->getStatus());
-//
-//        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
-//            [
-//                'source_id'   => $payout->getId(),
-//                'source_type' => 'payout',
-//            ], 'live')->first();
-//
-//        // Assert that fta status didn't update
-//        $this->assertEquals('failed', $ftaForPayout->getStatus());
-//
-//        //$payout->reload();
-//
-//        //$this->assertEquals('reversed', $payout->getStatus());
-//    }
+    public function testUpdateFTAAndPayoutToFailed()
+    {
+        $payout = $this->testCreatePayout();
+
+        $payout = (new Core)->getAPIModelPayoutFromPayoutService(substr($payout['id'], 5));
+
+        $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
+
+        $this->mockPayoutServiceDetails();
+
+        $this->mockPayoutServiceStatus('failed');
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        // Assert that payout status didn't update
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+            [
+                'source_id'   => $payout->getId(),
+                'source_type' => 'payout',
+            ], 'live')->first();
+
+        // Assert that fta status didn't update
+        $this->assertEquals('failed', $ftaForPayout->getStatus());
+
+        //$payout->reload();
+
+        //$this->assertEquals('reversed', $payout->getStatus());
+    }
 
     public function testUpdateFTAAndPayoutToFailedForDirectAccountPayouts()
     {
@@ -5547,6 +5859,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutWithIdempotencyKey()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $request['headers'][RequestHeader::X_PAYOUT_IDEMPOTENCY] =
             $this->testData[__FUNCTION__]['request']['server']['HTTP_' . \RZP\Http\RequestHeader::X_PAYOUT_IDEMPOTENCY];
 
@@ -5612,6 +5930,11 @@ class PayoutServiceTest extends TestCase
     // to go via payouts service, payout should go via payouts service
     public function testCreateOnHoldPayoutViaPayoutService()
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
             'entity_id'   => 10000000000000,
@@ -5674,6 +5997,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateScheduledPayoutViaPayoutService()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
         $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
 
@@ -5743,6 +6072,11 @@ class PayoutServiceTest extends TestCase
         string $balanceId = '',
         string $payoutID = 'pout_Gg7sgBZgvYjlSB')
     {
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $strippedPayoutID = $payoutID;
         $strippedPayoutID = Entity::verifyIdAndStripSign($strippedPayoutID);
 
@@ -6334,7 +6668,9 @@ class PayoutServiceTest extends TestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
 
         $mock = $this->createMetricsMock();
 
@@ -6367,6 +6703,9 @@ class PayoutServiceTest extends TestCase
             [
                 'account_number' => '2224440041626905',
             ], 'live')->first();
+
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreationForBalanceId($balance->getId(),'2224440041626905');
 
         $payoutData = [
             'id'                   => 'Gg7sgBZgvYjlSB',
@@ -6443,7 +6782,7 @@ class PayoutServiceTest extends TestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'enable']);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -6483,16 +6822,21 @@ class PayoutServiceTest extends TestCase
 
     public function testRejectPayoutForPayoutServicePayout()
     {
+
         $this->setUpExperimentForNWFS();
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $balance = $this->getDbEntities('balance',
             [
                 'account_number' => '2224440041626905',
             ], 'live')->first();
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreationForBalanceId($balance->getId(),'2224440041626905');
+
 
         $payoutData = [
             'id'                   => 'Gg7sgBZgvYjlSB',
@@ -7240,6 +7584,11 @@ class PayoutServiceTest extends TestCase
            'account_type'=>'direct',
         ]);
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(),Channel::YESBANK,'2224440041626905');
+
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
 
@@ -7264,6 +7613,11 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
 
+        $balanceId = $balance->getId();
+
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
+
         $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
             [
                 'entity_id' => '10000000000000',
@@ -7275,6 +7629,8 @@ class PayoutServiceTest extends TestCase
         $this->assertContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
+        $this->assertNotTrue($psBankingAccount['payout_service_enabled']);
+
     }
 
     public function testFreePayoutRollbackWithLedgerReverseShadowNotAssignedForCAMerchant()
@@ -7289,6 +7645,11 @@ class PayoutServiceTest extends TestCase
             $balance->getId(),[
             'account_type'=>'direct',
         ]);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(),Channel::YESBANK,'2224440041626905');
 
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
@@ -7309,6 +7670,11 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
 
+        $balanceId = $balance->getId();
+
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
+
         $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
             [
                 'entity_id' => '10000000000000',
@@ -7320,6 +7686,7 @@ class PayoutServiceTest extends TestCase
         $this->assertContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
+        $this->assertNotTrue($psBankingAccount['payout_service_enabled']);
     }
 
     public function testFreePayoutMigrationAdminActionDisableActionForCAMerchant()
@@ -7338,11 +7705,22 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(),Channel::YESBANK,'2224440041626905');
+
+
         $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
 
         $this->ba->adminAuth('live');
 
         $this->startTest();
+        $balanceId = $balance->getId();
+
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
+        $this->assertNotTrue($psBankingAccount['payout_service_enabled']);
     }
 
     public function testBasDetailsStatusUpdateAdminAction()
@@ -7657,6 +8035,11 @@ class PayoutServiceTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
             'entity_id'   => 10000000000000,
@@ -7678,6 +8061,11 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
 
+        $balanceId = $balance->getId();
+
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
+
         $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
             [
                 'entity_id' => '10000000000000',
@@ -7689,6 +8077,7 @@ class PayoutServiceTest extends TestCase
         $this->assertContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
+        $this->assertNotTrue($psBankingAccount['payout_service_enabled']);
     }
 
     public function testFreePayoutRollbackWithIdempotencyApiToPsFeatureAndFetchVaPayoutsViaPsEnabled()
@@ -7701,6 +8090,11 @@ class PayoutServiceTest extends TestCase
         $this->testData[__FUNCTION__] = $this->testData['testFreePayoutRollback'];
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create('feature', [
             'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
@@ -7739,6 +8133,10 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
 
+        $balanceId = $balance->getId();
+
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
         $liveFeaturesArrayAfterTest = $this->getDbEntity('feature',
                                                          [
                                                              'entity_id' => '10000000000000',
@@ -7751,6 +8149,7 @@ class PayoutServiceTest extends TestCase
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS, $liveFeaturesArrayAfterTest);
+        $this->assertNotTrue($psBankingAccount['payout_service_enabled']);
 
         $tagsAfter = $this->fixtures->on('live')->merchant->reloadTags();;
 
@@ -7778,6 +8177,11 @@ class PayoutServiceTest extends TestCase
                                         [
                                             'account_number'   => '2224440041626905',
                                         ], 'live')->first();
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreationForBalanceId($balance->getId(),Channel::YESBANK,'2224440041626905');
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
 
@@ -7807,8 +8211,13 @@ class PayoutServiceTest extends TestCase
             ],
             'live')->pluck('name')->toArray();
 
+        $balanceId = $balance->getId();
+
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
         $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+        $this->assertNotTrue($psBankingAccount['payout_service_enabled']);
     }
 
     public function testFreePayoutRollbackWithoutLedgerReverseShadowFeatureAssigned()
@@ -7863,7 +8272,7 @@ class PayoutServiceTest extends TestCase
         $this->fixtures->on('live')->edit(
             'feature',
             $feature['id'],
-                [
+            [
                 'name' => 'random_feature',
                 ]
         );
@@ -7917,11 +8326,32 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceFreePayoutSet();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $balance = $this->fixtures->create('balance',
             [
                 Balance::ACCOUNT_TYPE => AccountType::SHARED,
                 Balance::TYPE         => Type::BANKING,
             ]);
+
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::YESBANK,
+            'status'    => 'active',
+            'account_number' => '2224440041626905',
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->ba->adminAuth();
 
@@ -7935,11 +8365,32 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceFreePayoutSet(true);
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $balance = $this->fixtures->create('balance',
                                            [
                                                Balance::ACCOUNT_TYPE => AccountType::SHARED,
                                                Balance::TYPE         => Type::BANKING,
                                            ]);
+
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::YESBANK,
+            'status'    => 'active',
+            'account_number' => '2224440041626905',
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->ba->adminAuth();
 
@@ -7953,11 +8404,31 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceGetFreePayout();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $balance = $this->fixtures->create('balance',
                                            [
                                                Balance::ACCOUNT_TYPE => AccountType::SHARED,
                                                Balance::TYPE         => Type::BANKING,
                                            ]);
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::YESBANK,
+            'status'    => 'active',
+            'account_number' => '2224440041626907',
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->ba->adminAuth();
 
@@ -7981,11 +8452,31 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceGetFreePayout();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $balance = $this->fixtures->create('balance',
                                            [
                                                Balance::ACCOUNT_TYPE => AccountType::SHARED,
                                                Balance::TYPE         => Type::BANKING,
                                            ]);
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::YESBANK,
+            'status'    => 'active',
+            'account_number' => '2224440041626907',
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->ba->proxyAuth();
 
@@ -8080,7 +8571,10 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -8090,13 +8584,10 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreateBulkPayout(2, false, false, [], true);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -8115,6 +8606,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+         $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(), 'icici', '2224440041626907');
+
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -8133,7 +8626,10 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -8143,13 +8639,10 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreateBulkPayout(1);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -8168,6 +8661,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(), 'icici', '2224440041626907');
+
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -8187,7 +8682,10 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -8198,13 +8696,10 @@ class PayoutServiceTest extends TestCase
     {
         $this->mockPayoutServiceCreateBulkPayout(2);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -8224,6 +8719,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(), 'icici', '2224440041626907');
+
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -8232,7 +8729,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_SinglePayout_SpacesInAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8280,12 +8778,9 @@ class PayoutServiceTest extends TestCase
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8320,7 +8815,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureEnabled()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8372,12 +8868,10 @@ class PayoutServiceTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
+
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8411,7 +8905,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowFalse_FeatureEnabled()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
 
@@ -8431,7 +8926,7 @@ class PayoutServiceTest extends TestCase
                 'account_type'   => 'direct',
                 'merchant_id'    => $this->bankingBalance->getMerchantId(),
                 'type'           => 'banking',
-                'channel'        => 'icici',
+                'channel' => 'icici',
                 'account_number' => 2224440041626907,
             ]
         );
@@ -8448,7 +8943,7 @@ class PayoutServiceTest extends TestCase
         $this->ba->batchAuth('rzp_live_10000000000000');
 
         $headers = [
-            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
             'HTTP_X-Entity-Id'    => '10000000000000',
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
@@ -8464,7 +8959,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureDisabled()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8515,9 +9011,10 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAccount_SinglePayout_SkipWorkflowTrue_FeatureEnabled_UseMicroservice()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'shared',
@@ -8527,6 +9024,8 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreationForBalanceId($balance->getId(), 2224440041626907);
 
         $this->mockPayoutServiceCreateBulkPayout(1);
 
@@ -8547,7 +9046,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount_MultiplePayout_SpacesInAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8592,7 +9092,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccounts_SpacesInAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
@@ -8606,6 +9107,9 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
 
         $this->fixtures->create('banking_account_statement_details',[
             Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
@@ -8636,12 +9140,9 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_MultiplePayout_SpacesInAccountNumber()
     {
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::SHARED, Channel::YESBANK);
 
@@ -8656,7 +9157,7 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -8666,6 +9167,8 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(), 'icici', '2224440041626907');
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
@@ -8705,6 +9208,11 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreationForBalanceId($balance1->getId(), $this->bankingBalance->getAccountNumber());
+
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -8713,7 +9221,7 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_InvalidAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8736,12 +9244,9 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_CurrentAccountPayoutViaPayoutService_InvalidAccountNumber()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8765,7 +9270,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_ValidSharedAccount_And_InvalidAccountNumber()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
@@ -8777,6 +9283,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -8791,7 +9299,7 @@ class PayoutServiceTest extends TestCase
             Feature\Constants::PAYOUTS_BLOCKED_ON_LITE
         ]);
 
-        $this->fixtures->on('live')->create(
+        $balance  = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -8802,7 +9310,8 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayout(1);
 
@@ -8814,7 +9323,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
-
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId(
+            $balance->getId(), Channel::ICICI, '2224440041626907');
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -8823,7 +9333,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayoutForLiteBlocked_CAViaAPI_LiteViaPS()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->merchant->addFeatures([
             Feature\Constants::PAYOUTS_BLOCKED_ON_LITE,
@@ -8839,6 +9350,7 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+                        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -8858,6 +9370,10 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -8877,6 +9393,10 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -8886,7 +9406,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -8941,7 +9462,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_MultiplePayouts_SameDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
@@ -9008,7 +9530,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccounts()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
@@ -9022,6 +9545,61 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        $this->mockPayoutServiceCreateBulkPayout(2);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkPayout_SharedPayoutViaApiMonolith_DirectAccountsViaPayoutService()
+    {
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->setMockRazorxTreatment(
+            [
+
+                'imps_mode_payout_filter' => 'control',
+            ]
+        );
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
+
+        $balance1 = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'channel'        => 'icici',
+                'account_number' => 2224440041626907,
+            ]
+        );
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance1->getId(), 'icici', '2224440041626907');
 
         $this->fixtures->create('banking_account_statement_details',[
             Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
@@ -9051,7 +9629,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccount_ExceptionFromSharedAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9075,6 +9654,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -9094,12 +9675,9 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_ExceptionFromCurrentAccount()
     {
 
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9112,7 +9690,8 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->fixtures->on('live')->create(
+
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -9122,6 +9701,9 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(), 'icici', '2224440041626907');
+
 
         $this->mockPayoutServiceCreateBulkPayout(2, true);
 
@@ -9151,7 +9733,8 @@ class PayoutServiceTest extends TestCase
     }
     public function testBulkPayout_SharedAndDirectAccount_TimeoutFromPayoutsService()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9175,6 +9758,8 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -9193,7 +9778,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_ExceptionFromDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9221,7 +9807,8 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_SharedAndDirectAccount_ExceptionFromDirectAccount()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9232,6 +9819,8 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
@@ -9252,12 +9841,10 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_VAPayoutViaAPIMonolithAndCAPayoutViaPS_ExceptionFromSharedAccount()
     {
-        $this->setMockRazorxTreatment(
-            [
-                RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'on',
-                'imps_mode_payout_filter' => 'control',
-            ]
-        );
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable']);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -9270,7 +9857,7 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -9280,6 +9867,8 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($balance->getId(), 'icici', '2224440041626907');
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
@@ -9297,9 +9886,9 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
     }
-    public function testBulkPayout_SharedAndDirectAccounts_ExperimentOff()
+    public function testBulkPayout_SharedAndDirectAccountsPayoutViaPS()
     {
-        $this->fixtures->on('live')->create(
+        $balance = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -9318,6 +9907,15 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId(
+            $balance->getId(), Channel::ICICI, '2224440041626907');
+
+        $this->mockPayoutServiceCreateBulkPayout(4);
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -9337,6 +9935,10 @@ class PayoutServiceTest extends TestCase
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -9346,6 +9948,7 @@ class PayoutServiceTest extends TestCase
 
     public function testDccPayoutsDetailsFetch()
     {
+
         $this->testCreateReversalEntry();
 
         $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSC', ['id' => 'Gg7sgBZgvYjlSB']);
@@ -9458,126 +10061,9 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($expectedReversalDetails['transaction_id'], $actualReversalDetails['transaction_id']);
     }
 
-    public function testCreatePayoutToFundAccount_BatchID_InHeader()
-    {
-        $this->fixtures->on('live')->edit('balance', '10000000000000',
-            [
-                'account_type' => 'shared',
-                'type'         => 'banking',
-                'channel'      => 'icici',
-            ]);
-
-        $merchant = $this->getDbEntity('merchant',
-                                       [
-                                           'id' => '10000000000000'
-                                       ],
-                                       'live');
-
-        $payoutCreateInput = [
-            Entity::AMOUNT          => 1000,
-            Entity::CURRENCY        => 'INR',
-            Entity::PURPOSE         => 'refund',
-            Entity::NARRATION       => 'refund',
-            Entity::MODE            => 'IMPS',
-            Entity::FUND_ACCOUNT_ID => 'fa_100000000000fa',
-            Entity::BALANCE_ID      => '10000000000000',
-        ];
-
-        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
-                                                 [$this->app])->makePartial();
-
-        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
-
-        $payoutServiceCreateMock->shouldNotReceive('createPayoutViaMicroservice');
-
-        $this->app['rzp.mode'] = 'live';
-
-        $enteredCatch = false;
-
-        try
-        {
-            (new Core)->createPayoutToFundAccount($payoutCreateInput, $merchant, 'C0zv9I46W4wiOq');
-        }
-        catch (\Throwable $throwable)
-        {
-            $this->assertEquals(
-                'batch_id, idempotency_key is/are not required and should not be sent',
-                $throwable->getMessage());
-
-            $enteredCatch = true;
-        }
-
-        $this->assertEquals(true, $enteredCatch);
-
-        $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
-    }
-
-    public function testCreatePayoutToFundAccount_BatchID_In_Input()
-    {
-
-        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
-                                                 [$this->app])->makePartial();
-
-        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
-
-        $payoutServiceCreateMock->shouldNotReceive('createPayoutViaMicroservice');
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $metricsMock = $this->createMetricsMock();
-
-        $boolMetricCaptured = false;
-
-        $this->mockAndCaptureCountMetric(
-            Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
-            $metricsMock,
-            $boolMetricCaptured,
-            [
-                'route_name' => 'payout_create'
-            ]
-        );
-
-        $this->startTest();
-
-        $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
-
-        $this->assertTrue($boolMetricCaptured);
-    }
-
-    public function testCreatePayoutToFundAccount_IdempotencyKey()
-    {
-
-        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
-                                                 [$this->app])->makePartial();
-
-        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
-
-        $payoutServiceCreateMock->shouldNotReceive('createPayoutViaMicroservice');
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $metricsMock = $this->createMetricsMock();
-
-        $boolMetricCaptured = false;
-
-        $this->mockAndCaptureCountMetric(
-            Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
-            $metricsMock,
-            $boolMetricCaptured,
-            [
-                'route_name' => 'payout_create'
-            ]
-        );
-
-        $this->startTest();
-
-        $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
-
-        $this->assertTrue($boolMetricCaptured);
-    }
-
     public function testDccPayoutsDetailsFetchPayoutCountValidationFailure()
     {
+
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout', 'live')->toArray();
@@ -9638,6 +10124,26 @@ class PayoutServiceTest extends TestCase
     }
 
     public function payoutsServiceCreateFailureProcessingCronResponseMock($fail)
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 500;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
+    public function payoutsDualWriteFailureProcessingCronResponseMock($fail)
     {
         $response = new \WpOrg\Requests\Response();
 
@@ -9778,6 +10284,11 @@ class PayoutServiceTest extends TestCase
 
     public function testPayoutServiceMerchantFeatureAddition()
     {
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+       $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($this->bankingBalance->getId(), Channel::YESBANK, '2224440041626907');
+
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->mockPayoutServiceMerchantConfigUpdate();
@@ -9787,6 +10298,11 @@ class PayoutServiceTest extends TestCase
 
     public function testPayoutServiceMerchantFeatureAdditionServiceRequestFailure()
     {
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->DirectBulkPayoutViaPayoutsServiceBankingAccountCreationByBalanceId($this->bankingBalance->getId(), Channel::YESBANK, '2224440041626907');
+
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->mockPayoutServiceMerchantConfigUpdate(true);
@@ -9796,6 +10312,26 @@ class PayoutServiceTest extends TestCase
 
     public function testRemoveFeatureFromMerchantDashboard()
     {
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $this->bankingBalance->getId(),
+            'channel' => Channel::YESBANK,
+            'status'    => 'active',
+            'account_number' => '2224440041626907',
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $this->fixtures->merchant->addFeatures(['skip_workflow_for_api']);
 
         $this->ba->proxyAuth();
@@ -9823,6 +10359,24 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutsDualWriteFailureProcessingCron()
+    {
+        $this->ba->cronAuth();
+
+        $payoutDualWriteFailureProcessingCronClient = Mockery::mock(
+            'RZP\Services\PayoutService\PayoutsDualWriteFailureProcessingCron', [$this->app])->makePartial();
+
+        $payoutDualWriteFailureProcessingCronClient->shouldReceive('sendRequest')
+            ->andReturn(
+                $this->payoutsDualWriteFailureProcessingCronResponseMock(false)
+            );
+
+        $this->app->instance(PayoutsDualWriteFailureProcessingCron::PAYOUTS_DUAL_WRITE_FAILURE_PROCESSING_CRON,
+            $payoutDualWriteFailureProcessingCronClient);
+
+        $this->startTest();
+    }
+
     public function testPayoutServiceMerchantFeatureDeletion()
     {
         $this->fixtures->merchant->addFeatures(['free_payout_ledger_via_ps']);
@@ -9830,6 +10384,11 @@ class PayoutServiceTest extends TestCase
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->mockPayoutServiceMerchantConfigUpdate();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
         $this->startTest();
     }
@@ -9848,6 +10407,11 @@ class PayoutServiceTest extends TestCase
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->mockPayoutServiceMerchantConfigUpdate(true);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
 
         $this->startTest();
     }
@@ -9964,6 +10528,25 @@ class PayoutServiceTest extends TestCase
         $testData = $this->testData['testGetScheduleTimeSlotsForDashboard'];
         $this->testData[__FUNCTION__] = $testData;
         $this->testData[__FUNCTION__]['request']['headers']['X-Passport-JWT-V1'] = "";
+
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balanceId,
+            'channel' => $channel,
+            'status'    => 'active',
+            'account_number' => $accountNumber,
+            'account_type' => 'shared',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $this->ba->proxyAuth();
 
@@ -10199,6 +10782,8 @@ class PayoutServiceTest extends TestCase
         $this->mockLedgerSns(0);
 
         $this->setUpExperimentForNWFS();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::PAYOUT_TO_PREPAID_CARDS=>'enable']);
 
         $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
 
@@ -12058,6 +12643,12 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroServiceBeneficiaryHashGenerationSuccess()
     {
+
+        $this->SharedBulkPayoutViaPayoutsServiceBankingAccountCreation();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
+
         $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
 
         $this->testData[__FUNCTION__] = $testData;
@@ -12807,4 +13398,368 @@ class PayoutServiceTest extends TestCase
         $this->assertArrayHasKey('event_create_timestamp', $response);
         $this->assertArrayHasKey('event_id', $response);
     }
+
+    public function testCreateCACardPayout($mode = 'IMPS')
+    {
+        $payout = $this->testCreateCardPayoutEntry($mode, false);
+
+        $this->fixtures->on('live')->edit('payout', substr($payout['id'], 5), [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+                $expectedInput = [
+                    "account" => [
+                        "card" => [
+                            "issuer_bank" => "HDFC",
+                            "vault_token" => "NDExMTExMTExMTExMTExMQ==",
+                            "name" => "****", // test
+                            "network_code" => "VISA",
+                            "tokenised" => false,
+                            "bu_namespace" => "razorpayx_non_saved_cards"
+                        ]
+                    ],
+                ];
+
+                self::assertEquals($expectedInput['account'], $input['account']);
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(1);
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
+
+        return $payout;
+    }
+
+    public function testCreateCACardPayoutWithoutCardName($mode = 'IMPS')
+    {
+        $payout = $this->testCreateCardPayoutEntry($mode, false);
+
+        $this->fixtures->on('live')->edit('payout', substr($payout['id'], 5), [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+                $expectedInput = [
+                    "account" => [
+                        "card" => [
+                            "issuer_bank" => "HDFC",
+                            "vault_token" => "NDExMTExMTExMTExMTExMQ==",
+                            "name" => "**********", // dummy_card
+                            "network_code" => "VISA",
+                            "tokenised" => false,
+                            "bu_namespace" => "razorpayx_non_saved_cards"
+                        ]
+                    ],
+                ];
+
+                self::assertEquals($expectedInput['account'], $input['account']);
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            });
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
+
+        return $payout;
+    }
+
+    public function testCreateCACardPayoutWithoutCardName_redisKeySet($mode = 'IMPS')
+    {
+        $payout = $this->testCreateCardPayoutEntry($mode, false);
+
+        $this->fixtures->on('live')->edit('payout', substr($payout['id'], 5), [
+            'transaction_id' => 'randomtxnnnnnn',
+            'status'         => 'created',
+            'tax'            => 90,
+            'fees'           => 590,
+            'notes' => ['abc' => 'def']
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'randomtxnnnnnn',
+            'entity_id'   => substr($payout['id'], 5),
+            'type'        => 'payout',
+            'merchant_id' => $payout['merchant_id'],
+            'amount'      => $payout['amount'],
+            'debit'       => $payout['amount'],
+            'balance_id'  => $payout['balance_id'],
+            'posted_at'   => $payout['created_at'],
+        ]);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+            DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+            Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $redisMock = Mockery::mock('Illuminate\Redis\RedisManager', [$this->app, 'driver', []]);
+
+        $redisConnmock = Mockery::mock('Illuminate\Redis\Connections\PredisConnection', [null]);
+
+        $this->app->instance('redis', $redisMock);
+
+        $redisMock->shouldReceive('connection')
+            ->andReturn($redisConnmock);
+
+        $redisConnmock->shouldReceive('get')
+            ->with("card_metadata100000000lcard")
+            ->andReturn(['name' => 'Shivam Shah']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('createAndSendRequest')
+            ->andReturnUsing(function(string $endpoint, string $method, array $input) {
+                $expectedInput = [
+                    "account" => [
+                        "card" => [
+                            "issuer_bank" => "HDFC",
+                            "vault_token" => "NDExMTExMTExMTExMTExMQ==",
+                            "name" => "***********", // Shivam Shah
+                            "network_code" => "VISA",
+                            "tokenised" => false,
+                            "bu_namespace" => "razorpayx_non_saved_cards"
+                        ]
+                    ],
+                ];
+
+                self::assertEquals($expectedInput['account'], $input['account']);
+                self::assertEquals('/transfer', $endpoint);
+                self::assertEquals('POST', $method);
+
+                return [
+                    'body' => [
+                        'status'           => 'initiated',
+                        'fund_transfer_id' => 123,
+                        'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                    ],
+                    'code' => 201,
+                ];
+            })->times(2);
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $this->assertEquals($payout[Entity::ID], 'pout_' . $fta->getSourceId());
+
+        return $payout;
+    }
+
+    // Check payout Create Entry func on processor base
+    public function testCreateCardPayoutEntry($mode = 'IMPS',
+                                          $migratePayoutToPS = true,
+                                          $payoutID = 'pout_Gg7sgBZgvYjlSB',
+                                          $balanceID = '')
+    {
+        $this->ba->appAuthLive();
+
+        if (empty($balanceID) === true)
+        {
+            $this->fixtures->on('live')->create(
+                'balance',
+                [
+                    'account_type'   => 'direct',
+                    'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                    'type'           => 'banking',
+                    'channel'        => Channel::ICICI,
+                    'account_number' => 2224440041626907,
+                ]
+            );
+
+            $balanceId = $this->getDbLastEntity('balance', 'live')->getId();
+
+            $this->fixtures->create('banking_account', [
+                'account_type'          => 'direct',
+                'channel'               => Channel::ICICI,
+                'status'                => 'activated',
+                'balance_id'            => $balanceId,
+            ]);
+
+            $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balanceId;
+        }
+        else
+        {
+            $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balanceID;
+        }
+
+        $this->fixtures->on('live')->create('card',[
+            'id'                =>  '100000000lcard',
+            'merchant_id'       =>  '10000000000000',
+            'name'              =>  'test',
+            'expiry_month'      =>  '12',
+            'expiry_year'       =>  '2100',
+            'iin'               =>  '411111',
+            'last4'             =>  '1111',
+            'issuer'            =>  'HDFC',
+        ]);
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'    => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $strippedPayoutID = $payoutID;
+        $strippedPayoutID = Entity::verifyIdAndStripSign($strippedPayoutID);
+
+        $this->testData[__FUNCTION__]['request']['content']['id'] = $strippedPayoutID;
+        $this->testData[__FUNCTION__]['request']['content']['mode'] = $mode;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true,'live');
+
+        $this->assertEquals($payout['id'], $payoutID);
+
+        if ($migratePayoutToPS === true)
+        {
+            (new PayoutServiceDataMigration('live', [
+                DataMigration\Processor::FROM => $payout[Entity::CREATED_AT],
+                DataMigration\Processor::TO   => $payout[Entity::CREATED_AT],
+                Entity::BALANCE_ID            => $payout[Entity::BALANCE_ID]
+            ]))->handle();
+
+            $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$strippedPayoutID'")[0];
+
+            $this->assertEquals($payout[Entity::ID], 'pout_' .$migratedPayout->id);
+
+            $this->fixtures->edit('payout', $strippedPayoutID, ['id' => 'Gg7sgBZgvYjlSC']);
+        }
+
+        return $payout;
+    }
+
 }

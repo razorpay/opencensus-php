@@ -24,4 +24,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           E2E_ORCHESTRATOR_USERNAME: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
           E2E_ORCHESTRATOR_PASSWORD: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
-          CONFIG_NAME: "api_banking.json, api_smart-collect.json"
+          CONFIG_NAME: "api_banking.json, api_smart-collect.json, api_pgos.json"

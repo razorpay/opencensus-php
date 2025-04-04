@@ -7,6 +7,8 @@ Method | HTTP request | Description
 [**adminAPICreateAction**](AdminAPIApi.md#adminAPICreateAction) | **POST** /v1/actions | CreateAction creates the action entity in AuthZ policy store.
 [**adminAPICreatePermission**](AdminAPIApi.md#adminAPICreatePermission) | **POST** /v1/permissions | CreatePermission creates the permission entity in AuthZ policy store.
 [**adminAPICreatePolicy**](AdminAPIApi.md#adminAPICreatePolicy) | **POST** /v1/policies | CreatePolicy creates the policy entity in AuthZ policy store.
+[**adminAPICreatePrivilege**](AdminAPIApi.md#adminAPICreatePrivilege) | **POST** /v1/privileges | CreatePrivilege creates the privilege entity in AuthZ policy store.
+[**adminAPICreatePrivilegeRoleMapping**](AdminAPIApi.md#adminAPICreatePrivilegeRoleMapping) | **POST** /v1/privilege_role_mappings | CreatePrivilegeRoleMapping creates the privilege role mapping in AuthZ policy store.
 [**adminAPICreateResource**](AdminAPIApi.md#adminAPICreateResource) | **POST** /v1/resources | CreateResource creates the resource entity in AuthZ policy store.
 [**adminAPICreateResourceGroup**](AdminAPIApi.md#adminAPICreateResourceGroup) | **POST** /v1/resource_groups | CreateResourceGroup creates the resource group entity in AuthZ policy store.
 [**adminAPICreateResourceGroupMapping**](AdminAPIApi.md#adminAPICreateResourceGroupMapping) | **POST** /v1/resource_group_mappings | CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
@@ -25,21 +27,27 @@ Method | HTTP request | Description
 [**adminAPIDeleteService**](AdminAPIApi.md#adminAPIDeleteService) | **DELETE** /v1/services/{id} | DeleteService deletes the service entity from AuthZ policy store.
 [**adminAPIDeleteSubject**](AdminAPIApi.md#adminAPIDeleteSubject) | **DELETE** /v1/subjects | DeleteSubject detaches all roles for the given subject entity in AuthZ policy store.
 [**adminAPIDeleteSubjectRoleMapping**](AdminAPIApi.md#adminAPIDeleteSubjectRoleMapping) | **DELETE** /v1/subject_role_mappings | DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy store.
+[**adminAPIGetRole**](AdminAPIApi.md#adminAPIGetRole) | **GET** /v1/roles/{identifier} | GetRole returns the role entity from AuthZ policy store.
 [**adminAPIListAction**](AdminAPIApi.md#adminAPIListAction) | **GET** /v1/actions | ListAction returns a list of actions based on the supplied filters.
 [**adminAPIListPermission**](AdminAPIApi.md#adminAPIListPermission) | **GET** /v1/permissions | ListPermission returns a list of permissions satisfying the filter conditions.
 [**adminAPIListPolicy**](AdminAPIApi.md#adminAPIListPolicy) | **GET** /v1/policies | ListPolicy returns a list of policies satisfying the filter conditions.
+[**adminAPIListPrivileges**](AdminAPIApi.md#adminAPIListPrivileges) | **GET** /v1/privileges | ListPrivileges return a list of privileges for the given orgId
 [**adminAPIListResource**](AdminAPIApi.md#adminAPIListResource) | **GET** /v1/resources | ListResource returns a list of resources based on the supplied filters.
 [**adminAPIListResourceGroup**](AdminAPIApi.md#adminAPIListResourceGroup) | **GET** /v1/resource_groups | ListResourceGroup returns a list of resource group entities from AuthZ policy store.
 [**adminAPIListRole**](AdminAPIApi.md#adminAPIListRole) | **GET** /v1/roles | ListRole returns a list of roles matching the filter condition.
 [**adminAPIListService**](AdminAPIApi.md#adminAPIListService) | **GET** /v1/services | ListService returns a list of services based on the supplied filters.
+[**adminAPIMigrateRole**](AdminAPIApi.md#adminAPIMigrateRole) | **POST** /v1/roles_migrate | MigrateRole create role entities with pre-defined IDs. This will be decommissioned after CAC migration
 [**adminAPIRecon**](AdminAPIApi.md#adminAPIRecon) | **POST** /v1/recon | Recon is to be used for reconciliation of policies between MySQL &amp; Consul.
 [**adminAPIUpdateAction**](AdminAPIApi.md#adminAPIUpdateAction) | **PUT** /v1/actions | UpdateAction creates the action entity in AuthZ policy store.
 [**adminAPIUpdatePermission**](AdminAPIApi.md#adminAPIUpdatePermission) | **PUT** /v1/permissions | UpdatePermission creates the permission entity in AuthZ policy store.
 [**adminAPIUpdatePolicy**](AdminAPIApi.md#adminAPIUpdatePolicy) | **PUT** /v1/policies | UpdatePolicy creates the policy entity in AuthZ policy store.
+[**adminAPIUpdatePrivilege**](AdminAPIApi.md#adminAPIUpdatePrivilege) | **PUT** /v1/privileges | UpdatePrivilege updates the privilege entity in AuthZ policy store.
+[**adminAPIUpdatePrivilegeRoleMapping**](AdminAPIApi.md#adminAPIUpdatePrivilegeRoleMapping) | **PUT** /v1/privilege_role_mappings | UpdatePrivilegeRoleMapping updates the privilege role mapping in AuthZ policy store.
 [**adminAPIUpdateResource**](AdminAPIApi.md#adminAPIUpdateResource) | **PUT** /v1/resources | UpdateResource creates the resource entity in AuthZ policy store.
 [**adminAPIUpdateResourceGroup**](AdminAPIApi.md#adminAPIUpdateResourceGroup) | **PUT** /v1/resource_groups | UpdateResourceGroup updates the given resource group entity.
 [**adminAPIUpdateRole**](AdminAPIApi.md#adminAPIUpdateRole) | **PUT** /v1/roles | UpdateRole creates the role entity in AuthZ policy store.
 [**adminAPIUpdateService**](AdminAPIApi.md#adminAPIUpdateService) | **PUT** /v1/services | UpdateService creates the service entity in AuthZ policy store.
+[**adminAPIUpdateSubjectRoleMapping**](AdminAPIApi.md#adminAPIUpdateSubjectRoleMapping) | **PUT** /v1/subject_role_mappings | UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.
 
 
 # **adminAPICreateAction**
@@ -171,6 +179,100 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**\AuthzAdmin\Client\Model\V1Policy**](../Model/V1Policy.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
+# **adminAPICreatePrivilege**
+> \AuthzAdmin\Client\Model\V1Privilege adminAPICreatePrivilege($body)
+
+CreatePrivilege creates the privilege entity in AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1Privilege(); // \AuthzAdmin\Client\Model\V1Privilege | 
+
+try {
+    $result = $apiInstance->adminAPICreatePrivilege($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPICreatePrivilege: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1Privilege**](../Model/V1Privilege.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1Privilege**](../Model/V1Privilege.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
+# **adminAPICreatePrivilegeRoleMapping**
+> \AuthzAdmin\Client\Model\V1PrivilegeRoleMapping adminAPICreatePrivilegeRoleMapping($body)
+
+CreatePrivilegeRoleMapping creates the privilege role mapping in AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1PrivilegeRoleMapping(); // \AuthzAdmin\Client\Model\V1PrivilegeRoleMapping | 
+
+try {
+    $result = $apiInstance->adminAPICreatePrivilegeRoleMapping($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPICreatePrivilegeRoleMapping: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1PrivilegeRoleMapping**](../Model/V1PrivilegeRoleMapping.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1PrivilegeRoleMapping**](../Model/V1PrivilegeRoleMapping.md)
 
 ### Authorization
 
@@ -325,7 +427,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateRole**
-> \AuthzAdmin\Client\Model\V1Role adminAPICreateRole($body)
+> \AuthzAdmin\Client\Model\V1Role adminAPICreateRole($body, $x_passport_jwt_v1)
 
 CreateRole creates the role entity in AuthZ policy store.
 
@@ -340,9 +442,10 @@ $apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     new GuzzleHttp\Client()
 );
 $body = new \AuthzAdmin\Client\Model\V1Role(); // \AuthzAdmin\Client\Model\V1Role | 
+$x_passport_jwt_v1 = "x_passport_jwt_v1_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPICreateRole($body);
+    $result = $apiInstance->adminAPICreateRole($body, $x_passport_jwt_v1);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPICreateRole: ', $e->getMessage(), PHP_EOL;
@@ -355,6 +458,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)|  |
+ **x_passport_jwt_v1** | **string**|  |
 
 ### Return type
 
@@ -564,7 +668,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeletePermission**
-> \AuthzAdmin\Client\Model\V1Null adminAPIDeletePermission($id, $resource_id, $action_id, $effect)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeletePermission($id, $resource_id, $action_id, $effect, $group)
 
 DeletePermission deletes the permission entity from AuthZ policy store.
 
@@ -582,9 +686,10 @@ $id = "id_example"; // string |
 $resource_id = "resource_id_example"; // string | 
 $action_id = "action_id_example"; // string | 
 $effect = "EFFECT_UNKNOWN"; // string | 
+$group = "group_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIDeletePermission($id, $resource_id, $action_id, $effect);
+    $result = $apiInstance->adminAPIDeletePermission($id, $resource_id, $action_id, $effect, $group);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIDeletePermission: ', $e->getMessage(), PHP_EOL;
@@ -600,6 +705,7 @@ Name | Type | Description  | Notes
  **resource_id** | **string**|  | [optional]
  **action_id** | **string**|  | [optional]
  **effect** | **string**|  | [optional] [default to EFFECT_UNKNOWN]
+ **group** | **string**|  | [optional]
 
 ### Return type
 
@@ -823,7 +929,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteRole**
-> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteRole($id, $x_passport_jwt_v1, $name, $org_id, $type, $owner_type, $owner_id, $child_ids, $created_by, $description)
 
 DeleteRole deletes the role entity from AuthZ policy store.
 
@@ -838,14 +944,18 @@ $apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     new GuzzleHttp\Client()
 );
 $id = "id_example"; // string | 
+$x_passport_jwt_v1 = "x_passport_jwt_v1_example"; // string | 
 $name = "name_example"; // string | 
 $org_id = "org_id_example"; // string | 
 $type = "ROLE_POLICY_TYPE_INTERNAL"; // string | 
 $owner_type = "owner_type_example"; // string | 
 $owner_id = "owner_id_example"; // string | 
+$child_ids = array("child_ids_example"); // string[] | 
+$created_by = "created_by_example"; // string | 
+$description = "description_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id);
+    $result = $apiInstance->adminAPIDeleteRole($id, $x_passport_jwt_v1, $name, $org_id, $type, $owner_type, $owner_id, $child_ids, $created_by, $description);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIDeleteRole: ', $e->getMessage(), PHP_EOL;
@@ -858,11 +968,15 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **string**|  |
+ **x_passport_jwt_v1** | **string**|  |
  **name** | **string**|  | [optional]
  **org_id** | **string**|  | [optional]
  **type** | **string**|  | [optional] [default to ROLE_POLICY_TYPE_INTERNAL]
  **owner_type** | **string**|  | [optional]
  **owner_id** | **string**|  | [optional]
+ **child_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **created_by** | **string**|  | [optional]
+ **description** | **string**|  | [optional]
 
 ### Return type
 
@@ -1087,6 +1201,59 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
+# **adminAPIGetRole**
+> \AuthzAdmin\Client\Model\V1Role adminAPIGetRole($identifier, $org_id, $owner_id, $expand_children)
+
+GetRole returns the role entity from AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$identifier = "identifier_example"; // string | 
+$org_id = "org_id_example"; // string | 
+$owner_id = "owner_id_example"; // string | 
+$expand_children = true; // bool | 
+
+try {
+    $result = $apiInstance->adminAPIGetRole($identifier, $org_id, $owner_id, $expand_children);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIGetRole: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **identifier** | **string**|  |
+ **org_id** | **string**|  | [optional]
+ **owner_id** | **string**|  | [optional]
+ **expand_children** | **bool**|  | [optional]
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
 # **adminAPIListAction**
 > \AuthzAdmin\Client\Model\V1ListActionResponse adminAPIListAction($pagination_token, $action_name_prefix)
 
@@ -1190,7 +1357,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListPolicy**
-> \AuthzAdmin\Client\Model\V1ListPolicyResponse adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id)
+> \AuthzAdmin\Client\Model\V1ListPolicyResponse adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id, $role_owner_id, $enrich_roles, $role_ids, $role_identifier, $org_ids)
 
 ListPolicy returns a list of policies satisfying the filter conditions.
 
@@ -1212,9 +1379,14 @@ $service_id_list = array("service_id_list_example"); // string[] |
 $permission_id_list = array("permission_id_list_example"); // string[] | 
 $role_names = array("role_names_example"); // string[] | 
 $org_id = "org_id_example"; // string | 
+$role_owner_id = "role_owner_id_example"; // string | 
+$enrich_roles = true; // bool | 
+$role_ids = array("role_ids_example"); // string[] | 
+$role_identifier = "role_identifier_example"; // string | 
+$org_ids = array("org_ids_example"); // string[] | 
 
 try {
-    $result = $apiInstance->adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id);
+    $result = $apiInstance->adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id, $role_owner_id, $enrich_roles, $role_ids, $role_identifier, $org_ids);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIListPolicy: ', $e->getMessage(), PHP_EOL;
@@ -1234,10 +1406,70 @@ Name | Type | Description  | Notes
  **permission_id_list** | [**string[]**](../Model/string.md)|  | [optional]
  **role_names** | [**string[]**](../Model/string.md)|  | [optional]
  **org_id** | **string**|  | [optional]
+ **role_owner_id** | **string**|  | [optional]
+ **enrich_roles** | **bool**|  | [optional]
+ **role_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **role_identifier** | **string**|  | [optional]
+ **org_ids** | [**string[]**](../Model/string.md)|  | [optional]
 
 ### Return type
 
 [**\AuthzAdmin\Client\Model\V1ListPolicyResponse**](../Model/V1ListPolicyResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
+# **adminAPIListPrivileges**
+> \AuthzAdmin\Client\Model\V1ListPrivilegesResponse adminAPIListPrivileges($org_id, $expand_actions, $expand_roles, $pagination_token, $visibility)
+
+ListPrivileges return a list of privileges for the given orgId
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$org_id = "org_id_example"; // string | 
+$expand_actions = true; // bool | 
+$expand_roles = true; // bool | 
+$pagination_token = "pagination_token_example"; // string | 
+$visibility = 56; // int | 
+
+try {
+    $result = $apiInstance->adminAPIListPrivileges($org_id, $expand_actions, $expand_roles, $pagination_token, $visibility);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIListPrivileges: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **org_id** | **string**|  | [optional]
+ **expand_actions** | **bool**|  | [optional]
+ **expand_roles** | **bool**|  | [optional]
+ **pagination_token** | **string**|  | [optional]
+ **visibility** | **int**|  | [optional]
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1ListPrivilegesResponse**](../Model/V1ListPrivilegesResponse.md)
 
 ### Authorization
 
@@ -1353,7 +1585,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListRole**
-> \AuthzAdmin\Client\Model\V1ListRoleResponse adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id)
+> \AuthzAdmin\Client\Model\V1ListRoleResponse adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id, $key_id, $key_owner_type, $key_owner_id, $owner_ids, $type, $types)
 
 ListRole returns a list of roles matching the filter condition.
 
@@ -1372,9 +1604,15 @@ $role_name_prefix = "role_name_prefix_example"; // string |
 $role_names = array("role_names_example"); // string[] | 
 $role_ids = array("role_ids_example"); // string[] | 
 $org_id = "org_id_example"; // string | 
+$key_id = "key_id_example"; // string | 
+$key_owner_type = "key_owner_type_example"; // string | 
+$key_owner_id = "key_owner_id_example"; // string | 
+$owner_ids = array("owner_ids_example"); // string[] | 
+$type = "type_example"; // string | 
+$types = array("types_example"); // string[] | 
 
 try {
-    $result = $apiInstance->adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id);
+    $result = $apiInstance->adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id, $key_id, $key_owner_type, $key_owner_id, $owner_ids, $type, $types);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIListRole: ', $e->getMessage(), PHP_EOL;
@@ -1391,6 +1629,12 @@ Name | Type | Description  | Notes
  **role_names** | [**string[]**](../Model/string.md)|  | [optional]
  **role_ids** | [**string[]**](../Model/string.md)|  | [optional]
  **org_id** | **string**|  | [optional]
+ **key_id** | **string**|  | [optional]
+ **key_owner_type** | **string**|  | [optional]
+ **key_owner_id** | **string**|  | [optional]
+ **owner_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **type** | **string**|  | [optional]
+ **types** | [**string[]**](../Model/string.md)|  | [optional]
 
 ### Return type
 
@@ -1456,6 +1700,53 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
+# **adminAPIMigrateRole**
+> \AuthzAdmin\Client\Model\V1MigrateRoleResponse adminAPIMigrateRole($body)
+
+MigrateRole create role entities with pre-defined IDs. This will be decommissioned after CAC migration
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1MigrateRoleRequest(); // \AuthzAdmin\Client\Model\V1MigrateRoleRequest | 
+
+try {
+    $result = $apiInstance->adminAPIMigrateRole($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIMigrateRole: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1MigrateRoleRequest**](../Model/V1MigrateRoleRequest.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1MigrateRoleResponse**](../Model/V1MigrateRoleResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
 # **adminAPIRecon**
 > \AuthzAdmin\Client\Model\V1Null adminAPIRecon($body)
 
@@ -1471,7 +1762,7 @@ $apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \AuthzAdmin\Client\Model\V1Null(); // \AuthzAdmin\Client\Model\V1Null | 
+$body = new \AuthzAdmin\Client\Model\V1Null(); // \AuthzAdmin\Client\Model\V1Null | Null defines an empty message which the service uses when it doesn't have any data to return.
 
 try {
     $result = $apiInstance->adminAPIRecon($body);
@@ -1486,7 +1777,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)| Null defines an empty message which the service uses when it doesn&#39;t have any data to return. |
 
 ### Return type
 
@@ -1644,6 +1935,100 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
+# **adminAPIUpdatePrivilege**
+> \AuthzAdmin\Client\Model\V1Privilege adminAPIUpdatePrivilege($body)
+
+UpdatePrivilege updates the privilege entity in AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1Privilege(); // \AuthzAdmin\Client\Model\V1Privilege | 
+
+try {
+    $result = $apiInstance->adminAPIUpdatePrivilege($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIUpdatePrivilege: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1Privilege**](../Model/V1Privilege.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1Privilege**](../Model/V1Privilege.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
+# **adminAPIUpdatePrivilegeRoleMapping**
+> \AuthzAdmin\Client\Model\V1PrivilegeRoleMapping adminAPIUpdatePrivilegeRoleMapping($body)
+
+UpdatePrivilegeRoleMapping updates the privilege role mapping in AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1PrivilegeRoleMapping(); // \AuthzAdmin\Client\Model\V1PrivilegeRoleMapping | 
+
+try {
+    $result = $apiInstance->adminAPIUpdatePrivilegeRoleMapping($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIUpdatePrivilegeRoleMapping: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1PrivilegeRoleMapping**](../Model/V1PrivilegeRoleMapping.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1PrivilegeRoleMapping**](../Model/V1PrivilegeRoleMapping.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
 # **adminAPIUpdateResource**
 > \AuthzAdmin\Client\Model\V1Resource adminAPIUpdateResource($body)
 
@@ -1739,7 +2124,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdateRole**
-> \AuthzAdmin\Client\Model\V1Role adminAPIUpdateRole($body)
+> \AuthzAdmin\Client\Model\V1Role adminAPIUpdateRole($body, $x_passport_jwt_v1)
 
 UpdateRole creates the role entity in AuthZ policy store.
 
@@ -1754,9 +2139,10 @@ $apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     new GuzzleHttp\Client()
 );
 $body = new \AuthzAdmin\Client\Model\V1Role(); // \AuthzAdmin\Client\Model\V1Role | 
+$x_passport_jwt_v1 = "x_passport_jwt_v1_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIUpdateRole($body);
+    $result = $apiInstance->adminAPIUpdateRole($body, $x_passport_jwt_v1);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIUpdateRole: ', $e->getMessage(), PHP_EOL;
@@ -1769,6 +2155,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)|  |
+ **x_passport_jwt_v1** | **string**|  |
 
 ### Return type
 
@@ -1820,6 +2207,53 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**\AuthzAdmin\Client\Model\V1Service**](../Model/V1Service.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
+
+# **adminAPIUpdateSubjectRoleMapping**
+> \AuthzAdmin\Client\Model\V1Null adminAPIUpdateSubjectRoleMapping($body)
+
+UpdateSubjectRoleMapping updates the roles attached to a subject entity in AuthZ policy store.
+
+### Example
+```php
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
+    // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+    // This is optional, `GuzzleHttp\Client` will be used as default.
+    new GuzzleHttp\Client()
+);
+$body = new \AuthzAdmin\Client\Model\V1SubjectRoleMapping(); // \AuthzAdmin\Client\Model\V1SubjectRoleMapping | 
+
+try {
+    $result = $apiInstance->adminAPIUpdateSubjectRoleMapping($body);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AdminAPIApi->adminAPIUpdateSubjectRoleMapping: ', $e->getMessage(), PHP_EOL;
+}
+?>
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | [**\AuthzAdmin\Client\Model\V1SubjectRoleMapping**](../Model/V1SubjectRoleMapping.md)|  |
+
+### Return type
+
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 

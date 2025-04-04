@@ -265,11 +265,6 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()->where(Entity::PAYMENT_ID, '=', $paymentId);
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $query->firstOrFail();
-        }
-
         $data = $query->first();
 
         if (empty($data) === true)

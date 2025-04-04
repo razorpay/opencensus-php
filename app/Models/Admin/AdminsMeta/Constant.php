@@ -23,5 +23,6 @@ class Constant
     const ENABLE                        = 'enable';
     const START_DATE                    = 'start_date';
     const END_DATE                      = 'end_date';
+    const IDAM_DORMANCY                 = 'idam_dormancy';
 
 }

@@ -206,7 +206,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function emailInvoiceIssuedToCustomer($reminder = false, $newShortUrl = null): bool
+    public function emailInvoiceIssuedToCustomer($reminder = false, $newShortUrl = null, array $ncaInput = null): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -225,7 +225,14 @@ class Notifier extends Base\Core
         $dimensions = $this->invoice->getMetricDimensions(['email_type' => 'issued', 'merchant_country_code' => (string) $this->invoice->merchant->getCountry()]);
         $this->trace->count(Metric::INVOICE_EMAIL_NOTIFY_TOTAL, $dimensions);
 
-        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+        if ($ncaInput !== null)
+        {
+            $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForNCAProductsInternal($ncaInput);
+        }
+        else
+        {
+            $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+        }
 
         $this->trace->info(
             TraceCode::INVOICE_EMAIL_ISSUED_REQUEST_VIEW_PAYLOAD,
@@ -240,7 +247,7 @@ class Notifier extends Base\Core
             $viewPayload['invoice']['short_url'] = $newShortUrl;
         }
 
-        if ($this->invoice->isPaymentPageInvoice() === true)
+        if ($this->invoice->isPaymentPageInvoice() === true || $this->invoice->isNCAPaymentPageInvoice() === true)
         {
             $viewPayload['pp_invoice'] = true;
         }
@@ -1223,7 +1230,7 @@ class Notifier extends Base\Core
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
     }
 
-    public function emailInvoiceIssuedToMerchant(): bool
+    public function emailInvoiceIssuedToMerchant(array $ncaInput = null): bool
     {
         $merchant = $this->invoice->merchant;
 
@@ -1241,11 +1248,19 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+        if ($ncaInput !== null)
+        {
+            $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForNCAProductsInternal($ncaInput);
+        }
+        else
+        {
+            $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+        }
+
 
         $viewPayload['to'] = $merchantEmails;
 
-        if ($this->invoice->isPaymentPageInvoice() === true)
+        if ($this->invoice->isPaymentPageInvoice() === true || $this->invoice->isNCAPaymentPageInvoice() === true)
         {
             $viewPayload['pp_invoice'] = true;
         }

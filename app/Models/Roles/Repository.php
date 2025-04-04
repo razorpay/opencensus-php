@@ -4,6 +4,7 @@ namespace RZP\Models\Roles;
 
 use RZP\Models\Base;
 use RZP\Models\User\Role;
+use RZP\Constants\Table;
 use RZP\Constants\Product;
 
 class Repository extends Base\Repository
@@ -12,6 +13,9 @@ class Repository extends Base\Repository
 
     protected $entity = 'roles';
 
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
     public function listRoles($params)
     {
         $unionQuery = null;
@@ -44,6 +48,9 @@ class Repository extends Base\Repository
         return $unionQuery->get();
     }
 
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
     public function fetchRole($id)
     {
         return $this->newQuery()
@@ -58,6 +65,9 @@ class Repository extends Base\Repository
 
     }
 
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
     public function findOrFailByPublicIdWithParams(
         string $id,
         array  $params = [],
@@ -93,6 +103,9 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
     public function findNameByStandRolesOrMerchantId($name, $merchantId)
     {
         return $this->newQuery()->where('name', '=' , $name)
@@ -109,6 +122,9 @@ class Repository extends Base\Repository
         $this->newQueryWithConnection('test')->truncate();
     }
 
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
     public function fetchRoleName($roleId)
     {
         $roleEntity =  $this->fetchRole($roleId);
@@ -118,6 +134,30 @@ class Repository extends Base\Repository
             return null;
         }
         return $roleEntity->getName();
+    }
+
+    /**
+     * @deprecated - This function is deprecated in favor of CAC migration to Authz
+     */
+    public function fetchByIds(array $roleIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $roleIds)
+                    ->get();
+    }
+
+    public function fetchByIdsWithAuthzRoles(array $roleIds)
+    {
+        $rolesIdColumn = $this->dbColumn(Entity::ID);
+
+        $authzRolesColumn = $this->repo->role_access_policy_map->dbColumn(\RZP\Models\RoleAccessPolicyMap\Entity::AUTHZ_ROLES);
+        $roleAccessPolicyMapRoleIdColumn = $this->repo->role_access_policy_map->dbColumn(\RZP\Models\RoleAccessPolicyMap\Entity::ROLE_ID);
+
+        return $this->newQuery()
+                    ->join(Table::ROLE_ACCESS_POLICY_MAP, $rolesIdColumn, '=', $roleAccessPolicyMapRoleIdColumn)
+                    ->whereIn($rolesIdColumn, $roleIds)
+                    ->select($this->dbColumn('*'), $authzRolesColumn)
+                    ->get();
     }
 }
 

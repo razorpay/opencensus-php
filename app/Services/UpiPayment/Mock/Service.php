@@ -198,6 +198,337 @@ class Service extends UpiPaymentService
                 ],
             ];
         }
+        else if ($content['gateway'] == Payment\Gateway::UPI_RZPAPB)
+        {
+            if ($payload['description'] === 'payment_failed')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => $payload['amount'],
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_RZPAPB,
+                    ],
+                    'error' => [
+                    'description'               => 'Debit has been failed',
+                    'gateway_error_code'        => 'U30',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code'       => 200,
+                    'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                    ]
+                ];
+
+                $data['success'] = false;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+            if ($payload['description'] === 'create_intent_success')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($payload['amount'] * 100),
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_RZPAPB,
+                    ],
+                ];
+
+                $data['success'] = true;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+            if ($payload['description'] === 'amount_mismatch')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($payload['amount']),
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_RZPAPB,
+                    ],
+                ];
+
+                $data['success'] = true;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+
+            $data['data'] = [
+                'version' => 'v2',
+                'upi' => [
+                    'vpa' => $payload['payerVPA'] ?? '',
+                    'status_code' => $payload['errorCode'],
+                    'npci_reference_id' => $payload['rrn'],
+                    'merchant_reference' => $payload['id'],
+                ],
+                'payment' => [
+                    'id'       => $payload['id'],
+                    'currency' => 'INR',
+                    'amount_authorized' => (string) ($payload['amount'] * 100)
+                ],
+                'terminal' => [
+                    'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
+                    'gateway'              => $content['data']['terminal']['gateway'],
+                ],
+            ];
+        }
+        else if ($content['gateway'] == Payment\Gateway::UPI_RZPRBL)
+        {
+            if ($payload['description'] === 'payment_failed')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => $payload['amount'],
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_RZPAPB,
+                    ],
+                    'error' => [
+                        'description'               => 'Debit has been failed',
+                        'gateway_error_code'        => 'U30',
+                        'gateway_error_description' => 'Debit has been failed',
+                        'gateway_status_code'       => 200,
+                        'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                    ]
+                ];
+
+                $data['success'] = false;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+            if ($payload['description'] === 'create_intent_success')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($payload['amount'] * 100),
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_RZPAPB,
+                    ],
+                ];
+
+                $data['success'] = true;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+            if ($payload['description'] === 'amount_mismatch')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($payload['amount']),
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_RZPRBL,
+                    ],
+                ];
+
+                $data['success'] = true;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+
+            $data['data'] = [
+                'version' => 'v2',
+                'upi' => [
+                    'vpa' => $payload['payerVPA'] ?? '',
+                    'status_code' => $payload['errorCode'],
+                    'npci_reference_id' => $payload['rrn'],
+                    'merchant_reference' => $payload['id'],
+                ],
+                'payment' => [
+                    'id'       => $payload['id'],
+                    'currency' => 'INR',
+                    'amount_authorized' => (string) ($payload['amount'] * 100)
+                ],
+                'terminal' => [
+                    'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
+                    'gateway'              => $content['data']['terminal']['gateway'],
+                ],
+            ];
+        }
+        else if ($content['gateway'] == Payment\Gateway::UPI_KOTAK)
+        {
+            if ($payload['description'] === 'payment_failed')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => $payload['amount'],
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_KOTAK,
+                    ],
+                    'error' => [
+                        'description'               => 'Debit has been failed',
+                        'gateway_error_code'        => 'U30',
+                        'gateway_error_description' => 'Debit has been failed',
+                        'gateway_status_code'       => 200,
+                        'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                    ]
+                ];
+
+                $data['success'] = false;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+            if ($payload['description'] === 'create_intent_success')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($payload['amount'] * 100),
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_KOTAK,
+                    ],
+                ];
+
+                $data['success'] = true;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+            if ($payload['description'] === 'amount_mismatch')
+            {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $payload['vpa'] ?? '',
+                        'npci_reference_id' => '002002002002',
+                        'merchant_reference' => $payload['id'],
+                    ],
+                    'payment' => [
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($payload['amount']),
+                    ],
+                    'terminal' => [
+                        'gateway'              => Payment\Gateway::UPI_KOTAK,
+                    ],
+                ];
+
+                $data['success'] = true;
+                $response = [
+                    'data'      => $data,
+                    'gateway'   => $content['gateway'],
+                    'error'     => null,
+                ];
+
+                return [$response, 200];
+            }
+
+            $data['data'] = [
+                'version' => 'v2',
+                'upi' => [
+                    'vpa' => $payload['payerVPA'] ?? '',
+                    'status_code' => $payload['errorCode'],
+                    'npci_reference_id' => $payload['rrn'],
+                    'merchant_reference' => $payload['id'],
+                ],
+                'payment' => [
+                    'id'       => $payload['id'],
+                    'currency' => 'INR',
+                    'amount_authorized' => (string) ($payload['amount'] * 100)
+                ],
+                'terminal' => [
+                    'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
+                    'gateway'              => $content['data']['terminal']['gateway'],
+                ],
+            ];
+        }
+
         else
         {
             $data['data'] = [
@@ -303,6 +634,46 @@ class Service extends UpiPaymentService
             }
         }
 
+        if($content['gateway'] === 'upi_yesbank')
+        {
+            $recurringApbPayload = json_decode($content['body'], true);
+            if ($recurringApbPayload['mandateDtls'][0]['mandate'] === true) {
+                $data['data'] = [
+                    'version' => 'v2',
+                    'upi' => [
+                        'vpa' => $recurringApbPayload['mandateDtls'][0]['payerVpa'] ?? '',
+                        'status_code' => $recurringApbPayload['mandateDtls'][0]['respCode'],
+                        'npci_reference_id' => $recurringApbPayload['mandateDtls'][0]['custRefNo'],
+                        'merchant_reference' => $recurringApbPayload['requestInfo']['pspRefNo'],
+                    ],
+                    'payment' => [
+                        'id' => substr($recurringApbPayload['requestInfo']['pspRefNo'], 0,14),
+                        'currency' => 'INR',
+                        'amount_authorized' => (string) ($recurringApbPayload['mandateDtls'][0]['amount'] * 100),
+                        'recurring' => true
+                    ],
+                ];
+
+                if($recurringApbPayload['mandateDtls'][0]['status'] === 'PAUSE')
+                {
+                    $data['data']['upi_mandate']['status'] = 'pause';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['mandateDtls'][0]['UMN'];
+                }
+
+                if($recurringApbPayload['mandateDtls'][0]['status'] === 'UNPAUSE')
+                {
+                    $data['data']['upi_mandate']['status'] = 'resume';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['mandateDtls'][0]['UMN'];
+                }
+
+                if($recurringApbPayload['mandateDtls'][0]['status'] === 'REVOKED')
+                {
+                    $data['data']['upi_mandate']['status'] = 'revoke';
+                    $data['data']['upi_mandate']['umn'] = $recurringApbPayload['mandateDtls'][0]['UMN'];
+                }
+                $recurringApbPayload['code'] = '0';
+            }
+        }
         $data['success'] = true;
         $data['error'] = null;
         $data['next'] = null;
@@ -392,9 +763,95 @@ class Service extends UpiPaymentService
         {
             $responseData['acquirer']['reference1'] = 'IBL3aa942ae75214480b73704d09b3c1f69';
         }
-
         $statusCode = 200;
         $responseError = [];
+        if ($gateway === 'upi_rzpapb')
+        {
+            $responseData['amount_authorized'] = (string) ($payment['amount_authorized']);
+
+            if (empty($content['data']['data']['error']) === false)
+            {
+                $error = $content['data']['data']['error'];
+                $responseError = [
+                    'internal' => [
+                        'code'          => $error['internal_error_code'],
+                        'description'   => 'GATEWAY_ERROR',
+                        'metadata'      => [
+                            'description'               => $error['description'],
+                            'gateway_error_code'        => $error['gateway_error_code'],
+                            'gateway_error_description' => $error['gateway_error_description'],
+                            'internal_error_code'       => $error['internal_error_code']
+                        ]
+                    ]
+                ];
+                $response = [
+                    'data'      => $responseData,
+                    'gateway'   => $gateway,
+                    'error'     => $responseError,
+                ];
+
+                return [$response, $statusCode];
+            }
+        }
+        else if ($gateway === 'upi_rzprbl')
+        {
+            $responseData['amount_authorized'] = (string) ($payment['amount_authorized']);
+
+            if (empty($content['data']['data']['error']) === false)
+            {
+                $error = $content['data']['data']['error'];
+                $responseError = [
+                    'internal' => [
+                        'code'          => $error['internal_error_code'],
+                        'description'   => 'GATEWAY_ERROR',
+                        'metadata'      => [
+                            'description'               => $error['description'],
+                            'gateway_error_code'        => $error['gateway_error_code'],
+                            'gateway_error_description' => $error['gateway_error_description'],
+                            'internal_error_code'       => $error['internal_error_code']
+                        ]
+                    ]
+                ];
+                $response = [
+                    'data'      => $responseData,
+                    'gateway'   => $gateway,
+                    'error'     => $responseError,
+                ];
+
+                return [$response, $statusCode];
+            }
+        }
+        else if ($gateway === 'upi_kotak')
+        {
+            $responseData['amount_authorized'] = (string) ($payment['amount_authorized']);
+
+            if (empty($content['data']['data']['error']) === false)
+            {
+                $error = $content['data']['data']['error'];
+                $responseError = [
+                    'internal' => [
+                        'code'          => $error['internal_error_code'],
+                        'description'   => 'GATEWAY_ERROR',
+                        'metadata'      => [
+                            'description'               => $error['description'],
+                            'gateway_error_code'        => $error['gateway_error_code'],
+                            'gateway_error_description' => $error['gateway_error_description'],
+                            'internal_error_code'       => $error['internal_error_code']
+                        ]
+                    ]
+                ];
+                $response = [
+                    'data'      => $responseData,
+                    'gateway'   => $gateway,
+                    'error'     => $responseError,
+                ];
+
+                return [$response, $statusCode];
+            }
+        }
+
+
+
         // If mozart pre-process has returned an error block,
         // We need to convert that to UPS error block
         if (!empty($content['data']['error']) === true)
@@ -684,9 +1141,31 @@ class Service extends UpiPaymentService
     protected function validateAccountProxy($input)
     {
         $result = [];
+        if($input['value'] == '77777777')
+        {
+            $response = [
+                'error' => [
+                    'internal' => [
+                        'code' => 'GATEWAY_ERROR_REQUEST_ERROR',
+                        'identifier_code' => 'PGUP000045',
+                        'description' => 'GATEWAY_ERROR: received false response with status 200 from mozart',
+                        'metadata' => [
+                            'description' => 'Invalid UPI number',
+                            'gateway_error_code' => '1038',
+                            'gateway_error_description' => 'Invalid UPI number',
+                            'http_code' => '200',
+                            'internal_error_code' => 'BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER'
+                        ]
+                    ]
+                ]
+            ];
+
+            return [$response, 200];
+        }
+
         if (is_numeric($input['value']))
         {
-            $result['vpa_token'] = 'RandomGarbledVpaThatHasBeenEncrypted|RandomGarbledTokenForDecryption';
+            $result['vpa_token'] = '51e3487b0cb90937024991f16052752b5b2652172a93f51955e3297b6b2449|9ba8bfc48d88d18cd09d8b52a1d3e816';
             $result['masked_vpa'] = 'r*********@rzp';
         }
         else

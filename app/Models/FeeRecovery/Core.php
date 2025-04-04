@@ -4,9 +4,12 @@ namespace RZP\Models\FeeRecovery;
 
 use Carbon\Carbon;
 
+use RZP\Exception\InvalidArgumentException;
+use RZP\Exception\LogicException;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Error\ErrorCode;
@@ -28,6 +31,8 @@ use RZP\Models\Settlement\SlackNotification;
 class Core extends Base\Core
 {
     const BATCH_SIZE = 50000;
+    const OVERRIDDEN_BATCH_SIZE = 5000;
+    const TIME_BATCH_IN_SECONDS = 28800; //8hrs in seconds.
 
     const BULK_INSERT_SIZE = 1000;
 
@@ -57,22 +62,40 @@ class Core extends Base\Core
      * Creates an entry into the fee_recovery table corresponding to a Payout/Reversal.
      * This function gets invoked at payout initiation and reversal creation.
      * skipDedupe is true for debit fee recovery entry and calling function ensures that the debit entry creation is called only once
-     * @param Base\PublicEntity $entity
+     * @param PublicEntity $entity
      * @param bool $skipDedupe
+     * @return Entity
      * @throws BadRequestException
-     * @throws Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity, bool $skipDedupe = false)
     {
+        Validator::validateSourceEntity($entity);
+        $type = (new Type)->getTypeFromSourceEntity($entity);
+        return $this->createFeeRecoveryEntityForSourceAndType($entity, $type, $skipDedupe);
+    }
+
+    /**
+     * Creates an entry into the fee_recovery table corresponding to a Payout/Reversal.
+     * This function gets invoked at payout initiation and reversal creation.
+     * skipDedupe is true for debit fee recovery entry and calling function ensures that the debit entry creation is called only once
+     * @param PublicEntity $entity
+     * @param string $type
+     * @param bool $skipDedupe
+     * @return Entity
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    public function createFeeRecoveryEntityForSourceAndType(Base\PublicEntity $entity, string $type, bool $skipDedupe = false)
+    {
+        Validator::validateSourceEntity($entity);
+
         return $this->mutex->acquireAndRelease(
             'fee_recovery_' . $entity->getId(),
-            function () use ($entity, $skipDedupe)
+            function () use ($entity, $type, $skipDedupe)
             {
                 $feeRecoveryEntity = (new Entity)->build();
-
-                Validator::validateSourceEntity($entity);
-
-                $type = (new Type)->getTypeFromSourceEntity($entity);
 
                 $feeRecoveryEntity->setType($type);
 
@@ -253,6 +276,7 @@ class Core extends Base\Core
         $startTimeStamp = $input[Entity::FROM];
 
         $endTimeStamp = $input[Entity::TO];
+        $this->validateBalanceIdExistsInNegativeFeeRecoveryAmountExclusionList($balanceId, $input);
 
         $balance = $this->repo->balance->findOrFailById($balanceId);
 
@@ -401,20 +425,34 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function updateNextRunAndLastRunForFeeRecoveryTasks(Task\Entity $task)
+
+    public function updateNextRunAndLastRunForFeeRecoveryTasks(Task\Entity $task, $data)
     {
+        $this->trace->info(TraceCode::TASK_RUN_UPDATE, [
+            'message' => 'Updating lastRunAt and nextRunAt for fee recovery task',
+            'task_id' => $task->getId(),
+            'last_run_at' => $task->getLastRunAt(),
+            'next_run_at' => $task->getNextRunAt(),
+        ]);
         // compute nextRunAt and lastRunAt based on custom logic
-        $nextRunAt = $task->getNextRunAt();
+        $nextRunAt = $data['to'];
         $task->setLastRunAt($nextRunAt); // +1 is done in the job execution
 
         $refTime = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
 
         [$startTime, $endTime] = $this->getNextInterval($refTime);
         $task->setNextRunAt($endTime->timestamp);
+        $this->trace->info(TraceCode::TASK_RUN_UPDATE, [
+            'message' => 'Updated lastRunAt and nextRunAt for fee recovery task',
+            'task_id' => $task->getId(),
+            'last_run_at' => $task->getLastRunAt(),
+            'next_run_at' => $task->getNextRunAt(),
+        ]);
     }
 
     public function updateNextRunAtForNegativeFees(Task\Entity $task, string $balanceId)
     {
+        $startTime = microtime(true);
         $balance = $this->repo->balance->findOrFailById($balanceId);
 
         $lastRunAt = $task->getLastRunAt();
@@ -425,20 +463,35 @@ class Core extends Base\Core
 
         do
         {
+            $iteration_time = microtime(true);
             $refTime = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
 
             $nextRunAt = $refTime->copy()->addDay()->timestamp;
+            $fetchPayoutWithMerchantAndCreatedAtIndex = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fetch_payout_with_merchant_and_created_at_index');
 
             list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
                 $lastRunAt + 1,
-                $nextRunAt);
+                $nextRunAt, $fetchPayoutWithMerchantAndCreatedAtIndex);
 
             $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
+            $this->trace->info(TraceCode::FEE_RECOVERY_NEGATIVE_FEES, [
+                'amount' => $amount,
+                'last_run_at' => $lastRunAt,
+                'next_run_at' => $nextRunAt,
+                'time_diff_in_days' => ($nextRunAt-$lastRunAt)/86400,
+                'time_taken' => microtime(true) - $iteration_time
+            ]);
         }
-        while($nextRunAt < $currentTimeStamp and $amount < 0);
+        while($nextRunAt < $currentTimeStamp and $amount < 100);
 
         $task->setNextRunAt($nextRunAt);
-
+        $this->trace->info(TraceCode::FEE_RECOVERY_NEGATIVE_FEES, [
+            'message' => 'Negative fees Iteration Completed',
+            'last_run_at' => $lastRunAt,
+            'next_run_at' => $nextRunAt,
+            'time_diff_in_days' => ($nextRunAt-$lastRunAt)/86400,
+            'time_taken' => microtime(true) - $startTime
+        ]);
         $task->saveOrFail();
     }
 
@@ -535,9 +588,47 @@ class Core extends Base\Core
             'process_fee_recovery_' . $balance->getId(),
             function() use ($balance, $startTimestamp, $endTimestamp)
         {
-            list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
-                                                                                                            $startTimestamp,
-                                                                                                            $endTimestamp);
+
+            $startTime = microtime(true);
+
+            $feeRecoveryBatchingEnabled = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fee_recovery_fetch_batching');
+            $fetchPayoutWithMerchantAndCreatedAtIndex = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fetch_payout_with_merchant_and_created_at_index');
+
+            if($feeRecoveryBatchingEnabled){
+                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimestamp, $endTimestamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
+            } else {
+                list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimestamp, $endTimestamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
+            }
+
+            $this->trace->info(TraceCode::PROCESS_FEE_RECOVERY, [
+                'message'   => "FETCH PAYOUTS AND REVERSALS",
+                'payouts_count' => $payouts->count(),
+                'failed_payouts_count' => $failedPayouts->count(),
+                'reversals_count' => $reversals->count(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
+            // fetch fee recoveries
+            list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($payouts->getIds(), $failedPayouts->getIds(), $reversals->getIds());
+
+            $this->trace->info(TraceCode::PROCESS_FEE_RECOVERY, [
+                'message'   => "FETCH FEE RECOVERIES",
+                'fee_recovery_payouts_count' => $feeRecoveryPayouts->count(),
+                'fee_recovery_failed_payouts_count' => $feeRecoveryFailedPayouts->count(),
+                'fee_recovery_reversals_count' => $feeRecoveryReversals->count(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
+
+            $payouts = $this->filterAndCheckFeeRecoveryStatus($payouts, $feeRecoveryPayouts, Entity::PAYOUT);
+            $failedPayouts = $this->filterAndCheckFeeRecoveryStatus($failedPayouts, $feeRecoveryFailedPayouts, Entity::PAYOUT);
+            $reversals = $this->filterAndCheckFeeRecoveryStatus($reversals, $feeRecoveryReversals, Entity::REVERSAL);
+
+            $this->trace->info(TraceCode::PROCESS_FEE_RECOVERY, [
+                'message'   => "FILTER PAYOUTS AND REVERSALS",
+                'payouts_count' => $payouts->count(),
+                'failed_payouts_count' => $failedPayouts->count(),
+                'reversals_count' => $reversals->count(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
 
             $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
 
@@ -562,35 +653,20 @@ class Core extends Base\Core
             }
             if ($amount == 0)
             {
-                $variant = $this->app['razorx']->getTreatment(
-                    $balance->getMerchantId(),
-                    Merchant\RazorxTreatment::RX_FEE_RECOVERY_CONTROL_ROLL_OUT,
-                    $this->mode,
-                    3);
-
-                if ($variant === 'on')
-                {
-                    return [
-                        'message'  => "The total amount to be recovered is zero and hence we are not creating a fee recovery payout for the current week"
-                    ];
-                }
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO,
-                    null,
-                    [
-                        'balance_id'            => $balance->getId(),
-                        'start_timestamp'       => $startTimestamp,
-                        'end_timestamp'         => $endTimestamp,
-                        'fee_recovery_amount'   => $amount
-                    ]);
+                return [
+                    'message'  => "The total amount to be recovered is zero and hence we are not creating a fee recovery payout for the current week"
+                ];
             }
 
-            $feeRecoveryPayout =  $this->processAndGetFeeRecoveryPayout($payouts,
-                                                                        $failedPayouts,
-                                                                        $reversals,
-                                                                        $balance,
-                                                                        $amount);
+            $feeRecoveryPayout =  $this->processAndGetFeeRecoveryPayout($payouts, $failedPayouts, $reversals,
+                                                                        $feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals,
+                                                                        $balance, $amount);
+
+            $this->trace->info(TraceCode::PROCESS_FEE_RECOVERY, [
+                'message'   => "FEE_RECOVERY_PROCESS_COMPLETED",
+                'fee_recovery_payout' => $feeRecoveryPayout,
+                'time_taken' => microtime(true) - $startTime
+            ]);
 
             return $feeRecoveryPayout->toArrayPublic();
 
@@ -601,18 +677,56 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * Filters out recoveries other than UNRECOVERED.
+     * Throws an error if any recovery entries are missing, as recovery should not proceed in such cases.
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function filterAndCheckFeeRecoveryStatus($entities, $feeRecoveries, $entityType)
+    {
+        $startTime = microtime(true);
+        $indexedFeeRecoveries = $feeRecoveries->keyBy(Entity::ENTITY_ID);
+
+        $filteredEntities = $entities->reject(function ($entity) use ($indexedFeeRecoveries, $entityType) {
+            $entityId = $entity->getId();
+
+            if (!isset($indexedFeeRecoveries[$entityId])) {
+                $this->trace->error(
+                    TraceCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING,
+                    ['entity_id' => $entityId, 'entity_type' => $entityType]
+                );
+
+                throw new LogicException(
+                    "Fee recovery not found for {$entityType} ID: {$entityId}",
+                    ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING
+                );
+            }
+
+            return $indexedFeeRecoveries[$entityId]->getStatus() !== Status::UNRECOVERED;
+        });
+
+        $this->trace->info(TraceCode::FILTER_CHECK_FEE_RECOVERY_STATUS, [
+            'entity_type' => $entityType,
+            'filter_count' => $filteredEntities->count(),
+            'time_taken' => microtime(true) - $startTime
+        ]);
+        return $filteredEntities;
+    }
+
     protected function getPayoutAndReversalEntitiesForFeeRecovery(Balance\Entity $balance,
                                                                   int $startTimestamp,
-                                                                  int $endTimestamp)
+                                                                  int $endTimestamp,
+                                                                  bool $useMerchantAndCreatedAtIndex=false)
     {
         $merchant = $balance->merchant;
-
+        $merchantId = $merchant->getId();
         $balanceId = $balance->getId();
 
         $this->trace->info(
             TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_INITIATED,
             [
-                'merchant_id'   => $merchant->getId(),
+                'merchant_id'   => $merchantId,
                 'balance_id'    => $balanceId,
                 'start_time'    => $startTimestamp,
                 'end_time'      => $endTimestamp
@@ -620,31 +734,67 @@ class Core extends Base\Core
 
         // TODO : Add a limit to make sure that these fetch statements don't choke the network
 
-        $payouts = $this->repo->payout->fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
-            $merchant->getId(),
-            $balanceId,
-            $startTimestamp,
-            $endTimestamp
-        );
+        $properties = [
+            'id' => $balanceId,
+            'experiment_id' => 'fee_recovery_datalake_migration',
+            'request_data'  => json_encode(['balance_id' => $balanceId]),
+        ];
 
-        $failedPayouts = $this->repo->payout->fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
-            $merchant->getId(),
-            $balanceId,
-            $startTimestamp,
-            $endTimestamp
-        );
+        $expResult = $this->isSplitzExperimentEnable($properties, 'enabled');
 
-        $reversals = $this->repo->reversal->fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod(
-            $merchant->getId(),
-            $balanceId,
-            $startTimestamp,
-            $endTimestamp
-        );
+        if ($expResult === true)
+        {
+            $formatStringPayouts = "select p.id, p.fees from realtime_hudi_api.payouts p where p.merchant_id='%s' and p.balance_id='%s' and p.initiated_at is not null and p.initiated_at between %d and %d and coalesce(p.fee_type, '') != 'reward_fee'";
+            $queryPayouts = sprintf($formatStringPayouts, $merchantId, $balanceId, $startTimestamp, $endTimestamp);
+            $payoutsArray = $this->app['datalake.presto']->getDataFromDatalake($queryPayouts);
+            $payouts = $this->getPublicCollectionFromArrayWithType($payoutsArray, 'payout');
+
+            $formatStringFailedPayouts = "select id, fees from realtime_hudi_api.payouts p where p.merchant_id='%s' and p.balance_id='%s' and p.initiated_at is not null and p.failed_at between %d and %d and coalesce(p.fee_type, '') != 'reward_fee'";
+            $queryFailedPayouts = sprintf($formatStringFailedPayouts, $merchantId, $balanceId, $startTimestamp, $endTimestamp);
+            $failedPayoutsArray = $this->app['datalake.presto']->getDataFromDatalake($queryFailedPayouts);
+            $failedPayouts = $this->getPublicCollectionFromArrayWithType($failedPayoutsArray, 'payout');
+
+            $formatStringReversals = "select r.id, p.fees from realtime_hudi_api.reversals r join realtime_hudi_api.payouts p on r.entity_id=p.id where r.merchant_id='%s' and r.entity_type='payout' and r.balance_id='%s' and r.created_at between %d and %d and p.failed_at is null and coalesce(p.fee_type, '') != 'reward_fee'";
+            $query = sprintf($formatStringReversals, $merchantId, $balanceId, $startTimestamp, $endTimestamp);
+            $reversalsArray = $this->app['datalake.presto']->getDataFromDatalake($query);
+            $reversals = $this->getPublicCollectionFromArrayWithType($reversalsArray, 'reversal');
+
+            $this->trace->info(TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_TRINO_FETCH_COMPLETED, [
+                'merchant_id' => $merchantId,
+                'balance_id' => $balanceId,
+            ]);
+        }
+
+        else
+        {
+            $payouts = $this->repo->payout->fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $startTimestamp,
+                $endTimestamp,
+                $useMerchantAndCreatedAtIndex
+            );
+
+            $failedPayouts = $this->repo->payout->fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $startTimestamp,
+                $endTimestamp,
+                $useMerchantAndCreatedAtIndex
+            );
+
+            $reversals = $this->repo->reversal->fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $startTimestamp,
+                $endTimestamp,
+            );
+        }
 
         $this->trace->info(
             TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_COMPLETED,
             [
-                'merchant_id'           => $merchant->getId(),
+                'merchant_id'           => $merchantId,
                 'balance_id'            => $balanceId,
                 'payout_count'          => $payouts->count(),
                 'failed_payout_count'   => $failedPayouts->count(),
@@ -652,6 +802,80 @@ class Core extends Base\Core
             ]);
 
         return [$payouts, $failedPayouts, $reversals];
+    }
+
+
+    protected function getPayoutAndReversalEntitiesForFeeRecoveryViaBatching(Balance\Entity $balance,
+                                                                             int $startTimestamp,
+                                                                             int $endTimestamp,
+                                                                             bool $useMerchantAndCreatedAtIndex=false) : array
+    {
+        $merchant = $balance->merchant;
+        $merchantId = $merchant->getId();
+        $balanceId = $balance->getId();
+        $batchSize = self::TIME_BATCH_IN_SECONDS;
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_BATCH_FETCH_INITIATED,
+            [
+                'merchant_id'   => $merchantId,
+                'balance_id'    => $balanceId,
+                'start_time'    => $startTimestamp,
+                'end_time'      => $endTimestamp
+            ]);
+
+        $allPayouts = new Base\PublicCollection();
+        $allFailedPayouts = new Base\PublicCollection();
+        $allReversals = new Base\PublicCollection();
+
+
+        for ($batchStart = $startTimestamp; $batchStart < $endTimestamp; $batchStart += ($batchSize+1)) {
+            $batchEnd = min($batchStart + $batchSize, $endTimestamp);
+
+            // Fetch payouts for the current batch
+            $payouts = $this->repo->payout->fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $batchStart,
+                $batchEnd,
+                $useMerchantAndCreatedAtIndex
+            );
+
+            // Fetch failed payouts for the current batch
+            $failedPayouts = $this->repo->payout->fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $batchStart,
+                $batchEnd,
+                $useMerchantAndCreatedAtIndex
+            );
+
+            // Fetch reversals for the current batch
+            $reversals = $this->repo->reversal->fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod(
+                $merchantId,
+                $balanceId,
+                $batchStart,
+                $batchEnd
+            );
+
+            // Merge the results into the main collections
+            $allPayouts = $allPayouts->merge($payouts->all());
+            $allFailedPayouts = $allFailedPayouts->merge($failedPayouts->all());
+            $allReversals = $allReversals->merge($reversals->all());
+        }
+
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_BATCH_FETCH_COMPLETED,
+            [
+                'merchant_id'           => $merchantId,
+                'balance_id'            => $balanceId,
+                'payout_count'          => $allPayouts->count(),
+                'failed_payout_count'   => $allFailedPayouts->count(),
+                'reversal_count'        => $allReversals->count()
+            ]);
+
+        return [$allPayouts, $allFailedPayouts, $allReversals];
     }
 
     protected function getFeesForFeeRecovery(Base\PublicCollection $payouts,
@@ -695,6 +919,9 @@ class Core extends Base\Core
     protected function processAndGetFeeRecoveryPayout(Base\PublicCollection $payouts,
                                                       Base\PublicCollection $failedPayouts,
                                                       Base\PublicCollection $reversals,
+                                                      Base\PublicCollection $payoutFeeRecoveries,
+                                                      Base\PublicCollection $failedPayoutFeeRecoveries,
+                                                      Base\PublicCollection $reversalFeeRecoveries,
                                                       Balance\Entity $balance,
                                                       $amount)
     {
@@ -702,11 +929,25 @@ class Core extends Base\Core
         $failedPayoutIds    = $failedPayouts->getIds();
         $reversalIds        = $reversals->getIds();
 
-        $this->validateNoExistingFeeRecoveryInProcess($payoutIds, $failedPayoutIds, $reversalIds);
+        $unRecoveredPayoutsCount = $payoutFeeRecoveries->filter(function($feeRecovery) {
+            return $feeRecovery->getStatus() === Status::UNRECOVERED;
+        })->count();
+
+        $unRecoveredFailedPayoutsCount = $failedPayoutFeeRecoveries->filter(function($feeRecovery) {
+            return $feeRecovery->getStatus() === Status::UNRECOVERED;
+        })->count();
+
+        $unRecoveredReversalsCount = $reversalFeeRecoveries->filter(function($feeRecovery) {
+            return $feeRecovery->getStatus() === Status::UNRECOVERED;
+        })->count();
+
+        $this->validateNoExistingFeeRecoveryInProcess($payoutIds, $failedPayoutIds, $reversalIds,
+            $unRecoveredPayoutsCount, $unRecoveredFailedPayoutsCount, $unRecoveredReversalsCount);
 
         return $this->repo->transaction(
             function() use ($balance, $payoutIds, $failedPayoutIds, $reversalIds, $amount)
             {
+                $startTime = microtime(true);
                 $merchant = $balance->merchant;
 
                 $payoutPayload = $this->getPayloadForFeeRecoveryPayout($balance, $amount);
@@ -725,10 +966,17 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::FEE_RECOVERY_PAYOUT_CREATED,
                     [
-                        'payout_data' => $feeRecoveryPayout->toArrayPublic()
+                        'payout_data' => $feeRecoveryPayout->toArrayPublic(),
+                        'time_taken' => microtime(true) - $startTime
                     ]);
 
-                $this->updateFeesRecoveryStatus($payoutIds, $failedPayoutIds, $reversalIds, $feeRecoveryPayout);
+                $this->updateFeesRecoveryStatus($balance, $payoutIds, $failedPayoutIds, $reversalIds, $feeRecoveryPayout);
+
+                $this->trace->info(TraceCode::UPDATE_FEE_RECOVERY_STATUS, [
+                    'balance_id' => $balance->getId(),
+                    'fee_recovery_payout_id' => $feeRecoveryPayout->getId(),
+                    'time_taken' => microtime(true) - $startTime
+                ]);
 
                 return $feeRecoveryPayout;
             });
@@ -795,22 +1043,9 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateNoExistingFeeRecoveryInProcess($payoutIds,
-                                                              $failedPayoutIds,
-                                                              $reversalIds)
+    protected function validateNoExistingFeeRecoveryInProcess($payoutIds, $failedPayoutIds, $reversalIds,
+                                                              $unRecoveredPayoutCount, $unRecoveredFailedPayoutCount, $unRecoveredReversalCount)
     {
-        $unRecoveredPayoutCount = $this->fetchUnrecoveredFeeRecoveryCountViaBatching($payoutIds,
-                                                                                    Entity::PAYOUT,
-                                                                                    Type::DEBIT);
-
-        $unRecoveredFailedPayoutCount = $this->fetchUnrecoveredFeeRecoveryCountViaBatching($failedPayoutIds,
-                                                                                          Entity::PAYOUT,
-                                                                                          Type::CREDIT);
-
-        $unRecoveredReversalCount = $this->fetchUnrecoveredFeeRecoveryCountViaBatching($reversalIds,
-                                                                                      Entity::REVERSAL,
-                                                                                      Type::CREDIT);
-
         $payoutIdsCount = count($payoutIds);
         $reversalIdsCount = count($reversalIds);
         $failedPayoutIdsCount = count($failedPayoutIds);
@@ -910,11 +1145,10 @@ class Core extends Base\Core
                                                                    $type,
                                                                    $feeRecoveryPayoutId,
                                                                    $status,
-                                                                   $currentAttemptNumber)
+                                                                   $currentAttemptNumber,
+                                                                   $batch = self::BATCH_SIZE)
     {
         $left = 0;
-
-        $batch = self::BATCH_SIZE;
 
         $updatedEntitiesCount = 0;
 
@@ -959,7 +1193,8 @@ class Core extends Base\Core
         return $updatedEntitiesCount;
     }
 
-    protected function updateFeesRecoveryStatus($payoutIds,
+    protected function updateFeesRecoveryStatus($balance,
+                                                $payoutIds,
                                                 $failedPayoutIds,
                                                 $reversalIds,
                                                 $feeRecoveryPayout,
@@ -971,26 +1206,31 @@ class Core extends Base\Core
                 'fee_recovery_payout_id' => $feeRecoveryPayout->getPublicId(),
             ]);
 
+        $batchingEnabled = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fee_recovery_fetch_batching');
+        $batchSize = $batchingEnabled ? self::BATCH_SIZE : self::OVERRIDDEN_BATCH_SIZE;
         $updatedPayoutsCount = $this->updateBulkStatusAndRecoveryPayoutIdViaBatching($payoutIds,
                                                                                 Entity::PAYOUT,
                                                                                 Type::DEBIT,
                                                                                 $feeRecoveryPayout->getId(),
                                                                                 Status::PROCESSING,
-                                                                                $currentAttemptNumber);
+                                                                                $currentAttemptNumber,
+                                                                                $batchSize);
 
         $updatedFailedPayoutsCount = $this->updateBulkStatusAndRecoveryPayoutIdViaBatching($failedPayoutIds,
                                                                                       Entity::PAYOUT,
                                                                                       Type::CREDIT,
                                                                                       $feeRecoveryPayout->getId(),
                                                                                       Status::PROCESSING,
-                                                                                      $currentAttemptNumber);
+                                                                                      $currentAttemptNumber,
+                                                                                      $batchSize);
 
         $updatedReversalsCount = $this->updateBulkStatusAndRecoveryPayoutIdViaBatching($reversalIds,
                                                                                   Entity::REVERSAL,
                                                                                   Type::CREDIT,
                                                                                   $feeRecoveryPayout->getId(),
                                                                                   Status::PROCESSING,
-                                                                                  $currentAttemptNumber);
+                                                                                  $currentAttemptNumber,
+                                                                                  $batchSize);
 
         if (($updatedPayoutsCount !== count($payoutIds)) or
             ($updatedFailedPayoutsCount !== count($failedPayoutIds)) or
@@ -1776,4 +2016,417 @@ class Core extends Base\Core
 
         return $feeRecoveryPayout->toArrayPublic();
     }
+
+    protected function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode=null)
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+        return false;
+    }
+
+    protected function getPublicCollectionFromArrayWithType($array, $type)
+    {
+        $response = array();
+        if ($type === 'payout')
+        {
+            foreach($array as $payout)
+            {
+                $payoutEntity = new Payout\Entity();
+                $response[] = $payoutEntity->forceFill($payout);
+            }
+        }
+        else if ($type === 'reversal')
+        {
+            foreach($array as $reversal)
+            {
+                $reversalEntity = new Reversal\Entity();
+                $response[] = $reversalEntity->forceFill($reversal);
+            }
+        }
+        return new Base\PublicCollection($response);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function getFeeRecoveryByEntityIdsAndType(array $entityIds, string $entityType, string $type)
+    {
+        Validator::validateFeeRecoveryType($type);
+        return $this->fetchFeeRecoveryViaBatching($entityIds, $entityType, $type, self::OVERRIDDEN_BATCH_SIZE);
+    }
+
+    /**
+     * This function picks up all payouts, failed payouts and reversals between a certain period,
+     * checks for any discrepancies between the number of payouts and corresponding fee recovery entries.
+     * For any discrepancies this method will do the data correction by creating the debit/credit entries in the fee recovery table.
+     *
+     * @param array $input
+     * input contains - balance_id, from and to fields
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function processFeeRecoveryDataCorrection(array $input): bool
+    {
+        $balanceId = $input[Entity::BALANCE_ID];
+        $startTimeStamp = $input[Entity::FROM];
+        $endTimeStamp = $input[Entity::TO];
+
+        $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+            'balanceId' => $balanceId,
+            'startTimeStamp' => $startTimeStamp,
+            'endTimeStamp' => $endTimeStamp
+        ]);
+
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+        (new Validator)->validateBalanceTypeAndTimeStamps($balance, $startTimeStamp, $endTimeStamp);
+
+        $response = $this->mutex->acquireAndRelease(
+            'fee_recovery_data_correction_' . $balance->getId(),
+            function() use ($balance, $startTimeStamp, $endTimeStamp)
+            {
+                $startTime = microtime(true);
+
+                $totalCorrections = 0;
+                $totalCorrectionsFailed = 0;
+
+                $feeRecoveryBatchingEnabled = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fee_recovery_data_correction_fetch_batching');
+                $fetchPayoutWithMerchantAndCreatedAtIndex = $this->getSplitzExperimentEnableStatus($balance->getId(), 'fetch_payout_with_merchant_and_created_at_index');
+
+                if($feeRecoveryBatchingEnabled){
+                    list ($initiatedPayouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecoveryViaBatching($balance, $startTimeStamp, $endTimeStamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
+                    list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($initiatedPayouts->getIds(), $failedPayouts->getIds(), $reversals->getIds(), self::OVERRIDDEN_BATCH_SIZE);
+                } else {
+                    list ($initiatedPayouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance, $startTimeStamp, $endTimeStamp, $fetchPayoutWithMerchantAndCreatedAtIndex);
+                    list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($initiatedPayouts->getIds(), $failedPayouts->getIds(), $reversals->getIds());
+                }
+
+                $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                    'message'   => "FETCH PAYOUTS, REVERSALS AND RECOVERIES",
+                    'payouts_count' => count($initiatedPayouts),
+                    'failed_payouts_count' => count($failedPayouts),
+                    'reversals_count' => count($reversals),
+                    'feeRecoveryPayouts' => count($feeRecoveryPayouts),
+                    'feeRecoveryFailedPayouts' => count($feeRecoveryFailedPayouts),
+                    'feeRecoveryReversals' => count($feeRecoveryReversals),
+                    'time_taken' => microtime(true) - $startTime
+                ]);
+
+                $initiatedPayoutCountDiff = count($initiatedPayouts) - count($feeRecoveryPayouts);
+                $failedCountDiff = count($failedPayouts) - count($feeRecoveryFailedPayouts);
+                $reversalCountDiff = count($reversals) - count($feeRecoveryReversals);
+
+                $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                    "balanceId" => $balance->getId(),
+                    "initiatedPayouts" => count($initiatedPayouts),
+                    "feeRecoveryPayouts" => count($feeRecoveryPayouts),
+                    "failedPayouts" => count($failedPayouts),
+                    "feeRecoveryFailedPayouts" => count($feeRecoveryFailedPayouts),
+                    "reversals" => count($reversals),
+                    "feeRecoveryReversals" => count($feeRecoveryReversals),
+                    'time_taken' => microtime(true) - $startTime
+                ]);
+
+                if($initiatedPayoutCountDiff == 0 && $failedCountDiff == 0 && $reversalCountDiff == 0){
+                    $this->trace->count(Metric::FEE_RECOVERY_ISSUE, [Metric::STATUS => Metric::NO_ISSUE]);
+                    return true;
+                }
+
+                $this->trace->count(Metric::FEE_RECOVERY_ISSUE, [Metric::STATUS => Metric::INITIATED]);
+                if($initiatedPayoutCountDiff < 0 || $failedCountDiff < 0 || $reversalCountDiff < 0){
+                    $this->trace->count(Metric::FEE_RECOVERY_ISSUE, [Metric::STATUS => Metric::NEGATIVE_COUNT]);
+                    $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                        "balanceId" => $balance->getId(),
+                        "startTime" => $startTimeStamp,
+                        "endTime" => $endTimeStamp,
+                        "initiatedPayoutCountDiff" => $initiatedPayoutCountDiff,
+                        "failedCountDiff" => $failedCountDiff,
+                        "reversalCountDiff" => $reversalCountDiff,
+                    ]);
+                }
+
+                if($initiatedPayoutCountDiff > 0){
+                    list($correctedPayoutIds, $uncorrectedPayoutIds) = $this->feeRecoveryDataCorrectionForInitiatedPayouts($initiatedPayouts, $feeRecoveryPayouts);
+                    $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                        "balanceId" => $balance->getId(),
+                        "initiatedPayoutCountDiff" => $initiatedPayoutCountDiff,
+                        "correctedPayoutIds" => $correctedPayoutIds,
+                        "uncorrectedPayoutIds" => $uncorrectedPayoutIds
+                    ]);
+                    $totalCorrections = $totalCorrections + count($correctedPayoutIds);
+                    $totalCorrectionsFailed = $totalCorrectionsFailed + count($uncorrectedPayoutIds);
+                }
+
+                if($failedCountDiff > 0){
+                    list($correctedPayoutIds, $uncorrectedPayoutIds) = $this->feeRecoveryDataCorrectionForFailedPayouts($failedPayouts, $feeRecoveryFailedPayouts);
+                    $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                        "balanceId" => $balance->getId(),
+                        "failedCountDiff" => $failedCountDiff,
+                        "correctedPayoutIds" => $correctedPayoutIds,
+                        "uncorrectedPayoutIds" => $uncorrectedPayoutIds
+                    ]);
+                    $totalCorrections = $totalCorrections + count($correctedPayoutIds);
+                    $totalCorrectionsFailed = $totalCorrectionsFailed + count($uncorrectedPayoutIds);
+                }
+
+                if($reversalCountDiff > 0){
+                    list($correctedReversalIds, $uncorrectedReversalsIds) = $this->feeRecoveryDataCorrectionForReversedPayouts($reversals, $feeRecoveryReversals);
+                    $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                        "balanceId" => $balance->getId(),
+                        "reversalCountDiff" => $reversalCountDiff,
+                        "correctedReversalIds" => $correctedReversalIds,
+                        "uncorrectedReversalsIds" => $uncorrectedReversalsIds
+                    ]);
+                    $totalCorrections = $totalCorrections + count($correctedReversalIds);
+                    $totalCorrectionsFailed = $totalCorrectionsFailed + count($uncorrectedReversalsIds);
+                }
+
+                $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                    "balanceId" => $balance->getId(),
+                    "startTimeStamp" => $startTimeStamp,
+                    "endTimeStamp" => $endTimeStamp,
+                    "totalCorrections" => $totalCorrections,
+                    "totalCorrectionsFailed" => $totalCorrectionsFailed
+                ]);
+
+                return $this->isFeeRecoveryIssueResolved($balance->getId(), $initiatedPayouts, $failedPayouts, $reversals);
+            },
+            600,
+            ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $response;
+    }
+
+    private function getFeeRecoveryForPayouts($initiatedPayoutIds, $failedPayoutIds, $reversalIds, $batchSize=self::BATCH_SIZE)
+    {
+        $initiatedPayoutFeeRecoveries = $this->fetchFeeRecoveryViaBatching($initiatedPayoutIds,
+            Entity::PAYOUT,
+            Type::DEBIT,
+            $batchSize);
+
+        $failedPayoutsFeeRecoveries = $this->fetchFeeRecoveryViaBatching($failedPayoutIds,
+            Entity::PAYOUT,
+            Type::CREDIT,
+            $batchSize);
+
+        $reversalPayoutsFeeRecoveries = $this->fetchFeeRecoveryViaBatching($reversalIds,
+            Entity::REVERSAL,
+            Type::CREDIT,
+            $batchSize);
+
+        return [$initiatedPayoutFeeRecoveries, $failedPayoutsFeeRecoveries, $reversalPayoutsFeeRecoveries];
+    }
+
+
+    public function fetchFeeRecoveryViaBatching($entityIdList, $entityType, $type, $batch=self::BATCH_SIZE)
+    {
+        $left = 0;
+
+        $feeRecoveryEntities = [];
+        $batchResult = [];
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
+            [
+                'step'                   => self::INITIATE,
+                'operation'              => self::FETCH,
+                'start'                  => $left,
+                'batch_size'             => $batch,
+                'fee_recovery_entities'      => $feeRecoveryEntities,
+                'total_entity_count'     => count($entityIdList),
+                'entity_type'            => $entityType,
+                'type'                   => $type,
+            ]);
+
+        while ($left < count($entityIdList))
+        {
+            $currentSlice = array_slice($entityIdList, $left, $batch, true);
+            $left += $batch;
+
+            if(!empty($currentSlice)) {
+                $batchResult = $this->repo->fee_recovery->fetchFeeRecoveries($currentSlice, $entityType, $type)->toArrayWithItems()["items"];
+
+                if (!empty($batchResult)) {
+                    $feeRecoveryEntities = array_merge($feeRecoveryEntities, $batchResult);
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
+                [
+                    'step'                   => self::INTERMEDIATE,
+                    'operation'              => self::FETCH,
+                    'start'                  => $left,
+                    'batch_size'             => $batch,
+                    'batch_count'            => count($batchResult),
+                    'fee_recovery_count'      => count($feeRecoveryEntities),
+                    'total_entity_count'     => count($entityIdList),
+                    'current_slice_count'    => count($currentSlice),
+                ]);
+        }
+
+        return new Base\PublicCollection($feeRecoveryEntities);
+    }
+
+    private function feeRecoveryDataCorrectionForInitiatedPayouts(Base\PublicCollection $initiatedPayouts, Base\PublicCollection $feeRecoveryPayouts): array
+    {
+        $feeRecoveryMissingPayouts = $this->getFeeRecoveryMissingPayouts($initiatedPayouts->all(), $feeRecoveryPayouts->all());
+        $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, ["feeRecoveryMissingPayouts" => $feeRecoveryMissingPayouts,]);
+        return  $this->createFeeRecoveryForEntityWithType($feeRecoveryMissingPayouts, Type::DEBIT);
+    }
+
+    private function feeRecoveryDataCorrectionForFailedPayouts(Base\PublicCollection $failedPayouts, Base\PublicCollection $feeRecoveryFailedPayouts)
+    {
+        $feeRecoveryMissingFailedPayouts = new Base\PublicCollection($this->getFeeRecoveryMissingPayouts($failedPayouts->all(), $feeRecoveryFailedPayouts->all()));
+        $payoutsWithDebitEntries = $this->getFeeRecoveryByEntityIdsAndType($feeRecoveryMissingFailedPayouts->getIds(), Entity::PAYOUT, Type::DEBIT);
+        $payoutsWithDebitEntriesIds = array_column($payoutsWithDebitEntries->all(), 'entity_id');
+        $feeRecoveryMissingFailedPayoutsWithDebitEntries =  array_filter($feeRecoveryMissingFailedPayouts->all(), function($payout) use ($payoutsWithDebitEntriesIds) {
+            return in_array($payout->id, $payoutsWithDebitEntriesIds);
+        });
+        $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+            "feeRecoveryMissingFailedPayouts" => $feeRecoveryMissingFailedPayouts,
+            "payoutsWithDebitEntries" => $payoutsWithDebitEntries,
+            "payoutsWithDebitEntriesIds" => $payoutsWithDebitEntriesIds,
+            "feeRecoveryMissingFailedPayoutsWithDebitEntries" => $feeRecoveryMissingFailedPayoutsWithDebitEntries
+        ]);
+        return $this->createFeeRecoveryForEntityWithType($feeRecoveryMissingFailedPayoutsWithDebitEntries, Type::CREDIT);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function feeRecoveryDataCorrectionForReversedPayouts(Base\PublicCollection $reversals, Base\PublicCollection $feeRecoveryReversals): array
+    {
+        $feeRecoveryMissingReversals = new Base\PublicCollection($this->getFeeRecoveryMissingPayouts($reversals->all(), $feeRecoveryReversals->all()));
+        $feeRecoveryMissingReversalPayoutsIds = array_column($feeRecoveryMissingReversals->all(), 'entity_id');
+
+        $payoutsWithDebitEntries = $this->getFeeRecoveryByEntityIdsAndType($feeRecoveryMissingReversalPayoutsIds, Entity::PAYOUT, Type::DEBIT);
+        $payoutsWithDebitEntriesIds = array_column($payoutsWithDebitEntries->all(), 'entity_id');
+        $feeRecoveryMissingReversalsWithDebitEntries =  array_filter($feeRecoveryMissingReversals->all(), function($reversal) use ($payoutsWithDebitEntriesIds) {
+            return in_array($reversal->getEntityId(), $payoutsWithDebitEntriesIds);
+        });
+        $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+            "feeRecoveryMissingReversals" => $feeRecoveryMissingReversals,
+            "feeRecoveryMissingReversalPayoutsIds" => $feeRecoveryMissingReversalPayoutsIds,
+            "payoutsWithDebitEntries" => $payoutsWithDebitEntries,
+            "payoutsWithDebitEntriesIds" => $payoutsWithDebitEntriesIds,
+            "feeRecoveryMissingReversalsWithDebitEntries" => $feeRecoveryMissingReversalsWithDebitEntries
+        ]);
+        return $this->createFeeRecoveryForEntityWithType($feeRecoveryMissingReversalsWithDebitEntries, Type::CREDIT);
+    }
+
+    private function getFeeRecoveryMissingPayouts(array $payouts, array $feeRecoveryPayouts): array
+    {
+        $feeRecoveryIds = array_flip(array_column($feeRecoveryPayouts, 'entity_id'));
+        return array_values(array_filter($payouts, fn($payout) => !isset($feeRecoveryIds[$payout['id']])));
+    }
+
+    /**
+     * @param array $feeRecoveryMissingForEntityWithDebitEntries
+     * @return array[]
+     */
+    public function createFeeRecoveryForEntityWithType(array $feeRecoveryMissingForEntityWithDebitEntries, string $type): array
+    {
+        $correctedEntityIds = [];
+        $uncorrectedEntityIds = [];
+        foreach ($feeRecoveryMissingForEntityWithDebitEntries as $entity) {
+            try {
+                $this->createFeeRecoveryEntityForSourceAndType($entity, $type);
+                $correctedEntityIds[] = $entity->getId();
+            } catch (\Throwable $e) {
+                $uncorrectedEntityIds[] = $entity->getId();
+                $this->trace->error(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+                    'entity' => $entity,
+                    'type' => $type,
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage(),
+                    'details' => "Failed to create fee recovery entry"
+                ]);
+            }
+        }
+        return [$correctedEntityIds, $uncorrectedEntityIds];
+    }
+
+    /**
+     * @param mixed $initiatedPayouts
+     * @param mixed $failedPayouts
+     * @param mixed $reversals
+     * @return void
+     */
+    function isFeeRecoveryIssueResolved(string $balanceId, mixed $initiatedPayouts, mixed $failedPayouts, mixed $reversals): bool
+    {
+        list ($feeRecoveryPayouts, $feeRecoveryFailedPayouts, $feeRecoveryReversals) = $this->getFeeRecoveryForPayouts($initiatedPayouts->getIds(), $failedPayouts->getIds(), $reversals->getIds(), self::OVERRIDDEN_BATCH_SIZE);
+
+        $initiatedPayoutCountDiff = count($initiatedPayouts) - count($feeRecoveryPayouts);
+        $failedCountDiff = count($failedPayouts) - count($feeRecoveryFailedPayouts);
+        $reversalCountDiff = count($reversals) - count($feeRecoveryReversals);
+
+        $this->trace->info(TraceCode::FEE_RECOVERY_DATA_CORRECTION_PROCESS, [
+            'balanceId' => $balanceId,
+            'message' => "Post Data Correction",
+            'initiatedPayoutCountDiff' => $initiatedPayoutCountDiff,
+            'failedPayoutCountDiff' => $failedCountDiff,
+            'reversalCountDiff' => $reversalCountDiff
+        ]);
+        if ($initiatedPayoutCountDiff == 0 && $failedCountDiff == 0 && $reversalCountDiff == 0) {
+            $this->trace->count(Metric::FEE_RECOVERY_ISSUE, [Metric::STATUS => Metric::RESOLVED]);
+            return true;
+        } else {
+            $this->trace->count(Metric::FEE_RECOVERY_ISSUE, [Metric::STATUS => Metric::UNRESOLVED]);
+            return false;
+        }
+    }
+
+    /**
+     * @param Balance\Entity $balance
+     * @return bool
+     */
+    function getSplitzExperimentEnableStatus(string $id, string $experimentId): bool
+    {
+        $properties = ['id' => $id,
+            'experiment_id' => $experimentId,
+            'request_data' => json_encode(['id' => $id])
+        ];
+        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['request' => $properties]);
+        $experimentResult = $this->isSplitzExperimentEnable($properties, 'enable');
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, ['request' => $properties, 'result' => $experimentResult]);
+        return $experimentResult;
+    }
+
+    /**
+     * @param mixed $balanceId
+     * @param array $input
+     * @return void
+     * @throws BadRequestException
+     */
+    public function validateBalanceIdExistsInNegativeFeeRecoveryAmountExclusionList(mixed $balanceId, array $input): void
+    {
+        if ($this->getSplitzExperimentEnableStatus($balanceId, 'negative_fee_recovery_amount_balance_id_exclusion_list')) {
+
+            $msg = "Blacklisted the balanceId to avoid computation of fee recovery as it has amount to be collected.";
+            $this->trace->error(TraceCode::FEE_RECOVERY_INITIATED, [
+                'message' => $msg,
+                'input' => $input
+            ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT,
+                null,
+                $input,
+                $msg
+            );
+        }
+    }
+
 }

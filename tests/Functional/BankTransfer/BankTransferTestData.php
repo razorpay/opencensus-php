@@ -2298,6 +2298,44 @@ return [
         ]
     ],
 
+    'testEcollectIdfcBatchCreate' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/file/idfc',
+            'method'  => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key'    => 'idfc/filename.csv',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_idfc',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'ecollectIdfcBatchData' => [
+        [
+            'bankCode'              => '751',
+            'VAN'                   => '3141412932249569',
+            'product Code'           => 'IIMPS',
+            'instrumentType'        => 'IMPS',
+            'remitterAccountNumber' => '923020021413403',
+            'remitterIfscCode'      => null,
+            'remitterName'          => 'TUNECLINICALAESTHE',
+            'Contact No'            => null,
+            'Email'                 => null,
+            'status'                => 'Success',
+            'txnAmount'             => '1001',
+            'txnDate'               => '05-FEB-2025',
+            'txnRefNumber'          => '503618787655',
+            'Trn TimeStamp'         => '05-FEB-2025 18:21:01',
+            'CLIENT_CODE'           => 'RZPX'
+        ]
+    ],
+
     'testProcessBankTransferInvalidPayerIfsc' => [
         'url'     => '/ecollect/validate/test',
         'method'  => 'post',
@@ -3257,6 +3295,71 @@ return [
         ]
     ],
 
+    'testBankTransferIbl' => [
+        'request' => [
+            'url'     => '/ecollect/validate/ibl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IBL_SECRET',
+            ],
+            'content' => [
+                "data"=> "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2R0NNIn0.1KfDDKp3WaKcYYxMrBLIjX_QFOA-LUYWpAGdvKW56EDHsNT8gMPo5A.k5mZj_Z2uNJPaoOY.ycm5V5vLXTwflv9CR9IZOKohsEkfcUbi0Ig80t2gm-4FKJqBPWpqfw_Ym3qyulb3_93id77cylGhO6iPpLSpPpzUJzsskvCTxnKRrTXlFWw9XgXwA2mH1hYs1XrBSYfLQxqE8PIMWWV8dJoOslwEqLU2RVGB6MvyEpFZzDPK8ebAuTddXb3gr9mViJ6XMsSX10nt9GIQbEoP6hHnDnlbXf4j4utSQWOh54chxoJ6-z0SE1JnZ8lOx1A0KtXXqLyY4BOUlUZ9_qwaUta8rgmf27p2Ga9NMgeP23RDR__FOpyySB6bOCAlgFqDoD7yUEEqpx79pa1r7p5f7EXAfhr36z_MBEkb901GEta-typCFkbO4FP1VXPUa1_ptdaez_FVhOrnT8e3ZIwDlQE.-WKIEreA9U4eCX7HTjFZQQ"
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'Stts_flg'   => 'S',
+                'Err_cd'     => '000',
+                'message'    => 'Success',
+                'Identifier' => 'XYZ',
+            ],
+            'status_code'  =>  200,
+        ]
+    ],
+
+    'testBankTransferIblMerchantNotFound' => [
+        'request' => [
+            'url'     => '/ecollect/validate/ibl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IBL_SECRET',
+            ],
+            'content' => [
+                "data" => 'eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2R0NNIn0.V-rTAvkRDJhEjxQrA6Vhmja9OZsX8Vus8mQGMuZmm4IAYe-o8JH7fg.STmRcdmJj0YJL7CL.p86dZA0FWWpc02COwbZtTtmDm3LhgMH9xfzHkFACSCjQ35yh_uT6REAPl_rZJZ1e0B-i3O-kLPNuurhhryo_pseByMe_A5VheZLr_lnbxW3fXQDfulNxw-6ihUEDcafQExGh58hd4xAlxfraCc2614vuru27SuWk4y8r9eGeS3MdvdF3Wv-QKDKzX8nvAa34ov3ZM52gbhaFQpFOsFpmpS_cdfuTYe-nFEgxg7DkaKkDjGRIjZEoMcqnm6QK81TmwnX5kP0hc1ZAR6FXycA7bYCN9_hPAWMfROvcwkB6rJsYbobJbHzbNoSQLDzjMNZbKsE2BfOqwaiD5OuEK9t6qKQim8cRa0ZgVLMVa2quCNNU9Jl8QjBGIIBuB4UWCEvtV7EoMexFB95RuK7MzO7ctB2_fPQ.ddN_xTiBYtEUU-8BEhRs7g'
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'Stts_flg'   => 'F',
+                'Err_cd'     => '007',
+                'message'    => 'BAD_REQUEST_MERCHANT_NOT_FOUND',
+                'Identifier' => 'XYZ',
+            ],
+            'status_code'  =>  400,
+        ]
+    ],
+
+    'testEcollectAxisCollectxBatchCreate' => [
+        'request' => [
+            'url' => '/ecollect/validate/file/axis',
+            'method' => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key' => 'axis_collectx_mis_files/filename.xls',
+                'file_type' => 'collectx',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_axis_banking',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEcollectAxisBatchCreate' => [
         'request' => [
             'url' => '/ecollect/validate/file/axis',
@@ -3298,6 +3401,34 @@ return [
             'Batch Time'                        => '0001',
         ]
     ],
+
+    'ecollectAxisCollectxBatchData' => [
+        [
+            'Message Type'                      => 'IMPS',
+            'UTR Number'                        => '504500111734',
+            'Sender IFSC'                       => 'HDFC0000240',
+            'Sender Acc Type'                   => 'Saving Account',
+            'Sender Account Number'             => '50200067545111',
+            'Sender Name'                       => 'Test Name',
+            'Sender Address 1'                  => null,
+            'Beneficiary IFSC'                  => 'UTIB0CCH274',
+            'Beneficiary Account Number'        => '984576421280111',
+            'Beneficiary Account Name'          => null,
+            'Sender Information'                => 'IMPS',
+            'Amount'                            => '60000.00',
+            'Value Date - NEFT/RTGS'            => '14-02-2025',
+            'Transaction Date'                  => '14-02-2025',
+            'Beneficiary Account Type'          => 'Saving Account',
+            'Related Reference'                 => null,
+            'Beneficiary Address 1'             => null,
+            'Corporate Code'                    => 'IT CARD NEFT',
+            'Client Code - Master'              => '9845',
+            'Credit Acc Number - NEFT/RTGS'     => '921020010649111',
+            'Settled Trans Time - NEFT/RTGS'    => '015931',
+            'Name - Master'                     => null,
+        ]
+    ],
+
 
     'testBankTransferAxisCallbackValidationFailure' => [
         'request' => [

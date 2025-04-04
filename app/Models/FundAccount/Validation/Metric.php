@@ -42,6 +42,11 @@ class Metric extends Base\Core
     const FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED = 'fav_queue_for_fts_job_failed_or_attempt_exhausted';
     const FAV_COMPLETED_WITH_STATUS_ACTIVE_AND_BENE_NAME_NULL = 'fav_completed_with_status_active_and_bene_name_null';
 
+    const RBL_VPA_VALIDATE_GATEWAY_ERROR_COUNT = 'rbl_vpa_validate_gateway_error_count';
+    const RBL_VPA_VALIDATE_GATEWAY_TIME_DURATION = 'rbl_vpa_validate_gateway_time_duration';
+    const RBL_VPA_VALIDATE_GATEWAY_AUTH_TOKEN_FETCH_TIME_DURATION = 'rbl_vpa_validate_gateway_auth_token_fetch_time_duration';
+    const RBL_VPA_VALIDATE_SESSION_TOKEN_FETCH_TIME_DURATION = 'rbl_vpa_validate_session_token_fetch_time_duration';
+
     public function pushCreatedMetrics(string $fundAccountType)
     {
         try

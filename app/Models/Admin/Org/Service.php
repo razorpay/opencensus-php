@@ -13,6 +13,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Admin\Org;
 use Config;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+
 
 class Service extends Base\Service
 {
@@ -379,5 +383,45 @@ class Service extends Base\Service
     public function getOrgCustomConfig()
     {
         return Constants::ORG_CUSTOM_CONFIG;
+    }
+
+    public function fetchAcquirer(string $id)
+    {
+        try{
+            $merchant = $this->repo->merchant->findByPublicId($id);
+
+            if(empty($merchant) === true)
+            {
+                $this->trace->info(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND,[
+                    'acquirer' => null,
+                    'success' => false
+                ]);
+                return [
+                    'acquirer' => null,
+                    'success' => false
+                ];
+            }
+            $organization = $this->fetch('org_'.$merchant->getOrgId());
+
+            if(empty($organization) === false)
+            {
+                return ['acquirer' => $organization['custom_code'], 'success' => true];
+            }
+
+            return ['acquirer' => null,'success' => false];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ERROR_EXCEPTION, [
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage()
+            ]);
+            return [
+                'acquirer' => null,
+                'success' => false,
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage()
+            ];
+        }
     }
 }

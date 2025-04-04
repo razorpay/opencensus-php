@@ -97,4 +97,29 @@ class Payout extends Transaction
 
         return $this->view("emails.transaction.{$view}");
     }
+
+    public function shouldSendEmailViaStork():bool
+    {
+        return true;
+    }
+
+    public function getParamsForStork(): array
+    {
+        $this->data = [
+            'balance' => $this->balance,
+            'txn' => $this->txn,
+            'source' => $this->source,
+            'fundAccount'=> $this->fundAccount,
+            'event' => $this->event,
+            'merchant' => $this->merchant
+        ];
+
+        return [
+            'template_name' => $this->view,
+            'template_namespace' => 'razorpayx_payouts_core',
+            'org_id' => $this->merchant['org_id'],
+            'params' => $this->data
+        ];
+    }
+
 }

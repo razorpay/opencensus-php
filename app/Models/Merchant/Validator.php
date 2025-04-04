@@ -118,7 +118,7 @@ class Validator extends Base\Validator
 
     const SEARCH_MERCHANT_USERS_INTERNAL = 'search_merchant_users_internal';
 
-    const FETCH_ACCOUNT_BALANCES_V2 = 'fetch_account_balances_v2';
+    const FETCH_BANKING_ACCOUNT_BALANCES = 'fetch_banking_account_balances';
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -146,6 +146,7 @@ class Validator extends Base\Validator
         Entity::ID                          => 'sometimes|alpha_num|size:14',
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'sometimes|email',
+        Entity::ACCOUNT_CODE                => 'sometimes|string',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
@@ -779,9 +780,9 @@ class Validator extends Base\Validator
         'batch_size'       => 'required|int|min:1',
     ];
 
-    protected static $fetchAccountBalancesV2Rules = [
-        'account_type' => 'sometimes|string|in:direct,shared',
-        'bank'         => 'sometimes|string|max:32|custom',
+    protected static $fetchBankingAccountBalancesRules = [
+        'account_type' => 'sometimes|string|in:razorpayx_lite,current_account',
+        'bank_code'    => 'sometimes|string|size:4|in:UTIB,ICIC,IDFB,RATN,YESB',
         'count'        => 'sometimes|int',
         'skip'         => 'sometimes|int'
     ];
@@ -3366,86 +3367,6 @@ class Validator extends Base\Validator
                     "merchant_id" => $merchantId
                 ]
             );
-        }
-    }
-
-    /**
-     * @throws AssertionException
-     * @throws BadRequestException
-     */
-    public function validateIfAmountForFundWithdrawalIsValid($amount, $input, $merchant): void
-    {
-        $app = App::getFacadeRoot();
-        $mode = $app['rzp.mode'];
-
-        if($amount <= 0)
-        {
-            $app['trace']->info(TraceCode::INVALID_AMOUNT_FOR_FUND_WITHDRAWAL, [
-                "input" => $input,
-                "merchant_id" => $merchant->getId()
-            ]);
-
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION,
-                null,
-                [
-                    "input" => $input,
-                    "merchant_id" => $merchant->getId()
-                ]
-            );
-        }
-
-        $reserveBalance = (new Balance\Core)->fetchBalanceWithLock($merchant,
-            Balance\Type::RESERVE_PRIMARY, $mode);
-
-        if ($reserveBalance === null) {
-            $app['trace']->info(TraceCode::RESERVE_BALANCE_NOT_FOUND_FOR_FUND_WITHDRAWAL, [
-                "input" => $input,
-                "merchant_id" => $merchant->getId(),
-            ]);
-
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESERVE_BALANCE_NOT_FOUND_FOR_FUND_WITHDRAWAL,
-                null,
-                [
-                    "input" => $input,
-                    "merchant_id" => $merchant->getId()
-                ]
-            );
-        }
-
-        $reserveBalanceAmount = $reserveBalance->getBalance();
-
-        $liveBalance = (new Balance\Core)->createOrFetchReserveBalance($merchant,
-            Balance\Type::PRIMARY, $mode)[0];
-
-        $liveBalanceAmount = $liveBalance->getBalance();
-
-        if ($reserveBalanceAmount < $amount)
-        {
-            $app['trace']->info(TraceCode::INSUFFICIENT_BALANCE_FOR_FUND_WITHDRAWAL, [
-                "input" => $input,
-                "merchant_id" => $merchant->getId()
-            ]);
-
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_FUND_WITHDRAWAL,
-                null,
-                [
-                    "input" => $input,
-                    "merchant_id" => $merchant->getId()
-                ]
-            );
-        }
-
-        if (($liveBalanceAmount + $reserveBalanceAmount - $amount) < 0) {
-            $app['trace']->info(TraceCode::INSUFFICIENT_NEGATIVE_LIVE_BALANCE_FOR_FUND_WITHDRAWAL, [
-                "input" => $input,
-                "merchant_id" => $merchant->getId()
-            ]);
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_FUND_WITHDRAWAL,
-            null,
-            [
-                "input" => $input,
-                "merchant_id" => $merchant->getId()
-            ]);
         }
     }
 

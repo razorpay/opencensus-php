@@ -180,6 +180,12 @@ class Service extends Base\Service
 
     }
 
+    public function sendNotificationNCA(string $id, array $input, $merchant = null)
+    {
+        $merchant = $this->merchant ?? $merchant;
+        $this->core->sendNotificationNCA($input);
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      */
@@ -637,7 +643,14 @@ class Service extends Base\Service
 
         $this->trace->count(Metric::PAYMENT_PAGE_CREATE_ORDER, $paymentLink->getMetricDimensions());
 
-        return $data;
+        return $this->getResponseArrayWithDecompSpecificFields($data, $paymentLink->getViewType());
+    }
+
+    public function getResponseArrayWithDecompSpecificFields(array $response, string $viewType): array
+    {
+        $response[Entity::PAYMENT_PAGE_VIEW_TYPE] = $viewType;
+
+        return $response;
     }
 
     public function updatePaymentPageItem(string $paymentPageItemId, array $input)
@@ -652,7 +665,14 @@ class Service extends Base\Service
             return $this->core->updatePaymentPageItem($paymentPageItem, $input);
         });
 
-        return $paymentPageItem->toArrayPublic();
+        $paymentLinkId = $paymentPageItem->getPaymentLinkId();
+
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.ppi.update.get_payment_link'], function() use($paymentLinkId)
+        {
+            return $this->repo->payment_link->findByIdAndMerchant($paymentLinkId, $this->merchant);
+        });
+
+        return $this->getResponseArrayWithDecompSpecificFields($paymentPageItem->toArrayPublic(), $paymentLink->getViewType());
     }
 
     public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId, array $input)
@@ -886,9 +906,11 @@ class Service extends Base\Service
             return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
         });
 
-        return Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
+        $response = Tracer::inSpan(['name' => 'payment_page.receipts.create'], function() use ($paymentLink, $input) {
             return $this->core->setReceiptDetails($paymentLink, $input);
         });
+
+        return $this->getResponseArrayWithDecompSpecificFields($response, $paymentLink->getViewType());
     }
 
     public function getInvoiceDetails(string $paymentId)
@@ -896,14 +918,36 @@ class Service extends Base\Service
         return $this->core->getInvoiceDetails($paymentId);
     }
 
+    public function getInvoiceDetailsForNCA(string $paymentId, array $ncaInput)
+    {
+        return $this->core->getInvoiceDetailsForNCA($paymentId, $ncaInput);
+    }
+
+    public function createInvoiceForNCAProducts(string $paymentId, array $ncaInput)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        return $this->core->createInvoiceForNCAProducts($ncaInput, $payment, true);
+    }
+
     public function sendReceipt(string $paymentId, array $input)
     {
         return $this->core->sendReceipt($paymentId, $input);
     }
 
+    public function sendReceiptForNCA(string $paymentId, array $input)
+    {
+        return $this->core->sendReceiptForNCA($paymentId, $input);
+    }
+
     public function saveReceiptForPayment(string $paymentId, array $input)
     {
         return $this->core->saveReceiptForPaymentAndGeneratePdf($paymentId, $input);
+    }
+
+    public function saveReceiptForNCA(string $paymentId, array $input)
+    {
+        return $this->core->saveReceiptForNCAAndGeneratePdf($paymentId, $input);
     }
 
     public function getPayments(string $id, array $input)
@@ -923,27 +967,6 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => 'payment_page.payments.get.fetch_payments'], function() use($input, $merchant)
         {
-            $variant = $this->app['razorx']->getTreatment(
-                'paymentPageGetPayments',
-                'pp_payment_fetch_query_migration',
-                $this->mode ?? Mode::LIVE);
-
-            $this->trace->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
-                'variant'    => $variant,
-                'feature'    => 'pp_payment_fetch_query_migration',
-                'context_id' => 'paymentPageGetPayments',
-            ]);
-
-            if ($variant === "tidb")
-            {
-                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            }
-
-            if ($variant === "replica")
-            {
-                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::PAYMENT_FETCH_REPLICA);
-            }
-
             return $this->repo->payment->fetch($input, $merchant->getId());
         });
 
@@ -1280,6 +1303,127 @@ class Service extends Base\Service
 
             return (new ElfinWrapper(ElfinService::GIMLI))->expandAndGetMetadata($slug, $domain);
         });
+    }
+
+
+    /**
+     * @param array $input
+     * @return mixed
+     *
+     * Delete and insert payment link
+     * Delete and insert payment page items
+     * Delete and insert items
+     * Delete and insert nocode_custom_urls
+     * Upsert settings
+     *
+     */
+    public function dualWriteFromNCA(array $input): mixed
+    {
+
+        (new Validator)->validateInput('dualWrite', $input);
+
+        // If order line items are sent, just insert them in line items table and return
+        if (!empty($input['order_line_items'])) {
+            $this->repo->line_item->bulkInsert($input['order_line_items']);
+            return [];
+        }
+
+        $input = $this->getPlComputedSettingsAndUnsetFromInput($input);
+
+        return $this->repo->transaction(function() use ($input)
+        {
+            $paymentLinkInput = $input['payment_link'];
+            $paymentLinkId = $paymentLinkInput['id'];
+
+            if (empty($paymentLinkId)) {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST
+                );
+            }
+
+            $paymentLink = $this->repo->payment_link->find($paymentLinkId);
+
+            if (isset($paymentLink)) {
+                $this->repo->payment_link->lockForUpdate($paymentLink->getId());
+            }
+
+            // ----- delete and insert payment link --------
+            $this->repo->payment_link->deletePaymentLinkById($paymentLinkId);
+            $newPaymentLink = ((new Entity())->forceFill($paymentLinkInput));
+            $this->repo->payment_link->saveOrFail($newPaymentLink);
+
+            $plSettings = $input['settings'] ?? [];
+            if (!empty($plSettings)) {
+                $newPaymentLink->getSettingsAccessor()->upsert($plSettings)->save();
+            }
+
+            $plComputedSettings = $input['computed_settings'] ?? [];
+            if (!empty($plComputedSettings)) {
+                $newPaymentLink->getComputedSettingsAccessor()->upsert($plComputedSettings)->save();
+            }
+
+            // ------ delete and insert payment page items ------
+            // soft delete all associated payment page items, hard-delete input pp items
+            $ppiIds = array_column($input['payment_page_items'], 'id');
+            $this->repo->payment_page_item->deletePaymentPageItemsByPaymentLinkId($paymentLinkId);
+            $this->repo->payment_page_item->deletePaymentPageItemsByIds($ppiIds);
+
+            foreach ($input['payment_page_items'] as $ppiInput) {
+                $ppiSettings = $ppiInput['settings'] ?? [];
+                // unset settings from input
+                unset($ppiInput['settings']);
+
+                $paymentPageItem = (new PaymentPageItem\Entity())->forceFill($ppiInput);
+                $this->repo->payment_page_item->saveOrFail($paymentPageItem);
+
+                if (!empty($ppiSettings)) {
+                    $paymentPageItem->getSettingsAccessor()->upsert($ppiSettings)->save();
+                }
+            }
+
+
+            // ------ delete and insert items ------
+            $itemIds = array_column($input['items'], 'id');
+            $this->repo->item->deleteItemsByIds($itemIds);
+            $this->repo->item->bulkInsert($input['items']);
+
+            // ------ delete and insert nocode_custom_urls ------
+            if (isset($input['nocode_custom_url'])) {
+                $this->repo->nocode_custom_url->deleteNocodeCustomUrlsByProductId($paymentLinkId);
+                $this->repo->nocode_custom_url->insert($input['nocode_custom_url']);
+            }
+
+            return $this->repo->payment_link->find($paymentLinkId);
+        });
+    }
+
+    public function getPlComputedSettingsAndUnsetFromInput(array $input): array
+    {
+        $computedSettings = [
+            'captured_payments_count' => $input['payment_link']['captured_payments_count'] ?? 0,
+        ];
+        unset($input['payment_link']['captured_payments_count']);
+
+        $goalTrackerMetadata = $input['settings']['goal_tracker']['meta_data'] ?? [];
+
+        if (isset($goalTrackerMetadata['collected_amount'])) {
+            $computedSettings['goal_tracker']['meta_data']['collected_amount'] = $goalTrackerMetadata['collected_amount'];
+            unset($input['settings']['goal_tracker']['meta_data']['collected_amount']);
+        }
+
+        if (isset($goalTrackerMetadata['supporter_count'])) {
+            $computedSettings['goal_tracker']['meta_data']['supporter_count'] = $goalTrackerMetadata['supporter_count'];
+            unset($input['settings']['goal_tracker']['meta_data']['supporter_count']);
+        }
+
+        if (isset($goalTrackerMetadata['sold_units'])) {
+            $computedSettings['goal_tracker']['meta_data']['sold_units'] = $goalTrackerMetadata['sold_units'];
+            unset($input['settings']['goal_tracker']['meta_data']['sold_units']);
+        }
+
+        $input['computed_settings'] = $computedSettings;
+
+        return $input;
     }
 
     /**

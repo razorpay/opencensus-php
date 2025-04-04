@@ -269,6 +269,7 @@ class Validator extends Base\Core
         'upi.npci_reference_id'         => 'required',
         'upi.gateway_payment_id'        => 'sometimes',
         'upi.npci_txn_id'               => 'sometimes',
+        'upi.merchant_reference'        => 'sometimes',
         'reconciled_type'               => 'required|string',
         'amount'                        => 'required',
         'reconciled_at'                 => 'required|filled|epoch',
@@ -431,6 +432,7 @@ class Validator extends Base\Core
         'model'                     => 'required',
         'batch_id'                  => 'sometimes',
         'gateway_data'              => 'required|array',
+        'merchant_reference'        => 'sometimes',
     ];
 
     public function filterEmails(array $emailDetails)

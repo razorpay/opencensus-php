@@ -2,12 +2,15 @@
 
 namespace RZP\Models\BankingAccountStatement\Details;
 
-use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Models\Base;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
+
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Base;
+use RZP\Models\BankingAccountStatement\Metric;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -241,5 +244,111 @@ class Core extends Base\Core
         ];
 
         $this->updateBasDetailsInPayoutService($basDetails->getId(), $data);
+    }
+
+    public function updateStatementLastFetchedData(array $input)
+    {
+        (new Validator)->validateInput(Validator::UPDATE_STATEMENT_LAST_FETCHED_DATA_INPUT, $input);
+
+        $statementUpdateInput = $input['input'];
+
+        $id = $statementUpdateInput[Entity::ID];
+
+        /* @var Entity $basDetailEntity */
+        $basDetailEntity = $this->repo->banking_account_statement_details->find($id);
+
+        if ($basDetailEntity != null &&
+            $basDetailEntity->getLastStatementAttemptAt() > $statementUpdateInput['last_statement_attempt_at']
+        )
+        {
+            $this->trace->info(
+                TraceCode::UPDATE_STATEMENT_LAST_FETCHED_DATA_NO_ACTION,
+                [
+                    'input'         => $statementUpdateInput,
+                    'current_value' => $basDetailEntity->getLastStatementAttemptAt()
+                ]
+            );
+
+            return ['status' => 'success'];
+        }
+
+        // Update BASD table
+        $basDetailEntity->updateLastStatementAttemptAt($statementUpdateInput['last_statement_attempt_at']);
+        $this->repo->saveOrFail($basDetailEntity);
+
+        // Update Settings table
+        /* @var \RZP\Models\Merchant\Balance\Entity $balanceEntity */
+        $balanceEntity = $basDetailEntity->balance;
+        $balanceEntity->updateLastFetchedAtTo($statementUpdateInput['last_statement_attempt_at']);
+
+        return ['status' => 'success'];
+    }
+
+    public function handleDualWrite(array $input): array
+    {
+        $balanceIds = [];
+        $balanceIdToInputMap = [];
+
+        foreach ($input as $item) {
+            try {
+                (new Validator)->validateXBalanceUpdateDualWriteInput($item);
+            } catch (\Throwable $e) {
+                $this->trace->error(
+                    TraceCode::X_BALANCE_DUAL_WRITE_INPUT_VALIDATION_FAILED,
+                    [
+                        'item' => $item,
+                        'error' => $e->getMessage()
+                    ]
+                );
+                continue;
+            }
+
+            $balanceId = $item[Entity::BALANCE_ID];
+            $balanceIds[] = $balanceId;
+            $balanceIdToInputMap[$balanceId] = $item;
+        }
+
+        $basDetailEntities = $this->repo->banking_account_statement_details->getAccountStatementDetailsByBalanceIds($balanceIds);
+
+        foreach ($basDetailEntities as $basDetailEntity) {
+            $inputData = $balanceIdToInputMap[$basDetailEntity->getBalanceId()];
+            $inputTimestamp = $inputData[Entity::BALANCE_LAST_FETCHED_AT];
+
+            if ($basDetailEntity->getBalanceLastFetchedAt() <= $inputTimestamp) {
+                $basDetailEntity->setGatewayBalance($inputData[Entity::GATEWAY_BALANCE]);
+                $basDetailEntity->setBalanceLastFetchedAt($inputTimestamp);
+                if (!empty($inputData[Entity::GATEWAY_BALANCE_CHANGE_AT])) {
+                    $basDetailEntity->setGatewayBalanceLastChangedAt($inputData[Entity::GATEWAY_BALANCE_CHANGE_AT]);
+                }
+
+                $this->repo->beginTransaction();
+                try {
+                    $this->repo->saveOrFail($basDetailEntity);
+                    $this->updateGatewayBalanceInPS($basDetailEntity);
+                } catch (\Throwable $e) {
+                    $this->repo->rollBack();
+                    $this->trace->error(
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATE_FAILED_UPDATE,
+                        [
+                            Entity::BALANCE_ID => $basDetailEntity->getBalanceId(),
+                            'error' => $e->getMessage()
+                        ]
+                    );
+                    continue;
+                }
+                $this->repo->commit();
+
+            } else {
+                $this->trace->count(Metric::DUAL_WRITE_MESSAGE_PROCESSING_ORDER_VIOLATION, [
+                    'entity' => EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                    'merchant_id' => $basDetailEntity->getMerchantId(),
+                    'channel' => $basDetailEntity->getChannel(),
+                ]);
+            }
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATED_SUCCESSFULLY);
+
+        return ['success' => 'true'];
     }
 }

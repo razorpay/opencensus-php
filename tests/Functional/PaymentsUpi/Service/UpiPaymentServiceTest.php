@@ -69,6 +69,12 @@ class UpiPaymentServiceTest extends TestCase
         {
             return $this->getRazoxVariant($feature, 'api_upi_airtel_v1', 'upips');
         });
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = "upi_airtel";
     }
 
     public function mockDcsService($retValue = null)
@@ -132,9 +138,11 @@ class UpiPaymentServiceTest extends TestCase
         $this->ba->publicAuth();
 
         $toAssertResponse = [
-            'vpa' => 'test.cust@icici',
-            'customer_name' => 'T************',
             'success' => true,
+            'vpa_token' => '51e3487b0cb90937024991f16052752b5b2652172a93f51955e3297b6b2449|9ba8bfc48d88d18cd09d8b52a1d3e816',
+            'masked_vpa' => 'r*********@rzp',
+            'customer_name' => 'R******************',
+            'error' => null,
         ];
 
         $response =  $this->makeRequestAndGetContent($request);
@@ -230,18 +238,6 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->ba->publicAuth();
 
-
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "api_upi_airtel_v1")
-            {
-                return $this->getRazoxVariant($feature, 'api_upi_airtel_v1', 'upips');
-            }
-
-            return $this->getRazoxVariant($feature, 'numeric_mapper_encrypted_vpa', 'encrypted');
-        });
-
         $response =  $this->makeRequestAndGetContent($request);
 
         // 2.  Create payment with the encrypted vpa.
@@ -289,11 +285,6 @@ class UpiPaymentServiceTest extends TestCase
         ];
 
         $this->ba->publicAuth();
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'numeric_mapper_encrypted_vpa', 'encrypted');
-        });
 
         $response =  $this->makeRequestAndGetContent($request);
 
@@ -465,11 +456,6 @@ class UpiPaymentServiceTest extends TestCase
 
         $createdAt = time();
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'disable_timeout_on_upi_collect_expiry', 'on');
-        });
-
         // Updating the payment created timestamp to 14 < 20(expiry time) min old to test the time out behaviour
         $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $createdAt - 14*60]);
 
@@ -477,9 +463,7 @@ class UpiPaymentServiceTest extends TestCase
 
         $paymentNew = $this->getDbLastPayment();
 
-        $this->assertEquals('failed', $paymentNew->getStatus());
-
-        $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $paymentNew->getInternalErrorCode());
+        $this->assertEquals('created', $paymentNew->getStatus());
 
         $this->assertNull($upiEntity);
     }
@@ -516,11 +500,6 @@ class UpiPaymentServiceTest extends TestCase
 
         $createdAt = time();
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'block_merchant_timeout_on_upi_collect_expiry', 'on');
-        });
-
         // Updating the payment created timestamp to 14 < 20(expiry time) min old to test the time out behaviour
         $this->fixtures->edit('payment', $payment->getId(), ['created_at' => $createdAt - 14*60]);
 
@@ -528,9 +507,7 @@ class UpiPaymentServiceTest extends TestCase
 
         $paymentNew = $this->getDbLastPayment();
 
-        $this->assertEquals('failed', $paymentNew->getStatus());
-
-        $this->assertEquals('BAD_REQUEST_PAYMENT_TIMED_OUT', $paymentNew->getInternalErrorCode());
+        $this->assertEquals('created', $paymentNew->getStatus());
 
         $this->assertNull($upiEntity);
     }
@@ -820,7 +797,7 @@ class UpiPaymentServiceTest extends TestCase
         $this->ba->publicAuth();
 
         $toAssertResponse = [
-            'vpa_token' => 'RandomGarbledVpaThatHasBeenEncrypted|RandomGarbledTokenForDecryption',
+            'vpa_token' => '51e3487b0cb90937024991f16052752b5b2652172a93f51955e3297b6b2449|9ba8bfc48d88d18cd09d8b52a1d3e816',
             'masked_vpa' => 'r*********@rzp',
             'customer_name' => 'R******************',
             'success' => true,
@@ -899,7 +876,22 @@ class UpiPaymentServiceTest extends TestCase
     public function testValidateVpaProxySuccessForNonNumericVpa()
     {
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
-        $this->setMockRazorxTreatment(['validate_vpa_rearch_ups' => 'on']);
+
+        $splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $splitzMock);
+
+        $splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) {
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => "enable",
+                        ],
+                    ],
+                ];
+            });
 
         $input = [
             'vpa' => 'razorpay@rzp',

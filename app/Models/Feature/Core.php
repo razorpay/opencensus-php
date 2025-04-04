@@ -24,6 +24,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\EsEligible;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payout\BankingAccount;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Notifications\Dashboard\Events;
@@ -240,12 +241,6 @@ class Core extends Base\Core
             (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
         }
 
-        if (( ($feature->getName() === Feature::ES_ON_DEMAND) || ($feature->getName() === Feature::ONDEMAND_LINKED))
-            && ($feature->getEntityType() === Constants::MERCHANT))
-        {
-            (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountCreateJob($feature->getEntityId());
-        }
-
         Tracer::inspan(['name' => HyperTrace::SKIP_SUBM_ONBOARDING_COMMUNICATION], function () use ($feature, $entityId) {
 
             if (($feature->getName() === Feature::SKIP_SUBM_ONBOARDING_COMM) && ($feature->getEntityType() === Constants::MERCHANT)
@@ -346,7 +341,7 @@ class Core extends Base\Core
             {
                 $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
-                if ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true)
+                if ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantId($merchant->getId()))
                 {
                     $payoutServiceRequest = [
                         Constants::MERCHANT_ID        => $merchant->getId(),
@@ -1398,7 +1393,7 @@ class Core extends Base\Core
         }
     }
 
-    public function enablePayoutService(array $payoutServiceFeatureInput, bool $shouldSync = false): Entity
+    public function enablePayoutService(array $payoutServiceFeatureInput, string $balanceId, bool $shouldSync = false): Entity
     {
         $this->trace->info(TraceCode::ENABLE_PAYOUT_SERVICE_ENABLED_FEATURE_REQUEST,
                            [
@@ -1407,6 +1402,22 @@ class Core extends Base\Core
                            ]
         );
 
+        /**
+         * If the idempotency key from PS to API is present, delete it as we are migrating Merchant from API to PS
+         * If the idempotency key from API to PS feature is not present, then create as it has a use case in middleware for checking idempotency from Payout Service
+         * If the Payout Service Enabled feature is not present, then create it
+         * If Merchant's one of the Balance Id is  migrated from API to PS and Idempotency Key from API to PS,Payout Service Enabled feature are there
+         * then we skip Idempotency Key from API to PS and Payout Service Enabled feature creation
+         */
+
+        /** @var Entity $payoutServiceEnabledFeature */
+        $payoutServiceEnabledFeature = $this->repo->feature
+            ->findByEntityTypeEntityIdAndName(
+                $payoutServiceFeatureInput[Entity::ENTITY_TYPE],
+                $payoutServiceFeatureInput[Entity::ENTITY_ID],
+                Constants::PAYOUT_SERVICE_ENABLED);
+
+
         /** @var Entity $payoutServiceIdempotencyKeyFromPsToApiFeature */
         $payoutServiceIdempotencyKeyFromPsToApiFeature = $this->repo->feature
             ->findByEntityTypeEntityIdAndName(
@@ -1414,18 +1425,33 @@ class Core extends Base\Core
                 $payoutServiceFeatureInput[Entity::ENTITY_ID],
                 Constants::IDEMPOTENCY_PS_TO_API);
 
-        $this->trace->info(TraceCode::IS_IDEMPOTENCY_PS_TO_API_FEATURE_ENABLED,
+        /** @var Entity $payoutServiceIdempotencyKeyFromApiToPsFeature */
+        $payoutServiceIdempotencyKeyFromApiToPsFeature = $this->repo->feature
+            ->findByEntityTypeEntityIdAndName(
+                $payoutServiceFeatureInput[Entity::ENTITY_TYPE],
+                $payoutServiceFeatureInput[Entity::ENTITY_ID],
+                Constants::IDEMPOTENCY_API_TO_PS);
+
+        $this->trace->info(TraceCode::FEATURE_ENABLED_BETWEEN_API_AND_PS,
                            [
-                               'is_feature_enabled' =>
+                               'is_idempotency_ps_to_api_feature_enabled' =>
                                    (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === false),
+                               'is_idempotency_api_to_ps_feature_enabled' =>
+                                   (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false),
+                               'payout_service_feature_enabled' =>
+                                   (empty($payoutServiceEnabledFeature) === false),
                            ]
         );
 
         $feature = $this->repo->feature->transaction(function() use (
             $payoutServiceFeatureInput,
             $shouldSync,
-            $payoutServiceIdempotencyKeyFromPsToApiFeature
+            $payoutServiceIdempotencyKeyFromPsToApiFeature,
+            $payoutServiceIdempotencyKeyFromApiToPsFeature,
+            $balanceId,
+            $payoutServiceEnabledFeature
         ) {
+
             if (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === false)
             {
                 $this->delete($payoutServiceIdempotencyKeyFromPsToApiFeature, $shouldSync);
@@ -1437,9 +1463,23 @@ class Core extends Base\Core
                 Entity::NAME        => Constants::IDEMPOTENCY_API_TO_PS,
             ];
 
-            $this->create($payoutServiceIdempotencyKeyFromApiToPsFeatureInput, $shouldSync);
+            if (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === true)
+            {
+                $this->create($payoutServiceIdempotencyKeyFromApiToPsFeatureInput, $shouldSync);
+            }
 
-            return $this->create($payoutServiceFeatureInput, $shouldSync);
+            if (empty($payoutServiceEnabledFeature) === true)
+            {
+                $payoutServiceEnabledFeature = $this->create($payoutServiceFeatureInput, $shouldSync);
+            }
+
+            /** @var \RZP\Models\Merchant\Entity $merchant */
+            $merchantId = $payoutServiceFeatureInput[Entity::ENTITY_ID];
+
+            (new BankingAccount\Core()) ->enablePayoutServiceOnBalanceIdForMerchant($merchantId, $balanceId);
+
+            return $payoutServiceEnabledFeature;
+
         });
 
         $this->trace->info(TraceCode::ENABLE_PAYOUT_SERVICE_ENABLED_FEATURE_RESPONSE,
@@ -1463,14 +1503,22 @@ class Core extends Base\Core
         return $feature;
     }
 
-    public function disablePayoutService(Entity $payoutServiceFeature, bool $shouldSync = false)
+    public function disablePayoutService(Entity $payoutServiceFeature,string $balanceId, bool $shouldSync = false)
     {
         $this->trace->info(TraceCode::DISABLE_PAYOUT_SERVICE_ENABLED_FEATURE_REQUEST,
                            [
-                               'input'       => $payoutServiceFeature->toArray(),
+                               'input' => $payoutServiceFeature->toArray(),
                                'should_sync' => $shouldSync,
                            ]
         );
+
+        /**
+         * If the idempotency key from API to PS is present, delete it as we are migrating Merchant from PS to API
+         * If the idempotency key from PS to API feature is not present, then create as it has a use case in middleware for checking idempotency from Payout Service
+         * If Merchant all Balance Id are migrated to API Monolith then only delete the Payout Service Enabled feature
+         * If Merchant's one of the Balance Id is  migrated from PS to API and Idempotency Key from PS to API will be there
+         * then we skip Idempotency Key from PS to API  creation
+         */
 
         /** @var Entity $payoutServiceIdempotencyKeyFromApiToPsFeature */
         $payoutServiceIdempotencyKeyFromApiToPsFeature = $this->repo->feature
@@ -1479,31 +1527,41 @@ class Core extends Base\Core
                 $payoutServiceFeature->getEntityId(),
                 Constants::IDEMPOTENCY_API_TO_PS);
 
-        $this->trace->info(TraceCode::IS_IDEMPOTENCY_API_TO_PS_FEATURE_ENABLED,
-                           [
-                               'is_feature_enabled' =>
-                                   (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false),
-                           ]
-        );
+        /** @var Entity $payoutServiceIdempotencyKeyFromPsToApiFeature */
+        $payoutServiceIdempotencyKeyFromPsToApiFeature = $this->repo->feature
+            ->findByEntityTypeEntityIdAndName(
+                $payoutServiceFeature->getEntityType(),
+                $payoutServiceFeature->getEntityId(),
+                Constants::IDEMPOTENCY_PS_TO_API);
+
 
         /** @var Entity $payoutServiceFetchVaPayoutsViaPsFeature */
         $payoutServiceFetchVaPayoutsViaPsFeature = $this->repo->feature->findByEntityTypeEntityIdAndName(
-                $payoutServiceFeature->getEntityType(),
-                $payoutServiceFeature->getEntityId(),
+            $payoutServiceFeature->getEntityType(),
+            $payoutServiceFeature->getEntityId(),
                 Constants::FETCH_VA_PAYOUTS_VIA_PS);
 
-        $this->trace->info(TraceCode::IS_FETCH_VA_PAYOUTS_VIA_PS_FEATURE_ENABLED,
-                           [
-                               'is_feature_enabled' =>
-                                   (empty($payoutServiceFetchVaPayoutsViaPsFeature) === false),
-                           ]
+
+        $this->trace->info(TraceCode::FEATURE_ENABLED_BETWEEN_API_AND_PS,
+            [
+                'is_idempotency_ps_to_api_feature_enabled' =>
+                    (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === false),
+                'is_idempotency_api_to_ps_feature_enabled' =>
+                    (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false),
+                'payout_service_feature_enabled' =>
+                    (empty($payoutServiceEnabledFeature) === false),
+                'fetch_va_payouts_via_ps_feature_enabled' =>
+                    (empty($payoutServiceFetchVaPayoutsViaPsFeature) === false),
+            ]
         );
 
         $feature = $this->repo->feature->transaction(function() use (
             $payoutServiceFeature,
+            $balanceId,
             $shouldSync,
             $payoutServiceIdempotencyKeyFromApiToPsFeature,
-            $payoutServiceFetchVaPayoutsViaPsFeature
+            $payoutServiceFetchVaPayoutsViaPsFeature,
+            $payoutServiceIdempotencyKeyFromPsToApiFeature
         ) {
             if (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false)
             {
@@ -1516,19 +1574,27 @@ class Core extends Base\Core
                 Entity::NAME        => Constants::IDEMPOTENCY_PS_TO_API,
             ];
 
-            $this->create($payoutServiceIdempotencyKeyFromPsToApiFeatureInput, $shouldSync);
-
-            $this->delete($payoutServiceFeature, $shouldSync);
+            if (empty($payoutServiceIdempotencyKeyFromPsToApiFeature) === true)
+            {
+                $this->create($payoutServiceIdempotencyKeyFromPsToApiFeatureInput, $shouldSync);
+            }
 
             if (empty($payoutServiceFetchVaPayoutsViaPsFeature) === false)
             {
                 $this->delete($payoutServiceFetchVaPayoutsViaPsFeature, $shouldSync);
             }
+
+            if((new BankingAccount\Core())->merchantAllBalanceIdsMigratedToAPIMonolithOrNot($payoutServiceFeature->getEntityId(), $balanceId)){
+                $this->delete($payoutServiceFeature, $shouldSync);
+            }
+
+            (new BankingAccount\Core())->updatePayoutServiceEnabledFlagInPayoutServiceBankingAccount($payoutServiceFeature->getEntityId(), $balanceId, false);
+
         });
 
         $this->trace->info(TraceCode::DISABLE_PAYOUT_SERVICE_ENABLED_FEATURE_RESPONSE,
                            [
-                               'feature' => $payoutServiceFeature->toArrayDeleted(),
+                               'balance_id' => $balanceId,
                            ]
         );
 

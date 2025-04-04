@@ -268,7 +268,7 @@ class Service extends Base\Service
 
                 $key = $this->repo->transaction(function () use ($keyID) {
 
-                    $key = $this->repo->key->findNotExpired($keyID);
+                    $key = $this->repo->key->findNotExpired($keyID, true);
 
                     if (!$key) {
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_KEY_NOT_FOUND);

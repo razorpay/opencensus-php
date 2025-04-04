@@ -51,7 +51,7 @@ abstract class ConsumerApiKeyAPIAbstractClient
      */
     protected $prefix;
 
-    PROTECTED $trace;
+    protected $trace;
 
     public function __construct(
         $addr,

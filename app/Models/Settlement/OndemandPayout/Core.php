@@ -247,8 +247,6 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($settlementOndemandPayout);
 
-            $this->trace->count(Metric::SETTLEMENT_ONDEMAND_PAYOUT_STATUS_UPDATES, ['status' => Status::CREATED, 'mode' => $mode]);
-
             array_push($settlementOndemandPayouts, $settlementOndemandPayout);
         }
 
@@ -435,7 +433,7 @@ class Core extends Base\Core
 
         $payoutAmount = $settlementOndemandPayout->getPayoutAmount();
 
-        $fundAccount = (new OndemandFundAccount\Repository)->findByMerchantId($settlementOndemandPayout->getMerchantId());
+        $fundAccount = (new OndemandFundAccount\Service)->getOrCreateFundAccountForMerchant($settlementOndemandPayout->getMerchantId());
 
         $fundAccountId = $fundAccount[OndemandFundAccount\Entity::FUND_ACCOUNT_ID];
 

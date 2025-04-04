@@ -6,6 +6,8 @@ final class Metric
 {
     const OFFERS_ENGINE_REQUEST_FAILURE = 'offers_engine_request_failure';
 
+    const OFFERS_ENGINE_REQUEST_DISTRIBUTION_COUNT = 'offers_engine_request_distribution_count';
+
     const OFFERS_ENGINE_CREATE_OFFER_RESPONSE_NIL          = 'offers_engine_create_offer_response_nil';
 
     const OFFERS_ENGINE_CREATE_OFFER_FAIL       = 'offers_engine_create_offer_fail';

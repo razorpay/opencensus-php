@@ -100,6 +100,22 @@ class ViewDataSerializer extends Base\Core
         ];
     }
 
+    public function serializeForNCAProductsHosted(array $ncaInput): array
+    {
+        return [
+            'environment'      => $this->app->environment(),
+            'is_test_mode'     => ($this->mode === Mode::TEST),
+            'invoicejs_url'    => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'           => $this->getMerchantKeyId(),
+            'merchant'         => $this->serializeMerchantForHosted(),
+            'invoice'          => $this->serializeInvoiceForNCAProductsHosted($ncaInput),
+            'custom_labels'    => $this->getCustomLabelValues(),
+            'checkout_options' => $this->getCheckoutOptions(),
+            'view_preferences' => $this->getViewPreferences(),
+            E::ORG             => $this->serializeOrgPropertiesForHosted(),
+        ];
+    }
+
     public function serializeForHostedV2(): array
     {
         return [
@@ -118,6 +134,16 @@ class ViewDataSerializer extends Base\Core
     public function serializeForInternal(): array
     {
         $serialized = $this->serializeForHosted();
+
+        $this->addAdditionalAttributesForInternal($serialized);
+
+        return $serialized;
+    }
+
+    // this is the main serializer for nca products
+    public function serializeForNCAProductsInternal(array $ncaInput): array
+    {
+        $serialized = $this->serializeForNCAProductsHosted($ncaInput);
 
         $this->addAdditionalAttributesForInternal($serialized);
 
@@ -159,7 +185,8 @@ class ViewDataSerializer extends Base\Core
         }
 
         return [
-            'branding'  => $branding
+            'branding'  => $branding,
+            'id' => $this->merchant->getOrgId()
         ];
     }
 
@@ -480,6 +507,15 @@ class ViewDataSerializer extends Base\Core
         return $serialized;
     }
 
+    protected function serializeInvoiceForNCAProductsHosted(array $ncaInput): array
+    {
+        $serialized = $this->serializeInvoiceForHosted();
+
+        $this->addNCAProductAttributesForInvoice($serialized, $ncaInput);
+
+        return $serialized;
+    }
+
     protected function addDerivedAttributesForInvoice(array & $serialized)
     {
         // In view, we show only captured(successful, not refunded) payments
@@ -790,44 +826,12 @@ class ViewDataSerializer extends Base\Core
 
             $viewType = $externalEntity->getAttribute(PaymentLink\Entity::VIEW_TYPE);
 
-            $orderId = $this->invoice->getOrderId();
-            $merchantId = $this->invoice->getMerchantId();
-
-            $payment = $this->getCapturedPaymentForOrderId($orderId, $merchantId);
-
-            if($payment === null) {
-                $this->trace->info(TraceCode::INVOICE_PAYMENT_NULL_GET_CAPTURED_PAYMENT,
-                    [
-                        'orderId'   => $orderId,
-                        'invoiceId' => $this->invoice->getId(),
-                    ]);
-            }
-
-            $paymentFormatted = [];
-
-            if ($payment !== null)
-            {
-                $paymentFormatted = [
-                    'id'                   => $payment->getId(),
-                    'public_id'            => $payment->getPublicId(),
-                    'amount'               => $payment->getFormattedAmount(),
-                    'raw_amount'           => $payment['base_amount'],
-                    'adjusted_amount'      => $payment->getAdjustedAmountWrtCustFeeBearer(),
-                    'timestamp'            => $payment->getUpdatedAt(),
-                    'captured_at'          => $payment->getAttribute('captured_at'),
-                    'amount_spread'        => $payment->getAmountComponents(),
-                    'created_at_formatted' => Utility::getTimestampFormattedByTimeZone($payment->getCreatedAt(), 'jS M, Y', $payment->merchant->getTimeZone()),
-                    'method'               => $payment->getMethodWithDetail(),
-                    'notes'                => $payment->getNotes(),
-                ];
-            }
-
             $serialized[E::PAYMENT_PAGE] = [
                 'enable_80g'           => $enable80g,
                 'details_80g'          => empty($details80g) ? null : $details80g,
                 'selected_input_field' => $selectedInputField,
                 'title'                => $title,
-                'payment'              => $paymentFormatted,
+                'payment'              => $this->getPaymentDetailsForPaymentPageInvoice(),
                 'view_type'            => $viewType,
             ];
         }
@@ -844,6 +848,79 @@ class ViewDataSerializer extends Base\Core
         $notes = $order->getNotes()->toArray();
 
         return $notes[$selectedInputFiledName] ?? null;
+    }
+
+    protected function getPaymentDetailsForPaymentPageInvoice(): array
+    {
+        $orderId = $this->invoice->getOrderId();
+
+        $merchantId = $this->invoice->getMerchantId();
+
+        $payment = $this->getCapturedPaymentForOrderId($orderId, $merchantId);
+
+        if($payment === null) {
+            $this->trace->info(TraceCode::INVOICE_PAYMENT_NULL_GET_CAPTURED_PAYMENT,
+                [
+                    'orderId'   => $orderId,
+                    'invoiceId' => $this->invoice->getId(),
+                ]);
+        }
+
+        $paymentFormatted = [];
+
+        if ($payment !== null)
+        {
+            $paymentFormatted = [
+                'id'                   => $payment->getId(),
+                'public_id'            => $payment->getPublicId(),
+                'amount'               => $payment->getFormattedAmount(),
+                'raw_amount'           => $payment['base_amount'],
+                'adjusted_amount'      => $payment->getAdjustedAmountWrtCustFeeBearer(),
+                'timestamp'            => $payment->getUpdatedAt(),
+                'captured_at'          => $payment->getAttribute('captured_at'),
+                'amount_spread'        => $payment->getAmountComponents(),
+                'created_at_formatted' => Utility::getTimestampFormattedByTimeZone($payment->getCreatedAt(), 'jS M, Y', $payment->merchant->getTimeZone()),
+                'method'               => $payment->getMethodWithDetail(),
+                'notes'                => $payment->getNotes(),
+            ];
+        }
+
+        return $paymentFormatted;
+    }
+
+
+    protected function addNCAProductAttributesForInvoice(array & $serialized, array $ncaInput): void
+    {
+        $ppMerchantSettings = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        $details80g = [];
+
+        $enable80g = $ncaInput['enable_80g'] ?? null;
+
+        if ($enable80g == "1")
+        {
+            $text80G = $ppMerchantSettings[PaymentLink\Entity::TEXT_80G_12A] ?? null;
+
+            $imageURL80G = $ppMerchantSettings[PaymentLink\Entity::IMAGE_URL_80G] ?? null;
+
+            $details80g = [
+                'text'      => $text80G,
+                'image_url' => $imageURL80G,
+            ];
+
+            $details80g = array_filter($details80g);
+        }
+
+        $serialized[Entity::ENTITY_TYPE] = E::PAYMENT_PAGE;
+        $serialized[E::PAYMENT_PAGE] = [
+            'enable_80g'           => $enable80g,
+            'details_80g'          => empty($details80g) ? null : $details80g,
+            'selected_input_field' => $ncaInput['selected_input_field'],
+            'title'                => $ncaInput['title'],
+            'payment'              => $this->getPaymentDetailsForPaymentPageInvoice(),
+            'view_type'            => $ncaInput['view_type'],
+        ];
     }
 
     protected function getSelectedInputFieldTitleFromName($paymentPage, $selectedInputFieldName)

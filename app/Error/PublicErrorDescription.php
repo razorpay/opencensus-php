@@ -251,6 +251,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN                      = 'Payment failed';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER                            = 'Invalid UPI Number. Please enter a valid UPI Number';
+    const BAD_REQUEST_MOBILE_NUMBER_INVALID                                     = 'Mobile number should be 10 digit long';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';
     const BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED                             = 'Card used while setting UPI PIN has expired. Please use another debit card to reset UPI PIN or use another bank account for payment';
@@ -283,6 +284,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
+    const BAD_REQUEST_PAYMENT_OTM_MANDATE_ALREADY_CONFIRMED                     = 'Your payment has been declined as the One-time mandate is already created with the order. Please initiate the payment with a new order for new mandate creation.';
+
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
     const BAD_REQUEST_SCROOGE_DASHBOARD_ERROR                                   = 'Scrooge dashboard error';
     const BAD_REQUEST_REFUND_NOT_ALLOWED                                        = 'Refunds cannot be created on your account.';
@@ -528,6 +531,9 @@ class PublicErrorDescription
 
     const SERVER_ERROR_UPI_TRANSFER_PROCESSING_FAILED                           = 'Upi transfer processing failed';
     const SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED                             = 'Qr payment processing failed';
+
+    const SERVER_ERROR_FAILED_TO_FETCH_VPA                                      = 'Failed to Fetch VPA';
+    const BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND                                             = 'No linked account details found';
 
     const BAD_REQUEST_CARD_INVALID_DATA                                         = 'Payment failed as card details (CVV or expiry date) are incorrect. Please check and try again';
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';
@@ -1083,6 +1089,8 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_GIVEN             = 'Linked Account reversal ability is already given to the merchant';
     const BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_REMOVED           = 'Linked Account reversal ability is already removed from the merchant';
     const BAD_REQUEST_LINKED_ACCOUNT_CREATION_WITH_DUPLICATE_EMAIL_NOT_ENABLED  = 'Feature to create Linked Account with existing emails is not allowed for this merchant. Please contact support.';
+    const BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT          = 'Linked account creation is blocked for this merchant.';
+    const BAD_REQUEST_LINKED_ACCOUNT_UPDATE_BLOCKED_WITHOUT_2FA                 = 'Linked account update is blocked without 2FA';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
@@ -1173,6 +1181,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED                  = 'Cancelling a Fee Recovery Payout is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED                = 'Updating an internal Razorpay Fund Account is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED              = 'Creating a fund account for an Internal Razopay contact is not permitted';
+    const BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA                     = 'Account holder name not matching with bank provided name';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH                       = 'Amount recovered does not match with the total fees calculated for given payouts';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID         = 'Fee Recovery cannot be provided for a certain payout';
     const BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED             = 'Creating a payout to an internal Razorpay Fund Account is not permitted';
@@ -1191,7 +1200,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE_TYPE                       = 'Only Direct-Banking type balance is allowed';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED     = 'Manual recovery for rzp_fees type payouts is not supported';
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
-
+    const BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING = 'There are cases where fee recovery debit or credit entities are missing, So couldn\'t recover fee for the time range provided.';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                              = 'Request failed as contact mobile already taken';
 
     const BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED                              = 'No owner accounts associated with this contact mobile';
@@ -1503,7 +1512,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_TOKEN_FOR_PAUSE                                       = 'Token invalid, cannot be paused';
     const BAD_REQUEST_INVALID_TOKEN_FOR_RESUME                                      = 'Token invalid, cannot be resumed';
     const BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL                                = 'One or more tokens do not belong to this customer';
-    const BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH                         = 'You’ve entered an incorrect OTP. Please enter an OTP of length between 4-10 digits.';
+    const BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH                         = "You've entered an incorrect OTP. Please enter an OTP of length between 4-10 digits.";
 
     const BAD_REQUEST_ANOTHER_PROMOTION_EVENT_ALREADY_EXISTS                        = 'Bad request, another event exists with same name';
     const BAD_REQUEST_UPI_MANDATE_INVALID_EXECUTION_TIME                            = 'Execution only allowed between start time and end time';
@@ -1738,6 +1747,11 @@ class PublicErrorDescription
     const BAD_REQUEST_EMPTY_FILE_UPLOADED                                           = 'Empty file uploaded';
     const BAD_REQUEST_EMPTY_ROW_UPLOADED                                            = 'Empty row uploaded';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_TDS                        = 'Payout with TDS not supported via private auth';
+
+    const BAD_REQUEST_MODE_NOT_ALLOWED_FOR_MOBILE_NUMBER                            = 'This mode is not allowed for Mobile number Payouts';
+    const BAD_REQUEST_MOBILE_NUMBER_NOT_PRESENT                                     = 'Mobile number is not present';
+    const BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT                               = 'Account Holder name is not present';
+    const BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED                              = 'Payouts using Mobile numbers are not allowed.';
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS                = 'Payout with attachments not supported via private auth';
     const BAD_REQUEST_INVALID_TAX_PAYMENT_ID                                        = 'Invalid tax_payment_id';
     const SERVER_ERROR_GET_ATTACHMENTS_FAILURE                                      = 'Failed to get attachments for the payouts';
@@ -1848,6 +1862,9 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_DATE_RANGE                                            = 'Date range is invalid. Please ensure that the range is within 31 days.';
 
     const BAD_REQUEST_IDAM_ORG_NOT_FOUND                                            = 'IDAM Org not found.';
+    const BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED                                    = 'Admin disabled cron failed.';
+    const BAD_REQUEST_ADMIN_DISABLED                                                = 'Admin account is disabled.';
+    const BAD_REQUEST_ADMIN_DISABLED_BY_DORMANCY                                    = 'Admin account is disabled due to inactivity.';
 
     const BAD_REQUEST_CIN_MISMATCH            = 'The given CIN does not belong to your selected business type. Please provide a different CIN';
     const BAD_REQUEST_PAN_MISMATCH            = 'The given PAN does not belong to your selected business type. Please provide a different PAN';
@@ -1864,4 +1881,14 @@ class PublicErrorDescription
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'Partner does not have access to this feature';
 
     const BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Creation is currently blocked for RBL Merchants.";
+    const  BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_FAILURE = "A dispute can't be raised for the mentioned payment since it was made less than 5 days ago with an BSE registered broking merchant. Please proceed to file a chargeback or else wait for 5 days from the date of payment to raise a dispute";
+    const  BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_UPLOAD_FAILURE = 'Failed to upload the BSE circulars to UFH services';
+
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_NOT_ALLOWED_RBL = "Adding allowed payer to RBL VA is not allowed";
+
+    const BAD_REQUEST_VA_CLOSE_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Close is currently blocked for RBL Merchants";
+
+    const GATEWAY_VA_DEACTIVATION_FAILURE = "Gateway Failure in closing virtual account";
+
+    const BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS = 'Refund is currently blocked for Smart Collect 2.0 payments';
 }

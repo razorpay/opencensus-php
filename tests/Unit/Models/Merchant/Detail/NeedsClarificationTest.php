@@ -22,12 +22,14 @@ use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
+use RZP\Tests\Traits\MocksSplitz;
 
 class NeedsClarificationTest extends TestCase
 {
 
     use OAuthTrait;
     use BatchTestTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -1117,7 +1119,7 @@ class NeedsClarificationTest extends TestCase
         ]);
 
         $reason = (new Core())->composeNeedsClarificationReason($merchantDetail);
-        
+
         $expectedReasons = [
             "additional_details" => [
                 "bank_account_name" => [
@@ -2540,6 +2542,21 @@ class NeedsClarificationTest extends TestCase
         $merchant = $this->getDbEntity('merchant', ['id' => $merchantDetail->getMerchantId()]);
 
         $detailCore->getMerchantAndSetBasicAuth($merchantDetail->getMerchantId());
+
+        $splitzInput = [
+            'experiment_id' => 'PjJiJEYLMVYqIF',
+            'id'            => $merchantDetail->getMerchantId(),
+        ];
+
+        $splitzOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
         $ncCore->updateActivationStatusForNoDoc($merchant, $merchantDetail, 'no_doc_kyc_failure');
 

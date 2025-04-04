@@ -362,6 +362,8 @@ class Entity extends Base\PublicEntity
     protected $entity = 'merchant';
     const COUNTRY_CODE = 'country_code';
 
+    const VPAN_ENROLLMENTID = 'vpanEnrollmentID';
+
     /**
      * Merchant features, saved to this variable once fetched to avoid
      * repeated DB calls.
@@ -1604,6 +1606,46 @@ class Entity extends Base\PublicEntity
         return !$isExperimentEnabled;
     }
 
+    public function checkCACMigrationExperimentEnabled(): bool
+    {
+        try
+        {
+            $response = app('splitzService')->evaluateRequest([
+                'id'            => $this->getId(),
+                'experiment_id' => app('config')->get('app.cac_migration_splitz_experiment_id')
+            ]);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $isExperimentEnabled = ($variant === 'active');
+
+            app('trace')->info(TraceCode::CAC_MIGRATION_EXPERIMENT_STATUS, [
+                'is_experiment_enabled' => $isExperimentEnabled,
+                'merchant_id'           => $this->getId(),
+            ]);
+
+            return $isExperimentEnabled;
+        }
+        catch (\Throwable $e)
+        {
+            // returning a default false here leads to inconsistent behaviour. So, throwing an exception.
+            app('trace')->error(TraceCode::CAC_MIGRATION_EXPERIMENT_FETCH_FAILED, [
+                'merchant_id'   => $this->getId(),
+                'error_message' => $e->getMessage(),
+            ]);
+
+            // to remove any impact of UTs where experiment is not mocked properly
+            $app = App::getFacadeRoot();
+
+            if ($app->runningUnitTests())
+            {
+                return false;
+            }
+
+            throw $e;
+        }
+    }
+
     public function liveEnable()
     {
         $this->setAttribute(self::LIVE, true);
@@ -2325,6 +2367,11 @@ class Entity extends Base\PublicEntity
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function getVPanEnrollmentID()
+    {
+        return $this->getAttribute(self::VPAN_ENROLLMENTID);
     }
 
     public function setCategory($category)
@@ -3483,6 +3530,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) || $this->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE);
     }
+
+    public function isTokenContinuityEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::TOKEN_CONTINUITY);
+    }
+
 
     /**
      * Used for Marketplace, dashboard:
