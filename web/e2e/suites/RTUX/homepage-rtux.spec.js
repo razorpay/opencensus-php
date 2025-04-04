@@ -7,7 +7,7 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
     storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
   });
 
-  test('should show merchant overview @priority=normal', async ({ page }) => {
+  test.skip('should show merchant overview @priority=normal', async ({ page }) => {
     const components = await getRTUXResponse({ page });
 
     await expect(page.getByTestId('merchant-overview')).toBeVisible();

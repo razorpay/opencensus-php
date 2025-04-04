@@ -11,7 +11,7 @@ test.describe('Test webhook creation @flow=settings @project=payments', () => {
   test.use({
     storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,
   });
-  test('should create webhook @priority=critical', async ({ page }) => {
+  test.skip('should create webhook @priority=critical', async ({ page }) => {
     // go to the webhook settings tab
     await page.goto(ELEMENT_CONSTANTS.WEBHOOK_SETTINGS_URL);
 

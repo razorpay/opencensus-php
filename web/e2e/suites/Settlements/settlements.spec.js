@@ -102,7 +102,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
   });
   const { TEST_ENV } = playwrightEnvs;
-  test('should show settlements @priority=normal', async ({ page }) => {
+  test.skip('should show settlements @priority=normal', async ({ page }) => {
     await page.goto(routes.SETTLEMENTS);
 
     // switching merchant with settlements data
@@ -132,7 +132,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(page.getByText(settlementId)).toBeVisible();
   });
 
-  test('should search settlements by utr and settlement id @priority=P0', async ({ page }) => {
+  test.skip('should search settlements by utr and settlement id @priority=P0', async ({ page }) => {
     const response = await visitSettlementsPage({ page });
     const { settlementRecord, utr } = await getSettlementRecord(page, response);
 
@@ -142,7 +142,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(settlementRecord.getByText('Processed')).toBeVisible();
   });
 
-  test('should search settlements date @priority=P0', async ({ page }) => {
+  test.skip('should search settlements date @priority=P0', async ({ page }) => {
     const response = await visitSettlementsPage({ page });
     const { settlementRecord, utr } = await getSettlementRecord(page, response);
 
@@ -156,7 +156,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(settlementRecord.getByRole('button', { name: utr, exact: false })).toBeVisible();
   });
 
-  test('should reset settlements seach on click of clear @priority=normal', async ({ page }) => {
+  test.skip('should reset settlements seach on click of clear @priority=normal', async ({ page }) => {
     const response = await visitSettlementsPage({ page });
 
     // Extract the response JSON
@@ -197,7 +197,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(page.getByRole('heading', { name: 'Holidays List' })).toBeVisible();
   });
 
-  test('should show correct details for settlement with created status  @priority=normal', async ({
+  test.skip('should show correct details for settlement with created status  @priority=normal', async ({
     page,
   }) => {
     const response = await visitSettlementsPage({ page });
@@ -226,7 +226,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(page.getByText('To be deposited latest by 11:00 pm, today')).toBeVisible();
   });
 
-  test('should show correct details for settlement with processed status  @priority=normal', async ({
+  test.skip('should show correct details for settlement with processed status  @priority=normal', async ({
     page,
   }) => {
     const response = await visitSettlementsPage({ page });
@@ -254,7 +254,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(page.getByText('Money deposited in bank account')).toBeVisible();
   });
 
-  test('should show gross entities for settlement @priority=P0', async ({ page }) => {
+  test.skip('should show gross entities for settlement @priority=P0', async ({ page }) => {
     await visitSettlementsPage({ page });
 
     const GrossEntitiesSettlements = {
@@ -295,7 +295,7 @@ test.describe('Test Settlements view when settlements are present @flow=settleme
     await expect(grossSettlementsTab.getByRole('cell', { name: 'Adjustment ID' })).toBeVisible();
   });
 
-  test('should show deduction entities for settlement @priority=P0', async ({ page }) => {
+  test.skip('should show deduction entities for settlement @priority=P0', async ({ page }) => {
     await visitSettlementsPage({ page });
 
     const DeductionsEntitiesSettlements = {

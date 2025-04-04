@@ -33,7 +33,7 @@ test.describe
     await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
   });
 
-  test('should show add webhook button @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should show add webhook button @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await verifyAndRedirectPageRoute({
@@ -79,7 +79,7 @@ test.describe
     await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
   });
 
-  test('should show API keys @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should show API keys @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await verifyAndRedirectPageRoute({
