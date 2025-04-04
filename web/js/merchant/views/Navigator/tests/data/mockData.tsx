@@ -205,6 +205,12 @@ const SUPPORTED_GATEWAYS = {
       data_type: 'array',
       data_value: ['paylater'],
       terminals_key: '',
+      meta_data: {
+        paylater_metadata: {
+          can_select_paylaters: true,
+          paylaters: ['getsimpl', 'simpl_pay_in_3'],
+        },
+      },
     },
   },
   paytm: {

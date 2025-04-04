@@ -576,9 +576,21 @@ class AddProvider extends React.Component {
       }
     }
 
+    const paymentMethods = provider?.Gateway_details?.['Payment Methods'] ?? [];
+    const selectedWallets = provider?.Gateway_details?.wallet_metadata?.wallets ?? [];
+
+    const paylaterMetaData = provider?.Gateway_details?.paylater_metadata;
+    const selectedPaylaters = paylaterMetaData?.paylaters ?? [];
+    const canSelectPaylaterOptions = paylaterMetaData?.can_select_paylaters ?? false;
+
+    if (paymentMethods.includes('wallet') && selectedWallets.length <= 0) {
+      return false;
+    }
+
     if (
-      provider?.Gateway_details?.['Payment Methods'].indexOf('wallet') !== -1 &&
-      provider?.Gateway_details?.wallet_metadata?.wallets?.length <= 0
+      canSelectPaylaterOptions &&
+      paymentMethods.includes('paylater') &&
+      selectedPaylaters.length <= 0
     ) {
       return false;
     }
@@ -644,6 +656,18 @@ class AddProvider extends React.Component {
                 wallets: [...(selectedProviderWallets || [])],
               };
             }
+
+            if (value === 'paylater') {
+              const paylaterMetaData =
+                providers?.[selectedProvider]?.['Payment Methods']?.meta_data?.paylater_metadata;
+
+              if (paylaterMetaData?.can_select_paylaters) {
+                const selectedProviderPaylaters = paylaterMetaData?.paylaters;
+                provider.Gateway_details.paylater_metadata = {
+                  paylaters: [...(selectedProviderPaylaters || [])],
+                };
+              }
+            }
           } else {
             const paymentMethods = provider?.Gateway_details?.['Payment Methods'];
 
@@ -664,6 +688,10 @@ class AddProvider extends React.Component {
 
               if (value === 'wallet') {
                 delete provider.Gateway_details.wallet_metadata;
+              }
+
+              if (value === 'paylater') {
+                delete provider.Gateway_details.paylater_metadata;
               }
 
               const noCardOrUPI = provider.Gateway_details['Payment Methods'].every(
@@ -699,6 +727,24 @@ class AddProvider extends React.Component {
           wallet_metadata: {
             ...provider.Gateway_details.wallet_metadata,
             wallets: values,
+          },
+        },
+      };
+
+      return { provider: updatedProvider };
+    });
+  };
+
+  changeGatewayPaylaters = ({ values }) => {
+    this.setState((prevState) => {
+      const { provider } = prevState;
+      const updatedProvider = {
+        ...provider,
+        Gateway_details: {
+          ...provider.Gateway_details,
+          paylater_metadata: {
+            ...provider.Gateway_details.paylater_metadata,
+            paylaters: values,
           },
         },
       };
@@ -1224,6 +1270,7 @@ class AddProvider extends React.Component {
                   hasSeamlessOption={hasSeamlessOption || hasAccountTypeOption}
                   changeGatewayDetails={this.changeGatewayDetails}
                   changeGatewayWallets={this.changeGatewayWallets}
+                  changeGatewayPaylaters={this.changeGatewayPaylaters}
                   changeEnableAutoDebitSwitch={this.changeEnableAutoDebitSwitch}
                   onLinkClick={this.howtoGetDetails}
                   onEditClick={this.onEditClick}

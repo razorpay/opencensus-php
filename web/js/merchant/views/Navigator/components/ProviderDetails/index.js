@@ -23,6 +23,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
+import { PAYLATER_LABELS } from '@dashboards/payments/views/Optimizer/AddProvider/constants';
 
 const TPVDetails = ({ tpv }) => {
   if (!isBlank(tpv)) {
@@ -56,6 +57,10 @@ class ProviderDetails extends Component {
 
       const wallets = provider.Gateway_details?.wallet_metadata?.wallets || [];
       const walletsNames = wallets.map((wallet) => WalletLabels[wallet] || titleCase(wallet));
+      const paylaters = provider.Gateway_details?.paylater_metadata?.paylaters || [];
+      const paylatersNames = paylaters.map(
+        (paylater) => PAYLATER_LABELS[paylater] || titleCase(paylater),
+      );
       const seamlessOptionExist =
         SEAMLESS_PROVIDERS?.includes(provider?.Gateway) &&
         provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
@@ -147,6 +152,14 @@ class ProviderDetails extends Component {
                       <EntityDetailRow
                         label="Wallets Enabled"
                         value={() => walletsNames.join(', ')}
+                      />
+                    </div>
+                  )}
+                  {paylatersNames?.length > 0 && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow
+                        label="Paylaters Enabled"
+                        value={() => paylatersNames.join(', ')}
                       />
                     </div>
                   )}

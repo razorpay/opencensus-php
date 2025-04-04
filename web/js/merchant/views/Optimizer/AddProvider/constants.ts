@@ -16,3 +16,8 @@ export const METHODS = {
   RECURRING: 'recurring',
   ROUTE: 'route',
 };
+
+export const PAYLATER_LABELS = {
+  getsimpl: 'Simpl',
+  simpl_pay_in_3: 'Simpl Pay in 3',
+};

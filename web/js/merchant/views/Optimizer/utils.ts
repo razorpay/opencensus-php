@@ -1355,6 +1355,10 @@ export const PARAMETERS: Parameter[] = [
       {
         value: 'getsimpl',
       },
+      {
+        value: 'simpl_pay_in_3',
+        label: 'Simpl Pay In 3',
+      },
     ],
     operators: {
       '==': {

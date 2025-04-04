@@ -98,8 +98,8 @@ export const Expression = ({
   const values = parameter
     ? parameter.values.map((p) => {
         return {
-          id: p.value,
-          name: p.value,
+          id: p.label ?? p.value,
+          name: p.label ?? p.value,
           value: p.value,
           disabled_message: p.disabled_message,
           disabled: p.disabled,

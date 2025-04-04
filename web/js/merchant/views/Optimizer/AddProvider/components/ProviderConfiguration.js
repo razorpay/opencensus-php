@@ -37,6 +37,7 @@ import {
 
 import WalletAutoDebit from './WalletAutoDebit';
 import WalletsMultiSelect from './WalletsMultiSelect';
+import PaylatersMultiSelect from './PaylatersMultiSelect';
 
 const ProviderConfiguration = (props) => {
   const {
@@ -51,6 +52,7 @@ const ProviderConfiguration = (props) => {
     validationErrors,
     changeGatewayDetails,
     changeGatewayWallets,
+    changeGatewayPaylaters,
     changeEnableAutoDebitSwitch,
     onLinkClick,
     onEditClick,
@@ -63,8 +65,11 @@ const ProviderConfiguration = (props) => {
   const { Gateway_details } = provider;
 
   const selectedProviderDetails = providers?.[selectedProvider] ?? {};
-  const walletOptions =
-    selectedProviderDetails?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets ?? [];
+  const paymentMethodMetaData = selectedProviderDetails?.['Payment Methods']?.meta_data;
+  const walletOptions = paymentMethodMetaData?.wallet_metadata?.wallets ?? [];
+  const paylaterOptions = paymentMethodMetaData?.paylater_metadata?.paylaters ?? [];
+  const canSelectPaylaterOptions =
+    paymentMethodMetaData?.paylater_metadata?.can_select_paylaters ?? false;
 
   // Check if 'Sodexo' is enabled in provider
   const isSodexoSupported = selectedProviderDetails?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
@@ -294,6 +299,16 @@ const ProviderConfiguration = (props) => {
                         walletSelected={Gateway_details?.wallet_metadata?.wallets || []}
                         changeGatewayWallets={changeGatewayWallets}
                         disabled={selectedProvider === 'paytm'} // For paytm wallets get enabled by default
+                        isFormEdit={isFormEdit}
+                      />
+                    )}
+                  {paylaterOptions?.length > 0 &&
+                    canSelectPaylaterOptions &&
+                    Gateway_details?.['Payment Methods']?.includes('paylater') && (
+                      <PaylatersMultiSelect
+                        paylaterOptions={paylaterOptions}
+                        paylaterSelected={Gateway_details?.paylater_metadata?.paylaters || []}
+                        changeGatewayPaylaters={changeGatewayPaylaters}
                         isFormEdit={isFormEdit}
                       />
                     )}

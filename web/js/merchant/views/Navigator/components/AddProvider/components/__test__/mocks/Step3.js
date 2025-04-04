@@ -152,3 +152,25 @@ export const CASHFREE_PROVIDER = {
   validationErrors: {},
   changeGatewayDetails: jest.fn(),
 };
+
+export const GETSIMPL_PROVIDER = {
+  isEdit: true,
+  selectedProvider: 'getsimpl_optimizer',
+  providers: SUPPORTED_GATEWAYS,
+  provider: {
+    Provider_name: 'getsimpl_optimizer',
+    Description: 'test',
+    Gateway: 'getsimpl_optimizer',
+    Gateway_details: {
+      'Payment Methods': ['paylater'],
+      Terminal_id: '87405dff1d58c5cf2aa9d44a94b8daa8',
+      paylater_metadata: {
+        paylaters: ['simpl_pay_in_3', 'getsimpl'],
+      },
+    },
+    Terminal_id: 'Q5RapMkaJXRk9Z',
+    Status: 'activated',
+    created_at: 1741687526,
+    updated_at: 1741687526,
+  },
+};

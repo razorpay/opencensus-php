@@ -13,6 +13,7 @@ import {
   NETBANKING_HDFC_PROVIDER,
   NETBANKING_ICICI_PROVIDER,
   CASHFREE_PROVIDER,
+  GETSIMPL_PROVIDER,
 } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/Step3';
 import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/tests/data/mockData';
 import ProviderConfiguration from 'merchant/views/Optimizer/AddProvider/components/ProviderConfiguration';
@@ -278,6 +279,17 @@ describe('Add Provider > ProviderConfiguration', () => {
 
     test.each(FIELDS)('should rendered the required fields: %s', (field) => {
       render(<App {...CASHFREE_PROVIDER} />);
+      expect(screen.getByText(field)).toBeInTheDocument();
+    });
+  });
+
+  describe('For Gateway with selectable paylaters', () => {
+    const FIELDS = ['Payment Methods', 'Paylaters'];
+    test('should render without any errors', () => {
+      expect(() => render(<App {...GETSIMPL_PROVIDER} />)).not.toThrowError();
+    });
+    test.each(FIELDS)('should rendered the required fields: %s', (field) => {
+      render(<App {...GETSIMPL_PROVIDER} />);
       expect(screen.getByText(field)).toBeInTheDocument();
     });
   });
