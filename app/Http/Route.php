@@ -18875,7 +18875,8 @@ class Route
             'setl_schedule_get_ids',
             'setl_merchant_config_update',
             'setl_merchant_config_get_internal',
-            'setl_schedule_create'
+            'setl_schedule_create',
+            'merchant_get_pricing'
         ],
 
         'route' => [
