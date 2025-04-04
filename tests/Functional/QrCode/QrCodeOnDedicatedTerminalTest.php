@@ -2315,15 +2315,36 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
         $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
         $this->assertEquals(false, $isQRCodeFeatureEnabled);
+
+        // 1. failure scenario
         $payload = [
             "merchant_id" => "LiveAccountMer",
             "pos_activation_status" => "kyc_qualified"
         ];
 
         (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
-
         $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
         $this->assertEquals(false, $isQRCodeFeatureEnabled);
+
+        // 2. success scenario
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "kyc_qualified_stb"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
+
+        // 3. success scenario
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "activated"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
     }
 
     public function testInvalidLengthMultipleQrCodeClose()

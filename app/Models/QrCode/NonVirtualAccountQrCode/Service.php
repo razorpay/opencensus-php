@@ -377,7 +377,7 @@ class Service extends QrCode\Service
     {
 
         if ((empty($input[Constants::POS_ACTIVATION_STATUS]) === true) or
-            ($input[Constants::POS_ACTIVATION_STATUS] !== 'activated'))
+            !(($input[Constants::POS_ACTIVATION_STATUS] === 'activated') or ($input[Constants::POS_ACTIVATION_STATUS] === 'kyc_qualified_stb')))
         {
             return false;
         }
