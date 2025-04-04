@@ -1773,7 +1773,9 @@ class Entity extends Base\PublicEntity
                     {
                         $addon_methods[$method][$sub_method] = $input[$sub_method];
                     }
-                    unset($input[$sub_method]);
+                    if ($sub_method != self::AMAZONPAY) {
+                        unset($input[$sub_method]);
+                    }
                 }
                 else if (isset($input[$method][$sub_method]) ===  true)
                 {
