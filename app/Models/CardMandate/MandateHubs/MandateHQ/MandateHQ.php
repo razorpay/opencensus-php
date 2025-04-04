@@ -6,6 +6,7 @@ use Crypt;
 use Exception;
 use Carbon\Carbon;
 
+use App;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card;
@@ -24,6 +25,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
+use RZP\Models\Customer\Token;
 
 class MandateHQ extends CardMandate\MandateHubs\BaseHub
 {
@@ -335,9 +337,27 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
         $frequency = $token->getFrequency();
 
+        $mcc = $payment->merchant->getCategory();
+
+        $merchant_category = $this->getMerchantCategory($payment);
+
+        $merchantId = $payment->merchant->getMerchantId();
+        $app = App::getFacadeRoot();
+        $experimentName = $app['config']->get('app.afa_splitz');
+
         if ($maxAmount === null)
         {
-            $maxAmount = Constants::MAX_AMOUNT_DEFAULT;
+            if (self::getSplitzResponse($merchantId, $experimentName) === 'enable') {
+              if (!empty($mcc) && !empty($merchant_category)) {
+                  if (in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS)) {
+                      $maxAmount = Constants::MAX_AMOUNT_FOR_SPECIAL_MCC;
+                      $this->trace->info('Max amount for special MCC', ['max_amount' => $maxAmount]);
+                  }
+              }
+            }else{
+                $maxAmount = Constants::MAX_AMOUNT_DEFAULT;
+                $this->trace->info('Default Max Amount', ['max_amount' => $maxAmount]);
+            }
         }
 
         if ($frequency === null)
@@ -404,7 +424,6 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             $cardData[Constants::CARD_EXPIRY_MONTH] = stringify($card->getTokenExpiryMonth());
         }
 
-        $merchant_category = $this->getMerchantCategory($payment);
 
         $inputResponse = [
             Constants::AMOUNT            => $payment->getAmount(),
@@ -512,5 +531,22 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
     public function updateTokenisedCardTokenInMandate($cardMandate, $input)
     {
         $this->app->mandateHQ->updateTokenisedCardTokenInMandate($cardMandate->getMandateId(), $input);
+    }
+
+    public function getSplitzResponse(string $id, string $experimentId)
+    {
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
     }
 }
