@@ -111,7 +111,6 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
   }
   const splitz = useSplitzService();
   const isPaymentsRoute = location.pathname.includes('/payments');
-  const isCollectXEnabled = user.isCollectXEnabled;
 
   const shouldShowOptimizerDetails = user.isOptimizerView();
 
@@ -305,8 +304,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
             />
             {!isDesktop &&
             !isConfigTagEnabled('refunds.refund') &&
-            !user.isJnKOmniEnabled &&
-            !isCollectXEnabled ? (
+            !user.isJnKOmniEnabled ? (
               <Box>
                 <Button
                   isFullWidth

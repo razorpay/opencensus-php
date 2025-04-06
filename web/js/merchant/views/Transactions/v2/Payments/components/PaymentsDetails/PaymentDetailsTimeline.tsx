@@ -182,8 +182,6 @@ function PaymentDetailsTimeline({
     reFetchPageDetails(paymentIdDetails.id);
   };
 
-  const isCollectXEnabled = user.isCollectXEnabled;
-
   const openIssueRefundModal = () => {
     const clonedPaymentDetails = deepClone(paymentIdDetails);
     clonedPaymentDetails.refund = refundPaymentFn(paymentIdDetails.id);
@@ -253,10 +251,10 @@ function PaymentDetailsTimeline({
             <Spinner accessibilityLabel="timeline-loader" />
           </Box>
         )}
-        { !isIssueRefundHidden && !isIssueRefundDisabled(paymentIdDetails, user) &&
+        {!isIssueRefundHidden &&
+        !isIssueRefundDisabled(paymentIdDetails, user) &&
         !user.isJnKOmniEnabled &&
-        !isConfigTagEnabled('refunds.refund') &&
-        !isCollectXEnabled ? (
+        !isConfigTagEnabled('refunds.refund') ? (
           <>
             <Divider dividerStyle="dashed" />
             <Box display="flex" flexDirection="row" padding="12px" marginLeft="-16px" width="100%">
