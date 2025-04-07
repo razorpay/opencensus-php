@@ -717,7 +717,12 @@ class Content extends Component {
       isL2Sumitted && activation_status !== 'activated' && activation_status !== null;
 
     if (isEasyEnabledMerchant) {
-      return isValidMerchant && isExperimentEnabled(ray_onboarding_ai) && !isMasterKyc;
+      return (
+        isValidMerchant &&
+        isExperimentEnabled(ray_onboarding_ai) &&
+        !isMasterKyc &&
+        !user?.isCbMkycMerchant
+      );
     }
 
     return isValidMerchant && isExperimentEnabled(ray_ai);
@@ -2285,7 +2290,8 @@ class Content extends Component {
                     abExperiments: this.props.splitz?.abExperiments,
                   }) &&
                   !isPosSalesAgent &&
-                  !user.isMkycMerchant
+                  !user.isMkycMerchant &&
+                  !user.isCbMasterKycMerchant
                 }
               >
                 <Pos />

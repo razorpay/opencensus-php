@@ -811,7 +811,7 @@ const isEligibleForFtux = ({ user = {}, abExperiments = {}, isAdmin = false } = 
 
   const isMasterKyc = user?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
 
-  if (isMasterKyc) {
+  if (isMasterKyc || user?.isCbMkycMerchant) {
     return false;
   }
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};

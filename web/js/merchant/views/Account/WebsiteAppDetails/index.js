@@ -57,6 +57,7 @@ function WebsiteAppDetails({
 
   const isEligiblePolicyWizard =
     user.isMkycMerchant ||
+    user.isCbMkycMerchant ||
     policyWizardV2Data.isEligible ||
     policyWizardV2Data.policyEligible === 'v2';
 
@@ -109,6 +110,7 @@ function WebsiteAppDetails({
 
     if (
       !user.isMkycMerchant &&
+      !user.isCbMkycMerchant &&
       isExpEnabled &&
       !policyWizardV2Data.isDataLoaded &&
       !policyWizardV2Data.error

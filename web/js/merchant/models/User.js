@@ -2105,6 +2105,10 @@ export default class User {
     return this?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
   }
 
+  get isCbMkycMerchant() {
+    return this?.workflow_details?.cross_border_onboarding_workflow_type === 'MODULAR_ONBOARDING';
+  }
+
   get isUpiRefundDisabled() {
     return this.isFeatureEnabled('disable_upi_refunds');
   }
