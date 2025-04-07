@@ -21,7 +21,7 @@ import {
   PUBLIC_API_URL,
   RAZORPAY_WEBSITE,
   RECAPTCHA_V3_SITE_KEY,
-  REFINER_PROJECT_ID,
+  //REFINER_PROJECT_ID,
   SEGMENT_API_KEY,
   SHIELD_STAGE,
   STREAKS_REWARDS,
@@ -56,7 +56,6 @@ export const generateEnvironmentKeysGetterScriptElement = () => {
         window.CHECKBOX_CAPTCHA_SITE_KEY = "${CHECKBOX_CAPTCHA_SITE_KEY}";
         window.RECAPTCHA_V3_SITE_KEY = "${RECAPTCHA_V3_SITE_KEY}";
         window.STREAKS_REWARDS = "${STREAKS_REWARDS}";
-        window.REFINER_PROJECT_ID = "${REFINER_PROJECT_ID}";
         window.EASY_ONBOARDING_URL = "${EASY_ONBOARDING_URL}";
         window.PP_ECOMMERCE_URL = "${PP_ECOMMERCE_URL}";
         window.BANK_DETAILS_URL = "${BANK_DETAILS_URL}";

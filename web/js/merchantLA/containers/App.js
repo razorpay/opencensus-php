@@ -9,7 +9,7 @@ import Notifications from 'common/ui/Notifications';
 import debounce from 'common/utils/debounce';
 import Footer from 'merchant/components/Footer';
 import LocalStorageService from 'common/utils/localStorage';
-import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
+import { initLumberjack, initSegment } from 'common/utils/trackers';
 import { applyTheme } from 'merchant_common/helpers/themes';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -27,7 +27,6 @@ import LogoutDialog from '../../merchant/components/LogoutDialog';
 import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
-
 
 class App extends Component {
   pendingRequests = [];
@@ -109,7 +108,7 @@ class App extends Component {
           initSegment('MerchantLA', user);
 
           // Initialize refiner
-          initRefiner(user);
+          //   initRefiner(user);
         }
 
         return data;
@@ -237,7 +236,7 @@ class App extends Component {
     }
   }
 
-  switchMode = (mode, callback = () => { }) => {
+  switchMode = (mode, callback = () => {}) => {
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Header',
       eventAction: 'Switch - Mode',

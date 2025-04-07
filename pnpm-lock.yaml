@@ -1465,9 +1465,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -1913,9 +1910,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -2343,9 +2337,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -2767,9 +2758,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -3191,9 +3179,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -3615,9 +3600,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -4039,9 +4021,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -4463,9 +4442,6 @@ importers:
       redux-form:
         specifier: 6.8.0
         version: 6.8.0(react-redux@5.1.2(react@17.0.2)(redux@4.0.5))(react@17.0.2)(redux@4.0.5)
-      refiner-js:
-        specifier: 1.0.2
-        version: 1.0.2
       regenerator-runtime:
         specifier: 0.13.7
         version: 0.13.7
@@ -19429,9 +19405,6 @@ packages:
   referrer-policy@1.2.0:
     resolution: {integrity: sha512-LgQJIuS6nAy1Jd88DCQRemyE3mS+ispwlqMk3b0yjZ257fI1v9c+/p6SD5gP5FGyXUIgrNOAfmyioHwZtYv2VA==}
     engines: {node: '>=4.0.0'}
-
-  refiner-js@1.0.2:
-    resolution: {integrity: sha512-/RLNXtd0fITVl68hqJNhb+R7KsK+A9/vZaXfVAs12j9bz6b7kO/1VadT4veTi79wJ9h/b/sSXjb3ceCy/Qb98A==}
 
   reflect.getprototypeof@1.0.10:
     resolution: {integrity: sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw==}
@@ -46090,8 +46063,6 @@ snapshots:
       '@babel/runtime': 7.17.8
 
   referrer-policy@1.2.0: {}
-
-  refiner-js@1.0.2: {}
 
   reflect.getprototypeof@1.0.10:
     dependencies:
