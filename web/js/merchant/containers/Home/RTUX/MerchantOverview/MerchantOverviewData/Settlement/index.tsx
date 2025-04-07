@@ -30,12 +30,14 @@ import { useSplitzService } from 'common/splitz';
 
 interface SettlementProps extends ISettlement, IAnalyticsProperties, settlementConfig {
   bankUpdate?: boolean;
+  isCbImportMerchant?: boolean;
   settlementConfig: settlementConfig | null;
 }
 const Settlement: React.FC<SettlementProps> = ({
   settlement,
   analyticsProperties,
   bankUpdate,
+  isCbImportMerchant,
   settlementConfig,
 }) => {
   const {
@@ -100,7 +102,7 @@ const Settlement: React.FC<SettlementProps> = ({
             />
           </Box>
           <Box display="flex" flexDirection="column" justifyContent="space-between" width="100%">
-            {shouldShowUpcommingBlock && upcoming_settlement?.title_key ? (
+            {shouldShowUpcommingBlock && upcoming_settlement?.title_key && !isCbImportMerchant ? (
               <SettlementBlocked
                 title_key={upcoming_settlement.title_key}
                 analyticsProperties={analyticsProperties}

@@ -210,6 +210,7 @@ export type PaymentsDashboardUserGetters = {
   isMagicKonnectEnabled: boolean;
   isMerchantExpiryPPEnabled: boolean;
   isCustomerAmountEnabled: boolean;
+  isCbImportMerchant:boolean;
   isCreateOwnTemplateEnabled: boolean;
   isRiskAndFraudEnabled: boolean;
   isNoExpiryMandatoryPP: boolean;

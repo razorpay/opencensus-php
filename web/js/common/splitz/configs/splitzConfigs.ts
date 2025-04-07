@@ -358,6 +358,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'hide_cb_settlement_error',
+        experimentId: {
+          beta: 'QFSsGQFOWBsRTu',
+          production: 'QFRv1EcYUsYi6f',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'config_based_tags',
         experimentId: {
           beta: 'MJFQR9sKIrQsNL',

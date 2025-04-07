@@ -505,6 +505,10 @@ export default class User {
   get isRiskAndFraudEnabled() {
     return this.isFeatureEnabled('show_intl_risk_dashboard');
   }
+  
+  get isCbImportMerchant() {
+    return this.isFeatureEnabled('enable_import_flow');
+  }
 
   get isNoExpiryMandatoryPP() {
     const orgFeatureEnabled = this.isOrgFeatureEnabled('hide_no_expiry_for_pp');

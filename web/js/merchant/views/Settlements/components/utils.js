@@ -113,6 +113,12 @@ export const isSettlementSOHBlockEnabled = (splitz) => {
   return isExperimentEnabled(abExperiments.settlements_soh_block);
 };
 
+export const isHideCbSettlementErrorEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { hide_cb_settlement_error: undefined } };
+  if (!abExperiments?.hide_cb_settlement_error) return false;
+  return isExperimentEnabled(abExperiments.hide_cb_settlement_error);
+};
+
 export const isAccountCodeEnabled = (splitz) => {
   const { abExperiments } = splitz || { abExperiments: { account_code: undefined } };
   if (!abExperiments?.account_code) return false;

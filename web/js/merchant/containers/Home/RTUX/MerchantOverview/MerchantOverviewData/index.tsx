@@ -18,6 +18,7 @@ import { getAnalyticsHeroCardStateIdentifier } from '../utils';
 import {
   isSettlementSOHBlockEnabled,
   SETTLEMENT_HOLD_FEATURE,
+  isHideCbSettlementErrorEnabled,
 } from 'merchant/views/Settlements/components/utils';
 import { isRiskFoh, isRiskDisabled } from './Settlement/utils';
 import SettlementBlockedSOH from './Settlement/SettlementBlockedSOH';
@@ -136,6 +137,7 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
   if (!data) {
     return null;
   }
+
   const { hero_card_data } = data;
   const {
     is_settlement: isSettlement,
@@ -143,7 +145,7 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
     settlement_schedule: settlementSchedule,
     settlement,
   } = hero_card_data;
-
+  const isCbImportMerchant = user.isCbImportMerchant && isHideCbSettlementErrorEnabled(splitz);
   const settlementState = getAnalyticsHeroCardStateIdentifier(hero_card_data);
 
   if (isSettlementSOHBlockEnabled(splitz) && (isRiskNonTransactedFoh || isRiskDisabled())) {
@@ -161,6 +163,7 @@ const MerchantOverviewData: React.FC<IMerchantOverview & CommonWidgetProps> = ({
       settlement={settlement}
       bankUpdate={bankUpdate}
       settlementConfig={settlementConfig}
+      isCbImportMerchant={isCbImportMerchant}
       analyticsProperties={{ settlementState, screen, widgetId }}
     />
   ) : (
