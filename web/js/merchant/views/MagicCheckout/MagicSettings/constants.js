@@ -366,6 +366,7 @@ export const COUPON = 'coupon';
 export const CHECKOUT = 'checkout';
 export const ANALYTICS = 'analytics';
 export const CARD = 'Card';
+export const ABANDONED_WEBHOOK = 'abandoned webhook'
 export const COUPON_FORM = `${COUPON}Form`;
 export const COUPON_CARD = `${COUPON}Card`;
 export const CHECKOUT_FORM = `${CHECKOUT}Form`;

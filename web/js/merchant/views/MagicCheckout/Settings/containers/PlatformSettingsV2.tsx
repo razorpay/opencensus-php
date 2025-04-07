@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-
 import {
   updatePageView,
   fetchMagicSettings,
@@ -68,7 +67,6 @@ const PlatformSettings: React.FC<PlatformSettingsProps> = ({
   const { nested_view_type, status, has_saved_config, platform } = settings;
 
   const domain = platform === PLATFORMS.SHOPIFY ? settings?.shop_id : settings?.domain_url;
-
   useEffect(() => {
     if (settings.status === FETCH_STATUS.ERROR) {
       const notifTxt = settings?.error?.errors?.length

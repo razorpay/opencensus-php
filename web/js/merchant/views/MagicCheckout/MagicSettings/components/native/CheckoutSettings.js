@@ -1,7 +1,9 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback, useEffect } from 'react';
+import { Box } from '@razorpay/blade/components';
 import { AsyncBtn } from 'common/new-ui/Button';
+import AbandonedWebhookSettings from 'merchant/views/MagicCheckout/MagicSettings/components/common/AbandonedWebhookSettings';
 import CouponWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/native/CouponWrapper';
 import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CheckoutWrapper';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
@@ -15,10 +17,11 @@ import {
   COUPON,
   CHECKOUT,
   CHECKOUT_FORM,
+  ABANDONED_WEBHOOK,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
-export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
+export const CheckoutSetting = ({ settings, updateSettings, merchantId, user }) => {
   const [listPromURL, setListPromURL] = useState('');
   const [applyPromURL, setApplyPromURL] = useState('');
   const [autoFetchCoupon, setAutoFetchCoupon] = useState({});
@@ -29,11 +32,15 @@ export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
 
   const { nestedTabsStatus } = settings;
   const isLoading = nestedTabsStatus === FETCH_STATUS.LOADING;
-  const showAllFormView = window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
+  const showAllFormView =
+    window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
   const isFormView = !currentView.includes(CARD);
   const showCTA = isFormView || showAllFormView;
   const showSettings = (setting) =>
-    currentView.includes(CARD) || currentView.includes(setting) || showAllFormView;
+    currentView.includes(CARD) ||
+    currentView.includes(setting) ||
+    currentView.includes(ABANDONED_WEBHOOK) ||
+    showAllFormView;
 
   const onSave = useCallback(() => {
     const platform = PLATFORMS.VALUES.NATIVE;
@@ -81,7 +88,6 @@ export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
       setFormValid(false);
     }
   }, [listPromURL, applyPromURL]);
-
   return (
     <div className={`native-checkout${!showAllFormView && !isFormView ? ' native-card' : ''}`}>
       {showSettings(CHECKOUT) && (
@@ -108,6 +114,15 @@ export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
           setAutoFetchCoupon={setAutoFetchCoupon}
         />
       )}
+
+      {showSettings(ABANDONED_WEBHOOK) && (
+        <>
+          <hr />
+          <Box paddingX="spacing.5" paddingBottom="spacing.6" paddingTop="spacing.3">
+            <AbandonedWebhookSettings merchantId={user.current} />
+          </Box>
+        </>
+      )}
       {showCTA && (
         <AsyncBtn.Primary
           type="button"
@@ -127,6 +142,7 @@ export const CheckoutSetting = ({ settings, updateSettings, merchantId }) => {
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
   merchantId: state.config?.config?.id,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

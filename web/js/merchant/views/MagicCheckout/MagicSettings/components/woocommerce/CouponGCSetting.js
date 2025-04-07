@@ -1,7 +1,16 @@
+import { useState, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { useState, useCallback } from 'react';
+import { Box } from '@razorpay/blade/components';
 import { AsyncBtn } from 'common/new-ui/Button';
+import AbandonedWebhookSettings from 'merchant/views/MagicCheckout/MagicSettings/components/common/AbandonedWebhookSettings';
+import CouponWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponWrapper';
+import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CheckoutWrapper';
+import GCWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/common/GCWrapper';
+import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import { analyticsTrack } from 'common/utils/analytics';
+import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
+import { getGCAnalytics } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
 import {
   FETCH_STATUS,
   PLATFORMS,
@@ -12,31 +21,27 @@ import {
   CHECKOUT_FORM,
   GC_FORM,
   GIFT_CARD,
+  ABANDONED_WEBHOOK,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import CouponWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponWrapper';
-import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CheckoutWrapper';
-import GCWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/common/GCWrapper';
-import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import { analyticsTrack } from 'common/utils/analytics';
-import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
-
-import { getGCAnalytics } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
 
 export const CouponGCSetting = ({ settings, updateSettings, merchantId, user }) => {
   const [autoFetchCoupon, setAutoFetchCoupon] = useState({});
   const [checkoutSettings, setCheckoutSettings] = useState([]);
   const [giftCard, setGiftCard] = useState({});
   const [giftCardSettings, setGiftCardSettings] = useState([]);
-
   const [currentView, setCurrentView] = useState(CARD);
 
   const { list_promotions, apply_promotion, nestedTabsStatus } = settings;
   const isLoading = nestedTabsStatus === FETCH_STATUS.LOADING;
-  const showAllFormView = window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
+  const showAllFormView =
+    window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
   const isFormView = !currentView.includes(CARD);
   const showCTA = isFormView || showAllFormView;
   const showSettings = (setting) =>
-    currentView.includes(CARD) || currentView.includes(setting) || showAllFormView;
+    currentView.includes(CARD) ||
+    currentView.includes(setting) ||
+    currentView.includes(ABANDONED_WEBHOOK) ||
+    showAllFormView;
 
   const onSave = useCallback(() => {
     const platform = PLATFORMS.VALUES.WOOCOMMERCE;
@@ -129,6 +134,11 @@ export const CouponGCSetting = ({ settings, updateSettings, merchantId, user }) 
           setGiftCard={setGiftCard}
           setGiftCardSettings={setGiftCardSettings}
         />
+      )}
+      {showSettings(ABANDONED_WEBHOOK) && (
+        <Box paddingX="spacing.5" paddingTop="spacing.3" paddingBottom="spacing.4">
+          <AbandonedWebhookSettings merchantId={user.current} />
+        </Box>
       )}
       {showCTA && (
         <AsyncBtn.Primary

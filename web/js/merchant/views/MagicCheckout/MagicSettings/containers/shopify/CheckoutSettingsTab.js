@@ -1,9 +1,11 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback, useEffect } from 'react';
+import { Box } from '@razorpay/blade/components';
 import GCWrapper from 'merchant/views/MagicCheckout/MagicSettings/components/common/GCWrapper';
 import CheckoutWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutWrapper';
 import AnalyticsWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/AnalyticsWrapper';
+import AbandonedWebhookSettings from 'merchant/views/MagicCheckout/MagicSettings/components/common/AbandonedWebhookSettings';
 import {
   fetchMagicSettings,
   updateMagicSettings,
@@ -11,6 +13,7 @@ import {
 import { AsyncBtn } from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getGCAnalytics } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
+import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 import {
   FETCH_STATUS,
   PLATFORMS,
@@ -23,9 +26,9 @@ import {
   ANALYTICS,
   GIFT_CARD,
   CARD,
+  ABANDONED_WEBHOOK,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import 'merchant/views/MagicCheckout/css/settings/checkout.styl';
-import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/storeSettings';
 
 const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExperiments }) => {
   const [checkoutSettings, setCheckoutSettings] = useState([]);
@@ -37,9 +40,9 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExp
   const { nestedTabsStatus } = settings;
   const isLoading = nestedTabsStatus === FETCH_STATUS.LOADING;
   const isFormView = !currentView.includes(CARD);
-  const showAllFormView = window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
+  const showAllFormView =
+    window?.localStorage.getItem(`show_default_view-${merchantId}`) === 'true';
   const showCTA = isFormView || showAllFormView;
-
   //hiding the analytics settings section in the store setting tab, as a separate tab for analytics settings was added
   const isAnalyticsSettingExperimentEnabled =
     abExperiments?.magic_analytics_setting?.variables?.result === 'on';
@@ -132,10 +135,12 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExp
   ]);
 
   const showSettings = (setting) =>
-    currentView.includes(CARD) || currentView.includes(setting) || showAllFormView;
+    currentView.includes(CARD) ||
+    currentView.includes(setting) ||
+    currentView.includes(ABANDONED_WEBHOOK) ||
+    showAllFormView;
 
   const showFormView = (formView) => currentView === formView || showAllFormView;
-
   return (
     <>
       <div className="checkout-settings">
@@ -169,6 +174,14 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExp
             setGiftCard={setGiftCard}
             setGiftCardSettings={setGiftCardSettings}
           />
+        )}
+        {showSettings(ABANDONED_WEBHOOK) && (
+          <>
+            <hr />
+            <Box marginTop="spacing.6">
+              <AbandonedWebhookSettings merchantId={user.current} />
+            </Box>
+          </>
         )}
       </div>
       {showCTA && (

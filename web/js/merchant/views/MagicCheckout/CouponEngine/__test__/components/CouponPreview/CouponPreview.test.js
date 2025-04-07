@@ -330,7 +330,7 @@ describe('CouponPreview Component for amount_off_order coupon type', () => {
     );
 
     // Check that no sections are rendered
-    expect(screen.queryByText('Starts 2025-01-28 4:46')).toBeInTheDocument();
+    expect(screen.queryByText('Starts 2025-01-28 4:46 am')).toBeInTheDocument();
     expect(screen.queryByText('Expires after Rs. 20 budget is reached')).toBeInTheDocument();
   });
 
@@ -356,8 +356,8 @@ describe('CouponPreview Component for amount_off_order coupon type', () => {
     );
 
     // Check that no sections are rendered
-    expect(screen.queryByText('Starts 2025-01-28 4:46')).toBeInTheDocument();
-    expect(screen.queryByText('Expires 2025-01-29 11:59')).toBeInTheDocument();
+    expect(screen.queryByText('Starts 2025-01-28 4:46 am')).toBeInTheDocument();
+    expect(screen.queryByText('Expires 2025-01-29 11:59 pm')).toBeInTheDocument();
 
     expect(screen.queryByText(`Doesn't Expire`)).not.toBeInTheDocument();
 

@@ -194,15 +194,11 @@ const validityPreviewMapping = ({ widgetsData }: ModalContextValue) => ({
   title: 'Validity',
   list: [
     {
-      text: `Starts ${
-        widgetsData.couponValidity.startDate
-      } ${widgetsData.couponValidity.startTime.slice(0, 5)}`,
+      text: `Starts ${widgetsData.couponValidity.startDate} ${widgetsData.couponValidity.startTime}`,
       condition: () => widgetsData.couponValidity.startDate,
     },
     {
-      text: `Expires ${
-        widgetsData.couponValidity.endDate
-      } ${widgetsData.couponValidity.endTime.slice(0, 5)}`,
+      text: `Expires ${widgetsData.couponValidity.endDate} ${widgetsData.couponValidity.endTime}`,
       condition: () => widgetsData.couponValidity.isLimitedUsage,
     },
     {
