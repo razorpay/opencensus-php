@@ -305,5 +305,7 @@ export const routes: Record<string, string> = {
   X_BANKING: '/app/razorpayx',
   LOANS: '/app/capital/loans',
   WALLET_CAMPAIGNS: '/app/wallet/campaigns',
+  BILLME_SETTINGS: '/app/billme-settings/brands-and-terminals',
+  STORE_SETTINGS: '/app/store-settings/stores-list',
   ACTIVATION_DETAILS: 'business-settings/account-activation-details',
 };
