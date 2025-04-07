@@ -1386,8 +1386,6 @@ return array(
 
     'saved_card_token_payments_via_pg_router' => env('SAVED_CARD_TOKEN_PAYMENTS_VIA_PG_ROUTER'),
 
-    'non_card_offer_payments_via_pg_router' => env('NON_CARD_OFFER_PAYMENTS_VIA_PG_ROUTER'),
-
     'fetch_cryptogram_via_cps' => env('FETCH_CRYPTOGRAM_VIA_CPS'),
 
     'mc_scof_payments_via_cps'=> env('MC_SCOF_PAYMENTS_VIA_CPS'),
@@ -1429,6 +1427,8 @@ return array(
     'enable_fee_check_before_registration' => env('ENABLE_FEE_CHECK_BEFORE_REGISTER'),
 
     'auto_capture_result'   => env('AUTO_CAPTURE_RESULT'),
+
+    'cps_offers_rearch' => env('CPS_OFFERS_REARCH'),
 
     'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT'),
 
