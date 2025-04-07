@@ -1906,6 +1906,14 @@ class Header
     const BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE = 'Enrichment Type';
     const BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID = 'Account Id';
 
+    // headers for mandate continuity
+
+    const MANDATE_CONTINUITY_JUSPAY_TOKEN_ID = 'Juspay Token Id';
+    const MANDATE_CONTINUITY_TRANSACTION_ID = 'Transaction Id';
+    const MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID = 'External Pa Mandate Id';
+    const MANDATE_CONTINUITY_TERMINAL_ID = 'Terminal Id';
+
+
     // S2P Groups Onboarding headers
     const S2P_GROUPS_ONBOARDING_MERCHANT_ID = "MID (Mandatory) 14 character merchant ID";
     const S2P_GROUPS_ONBOARDING_GROUP_TYPE_ID = "Group Type ID (Mandatory) ID of the group type created for the MID";
@@ -7702,8 +7710,16 @@ class Header
                 self::DEVICE_TO_QR_UNMAPPING_RZP_MID,
                 self::DEVICE_TO_QR_UNMAPPING_FROM_QR,
             ],
-        ]
-
+        ],
+        Type::MANDATE_CONTINUITY => [
+            self::INPUT => [
+                self::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID,
+                self::MANDATE_CONTINUITY_TRANSACTION_ID,
+                self::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID,
+                self::MANDATE_CONTINUITY_TERMINAL_ID,
+            ],
+            self::OUTPUT => [],
+        ],
     ];
 
     /**

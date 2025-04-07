@@ -18285,7 +18285,10 @@ class Route
             'internal_token_create',
             'update_token_on_authorized',
             'internal_transactions',
-            'token_create_internal_for_continuity'
+            'token_create_internal_for_continuity',
+            'internal_transactions',
+            'payment_fetch_by_id_internal',
+            'internal_order_payments'
         ],
 
         'otpelf' => [

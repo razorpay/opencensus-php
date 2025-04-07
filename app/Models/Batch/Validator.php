@@ -556,6 +556,13 @@ class Validator extends Base\Validator
         Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file',
     ];
+
+
+    protected static $mandateContinuityCreateRules = [
+        Entity::TYPE                    => 'required|in:mandate_continuity',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -900,6 +907,13 @@ class Validator extends Base\Validator
         Header::BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID            => 'required|string|size:14',
         Header::BVS_BULK_KYC_VERIFICATION_DOCUMENT              => 'required|string',
         Header::BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE       => 'sometimes|nullable|string',
+    ];
+
+    protected static $mandateContinuityTypeRowRules = [
+        Header::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID            => 'required|string',
+        Header::MANDATE_CONTINUITY_TRANSACTION_ID             => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID     => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_TERMINAL_ID                => 'sometimes|nullable|string',
     ];
 
     protected static $sendMailRules = [
@@ -3293,6 +3307,13 @@ class Validator extends Base\Validator
             }
 
             $existingKeys[] = $key;
+        }
+    }
+
+    public function validateMandateContinuityEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry) {
+            $this->validateInput('mandateContinuityTypeRow', $entry);;
         }
     }
 }
