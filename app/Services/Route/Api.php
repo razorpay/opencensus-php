@@ -261,6 +261,18 @@ class Api extends Base
     }
 
     /**
+     * To decrement amount_transferred of API schema transfer_payment in Route microservice
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function decrementTransferPayment(string $paymentId, array $input) : array
+    {
+        $endpoint = sprintf(Constant::DECREMENT_TRANSFER_PAYMENT_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
+    /**
      * To fetch a transfer by ID from Route microservice
      * @return array
      * @throws Exception\RuntimeException
