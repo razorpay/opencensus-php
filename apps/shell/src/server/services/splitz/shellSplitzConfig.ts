@@ -1,6 +1,5 @@
 import type { VariantConfigArgs } from './types';
 
-// .
 export const shellSplitzConfig: VariantConfigArgs[] = [
   {
     defaultVariant: {
