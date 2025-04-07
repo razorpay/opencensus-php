@@ -4735,11 +4735,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         list($errorCodeJson,) = $app['error_mapper']->getErrorMapping($internalErrorCode, $method);
 
-        $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
-
-        $array[self::ERROR_STEP] = $errorCodeJson['step'] ?: null;
-
-        $array[self::ERROR_REASON] = $errorCodeJson['reason'] ?: null;
+        if (empty( $array[self::ERROR_SOURCE] ))
+            $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
+        if (empty( $array[self::ERROR_STEP] ))
+            $array[self::ERROR_STEP] = $errorCodeJson['step'] ?: null;
+        if (empty( $array[self::ERROR_REASON] ))
+            $array[self::ERROR_REASON] = $errorCodeJson['reason'] ?: null;
     }
 
     public function setPublicDCCAttribute(array & $array)
