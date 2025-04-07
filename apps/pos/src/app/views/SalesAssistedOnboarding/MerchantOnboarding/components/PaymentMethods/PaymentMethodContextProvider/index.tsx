@@ -332,17 +332,22 @@ const deriveMethodTypeFromModularConfig = (
 } => {
   const component = getComponentFromStep({
     modularConfig,
-    step: 'pricing_step',
-    component: 'acquisition_model_component',
+    step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+    component: PricingStepComponents.ACQUISITION_MODEL_COMPONENT,
   });
   if (component) {
+    const acquisitionModelField = getFieldFromComponent({
+      modularConfig,
+      step: MODULAR_PRICING_FIELDS.PRICING_STEP,
+      component: PricingStepComponents.ACQUISITION_MODEL_COMPONENT,
+      fieldName: MODULAR_PRICING_FIELDS.ACQUISITION_MODEL_FIELD,
+    });
     const methodType =
-      isStringValue(component?.fields[0]) &&
-      (component?.fields[0].stringValue as PaymentMethodFormType);
-    const aquisitionModelFields = component?.fields[0];
+      isStringValue(acquisitionModelField) &&
+      (acquisitionModelField.stringValue as PaymentMethodFormType);
     return {
       paymentMethodType: methodType || PaymentMethodFormType.AGGREGATOR,
-      aquisitionModelFields,
+      aquisitionModelFields: acquisitionModelField,
     };
   }
   return { paymentMethodType: PaymentMethodFormType.AGGREGATOR, aquisitionModelFields: null };
@@ -352,10 +357,15 @@ const getPricingNcDetails = (
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse | null,
 ): PricingNcComment | null => {
   if (!modularConfig) return null;
+  const pricingMethodType = deriveMethodTypeFromModularConfig(modularConfig).paymentMethodType;
+  const pricingComponentName =
+    pricingMethodType === PaymentMethodFormType.DIRECT
+      ? PricingStepComponents.VAS_RATES_COMPONENT
+      : PricingStepComponents.MDR_VAS_RATES_COMPONENT;
   const pricingNcField = getFieldFromComponent({
     modularConfig,
     step: MODULAR_PRICING_FIELDS.PRICING_STEP,
-    component: PricingStepComponents.MDR_VAS_RATES_COMPONENT,
+    component: pricingComponentName,
     fieldName: PaymentMethodsFieldKeyNames.PRICING_NC_COMMENT_FIELD,
   });
   if (!pricingNcField) return null;
@@ -375,7 +385,8 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     states;
   const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
   const isPricingNcRaised =
-    merchantDetails?.activation?.posPricingNcStatus?.toLowerCase() === pricingNcStatusMap.pending_agent_action;
+    merchantDetails?.activation?.posPricingNcStatus?.toLowerCase() ===
+    pricingNcStatusMap.pending_agent_action;
 
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,

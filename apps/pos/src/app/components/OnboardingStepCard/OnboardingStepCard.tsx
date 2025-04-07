@@ -2,8 +2,8 @@ import React, { ReactElement } from 'react';
 import { Box, Card, CardBody, Text } from '@razorpay/blade/components';
 import StatusBadge from 'apps/pos/src/app/components/StatusBadge/StatusBadge';
 import { StyledCard } from './styled';
-import { PricingNcStatus } from 'apps/pos/src/app/types/PaymentsAndService';
-import { AllBadgeTypes } from 'apps/pos/src/app/types/common';
+import { PricingNcStatus, pricingNcStatusMap } from 'apps/pos/src/app/types/PaymentsAndService';
+import { AllBadgeTypes, AvailableSteps } from 'apps/pos/src/app/types/common';
 
 interface OnboardingStepCardProps {
   slug: string;
@@ -32,7 +32,7 @@ const OnboardingStepCard = ({
   });
 
   const shouldShowPricingNcBadge =
-    pricingNcStatus === 'pending_agent_action' && slug === 'paymentMethods';
+    pricingNcStatus === pricingNcStatusMap.pending_agent_action && slug === AvailableSteps.PAYMENT_METHODS;
 
   return (
     <StyledCard
@@ -95,10 +95,10 @@ const OnboardingStepCard = ({
                 top="0px"
                 right="0px"
               >
-                {!shouldShowPricingNcBadge && <StatusBadge type={status} size="medium" />}
-                {shouldShowPricingNcBadge && (
-                  <StatusBadge type={'pending_agent_action'} size="medium" />
-                )}
+                <StatusBadge
+                  type={shouldShowPricingNcBadge ? pricingNcStatusMap.pending_agent_action : status}
+                  size="medium"
+                />
               </Box>
             ) : null}
           </Box>

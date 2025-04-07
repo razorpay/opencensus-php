@@ -25,6 +25,7 @@ import {
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import StatusBadge from 'apps/pos/src/app/components/StatusBadge/StatusBadge';
 import { ONBOARDING_ROUTE } from 'apps/pos/src/app/routes';
+import { AllBadgeTypes } from 'apps/pos/src/app/types/common';
 
 interface DashboardTableProps {
   pages: SalesOnboardedMerchants[];
@@ -134,17 +135,19 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                         height="auto"
                         gap="spacing.4"
                         flexWrap="wrap"
-                        paddingTop='spacing.3'
-                        paddingBottom='spacing.3'
+                        paddingTop="spacing.3"
+                        paddingBottom="spacing.3"
                       >
                         <StatusBadge
-                          type={String(tableItem.status).toLocaleLowerCase()}
+                          type={String(tableItem.status).toLocaleLowerCase() as AllBadgeTypes}
                           size="large"
                         />
                         {tableItem.pricingNcStatus ===
                           SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION && (
                           <StatusBadge
-                            type={SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION.toLocaleLowerCase()}
+                            type={
+                              SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION.toLocaleLowerCase() as AllBadgeTypes
+                            }
                             size="large"
                           />
                         )}
@@ -176,13 +179,13 @@ const SalesTable: React.FC<DashboardTableProps> = ({
                       <Box>
                         <Box display="flex" gap="spacing.3" flexDirection="column">
                           <StatusBadge
-                            type={String(tableItem.status).toLocaleLowerCase()}
+                            type={String(tableItem.status).toLocaleLowerCase() as AllBadgeTypes}
                             size="medium"
                           />
                           {tableItem.pricingNcStatus ===
                             SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION && (
                             <StatusBadge
-                              type={SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION.toLocaleLowerCase()}
+                              type={SalesMerchantPricingNcStatusEnum.PENDING_AGENT_ACTION.toLocaleLowerCase() as AllBadgeTypes}
                               size="medium"
                             />
                           )}

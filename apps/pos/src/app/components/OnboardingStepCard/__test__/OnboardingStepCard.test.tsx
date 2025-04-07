@@ -2,6 +2,7 @@ import React from 'react';
 import OnboardingStepCard from '../OnboardingStepCard';
 import { render, screen, userEvent } from 'apps/pos/src/services/test/test-utils';
 import { pricingNcStatusMap } from 'apps/pos/src/app/types/PaymentsAndService';
+import { AllBadgeTypes, AvailableSteps } from 'apps/pos/src/app/types/common';
 
 describe('OnboardingStepCard', () => {
   const defaultProps = {
@@ -9,7 +10,7 @@ describe('OnboardingStepCard', () => {
     title: 'Test Title',
     description: 'Test Description',
     icon: <svg data-testid="test-icon" />,
-    status: 'under_review',
+    status: 'under_review' as AllBadgeTypes,
     isDisabled: false,
     onClick: jest.fn(),
     pricingNcStatus: pricingNcStatusMap.approved,
@@ -43,7 +44,7 @@ describe('OnboardingStepCard', () => {
     expect(screen.getByText('Under Review')).toBeInTheDocument();
   });
   test('should render StatusBadge with correct pricing needs clarification status', () => {
-    renderComponent({ pricingNcStatus: 'pending_agent_action', slug: 'paymentMethods' });
+    renderComponent({ pricingNcStatus: pricingNcStatusMap.pending_agent_action, slug: AvailableSteps.PAYMENT_METHODS });
     expect(screen.getByText('Pricing Needs Clarification')).toBeInTheDocument();
   });
 });
