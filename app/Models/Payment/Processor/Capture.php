@@ -191,7 +191,7 @@ trait Capture
         try
         {
             $this->capturePayment($payment, $amount, $currency);
-            
+
             $this->trace->info(
                 TraceCode::PAYMENT_AUTO_CAPTURE_SUCCESS,
                 [
@@ -201,7 +201,7 @@ trait Capture
                     'payment_status'        => $payment->getStatus(),
                     'auto_capture_status'   => "success",
                 ]);
-            
+
             $this->emitAutoCaptureMetrics($payment, "");
 
         }
@@ -289,7 +289,7 @@ trait Capture
         {
             (new Payment\Metric)->pushAutoCaptureResultMetrics($payment,$errorMessage );
         }
-                
+
     }
 
     /**
@@ -1073,7 +1073,7 @@ trait Capture
             {
                 $discount = $this->getDiscountIfApplicableForLedger($payment);
 
-                if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                if (($payment->isCard() === false) || !(isset($payment["original_cps_route"]) === true) || $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
                 {
                     [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
                 }
