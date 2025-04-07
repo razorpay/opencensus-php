@@ -1908,10 +1908,12 @@ class Header
 
     // headers for mandate continuity
 
-    const MANDATE_CONTINUITY_JUSPAY_TOKEN_ID = 'Juspay Token Id';
-    const MANDATE_CONTINUITY_TRANSACTION_ID = 'Transaction Id';
-    const MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID = 'External Pa Mandate Id';
-    const MANDATE_CONTINUITY_TERMINAL_ID = 'Terminal Id';
+    const MANDATE_CONTINUITY_JUSPAY_TOKEN_ID = 'mandate_id';
+    const MANDATE_CONTINUITY_TRANSACTION_ID = 'epg_txn_id';
+    const MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID = 'external_pa_mandate_id';
+    const MANDATE_CONTINUITY_TERMINAL_ID = 'terminal_id';
+
+    const MANDATE_CONTINUITY_DATE_CREATED_UTC = 'date_created_utc';
 
 
     // S2P Groups Onboarding headers
@@ -7715,8 +7717,9 @@ class Header
             self::INPUT => [
                 self::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID,
                 self::MANDATE_CONTINUITY_TRANSACTION_ID,
+                self::MANDATE_CONTINUITY_DATE_CREATED_UTC,
                 self::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID,
-                self::MANDATE_CONTINUITY_TERMINAL_ID,
+                self::MANDATE_CONTINUITY_TERMINAL_ID
             ],
             self::OUTPUT => [],
         ],
@@ -7784,6 +7787,9 @@ class Header
             return;
         }
 
+        if ($type == Type::MANDATE_CONTINUITY) {
+            return;
+        }
 
         if ($orgId !== null)
         {
