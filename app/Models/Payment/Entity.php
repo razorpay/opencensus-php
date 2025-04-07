@@ -7941,11 +7941,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function shouldCreateDCCEInvoice()
     {
-        if ($this->getGateway() != Gateway::HITACHI)
+        if ($this->getGateway() == Gateway::HITACHI || $this->getGateway() == Gateway::FULCRUM)
         {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     // Return fee in payment currency
