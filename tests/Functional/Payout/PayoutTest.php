@@ -66,6 +66,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
+use RZP\Jobs\LedgerJournalBase;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
@@ -327,6 +328,161 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
+    }
+
+    public function testLedgerJournalBaseJobWithTransactionCreateDisabled()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $splitzResp = $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE_TEST;
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $ledgerPayload = [
+            "transactor_id"=> "pout_".$payout->getId(),
+            "transactor_event"=> "payout_initiated",
+            "updated_at"=> 1743519616,
+            "amount"=> "240295",
+            "transaction_date"=> 1743519616,
+            "ledger_entry"=> [
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "250",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "cash"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va"
+                        ]
+                    ],
+                    "base_amount"=> "250",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0Wq95Bbn",
+                    "account_id"=> "J10ACA57N4tbbN",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "45",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "va_gst"
+                        ]
+                    ],
+                    "base_amount"=> "45",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0XwWLj9J",
+                    "account_id"=> "J10ACFxXZRVJ8a",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "balance"=> "31955385523.000000",
+                    "created_at"=> 1743519616,
+                    "balance_updated"=> true,
+                    "amount"=> "240295",
+                    "type"=> "debit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va"
+                        ]
+                    ],
+                    "base_amount"=> "240295",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0YGEjzUm",
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "updated_at"=> 1743519616,
+                    "account_id"=> "J10AC59zxIRRgc",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "240000",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va_vendor"
+                        ]
+                    ],
+                    "base_amount"=> "240000",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0YXHiNVD",
+                    "account_id"=> "J10ACLhRGe5Y2e",
+                    "merchant_id"=> $payout->getMerchantId()
+                ]
+            ],
+            "base_amount"=> "240295",
+            "currency"=> "INR",
+            "id"=> "QDppncrKiEw16D",
+            "tenant"=> "X",
+            "created_at"=> 1743519616
+        ];
+        LedgerJournalBase::dispatch('test', $ledgerPayload);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('QDppncrKiEw16D', $payout->getTransactionId());
+        $this->assertEquals('transaction', $payout['transaction_type']);
+        $res = $payout->toArrayAdmin();
+        s($res);
+        s($payout['transaction_id']);
+        s($payout['transaction_type']);
+        s("debug info");
     }
 
     public function testAccountStatementQueuePushForProcessedPayout() {

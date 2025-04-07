@@ -8563,6 +8563,7 @@ class Core extends Base\Core
                     if ($isPayoutServicePayout === false)
                     {
                         $payout->setTransactionId($journalId);
+                        $payout->setTransactionType(Entity::TRANSACTION);
                         $this->repo->saveOrFail($payout);
                     }
                 });
