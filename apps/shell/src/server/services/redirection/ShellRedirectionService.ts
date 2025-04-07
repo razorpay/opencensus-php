@@ -116,8 +116,7 @@ export class ShellRedirectionService {
     const isOrgRZP = orgCode === AppConstants.ORG_RZP;
     const isRZPOrgID = orgID === AppConstants.ORG_RZP_ID;
     const isFTUXApplicableForIndia = isRZPOrgID && countryCode === AppConstants.INDIA_COUNTRY_CODE;
-    const isApplicableForFtuxRedirection =
-      this.isRedirectionApplicableForFtux(this.data?.user || {}) && isOrgRZP;
+    const isApplicableForFtuxRedirection = this.isRedirectionApplicableForFtux(this.data?.user || {}) && isOrgRZP;
 
     if (isApplicableForFtuxRedirection && isFTUXApplicableForIndia) {
       return process.env[AppConstants.EASY_DASHBOARD_URL] + '/onboarding/overview';

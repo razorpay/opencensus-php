@@ -154,12 +154,7 @@ class UserController extends Controller
             'org'                   => json_encode($org),
             'session_id'            => Session::getId(),
             'cdnDashboardUrl'       => \Config::get('app.cdn_dashboard_url'),
-            'isNewAuthReArch'      => $this->isNewAuthReArch(),
         ];
-
-        $this->trace->info(TraceCode::NEW_AUTH_REARCH_ENABLED, [
-            'result' => $data['isNewAuthReArch'],
-        ]);
 
         $data['requestPath'] = \Request::path();
 
@@ -544,6 +539,11 @@ class UserController extends Controller
             }
             else
             {
+                $data['isNewAuthReArch'] = $this->isNewAuthReArch();
+                $this->trace->info(TraceCode::NEW_AUTH_REARCH_ENABLED, [
+                    'result' => $data['isNewAuthReArch'],
+                ]);
+
                 // Chunk based straming: send second chunk
                 $view = view('merchant.index2', $data)->render();
                 $this->trace->info(TraceCode::CHUNKED_DETAILS, [
