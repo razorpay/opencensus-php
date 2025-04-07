@@ -389,6 +389,7 @@ export enum Status {
   WorkflowNeedsClarification = 'workflow_needs_clarification',
   Rejected = 'rejected',
   WebsiteUpdateFailed = 'website_update_failed',
+  WebsiteLivenessFailed = 'website_liveness_failed',
 }
 
 export type NullableStatus = Status | null;
@@ -467,6 +468,8 @@ export function getWebsiteWorkflowStatus({
     current_status === WebsiteUpdateAutomationStatus.WORKFLOW_CREATION_FAILED
   ) {
     status = Status.WebsiteUpdateFailed;
+  } else if (current_status === WebsiteUpdateAutomationStatus.WEBSITE_LIVENESS_FAILED) {
+    status = Status.WebsiteLivenessFailed;
   } else if (ocr_automated_check_enable || hasReviewStatus || hasCustomerRespondedStatus) {
     status = Status.WorkflowInReview;
   } else if (hasAwaitingCustomerResponseStatus) {
@@ -533,7 +536,7 @@ export const getWebsiteCount = (user: User) => {
 };
 
 type NonNullableStatus = NonNullable<Status>;
-export const alertText: Record<NonNullableStatus, string> = {
+const alertText: Record<NonNullableStatus, string> = {
   [Status.Success]: 'Your website has been successfully verified',
   [Status.BvsNeedsClarification]: 'We found a few policy details missing on your website',
   [Status.BvsInProgress]: 'Your website verification request is under review',
@@ -541,6 +544,33 @@ export const alertText: Record<NonNullableStatus, string> = {
   [Status.WorkflowNeedsClarification]: 'Our team needs a few more details to verify your website',
   [Status.Rejected]: 'Our team has rejected your website upon careful verification',
   [Status.WebsiteUpdateFailed]: 'Oops, something went wrong',
+  [Status.WebsiteLivenessFailed]: 'Attention: We noticed that your website is not live',
+};
+
+export const getAlertText = (status, mainPageUrl): string => {
+  if (!mainPageUrl) {
+    return alertText[status] ?? '';
+  }
+
+  switch (status) {
+    case Status.Success:
+      return `Your website ${mainPageUrl} has been successfully verified`;
+    case Status.BvsNeedsClarification:
+      return `We found a few policy details missing on your website ${mainPageUrl}`;
+    case Status.BvsInProgress:
+    case Status.WorkflowInReview:
+      return `Your website verification request for ${mainPageUrl} is under review`;
+    case Status.WorkflowNeedsClarification:
+      return `Our team needs a few more details to verify your website (${mainPageUrl})`;
+    case Status.Rejected:
+      return `Our team has rejected your website (${mainPageUrl}) upon careful verification`;
+    case Status.WebsiteUpdateFailed:
+      return `Oops, something went wrong with your website (${mainPageUrl})`;
+    case Status.WebsiteLivenessFailed:
+      return `Attention: We noticed that your website (${mainPageUrl}) is not live`;
+    default:
+      return alertText[status] ?? '';
+  }
 };
 
 export const alertCTAText: Partial<Record<NonNullableStatus, string>> = {

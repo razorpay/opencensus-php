@@ -19,7 +19,7 @@ import { BusinessWebsiteWorkflow, WebsiteUpdateApiData } from '../types';
 import {
   Status,
   alertCTAText,
-  alertText,
+  getAlertText,
   getUnderReviewETA,
   getWebsiteCount,
   getWebsiteWorkflowStatus,
@@ -61,7 +61,8 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const title: string | undefined = alertText[status];
+  const mainPageUrl = websiteUpdateData?.main_page_url ?? '';
+  const title = getAlertText(status, mainPageUrl);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const ctaText: string = alertCTAText[status] || '';
@@ -271,6 +272,23 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   }
 
   if (status === Status.WebsiteUpdateFailed) {
+    return (
+      <Alert
+        color="negative"
+        isDismissible={true}
+        isFullWidth
+        title={title}
+        description={
+          <Text color="surface.text.gray.subtle" wordBreak="break-word">
+            Please try adding the website again. If the issue persists, reach out to our support
+            team for assistance.
+          </Text>
+        }
+      />
+    );
+  }
+
+  if (status === Status.WebsiteLivenessFailed) {
     return (
       <Alert
         color="negative"

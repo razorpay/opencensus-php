@@ -2,6 +2,7 @@ import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import User, { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { set, merge } from 'common/utils/immutable';
 import { titleCase } from 'common/utils/rzp-utils';
+import { getMode } from '@libs/shared-utils';
 
 const UPDATE_SESSION = 'UPDATE_SESSION';
 const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
@@ -176,9 +177,9 @@ export const initialState = {
   org: {
     security_branding_logo: 'https://cdn.razorpay.com/static/assets/pay_methods_branding.png',
   },
-  mode: 'test',
+  mode: getMode(window?.rzp_user?.current),
+  modeFormatted: titleCase(getMode(window?.rzp_user?.current)),
   partnerMode: 'test',
-  modeFormatted: 'Test',
   partnerModeFormatted: 'Test',
   highlightMode: true,
   isTourVisible: false,

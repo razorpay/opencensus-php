@@ -120,6 +120,7 @@ export enum WebsiteUpdateAutomationStatus {
 
   WORKFLOW_CREATION_FAILED = 'workflow_creation_failed',
   WEBSITE_UPDATE_FAILED = 'website_update_failed',
+  WEBSITE_LIVENESS_FAILED = 'website_update_failed_due_to_liveness_check_failure',
 }
 
 export enum WebsiteVerificationStatus {
