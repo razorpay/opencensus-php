@@ -339,9 +339,6 @@ final class RazorxTreatment
 
     const PAYOUT_SERVICE_TXN_RECON = 'payout_service_txn_recon';
 
-    // for creating upi recurring auth link via batch upload pick up as presented frequency by default
-    const UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT = 'upi_auth_link_frequency_as_presented_default';
-
     const BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS = 'banking_account_statement_temp_records';
 
     const BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP = 'banking_account_statement_fetch_dedup';
@@ -566,9 +563,6 @@ final class RazorxTreatment
     // Experiment to send charge collection events to payout service
 
     const SEND_CHARGE_COLLECTION_EVENT_RX = 'send_charge_collection_event_rx';
-
-    // Experiment to pass unused rejected tokens along with regular tokens in fetchTokens api call
-    const PASS_REJECTED_UNUSED_TOKENS = 'pass_rejected_unused_tokens';
 
     // razorx treatment for fetch from scrooge service
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
