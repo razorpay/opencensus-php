@@ -7,6 +7,7 @@ use Config;
 use DateTime;
 use DOMDocument;
 use RZP\Http\RequestHeader;
+use RZP\Services\KafkaProducer;
 use RZP\lib\TemplateEngine;
 use Illuminate\Support\Str;
 use RZP\Constants\Environment;
@@ -115,6 +116,7 @@ use RZP\Models\Transaction\Service as TransactionService;
 use GuzzleHttp\Client as HttpClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
+use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
 use RZP\Models\Merchant\Consent\Details\Entity as MerchantConsentDetails;
 use RZP\Models\Merchant\Consent\Entity as MerchantConsent;
 use RZP\Models\Merchant\Consent\Core as ConsentCore;
@@ -268,6 +270,7 @@ class Service extends Base\Service
     public function fetchMerchantDetails($isActivationDetailsFlow = false, $input = null)
     {
         $merchantId = $this->merchant->getId();
+
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
         $isPGOSExpEnabled     = false;
         $isActivated          = $this->merchant->isActivated();
@@ -385,6 +388,13 @@ class Service extends Base\Service
         if (isset($pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3]) === true)
         {
             $response[DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3] = $pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION]) === true)
+        {
+            $response[DetailConstants::BDD_VERIFICATION_STATUS]                 = $pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION][DetailConstants::BDD_VERIFICATION_STATUS] ?? '';
+            $response[DetailConstants::ALLOWED_NEXT_BDD_VERIFICATION_STATUSES]  = $pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION][DetailConstants::ALLOWED_NEXT_BDD_VERIFICATION_STATUSES] ?? [];
+            $response[DetailConstants::BDD_VERIFICATION_STATUS_CHANGE_LOGS]     = $pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION][DetailConstants::BDD_VERIFICATION_STATUS_CHANGE_LOGS] ?? [];
         }
 
         if (isset($pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT]) === true)
@@ -708,6 +718,36 @@ class Service extends Base\Service
 
         $details = $service->getAdditionalDetailsFromASV($merchantId);
         $service->transitionToNextRekycStatus($merchantId, $details, $input['rekyc_status']);
+    }
+
+    /**
+     * Updates the merchant's bdd verification status upon maker-checker workflow approval.
+     *
+     * @param array $input The input data containing the bdd verification status.
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    public function postMerchantBddVerificationStatusUpdate(array $input)
+    {
+        $service = new Merchant\Service();
+        $merchantId = $this->merchant->getMerchantId();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $nextBddVerificationStatus = $input['bdd_verification_status'] ?? "";
+
+        $details = $service->getAdditionalDetailsFromASV($merchantId);
+
+        $isValidTransition =  $service->isBddVerificationTransitionValid($details, $nextBddVerificationStatus);
+        if(!$isValidTransition){
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION, null, [
+                'error' => 'Invalid state transition'
+            ]);
+        }
+
+        $service->transitionToNextBDDVerificationStatus($merchantId, $nextBddVerificationStatus, $merchant);
     }
 
 
@@ -2159,6 +2199,33 @@ class Service extends Base\Service
         ]);
 
         $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
+
+        if (empty($input[DEConstants::BDD_VERIFICATION_STATUS]) === false)
+        {
+            $merchantService = new MerchantService();
+            $workflowService = new MakerCheckerWorkflowService();
+
+            $details = $merchantService->getAdditionalDetailsFromASV($merchantId);
+            $latestBddVerificationStatus = $merchantService->getLatestBddVerificationStatus($details);
+
+            $workflowInput = [
+                "permission_name"   =>  DetailConstants::MERCHANT_BDD_VERIFICATION_STATUS_UPDATE,
+                "route_name"        =>  DetailConstants::ACTIVATION_ROUTE_NAME,
+                "entity_name"       =>  DetailConstants::MERCHANT,
+                "entity_id"         =>  $merchantId,
+                "admin_id"          =>  $input[DEConstants::WORKFLOW_MAKER_ADMIN_ID],
+                "input" =>  [
+                    "bdd_verification_status"=> $input[DEConstants::BDD_VERIFICATION_STATUS],
+                ],
+                "input_old" => [
+                    "bdd_verification_status"=> $latestBddVerificationStatus,
+                ],
+                "tags" => [DetailConstants::BDD_VERIFICATION_STATUS_UPDATE_TAG]
+            ];
+
+            $workflowService->createWorkflow($workflowInput);
+            return $merchant->getMerchantDetail();
+        }
 
         $this->app['workflow']->setMakerFromAuth(false);
         $this->app['workflow']->setWorkflowMaker($maker);
@@ -5448,6 +5515,16 @@ class Service extends Base\Service
                                 'applicable_status' => $newActivationStatus
                             ]);
 
+                            $splitzResult = $this->isAMPDeprecationExperimentEnabled($merchant->getId());
+
+                            if ($splitzResult == DetailConstants::ENABLE && $newActivationStatus === Status::ACTIVATED_MCC_PENDING && (new Merchant\Core)->isRegularMerchant($merchant) === true)
+                            {
+                                $newActivationStatus = Status::ACTIVATED;
+
+                                $service = new Merchant\Service();
+                                $service->transitionToNextBDDVerificationStatus($merchant->getId(), DEConstants::PENDING, $merchant);
+                            }
+
                             // move the merchant to eligible activation_status
                             $input[Entity::ACTIVATION_STATUS] = $newActivationStatus;
 
@@ -5799,6 +5876,16 @@ class Service extends Base\Service
 
         return $this->core->updateEDDStatus($input);
     }
+
+    public function isAMPDeprecationExperimentEnabled(string $merchantId)
+    {
+        $experimentName = 'amp_deprecation_exp_id';
+
+        $splitzResult = $this->core->getSplitzResponse($merchantId, $experimentName);
+
+        return $splitzResult;
+    }
+
 
     public function getEDDDetails($input)
     {

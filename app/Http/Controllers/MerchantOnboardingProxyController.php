@@ -142,6 +142,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const INITIATE_POS_ONBOARDING                = 'initiate_pos_onboarding';
 
     const GET_VCIP_LINK                          = 'get_vcip_link';
+    const BDD_VERIFICATION_STATUS_UPDATE         = 'bdd_verification_status_update';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
@@ -322,6 +323,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::UPDATE_BRAND_DEALER_DETAILS                   => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateBrandDealerDetails',
         self::INITIATE_POS_ONBOARDING                       => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/InitiatePosOnboarding',
         self::GET_VCIP_LINK                                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetVcipLink',
+        self::BDD_VERIFICATION_STATUS_UPDATE                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UpdateBddVerificationStatus',
     ];
 
     // timeout in seconds
@@ -354,6 +356,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_POLICY_VERIFY            => 40,
         self::L2_SUBMIT_SHADOW                          => 1,
         self::GET_APPLICABLE_ACTIVATION_STATUS          => 3,
+        self::BDD_VERIFICATION_STATUS_UPDATE            => 3,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -394,6 +397,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
         self::MERCHANT_DOCUMENT_UPLOAD,
         self::MERCHANT_CONSENTS_SAVE,
+        self::BDD_VERIFICATION_STATUS_UPDATE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,

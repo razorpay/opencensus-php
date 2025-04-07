@@ -223,8 +223,11 @@ class Core extends Base\Core
         $service = new Merchant\Service();
         $isRekycMerchant = $service->isRekycMerchant($merchant->getMerchantId(), $merchantDetails->getActivationStatus());
 
+        $details = $service->getAdditionalDetailsFromASV($merchant->getMerchantId());
+        $latestBddVerificationStatus = $service->getLatestBddVerificationStatus($details);
+
         // unlock the form for the rekyc case
-        if($isRekycMerchant) {
+        if($isRekycMerchant || $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION) {
             $merchantDetails->setLocked(false);
         }
 
@@ -286,7 +289,7 @@ class Core extends Base\Core
                 ]);
 
                 // lock again for the rekyc case
-                if ($isRekycMerchant){
+                if ($isRekycMerchant || $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION){
                     $merchantDetails->setLocked(true);
                 }
 
@@ -822,8 +825,12 @@ class Core extends Base\Core
         $activationStatus = $merchant->merchantDetail->getActivationStatus();
         $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
 
+        $details = $service->getAdditionalDetailsFromASV($merchant->getMerchantId());
+        $latestBddVerificationStatus = $service->getLatestBddVerificationStatus($details);
+
+
         if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
-            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
+            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant or $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 

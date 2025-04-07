@@ -871,6 +871,10 @@ return array(
 
     'merchant_automation_activation_exp_id' => env('MERCHANT_AUTOMATION_ACTIVATION_EXP_ID'),
 
+    'amp_deprecation_exp_id' => env('AMP_DEPRECATION_EXP_ID'),
+
+    'non_regular_merchant_to_under_review' => env('NON_REGULAR_MERCHANT_TO_UNDER_REVIEW'),
+
     'ignore_signature_error_exp_id' => env('IGNORE_SIGNATURE_ERROR_EXP_ID'),
 
     'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),

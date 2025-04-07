@@ -1161,4 +1161,136 @@ class WorkflowActionTest extends TestCase
 
         $observer->onExecute($observerData);
     }
+
+    public function testOnExecuteWithBddVerificationStatusUpdateVerified()
+    {
+        $kafkaProducerMock = Mockery::mock('overload:RZP\Services\KafkaProducer');
+        $merchantId = 'No72z8gsJTcHKu';
+
+        $expectedData = [
+            WorkflowConstants::WORKFLOW_ACTION_ID => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            WorkflowConstants::PERMISSION_NAME    => Permission\Name::MERCHANT_BDD_VERIFICATION_STATUS_CHANGE,
+            WorkflowConstants::STATUS             => WorkflowConstants::EXECUTED,
+            WorkflowConstants::AGENT_Id           => 'undefined_agent',
+            WorkflowConstants::AGENT_NAME         => 'undefined_agent',
+            DifferEntity::ENTITY_ID               => $merchantId,
+            DifferEntity::ENTITY_NAME             => WorkflowConstants::MERCHANT,
+            WorkflowConstants::EVENT_TYPE         => WorkflowConstants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            WorkflowConstants::CMMA_CASE_TYPE     => DEConstants::CMMA_POST_ACTIVATION_BUSINESS_DUE_DILIGENCE,
+        ];
+
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(true);
+
+        $kafkaProducerMock->shouldReceive('__construct')
+            ->once()
+            ->with(
+                env('CMMA_CASE_EVENTS_TOPIC_NAME'),
+                Mockery::on(function ($actualPayload) use ($expectedData) {
+                    return $actualPayload === stringify($expectedData);
+                })
+            );
+
+        $merchantAttributes = ['id' => $merchantId];
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            $merchantDetail['merchant_id'],
+            ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true],
+            "owner"
+        );
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata'        => ['service' => 'pgos']
+        ]);
+
+        $observer = new MerchantActivationStatusObserver([
+            'entity_id'             => $merchantId,
+            'permission'       => Permission\Name::MERCHANT_BDD_VERIFICATION_STATUS_CHANGE,
+        ]);
+
+        $observerData = [
+            DifferEntity::ACTION_ID  => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            DifferEntity::AGENT_ID   => $merchantId,
+            DifferEntity::AGENT_NAME => 'test_agent',
+        ];
+
+        $observer->onExecute($observerData);
+    }
+
+
+    public function testOnExecuteWithBddVerificationStatusUpdateReject()
+    {
+        $kafkaProducerMock = Mockery::mock('overload:RZP\Services\KafkaProducer');
+        $merchantId = 'No72z8gsJTcHKu';
+
+        $expectedData = [
+            WorkflowConstants::WORKFLOW_ACTION_ID => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            WorkflowConstants::PERMISSION_NAME    => Permission\Name::MERCHANT_BDD_VERIFICATION_STATUS_CHANGE,
+            WorkflowConstants::STATUS             => "rejected",
+            WorkflowConstants::AGENT_Id           => 'undefined_agent',
+            WorkflowConstants::AGENT_NAME         => 'undefined_agent',
+            DifferEntity::ENTITY_ID               => $merchantId,
+            DifferEntity::ENTITY_NAME             => WorkflowConstants::MERCHANT,
+            WorkflowConstants::EVENT_TYPE         => WorkflowConstants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            WorkflowConstants::CMMA_CASE_TYPE     => DEConstants::CMMA_POST_ACTIVATION_BUSINESS_DUE_DILIGENCE,
+        ];
+
+        $kafkaProducerMock->shouldReceive('produce')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(true);
+
+        $kafkaProducerMock->shouldReceive('__construct')
+            ->once()
+            ->with(
+                env('CMMA_CASE_EVENTS_TOPIC_NAME'),
+                Mockery::on(function ($actualPayload) use ($expectedData) {
+                    return $actualPayload === stringify($expectedData);
+                })
+            );
+
+        $merchantAttributes = ['id' => $merchantId];
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            $merchantDetail['merchant_id'],
+            ['contact_mobile' => '9891817372', 'contact_mobile_verified' => true],
+            "owner"
+        );
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'partner_assisted_onboarding',
+            'metadata'        => ['service' => 'pgos']
+        ]);
+
+        $observer = new MerchantActivationStatusObserver([
+            'entity_id'             => $merchantId,
+            'permission'       => Permission\Name::MERCHANT_BDD_VERIFICATION_STATUS_CHANGE,
+        ]);
+
+        $observerData = [
+            DifferEntity::ACTION_ID  => WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+            DifferEntity::AGENT_ID   => $merchantId,
+            DifferEntity::AGENT_NAME => 'test_agent',
+        ];
+
+        $observer->onReject($observerData);
+    }
+
 }

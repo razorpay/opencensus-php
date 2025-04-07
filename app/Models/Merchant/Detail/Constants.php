@@ -151,6 +151,12 @@ class Constants
     const PG_ONBOARDING                     = 'pg_onboarding';
     const MANUAL_REKYC                      = "manual_rekyc";
     const REKYC_STATUS                      = "rekyc_status";
+    const BDD_VERIFICATION_STATUS           = "bdd_verification_status";
+    const BDD_VERIFICATION                  = "bdd_verification";
+    const BDD_VERIFICATION_STATUS_UPDATE    = "bdd_verification_status_update";
+
+    const ALLOWED_NEXT_BDD_VERIFICATION_STATUSES   = "allowed_next_bdd_verification_statuses";
+    const BDD_VERIFICATION_STATUS_CHANGE_LOGS    = 'bdd_verification_status_change_logs';
 
     // For Route no doc KYC feature.
     const UNREGISTERED_AND_PROPRIETORSHIP   = 'unregistered_and_proprietorship';
@@ -630,7 +636,11 @@ class Constants
     const MERCHANT_REKYC_UPDATE = 'merchant_rekyc_update';
     const MERCHANT_DETAILS_PATCH = 'merchant_details_patch';
 
+    const MERCHANT_BDD_VERIFICATION_STATUS_UPDATE = 'merchant_bdd_verification_status_update';
+
     const REKYC_UPDATE_TAG = 'rekyc_update';
+
+    const BDD_VERIFICATION_STATUS_UPDATE_TAG = 'bdd_verification_status_update';
 
     //Encryper business website comment on workflow request start with following
     const ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER = 'business_website_credentials_.';
@@ -836,6 +846,8 @@ class Constants
     const UBO_SHAREHOLDER_COUNTRY   = 'ubo_shareholder_country';
     const UBO_SHAREHOLDER_OWNERSHIP = 'ubo_shareholder_ownership';
 
+    const BDD_VERIFICATION_NC_SUBMIT = 'bdd_verification_nc_submit';
+
     const SHOP_FRONT_IMAGE    = 'shop_front';
     const SHOP_INTERIOR_IMAGE = 'shop_interior';
 
@@ -871,6 +883,8 @@ class Constants
     const URLTYPE                                           ='urlType';
     const WORKFLOW_DETAIL_INPUT                             = 'workflow_detail_input';
     const FETCH_MERCHANT_ID_SAME_BUSINESS_WEBSITE_FROM_WDA  = 'fetch_merchant_id_same_business_website_from_wda';
+    const CMMA_POST_ACTIVATION_BUSINESS_DUE_DILIGENCE       = 'postActivationBusinessDueDiligence';
+    const BDD_VERIFICATION_NC_EVENT_TYPE                    = 'bdd_verification_nc_event_type';
 
     const CMMA_POS_CASE_NC_EVENT_TYPE      = "pos_nc_case_event_type";
     const UNDER_REVIEW                     = 'under_review';
