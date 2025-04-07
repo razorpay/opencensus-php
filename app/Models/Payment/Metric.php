@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Service as PaymentService;
@@ -62,6 +63,7 @@ class Metric extends Base\Core
     const LABEL_RECURRING                       = 'recurring';
     const LABEL_RECURRING_TYPE                  = 'recurring_type';
     const LABEL_IS_REARCH                       = 'is_rearch';
+    const LABEL_IMPORT_PAYMENT                  = 'import_payment';
 
 
     // Metric Names
@@ -495,6 +497,9 @@ class Metric extends Base\Core
 
         $dimensions += $upiDimensions;
 
+        $importPaymentDimensions = $this->getDefaultImportPaymentDimensions($payment);
+        $dimensions += $importPaymentDimensions;
+
         return $dimensions;
     }
 
@@ -532,6 +537,31 @@ class Metric extends Base\Core
         }
 
         return $upiDimensions;
+    }
+
+    protected function getDefaultImportPaymentDimensions(Entity $payment): array
+    {
+        $importPaymentDimensions = [
+            self::LABEL_IMPORT_PAYMENT    => null,
+        ];
+
+        try
+        {
+            if ($payment->merchant->isFeatureEnabled(Constants::ENABLE_IMPORT_FLOW) === true ) {
+                $importPaymentDimensions[self::LABEL_IMPORT_PAYMENT] = true;
+            }
+        }
+        catch (\Error $exception)
+        {
+            $this->trace->warning(
+                TraceCode::IMPORT_PAYMENT_DIMENSION_CREATE_FAILED,
+                [
+                    'message' => $exception->getMessage()
+                ]
+            );
+        }
+
+        return $importPaymentDimensions;
     }
 
     protected function getUpiPsp($upi)

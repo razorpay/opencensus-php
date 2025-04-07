@@ -172,8 +172,7 @@ class CrossBorderImportServiceClient
             'merchant_id' => $input['merchant_id'],
             'payment_id' => $input['id'],
             'recurring' => $input['recurring'],
-            'library' => (new PaymentService)->getLibraryFromPayment($input),
-            'flow'=> $input['flow']
+            'library' => (new PaymentService)->getLibraryFromPayment($input)
         ];
 
         try {
