@@ -351,12 +351,10 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
               if (!empty($mcc) && !empty($merchant_category)) {
                   if (in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS)) {
                       $maxAmount = Constants::MAX_AMOUNT_FOR_SPECIAL_MCC;
-                      $this->trace->info('Max amount for special MCC', ['max_amount' => $maxAmount]);
                   }
               }
             }else{
                 $maxAmount = Constants::MAX_AMOUNT_DEFAULT;
-                $this->trace->info('Default Max Amount', ['max_amount' => $maxAmount]);
             }
         }
 
