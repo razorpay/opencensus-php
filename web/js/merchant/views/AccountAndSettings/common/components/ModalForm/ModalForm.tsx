@@ -9,13 +9,26 @@ import {
   Text,
   TextInput,
   Checkbox,
+  PhoneNumberInput,
 } from '@razorpay/blade/components';
 import { modalConfig } from './ModalConfig';
-import { ActiveModalI } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import {
+  ActiveModalI,
+  PersonalProfileFields,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { bindActionCreators } from 'redux';
 import { Store } from 'common/typings';
+import { CountryCodeType } from '@razorpay/i18nify-js';
+
+type PhoneNumberEvent = {
+  phoneNumber: string;
+  dialCode: string;
+  country: CountryCodeType;
+  value: string;
+  name: string;
+};
 
 interface ModalFormProps {
   entity: ActiveModalI | null;
@@ -38,7 +51,7 @@ const ModalForm = ({
   user,
   hasCheckbox = false,
 }: ModalFormProps) => {
-  const [textInput, settextInput] = useState<string | undefined>('');
+  const [textInput, settextInput] = useState<string | undefined | PhoneNumberEvent>('');
   const [isChecked, setIsChecked] = useState(true);
   const [hasValidationError, setHasValidationError] = useState(false);
   const validationState = hasValidationError ? 'error' : 'none';
@@ -56,9 +69,14 @@ const ModalForm = ({
   } = modalConfig({ user })[entity?.id] || {};
 
   const handleUpdateClick = () => {
-    if (textInput && isValid(textInput!)) {
+    const valueToValidate =
+      typeof textInput === 'object' ? `${textInput.dialCode}${textInput.value}` : textInput || '';
+    if (textInput && isValid(valueToValidate)) {
       setHasValidationError(false);
-      onUpdateClick({ textInput, checkbox: isChecked });
+      onUpdateClick({
+        textInput: valueToValidate,
+        checkbox: isChecked,
+      });
     } else {
       setHasValidationError(true);
     }
@@ -77,41 +95,71 @@ const ModalForm = ({
     }
   };
 
+  const renderInput = () => {
+    if (entity?.id === PersonalProfileFields.CONTACT_MOBILE) {
+      return (
+        <PhoneNumberInput
+          label={label}
+          value={typeof textInput === 'object' ? textInput.value : ''}
+          onChange={(event: PhoneNumberEvent) => {
+            settextInput(event);
+          }}
+          validationState={validationState}
+          errorText={hasValidationError ? errorText : undefined}
+          isRequired
+        />
+      );
+    }
+
+    return (
+      <TextInput
+        label={label}
+        value={typeof textInput === 'string' ? textInput : ''}
+        type="text"
+        onChange={({ value }) => settextInput(value)}
+        validationState={validationState}
+        errorText={hasValidationError ? errorText : undefined}
+        isRequired
+        necessityIndicator="required"
+        showClearButton
+        onClearButtonClick={() => settextInput('')}
+        autoFocus
+      />
+    );
+  };
+
   return (
     <Modal isOpen={showModal} onDismiss={handleModalDismiss} size="small">
       <ModalHeader title={title} />
       <ModalBody>
-        <TextInput
-          label={label}
-          onChange={(e) => settextInput(e.value)}
-          isRequired
-          type="text"
-          necessityIndicator="required"
-          errorText={errorText}
-          validationState={validationState}
-          showClearButton
-          onClearButtonClick={() => settextInput('')}
-          autoFocus
-        />
-        <Box marginTop="spacing.6">
-          <Text color="surface.text.gray.normal" size="medium" variant="body" weight="regular">
-            {bodyText}
-          </Text>
-        </Box>
-        {hasCheckbox && checkboxText ? (
-          <Box marginTop="spacing.7">
+        <Box display="flex" flexDirection="column" gap="spacing.4">
+          <Text>{bodyText}</Text>
+          {renderInput()}
+          {hasCheckbox && checkboxText ? (
             <Checkbox
               isChecked={isChecked}
               onChange={({ isChecked: isCheckedNewValue }) => setIsChecked(isCheckedNewValue)}
             >
               {checkboxText}
             </Checkbox>
-          </Box>
-        ) : null}
+          ) : null}
+        </Box>
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-          <Button isLoading={isLoading} onClick={handleUpdateClick} isDisabled={isBtnDisabled()}>
+          <Button
+            variant="tertiary"
+            onClick={handleModalDismiss}
+            type="button"
+            isDisabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpdateClick}
+            isLoading={isLoading}
+            isDisabled={isBtnDisabled() || isLoading}
+          >
             {ctaText}
           </Button>
         </Box>
