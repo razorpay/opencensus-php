@@ -1412,6 +1412,10 @@ return array(
 
     'send_payment_link_emails_via_stork_captured'  => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_CAPTURED'),
 
+    'send_payment_link_emails_via_stork_merchant_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_MERCHANT_ISSUED'),
+
+    'send_payment_link_emails_via_stork_payment_authorized' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_PAYMENT_AUTHORIZED'),
+
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 
     'api_migration_v3' => env('API_MIGRATION_V3'),
