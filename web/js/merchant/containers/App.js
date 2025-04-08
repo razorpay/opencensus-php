@@ -69,6 +69,7 @@ import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 import { DashboardLoader } from '@libs/shared-ui';
 import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
+import { isEligibleForFtuxV2 } from './Home/FTUX/utils';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -1349,7 +1350,10 @@ class App extends Component {
     const { user, splitz } = this.props;
 
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments: splitz.abExperiments });
+    const isFtuxV2Enabled = isEligibleForFtuxV2({ user, abExperiments: splitz.abExperiments });
     const { isPosSalesAgent } = checkIfPosSalesAgent({ user, abExperiments: splitz.abExperiments });
+
+    const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
 
     const isSidebarV2 =
       user.isOrgRZP &&
@@ -1359,7 +1363,7 @@ class App extends Component {
       !user.isPartnerRole &&
       !isPosSalesAgent;
 
-    if (isRTUXHomepage) {
+    if (showNewHomePage) {
       return isSidebarV2;
     }
     return isSidebarV2 && !isMobileDevice();
@@ -1409,6 +1413,9 @@ class App extends Component {
     };
 
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
+    const isFtuxV2Enabled = isEligibleForFtuxV2({ user, abExperiments });
+
+    const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
 
     const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
 
@@ -1442,7 +1449,7 @@ class App extends Component {
               'layout',
               this.orgCode,
               this.renderFullPageView && 'layout--fp',
-              isRTUXHomepage && 'layout--rtux--background',
+              showNewHomePage && 'layout--rtux--background',
               isConnectedNavigation && 'layout--connected-navigation',
             )}
           >
@@ -1469,7 +1476,7 @@ class App extends Component {
                         modeFormatted={currentModeFormatted} // not being used by the Content
                         fullPageView={this.renderFullPageView}
                         isWebView={this.state.isWebView}
-                        isRTUXHomepage={isRTUXHomepage}
+                        showNewHomePage={showNewHomePage}
                       />
                     </Suspense>
                   </SplitzRoutesBasedService>

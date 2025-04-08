@@ -42,7 +42,7 @@ export class AppConstants{
     static readonly P2PM_ONBOARDING= 'p2pm_onboarding';
     static readonly DISABLE_EASY_REDIRECTION_FOR_BANKING = 'DISABLE_EASY_REDIRECTION_FOR_BANKING';
     static readonly ONBOARDING_FTUX = 'ONBOARDING_FTUX';
-    static readonly ONBOARDING_FTUX_AFTER_L2 = 'ONBOARDING_FTUX_AFTER_L2';
+    static readonly ONBOARDING_FTUX_V2 = 'ONBOARDING_FTUX_V2';
     static readonly ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
     static readonly PARTNER_AGENT_ROLE = 'partner_agent';
     static readonly PG3_V1_ENABLED = 'PG3_V1_ENABLED';

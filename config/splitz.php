@@ -165,8 +165,8 @@ return [
         // FTUX for Onboarding
         'ONBOARDING_FTUX' => env('ONBOARDING_FTUX', ''),
 
-        // FTUX After L2 submit for Onboarding
-        'ONBOARDING_FTUX_AFTER_L2' => env('ONBOARDING_FTUX_AFTER_L2', ''),
+        // FTUX  V2 for Onboarding
+        'ONBOARDING_FTUX_V2' => env('ONBOARDING_FTUX_V2', ''),
 
         // Disable easy onboarding redirection for banking origin requests
         'DISABLE_EASY_REDIRECTION_FOR_BANKING' => env('DISABLE_EASY_REDIRECTION_FOR_BANKING', ''),

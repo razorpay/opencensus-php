@@ -5,13 +5,13 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { Box, ChevronDownIcon, Text } from '@razorpay/blade/components';
 import { ModesDropdownWrapper } from './styled';
 
-const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, isRTUXHomepage }) => {
+const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked, showNewHomePage }) => {
   const dropdownDisabled = mode === 'live' && !!isTestModeBlocked;
   const isTestMode = mode === 'test';
   return (
     <Dropdown disabled={dropdownDisabled}>
       <DropdownTrigger className="dropdown-toggle switch-modes-toggle">
-        {isRTUXHomepage ? (
+        {showNewHomePage ? (
           <ModesDropdownWrapper
             onClick={() => {
               analyticsTrack({

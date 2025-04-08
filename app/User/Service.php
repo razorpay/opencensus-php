@@ -4252,8 +4252,8 @@ class Service extends Base\Service
         }
 
         if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding') || ($signupCampaign === 'sg_signup')) and
-            (empty($details['activation_form_milestone']) === true) and
-            ($submitted == 0))
+            ((empty($details['activation_form_milestone']) === true) ||
+            ($submitted == 0)))
         {
             return true;
         }
@@ -4355,17 +4355,17 @@ class Service extends Base\Service
                 return false;
             }
 
+            if($this->isFtuxV2ExperimentEnabled() === true)
+            {
+                return false;
+            }
+
             if($this->isFtuxExperimentEnabled() === false)
             {
                 return false;
             }
 
             if(empty($_COOKIE['ftuxSession']) === false)
-            {
-                return false;
-            }
-
-            if($this->isFtuxAfterL2ExperimentEnabled($details) === true and $details[MerchantConstants::ACTIVATION_STATUS] === null)
             {
                 return false;
             }
@@ -4444,7 +4444,7 @@ class Service extends Base\Service
 
         $concurrentApiCallExperimentId = config('splitz.experiments')[AppConstants::DASHBOARD_USER_CONCURRENT_API_CALL];
         $onboardingFtuxExperiment = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX];
-        $onboardingFtuxAfterL2Experiment = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX_AFTER_L2];
+        $onboardingFtuxV2Experiment = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX_V2];
         $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
         $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
         $eligibleForPosExperiment = config('splitz.experiments')[AppConstants::ELIGIBLE_FOR_POS];
@@ -4452,7 +4452,7 @@ class Service extends Base\Service
         $shellRedirection = config('splitz.experiments')[AppConstants::SHELL_REDIRECTION_EXPERIMENT_ID];
 
         $experimentIds = [$shellRedirection, $onboardingFtuxExperiment, $concurrentApiCallExperimentId,
-            $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxAfterL2Experiment, $eligibleForPosExperiment,
+            $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxV2Experiment, $eligibleForPosExperiment,
             $chunkedBasedStreamingEnabled];
 
         if (! empty($experiments))
@@ -4513,9 +4513,9 @@ class Service extends Base\Service
         return ($this->splitzExprimentData[$experimentId][Constants::VARIABLES][Constants::RESULT] ?? null) === 'on';
     }
 
-    private function isFtuxAfterL2ExperimentEnabled()
+    private function isFtuxV2ExperimentEnabled()
     {
-        $experimentId = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX_AFTER_L2];
+        $experimentId = config('splitz.experiments')[AppConstants::ONBOARDING_FTUX_V2];
 
         if (!array_key_exists($experimentId, $this->splitzExprimentData))
         {

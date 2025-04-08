@@ -546,7 +546,7 @@ class WhatsNewOld extends Component {
         );
       }
     */
-    if (this.props.isRTUXHomepage) {
+    if (this.props.showNewHomePage) {
       return (
         <AnnouncementIcon
           size="medium"

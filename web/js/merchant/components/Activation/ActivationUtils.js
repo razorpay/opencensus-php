@@ -804,23 +804,24 @@ const redirectToEasyAfter1sec = () => {
   }, 1000);
 };
 
-const isEligibleForFtux = ({ user = {}, abExperiments = {}, isAdmin = false } = {}) => {
+const isEligibleForFtuxV1 = ({ user = {}, abExperiments = {}, isAdmin = false } = {}) => {
   if (isAdmin) {
     return false;
   }
 
+  const isFtuxV2Enabled = isExperimentEnabled(abExperiments?.ftuxV2);
+
   const isMasterKyc = user?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
 
-  if (isMasterKyc || user?.isCbMkycMerchant) {
+  if (isMasterKyc || user?.isCbMkycMerchant || isFtuxV2Enabled) {
+
     return false;
   }
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
 
   const isPOSMerchant = isExperimentEnabled(abExperiments?.omniChannelGtm) && !!physical_store;
 
-  const isFtuxExpEnabledAfterL2 = isExperimentEnabled(abExperiments?.ftuxAfterL2);
-
-  let isFtuxEnabled =
+  const isFtuxEnabled =
     user.isOrgRZP &&
     user.isCountryIndia &&
     user.isFtuxEnabled &&
@@ -828,9 +829,6 @@ const isEligibleForFtux = ({ user = {}, abExperiments = {}, isAdmin = false } = 
     !user.isPartner() &&
     !isPOSMerchant;
 
-  if (isFtuxEnabled && isFtuxExpEnabledAfterL2) {
-    isFtuxEnabled = user?.activation_form_milestone === 'L2' && user?.activation_status !== null;
-  }
 
   return isFtuxEnabled;
 };
@@ -891,5 +889,5 @@ export {
   getNcExpiryDate,
   isNewNcActivationStatus,
   redirectToEasyAfter1sec,
-  isEligibleForFtux,
+  isEligibleForFtuxV1,
 };

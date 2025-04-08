@@ -2762,9 +2762,7 @@ class Content extends Component {
             ? ''
             : classList(
                 !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
-                !fullPageView && !isWebView && this.props.isRTUXHomepage
-                  ? 'main-content--rtux'
-                  : '',
+                !fullPageView && !isWebView && this.props.showNewHomePage ? 'main-content--rtux' : '',
                 !fullPageView && !isWebView && isConnectedNavigation
                   ? 'main-content--connected-navigation'
                   : '',

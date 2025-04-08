@@ -219,7 +219,7 @@ class ProfileDropdown extends Component {
       partnerMode,
       onSwitchMode,
       i18: { isConfigTagEnabled },
-      isRTUXHomepage,
+      showNewHomePage,
       splitz,
       onSwitchMerchant,
       isConnectedNavigation = false,
@@ -261,7 +261,7 @@ class ProfileDropdown extends Component {
       );
     }
 
-    if (isRTUXHomepage && !isPosSalesAgent) {
+    if (showNewHomePage && !isPosSalesAgent) {
       return (
         <ProfileDropdownV2
           user={user}

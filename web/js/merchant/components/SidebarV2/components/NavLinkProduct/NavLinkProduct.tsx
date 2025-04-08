@@ -21,6 +21,7 @@ import { useSplitzService } from 'common/splitz';
 import { useI18Service } from 'common/i18';
 import { Box, Text } from '@razorpay/blade/components';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
+import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const NavLinkProduct = ({
   heading,
@@ -38,6 +39,9 @@ const NavLinkProduct = ({
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
+  const isFtuxV2Enabled = useIsFtuxV2Enabled();
+
+  const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
 
   const handleToggle = (): void => {
     analyticsTrack({
@@ -127,7 +131,7 @@ const NavLinkProduct = ({
 
   return sectionProducts?.valid?.length ? (
     <>
-      {isRTUXHomepage ? (
+      {showNewHomePage ? (
         <Text
           weight="semibold"
           marginX="spacing.7"
@@ -156,7 +160,7 @@ const NavLinkProduct = ({
           </Collapsible>
           {sectionProducts.valid.length > 3 && (
             <>
-              {isRTUXHomepage ? (
+              {showNewHomePage ? (
                 <ShowMoreWrapper data-testid="show-all-products" onClick={handleToggle}>
                   <Text weight="semibold" size="small" color="interactive.text.primary.subtle">
                     {isOpen ? 'Show less' : `Show all (${sectionProducts.valid.length})`}
@@ -171,7 +175,7 @@ const NavLinkProduct = ({
           )}
         </Items>
       )}
-      {isRTUXHomepage ? <Box marginBottom="spacing.6" /> : <Divider />}
+      {showNewHomePage ? <Box marginBottom="spacing.6" /> : <Divider />}
     </>
   ) : null;
 };

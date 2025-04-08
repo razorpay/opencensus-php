@@ -374,8 +374,7 @@ export class ShellRedirectionService {
       (signupCampaign === AppConstants.I18N_MY_SIGNUP ||
         signupCampaign === AppConstants.EASY_ONBOARDING ||
         signupCampaign === AppConstants.SG_SIGNUP) &&
-      !this.data?.user?.activation_form_milestone &&
-      submitted === 0
+      (!this.data?.user?.activation_form_milestone || submitted === 0)
     );
   }
 
@@ -437,6 +436,10 @@ export class ShellRedirectionService {
         return false;
       }
 
+      if (this.isFtuxV2ExperimentEnabled()) {
+        return false;
+      }
+
       if (!this.isFtuxExperimentEnabled()) {
         return false;
       }
@@ -445,12 +448,6 @@ export class ShellRedirectionService {
         return false;
       }
 
-      if (
-        this.isFtuxAfterL2ExperimentEnabled() &&
-        details[AppConstants.ACTIVATION_STATUS] === null
-      ) {
-        return false;
-      }
 
       if (
         details?.activation_status !== AppConstants.ACTIVATION_STATUS_ACTIVATED &&
@@ -501,8 +498,8 @@ export class ShellRedirectionService {
     );
   }
 
-  private isFtuxAfterL2ExperimentEnabled(): boolean {
-    const experimentId = process.env[AppConstants.ONBOARDING_FTUX_AFTER_L2] || '';
+  private isFtuxV2ExperimentEnabled(): boolean {
+    const experimentId = process.env[AppConstants.ONBOARDING_FTUX_V2] || '';
     return (
       this.data?.user?.splitz_experiments?.[experimentId]?.[AppConstants.VARIABLES]?.[
         AppConstants.RESULT

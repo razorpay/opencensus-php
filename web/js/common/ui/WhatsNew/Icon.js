@@ -23,7 +23,7 @@ const WhatsNewIcon = ({
   showMobileNav,
   tracking,
   pushSlider,
-  isRTUXHomepage,
+  showNewHomePage,
   isConnectedNavigation,
 }) => {
   const [isOpen, setOpen] = useState(false);
@@ -59,7 +59,7 @@ const WhatsNewIcon = ({
   }, []);
 
   const handleSliderToggleClick = () => {
-    isRTUXHomepage &&
+    (showNewHomePage) &&
       analyticsTrack({
         screen: 'home page',
         objectName: 'Announcements Icon',
@@ -83,7 +83,7 @@ const WhatsNewIcon = ({
   };
 
   const getAnnouncementCta = () => {
-    if (isRTUXHomepage) {
+    if (showNewHomePage) {
       return (
         <AnnouncementIcon
           size="medium"

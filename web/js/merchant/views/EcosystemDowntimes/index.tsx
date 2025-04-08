@@ -20,14 +20,14 @@ const StatusDetails = lazy(
 type EcosystemDowntimesProps = {
   mode: string;
   showMobileNav: boolean;
-  isRTUXHomepage: boolean;
+  showNewHomePage: boolean;
   isConnectedNavigation?: boolean;
 };
 
 const EcosystemDowntimes = ({
   mode,
   showMobileNav,
-  isRTUXHomepage,
+  showNewHomePage,
   isConnectedNavigation = false,
 }: EcosystemDowntimesProps): JSX.Element => {
   return (
@@ -44,7 +44,7 @@ const EcosystemDowntimes = ({
     >
       <Suspense fallback={null}>
         <EcosystemDowntimesContainer
-          isRTUXHomepage={isRTUXHomepage}
+          showNewHomePage={showNewHomePage}
           isConnectedNavigation={isConnectedNavigation}
         />
       </Suspense>

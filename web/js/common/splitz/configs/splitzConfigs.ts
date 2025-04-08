@@ -283,10 +283,10 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
-        uniqueHashKey: 'ftuxAfterL2',
+        uniqueHashKey: 'ftuxV2',
         experimentId: {
-          beta: 'NziszawWZ4GCni',
-          production: 'Nzitvn5ZfZdesK',
+          beta: 'Q9Na1Q9dN8Lw8h',
+          production: 'Q9NRq89PMXqo71',
         },
         defaultVariant: {
           name: 'variables',

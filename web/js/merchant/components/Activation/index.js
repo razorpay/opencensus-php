@@ -88,7 +88,7 @@ import {
   isSourceRX,
   getBankTabHeader,
   isVerificationFailed,
-  isEligibleForFtux,
+  isEligibleForFtuxV1,
 } from './ActivationUtils';
 
 import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
@@ -1676,7 +1676,7 @@ class ActivationWizard extends React.Component {
 
       const { abExperiments } = splitz ?? {};
 
-      const isFtuxEnabled = isEligibleForFtux({ user, abExperiments, isAdmin });
+      const isFtuxEnabled = isEligibleForFtuxV1({ user, abExperiments, isAdmin });
 
       if (response.data.activation_status === 'needs_clarification') {
         const poi_verification_status = response.data.poi_verification_status;

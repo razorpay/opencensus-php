@@ -1,6 +1,6 @@
-import { isEligibleForFtux } from '../ActivationUtils';
+import { isEligibleForFtuxV1 } from '../ActivationUtils';
 
-describe('isEligibleForFtux', () => {
+describe('isEligibleForFtuxV1', () => {
   it('returns true when user is belongs to isCountryIndia is true and isOrgRZP is true', () => {
     const user = {
       isOrgRZP: true,
@@ -11,7 +11,7 @@ describe('isEligibleForFtux', () => {
       isPartner: () => false,
     };
     const abExperiments = {};
-    expect(isEligibleForFtux({ user, abExperiments })).toBe(true);
+    expect(isEligibleForFtuxV1({ user, abExperiments })).toBe(true);
   });
 
   it('returns false when user is belongs to isCountryIndia is false and isOrgRZP is true', () => {
@@ -24,6 +24,6 @@ describe('isEligibleForFtux', () => {
       isPartner: () => false,
     };
     const abExperiments = {};
-    expect(isEligibleForFtux({ user, abExperiments })).toBe(false);
+    expect(isEligibleForFtuxV1({ user, abExperiments })).toBe(false);
   });
 });

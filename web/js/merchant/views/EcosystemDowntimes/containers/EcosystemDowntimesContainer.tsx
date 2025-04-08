@@ -32,7 +32,7 @@ const MethodsContainer = lazy(
 const EcosystemDowntimesContainer = (props): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const { selectedProduct } = useConnectedNavigationStore();
-  const { openSlider: sliderOpen, isRTUXHomepage, isConnectedNavigation } = props;
+  const { openSlider: sliderOpen, showNewHomePage, isConnectedNavigation } = props;
   const methodsContainerRef = useRef<HTMLDivElement | null>(null);
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
   const queryCache = useQueryClient();
@@ -87,7 +87,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
           className={classList('status-details', isExpanded && 'status-details--active')}
         >
           <div className="status-details-slide-toggle">
-            {isRTUXHomepage ? (
+            {showNewHomePage ? (
               <div
                 onClick={() => {
                   handleToggleSlider();

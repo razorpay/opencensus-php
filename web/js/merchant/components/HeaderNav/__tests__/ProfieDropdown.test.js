@@ -143,8 +143,8 @@ describe('test for ProfileDropdown component', () => {
     expect(screen.queryByText(text)).not.toBeInTheDocument();
   });
 
-  test('should render profile dropdown v2 when isRTUXHomepage', () => {
-    const props = { ...defaultProps, isRTUXHomepage: true };
+  test('should render profile dropdown v2 when isRTUXHomepage or isFtuxV2Enabled', () => {
+    const props = { ...defaultProps, showNewHomePage: true };
 
     renderApp({ props });
     expect(screen.queryByText('ProfileDropdownV2 Component')).toBeInTheDocument();

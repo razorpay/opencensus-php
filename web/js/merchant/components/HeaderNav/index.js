@@ -39,6 +39,7 @@ import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { isEligibleForFtuxV2 } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -98,6 +99,12 @@ class HeaderNav extends Component {
     return isRTUXHomepageEnabled({ user, abExperiments });
   }
 
+  isFtuxV2Enabled() {
+    const { abExperiments } = this.props.splitz;
+    const { user } = this.props;
+    return isEligibleForFtuxV2({ user, abExperiments });
+  }
+
   componentDidMount() {
     const hash = this.props.history.location.hash;
     if (hash === '#profile_dropdown') {
@@ -126,7 +133,6 @@ class HeaderNav extends Component {
     analyticsAction('Click - Sidebar Toggle');
     this.props.toggleMobileMenu();
   }
-
 
   goToNCOnEasy = () => {
     const needsClarificationOnEasyUrl = getNCUrlOnEasyOrPhantom();
@@ -160,14 +166,14 @@ class HeaderNav extends Component {
       canShowMtuPopup: user.showMtuPopup,
       mtuOfferCount,
     };
-    const isRTUXHomepage = isSidebarV2 && this.isRTUXHomepage();
+    const showNewHomePage = isSidebarV2 && (this.isRTUXHomepage() || this.isFtuxV2Enabled());
     const commonProps = {
       user,
       showGSTModal,
       modeFormatted,
       onSwitchMode,
       onSwitchMerchant,
-      isRTUXHomepage,
+      showNewHomePage,
     };
     const isUniversalSearchEnabled = user.isUniversalSearchEnabled;
     const isMobileSearch = isUniversalSearchEnabled && isMobile;
@@ -185,7 +191,7 @@ class HeaderNav extends Component {
           className={classList(
             'navbar navbar-default navbar-fixed-top',
             isMobileSearch && 'search-nav-box',
-            isRTUXHomepage && 'homepage-rtux-navbar',
+            showNewHomePage && 'homepage-rtux-navbar',
           )}
         >
           <div className="container-fluid navbar-container">
@@ -199,7 +205,7 @@ class HeaderNav extends Component {
               )}
               {isMobile ? (
                 <div className="pull-left navbar-toggle-container">
-                  {isRTUXHomepage ? (
+                  {showNewHomePage ? (
                     <Box
                       display="flex"
                       alignItems="center"
@@ -234,7 +240,7 @@ class HeaderNav extends Component {
                 <React.Fragment>
                   {isUniversalSearchEnabled && !isMobile && (
                     <div className="universal-search-desktop">
-                      <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
+                      <UniversalSearch showNewHomePage={showNewHomePage} />
                     </div>
                   )}
                   <ul className="nav navbar-nav navbar-right">
@@ -250,7 +256,7 @@ class HeaderNav extends Component {
                       additionalCondition={(_user) =>
                         !isConfigTagEnabled('announcements.announcements') &&
                         !isMobileDevice() &&
-                        !isRTUXHomepage
+                        !showNewHomePage
                       }
                     >
                       <GrowthAssetEB>
@@ -266,7 +272,7 @@ class HeaderNav extends Component {
                     </ShowWhen>
 
                     {/* Will uncomment later. Please dont block this from going to prod  */}
-                    {!isRTUXHomepage && !showMobileNav && user.isMobileSignupCareActive && (
+                    {!showNewHomePage && !showMobileNav && user.isMobileSignupCareActive && (
                       <li id="support-request">
                         <SupportRequestDropdown showMobileNav={showMobileNav} />
                       </li>
@@ -310,13 +316,13 @@ class HeaderNav extends Component {
                           <EcosystemDowntimes
                             mode={mode}
                             showMobileNav={showMobileNav}
-                            isRTUXHomepage={isRTUXHomepage}
+                            showNewHomePage={showNewHomePage}
                           />
                         ) : (
                           <StatusDetails
                             AppMode={mode}
                             showMobileNav={showMobileNav}
-                            isRTUXHomepage={isRTUXHomepage}
+                            showNewHomePage={showNewHomePage}
                           />
                         )}
                       </li>
@@ -324,7 +330,7 @@ class HeaderNav extends Component {
 
                     <ShowWhen
                       additionalCondition={(_user) =>
-                        !isRTUXHomepage &&
+                        !showNewHomePage &&
                         _user?.isAccepted &&
                         !_user?.isOrgAxis &&
                         !_user?.isOrgKotak &&
@@ -368,12 +374,9 @@ class HeaderNav extends Component {
           <React.Fragment>
             {isMobileSearch && (
               <div
-                className={classList(
-                  'mobile-search-layout',
-                  isRTUXHomepage && 'homepage-rtux-navbar',
-                )}
+                className={classList('mobile-search-layout', showNewHomePage && 'homepage-rtux-navbar')}
               >
-                <UniversalSearch isRTUXHomepage={isRTUXHomepage} />
+                <UniversalSearch showNewHomePage={showNewHomePage} />
               </div>
             )}
             {mode === 'test' && isMobileDevice() && (

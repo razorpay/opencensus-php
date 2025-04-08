@@ -27,7 +27,9 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
+import {
+  setRecommendedProduct,
+} from 'merchant/components/Activation/ActivationUtils';
 import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
 import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
@@ -77,10 +79,12 @@ import {
   trackIAClose,
   iaActivations,
 } from './ga';
+import { isEligibleForFtuxV2 } from './FTUX/utils';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
 const RTUXHomepage = lazyLoader(() => import(/* webpackChunkName: 'RTUXHomepage' */ './RTUX'));
+const FTUXHomepage = lazyLoader(() => import(/* webpackChunkName: 'FTUXHomepage' */ './FTUX'));
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -938,6 +942,7 @@ class HomeContainer extends Component {
       user.activation_status === 'activated' &&
       isBankAccountDetailsAllowed({ abExperiments, isConfigTagEnabled });
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
+    const isFtuxV2Enabled = isEligibleForFtuxV2({ user, abExperiments });
 
     const hasLakhmiVilasBankAcc =
       user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
@@ -1154,7 +1159,11 @@ class HomeContainer extends Component {
             />
           )}
         </ShowWhen>
-        {isRTUXHomepage ? (
+        {isFtuxV2Enabled ? (
+          <SuspenseWithLoader type={isMobile ? 'full' : 'centerToMainContent'}>
+            <FTUXHomepage />
+          </SuspenseWithLoader>
+        ) : isRTUXHomepage ? (
           <SuspenseWithLoader type={isMobile ? 'full' : 'centerToMainContent'}>
             <RTUXHomepage />
           </SuspenseWithLoader>

@@ -61,7 +61,7 @@ class UserController extends Controller
 
     const ONBOARDING_FTUX = 'ONBOARDING_FTUX';
 
-    const ONBOARDING_FTUX_AFTER_L2 = 'ONBOARDING_FTUX_AFTER_L2';
+    const ONBOARDING_FTUX_V2 = 'ONBOARDING_FTUX_V2';
 
     const ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
 
@@ -1166,8 +1166,8 @@ class UserController extends Controller
         }
 
         if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding') || ($signupCampaign === 'sg_signup')) and
-            (empty($details['activation_form_milestone']) === true) and
-            ($submitted == 0))
+            ((empty($details['activation_form_milestone']) === true) ||
+            ($submitted == 0)))
         {
             return true;
         }
@@ -2352,17 +2352,17 @@ class UserController extends Controller
                 return false;
             }
 
+            if($this->isFtuxV2ExperimentEnabled() === true)
+            {
+                return false;
+            }
+
             if($this->isFtuxExperimentEnabled() === false)
             {
                 return false;
             }
 
             if(empty($_COOKIE['ftuxSession']) === false)
-            {
-                return false;
-            }
-
-            if($this->isFtuxAfterL2ExperimentEnabled($details) === true and $details[MerchantConstants::ACTIVATION_STATUS] === null)
             {
                 return false;
             }
@@ -2435,10 +2435,10 @@ class UserController extends Controller
      *
      * @return bool
      */
-    private function isFtuxAfterL2ExperimentEnabled()
+    private function isFtuxV2ExperimentEnabled()
     {
 
-        $experimentId = config('splitz.experiments')[self::ONBOARDING_FTUX_AFTER_L2];
+        $experimentId = config('splitz.experiments')[self::ONBOARDING_FTUX_V2];
 
         if (!array_key_exists($experimentId, $this->splitzExprimentData))
         {

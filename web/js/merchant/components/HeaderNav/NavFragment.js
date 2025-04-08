@@ -15,7 +15,7 @@ import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducer
 import { FtuxModal } from './FtuxModal';
 import SwitchMerchant from './SwitchMerchant';
 import ModesDropdown from './SwitchMode';
-import { isEligibleForFtux } from '../Activation/ActivationUtils';
+import { isEligibleForFtuxV1 } from '../Activation/ActivationUtils';
 
 class NavFragment extends Component {
   constructor(props) {
@@ -66,7 +66,7 @@ class NavFragment extends Component {
     const { splitz, user } = this.props;
     const { abExperiments } = splitz ?? {};
 
-    const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+    const isFtuxEnabled = isEligibleForFtuxV1({ user, abExperiments });
 
     if (!isFtuxEnabled || user.isTransacted) {
       this.setState({
@@ -90,7 +90,7 @@ class NavFragment extends Component {
 
     const { abExperiments } = splitz ?? {};
 
-    const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+    const isFtuxEnabled = isEligibleForFtuxV1({ user, abExperiments });
     if (isFtuxEnabled) {
       this.shouldShowFtuxModal();
     }
@@ -100,7 +100,7 @@ class NavFragment extends Component {
     const { user, splitz } = this.props;
     const { abExperiments } = splitz ?? {};
 
-    const isFtuxEnabled = isEligibleForFtux({ user, abExperiments });
+    const isFtuxEnabled = isEligibleForFtuxV1({ user, abExperiments });
 
     if (isFtuxEnabled && !user.isTransacted) {
       this.shouldShowFtuxModal();
@@ -118,7 +118,7 @@ class NavFragment extends Component {
       canShowMtuPopup,
       mtuOfferCount,
       exclusive_offers,
-      isRTUXHomepage,
+      showNewHomePage,
     } = this.props;
     const { showSwitchModeTooltip, showFtuxModal } = this.state;
 
@@ -134,7 +134,7 @@ class NavFragment extends Component {
 
     return (
       <React.Fragment>
-        {!isRTUXHomepage && (
+        {!showNewHomePage && (
           <GrowthAssetEB>
             <ShowWhen
               // eslint-disable-next-line no-shadow
@@ -155,7 +155,7 @@ class NavFragment extends Component {
             modeFormatted={modeFormatted}
             onSwitchMode={onSwitchMode}
             isTestModeBlocked={user.isTestModeBlocked}
-            isRTUXHomepage={isRTUXHomepage}
+            showNewHomePage={showNewHomePage}
           />
           {showSwitchModeTooltip && (
             <Popover persistent={true} theme="dark">
@@ -170,7 +170,7 @@ class NavFragment extends Component {
             </Popover>
           )}
         </li>
-        {!isRTUXHomepage && Object.keys(user.merchants).length > 1 ? (
+        {!showNewHomePage && Object.keys(user.merchants).length > 1 ? (
           <li className="SwitchMerchantDropdown">
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>

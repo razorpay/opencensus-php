@@ -29,6 +29,7 @@ import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import getPricingPlan from 'merchant/components/Announcements/MonetizationCharges/utils/getPricingPlan';
 import { getNoCodeMonetizationExperiment } from 'merchant/components/Announcements/MonetizationCharges/utils/getNoCodeMonetizationExperiment';
+import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const CustomBadge = ({ text }: { text: string }) => {
   return (
@@ -74,6 +75,8 @@ const NavLinkItem = ({
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
+  const isFtuxV2Enabled = useIsFtuxV2Enabled();
+  const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
   const isNoCodeMonetizationExperimentOn = getNoCodeMonetizationExperiment();
   const pricingPlanForMerchant = getPricingPlan(user, isNoCodeMonetizationExperimentOn);
 
@@ -157,7 +160,7 @@ const NavLinkItem = ({
           <i className="i i-chevron-right" />
           {Tags}
         </LinkButtonItem>
-      ) : isRTUXHomepage ? (
+      ) : showNewHomePage ? (
         <LinkItemV2 to={url} onClick={onNavLinkItemClick} isActive={isActive}>
           {isActive && (
             <Image
@@ -174,7 +177,7 @@ const NavLinkItem = ({
               size="medium"
             />
           ) : (
-            <Icon className={`i ${icon}`} isRTUXHomepage={isRTUXHomepage} isActive={isActive} />
+            <Icon className={`i ${icon}`} showNewHomePage={showNewHomePage} isActive={isActive} />
           )}
 
           <Text

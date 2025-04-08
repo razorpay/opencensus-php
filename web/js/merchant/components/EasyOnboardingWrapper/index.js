@@ -6,7 +6,7 @@ import { useSplitzService } from 'common/splitz';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 
-import { isEligibleForFtux } from '../Activation/ActivationUtils';
+import { isEligibleForFtuxV1 } from '../Activation/ActivationUtils';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const EasyOnboardingWrapper = (props) => {
@@ -28,7 +28,7 @@ const EasyOnboardingWrapper = (props) => {
 
   const { loading, data: isAdmin } = isAdminAsMerchant;
 
-  const isFtuxEnabled = isEligibleForFtux({ user, abExperiments, isAdmin });
+  const isFtuxEnabled = isEligibleForFtuxV1({ user, abExperiments, isAdmin });
 
   const getShouldRouteToEasy = async () => {
     if (isSourceRX || isAdmin) {

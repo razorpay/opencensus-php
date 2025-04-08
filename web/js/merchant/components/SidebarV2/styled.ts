@@ -4,7 +4,7 @@ import styled, { css } from 'styled-components';
 import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 
 interface RTUXProps {
-  isRTUXHomepage: boolean;
+  showNewHomePage: boolean;
   isMobile: boolean;
 }
 
@@ -13,20 +13,20 @@ interface SidebarContainerProps extends RTUXProps {
 }
 
 export const SidebarContainer = styled.div<SidebarContainerProps>(
-  ({ theme, isRTUXHomepage, isVisible, isMobile }) => `
+  ({ theme, showNewHomePage, isVisible, isMobile }) => `
   display: flex;
   flex-direction: column;
   position: fixed;
   top: 0;
   bottom: 0;
   background-color: ${
-    isRTUXHomepage
+    showNewHomePage
       ? isMobile
         ? theme.colors.surface.background.cloud.subtle
         : 'transparent'
       : '#2e3345'
   };
-  width: ${isRTUXHomepage ? 216 : 248}px;
+  width: ${showNewHomePage ? 216 : 248}px;
   z-index: ${isMobile ? 1001 : DASHBOARD_ZINDEX_MAP.sidebar};
   transform: translate(-100%,0);
   transition: transform ${makeMotionTime(theme.motion.delay.short)} ${theme.motion.easing.standard};
@@ -41,9 +41,9 @@ export const SidebarContainer = styled.div<SidebarContainerProps>(
 );
 
 export const SidebarSection = styled.section<RTUXProps>(
-  ({ isRTUXHomepage, isMobile, theme }) => `
+  ({ showNewHomePage, isMobile, theme }) => `
   ${
-    isRTUXHomepage
+    showNewHomePage
       ? ''
       : `&:after {
     content: '';
@@ -61,7 +61,7 @@ export const SidebarSection = styled.section<RTUXProps>(
     padding-top: 0px;
   }
   background-color: ${
-    isRTUXHomepage
+    showNewHomePage
       ? isMobile
         ? theme.colors.surface.background.cloud.subtle
         : 'transparent'
@@ -91,8 +91,8 @@ export const NavContent = styled.div`
 `;
 
 export const Navigation = styled.nav<RTUXProps>(
-  ({ isRTUXHomepage }) => `
-  padding: ${isRTUXHomepage ? `8px` : `15px`} 0 30px;
+  ({ showNewHomePage }) => `
+  padding: ${showNewHomePage ? `8px` : `15px`} 0 30px;
   overflow-y: auto;
   overflow-x: hidden;
   -ms-overflow-style: none;

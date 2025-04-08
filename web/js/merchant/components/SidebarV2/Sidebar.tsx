@@ -58,6 +58,7 @@ import { COMMON_PRODUCTS, PRODUCTS_DATA, CUSTOMERS_PRODUCTS } from './utils/Prod
 import { getLeftNavItemsCache, setLeftNavItemsCache } from './utils/Sidebar';
 import { getActiveTab, initializeRoutes } from './utils/href';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
+import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -77,6 +78,9 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
 
   const { isConfigTagEnabled } = useI18Service();
   const isRTUXHomepage = useIsRTUXHomepageEnabled();
+  const isFtuxV2Enabled = useIsFtuxV2Enabled();
+
+  const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
 
   const {
     abExperiments: { diwali_themed_logo },
@@ -170,22 +174,18 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const leftNavItems = cachedLeftNavItems || data;
   const isSidebarVisible = !isMobile || (isMobile && shouldShowMobileMenu);
   // Enabled for sidebarV2 in blade and check redux value only on mobile
-  const shouldShowMobileOverlay = isRTUXHomepage && isMobileDevice() && shouldShowMobileMenu;
+  const shouldShowMobileOverlay = showNewHomePage && isMobileDevice() && shouldShowMobileMenu;
 
-  const rzpLogoSource = isRTUXHomepage
+  const rzpLogoSource = showNewHomePage
     ? isDiwaliThemedLogoEnabled
       ? RZP_LOGO_URL_DARK_DIWALI
       : RZP_LOGO_URL_DARK
     : logoURL || (isDiwaliThemedLogoEnabled ? RZP_LOGO_URL_LIGHT_DIWALI : RZP_LOGO_URL);
 
   return (
-    <BladeProvider themeTokens={bladeTheme} colorScheme={isRTUXHomepage ? 'light' : 'dark'}>
-      <SidebarContainer
-        isRTUXHomepage={isRTUXHomepage}
-        isVisible={isSidebarVisible}
-        isMobile={isMobile}
-      >
-        <SidebarSection isRTUXHomepage={isRTUXHomepage} isMobile={isMobile}>
+    <BladeProvider themeTokens={bladeTheme} colorScheme={showNewHomePage ? 'light' : 'dark'}>
+      <SidebarContainer showNewHomePage={showNewHomePage} isVisible={isSidebarVisible} isMobile={isMobile}>
+        <SidebarSection showNewHomePage={showNewHomePage} isMobile={isMobile}>
           <Link to="/dashboard" aria-label="brand-logo home page link">
             <Logo src={rzpLogoSource} role="img" aria-label="brand-logo" alt="brand-logo" />
           </Link>
@@ -196,7 +196,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
             !isConfigTagEnabled('onboarding.onboarding')
           }
         >
-          {isRTUXHomepage ? null : (
+          {showNewHomePage ? null : (
             <ActivationProgress
               onSidebarActivationClick={handleActivationClick}
               user={user}
@@ -204,7 +204,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
             />
           )}
         </ShowWhen>
-        <Navigation isRTUXHomepage={isRTUXHomepage}>
+        <Navigation showNewHomePage={showNewHomePage}>
           <NavContent>
             <>
               {' '}
@@ -219,7 +219,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                   />
                 ))}
               </Box>
-              {isRTUXHomepage ? <Box marginBottom="spacing.6" /> : <Divider />}
+              {showNewHomePage ? <Box marginBottom="spacing.6" /> : <Divider />}
               {leftNavItems.map((each) => (
                 <NavLinkProduct
                   key={each.section_name}

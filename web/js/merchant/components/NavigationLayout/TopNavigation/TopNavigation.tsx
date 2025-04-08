@@ -58,6 +58,7 @@ import { productIconsMap, ExtendedListItems } from '../utils';
 import { useNavigationLayoutContext } from '../context';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const WhatsNew = lazyLoader(
   () => import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -80,8 +81,9 @@ const TopNavigation = ({
   renderFullPageView,
 }) => {
   const isRTUXHomepageEnabled = useIsRTUXHomepageEnabled();
+  const isFtuxV2ExpEnabled = useIsFtuxV2Enabled();
   const { selectedProduct, setProduct } = useConnectedNavigation();
-  const isRTUXHomepage = isSidebarV2 && isRTUXHomepageEnabled;
+  const showNewHomePage = isSidebarV2 && (isRTUXHomepageEnabled || isFtuxV2ExpEnabled);
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -98,7 +100,7 @@ const TopNavigation = ({
     modeFormatted,
     onSwitchMode,
     onSwitchMerchant,
-    isRTUXHomepage,
+    showNewHomePage,
     isConnectedNavigation: true,
     selectedProduct,
   };
@@ -290,7 +292,7 @@ const TopNavigation = ({
           <EcosystemDowntimes
             mode={mode}
             showMobileNav={showMobileNav}
-            isRTUXHomepage={false}
+            showNewHomePage={false}
             isConnectedNavigation={true}
           />
         )}
