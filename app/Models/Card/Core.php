@@ -125,47 +125,12 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($card);
 
-            $this->saveParValue($card, $input);
         }
 
         return $card;
     }
 
-    public function saveParValue($card, $input = null)
-    {
-        if(($this->checkIfFetchingParApplicable($card->getNetwork())) === false)
-        {
-            return;
-        }
 
-        try {
-
-            $id = UniqueIdEntity::generateUniqueId(); // Need to generate random string because we don't have access to task id, Also need to add random string generator for this
-
-            $variant = $this->app->razorx->getTreatment($id, Merchant\RazorxTreatment::PAR_ASYNC_FOR_CARD_FINGERPRINT, $this->mode);
-
-            $this->trace->info(TraceCode::PAR_ASYNC_JOB, [
-                "variant" => $variant
-            ]);
-
-            if (strtolower($variant) === "on") {
-
-                $this->trace->info(TraceCode::ASYNC_FETCH_PAR_RAZORX_VARIANT, [
-                    'razorx_variant' => $variant,
-                ]);
-
-                ParAsyncTokenisationJob::dispatch($this->mode, $card->getId(), $input["number"]);
-
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->error(TraceCode::ERROR_EXCEPTION, [
-                "card_id" => $card->getId(),
-                "network" => $card->getNetwork()
-            ]);
-        }
-    }
 
     public function migrateToTokenizedCard($card, $merchant, $input, $payment = null, $asyncTokenisationJobId, $callback=null)
     {
@@ -540,8 +505,6 @@ class Core extends Base\Core
         $iin = $this->fillNetworkDetails($card, $input);
 
         $card->saveOrFail();
-
-        $this->saveParValue($card, $input);
 
         $card = $this->repo->card->getCardById($card->getId());
 
