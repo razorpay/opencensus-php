@@ -1446,5 +1446,7 @@ return array(
 
     'pass_rejected_unused_tokens' => env('PASS_REJECTED_UNUSED_TOKENS'),
 
-    'upi_auth_link_frequency_as_presented_default' => env('UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT')
+    'upi_auth_link_frequency_as_presented_default' => env('UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT'),
+
+    'banking_redirection_enabled' => env('BANKING_REDIRECTION_ENABLED'),
 );

@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 
 class Service extends Base\Service
@@ -24,7 +25,16 @@ class Service extends Base\Service
 
         $merchantType = $this->getMerchantType($input);
 
-        $this->validateInvitation($orgId, $input);
+        $properties = [
+            'id'            => $orgId,
+            'experiment_id' => $this->app['config']->get('app.banking_redirection_enabled'),
+        ];
+
+        $isExperimentEnabled =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($isExperimentEnabled === false){
+            $this->validateInvitation($orgId, $input);
+        }
 
         (new Validator)->validateOrgSpecificInput(
             'sendInvitation', $input, $orgId, $entity);
