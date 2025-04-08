@@ -737,6 +737,11 @@ class Entity extends Base\PublicEntity
             self::MAX_PAYMENT_AMOUNT_DEFAULT                    => 3000000,
             self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED   => 60000,
             self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT      => 3000000
+        ],
+        "SG" => [
+            self::MAX_PAYMENT_AMOUNT_DEFAULT                    => 1000000,
+            self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED   => 1000000,
+            self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT      => 1500000
         ]
     ];
 
