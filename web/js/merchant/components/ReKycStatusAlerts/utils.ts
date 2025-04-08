@@ -57,7 +57,7 @@ export const getParamsFromUser = (user: User) => {
   const status = user.rekyc_status;
   const canPerformActions = user.isAdminOrOwner;
   const ncCount = (user.manual_rekyc?.status ?? []).filter(
-    ({ rekyc_status }) => rekyc_status === REKYC_STATUS_OPTIONS.NEEDS_CLARIFICATION,
+    (changelog) => changelog?.rekyc_status === REKYC_STATUS_OPTIONS.NEEDS_CLARIFICATION,
   ).length;
 
   return {

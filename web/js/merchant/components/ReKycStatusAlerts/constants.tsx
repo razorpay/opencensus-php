@@ -6,8 +6,8 @@ import { User } from 'common/typings';
 import { Strong } from './styled';
 import { getParamsFromUser, onClickRedirectNC, onClickRedirectVKYC } from './utils';
 
-const REKYC_DEADLINE = '31st March, 2025';
-const REKYC_DEADLINE_SHORT = '31st March';
+const REKYC_DEADLINE = '31st May, 2025';
+const REKYC_DEADLINE_SHORT = '31st May';
 
 export const REKYC_STATUS_OPTIONS = {
   UNDER_REVIEW: 'under_review',
