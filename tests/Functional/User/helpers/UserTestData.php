@@ -4113,6 +4113,27 @@ return [
         ],
     ],
 
+    'testFailedLogin2faNotSetupWithCustomInviteMerchantFlow' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ], 
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'contact_mobile' => '9949939921',
+            ]
+        ]
+    ],
+
     'testSSWFSmsOtpViaStork' => [
         'request' => [
             'url'     => '/users/otp/send',

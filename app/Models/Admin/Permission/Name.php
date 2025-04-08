@@ -1241,6 +1241,9 @@ class Name
 
     const UPDATE_ALL_ODS_CONFIG = 'update_all_ods_config';
 
+    // this permissin allow admin to utilize custom merchant invite flow
+    const CUSTOM_INVITE_MERCHANT_FLOW = 'custom_invite_merchant_flow';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
