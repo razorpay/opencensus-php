@@ -505,6 +505,11 @@ class UserController extends Controller
                 'isChunkedBasedStreamingDisabled' => $isChunkedBasedStreamingDisabled
             ]);
 
+            $data['isNewAuthReArch'] = $this->isNewAuthReArch();
+            $this->trace->info(TraceCode::NEW_AUTH_REARCH_ENABLED, [
+                'result' => $data['isNewAuthReArch'],
+            ]);
+
 
             if (($isMerchantLogin === false) || ($isChunkedBasedStreamingDisabled === true))
             {
@@ -539,11 +544,6 @@ class UserController extends Controller
             }
             else
             {
-                $data['isNewAuthReArch'] = $this->isNewAuthReArch();
-                $this->trace->info(TraceCode::NEW_AUTH_REARCH_ENABLED, [
-                    'result' => $data['isNewAuthReArch'],
-                ]);
-
                 // Chunk based straming: send second chunk
                 $view = view('merchant.index2', $data)->render();
                 $this->trace->info(TraceCode::CHUNKED_DETAILS, [

@@ -7,6 +7,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { ShellCommonProvider } from '@apps/shell/src/shared/contexts/ShellCommonProvider';
 import { STAGE } from '@apps/shell/src/env';
 
+//dummy comment
 export const ShellBrowserProvider = ({ children, queryClient }) => {
   return (
     <ErrorBoundary>
