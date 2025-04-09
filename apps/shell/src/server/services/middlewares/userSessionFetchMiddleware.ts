@@ -6,8 +6,9 @@ import { NextFunction, Request, Response } from 'express';
 
 type UserSessionFetchMiddleware = () => (req: Request, res: Response, next: NextFunction) => void;
 
-/** Try fetching user, if there's a response, then session is authenticated
- *  else makes relevant redirects
+/**
+ * Try fetching user, if there's a response, then session is authenticated
+ * else makes relevant redirects
  */
 export const userSessionFetchMiddleware: UserSessionFetchMiddleware =
   () =>

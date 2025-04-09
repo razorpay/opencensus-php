@@ -26,9 +26,22 @@ const path = require('path');
 
     writeFileSync(commitFilePath, JSON.stringify(executionData, null, 2), 'utf8');
 
-    await execCommand(
-      `aws s3 cp ${commitFilePath} s3://${targetBucket}/dashboard/ci-archive/dashboard-core/skipped-workflows/.playwright/${commitSha}.json --cache-control "public,max-age=31536000"`
-    );
+    const awsWriteFile = async (suitePath) => {
+      await execCommand(
+        `aws s3 cp ${commitFilePath} s3://${targetBucket}/dashboard/ci-archive/dashboard-core/skipped-workflows/${suitePath}/${commitSha}.json --cache-control "public,max-age=31536000"`,
+      );
+    };
+
+    switch (workflowName) {
+      case 'Run E2E Tests':
+        await awsWriteFile('.playwright');
+        break;
+      case 'Code Integrity Suite':
+        await awsWriteFile('.code-integrity-suite');
+        break;
+      default:
+        throw new Error(`Unsupported Workflow Name: ${workflowName}`);
+    }
 
     rmSync(tempDir, { recursive: true, force: true });
 

@@ -25,9 +25,31 @@ env:
   AWS_STAGE_DASHBOARD_ASSETS_CDN_BUCKET: "rzp-1018-nonprod-dashboard-assets"
 
 jobs:
+  check-skip:
+    name: Check If Skip Applicable
+    runs-on: [non-api-premium]
+    outputs:
+      skip_job: ${{ steps.check-skip.outputs.skip_job }}
+    steps:
+      - name: Check If Skip Applicable
+        id: check-skip
+        run: |
+          URL="https://dashboard-assets.np.razorpay.in/dashboard/ci-archive/dashboard-core/skipped-workflows/.code-integrity-suite/${{ github.sha }}.json"
+          echo "Checking if skip file exists: $URL"
+          if curl --head --silent --fail "$URL" > /dev/null; then
+            echo "skip_job=true" >> $GITHUB_OUTPUT
+            echo "Skip file exists. Exiting job successfully."
+            exit 0
+          else
+            echo "skip_job=false" >> $GITHUB_OUTPUT
+            echo "Not applicable"
+          fi
+
   report-summary-init:
     name: Generate Jest Analysis Report Links
     runs-on: [non-api-premium]
+    needs: [check-skip]
+    if: ${{ needs.check-skip.outputs.skip_job == 'false' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,6 +77,8 @@ jobs:
   run-jest-analysis-memory-intensive:
     name: Jest - MI
     runs-on: [non-api-premium, cache-2]
+    needs: [check-skip]
+    if: ${{ needs.check-skip.outputs.skip_job == 'false' }}
     strategy:
       fail-fast: false
       matrix:
@@ -111,12 +135,12 @@ jobs:
           if [ "${{ steps.run-tests.outcome }}" != "success" ]; then
             exit 1
           fi
-  
 
   combine-sharded-analysis:
     name: Combine Sharded Jest Analysis
     runs-on: [non-api-premium]
-    needs: [run-jest-analysis-memory-intensive]
+    needs: [run-jest-analysis-memory-intensive, check-skip]
+    if: ${{ needs.check-skip.outputs.skip_job == 'false' }}
     strategy:
       matrix:
         targetProject: ${{ fromJson(inputs.memory_intensive_ut_configured_apps) }}
@@ -170,6 +194,8 @@ jobs:
   run-jest-analysis-default:
     name: Jest - Default
     runs-on: [non-api-premium, cache-2]
+    needs: [check-skip]
+    if: ${{ needs.check-skip.outputs.skip_job == 'false' }}
     strategy:
       fail-fast: false
       matrix:

@@ -9,6 +9,7 @@ on:
         required: true
         options:
           - "Run E2E Tests"
+          - "Code Integrity Suite"
       doe_approval:
         description: "DOE Approval Slack Thread URL"
         type: string
@@ -47,7 +48,7 @@ jobs:
             console.log("Labeler: ", actor);
 
             // Check if the user who triggered the workflow is in the approversList
-            const approversList = ["rahul-rzp", "abhieshekumar", "vinilvasani", "AniketOnWeb", "joel-jaimon", "dhruvdutt"];
+            const approversList = ["rahul-rzp", "abhieshekumar", "vinilvasani", "shridhar52war", "joel-jaimon"];
             if (!approversList.includes(actor)) {
               console.log(`User ${actor} is not in the approvers list.`);
               process.exit(1);
