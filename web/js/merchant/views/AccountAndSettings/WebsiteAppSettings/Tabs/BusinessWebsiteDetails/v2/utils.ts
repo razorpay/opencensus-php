@@ -1,6 +1,6 @@
 import { User } from 'common/typings';
 import { autoPrefixUrls } from 'common/utils/rzp-utils';
-import { isEmail, isPhone, isValidWebsite } from 'common/utils/validators';
+import { isEmail, isPhoneNumberIndia, isValidWebsite } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 
@@ -226,7 +226,7 @@ export const policyPageFormCreationValidator = (
           newFormState[field].valid = ValidationState.ERROR;
         }
       } else if (field === WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER) {
-        if (!newFormState[field].value || !isPhone(newFormState[field].value)) {
+        if (!newFormState[field].value || !isPhoneNumberIndia(newFormState[field].value)) {
           hasError = true;
           newFormState[field].valid = ValidationState.ERROR;
         }
@@ -544,7 +544,7 @@ const alertText: Record<NonNullableStatus, string> = {
   [Status.WorkflowNeedsClarification]: 'Our team needs a few more details to verify your website',
   [Status.Rejected]: 'Our team has rejected your website upon careful verification',
   [Status.WebsiteUpdateFailed]: 'Oops, something went wrong',
-  [Status.WebsiteLivenessFailed]: 'Attention: We noticed that your website is not live',
+  [Status.WebsiteLivenessFailed]: 'Attention: We noticed that your website is currently not live.',
 };
 
 export const getAlertText = (status, mainPageUrl): string => {
@@ -567,7 +567,7 @@ export const getAlertText = (status, mainPageUrl): string => {
     case Status.WebsiteUpdateFailed:
       return `Oops, something went wrong with your website (${mainPageUrl})`;
     case Status.WebsiteLivenessFailed:
-      return `Attention: We noticed that your website (${mainPageUrl}) is not live`;
+      return `Attention: We noticed that your website (${mainPageUrl}) is currently not live.`;
     default:
       return alertText[status] ?? '';
   }

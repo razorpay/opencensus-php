@@ -31,6 +31,7 @@ export {
   isAmount,
   isPhone,
   isMobile,
+  isPhoneNumberIndia,
   isValidPinCode,
   isValidName,
   isInteger,

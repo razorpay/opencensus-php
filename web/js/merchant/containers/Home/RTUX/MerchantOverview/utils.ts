@@ -44,7 +44,6 @@ export function getAnalyticsHeroCardStateIdentifier(heroCardData) {
       UpcomingSettlementKeys.UPCOMING_SETL_BLOCK_FOH,
       UpcomingSettlementKeys.UPCOMING_SETL_BLOCK_MOH,
       UpcomingSettlementKeys.UPCOMING_SETL_BLOCK_SOH,
-      UpcomingSettlementKeys.UPCOMING_SETL_SKIPPED_NO_NEXT_SETTLEMENT,
     ].includes(settlement.upcoming_settlement?.title_key)
   ) {
     return settlement.upcoming_settlement.title_key;

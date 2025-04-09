@@ -49,7 +49,7 @@ web/js/common/utils/posAgent.ts                                          @razorp
 environment/.env.vault.j2                                                @razorpay-sanjib @shubham25kr07 @loombarishav @joel-jaimon @rahul-rzp
 
 # Each change to homepage needs to be reviewed by design team
-web/js/merchant/containers/Home/RTUX/index.tsx                           @razorpay/ssab-fe
+web/js/merchant/containers/Home/RTUX                                     @razorpay/ssab-fe
 
 # Monitoring the folders until old cold is removed
 web/js/merchant/reducers/submerchant.js                                  @1995navinkumar @shashi-vc

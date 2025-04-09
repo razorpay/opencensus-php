@@ -96,7 +96,6 @@ export const getSettlementConfig = (settlement: ISettlementData): ISettlementCon
       UpcomingSettlementKeys.UPCOMING_SETL_BLOCK_FOH,
       UpcomingSettlementKeys.UPCOMING_SETL_BLOCK_MOH,
       UpcomingSettlementKeys.UPCOMING_SETL_BLOCK_SOH,
-      UpcomingSettlementKeys.UPCOMING_SETL_SKIPPED_NO_NEXT_SETTLEMENT,
     ].includes(upcoming_settlement.title_key);
   }
   if (previous) {
@@ -105,7 +104,12 @@ export const getSettlementConfig = (settlement: ISettlementData): ISettlementCon
       settlementRules.shouldShowPrevious = true;
     }
     // if there is no today or upcomming settlement then just show previous settlement
-    if (!today && !upcoming_settlement) {
+    // or if the upcomming settlement is skipped and there is no next settlement time
+    if (
+      (!today && !upcoming_settlement) ||
+      upcoming_settlement?.title_key ===
+        UpcomingSettlementKeys.UPCOMING_SETL_SKIPPED_NO_NEXT_SETTLEMENT
+    ) {
       settlementRules.shouldShowOnlyPreviousSettlement = true;
     }
   }

@@ -297,8 +297,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
         title={title}
         description={
           <Text color="surface.text.gray.subtle" wordBreak="break-word">
-            Please try adding the website again. If the issue persists, reach out to our support
-            team for assistance.
+            Please submit your request after the website is fully live and functional.
           </Text>
         }
       />

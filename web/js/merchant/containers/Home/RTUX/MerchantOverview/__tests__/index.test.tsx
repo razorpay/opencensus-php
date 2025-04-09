@@ -317,9 +317,8 @@ const runMerchantOverviewTestSuite = ({ isMobile }) => {
       renderApp({
         data: heroCardsVariantsData.SETTLEMENT_UPCOMMING_PAUSED_NO_NEXT_SETTLEMENT,
       });
-      expect(screen.getByText(`Upcoming settlements are`)).toBeVisible();
-      expect(screen.getByText(SettlementStatusBadge.paused)).toBeVisible();
-      expect(screen.getByText(TEXT_CONTENT.UPCOMMING_SKIP_NO_NEXT)).toBeVisible();
+      expect(screen.getByText(`Last settlement`)).toBeVisible();
+      expect(screen.getByText(titleCase(SettlementStatusBadge.processed))).toBeVisible();
     });
 
     test(`should show ${heroCardVariants.SETTLEMENT_UPCOMMING_SKIP_NEGATIVE_BALANCE} case`, () => {

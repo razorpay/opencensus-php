@@ -228,6 +228,7 @@ function Questionare({
                         label="Enter your support contact number"
                         placeholder="Phone number"
                         type="telephone"
+                        maxCharacters="10"
                         name={WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER}
                         onChange={handleTextInputChange}
                         value={
