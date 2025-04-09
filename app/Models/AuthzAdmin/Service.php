@@ -7,6 +7,7 @@ use App;
 use RZP\Models\Base;
 use RZP\Models\Roles;
 use RZP\Models\User\BankingRole;
+use RZP\Models\User\Role;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 use AuthzAdmin\Client\ApiException;
@@ -276,6 +277,12 @@ class Service extends Base\Service
 
     public function adminAPIGetRole(string $roleId, string|null $ownerId, bool $expandChildren = false)
     {
+        // Returning early if this is a standard role and does not belong to RazorpayX's CAC
+        if (Role::exists($roleId) && !BankingRole::exists($roleId))
+        {
+            return [];
+        }
+
         if (BankingRole::isCACStandardRole($roleId))
         {
             $roleId = BankingRole::getStandardRoleNameFromRoleId($roleId);
