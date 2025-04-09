@@ -100,6 +100,18 @@ class Cors
         'hdfc_collect_now_accounts_domain' => [
             'url_config'    => 'app.hdfc_collect_now_accounts_url'
         ],
+
+        'yesbank_accounts_domain' => [
+            'url_config'    => 'app.yesbank_accounts_url'
+        ],
+
+        'idfcbank_accounts_domain' => [
+            'url_config'    => 'app.idfcbank_accounts_url'
+        ],
+
+        'indusindbank_accounts_domain' => [
+            'url_config'    => 'app.indusindbank_accounts_url'
+        ],
     ];
 
     protected function shouldAllowCors($request, $originHost) : bool

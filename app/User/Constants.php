@@ -341,7 +341,10 @@ class Constants
         'hdfc.razorpay.com'                => ['redirect_url' => 'https://hdfc-accounts.razorpay.com', 'id'=>'BANKING_REDIRECTION_ENABLED'],
         'hdfcbankcollectnow.razorpay.com' => ['redirect_url' => 'https://hdfcbankcollectnow-accounts.razorpay.com', 'id'=>'BANKING_REDIRECTION_ENABLED'],
         'dashboard-axis.dev.razorpay.in'   => ['redirect_url' => 'https://accounts-axis.np.razorpay.in', 'id'=>'BANKING_REDIRECTION_ENABLED'],
-        'dashboard-axiseasypay.dev.razorpay.in' => ['redirect_url' => 'https://accounts-axiseasypay.np.razorpay.in', 'id'=>'BANKING_REDIRECTION_ENABLED']
+        'dashboard-axiseasypay.dev.razorpay.in' => ['redirect_url' => 'https://accounts-axiseasypay.np.razorpay.in', 'id'=>'BANKING_REDIRECTION_ENABLED'],
+        'idfcbank.razorpay.com' => ['redirect_url' => 'https://idfcbank-accounts.razorpay.com', 'id'=>'BANKING_REDIRECTION_ENABLED'],
+        'indusindbankltd.razorpay.com' => ['redirect_url' => 'https://indusindbankltd-accounts.razorpay.com', 'id'=>'BANKING_REDIRECTION_ENABLED'],
+        'yesbank.razorpay.com' => ['redirect_url' => 'https://yesbank-accounts.razorpay.com', 'id'=>'BANKING_REDIRECTION_ENABLED']
     ];
 
     const PHONE_NUMBER_EXTENSIONS = [

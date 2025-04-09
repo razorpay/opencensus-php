@@ -301,6 +301,9 @@ return array(
     'hdfc_giga_accounts_url'      => env('HDFC_GIGA_ACCOUNTS_URL'),
     'hdfc_vas_accounts_url' => env('HDFC_VAS_ACCOUNTS_URL'),
     'hdfc_collect_now_accounts_url' => env('HDFC_COLLECT_NOW_ACCOUNTS_URL'),
+    'yesbank_accounts_url' => env('YESBANK_ACCOUNTS_URL'),
+    'idfcbank_accounts_url' => env('IDFCBANK_ACCOUNTS_URL'),
+    'indusindbank_accounts_url' => env('INDUSINDBANK_ACCOUNTS_URL'),
 
     'razorassist' => [
         'url'       => env('RAZORASSIST_HOST_URL'),
