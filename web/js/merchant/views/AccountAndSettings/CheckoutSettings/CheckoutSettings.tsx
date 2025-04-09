@@ -116,7 +116,9 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           >
             <NavLink to={ROUTES_INFO.TRUSTED_BADGE}>Trusted Badge</NavLink>
           </ShowWhen>
-          <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
+          <Box as="span">
+            <DocsLink title="Documentation" isTab={true} shouldApplyLineHeight={true} shouldFloatRight={true} />
+          </Box>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>

@@ -62,6 +62,9 @@ export const docsUrl = {
   INVITATION_PAYMENT_CODES_DOC_URL: `${docsDomain}/payments/dashboard/account-settings/international-payment-codes/${utmParam}`,
   OPTIMIZER_RULE_DOC_URL: `${docsDomain}/payments/optimizer/create-custom-rule/${utmParam}`,
   POS_PARTNERSHIP_DOC_URL: `${docsDomain}/partners/pos/${utmParam}`,
+  PAYMENT_CONFIGURATION_DOC_URL: `${docsDomain}/payments/dashboard/account-settings/payment-configuration/`,
+  CHECKOUT_FEATURE_DOC_URL: `${docsDomain}/payments/dashboard/account-settings/checkout-features/`,
+  CHECKOUT_STYLING_DOC_URL: `${docsDomain}/payments/dashboard/account-settings/checkout-styling/`,
 };
 
 export const docsUrlTabs = {
@@ -69,6 +72,9 @@ export const docsUrlTabs = {
   [`/${checkoutSettings}/flash-checkout`]: docsUrl.FLASH_CHECKOUT_DOC_URL,
   [`/${checkoutSettings}/skip-mandatory-summary-page`]: docsUrl.MANDATE_DOC_URL,
   [`/${checkoutSettings}/trustedbadge`]: docsUrl.TRUSTED_BADGE_DOC_URL,
+  [`/${checkoutSettings}/payment-configuration`]: docsUrl.PAYMENT_CONFIGURATION_DOC_URL,
+  [`/${checkoutSettings}/checkout-features`]: docsUrl.CHECKOUT_FEATURE_DOC_URL,
+  [`/${checkoutSettings}/checkout-styling`]: docsUrl.CHECKOUT_STYLING_DOC_URL,
   [`/${businessSettings}/contact`]: docsUrl.ACCOUNT_DOC_URL,
   [`/${businessSettings}/business`]: docsUrl.BUSINESS_DETAILS_DOC_URL,
   [`/${businessSettings}/customer-support`]: docsUrl.CUSTOMER_SUPPORT_DETAILS_URL,

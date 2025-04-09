@@ -30,7 +30,7 @@ export function SetConfigAsDefaultModal({
 
   return (
     <Modal isOpen={isOpen} onDismiss={onClose} size="small">
-      <ModalHeader title="Save this Configuration as Deafult" />
+      <ModalHeader title="Save this Configuration as Default" />
       <ModalBody>
         <Text size="small" weight="regular" color="surface.text.gray.normal">
           Set this configuration as the default to be shown to users who don’t fall under any active

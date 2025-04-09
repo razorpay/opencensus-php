@@ -49,6 +49,7 @@ export function CreateConfigModal({
           onChange={({ value }) => setConfigName(value ?? '')}
           value={configName}
           autoFocus={true}
+          maxCharacters={22}
         />
       </ModalBody>
       <ModalFooter>

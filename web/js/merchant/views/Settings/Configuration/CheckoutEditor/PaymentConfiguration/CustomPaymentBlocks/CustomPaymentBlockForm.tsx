@@ -293,6 +293,7 @@ export function CustomPaymentBlockForm({ blockKey, isNew = false }: CustomPaymen
                 helpText="Use 2-3 words only"
                 value={block?.name ?? ''}
                 isRequired
+                maxCharacters={22}
                 onChange={({ value }) => {
                   handleBlockNameUpdate(value ?? '');
                 }}
