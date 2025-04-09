@@ -7345,7 +7345,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $app = App::getFacadeRoot();
 
-        if ($this->getCpsRoute() === Payment\Entity::API && $this->shouldPopulateFlowForMerchant() === true) {
+        if (($this->getCpsRoute() === Payment\Entity::API || $this->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE) && $this->shouldPopulateFlowForMerchant() === true) {
 
         // Allow populating Flow in UPI block for all payments
         $upiMetadata = $this->getUpiMetadata();
