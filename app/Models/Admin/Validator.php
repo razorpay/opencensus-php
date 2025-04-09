@@ -310,7 +310,8 @@ class Validator extends Base\Validator
         ConfigKey::ODS_CAPPING_CHECK_REQUIRED                                          => 'filled|boolean',
         ConfigKey::ODS_GLOBAL_LIMIT                                                    => 'filled|integer',
         ConfigKey::ODS_CAPPING_SCALE_FACTOR                                            => 'filled|integer',
-        ConfigKey::ODS_CAPPED_MID_LIST                                                 => 'filled|array'
+        ConfigKey::ODS_CAPPED_MID_LIST                                                 => 'filled|array',
+        ConfigKey::BALANCE_FETCH_MERCHANTS_BLACKLIST                                   => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
