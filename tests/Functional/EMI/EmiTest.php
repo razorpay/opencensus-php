@@ -362,4 +362,11 @@ class EmiTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testAddAUBLEmiPlansWithMerchant()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }
