@@ -490,6 +490,9 @@ class Name
     const NEEDS_CLARIFICATION_RESPONDED = 'needs_clarification_responded';
     const POS_EDIT_ACTIVATE_MERCHANT        = 'pos_edit_activate_merchant';
 
+    const MERCHANT_BDD_VERIFICATION_STATUS_CHANGE        = 'merchant_bdd_verification_status_update';
+
+
     // Permission to create workflow for an impersonating merchant found during Dedupe
     const IMPERSONATING_MERCHANT_DEDUPE       = 'impersonating_merchant_dedupe';
 

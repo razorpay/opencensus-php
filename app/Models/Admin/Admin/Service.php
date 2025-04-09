@@ -32,8 +32,10 @@ use RZP\Models\Admin\Group;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Admin\Action;
 use RZP\Events\AuditLogEntry;
+use RZP\Models\Admin\AdminsMeta;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Admin\Account as AdminMail;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
@@ -86,6 +88,11 @@ class Service extends Base\Service
 
         $admin->getValidator()->validateCredentials($input);
 
+        if($orgId === Constant::IDAM_AXIS_ORG)
+        {
+            $this->checkIDAMAdminDisabled($admin);
+        }
+
         try
         {
             $authPolicy = new AuthPolicy\Service;
@@ -129,6 +136,55 @@ class Service extends Base\Service
         $org = $this->repo->org->findByPublicId($orgId);
 
         return $org->isFeatureEnabled(Constants::ORG_SECOND_FACTOR_AUTH);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function checkIDAMAdminDisabled($admin): void
+    {
+        try
+        {
+            $adminMeta = $this->repo->admins_meta->fetchAxisAdminMetaData($admin);
+
+            if($adminMeta === null)
+            {
+                throw new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_ADMIN_NOT_FOUND);
+            }
+
+            if($adminMeta[AdminsMeta\Entity::AUTH_MODE] === ORG\AuthType::ADFS
+                and $admin[Entity::DISABLED] === true)
+            {
+                $disabledReason = $adminMeta[AdminsMeta\Entity::DISABLED_REASON];
+
+                $errorCode = ((empty($disabledReason) === false) && ($disabledReason === AdminsMeta\Constant::IDAM_DORMANCY))
+                            ? ErrorCode::BAD_REQUEST_ADMIN_DISABLED_BY_DORMANCY
+                            : ErrorCode::BAD_REQUEST_ADMIN_DISABLED;
+
+                throw new Exception\BadRequestException(
+                    $errorCode,
+                    AdminsMeta\Entity::DISABLED_REASON,
+                    [
+                        AdminsMeta\Entity::DISABLED_REASON => $disabledReason
+                    ]
+                );
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+
+            if ($ex->getMessage() !== PublicErrorDescription::BAD_REQUEST_ADMIN_NOT_FOUND)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    $ex->getData(),
+                    $ex->getMessage()
+                );
+            }
+        }
     }
 
     public function isAdminPasswordResetAllowed(string $orgId): bool
@@ -861,6 +917,13 @@ class Service extends Base\Service
      */
     public function editAdmin(string $adminId, array $input)
     {
+        $route = $this->app['api.route']->getCurrentRouteName();
+
+        if($route === 'org_admin_disable_cron')
+        {
+            return (new AdminsMeta\Service())->disableDormantOrgAdmins();
+        }
+
         $admin = $this->validateAndEditAdmin($adminId, $input);
 
         return $admin->toArrayPublic();

@@ -181,6 +181,7 @@ class Core extends Base\Core
         if ($asyncTokenisationJobId === "hdfcPushProvNetworkTokenMigrate"
             || $asyncTokenisationJobId === "hdfcPushProvIssuerTokenMigrate") {
             $input = [
+                'via_push_provisioning'            =>true,
                 'asyncTokenisationJobId'           => $asyncTokenisationJobId,
                 'hdfc_push_prov'                   => true,
                 'pushProvisioningReceipt'          => $input['pushProvisioningReceipt'],
@@ -211,11 +212,12 @@ class Core extends Base\Core
         return (new Card\CardVault)->fetchParValueFromVault($input);
     }
 
-    public function createTokenizedCard($input, $merchant)
+    public function createTokenizedCard($input, $merchant, $isTokenContinuityFlow = false)
     {
-        $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
-        return $this->createTokenizedCardEntity($input['card'], $merchant, $response);
+        $response = $this->getTokenizedCardResponseFromVault($input, $merchant, $isTokenContinuityFlow);
+
+        return $this->createTokenizedCardEntity($input['card'], $merchant, $response, $isTokenContinuityFlow);
     }
 
     protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null, $asyncTokenisationJobId, $callback = null)
@@ -397,7 +399,7 @@ class Core extends Base\Core
         $mapCardIinToTokenIin->addMapping($iin, $tokenIin);
     }
 
-    protected function createTokenizedCardEntity($input, $merchant, $response)
+    protected function createTokenizedCardEntity($input, $merchant, $response, $isTokenContinuityFlow = false)
     {
         $createInput = [
             Card\Entity::VAULT_TOKEN        => $response['token'],
@@ -458,6 +460,17 @@ class Core extends Base\Core
                 $createInput[Card\Entity::TOKEN_EXPIRY_MONTH] = $expiry_token[1];
             }
         }
+        else if ($isTokenContinuityFlow)
+        {
+            $createInput[Card\Entity::TOKEN_IIN] = $input['token_iin'];
+            $createInput[Card\Entity::LENGTH] = strlen($input[Card\Entity::NUMBER]);
+            $createInput[Card\Entity::VAULT] = $input['vault'];;
+            $createInput[Card\Entity::IIN] = $input['iin'];
+            $createInput[Card\Entity::TOKEN_EXPIRY_YEAR] =   $input['token_expiry_year'];
+            $createInput[Card\Entity::TOKEN_EXPIRY_MONTH] =  (int) $input['token_expiry_month'];
+            $createInput[Card\Entity::GLOBAL_FINGERPRINT] = $input['par'];
+        }
+
         $tokenizedCard = (new Card\Entity)->buildCard($createInput, 'tokenizedCard');
 
         $tokenizedCard->merchant()->associate($merchant);
@@ -1738,7 +1751,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function getTokenizedCardResponseFromVault($input, $merchant)
+    protected function getTokenizedCardResponseFromVault($input, $merchant, $isTokenContinuityFlow = false)
     {
         $iinNumber  = substr($input['card']['number'] ?? null, 0, 6);
 
@@ -1757,7 +1770,7 @@ class Core extends Base\Core
 
         $cardVault = (new Card\CardVault);
 
-        return $cardVault ->createTokenizedCard($input, $merchant, $iinInfo);
+        return $cardVault ->createTokenizedCard($input, $merchant, $iinInfo, $isTokenContinuityFlow);
     }
 
     protected function getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input)

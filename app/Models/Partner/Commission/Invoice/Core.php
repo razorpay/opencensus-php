@@ -1924,7 +1924,7 @@ class Core extends Base\Core
                     }
                     $afterId = $comm_transactions['after_id'];
 
-                    CommissionOnHoldClear::dispatch($this->mode, $transactions);
+                    CommissionOnHoldClear::dispatch($this->mode, $transactions, $fromTimestamp);
 
                     $batchCount++;
                 }

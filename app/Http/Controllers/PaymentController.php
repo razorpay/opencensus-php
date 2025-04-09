@@ -93,24 +93,6 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
-
-    public function getPaymentwithSubscription($subscriptionId)
-    {
-        $payment = $this->service()->fetchpaymentwithSubscription($subscriptionId);
-
-        return ApiResponse::json($payment);
-    }
-
-    /*
-     * Temporary code
-     */
-    public function getPaymentwithSubscriptionEmailAndContactNotNull($subscriptionId)
-    {
-        $payment = $this->service()->fetchpaymentwithSubscriptionEmailAndContactNotNull($subscriptionId);
-
-        return ApiResponse::json($payment);
-    }
-
     public function getPaymentsInternal() {
         $input = Request::all();
 

@@ -16,6 +16,7 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Credits;
+use Razorpay\Trace\Logger as Trace;
 
 class Refund extends Base
 {
@@ -55,7 +56,7 @@ class Refund extends Base
     // This is for setting a lock on the merchant's refund credits
     public function setMerchantCredits()
     {
-        if(($this->merchant != null)&& ($this->isMerchantRefundCreditsRamped($this->merchant->getId()) === true))
+        if(($this->merchant != null)&& ($this->isRefundCreditsWithLockEnabled($this->merchant->getId()) === true))
         {
             $this->repo->credits->getMerchantCreditsForRefund($this->txn->merchant);
         }
@@ -298,44 +299,32 @@ class Refund extends Base
      */
     public function isMerchantRefundFallbackEnabled($merchantId): bool
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_source_fallback_enabled_exp_id')
+            ];
 
-        $result = $this->app->razorx->getTreatment(
-            $merchantId, RazorxTreatment::REFUND_FALLBACK_ENABLED_ON_MERCHANT, $mode);
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::SCROOGE_REFUND_SOURCE_FALLBACK_RAZORX,
-            [
-                'result' => $result,
-                'mode' => $mode,
-                'merchant_id' => $merchantId,
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SCROOGE_REFUND_SOURCE_FALLBACK_RAZORX, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
             ]);
 
-        return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
-    }
-
-    /**
-     * This function determines whether the merchant has Refund Credits ramped up to be fetched with a locking read mechanism
-     *
-     * @param $merchantId
-     * @return bool
-     */
-    public function isMerchantRefundCreditsRamped($merchantId): bool
-    {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app->razorx->getTreatment(
-            $merchantId, RazorxTreatment::REFUND_CREDITS_WITH_LOCK, $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_FETCH_REFUND_CREDITS_WITH_LOCK,
-            [
-                'result' => $result,
-                'mode' => $mode,
-                'merchant_id' => $merchantId,
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_source_fallback_enabled_exp_id') ?? null
             ]);
 
-        return (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON);
+            return false;
+        }
     }
-
 }

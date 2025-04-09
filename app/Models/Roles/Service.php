@@ -176,7 +176,7 @@ class Service extends Base\Service
 
         Entity::stripRoleId($id);
 
-        if (\RZP\Models\User\BankingRole::exists($id) === false)
+        if (\RZP\Models\User\BankingRole::isCACStandardRole($id) === false)
         {
             Cache::forget(Constants::CACHE_KEY_ROLE_NAME.$id);
         }
@@ -393,7 +393,7 @@ class Service extends Base\Service
         // 1. filter out the standard roles & custom roles from $roleIds
         foreach($roleIds as $roleId)
         {
-            if (BankingRole::exists($roleId))
+            if (BankingRole::isCACStandardRole($roleId))
             {
                 $standardRoleIds[] = $roleId;
             }

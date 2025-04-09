@@ -1189,6 +1189,28 @@ return [
         ],
     ],
 
+    'testFetchRoleByIdRoleFinanceL1CACMigration' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/role',
+            'content'   => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'finance_l1',
+                'name' => 'Finance L1',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'members' => 0,
+                'created_by' => '10000000system',
+            ]
+        ],
+    ],
+
     'testFetchSelfRoleCACMigration' => [
         'request'  => [
             'method'  => 'GET',

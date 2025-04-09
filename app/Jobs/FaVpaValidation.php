@@ -18,6 +18,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Payment\Service as PaymentService;
+use RZP\Models\FundAccount\Validation\Processor\Vpa;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
@@ -110,11 +111,15 @@ class FaVpaValidation extends Job
 
                 $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
 
+                $accountType = $fundAccount->getAccountType();
+
                 $this->trace->info(
-                    TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
+                    TraceCode::VPA_VALIDATION_REQUEST,
                     [
                         'account_type' => $fundAccount->getAccountType(),
-                        'id' => $fundAccount->getId()
+                        'id' => $fundAccount->getId(),
+                        'fav_id' => $faValidation->getId(),
+                        'isPenniless' => $isPenniless
                     ]
                 );
 
@@ -139,11 +144,11 @@ class FaVpaValidation extends Job
                 }
 
                 $this->trace->info(
-                    TraceCode::VPA_VALIDATION_REQUEST_TO_PAYMENTS_SERVICE,
+                    TraceCode::VPA_VALIDATION_VPA_INPUT,
                     $vpaInput
                 );
 
-                $data = $this->getVpaValidateResponse($vpaInput);
+                $data = $this->getVpaValidateResponse($vpaInput, $vpaProcessor, $accountType, $faValidation);
 
                 $errorCode = array_key_exists('error_code', $data) ? $data['error_code'] : null;
 
@@ -152,9 +157,13 @@ class FaVpaValidation extends Job
                 if ((array_key_exists('fav_status', $data)) && ($data['fav_status'] === Status::COMPLETED)) {
                     $faValidation->setRegisteredName($data['name']);
 
+                    $faValidation->setIfscCodeInNotesAttribute($data['ifsc_code']);
+
                     $accountStatus = array_key_exists('account_status', $data) ? $data['account_status'] : null;
 
                     $name = array_key_exists('name', $data) ? $data['name'] : null;
+
+                    $ifsc_code = array_key_exists('ifsc_code', $data) ? $data['ifsc_code'] : null;
 
                     $success = array_key_exists('success', $data) ? $data['success'] : null;
 
@@ -162,6 +171,7 @@ class FaVpaValidation extends Job
                         'isPenniless' => $isPenniless,
                         'account_status' => $accountStatus,
                         'customer_name' => $name,
+                        'ifsc_code'     => $ifsc_code,
                         'fav_status' => $data['fav_status'],
                         'id' => $faValidation->getId(),
                         'success' => $success
@@ -172,19 +182,19 @@ class FaVpaValidation extends Job
                         $traceable
                     );
 
-                if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
-                {
-                    $favCore = new FAVCore();
-
-                    if (($success === true) &&
-                        ($name != null) &&
-                        ($favCore->isNameReceivedFromPennilessValid($name, $ifsc) === true) &&
-                        ($accountStatus === AccountStatus::ACTIVE))
+                    if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
                     {
-                        $this->trace->info(
-                            TraceCode::BANK_ACCOUNT_VALIDATED_USING_VPA,
-                            $traceable
-                        );
+                        $favCore = new FAVCore();
+
+                        if (($success === true) &&
+                            ($name != null) &&
+                            ($favCore->isNameReceivedFromPennilessValid($name, $ifsc) === true) &&
+                            ($accountStatus === AccountStatus::ACTIVE))
+                        {
+                            $this->trace->info(
+                                TraceCode::BANK_ACCOUNT_VALIDATED_USING_VPA,
+                                $traceable
+                            );
 
                             $vpaProcessor->markValidationAsCompleted($data['account_status'],
                                 errDesc: FavConstants::PENNILESS);
@@ -246,15 +256,39 @@ class FaVpaValidation extends Job
      * @throws LogicException
      * @throws RuntimeException
      */
-    protected function getVpaValidateResponse(array $vpaInput) : array
+    protected function getVpaValidateResponse(array $vpaInput, Vpa $vpaProcessor = null, string $accountType = "", Entity $faValidation = null) : array
     {
         $data = [];
 
         try
         {
-            $paymentService = new PaymentService();
+            if (($accountType === Type::VPA) and
+                ($faValidation->merchant->isFeatureEnabled(Constants::VPA_BANK_INFO_ENABLED) === true))
+            {
+                $startTime = millitime();
 
-            $response = $paymentService->validateVpa($vpaInput);
+                $faValidation->setIsVpaBankInfoEnabledFlag();
+
+                $this->trace->info(
+                    TraceCode::VPA_VALIDATION_REQUEST_VIA_RBL_API,
+                    $vpaInput
+                );
+
+                $response = $vpaProcessor->validateVpaUsingRblValidateVpaApi($vpaInput);
+
+                $endTime = millitime();
+
+                $this->trace->histogram(
+                    \RZP\Models\FundAccount\Validation\Metric::RBL_VPA_VALIDATE_GATEWAY_TIME_DURATION,
+                    $endTime-$startTime);
+
+            }
+            else
+            {
+                $paymentService = new PaymentService();
+
+                $response = $paymentService->validateVpa($vpaInput);
+            }
 
             $customerName = $response['customer_name'] ?? null;
 
@@ -278,31 +312,39 @@ class FaVpaValidation extends Job
 
             $data['name'] = $response['customer_name'];
 
+            $data['ifsc_code'] = $response['ifsc_code'] ?? null;
+
             $data['success'] = $response['success'];
 
             $data['fav_status'] = Status::COMPLETED;
 
             $data['error_code'] = $response['success'] === true ? null : 'BAD_REQUEST_PAYMENT_UPI_INVALID_VPA';
-
         }
         catch (GatewayErrorException $e)
         {
-            //gateway error as per payments api can mean some gateway error where we cannot get any response from the gateway
-            //or invalid vpa for some gateways
-            //The invalid vpa gateway errors are caught by payments api and only the other gateway errors are been thrown to us
-            $this->trace->traceException(
-                $e,
-                Logger::ERROR,
-                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_TIMEOUT,
-                [
-                    'fa_validation_id' => $this->favId
-                ]
-            );
-
             $data['fav_status'] = Status::FAILED;
 
-            $data['error_code'] = $e->getCode();
+            if (($accountType === Type::VPA) and
+                ($faValidation->merchant->isFeatureEnabled(Constants::VPA_BANK_INFO_ENABLED) === true))
+            {
+                $data['error_code'] = $e->getCode().': '.$e->getGatewayErrorCodeAndDesc()[1];
+            }
+            else
+            {
+                //gateway error as per payments api can mean some gateway error where we cannot get any response from the gateway
+                //or invalid vpa for some gateways
+                //The invalid vpa gateway errors are caught by payments api and only the other gateway errors are been thrown to us
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_TIMEOUT,
+                    [
+                        'fa_validation_id' => $this->favId
+                    ]
+                );
 
+                $data['error_code'] = $e->getCode();
+            }
         }
         catch (BadRequestException $e)
         {

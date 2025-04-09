@@ -711,7 +711,10 @@ class Core extends Base\Core
                             $transfer->getId(),
                             $transfer->getToId());
 
-        $payment = $this->repo->payment->findOrFail($payment->getId());
+        if ($payment->isExternal() === false)
+        {
+            $payment = $this->repo->payment_method_transfer->findOrFail($payment->getId());
+        }
 
         $payment->setOnHold($transferOnHold);
 

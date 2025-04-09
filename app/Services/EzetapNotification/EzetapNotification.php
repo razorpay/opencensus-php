@@ -109,6 +109,50 @@ class EzetapNotification
         return $responseBody;
     }
 
+    public function sendEzetapRawRequest(
+        array $input,
+        $urlName,
+        int $timeout = self::TIMEOUT,
+        int $connectTimeout = self::CONNECT_TIMEOUT
+    ){
+        $startTimeMs = microtime(true) * 1000;
+
+        $metric      = new EzetapNotificationMetric();
+        $errorMessage = null;
+        try {
+
+            $url = $this->getUrlByUrlName($urlName);
+
+            $signature = $this->getSignatureDetailsByUrlName($input,$urlName);
+
+            $request = $this->getRequest($url, $signature, $input, $timeout, $connectTimeout);
+
+            $this->trace->info(TraceCode::EZETAP_SERVICE_REQUEST, $request);
+
+            $responseBody = $this->sendRawRequest($request);
+
+            $this->trace->info(TraceCode::EZETAP_SERVICE_RESPONSE, [
+                'responseBody' => $responseBody,
+                'message'      => 'EZETAP_SERVICE_RESPONSE',
+            ]);
+
+            return $responseBody;
+        }
+        catch (\Exception $ex)
+        {
+            $errorMessage = $ex->getMessage();
+        }
+        finally
+        {
+            $metric->pushEzetapNotificationMetrics($input, $errorMessage);
+        }
+
+        $metric->pushEzetapNotificationLatencyMetrics($input, $startTimeMs);
+
+        return $responseBody;
+
+    }
+
     public function sendDeviceNotification(
         Entity $event,
         int $timeout = self::TIMEOUT,
@@ -229,6 +273,13 @@ class EzetapNotification
         return $url;
     }
 
+    protected function getUrlByUrlName(string $urlName): string
+    {
+        $url = $this->config->get('applications.ezetap-request.'.$urlName);
+
+        return $url;
+    }
+
     protected function getDeviceWebhookUrl()
     {
         return $this->config->get('applications.ezetap-notification.device_webhook_url');
@@ -241,6 +292,14 @@ class EzetapNotification
         $hashSignature = hash_hmac(HashAlgo::SHA256, json_encode($input), $secret);
         return $hashSignature;
     }
+
+    protected function getSignatureDetailsByUrlName(array $input,string $urlName)
+    {
+        $secret = $this->config->get('applications.ezetap-request.'.$urlName.'_secret');
+        $hashSignature = hash_hmac(HashAlgo::SHA256, json_encode($input), $secret);
+        return $hashSignature;
+    }
+
 
     protected function getRequest(string $url, String $signature, array $input,
                                   int $timeout = self::TIMEOUT, int $connectTimeout = self::CONNECT_TIMEOUT): array

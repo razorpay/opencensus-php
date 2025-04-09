@@ -16,6 +16,8 @@ class Metrics extends Core
 
     const CROSS_BORDER_MERCHANT_ACTIVATION_FAILED = 'cross_border_merchant_activation_failed';
 
+    const CROSS_BORDER_MODULAR_MERCHANT_INTERNATIONAL_PRODUCT_ACTIVATION_FAILED = 'cross_border_modular_merchant_international_product_activation_failed';
+
     // Dimensions
     const ACTION = 'action';
     const IS_DELETED = 'is_deleted';

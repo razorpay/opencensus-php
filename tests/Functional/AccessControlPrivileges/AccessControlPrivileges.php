@@ -152,7 +152,7 @@ class AccessControlPrivileges extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -254,7 +254,7 @@ class AccessControlPrivileges extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testFetchAllPrivilegesWithParentCACMigration()
     {
         $this->ba->proxyAuth();
@@ -267,7 +267,7 @@ class AccessControlPrivileges extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);

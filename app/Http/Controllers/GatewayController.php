@@ -2154,11 +2154,6 @@ class GatewayController extends Controller
             return true;
         }
 
-        if ($this->app->runningUnitTests() === true)
-        {
-            return true;
-        }
-
         return false;
     }
 
@@ -2309,19 +2304,9 @@ class GatewayController extends Controller
         {
             $merchantID = $payment['merchant_id'];
 
-            $variant = $this->app['razorx']->getTreatment($merchantID,
-                RazorxTreatment::SKIP_UPI_ICICI_CALLBACK_FOR_BT,
-                $mode);
+            $variant = $this->evaluateSplitzForBTCallback($merchantID);
 
-            $this->trace->info(
-                TraceCode::RAZORX_SKIP_UPI_ICICI_CALLBACK_FOR_BT,
-                [
-                    'variant' => $variant,
-                    'mode' => $mode,
-                    'merchant_id' => $merchantID
-                ]);
-
-            if (strtolower($variant) === 'on')
+            if (strtolower($variant) === 'enable')
             {
                 return true;
             }
@@ -2329,6 +2314,37 @@ class GatewayController extends Controller
 
         return false;
     }
+
+    /** Evaluates splitz for skipping BT callback
+     * @param string $merchantId
+     * @return mixed|string
+     */
+    private function evaluateSplitzForBTCallback(string $merchantId)
+    {
+        try {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.skip_upi_icici_callback_bt'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            return $variant;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::SKIP_UPI_ICICI_CALLBACK_FOR_BT_SPLITZ_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return 'disable';
+    }
+
 
     private function shouldSkipUpiRecurringICICIDebitCallback(Payment\Entity $payment, string $mode, array $input)
     {

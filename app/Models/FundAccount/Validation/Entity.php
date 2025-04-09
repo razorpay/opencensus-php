@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Reversal;
+use RZP\Models\Bank\Name;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
     use Traits\HasBalance;
 
     protected $isCompositeResponse = false;
+    protected bool $isVpaBankInfoEnabledFlag = false;
 
     const ID                     = 'id';
     const RECEIPT                = 'receipt';
@@ -53,6 +55,10 @@ class Entity extends Base\PublicEntity
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const RETRY_AT               = 'retry_at';
     const ATTEMPTS               = 'attempts';
+    const IFSC_CODE              = 'ifsc_code';
+    const IFSC                   = 'ifsc';
+    const BANK_NAME              = 'bank_name';
+    const RESULT_IFSC_CODE       = 'result_ifsc_code';
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
@@ -352,9 +358,33 @@ class Entity extends Base\PublicEntity
         $this->isCompositeResponse = $flag;
     }
 
+    public function setIsVpaBankInfoEnabledFlag(): void
+    {
+        $this->isVpaBankInfoEnabledFlag = true;
+    }
+
     public function setReceipt(string $value)
     {
         $this->setAttribute(self::RECEIPT, $value);
+    }
+
+    public function setIfscCodeInNotesAttribute($ifscCode): void
+    {
+        if (empty($ifscCode) === true or ($this->isVpaBankInfoEnabledFlag === false))
+        {
+            return;
+        }
+
+        $notes = $this->getAttribute(self::NOTES);
+
+        if (empty($notes) === true)
+        {
+            $notes = [];
+        }
+
+        $notes['result_ifsc_code'] = $ifscCode;
+
+        $this->setAttribute(self::NOTES, $notes);
     }
 
     // -------------- Public Setters --------------
@@ -397,6 +427,25 @@ class Entity extends Base\PublicEntity
             {
                 $array[self::RESULTS][self::UTR] = $this->getUtr();
             }
+
+            if ( ($merchant !== null) and
+                ($this->isVpaBankInfoEnabledFlag === true))
+            {
+                $ifscCode = $this->getIfscCodeFromNotes();
+
+                $bankName = null;
+
+                if (empty($ifscCode) === false)
+                {
+                    $bankName = Name::getName($ifscCode);
+                }
+
+                $array[self::RESULTS][self::IFSC] = $ifscCode;
+
+                $array[self::RESULTS][self::BANK_NAME] = $bankName;
+
+                unset($array[self::NOTES][self::RESULT_IFSC_CODE]);
+            }
         }
     }
 
@@ -434,6 +483,24 @@ class Entity extends Base\PublicEntity
                 self::NAME_MATCH_SCORE => $this->getNameMatchScore(),
                 self::DETAILS          => $this->getDetails()
             ];
+
+            if($this->isVpaBankInfoEnabledFlag === true)
+            {
+                $ifscCode = $this->getIfscCodeFromNotes();
+
+                $bankName = null;
+
+                if (empty($ifscCode) === false)
+                {
+                    $bankName = Name::getName($ifscCode);
+                }
+
+                $array[self::VALIDATION_RESULTS][self::IFSC] = $ifscCode;
+
+                $array[self::VALIDATION_RESULTS][self::BANK_NAME] = $bankName;
+
+                unset($array[self::NOTES][self::RESULT_IFSC_CODE]);
+            }
         }
         else
         {
@@ -544,6 +611,18 @@ class Entity extends Base\PublicEntity
     public function getRegisteredName()
     {
         return $this->getAttribute(self::REGISTERED_NAME);
+    }
+
+    public function getIfscCodeFromNotes()
+    {
+        $notes = $this->getAttribute(self::NOTES)->toArray();
+
+        if (empty($notes) === true)
+        {
+            return null;
+        }
+
+        return $notes[self::RESULT_IFSC_CODE] ?? null;
     }
 
     public function getNameMatchScore()

@@ -30,11 +30,42 @@ class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
     {
         $this->testRecurringMandateCreate();
 
+        $this->fixtures->merchant->addFeatures(['cancel_token_v1']);
+
         $mandate = $this->getDbLastEntity('upi_mandate');
 
         $token = $this->getDbLastEntity('token');
 
         $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals('revoked', $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals('cancelled', $token['recurring_status']);
+    }
+
+    public function testRevokeMandateNewFlow()
+    {
+        $this->testRecurringMandateCreate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals('confirmed', $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals('cancellation_initiated', $token['recurring_status']);
+
+        $this->mandateRevokeCallback($mandate);
 
         $mandate->reload();
 

@@ -2684,6 +2684,7 @@ class Service extends Base\Service
 
         $priority = $input['priority'] ?? 'P0';   // P0/P1
 
+        $slackChannel = $input['slack_channel'] ?? 'payments-route-alerts';
         $alertData = [];
 
         $orderTransfersCount = 0;
@@ -2729,7 +2730,7 @@ class Service extends Base\Service
 
             $alertData['severity'] = $priority === 'P0' ? 'critical' : 'warning';
 
-            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority);
+            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority, $slackChannel);
         }
 
         $this->trace->info(
@@ -2759,9 +2760,9 @@ class Service extends Base\Service
         return [$order_transfers_count, $payment_transfers_count];
     }
 
-    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority)
+    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority, $slackChannel)
     {
-        $channel = $this->app->config->get('slack.channels.payments-route-alerts');
+        $channel = $this->app->config->get('slack.channels.' . $slackChannel);
 
         $headline = sprintf(
             '<!subteam^S01JSULB27N> %s Alert: Pending transfers since %s minutes in last %s minutes',

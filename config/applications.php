@@ -154,7 +154,17 @@ return [
         'mock'               => env('EZETAP_WEBHOOK_MOCK', false),
         'url'                => env('EZETAP_WEBHOOK_URL'),
         'device_webhook_url' => env('EZETAP_DEVICE_WEBHOOK_URL'),
-        'secret'        => env('EZETAP_WEBHOOK_SECRET'),
+        'secret'             => env('EZETAP_WEBHOOK_SECRET'),
+    ],
+
+    'ezetap-request' => [
+        'update_org_code_url_mock'      => env('EZETAP_WEBHOOK_MOCK', false),
+        'update_org_code_url'           => env('EZETAP_UPDATE_ORGCODE_URL'),
+        'update_org_code_url_secret'    => env('EZETAP_WEBHOOK_SECRET'),
+
+        'remove_org_code_url_mock'      => env('EZETAP_WEBHOOK_MOCK', false),
+        'remove_org_code_url'           => env('EZETAP_REMOVE_ORGCODE_URL'),
+        'remove_org_code_url_secret'    => env('EZETAP_WEBHOOK_SECRET'),
     ],
 
     'raven' => [
@@ -703,6 +713,7 @@ return [
             ],
         ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
+        'migrationDefaultCountryCodes' => env('SETTLEMENTS_MIGRATION_DEFAULT_COUNTRY_CODES', 'IN,MY'),
     ],
 
     'einvoice' => [
@@ -1861,6 +1872,12 @@ return [
         "splitz_enable_exclusion_flow" => env('ASV_SPLITZ_ENABLE_EXCLUSION_FLOW', ''),
         'splitz_handle_open_transaction' => env('ASV_SPLITZ_HANDLE_OPEN_TRANSACTION', ''),
         'splitz_fallback_to_asv_db' => env('ASV_SPLITZ_FALLBACK_TO_ASV_DB', ''),
+    ],
+
+    //Store Service Integration
+    'store_service' => [
+        'url' =>  env('STORE_SERVICE_HOST'),
+        "mock" => env('STORE_SERVICE_MOCK', false)
     ],
 
     'recon'         => [

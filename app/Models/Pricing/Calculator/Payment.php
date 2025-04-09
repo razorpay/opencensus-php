@@ -809,7 +809,16 @@ class Payment extends Base
 
         $bank = $payment->getBank();
 
-        $authType = $payment->getGlobalOrLocalTokenEntity()->getAuthType();
+        $authType = $payment->getAuthType();
+
+        if($authType===null)
+        {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+            if($token==!null)
+            {
+                $authType = $token->getAuthType();
+            }
+        }
 
         $recurringType = $payment->getRecurringType();
 
@@ -1194,9 +1203,7 @@ class Payment extends Base
                             'fee_model' => $feeModel,
                             'merchant_id' => $payment->getMerchantId(),
                             'payment_id' => $payment->getId(),
-                            'transaction_id' => $payment->transaction->getId(),
                         ]);
-                    $payment->transaction->setFeeModel($feeModel);
                 }
             }
         } catch (\Throwable $e){

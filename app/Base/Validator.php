@@ -70,6 +70,13 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         return $app['trace'];
     }
 
+    protected function getConfig()
+    {
+        $app = App::getFacadeRoot();
+
+        return $app['config'];
+    }
+
     /**
      * @throws BadRequestValidationFailureException
      */

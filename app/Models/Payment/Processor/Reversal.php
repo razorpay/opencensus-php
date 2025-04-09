@@ -48,6 +48,11 @@ trait Reversal
                                 ->payment_method_transfer
                                 ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
+        if ($transferPayment->isExternal() === false)
+        {
+            $transferPayment = $this->repo->payment_method_transfer->findOrFail($transferPayment->getId());
+        }
+
         $transferPayment = $this->repo->payment_method_transfer->findOrFail($transferPayment->getId());
 
         //
@@ -163,11 +168,7 @@ trait Reversal
 
         if ($transferPayment->isExternal())
         {
-            $amountTransferred = $transferPayment->getAmountTransferred();
-
-            $transferPayment->setAmountTransferred($amountTransferred - $amount);
-
-            $this->repo->transfer_payment->saveOrFail($transferPayment);
+            $this->repo->transfer_payment->decrementAmountTransferredExternal($transferPayment, $amount);
         }
         else
         {
@@ -403,6 +404,12 @@ trait Reversal
                 }
 
                 $this->validateTransferReversalAllowedIfLedgerReverseShadowEnabled($transfer);
+
+                if ($transfer->isExternal() && $transfer->getStatus() === Transfer\Status::PENDING)
+                {
+                    // For rearch transfer, wait till transfer reaches terminaL state
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
+                }
 
                 if (($isFailTransfersExpEnabled) === true and ($transfer->getStatus() === Transfer\Status::PENDING))
                 {

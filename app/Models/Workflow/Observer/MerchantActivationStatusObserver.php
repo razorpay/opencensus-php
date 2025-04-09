@@ -219,6 +219,12 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
             (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
         }
 
+
+        if ($this->permissionName === PermissionName::MERCHANT_BDD_VERIFICATION_STATUS_CHANGE)
+        {
+            $this->publishCMMAKafkaEventForWorkflowStatusChange($observerData, Status::REJECTED);
+        }
+
     }
 
     public function onCreate(array $observerData)
@@ -402,6 +408,11 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
             (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
         }
+
+        if ($this->permissionName === PermissionName::MERCHANT_BDD_VERIFICATION_STATUS_CHANGE)
+        {
+            $this->publishCMMAKafkaEventForWorkflowStatusChange($observerData, Constants::EXECUTED);
+        }
     }
 
     protected function isMetroMigrateOutExperimentEnabledForCmmaEvents($entityId): bool
@@ -416,6 +427,34 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         $variant = $response['response']['variant']['name'] ?? '';
 
         return $variant === Constants::ENABLE;
+    }
+
+    protected function publishCMMAKafkaEventForWorkflowStatusChange($observerData, $status)
+    {
+        $caseType     = DEConstants::CMMA_POST_ACTIVATION_BUSINESS_DUE_DILIGENCE;
+
+        $cmmaCaseEventData = [
+            Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+            Constants::PERMISSION_NAME    => $this->permissionName,
+            Constants::STATUS             => $status,
+            Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+            Constants::AGENT_NAME         => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+            DifferEntity::ENTITY_ID       => $this->entityId,
+            DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+            Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+            Constants::CMMA_CASE_TYPE     => $caseType,
+        ];
+
+        $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
+
+        $this->app['trace']->info(TraceCode::MCC_VERIFICATON_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                'data'        => $cmmaCaseEventData,
+                'topic'       => $cmmaCaseEventTopic,
+                'merchant_id' => $this->entityId,
+            ]
+        );
+
+        (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
     }
 
     public function getMerchantId()

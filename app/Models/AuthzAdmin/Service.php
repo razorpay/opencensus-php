@@ -276,6 +276,11 @@ class Service extends Base\Service
 
     public function adminAPIGetRole(string $roleId, string|null $ownerId, bool $expandChildren = false)
     {
+        if (BankingRole::isCACStandardRole($roleId))
+        {
+            $roleId = BankingRole::getStandardRoleNameFromRoleId($roleId);
+        }
+
         $this->trace->info(TraceCode::AUTHZ_GET_ROLE_REQUEST, [
             'role_id'      => $roleId
         ]);

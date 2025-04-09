@@ -1906,6 +1906,14 @@ class Header
     const BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE = 'Enrichment Type';
     const BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID = 'Account Id';
 
+    // headers for mandate continuity
+
+    const MANDATE_CONTINUITY_JUSPAY_TOKEN_ID = 'Juspay Token Id';
+    const MANDATE_CONTINUITY_TRANSACTION_ID = 'Transaction Id';
+    const MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID = 'External Pa Mandate Id';
+    const MANDATE_CONTINUITY_TERMINAL_ID = 'Terminal Id';
+
+
     // S2P Groups Onboarding headers
     const S2P_GROUPS_ONBOARDING_MERCHANT_ID = "MID (Mandatory) 14 character merchant ID";
     const S2P_GROUPS_ONBOARDING_GROUP_TYPE_ID = "Group Type ID (Mandatory) ID of the group type created for the MID";
@@ -2334,6 +2342,15 @@ class Header
     const HDFC_TRANSITORY_GL_FLAG = "TRANSITORY_GL_FLAG";
     const HDFC_EEFC_DEBIT_FLAG = "EEFC_DEBIT_FLAG";
 
+    // Device to QR Mapping/Unmapping headers
+    const DEVICE_TO_QR_MAPPING_DSN = "Device Serial No";
+    const DEVICE_TO_QR_MAPPING_VPA = "VPA";
+    const DEVICE_TO_QR_MAPPING_QR_CODE_STRING = "QR code string";
+    const DEVICE_TO_QR_MAPPING_EPN_MERCHANT_TYPE = "EPN-Merchant Type";
+    const DEVICE_TO_QR_UNMAPPING_RZP_MID = "UnmapFromRazorpayMID";
+    const DEVICE_TO_QR_UNMAPPING_FROM_QR = "UnmapFromQR";
+    const DEVICE_TO_QR_UNMAPPING_USER_ID = "UnmapFromUserID";
+
 
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
@@ -2496,6 +2513,17 @@ class Header
     const MANDATORY_HEADERS_FOR_ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST = [
         Header::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_TYPE,
         Header::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_VALUE,
+    ];
+
+    const MANDATORY_HEADERS_FOR_QR_DEVICE_MAPPING = [
+        Header::DEVICE_TO_QR_MAPPING_DSN,
+        Header::DEVICE_TO_QR_MAPPING_QR_CODE_STRING,
+    ];
+
+    const MANDATORY_HEADERS_FOR_QR_DEVICE_UNMAPPING = [
+        Header::DEVICE_TO_QR_MAPPING_DSN,
+        Header::DEVICE_TO_QR_UNMAPPING_FROM_QR,
+        Header::DEVICE_TO_QR_UNMAPPING_RZP_MID,
     ];
 
     /**
@@ -7667,8 +7695,31 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
-        ]
+        ],
 
+        Type::QR_DEVICE_MAPPING => [
+            self::INPUT => [
+                self::DEVICE_TO_QR_MAPPING_QR_CODE_STRING,
+                self::DEVICE_TO_QR_MAPPING_DSN,
+            ],
+        ],
+
+        Type::QR_DEVICE_UNMAPPING => [
+            self::INPUT => [
+                self::DEVICE_TO_QR_MAPPING_DSN,
+                self::DEVICE_TO_QR_UNMAPPING_RZP_MID,
+                self::DEVICE_TO_QR_UNMAPPING_FROM_QR,
+            ],
+        ],
+        Type::MANDATE_CONTINUITY => [
+            self::INPUT => [
+                self::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID,
+                self::MANDATE_CONTINUITY_TRANSACTION_ID,
+                self::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID,
+                self::MANDATE_CONTINUITY_TERMINAL_ID,
+            ],
+            self::OUTPUT => [],
+        ],
     ];
 
     /**
@@ -7950,6 +8001,18 @@ class Header
         if ($type === Type::GCMS_UPLOAD_BULK_EMAILS)
         {
             self::validateGCOMSBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPLOAD_BULK_EMAILS);
+        }
+
+        if ($type === Type::QR_DEVICE_MAPPING)
+        {
+            self::validateQRDeviceMappingBatchHeaders($expectedHeaders, $actualHeaders);
+            return;
+        }
+
+        if ($type === Type::QR_DEVICE_UNMAPPING)
+        {
+            self::validateQRDeviceUnmappingBatchHeaders($expectedHeaders, $actualHeaders);
+            return;
         }
 
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
@@ -8648,5 +8711,51 @@ class Header
         }
 
         return $areValidCustomField;
+    }
+
+    public static function validateQRDeviceMappingBatchHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_QR_DEVICE_MAPPING;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+    }
+
+    public static function validateQRDeviceUnmappingBatchHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_QR_DEVICE_UNMAPPING;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
     }
 }

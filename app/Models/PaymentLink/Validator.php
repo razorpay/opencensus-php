@@ -139,6 +139,15 @@ class Validator extends Base\Validator
         'contacts.*' => 'required|contact_syntax|digits_between:8,11',
     ];
 
+    protected static $dualWriteRules = [
+        'payment_link' => 'required|filled|array',
+        'payment_page_items' => 'array',
+        'items' => 'array',
+        'nocode_custom_url' => 'array',
+        'settings' => 'array',
+        'order_line_items' => 'array'
+    ];
+
     /**
      * Rules for settings.udf_schema.
      * @var array

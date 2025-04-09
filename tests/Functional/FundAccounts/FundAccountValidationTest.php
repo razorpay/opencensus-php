@@ -8,30 +8,31 @@ use \RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Services\Mozart;
 use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
 use RZP\Services\DiagClient;
 use RZP\Models\Pricing\Fee;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Jobs\FaVpaValidation;
+use RZP\Gateway\Mozart\Action;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Services\FavService\Fetch;
-use RZP\Services\FavService\Update;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\RuntimeException;
 use Illuminate\Support\Facades\Queue;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
-use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -406,6 +407,1434 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('Penniless Customer', $favUpdated[Entity::REGISTERED_NAME]);
         $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
         $this->assertEquals('Penniless', $favUpdated[Entity::ERROR_DESCRIPTION]);
+    }
+
+    protected function mockBASResponseForFetchingBankingCredentials($exception = null): void
+    {
+        $basMock = $this->getMockBuilder(\RZP\Services\Mock\BankingAccountService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['fetchBankingCredentials'])
+            ->getMock();
+
+        $basMock->method('fetchBankingCredentials')
+            ->willReturn([
+                "id"            => "1234",
+                "credentials"   => [
+                    "bank_reference_number" => "123456",
+                    "auth_password"         => "johndoe123",
+                    "auth_username"         => "johndoe",
+                    "client_id"             => "client_id",
+                    "client_secret"         => "client_secret",
+                    "corp_id"               => "123456",
+                ],
+                "extra_field_1" => "extra_field_1" // Added this to verify the strict validation
+            ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
+    protected function setUpForFavUsingRblValidateVpaApi(
+        int $balance = 0,
+        string $balanceType = AccountType::DIRECT,
+        $channel = 'rbl',
+        $merchantID = 'Fr3lebmRmT0Cpy',
+        $status = 'migrated')
+    {
+        $this->fixtures->merchant->create(['id' => $merchantID]);
+        $this->fixtures->merchant->edit($merchantID, ['business_banking' => 1]);
+        $this->fixtures->merchant->activate();
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balance, $merchantID ,$balanceType, $channel);
+
+        $bankingBalance->setAccountNumber(1234567890);
+        $bankingBalance->save();
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde123456789',
+            'account_number'        =>  $bankingBalance['account_number'],
+            'balance_id'            =>  $bankingBalance['id'],
+            'account_type'          =>  'current',
+            'channel'               =>  $bankingBalance['channel'],
+            'reference1'            =>  '123456',
+            'merchant_id'           =>  $merchantID,
+            'status'                =>  $status,
+        ];
+
+        $bankingaccount = $this->createBankingAccount($bankingAccountAttributes);
+
+        $this->fixtures->merchant->addFeatures(['penniless_validation', 'vpa_bank_info_enabled']);
+
+        (new AdminService())->setConfigKeys(
+            [
+                ConfigKey::RBL_VPA_VALIDATE_API_SESSION_TOKEN => "session_1234567890",
+                configKey::RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN => "gateway_auth_1234567890"
+            ]);
+
+        $this->mockBASResponseForFetchingBankingCredentials();
+
+        $keys = ['bcagent_username', 'bcagent_password', 'hmacKey', 'payerVpa', 'aggrOrgId', 'bcagent', 'mrchOrgId'];
+
+        $count = 0;
+        foreach ($keys as $key)
+        {
+            $this->fixtures->create('banking_account_detail', [
+                'id' => 'ABCde12345677' . $count,
+                'banking_account_id' => $bankingaccount['id'],
+                'merchant_id' => $merchantID,
+                'gateway_key' => $key,
+                'gateway_value' => $key . '_value'
+            ]);
+
+            $count += 1;
+        }
+    }
+
+    public function mockMozart_SuccessResponse()
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $validateVpaMozartSuccessResponse = [
+            "data"=> [
+                "bank_status_code"=> "SUCCESS",
+                "description"=> "Test User",
+                "ifsc_code"=> "HDFC0000705"
+            ],
+            "error"=> null,
+            "external_trace_id"=> "DUMMY_REQUEST_ID",
+            "mozart_id"=> "DUMMY_REQUEST_ID",
+            "next"=> [],
+            "success"=> true
+        ];
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) {
+                $validateVpaMozartRequest = [
+                    'fund_account' =>
+                        [
+                            'vpa' =>
+                                [
+                                    'handle' => 'razorpay',
+                                    'username' => 'withname',
+                                ],
+                        ],
+                    'source_account' =>
+                        [
+                            'credentials' =>
+                                [
+                                    'auth_username' => 'johndoe',
+                                    'auth_password' => 'johndoe123',
+                                    'client_id' => 'client_id',
+                                    'client_secret' => 'client_secret',
+                                    'corp_id' => '123456',
+                                    'payerVpa' => 'payerVpa_value',
+                                    'bcagent' => 'bcagent_value',
+                                    'bcagent_username' => 'bcagent_username_value',
+                                    'bcagent_password' => 'bcagent_password_value',
+                                    'hmacKey' => 'hmacKey_value',
+                                    'mrchOrgId' => 'mrchOrgId_value',
+                                    'aggrOrgId' => 'aggrOrgId_value',
+                                ],
+                        ],
+                    'gateway_auth' =>
+                        [
+                            'token' => 'gateway_auth_1234567890',
+                        ],
+                    'gateway_session' =>
+                        [
+                            'token' => 'session_1234567890',
+                        ],
+                ];
+
+                $this->assertArraySelectiveEquals($validateVpaMozartRequest, $input);
+
+                return true;
+
+            })->andReturn($validateVpaMozartSuccessResponse);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_Success()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_SuccessResponse();
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Test User', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+        $this->assertEquals('HDFC0000705', $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals('HDFC Bank', $favUpdated->toArrayPublic()['results']['bank_name']);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['notes']['result_ifsc_code']);
+    }
+
+    public function testVpaCompositeValidationUsingRblValidateApi_Success()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCompositeFavValidationUsingRblValidateApi'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_SuccessResponse();
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $favUpdated->setIsCompositeResponse(true);
+
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('Test User', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+        $this->assertEquals('HDFC Bank', $favUpdated->toArrayPublic()['validation_results']['bank_name']);
+        $this->assertEquals('HDFC0000705', $favUpdated->toArrayPublic()['validation_results']['ifsc']);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['notes']['result_ifsc_code']);
+    }
+
+    public function testGetFavCreatedUsingRblValidateApi()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->testVpaValidationUsingRblValidateApi_Success();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCompositeFavCreatedUsingRblValidateApi()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->testVpaCompositeValidationUsingRblValidateApi_Success();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function mockMozart_InvalidSuccessToken(): void
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $retryCount = 0;
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) use (& $retryCount) {
+                if ($action === Action::VALIDATE_VPA) {
+                    $mozartRequest = [
+                        'fund_account' =>
+                            [
+                                'vpa' =>
+                                    [
+                                        'handle' => 'razorpay',
+                                        'username' => 'withname',
+                                    ],
+                            ],
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                        'gateway_auth' =>
+                            [
+                                'token' => 'gateway_auth_1234567890',
+                            ],
+                        'gateway_session' =>
+                            [
+                                'token' => ($retryCount === 0) ? 'session_1234567890' : 'session_token_2'
+                            ],
+                    ];
+                }
+                elseif ($action === Action::GATEWAY_SESSION)
+                {
+                    $mozartRequest = [
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                    ];
+                }
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) use (& $retryCount) {
+                if ($action == Action::VALIDATE_VPA)
+                {
+                    if ($retryCount === 0) {
+                        throw new GatewayErrorException(
+                            ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                            "Your Session has been Expired or Invalid.Please Relogin the Application",
+                            "Your Session has been Expired or Invalid.Please Relogin the Application",
+                            [
+                                'error' => [
+                                    "description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "gateway_error_code" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "gateway_error_description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "gateway_status_code" => 200,
+                                    "internal_error_code" => "AUTHORIZATION_FAILED_RETRIABLE"
+                                ],
+                                'data' => [
+                                    "bank_status_code" => "FAILED",
+                                    "description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "status" => 0
+                                ],
+                            ]);
+                    }
+                    elseif ($retryCount === 1)
+                    {
+                        return [
+                            "data"=> [
+                                "bank_status_code"=> "SUCCESS",
+                                "description"=> "Test User",
+                                "ifsc_code"=> "HDFC0000705"
+                            ],
+                            "error"=> null,
+                            "external_trace_id"=> "DUMMY_REQUEST_ID",
+                            "mozart_id"=> "DUMMY_REQUEST_ID",
+                            "next"=> [],
+                            "success"=> true
+                        ];
+                    }
+                }
+                else if ($action == Action::GATEWAY_SESSION)
+                {
+                    $retryCount += 1;
+
+                    return [
+                        "data"=> [
+                            "gateway_session"=> [
+                                "token"=> "session_token_2",
+                                "token_type"=> "sessionToken",
+                                "validity_duration"=> "9/16/2020 9=>50=>05 PM"
+                            ]
+                        ],
+                        "error"=> null,
+                        "external_trace_id"=> "DUMMY_REQUEST_ID",
+                        "mozart_id"=> "DUMMY_REQUEST_ID",
+                        "next"=> [],
+                        "success"=> true
+                    ];
+                }
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_InvalidSessionToken()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_InvalidSuccessToken();
+
+        $this->startTest();
+
+        $fav     = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $sessionToken = (new AdminService())->getConfigKey(
+            ['key' => configKey::RBL_VPA_VALIDATE_API_SESSION_TOKEN]
+        );
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Test User', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+        $this->assertEquals('HDFC0000705', $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['notes']['result_ifsc_code']);
+        $this->assertEquals('session_token_2', $sessionToken);
+    }
+
+    public function mockMozart_ValidateVpa_RetryExhausted(): void
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $retryCount = 0;
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) use (& $retryCount) {
+                if ($action === Action::VALIDATE_VPA) {
+                    $mozartRequest = [
+                        'fund_account' =>
+                            [
+                                'vpa' =>
+                                    [
+                                        'handle' => 'razorpay',
+                                        'username' => 'withname',
+                                    ],
+                            ],
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                        'gateway_auth' =>
+                            [
+                                'token' => 'gateway_auth_1234567890',
+                            ],
+                        'gateway_session' =>
+                            [
+                                'token' => ($retryCount === 0) ? 'session_1234567890' : 'session_token_2'
+                            ],
+                    ];
+                }
+                elseif ($action === Action::GATEWAY_SESSION)
+                {
+                    $mozartRequest = [
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                    ];
+                }
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) use (& $retryCount) {
+                if ($action == Action::VALIDATE_VPA)
+                {
+                    throw new GatewayErrorException(
+                        ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                        "Your Session has been Expired or Invalid.Please Relogin the Application",
+                        "Your Session has been Expired or Invalid.Please Relogin the Application",
+                        [
+                            'error' => [
+                                "description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                "gateway_error_code" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                "gateway_error_description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                "gateway_status_code" => 200,
+                                "internal_error_code" => "AUTHORIZATION_FAILED_RETRIABLE"
+                            ],
+                            'data' => [
+                                "bank_status_code" => "FAILED",
+                                "description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                "status" => 0
+                            ],
+                        ]);
+
+                }
+                else if ($action == Action::GATEWAY_SESSION)
+                {
+                    $retryCount += 1;
+
+                    return [
+                        "data"=> [
+                            "gateway_session"=> [
+                                "token"=> "session_token_2",
+                                "token_type"=> "sessionToken",
+                                "validity_duration"=> "9/16/2020 9=>50=>05 PM"
+                            ]
+                        ],
+                        "error"=> null,
+                        "external_trace_id"=> "DUMMY_REQUEST_ID",
+                        "mozart_id"=> "DUMMY_REQUEST_ID",
+                        "next"=> [],
+                        "success"=> true
+                    ];
+                }
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_RetryExhausted()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_ValidateVpa_RetryExhausted();
+
+        $this->startTest();
+
+        $fav     = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $this->assertEquals(null, $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['bank_name']);
+        $this->assertEquals('failed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR: Your Session has been Expired or Invalid.Please Relogin the Application', $favUpdated['internal_error_code']);
+    }
+
+    public function mockMozart_InvalidSuccessToken_FetchSessionTokenFailure(): void
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $retryCount = 0;
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) use (& $retryCount) {
+                if ($action === Action::VALIDATE_VPA) {
+                    $mozartRequest = [
+                        'fund_account' =>
+                            [
+                                'vpa' =>
+                                    [
+                                        'handle' => 'razorpay',
+                                        'username' => 'withname',
+                                    ],
+                            ],
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                        'gateway_auth' =>
+                            [
+                                'token' => 'gateway_auth_1234567890',
+                            ],
+                        'gateway_session' =>
+                            [
+                                'token' => ($retryCount === 0) ? 'session_1234567890' : 'session_token_2'
+                            ],
+                    ];
+                }
+                elseif ($action === Action::GATEWAY_SESSION)
+                {
+                    $mozartRequest = [
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                    ];
+                }
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) use (& $retryCount) {
+                if ($action == Action::VALIDATE_VPA)
+                {
+                    if ($retryCount === 0) {
+                        throw new GatewayErrorException(
+                            ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                            "Your Session has been Expired or Invalid.Please Relogin the Application",
+                            "Your Session has been Expired or Invalid.Please Relogin the Application",
+                            [
+                                'error' => [
+                                    "description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "gateway_error_code" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "gateway_error_description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "gateway_status_code" => 200,
+                                    "internal_error_code" => "AUTHORIZATION_FAILED_RETRIABLE"
+                                ],
+                                'data' => [
+                                    "bank_status_code" => "FAILED",
+                                    "description" => "Your Session has been Expired or Invalid.Please Relogin the Application",
+                                    "status" => 0
+                                ],
+                            ]);
+                    }
+                    elseif ($retryCount === 1)
+                    {
+                        return [
+                            "data"=> [
+                                "bank_status_code"=> "SUCCESS",
+                                "description"=> "Test User",
+                                "ifsc_code"=> "HDFC0000705"
+                            ],
+                            "error"=> null,
+                            "external_trace_id"=> "DUMMY_REQUEST_ID",
+                            "mozart_id"=> "DUMMY_REQUEST_ID",
+                            "next"=> [],
+                            "success"=> true
+                        ];
+                    }
+                }
+                else if ($action == Action::GATEWAY_SESSION)
+                {
+                    throw new GatewayErrorException(
+                        ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                        "401",
+                        "Unauthorized",
+                        [
+                            'error' => [
+                                "description" => "Unauthorized",
+                                "gateway_error_code" => "401",
+                                "gateway_error_description" => "Unauthorized",
+                                "gateway_status_code" => 200,
+                                "internal_error_code" => "AUTHENTICATION_FAILED"
+                            ],
+                            'data' => [
+                                "gateway_session"=> [
+                                "token"=> null,
+                                "token_type"=> "sessionToken",
+                                "validity_duration"=> null
+                                ]
+                            ],
+                        ]);
+                }
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_InvalidSessionToken_FetchSessionTokenFailure()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_InvalidSuccessToken_FetchSessionTokenFailure();
+
+        $this->startTest();
+
+        $fav     = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $this->assertEquals(null, $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals('failed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR: Unauthorized', $favUpdated['internal_error_code']);
+    }
+
+    public function mockMozart_InvalidGatewayAuthToken(): void
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $retryCount = 0;
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) use (& $retryCount) {
+                if ($action === Action::VALIDATE_VPA) {
+                    $mozartRequest = [
+                        'fund_account' =>
+                            [
+                                'vpa' =>
+                                    [
+                                        'handle' => 'razorpay',
+                                        'username' => 'withname',
+                                    ],
+                            ],
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                        'gateway_auth' =>
+                            [
+                                'token' => ($retryCount === 0) ? 'gateway_auth_1234567890' : "gateway_auth_token_2",
+                            ],
+                        'gateway_session' =>
+                            [
+                                'token' => 'session_1234567890'
+                            ],
+                    ];
+                }
+                elseif ($action === Action::GATEWAY_AUTH)
+                {
+                    $mozartRequest = [
+                        'source_account' =>
+                            [
+                                'credentials' =>
+                                    [
+                                        'auth_username' => 'johndoe',
+                                        'auth_password' => 'johndoe123',
+                                        'client_id' => 'client_id',
+                                        'client_secret' => 'client_secret',
+                                        'corp_id' => '123456',
+                                        'payerVpa' => 'payerVpa_value',
+                                        'bcagent' => 'bcagent_value',
+                                        'bcagent_username' => 'bcagent_username_value',
+                                        'bcagent_password' => 'bcagent_password_value',
+                                        'hmacKey' => 'hmacKey_value',
+                                        'mrchOrgId' => 'mrchOrgId_value',
+                                        'aggrOrgId' => 'aggrOrgId_value',
+                                    ],
+                            ],
+                        "gateway_session" => [
+                            "token" => 'session_1234567890'
+                        ]
+                    ];
+                }
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) use (& $retryCount) {
+                if ($action == Action::VALIDATE_VPA)
+                {
+                    if ($retryCount === 0) {
+                        throw new GatewayErrorException(
+                            ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                            "E001:Invalid Auth token",
+                            "Invalid Auth token",
+                            [
+                                'error' => [
+                                    "description" => "Invalid Auth token",
+                                    "gateway_error_code" => "E001:Invalid Auth token",
+                                    "gateway_error_description" => "Invalid Auth token",
+                                    "gateway_status_code" => 200,
+                                    "internal_error_code" => "AUTHORIZATION_FAILED"
+                                ],
+                                'data' => [
+                                    "bank_status_code" => "FAILED",
+                                    "description" => "E001:Invalid Auth token"
+                                ],
+                            ]);
+                    }
+                    elseif ($retryCount === 1)
+                    {
+                        return [
+                            "data"=> [
+                                "bank_status_code"=> "SUCCESS",
+                                "description"=> "Test User",
+                                "ifsc_code"=> "HDFC0000705"
+                            ],
+                            "error"=> null,
+                            "external_trace_id"=> "DUMMY_REQUEST_ID",
+                            "mozart_id"=> "DUMMY_REQUEST_ID",
+                            "next"=> [],
+                            "success"=> true
+                        ];
+                    }
+                }
+                else if ($action == Action::GATEWAY_AUTH)
+                {
+                    $retryCount += 1;
+
+                    return [
+                        "data"=> [
+                            "gateway_auth"=> [
+                                "token"=> "gateway_auth_token_2",
+                                "token_type"=> "authToken",
+                                "validity_duration"=> "30"
+                            ]
+                        ],
+                        "error"=> null,
+                        "external_trace_id"=> "DUMMY_REQUEST_ID",
+                        "mozart_id"=> "DUMMY_REQUEST_ID",
+                        "next"=> [],
+                        "success"=> true
+                    ];
+                }
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_InvalidGatewayAuthToken()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_InvalidGatewayAuthToken();
+
+        $this->startTest();
+
+        $fav     = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $authToken = (new AdminService())->getConfigKey(
+            ['key' => configKey::RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN]
+        );
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Test User', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+        $this->assertEquals('HDFC0000705', $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['notes']['result_ifsc_code']);
+        $this->assertEquals('Z2F0ZXdheV9hdXRoX3Rva2VuXzI=', $authToken);
+    }
+
+    public function mockMozart_UnknownGatewayError(): void
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) {
+                $mozartRequest = [
+                    'fund_account' =>
+                        [
+                            'vpa' =>
+                                [
+                                    'handle' => 'razorpay',
+                                    'username' => 'withname',
+                                ],
+                        ],
+                    'source_account' =>
+                        [
+                            'credentials' =>
+                                [
+                                    'auth_username' => 'johndoe',
+                                    'auth_password' => 'johndoe123',
+                                    'client_id' => 'client_id',
+                                    'client_secret' => 'client_secret',
+                                    'corp_id' => '123456',
+                                    'payerVpa' => 'payerVpa_value',
+                                    'bcagent' => 'bcagent_value',
+                                    'bcagent_username' => 'bcagent_username_value',
+                                    'bcagent_password' => 'bcagent_password_value',
+                                    'hmacKey' => 'hmacKey_value',
+                                    'mrchOrgId' => 'mrchOrgId_value',
+                                    'aggrOrgId' => 'aggrOrgId_value',
+                                ],
+                        ],
+                    'gateway_auth' =>
+                        [
+                            'token' => 'gateway_auth_1234567890',
+                        ],
+                    'gateway_session' =>
+                        [
+                            'token' => 'session_1234567890'
+                        ],
+                ];
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) {
+
+                throw new GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+                    "SUCCESS",
+                    "(No error description was mapped for this error code)",
+                    [
+                        'error' => [
+                            "description" => "",
+                            "gateway_error_code" => "SUCCESS",
+                            "gateway_error_description" => "(No error description was mapped for this error code)",
+                            "gateway_status_code" => 200,
+                            "internal_error_code" => "GATEWAY_ERROR_UNKNOWN_ERROR"
+                        ],
+                        'data' => [
+                            "bank_status_code" => "FAILED",
+                            "description" => "",
+                            "status" => ""
+                        ],
+                    ]);
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_UnknownGatewayError()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_UnknownGatewayError();
+
+        $this->startTest();
+
+        $fav     = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $this->assertEquals(null, $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals('failed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR: (No error description was mapped for this error code)', $favUpdated['internal_error_code']);
+    }
+
+    public function mockMozart_InvalidVpa(): void
+    {
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) {
+                $mozartRequest = [
+                    'fund_account' =>
+                        [
+                            'vpa' =>
+                                [
+                                    'handle' => 'razorpay',
+                                    'username' => 'withname',
+                                ],
+                        ],
+                    'source_account' =>
+                        [
+                            'credentials' =>
+                                [
+                                    'auth_username' => 'johndoe',
+                                    'auth_password' => 'johndoe123',
+                                    'client_id' => 'client_id',
+                                    'client_secret' => 'client_secret',
+                                    'corp_id' => '123456',
+                                    'payerVpa' => 'payerVpa_value',
+                                    'bcagent' => 'bcagent_value',
+                                    'bcagent_username' => 'bcagent_username_value',
+                                    'bcagent_password' => 'bcagent_password_value',
+                                    'hmacKey' => 'hmacKey_value',
+                                    'mrchOrgId' => 'mrchOrgId_value',
+                                    'aggrOrgId' => 'aggrOrgId_value',
+                                ],
+                        ],
+                    'gateway_auth' =>
+                        [
+                            'token' => 'gateway_auth_1234567890',
+                        ],
+                    'gateway_session' =>
+                        [
+                            'token' => 'session_1234567890'
+                        ],
+                ];
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) {
+                throw new GatewayErrorException(
+                    ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                    "",
+                    "",
+                    [
+                        'error' => [
+                            "description" => "",
+                            "gateway_error_code" => "",
+                            "gateway_error_description" => "(No error description was mapped for this error code)",
+                            "gateway_status_code" => 200,
+                            "internal_error_code" => "GATEWAY_ERROR_UNKNOWN_ERROR"
+                        ],
+                        'data' => [
+                            "bank_status_code" => "FAILED",
+                            "description" => "",
+                            "status" => "0"
+                        ],
+                    ]);
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_InvalidVpa()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_InvalidVpa();
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $this->assertEquals('invalid', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['bank_name']);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_UPI_INVALID_VPA', $favUpdated['internal_error_code']);
+    }
+
+    public function mockMozart_ServiceError(): void
+    {
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+            ->withArgs(function($namespace, $gateway, $action, $input) {
+                $mozartRequest = [
+                    'fund_account' =>
+                        [
+                            'vpa' =>
+                                [
+                                    'handle' => 'razorpay',
+                                    'username' => 'withname',
+                                ],
+                        ],
+                    'source_account' =>
+                        [
+                            'credentials' =>
+                                [
+                                    'auth_username' => 'johndoe',
+                                    'auth_password' => 'johndoe123',
+                                    'client_id' => 'client_id',
+                                    'client_secret' => 'client_secret',
+                                    'corp_id' => '123456',
+                                    'payerVpa' => 'payerVpa_value',
+                                    'bcagent' => 'bcagent_value',
+                                    'bcagent_username' => 'bcagent_username_value',
+                                    'bcagent_password' => 'bcagent_password_value',
+                                    'hmacKey' => 'hmacKey_value',
+                                    'mrchOrgId' => 'mrchOrgId_value',
+                                    'aggrOrgId' => 'aggrOrgId_value',
+                                ],
+                        ],
+                    'gateway_auth' =>
+                        [
+                            'token' => 'gateway_auth_1234567890',
+                        ],
+                    'gateway_session' =>
+                        [
+                            'token' => 'session_1234567890'
+                        ],
+                ];
+
+                $this->assertArraySelectiveEquals($mozartRequest, $input);
+
+                return true;
+            })
+            ->andReturnUsing(function(string $namespace, string $gateway, string $action, array  $input) {
+                throw new ServerNotFoundException(
+                    'Mozart Service Not Available',
+                    ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_CALLED);
+            });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testVpaValidationUsingRblValidateApi_MozartServiceError()
+    {
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFavValidationUsingRblValidateApi'];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->setUpForFavUsingRblValidateVpaApi();
+
+        $this->mockMozart_ServiceError();
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getDbEntityById('balance', $fav['balance_id']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $favUpdated->setIsVpaBankInfoEnabledFlag();
+
+        $this->assertEquals(null, $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals(null, $favUpdated->toArrayPublic()['results']['ifsc']);
+        $this->assertEquals('created', $favUpdated[Entity::STATUS]);
     }
 
     public function testPennilessVpaValidationWithInvalidAccountStatus()
@@ -876,6 +2305,7 @@ class FundAccountValidationTest extends TestCase
             'account_status' => "active",
             'name' => "Razorpay Customer",
             'success' => true,
+            'ifsc_code' => null,
             'fav_status' => "completed",
             'error_code' => null,
         ];

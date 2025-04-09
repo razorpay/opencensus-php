@@ -769,6 +769,14 @@ class DisputePresentmentTest extends TestCase
                 'expected_recovery_method' => 'adjustment',
             ],
             [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'optimizer_razorpay'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_rzpaxis'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
                 'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_juspay'],
                 'expected_recovery_method' => 'adjustment',
             ],

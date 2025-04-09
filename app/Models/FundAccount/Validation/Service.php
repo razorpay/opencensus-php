@@ -6,12 +6,11 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Redaction;
@@ -65,7 +64,17 @@ class Service extends Base\Service
 
         if (empty($fav) === true)
         {
+            /** @var Entity $fav */
             $fav = $this->repo->fund_account_validation->findByPublicIdAndMerchant($id, $this->merchant);
+
+            /** @var \RZP\Models\Merchant\Entity $merchant */
+            $merchant = $this->repo->merchant->findOrFail($fav->getMerchantId());
+
+            if (($fav->getFundAccountType() == Type::VPA) and
+                ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VPA_BANK_INFO_ENABLED) === true))
+            {
+                $fav->setIsVpaBankInfoEnabledFlag();
+            }
 
             $fav = $this->core->setAdditionalFieldsForCompositeResponse($fav);
 

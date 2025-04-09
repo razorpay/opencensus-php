@@ -47,4 +47,9 @@ class Repository extends Base\Repository
                     ->entity($morphEntity)
                     ->findManyOrFailPublic($ids);
     }
+
+    public function bulkInsert(array $lineItems)
+    {
+        return $this->newQuery()->insert($lineItems);
+    }
 }

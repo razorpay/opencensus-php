@@ -1090,6 +1090,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_REMOVED           = 'Linked Account reversal ability is already removed from the merchant';
     const BAD_REQUEST_LINKED_ACCOUNT_CREATION_WITH_DUPLICATE_EMAIL_NOT_ENABLED  = 'Feature to create Linked Account with existing emails is not allowed for this merchant. Please contact support.';
     const BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED_FOR_VAS_MERCHANT          = 'Linked account creation is blocked for this merchant.';
+    const BAD_REQUEST_LINKED_ACCOUNT_UPDATE_BLOCKED_WITHOUT_2FA                 = 'Linked account update is blocked without 2FA';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
@@ -1199,7 +1200,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE_TYPE                       = 'Only Direct-Banking type balance is allowed';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED     = 'Manual recovery for rzp_fees type payouts is not supported';
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
-
+    const BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING = 'There are cases where fee recovery debit or credit entities are missing, So couldn\'t recover fee for the time range provided.';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                              = 'Request failed as contact mobile already taken';
 
     const BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED                              = 'No owner accounts associated with this contact mobile';
@@ -1861,6 +1862,9 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_DATE_RANGE                                            = 'Date range is invalid. Please ensure that the range is within 31 days.';
 
     const BAD_REQUEST_IDAM_ORG_NOT_FOUND                                            = 'IDAM Org not found.';
+    const BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED                                    = 'Admin disabled cron failed.';
+    const BAD_REQUEST_ADMIN_DISABLED                                                = 'Admin account is disabled.';
+    const BAD_REQUEST_ADMIN_DISABLED_BY_DORMANCY                                    = 'Admin account is disabled due to inactivity.';
 
     const BAD_REQUEST_CIN_MISMATCH            = 'The given CIN does not belong to your selected business type. Please provide a different CIN';
     const BAD_REQUEST_PAN_MISMATCH            = 'The given PAN does not belong to your selected business type. Please provide a different PAN';
@@ -1877,6 +1881,8 @@ class PublicErrorDescription
     const BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_PARTNER                               = 'Partner does not have access to this feature';
 
     const BAD_REQUEST_VA_CREATION_BLOCKED_FOR_RBL_MERCHANTS = "Virtual Account Creation is currently blocked for RBL Merchants.";
+    const  BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_FAILURE = "A dispute can't be raised for the mentioned payment since it was made less than 5 days ago with an BSE registered broking merchant. Please proceed to file a chargeback or else wait for 5 days from the date of payment to raise a dispute";
+    const  BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_UPLOAD_FAILURE = 'Failed to upload the BSE circulars to UFH services';
 
     const BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_NOT_ALLOWED_RBL = "Adding allowed payer to RBL VA is not allowed";
 

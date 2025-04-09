@@ -77,5 +77,9 @@ class Action
 
     const VALIDATE_VPA          = 'validate_vpa';
 
+    const GATEWAY_SESSION       = 'gateway_session';
+
+    const GATEWAY_AUTH          = 'gateway_auth';
+
     const MANDATE_VERIFY        = 'mandate_verify';
 }

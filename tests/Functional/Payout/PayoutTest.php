@@ -66,6 +66,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
+use RZP\Jobs\LedgerJournalBase;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
@@ -327,6 +328,161 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
+    }
+
+    public function testLedgerJournalBaseJobWithTransactionCreateDisabled()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $splitzResp = $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE_TEST;
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $ledgerPayload = [
+            "transactor_id"=> "pout_".$payout->getId(),
+            "transactor_event"=> "payout_initiated",
+            "updated_at"=> 1743519616,
+            "amount"=> "240295",
+            "transaction_date"=> 1743519616,
+            "ledger_entry"=> [
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "250",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "cash"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va"
+                        ]
+                    ],
+                    "base_amount"=> "250",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0Wq95Bbn",
+                    "account_id"=> "J10ACA57N4tbbN",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "45",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "va_gst"
+                        ]
+                    ],
+                    "base_amount"=> "45",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0XwWLj9J",
+                    "account_id"=> "J10ACFxXZRVJ8a",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "balance"=> "31955385523.000000",
+                    "created_at"=> 1743519616,
+                    "balance_updated"=> true,
+                    "amount"=> "240295",
+                    "type"=> "debit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va"
+                        ]
+                    ],
+                    "base_amount"=> "240295",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0YGEjzUm",
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "updated_at"=> 1743519616,
+                    "account_id"=> "J10AC59zxIRRgc",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "240000",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va_vendor"
+                        ]
+                    ],
+                    "base_amount"=> "240000",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0YXHiNVD",
+                    "account_id"=> "J10ACLhRGe5Y2e",
+                    "merchant_id"=> $payout->getMerchantId()
+                ]
+            ],
+            "base_amount"=> "240295",
+            "currency"=> "INR",
+            "id"=> "QDppncrKiEw16D",
+            "tenant"=> "X",
+            "created_at"=> 1743519616
+        ];
+        LedgerJournalBase::dispatch('test', $ledgerPayload);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('QDppncrKiEw16D', $payout->getTransactionId());
+        $this->assertEquals('transaction', $payout['transaction_type']);
+        $res = $payout->toArrayAdmin();
+        s($res);
+        s($payout['transaction_id']);
+        s($payout['transaction_type']);
+        s("debug info");
     }
 
     public function testAccountStatementQueuePushForProcessedPayout() {
@@ -4121,6 +4277,7 @@ class PayoutTest extends OAuthTestCase
                 'transaction_date' => 12345
             ]
         ];
+        $this->expectWebhookEventOneTime('payout.reversed');
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -4163,6 +4320,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($payout->reversal->getTransactionId());
 
         $this->ba->payoutInternalAppAuth();
+
+        $this->dontExpectAnyWebhookEvent();
 
         $request = [
             'url'     => '/banking_account_statement/payout_update',
@@ -16017,7 +16176,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(2);
+            })->times(3);
 
         $this->testPayoutStatusUpdate();
     }
@@ -24405,7 +24564,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(6);
+            })->times(7);
 
         $this->testCreatePayout();
 
@@ -24448,7 +24607,7 @@ class PayoutTest extends OAuthTestCase
                 }
 
                 return new \WpOrg\Requests\Response();
-            })->times(6);
+            })->times(7);
 
         $this->testCreatePayoutOnLiveMode();
 
@@ -28500,6 +28659,164 @@ class PayoutTest extends OAuthTestCase
                                                                 ]);
 
         $this->assertNotContains('HDFC', $eventConfigFromFTS['BENEFICIARY'], true);
+    }
+
+    public function testPayoutEventPushToXBalanceServiceForAPIPayout()
+    {
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function($array) {
+                 return ["response" => ["variant" => ["name" => 'enabled']]];
+             });
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+
+            public $payload;
+
+            public function pushRaw($payload, $queueName)
+            {
+                $this->payload   = $payload;
+                $this->queueName = $queueName;
+
+                return true;
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->on('live')->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $payoutCore = $this->app->make('RZP\Models\Payout\Core');
+        $payoutCore->pushPayoutEventToBalanceService($payout);
+
+        $queuePayload = json_decode($queueObject->payload);
+        $queueName    = $this->app['config']->get('queue.x_balances_payout_event.' . Mode::LIVE);
+
+        $this->assertEquals($queueName, $queueObject->queueName);
+        $this->assertEquals($payout->getId(), $queuePayload->entity_id);
+        $this->assertEquals($payout->getBalanceId(), $queuePayload->balance_id);
+        $this->assertEquals($payout->getMerchantId(), $queuePayload->merchant_id);
+        $this->assertNotNull($queuePayload->event_creation_time);
+    }
+
+    public function testPayoutEventPushToXBalanceServiceForAPIPayoutException()
+    {
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function($array) {
+                 return ["response" => ["variant" => ["name" => 'enabled']]];
+             });
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+
+            public $payload;
+
+            public $isExceptionThrown;
+
+            public function pushRaw($payload, $queueName)
+            {
+                $this->isExceptionThrown = true;
+                throw new Exception("This exception class will not be found");
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->on('live')->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $payoutCore = $this->app->make('RZP\Models\Payout\Core');
+        $payoutCore->pushPayoutEventToBalanceService($payout);
+
+        $this->assertEquals(true, $queueObject->isExceptionThrown);
+    }
+
+    public function testPayoutEventNotPushedToXBalanceServiceForAPIPayoutOnSplitzDisabled()
+    {
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->andReturnUsing(function($array) {
+                 return ["response" => ["variant" => ["name" => 'disabled']]];
+             });
+
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+
+            public $payload;
+
+            public function pushRaw($payload, $queueName)
+            {
+                $this->isPushed = true;
+            }
+        };
+
+        $queueMock->shouldNotReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'rbl',
+            'balance'        => 10000000,
+            'account_number' => '2224440041626905',
+        ]);
+
+        $payout = $this->fixtures->on('live')->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $payoutCore = $this->app->make('RZP\Models\Payout\Core');
+        $payoutCore->pushPayoutEventToBalanceService($payout);
     }
 
     public function testCreateRequestSubmittedToOnHoldAndProcessing()
@@ -33170,6 +33487,71 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($payout->transaction);
 
         $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'SHARED',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => 'Pullak',
+                'cms_ref_no'       => '7a452792bee811ec949d0a0047340000',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+    }
+
+    public function testPayoutChannelChangeWhenTxnCreatedInLedgerReverseShadowWithoutDualWrite()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('icici', $payout->getChannel());
+
+        $this->assertNull($payout->transaction);
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->edit('payout', $payoutId, [
+            'transaction_id' => 'random14id1234'
+        ]);
 
         $this->ba->ftsAuth();
 

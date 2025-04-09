@@ -24,6 +24,12 @@ class UpiPaymentServiceReconTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = "upi_airtel";
     }
 
     /**

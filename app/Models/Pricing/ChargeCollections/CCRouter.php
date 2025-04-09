@@ -299,7 +299,14 @@ class CCRouter
                     }
                     return $this->transformToPricingModel($modifiedResponse);
                 }
-                return $this->transformToPlanModel($response);
+                else if ($fqcn === "RZP\Models\Pricing\Repository\getPricingRuleIdsByMerchant") {
+                    $planModel = $this->transformToPlanModel($response);
+                    $ids = array_column($planModel->toArray(), 'id');
+                    return $ids;
+                }
+                else {
+                    return $this->transformToPlanModel($response);
+                }
             }
 
             if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
@@ -784,6 +791,13 @@ class CCRouter
                 ]);
                 return;
             }
+
+            if ($fqcn === "RZP\Models\Pricing\Repository\getPricingRuleIdsByMerchant") {
+                $this->compareArrays($ccResponse, $legacyResponse, $fqcn, $rampPhase);
+                return;
+            }
+
+
             if (get_class($ccResponse) !== get_class($legacyResponse)) {
                 $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
                     'function' => $fqcn,
@@ -822,6 +836,28 @@ class CCRouter
                 'method' => $fqcn,
                 'code' => $e->getCode(),
                 'message' => $e->getMessage(),
+                'ramp_phase' => $rampPhase,
+            ]);
+        }
+    }
+
+    private function compareArrays($ccResponse, $legacyResponse, $fqcn, $rampPhase)
+    {
+        sort($ccResponse);
+        sort($legacyResponse);
+
+        if ($ccResponse !== $legacyResponse) {
+            $this->trace->info(TraceCode::CC_ROUTER_RESPONSE_MISMATCH, [
+                'function' => $fqcn,
+                'reason' => 'array_mismatch',
+                'cc_response' => $ccResponse,
+                'legacy_response' => $legacyResponse,
+                'ramp_phase' => $rampPhase,
+                'mode' => $this->mode,
+            ]);
+            $this->trace->count(Metric::CC_ROUTER_RESPONSE_MISMATCH, [
+                'function' => $fqcn,
+                'reason' => 'array_mismatch',
                 'ramp_phase' => $rampPhase,
             ]);
         }

@@ -133,13 +133,14 @@ class CapitalEarlySettlementClient
         );
     }
 
-    public function invalidateAndCreateFundAccount($merchantId, $skipCreation)
+    public function invalidateAndCreateFundAccount($merchantId, $skipCreation = false, $syncMode = false, $bankAccount = null)
     {
         return $this->sendRequestAndParseResponse(self::GET_FUND_ACCOUNT,
             [
                 'merchant_id' => $merchantId,
-                'sync_mode' => false,
-                'skip_creation' => $skipCreation
+                'skip_creation' => $skipCreation,
+                'sync_mode' => $syncMode,
+                'bank_account' => $bankAccount,
             ],
             [
                 'X-Auth-Type'    => 'internal',

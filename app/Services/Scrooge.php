@@ -1114,21 +1114,9 @@ class Scrooge
      */
     protected function generateRequest(string $endpoint, string $method, array $data): array
     {
-        $app = App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-            "scrooge_edge_migration",
-            $app['rzp.mode'] ?? 'live');
-
         $url = $this->baseUrl . $endpoint;
 
-        if ($this->baseUrl == "https://scrooge.razorpay.com/v1/" && $variant==='on')
-        {
-            $url = "https://scrooge-temp.razorpay.com/v1/" . $endpoint;
-        }
-
         $this->trace->info(TraceCode::SCROOGE_EDGE_MIGRATION, [
-            'variant'    => $variant,
             'url'        => $url,
         ]);
 

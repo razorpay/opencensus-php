@@ -404,12 +404,6 @@ class Processor
     const BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER = 'banking_org_id_card_payments_via_pg_router';
 
     /**
-     * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
-     */
-    const BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER = 'banking_org_id_MOTO_payments_via_pg_router';
-
-
-    /**
      * Razorx flag to block merchants from re-arch flow
      */
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
@@ -546,8 +540,6 @@ class Processor
      * Razorx flag to block merchant on re-arch flow for payments card
      */
     const BLOCK_MERCHANTS_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
-
-    const ENABLE_REARCH_PAYMENTS_FLOW = 'enable_rearch_payments_flow';
 
     const ENABLE_REARCH_EMI_PAYMENTS_FLOW = 'enable_rearch_emi_payments_flow';
 
@@ -878,9 +870,17 @@ class Processor
             return false;
         }
 
-        $skipFeeBearerCheck = $this->evaluateSplitzExperimentforSkipFeeBearerCheck($merchant);
-        if (!$skipFeeBearerCheck && ($merchant->isFeeBearerCustomerOrDynamic() === true)){
-            return false;
+        if ($merchant->isFeeBearerDynamic() === true) {
+            if ($this->inputCurrencyNotINR($input)) {
+                return $this->evaluateSplitzExperimentforNonINRDFBRearch($merchant);
+            }
+            return $this->evaluateSplitzExperimentforINRDFBRearch($merchant);
+        }
+        if ($merchant->isFeeBearerCustomer() === true){
+            if ($this->inputCurrencyNotINR($input)) {
+                return $this->evaluateSplitzExperimentforNonINRCFBRearch($merchant);
+            }
+            return $this->evaluateSplitzExperimentforINRCFBRearch($merchant);
         }
 
         if($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID){
@@ -984,13 +984,121 @@ class Processor
         return false;
     }
 
-    private function evaluateSplitzExperimentforSkipFeeBearerCheck ($merchant)
+    private function evaluateSplitzExperimentforINRCFBRearch ($merchant)
     {
         try
         {
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.cross_border_skip_fee_bearer_check_experiment_id'),
+                'experiment_id' => $this->app['config']->get('app.cross_border_cfb_inr_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    public function evaluateSplitzExperimentforNonINRCFBRearch ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_cfb_non_inr_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforINRDFBRearch ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dfb_inr_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    private function evaluateSplitzExperimentforNonINRDFBRearch ($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dfb_non_inr_experiment_id'),
                 'request_data'  => json_encode(
                     [
                         'merchant_id' => $merchant->getId(),
@@ -1464,6 +1572,39 @@ class Processor
         return false;
     }
 
+    private function evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_initial_mandatehq');
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+        return false;
+    }
 
     private function evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant, $routeName)
     {
@@ -1528,6 +1669,39 @@ class Processor
             ]);
             $variant = $response['response']['variant']['name'] ?? '';
             if ($variant === 'enable') {
+                if ($cardMandate->getMandateHub() === 'mandate_hq'){
+                    try
+                    {
+                        $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_hub_mandatehq');
+                        $properties = [
+                            'id'            => UniqueIdEntity::generateUniqueId(),
+                            'experiment_id' => $experimentId,
+                            'request_data'  => json_encode(
+                                [
+                                    'merchant_id' => $merchant->getId(),
+                                ]),
+                        ];
+                        $response = $this->app['splitzService']->evaluateRequest($properties);
+                        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                            'properties' => $properties,
+                            'response' => $response,
+                        ]);
+                        $variant = $response['response']['variant']['name'] ?? '';
+                        if ($variant === 'enable') {
+                            return true;
+                        }
+                    }
+                    catch (\Exception $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+                        );
+                    }
+                    return false;
+                }
+
                 return true;
             }
         }
@@ -1613,11 +1787,6 @@ class Processor
                 $tokenId = $input[Payment\Entity::TOKEN];
 
                 $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
-
-                // not required in case of billdesk, add vpa if required for any other provider
-                $input[Payment\Entity::CARD] = null;
-                $input[Payment\Entity::UPI] = null;
-                $input[Payment\Entity::BANK_ACCOUNT] = null;
 
                 if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD)
                 {
@@ -1708,6 +1877,10 @@ class Processor
                 ];
 
                 $input["recurring_token"] = $recurringToken;
+                // not required in case of billdesk, add vpa if required for any other provider
+                $input[Payment\Entity::CARD] = null;
+                $input[Payment\Entity::UPI] = null;
+                $input[Payment\Entity::BANK_ACCOUNT] = null;
 
                 $this->trace->info(TraceCode::OPTIMIZER_REARCH_ROUTING_CRITERIA_PASSED_REASON, [
                     'merchant_id' => $merchant->getId(),
@@ -1749,21 +1922,6 @@ class Processor
             $result = '';
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
-
-            if (Environment::isTestingEnvironment($this->app['env']) === false)
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_PAYMENTS_FLOW, $this->mode);
-
-                if ($result === 'on')
-                {
-                    $this->trace->info(TraceCode::FORCE_ROUTE_THROUGH_REARCH, [
-                        'reason' => "whitelisted merchant",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-
-                    return true;
-                }
-            }
 
             if ($merchant->getCountry() === 'MY')
             {
@@ -1891,10 +2049,10 @@ class Processor
 
                 $offerMethod = $offer->getPaymentMethod();
 
-                if ($offerMethod === Payment\Method::CARD)
+                if ($offerMethod === Payment\Method::CARD || $offerMethod === Offer\Entity::MULTIPLE)
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "card_offer_payment_blocked",
+                        'reason' => "card_or_multiple_offer_payment_blocked",
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -1933,9 +2091,9 @@ class Processor
 
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
-                $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                if($result !== 'on')
+                $experimentName = 'app.banking_org_id_moto_payments_via_pg_router';
+                $result = (new Payment\Service())->getSplitzExperimentResponseForBankingMotoRearch($merchant->getOrgId(),$experimentName);
+                if ($result !== 'enable')
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "MOTO_Payment",
@@ -1946,19 +2104,6 @@ class Processor
                 }
 
                 $routeMotoToRearch = true;
-            }
-
-            // check if eligible banking org id to redirect to card's re-arch
-            if ($merchant->isRazorpayOrgId() === false) {
-                $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER, $this->mode);
-                if ($result !== 'on') {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "Banking_Org_Id",
-                        'merchant_id' => $merchant->getId(),
-                        'banking_org_id' => $merchant->getOrgId(),
-                    ]);
-                    return false;
-                }
             }
 
             $order = null;
@@ -2238,7 +2383,7 @@ class Processor
                         }
 
                         $app = App::getFacadeRoot();
-                        if ($iin->isRupay() || $app->mandateHQ->isBinSupported($iin->getIin()))
+                        if ($iin->isRupay() || ($app->mandateHQ->isBinSupported($iin->getIin()) && !$this->evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)))
                         {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "initial_hub_mhq_rupay",
@@ -2264,7 +2409,7 @@ class Processor
 
                         $iin = $card->getIin();
                         $app = App::getFacadeRoot();
-                        if ($card->isRupay() || $app->mandateHQ->isBinSupported($iin))
+                        if ($card->isRupay() || ($app->mandateHQ->isBinSupported($iin) && !$this->evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)))
                         {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "initial_hub_mhq_rupay",
@@ -3274,12 +3419,12 @@ class Processor
     private function preProcessTokenisedPaymentRequestForRearch(&$input, $merchant) : bool
     {
         $tokenId = $input[Payment\Entity::TOKEN];
-
+        $ifenvITF = Environment::isEnvironmentItf($this->app['env']);
         try {
             // First fetch the relevant customer (global or local)
             list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                 $input, $merchant, false);
-            if ($customer !== null)
+            if ($customer !== null  && !$ifenvITF)
             {
                 $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
             }
@@ -3373,8 +3518,14 @@ class Processor
     {
         try
         {
+            if ($input[Payment\Entity::METHOD] !== Payment\METHOD::NETBANKING)
+            {
+               return false;
+
+            }
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
+
 
             // test mode payments are not supported
             if ((app()->isEnvironmentProduction() === true) and
@@ -3564,9 +3715,7 @@ class Processor
             }
 
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from UPS re-arch traffic
-            $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_UPS,
-                $this->mode);
-            if ($result === 'on') {
+            if ($this->shouldBlockMerchantsOnUPS($merchant->getId()) === true) {
                 return false;
             }
 
@@ -4001,7 +4150,7 @@ class Processor
 
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
-            $routeViaReArch = true;
+            $routeViaReArch = false;
             $dimensions[5] = 1;
         }
 
@@ -4081,12 +4230,13 @@ class Processor
             $library = $input['_']['library'];
         }
 
-        if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS )
+        if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS)
         {
-        // Add experiment based on library to rampup traffic
-          $routeViaReArch = false;
-          $dimensions[17] = 1;
-
+            $library = strtolower($library);
+            if ($this->isLibrarySupportedForNbplusRearch($library) === false){
+                    $routeViaReArch = false;
+                    $dimensions[17] = 1;
+                }
         }
 
       if (empty($input[Payment\Entity::ORDER_ID]) === false)
@@ -4767,18 +4917,8 @@ class Processor
             return;
         }
 
-        $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            RazorxTreatment::NON_TWO_DECIMAL_CURRENCY_VALIDATION,
-            $this->app['rzp.mode']);
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
 
-        if ($variantFlag === "on"  ||
-            ($variantFlag === "invoice_on" && $isInvoicePayment === true) ||
-            ($variantFlag === "plugin_on" && $isPluginFlowPayment === true)
-        )
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
-        }
     }
 
     public function validateCardRecurringAutoPayment($input)
@@ -4786,13 +4926,24 @@ class Processor
         if ((isset($input[Payment\Entity::METHOD])) and
             ($input[Payment\Entity::METHOD] === Payment\Method::CARD))
         {
-            $variant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
-                $this->mode
-            );
 
-            if (($variant === 'on') and
+            $properties = [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.card_mandate_enable_multiple_frequencies'),
+                'request_data' => json_encode([
+                    'mid' => $this->merchant->getId()
+                ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'response' => $response,
+            ]);
+
+            if (($variant === 'enable') and
                 (isset($input[Payment\Entity::TOKEN])) and
                 (isset($input[Payment\Entity::CUSTOMER_ID])))
             {
@@ -9848,12 +9999,9 @@ class Processor
 
         $merchant = $payment->merchant;
 
-        $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            RazorxTreatment::SEND_DCC_INDICATOR,
-            $this->app['rzp.mode']);
         $data['merchant'] = [
             'is_vas_merchant' => $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VAS_MERCHANT),
-            'send_dcc_compliance' => $variantFlag === "on" ? true : false,
+            'send_dcc_compliance' => true,
         ];
 
 
@@ -13405,7 +13553,7 @@ class Processor
     }
 
     protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)
-    {
+    {        
         // If total amount refund is 0, setting payment's refund status to null
         if ($payment->getAmountRefunded() === 0)
         {
@@ -13417,7 +13565,15 @@ class Processor
             $payment->setRefundStatus(Payment\RefundStatus::PARTIAL);
         }
 
-        $payment->setStatus(Payment\Status::CAPTURED);
+        // Payment status transitions: CAPTURED > REFUNDED or AUTHORIZED > REFUNDED
+        // Note: REFUNDED status can only follow AUTHORIZED or CAPTURED statuses.
+        // If captured_at is null, the payment transitioned to REFUNDED from AUTHORIZED. So revert of payment status happen accordingly
+        if ($this->evaluateExeperimentForPaymentStatusRevertFromRefunded($payment->getMerchantId()) && $payment->getCapturedAt() === null) {
+            $payment->setStatus(Payment\Status::AUTHORIZED);
+            } else {
+                $payment->setStatus(Payment\Status::CAPTURED);
+            }
+
     }
 
     protected function getUpiStatus(string $id)
@@ -14604,17 +14760,7 @@ class Processor
 
         }
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
-            self::ALLOW_CFB_MERCHANTS_ON_REARCH_UPS, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_CFB_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant' => $variant,
-            'mode'    => $this->mode,
-            'feature' => self::ALLOW_CFB_MERCHANTS_ON_REARCH_UPS,
-        ]);
-
-        return $variant === 'on';
+        return true;
     }
 
     /**
@@ -14703,6 +14849,32 @@ public function isNBPlusRearchTpv($merchant): bool
     return $variant === 'variant_on';
 }
 
+public function isLibrarySupportedForNbplusRearch($library): bool
+{
+    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'_library';
+
+    $properties = [
+        'id'            => $library,
+        'experiment_id' => $featureFlag,
+        'request_data'  => json_encode(['library' => $library, 'mode' => $this->mode]),
+    ];
+    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+    $variant = $response['response']['variant']['name'] ?? 'control';
+
+     // Log the feature variant for debugging
+     $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_LIBRARY_PAYMENT_SPLITZ_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'feature'     => $featureFlag,
+        'response'    => $response,
+    ]);
+
+    return $variant === 'variant_on';
+
+}
+
 /**
      * isFeeConfigIDRamped returns true if merchant is ramped on FeeConfigID
      * @return bool
@@ -14757,30 +14929,14 @@ public function isNBPlusRearchTpv($merchant): bool
         // If the feature flag "banking_upi_rearch" and the razorx experiment for the merchant ID are enabled,
         // route the UPI traffic of that org via rearch as part of API decomposition.
 
-        $razorxResult = $this->app->razorx->getTreatment($this->merchant->getId(), Features::BANKING_UPI_REARCH, $this->mode);
-
         $featureResult = $this->merchant->org->isFeatureEnabled(Features::BANKING_UPI_REARCH);
 
-        if (($razorxResult === 'on') and ($featureResult === true))
+        if ($featureResult === true)
         {
             return true;
         }
 
-        $orgId = $this->merchant->getMerchantOrgId();
-
-        $feature = self::ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS . '_org_' . $orgId;
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), $feature, $this->mode);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_NON_RZP_ORG_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'org_id'      => $orgId,
-            'variant'     => $variant,
-            'mode'        => $this->mode,
-            'feature'     => $feature,
-        ]);
-
-        return str_starts_with($variant, 'on') === true;
+        return true;
     }
 
     /**
@@ -15587,6 +15743,85 @@ public function isNBPlusRearchTpv($merchant): bool
                 $e,
                 null,
                 TraceCode::POS_PAYMENTS_REFERENCE13_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+    /**
+     * evaluateExeperimentForPaymentStatusRevertFromRefunded checks if payment_status_revert_api_via_scrooge_experiment splitz is enabled
+     *
+     * @param string $merchantId
+     * @return boolean
+     */
+    public function evaluateExeperimentForPaymentStatusRevertFromRefunded ($merchantId)
+    {  
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.payment_status_revert_api_via_scrooge_experiment'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId
+                    ])
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+        
+            $variant = $response['response']['variant']['name'] ?? '';
+            $this->trace->info(TraceCode::PAYMENT_STATUS_REVERT_EXPERIMENT_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'variant' => $variant ,
+                'response' => $response,
+                'experiment_id' => $this->app['config']->get('app.payment_status_revert_api_via_scrooge_experiment')
+            ]);
+
+            if ($variant === 'variant_on')
+            {   
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYMENT_STATUS_REVERT_EXPERIMENT_ERROR
+            );
+        }
+        return false;
+    }
+    /** Splitz to check if merchant needs to be blocked
+     * @param $merchantID
+     * @return bool
+     */
+    private function shouldBlockMerchantsOnUPS($merchantID): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.block_merchants_on_ups_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::BLOCK_MERCHANTS_ON_UPS_SPLITZ_RESULT, [
+                'merchant_id' => $merchantID,
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::BLOCK_MERCHANTS_ON_UPS_SPLITZ_FAILED);
         }
 
         return false;

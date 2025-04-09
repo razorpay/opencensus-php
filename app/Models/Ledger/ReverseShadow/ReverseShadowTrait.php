@@ -14,6 +14,7 @@ use RZP\Constants\Metric;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Feature;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -129,15 +130,15 @@ trait ReverseShadowTrait
         return (($feeCredits > 0) and ($feeCredits >= $fee) and ($this->isPaymentFeeBearerCustomer($payment) === false));
     }
 
-    protected function isPostPaidDynamicFeeBearerFlag(PaymentEntity $payment,$merchant)
+    protected function isPostPaidDynamicFeeBearerFlag(PaymentEntity $payment,$merchant, $feesSplit)
     {
-        return (($this->isPostpaid($payment) === true) and ($merchant->isFeeBearerDynamic() === true) and ($payment->isFeeBearerPlatform() === true));
+        return (($this->isPostpaid($payment, $feesSplit) === true) and ($merchant->isFeeBearerDynamic() === true) and ($payment->isFeeBearerPlatform() === true));
     }
 
-    protected function isPrepaidDynamicFeeBearerFlag(PaymentEntity $payment): bool
+    protected function isPrepaidDynamicFeeBearerFlag(PaymentEntity $payment, $feesSplit): bool
     {
         $merchant = $payment->merchant;
-        return (($this->isPostpaid($payment) === false) and ($merchant->isFeeBearerDynamic() === true) and ($payment->isFeeBearerPlatform() === true));
+        return (($this->isPostpaid($payment, $feesSplit) === false) and ($merchant->isFeeBearerDynamic() === true) and ($payment->isFeeBearerPlatform() === true));
     }
 
     protected function isFeeCredits($feeCredits ,$fee): bool
@@ -160,13 +161,23 @@ trait ReverseShadowTrait
         return ($merchant->getRefundSource() === RefundSource::CREDITS);
     }
 
-    protected function isPostPaidWithoutCustomerFeeBearer(PaymentEntity $payment)
+    protected function isPostPaidWithoutCustomerFeeBearer(PaymentEntity $payment, $feesSplit)
     {
-        return (($this->isPostpaid($payment) === true) and ($this->isPaymentFeeBearerCustomer($payment) === false));
+        return (($this->isPostpaid($payment, $feesSplit) === true) and ($this->isPaymentFeeBearerCustomer($payment) === false));
     }
 
-    protected function isPostpaid(PaymentEntity $payment): bool
+    protected function isPostpaid(PaymentEntity $payment, $feesSplit): bool
     {
+        try {
+            if($payment->isEligibleForFeeModelOverride()) {
+                $feeModel = $feesSplit->where('name', PricingFeature::PAYMENT)->first()->pricingRule->getFeeModel();
+                if (!empty($feeModel)) {
+                    return $feeModel == Merchant\FeeModel::POSTPAID;
+                }
+            }
+        } catch(\Throwable $e){
+            $this->trace->error(TraceCode::RULE_LEVEL_FEE_MODEL_FAILURE, ['error'=> $e->getMessage()]);
+        }
         return ($payment->merchant->getFeeModel() === Merchant\FeeModel::POSTPAID);
     }
 
@@ -1343,7 +1354,6 @@ trait ReverseShadowTrait
 
         // currently, international cases are blocked on this flow, so we can cleanly just have the fee set for non CFB cases.
         // TODO on this will be to start flowing cross borded payments and have the fee set for them for CFB use cases too.
-        ;
         if (($payment->isFeeBearerCustomer() === false) or (($payment->isFeeBearerCustomer() === true) and
                 (($payment->isInternational() === true) or
                 ($payment->merchant->isLRSFlowEnabled() === true) or

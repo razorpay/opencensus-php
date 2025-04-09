@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingSbi\SubReconciliator;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
@@ -373,11 +374,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $scroogeReconData['status'] = null;
         }
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
-            RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
-            $this->app['rzp.mode']);
-        if ($variantFlag !== 'on')
+        $env = $this->app->environment();
+
+        if ($env !== Environment::PRODUCTION)
         {
             // This is required to save the association of the transaction with the refund.
             $this->repo->saveOrFail($refundEntity);

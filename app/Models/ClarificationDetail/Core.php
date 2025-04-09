@@ -4,7 +4,12 @@ namespace RZP\Models\ClarificationDetail;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Http\Controllers\NeedsClarificationProxyController;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -233,9 +238,39 @@ class Core extends Base\Core
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $clarificationDetails = (new ClarDetailCore)->getCommunicationParams($merchantId);
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.clarification_table_read_migration'),
+        ];
 
-        if ($this->hasClarificationDetails($merchantId) === true)
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+        $this->trace->info(TraceCode::SPLITZ_RES_FOR_CLARIFICATION_DETAILS_READ_MIGRATION, [
+            'experiment_enabled' => $isExperimentEnabled
+        ]);
+
+        if ($isExperimentEnabled === true) {
+
+            $response = (new Service)->fetchAndBuildCommunicationParams($merchantId);
+
+            $clarificationDetails = $response['communication_params'];
+
+            $hasClarificationDetails = $response['has_clarification_details'];
+
+        } else {
+
+            $clarificationDetails = (new ClarDetailCore)->getCommunicationParams($merchantId);
+
+            $hasClarificationDetails = $this->hasClarificationDetails($merchantId);
+
+        }
+
+        $this->trace->info(TraceCode::CLARIFICATION_DETAILS_RESPONSE, [
+            'clarificationDetails'    => $clarificationDetails,
+            'hasClarificationDetails' => $hasClarificationDetails
+        ]);
+
+        if ($hasClarificationDetails === true)
         {
             $args = [
                 EscalationsConstant::MERCHANT => $merchant,
@@ -307,28 +342,94 @@ class Core extends Base\Core
         {
             $properties = [];
 
-            $isEligibleForNCRevamp = (new ClarDetailService())->isEligibleForRevampNC($merchant->getId());
+            $splitzProperties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.clarification_table_read_migration'),
+            ];
 
-            if($isEligibleForNCRevamp === true)
-            {
-                $properties['merchantId'] = $merchant->getId();
+            $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
 
-                $properties['nc_count'] = $this->getNcCount($merchant);
+            $this->trace->info(TraceCode::SPLITZ_RES_FOR_CLARIFICATION_DETAILS_READ_MIGRATION, [
+                'experiment_enabled' => $isExperimentEnabled
+            ]);
 
-                $clarificationDetails = $this->repo->clarification_detail->getByMerchantIdAndStatusFromReplica($merchant->getId(), Constants::NEEDS_CLARIFICATION);
+            if ($isExperimentEnabled === true) {
 
-                foreach ($clarificationDetails as $clarificationDetail)
-                {
-                    $params = [];
+                $ncRevampResponse = (new ClarDetailService)->getMerchantNcRevampEligibility($merchant->getId());
 
-                    $groupName = $clarificationDetail->getGroupName();
+                $this->trace->info(TraceCode::GET_NC_REVAMP_RESPONSE, [
+                    'ncRevampResponse' => $ncRevampResponse
+                ]);
 
-                    $params['admin_email'] = $clarificationDetail->getAdminEmail();
+                if ($ncRevampResponse['nc_revamp_enabled'] === false) {
 
-                    $params['admin_comment'] = $clarificationDetail->getAdminComment();
-
-                    $properties[$groupName] = $params;
+                    return $properties;
                 }
+
+                $clarificationDetails = (new ClarDetailService)->getClarificationDetail($merchant->getId());
+
+                $this->trace->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
+                    'clarificationDetails' => $clarificationDetails
+                ]);
+
+                if(isset($clarificationDetails['clarification_details']['nc_count'])) {
+
+                    $properties['merchantId'] = $merchant->getId();
+
+                    $properties['nc_count'] = $clarificationDetails["clarification_details"]["nc_count"];
+
+                    foreach ($clarificationDetails['clarification_details'] as $key => $details) {
+
+                        if(isset($details['comments'])) {
+
+                            $params = [];
+
+                            foreach ($details['comments'] as $comment) {
+
+                                if ($comment['message_from'] === 'admin' && $comment['comment_data']['type'] === 'predefined' && $comment['status'] === Constants::NEEDS_CLARIFICATION) {
+
+                                    $params['admin_email'] = $comment['admin_email'];
+
+                                    $params['admin_comment'] = $comment['comment_data']['text'];
+
+                                }
+                            }
+
+                            if (!empty($params)) {
+
+                                $properties[$key] = $params;
+
+                            }
+                        }
+                    }
+                }
+
+            } else {
+
+                $isEligibleForNCRevamp = (new ClarDetailService())->isEligibleForRevampNC($merchant->getId());
+
+                if($isEligibleForNCRevamp === true)
+                {
+                    $properties['merchantId'] = $merchant->getId();
+
+                    $properties['nc_count'] = $this->getNcCount($merchant);
+
+                    $clarificationDetails = $this->repo->clarification_detail->getByMerchantIdAndStatusFromReplica($merchant->getId(), Constants::NEEDS_CLARIFICATION);
+
+                    foreach ($clarificationDetails as $clarificationDetail)
+                    {
+                        $params = [];
+
+                        $groupName = $clarificationDetail->getGroupName();
+
+                        $params['admin_email'] = $clarificationDetail->getAdminEmail();
+
+                        $params['admin_comment'] = $clarificationDetail->getAdminComment();
+
+                        $properties[$groupName] = $params;
+                    }
+                }
+
             }
 
             $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [

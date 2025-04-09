@@ -420,6 +420,29 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getInvoiceDetailsForNCA(string $paymentId)
+    {
+        $response = Tracer::inSpan(['name' => 'payment_page.invoice.get_for_nca'], function() use($paymentId)
+        {
+            return $this->service()->getInvoiceDetailsForNCA($paymentId, $this->input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
+    public function createInvoiceForNCAProducts(string $paymentId)
+    {
+
+        $input = Request::all();
+
+        $response = Tracer::inSpan(['name' => 'payment_page.invoice.send_receipt_for_nca'], function() use($paymentId, $input)
+        {
+            return $this->service()->createInvoiceForNCAProducts($paymentId, $input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
     public function sendReceipt(string $paymentId)
     {
         $input = Request::all();
@@ -432,6 +455,19 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    // this only sends the receipt only if the invoice is already generated. otherwise throws an error.
+    public function sendReceiptForNCA(string $paymentId)
+    {
+        $input = Request::all();
+
+        $response = Tracer::inSpan(['name' => 'payment_page.receipt.send_for_nca'], function() use($paymentId, $input)
+        {
+            return $this->service()->sendReceiptForNCA($paymentId, $input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
     public function saveReceiptForPayment(string $paymentId)
     {
         $input = Request::all();
@@ -439,6 +475,18 @@ class PaymentLinkController extends Controller
         $response = Tracer::inSpan(['name' => 'payment_page.receipt.save'], function() use($paymentId, $input)
         {
             return $this->service()->saveReceiptForPayment($paymentId, $input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
+    public function saveReceiptForNCA(string $paymentId)
+    {
+        $input = Request::all();
+
+        $response = Tracer::inSpan(['name' => 'payment_page.receipt.save_for_nca'], function() use($paymentId, $input)
+        {
+            return $this->service()->saveReceiptForNCA($paymentId, $input);
         });
 
         return ApiResponse::json($response);
@@ -569,6 +617,15 @@ class PaymentLinkController extends Controller
             'msg'   => 'Nocode debug route. Use this route for debugging/data corrections via dark',
             'input' => $input
         ]);
+    }
+
+    public function dualWriteFromNCA()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->dualWriteFromNCA($input);
+
+        return ApiResponse::json($response);
     }
 
     /**

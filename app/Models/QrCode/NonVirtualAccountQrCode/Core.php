@@ -35,6 +35,7 @@ use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
 use RZP\Models\BharatQr\Service as BharatQrService;
+use function PHPUnit\Framework\isEmpty;
 
 class Core extends QrCode\Core
 {
@@ -749,4 +750,70 @@ class Core extends QrCode\Core
 
 
     }
+
+    public function fetchQrCodeFromQrStringOrDeviceId(array $input)
+    {
+        if(isset($input['map_identifiers']) and !empty($input['map_identifiers']['qr_string']))
+        {
+            $qrString = $input['map_identifiers']['qr_string'];
+
+            $tr = str_starts_with($qrString, 'upi')
+                ? $this->getTransactionReferenceFromQrString($qrString)
+                : BharatQrVpaExtracter::getTr($qrString);
+
+            if (str_starts_with($tr,  QrCode\Constants::QR_CODE_V2_ICICI_PREFIX) or str_starts_with($tr,  QrCode\Constants::QR_CODE_V2_HDFC_PREFIX))
+            {
+                $tr = substr($tr, 3); // Remove first 3 characters
+            }
+
+            if (str_ends_with($tr, QrCode\Constants::QR_CODE_V2_TR_SUFFIX))
+            {
+                $tr = mb_substr($tr, 0, -mb_strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+            }
+
+            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
+        }
+        else if(isset($input['unmap_identifiers']) and !empty($input['unmap_identifiers']))
+        {
+            $qrCode = (new Repository())->findByDeviceId($input[Entity::DEVICE_ID]);
+        }
+
+        if(empty($qrCode) === true)
+        {
+            $this->trace->info(
+                TraceCode::QR_CODE_NOT_FOUND,
+                [
+                    'message' => 'QR_CODE_NOT_FOUND',
+                    'qr_string'  => $input['map_identifiers']['qr_string'],
+                    'mode'    => $mode,
+                    'device_id' => $input[Entity::DEVICE_ID]
+                ]
+            );
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND);
+        }
+
+        return $qrCode;
+    }
+
+    public function sendEzetapRequest($payload, $urlName)
+    {
+        $response =$this->app['ezetapNotification']->sendEzetapRawRequest($payload,$urlName);
+        $response = json_decode($response,true);
+
+        if($response['success'] === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::SERVER_ERROR_EZETAP_INTEGRATION_ERROR, null, $response);
+        }
+
+        return $response;
+
+    }
+
+    function isTrue(mixed $value): bool
+    {
+        return in_array(strtolower((string) $value), ['yes', 'y', 'true', '1',true,'Yes', 'YES'], true);
+    }
+
 }

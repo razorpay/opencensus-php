@@ -17,7 +17,7 @@ class Transformations
             Entity::CONTACT        => $v2Data[Entity::CONTACT] ?? null,
             Entity::GSTIN          => $v2Data['tax_details'][0]['value'] ?? null,
             Entity::NOTES          => $v2Data[Entity::NOTES] ?? [],
-
+            Entity::ACTIVE         => true
         ];
         $customer->fill($entityData);
         $customer->setAttribute(Entity::CREATED_AT, $v2Data[Entity::CREATED_AT]);

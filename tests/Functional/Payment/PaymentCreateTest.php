@@ -4057,8 +4057,6 @@ class PaymentCreateTest extends TestCase
     {
         $this->mockCardVault();
 
-        $this->mockRazorxWith(
-            "skip_cvv", 'skip');
         $payment = $this->getDefaultPaymentArray();
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'skip_cvv']);

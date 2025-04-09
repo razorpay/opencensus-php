@@ -72,4 +72,13 @@ class PartnerKycAccessController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function upsertFromPRTS()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->upsertFromPRTS($input);
+
+        return ApiResponse::json($response);
+    }
 }

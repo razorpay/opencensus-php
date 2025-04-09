@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -60,6 +61,19 @@ class Service extends Base\Service
         (new Validator)->validateMerchantReferredByPartner($partnerId, $this->merchant->getId());
 
         return $this->core->getKycAccessStatus($partnerId, $this->merchant->getId());
+    }
+
+    public function upsertFromPRTS(array $input): array
+    {
+        (new Validator())->validateInput('upsert_from_prts', $input);
+
+        $this->trace->info(
+            TraceCode::PRTS_KYC_ACCESS_STATE_UPSERT_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        return $this->core()->upsertFromPRTS($input);
     }
 
     protected function fetchPartnerFromReferralCode(string $referralCode)

@@ -89,6 +89,11 @@ class Core extends Base\Core
         $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
+    public function setPdfGeneratorForNCAProducts(Entity $invoice, array $ncaInput)
+    {
+        $this->pdfGenerator = new PdfGenerator($invoice, $ncaInput);
+    }
+
     /**
      * Creates invoice
      *
@@ -671,6 +676,41 @@ class Core extends Base\Core
         return ['success' => $response];
     }
 
+    public function sendNotificationForNCAProducts(Entity $invoice, array $ncaInput, string $medium, bool $merchantEmail = false): array
+    {
+        $this->trace->info(
+            TraceCode::INVOICE_SEND_NOTIFICATION,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'medium'         => $medium,
+            ]);
+
+        $invoice->getValidator()->validateSendNotificationRequest($medium);
+
+        $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
+
+        $pdfPath = null;
+
+        if ($medium === NotifyMedium::EMAIL)
+        {
+            $pdfPath = $this->getFreshInvoicePdfFilePathForNCAProducts($invoice, $ncaInput);
+        }
+
+        $response = (new Notifier($invoice, $pdfPath))->$func(false, null, $ncaInput);
+
+        $this->repo->saveOrFail($invoice);
+
+        if ($merchantEmail === true)
+        {
+            $func = studly_case($medium) . 'InvoiceIssuedToMerchant';
+
+            (new Notifier($invoice, $pdfPath))->$func($ncaInput);
+        }
+
+        return ['success' => $response];
+    }
+
     public function cancelInvoice(Entity $invoice): Entity
     {
         $this->trace->info(
@@ -1019,6 +1059,40 @@ class Core extends Base\Core
         return $pdf;
     }
 
+
+    /**
+     * @param Entity $invoice
+     *
+     * @return FileStore\Entity|null
+     */
+    public function getFreshInvoicePdfForNCAProducts(Entity $invoice, array $ncaInput)
+    {
+        if ($invoice->isNCAPaymentPageInvoice() === false)
+        {
+            return null;
+        }
+
+        // If requested withing expected queue delay, create fresh pdf and return
+        $now = Carbon::now()->getTimestamp();
+
+        if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
+        {
+            $this->trace->debug(TraceCode::INVOICE_PDF_GEN_SYNC, [Entity::ID => $invoice->getId()]);
+
+            return $this->createInvoicePdfForNCAProducts($invoice, $ncaInput);
+        }
+
+        // Else return existing pdf. Now in case it doesn't exist still, create
+        $pdf = $invoice->pdf();
+
+        if ($pdf === null)
+        {
+            $pdf = $this->createInvoicePdfForNCAProducts($invoice, $ncaInput);
+        }
+
+        return $pdf;
+    }
+
     /**
      * @param Entity $invoice
      *
@@ -1027,6 +1101,25 @@ class Core extends Base\Core
     public function getFreshInvoicePdfFilePath(Entity $invoice)
     {
         $pdf = $this->getFreshInvoicePdf($invoice);
+
+        if ($pdf === null)
+        {
+            return null;
+        }
+
+        $signedUrl = (new FileUploadUfh())->getSignedUrl($invoice);
+
+        if($this->app->environment() == Environment::TESTING)
+        {
+            $signedUrl = self::SAMPLE_PDF_LINK;
+        }
+
+        return $signedUrl;
+    }
+
+    public function getFreshInvoicePdfFilePathForNCAProducts(Entity $invoice, array $ncaInput)
+    {
+        $pdf = $this->getFreshInvoicePdfForNCAProducts($invoice, $ncaInput);
 
         if ($pdf === null)
         {
@@ -1060,6 +1153,27 @@ class Core extends Base\Core
         // used multiple times in following line with retry.
         //
         $this->setPdfGenerator($invoice);
+
+        return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    /**
+     * @param Entity $invoice
+     *
+     * @return FileStore\Entity|null
+     */
+    public function createInvoicePdfForNCAProducts(Entity $invoice, array $ncaInput)
+    {
+        if ($invoice->isNCAPaymentPageInvoice() === false)
+        {
+            return null;
+        }
+
+        //
+        // Single PdfGenerator instance created as part of this class's member,
+        // used multiple times in following line with retry.
+        //
+        $this->setPdfGeneratorForNCAProducts($invoice, $ncaInput);
 
         return $this->generatePdfWithRetry($invoice->getId());
     }

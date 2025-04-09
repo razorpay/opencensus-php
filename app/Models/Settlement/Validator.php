@@ -189,6 +189,7 @@ class Validator extends Base\Validator
     protected static $settlementBulkMigrationsRules = [
         'limit'              => 'required|integer|max:7000|min:1',
         'offset_id'          => 'sometimes|string|alpha_num|size:14',
+        'country_code'       => 'sometimes|string|size:2'
     ];
 
     protected static $settlementsServiceBlockedMigrationRules = [

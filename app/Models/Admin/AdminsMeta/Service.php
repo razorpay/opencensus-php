@@ -9,8 +9,11 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Role;
+use RZP\Models\BankingConfig;
 use RZP\Models\Admin\Admin\Entity;
+use RZP\Services\Dcs\Configurations;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Admin\AdminsMeta\Entity as AdminsMetaEntity;
 
 class Service extends Base\Service
@@ -211,6 +214,62 @@ class Service extends Base\Service
             );
         }
     }
+
+    /**
+     * method to disable admins based on their dormancy period.
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+
+    public function disableDormantOrgAdmins(): array
+    {
+        $dormancyPeriod = null;
+
+        try {
+            // Get dormancy period for axis IDAM org.
+            $orgId = ORG_ENTITY::AXIS_ORG_ID;
+
+            $dormancyPeriod = $this->getDormancyPeriodFromDCSConfig($orgId);
+
+            // disable admins and update meta based on the dormancy period of axis org.
+            [$adminDisabled, $adminNotDisabled] = $this->repo->admins_meta->disableDormantAdminsAndUpdateMeta($dormancyPeriod);
+
+            // return response
+            return [
+                'success'       => $adminDisabled,
+                'failure'       => $adminNotDisabled
+            ];
+        }
+        catch (\Exception $e)
+        {
+            $failedDormantAdmins = [];
+
+            if(isset($dormancyPeriod) === true)
+            {
+                $failedDormantAdmins = $this->repo->admins_meta->fetchDormantAdmins($dormancyPeriod);
+            }
+
+            $this->trace->error(
+            TraceCode::BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED,
+                [
+                    'failedDormantAdmins'   => $failedDormantAdmins,
+                    'method_name'           => __FUNCTION__,
+                    'route_name'            => $this->app['api.route']->getCurrentRouteName(),
+                    'error_message'         => $e->getMessage()
+                ]
+            );
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ADMIN_DISABLED_CRON_FAILED,
+                null,
+                [
+                    'error_message'         => $e->getMessage(),
+                    'failedDormantAdmins'   => count($failedDormantAdmins)
+                ]
+            );
+        }
+    }
+
     public function getMultipleOrgAdmins(array $input)
     {
         (new Validator())->validateInput('get_multiple_admins', $input);
@@ -369,6 +428,36 @@ class Service extends Base\Service
         } else {
             return false;
         }
+    }
+
+
+    /**
+     * Retrieves the Dormancy period from DCS config stored at org level.
+     *
+     * @param $orgId
+     * @return int|null Dormancy Period of User in days.
+     */
+    public function getDormancyPeriodFromDCSConfig($orgId): ?int
+    {
+        $field_name = Configurations\Constants::DormancyPeriod;
+
+        $bankingConfigInput = [
+            BankingConfig\Constants::FIELDS         => [$field_name],
+            BankingConfig\Constants::ENTITY_ID      => $orgId,
+            BankingConfig\Constants::KEY            => Configurations\Constants::$configurationsToDCSKeyMapping[$field_name],
+            BankingConfig\Constants::SHORT_KEY      => $field_name
+        ];
+
+        $dormancyPeriod =  (new BankingConfig\Service())->getBankingConfig($bankingConfigInput);
+
+        $response  = $dormancyPeriod[Configurations\Constants::DormancyPeriod] ?? null;
+
+        if(isset($response) === false)
+        {
+            throw new \RuntimeException("Dormancy period not found for org ID: {$orgId}");
+        }
+
+        return $response;
     }
 
 }

@@ -72,28 +72,23 @@ class FailedToAuthorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
-        $merchantID = $this->data['merchant']['id'];
+        $data = $this->data;
 
-        if($this->view == 'emails.mjml.customer.payment')
-        {
-            return ($this->isSendingPaymentServiceMailsSupported($merchantID,$this->view));
-        }
+        $traceData = [
+            'merchant_id' => $data['merchant']['id'],
+            'view' => $this->view,
+            'data' => $data
+        ];
+
+        $app = \App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_FAILED_TO_AUTHORIZED , $traceData);
         return true;
     }
 
     protected function getParamsForStork(): array
     {
         $data = $this->data;
-
-        if($this->view == 'emails.mjml.customer.payment')
-        {
-            return [
-                'template_name' => $this->view,
-                'template_namespace' => 'payments_payment_links',
-                'org_id' => $data['org']['id'],
-                'params' => $data
-            ];
-        }
 
         $storkParams = [
             'template_namespace'                => 'payments_core',

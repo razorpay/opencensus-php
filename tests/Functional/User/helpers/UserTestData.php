@@ -715,7 +715,7 @@ return [
                 "error" => [
                     "code"=> "BAD_REQUEST_ERROR",
                     "description" => "The user id field is required.",
-                    "source" => "business",
+                    "source" => "internal",
                     "step" => "payment_initiation",
                     "reason" => "input_validation_failed",
                     "metadata" => [],
@@ -744,7 +744,7 @@ return [
                 "error" => [
                     "code"=> "BAD_REQUEST_ERROR",
                     "description" => "The org id field is required.",
-                    "source" => "business",
+                    "source" => "internal",
                     "step" => "payment_initiation",
                     "reason" => "input_validation_failed",
                     "metadata" => [],
@@ -8962,5 +8962,24 @@ return [
             'content'   =>  [
             ],
         ],
-    ]
+    ],
+    'testVerifyEmailWithCallForRazorpaySalesUser' => [
+    'request'  => [
+        'url'     => '/users/verify_email',
+        'method'  => 'POST',
+        'content' => [
+            'otp'            => '0007',
+            'token'          => 'BUIj3m2Nx2VvVj',
+            'email'          => 'abc@rzp.com',
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'user' => [
+                'id'        => '10000000000004',
+                'email'     => 'udittest@rzp.com'
+            ]
+        ],
+    ],
+]
 ];

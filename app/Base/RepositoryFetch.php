@@ -616,6 +616,10 @@ trait RepositoryFetch
     {
         $app = $this->app;
 
+        if (($app['env'] == Environment::PRODUCTION) && ($experiment === "rearch_fetch_tidb_or_slave")){
+            return true;
+        }
+
         $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
             $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
 

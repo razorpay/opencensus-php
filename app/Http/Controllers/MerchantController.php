@@ -1585,6 +1585,21 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postMerchantBddVerificationStatusUpdate()
+    {
+        // This controller would be called in case of approval on maker checker workflow for update in bdd verification status
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::POST_MERCHANT_BDD_VERIFICATION_STATUS_UPDATE, [
+            '$input' => $input,
+        ]);
+
+        $response = $this->service(E::MERCHANT_DETAIL)->postMerchantBddVerificationStatusUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postApplyCoupon()
     {
         $input = Request::all();

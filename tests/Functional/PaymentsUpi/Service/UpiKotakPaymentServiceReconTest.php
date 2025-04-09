@@ -10,6 +10,10 @@ class UpiKotakPaymentServiceReconTest extends UpiPaymentServiceReconBase
     {
         parent::setUp();
 
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_kotak';
 
         $this->terminal = $this->fixtures->create('terminal:shared_upi_kotak_terminal');

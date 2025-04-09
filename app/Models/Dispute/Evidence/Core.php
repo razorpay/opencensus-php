@@ -12,6 +12,7 @@ use RZP\Constants\Table;
 use RZP\Models\Payment\Method;
 use RZP\Models\Dispute\RecoveryMethod;
 use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
+use RZP\Models\Feature;
 
 class Core extends Base\Core
 {
@@ -20,6 +21,8 @@ class Core extends Base\Core
     const EVIDENCE_UPDATE_HANDLER = "updateForDispute";
     const EVIDENCE_ACCEPT_HANDLER = "acceptForDispute";
     const EVIDENCE_SUBMIT_HANDLER = "submitEvidenceHandler";
+    const AUTO_CLOSURE_CHARGEBACK = 'chargeback';
+    const PHASE                   = 'phase';
 
 
     public function handlePatchDisputeEvidence(Dispute\Entity $dispute, array $input): Entity
@@ -414,10 +417,21 @@ class Core extends Base\Core
     {
         $result = $this->updateForDispute($dispute, $input);
 
-        (new Dispute\Core)->update($dispute, [
+        $update = [
             Dispute\Entity::STATUS   => Dispute\Status::UNDER_REVIEW,
             Dispute\Entity::BACKFILL => false,
-        ]);
+        ];
+
+        $merchantDetails = $dispute->merchant;
+
+        if ($merchantDetails->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true)
+        {
+            if ($input[self::PHASE] === self::AUTO_CLOSURE_CHARGEBACK) {
+                $update[Dispute\Entity::DISPUTE_OUTCOME_REASON_ID] = 1;
+            }
+        }
+
+        (new Dispute\Core)->update($dispute, $update);
 
         $submittedBy = ($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true) ? Constants::ADMIN : Constants::MERCHANT;
         $merchantId = $dispute->getMerchantId();

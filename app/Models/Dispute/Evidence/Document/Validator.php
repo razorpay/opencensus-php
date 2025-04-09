@@ -40,7 +40,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::DISPUTE_ID  => 'required|size:14',
-        Entity::DOCUMENT_ID => 'required|size:14|custom',
+        Entity::DOCUMENT_ID => 'required|size:14',
         Entity::TYPE        => 'required|custom',
         Entity::SOURCE      => 'required|custom',
         Entity::CUSTOM_TYPE => 'required_if:type,others',
@@ -69,7 +69,7 @@ class Validator extends Base\Validator
         throw new BadRequestValidationFailureException(Constants::ATLEAST_ONE_EVIDENCE_DOCUMENT_REQUIRED_ERROR_MESSAGE);
     }
 
-    protected function validateDocumentId($attribute, $value)
+    protected function validateDocumentId($attribute, $value, $merchantId = null)
     {
         $this->app->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_VERIFYING_DOC_ID, [
             Entity::DOCUMENT_ID => $value,
@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         $documentId = 'doc_' . $value;
 
         // if the document doesnt exist or doesnt belong to this merchant, below line throws an exception which is propagated
-        $data = (new GenericDocument\Service())->getDocument([], $documentId);
+        $data = (new GenericDocument\Service())->getDocument([], $documentId, $merchantId);
 
         if ((isset($data[GenericDocument\Constants::PURPOSE]) === false) or
             ($data[GenericDocument\Constants::PURPOSE] !== GenericDocument\Constants::DISPUTE_EVIDENCE))
@@ -118,6 +118,10 @@ class Validator extends Base\Validator
             $exceptionData);
     }
 
+    public function validateMxDocumentId($attribute, $value, $merchantId = null): void
+    {
+        $this->validateDocumentId($attribute, $value, $merchantId);
+    }
     protected function validateSource($attribute, $value)
     {
 

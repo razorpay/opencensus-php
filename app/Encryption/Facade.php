@@ -127,14 +127,7 @@ class Facade extends BaseFacade
                 return false;
             }
 
-            $variantFlag = $app->razorx->getTreatment($razorxMid, "BYOK_USE_ORG_KEY_FOR_ENCRYPTION_API", $mode);
-
-            self::traceInfo(TraceCode::BYOK_RAZORX_VARIANT,  ['variant' => $variantFlag, 'mid' => $razorxMid]);
-
-            if ($variantFlag === 'on')
-            {
-                return true;
-            }
+            return true;
         }
         return false;
     }

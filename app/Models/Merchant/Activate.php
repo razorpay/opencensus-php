@@ -204,7 +204,7 @@ class Activate extends Base\Core
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
-        $this->activateMoneySaverAccountIfApplicable($merchant);
+        $this->activateCrossBorderProductsIfApplicable($merchant);
 
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
@@ -531,14 +531,18 @@ class Activate extends Base\Core
      *  If merchant is coming from modular onboarding for international onboarding
      *  Merchant's purpose code ,iec code will be set, so will be activating money saver account for the merchant.
      * */
-    public function activateMoneySaverAccountIfApplicable(Entity $merchant): void
+    public function activateCrossBorderProductsIfApplicable(Entity $merchant): void
     {
-
         if ($merchant->hasValidPurposeCodeForGlobalBankTransfer() === false || empty($merchant->getIecCode()) === true) {
+            $this->trace->info(TraceCode::INVALID_REQUEST_FOR_CROSS_BORDER_EXPORT_PRODUCTS_ACTIVATION, [
+                'merchant_id' =>$merchant->getId(),
+                'purpose_code' => $merchant->getPurposeCode()
+            ]);
             return;
         }
+
         $payload = [
-            'action' => CrossBorderCommonUseCases::CREATE_INTERNATIONAL_VIRTUAL_ACCOUNT_INTERNALLY,
+            'action' => CrossBorderCommonUseCases::ACTIVATE_CROSS_BORDER_PRODUCTS_FOR_MODULAR_ONBOARDING,
             'merchant_id' => $merchant->getId(),
             'mode' =>  Mode::LIVE,
         ];

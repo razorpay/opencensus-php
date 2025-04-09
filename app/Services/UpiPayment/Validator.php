@@ -12,6 +12,7 @@ class Validator extends Base\Validator
         'upi'                      => 'required|array',
         'upi.npci_reference_id'    => 'required',
         'gateway'                  => 'required',
-        'terminal'                 => 'required|array'
+        'terminal'                 => 'required|array',
+        'source'                   => 'required'
     ];
 }

@@ -174,7 +174,10 @@ class Core extends Base\Core
             ->payment_method_transfer
             ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
-        $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+        if ($transferPayment->isExternal() === false)
+        {
+            $transferPayment = $this->repo->payment_method_transfer->findOrFail($transferPayment->getId());
+        }
 
         $paymentProcessor = new Payment\Processor\Processor($merchant);
 

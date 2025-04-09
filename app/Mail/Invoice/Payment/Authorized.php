@@ -6,6 +6,7 @@ use RZP\Mail\Payment\Base;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
+use RZP\Trace\TraceCode;
 
 /**
  * We are extending Mail\Payment\Base class here instead of Invoice|base
@@ -87,6 +88,16 @@ class Authorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $traceData = [
+            'merchant_id' => $this->data['merchant']['id'],
+            'view' => $this->view,
+            'data' => $this->data
+        ];
+
+        $app = \App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_PAYMENT_AUTHORIZED , $traceData);
+
         return false;
     }
 }

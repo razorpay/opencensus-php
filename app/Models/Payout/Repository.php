@@ -1241,22 +1241,31 @@ class Repository extends Base\Repository
         string $merchantId,
         string $balanceId,
         int $start,
-        int $end)
+        int $end,
+        bool $useMerchantAndCreatedAtIndex=false)
     {
         $payoutsIdColumn            = $this->dbColumn(Entity::ID);
         $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
         $payoutsFeeTypeColumn       = $this->dbColumn(Entity::FEE_TYPE);
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
+        if ($useMerchantAndCreatedAtIndex) {
+            $payoutsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+            $behind4MonthsFromStart = Carbon::createFromTimestamp($start, Timezone::IST)->subMonths(4)->getTimestamp();
+        }
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($payoutsIdColumn, $payoutsFeesColumn)
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, $balanceId)
                     ->whereNotNull($payoutsInitiatedAtColumn)
                     ->whereBetween($payoutsInitiatedAtColumn, [$start, $end])
-                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'), '!=', Transaction\CreditType::REWARD_FEE)
-                    ->get();
+                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'), '!=', Transaction\CreditType::REWARD_FEE);
+
+        if ($useMerchantAndCreatedAtIndex) {
+            $query->whereNotNull($payoutsCreatedAtColumn)->whereBetween($payoutsCreatedAtColumn, [$behind4MonthsFromStart, $end]);
+        }
+        return $query->get();
     }
 
     /**
@@ -1273,7 +1282,8 @@ class Repository extends Base\Repository
         string $merchantId,
         string $balanceId,
         int $start,
-        int $end)
+        int $end,
+        bool $useMerchantAndCreatedAtIndex=false)
     {
         $payoutsIdColumn            = $this->dbColumn(Entity::ID);
         $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
@@ -1281,15 +1291,24 @@ class Repository extends Base\Repository
         $payoutsFailedAtColumn      = $this->dbColumn(Entity::FAILED_AT);
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
+        if ($useMerchantAndCreatedAtIndex) {
+            $payoutsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+            $behind4MonthsFromStart = Carbon::createFromTimestamp($start, Timezone::IST)->subMonths(4)->getTimestamp();
+        }
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($payoutsIdColumn, $payoutsFeesColumn)
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, $balanceId)
                     ->whereNotNull($payoutsInitiatedAtColumn)
                     ->whereBetween($payoutsFailedAtColumn, [$start, $end])
-                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'),  '!=', [Transaction\CreditType::REWARD_FEE])
-                    ->get();
+                    ->where(DB::raw('COALESCE(' . $payoutsFeeTypeColumn. ', "")'),  '!=', [Transaction\CreditType::REWARD_FEE]);
+
+        if ($useMerchantAndCreatedAtIndex) {
+            $query->whereNotNull($payoutsCreatedAtColumn)->whereBetween($payoutsCreatedAtColumn, [$behind4MonthsFromStart, $end]);
+        }
+
+        return $query->get();
     }
 
     /**

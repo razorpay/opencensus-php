@@ -18,6 +18,8 @@ class Status
     const KYC_QUALIFIED_STB         = 'kyc_qualified_stb';
     const EDD_PENDING               = 'edd_pending';
     const APPROVED                  = "approved";
+    const VERIFIED                  = "verified";
+    const PENDING                   = "pending";
 
     /*
      * Allowed next activation statuses mapping
@@ -77,6 +79,17 @@ class Status
         self::REJECTED                  => [self::UNDER_REVIEW],
         self::EDD_PENDING               => [self::APPROVED],
         self::APPROVED                  => [],
+    ];
+
+    /*
+     * Allowed next bdd verification statuses map
+     */
+    const ALLOWED_NEXT_BDD_VERIFICATION_STATUSES_MAPPING = [
+        self::PENDING                   => [self::NEEDS_CLARIFICATION, self::REJECTED, self::VERIFIED],
+        self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::REJECTED, self::VERIFIED],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW],
+        self::REJECTED                  => [self::UNDER_REVIEW],
+        self::VERIFIED                  => [],
     ];
 
     /*

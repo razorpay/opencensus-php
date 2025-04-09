@@ -6,6 +6,7 @@ use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Constants\Entity as E;
+use RZP\Trace\TraceCode;
 
 class MerchantIssued extends Mailable
 {
@@ -131,5 +132,20 @@ class MerchantIssued extends Mailable
         $appendText .= ' - '.$this->data['invoice'][E::PAYMENT_PAGE]['title'];
 
         return $appendText;
+    }
+
+    protected function shouldSendEmailViaStork(): bool
+    {
+        $traceData = [
+            'merchant_id' => $this->data['merchant']['id'],
+            'view' => $this->view,
+            'data' => $this->data
+        ];
+
+        $app = \App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_MERCHANT_ISSUED , $traceData);
+
+        return false;
     }
 }

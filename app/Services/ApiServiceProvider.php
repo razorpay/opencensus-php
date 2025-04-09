@@ -963,6 +963,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new Device\Api($app);
         });
+
+        $this->app->singleton('store_service', function($app)
+        {
+
+            $storeServiceMock = $app['config']->get('applications.store_service.mock');
+
+            if ($storeServiceMock === true)
+            {
+                return new RZP\Models\Payment\Store\Mock\ApiMock($app);
+            }
+
+            return new RZP\Models\Payment\Store\Api($app);
+        });
     }
 
     protected function registerCacheManager()

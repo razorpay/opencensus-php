@@ -33,6 +33,7 @@ class UserRolesScope
     {
         $this->routeUserRoleMap = [
             'register_merchant_sales'                              => [Role::PARTNER_AGENT],
+            'partner_referral'                                     => [Role::OWNER],
             'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
             'add_sales_user_mapping'                               => [Role::POS_SALES_ADMIN],
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],

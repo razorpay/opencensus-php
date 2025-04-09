@@ -6,8 +6,15 @@ use App;
 use Carbon\Carbon;
 
 use RZP\Constants\Entity as E;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Events\Event;
+use RZP\Exception;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Models\ClarificationDetail\Constants as NCConstants;
+use RZP\Models\ClarificationDetail\Service;
+use RZP\Models\Merchant\Core;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Notifications\Channel;
@@ -224,18 +231,44 @@ class Handler extends BaseHandler
     {
         $events = [];
 
-        $doesV3Exist = (new ClarificationDetailsCore)->hasClarificationDetails($merchant->getId());
+        $splitzProperties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.clarification_table_read_migration'),
+        ];
+
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable($splitzProperties, 'enable');
+
+        $this->trace->info(TraceCode::SPLITZ_RES_FOR_CLARIFICATION_DETAILS_READ_MIGRATION, [
+            'experiment_enabled' => $isExperimentEnabled
+        ]);
+
+        if ($isExperimentEnabled === true) {
+
+            $response = (new Service)->fetchAndBuildCommunicationParams($merchant->getId());
+
+            $clarificationDetails = $response['communication_params'];
+
+            $doesV3Exist = $response['has_clarification_details'];
+
+        } else {
+
+            $clarificationDetails = (new ClarificationDetailsCore)->getCommunicationParams($merchant->getId());
+
+            $doesV3Exist = (new ClarificationDetailsCore)->hasClarificationDetails($merchant->getId());
+
+        }
+
+        $this->trace->info(TraceCode::CLARIFICATION_DETAILS_RESPONSE, [
+            'clarificationDetails'  => $clarificationDetails,
+            'doesV3Exist'          => $doesV3Exist
+        ]);
 
         $statusChangeLogs = (new MCore)->getActivationStatusChangeLog($merchant);
 
         $ncCount = (new DetailCore)->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
 
-        $clarificationDetails = [];
-
         if ($doesV3Exist === true)
         {
-            $clarificationDetails = (new ClarificationDetailsCore)->getCommunicationParams($merchant->getId());
-
             if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === false)
             {
                 $events[] = ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE;
@@ -328,17 +361,44 @@ class Handler extends BaseHandler
     {
         $events = [];
 
-        $doesV3Exist = (new ClarificationDetailsCore)->hasClarificationDetails($merchant->getId());
+        $splitzProperties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.clarification_table_read_migration'),
+        ];
+
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable($splitzProperties, 'enable');
+
+        $this->trace->info(TraceCode::SPLITZ_RES_FOR_CLARIFICATION_DETAILS_READ_MIGRATION, [
+            'experiment_enabled' => $isExperimentEnabled
+        ]);
+
+        if ($isExperimentEnabled === true) {
+
+            $response = (new Service)->fetchAndBuildCommunicationParams($merchant->getId());
+
+            $clarificationDetails = $response['communication_params'];
+
+            $doesV3Exist = $response['has_clarification_details'];
+
+        } else {
+
+            $clarificationDetails = (new ClarificationDetailsCore)->getCommunicationParams($merchant->getId());
+
+            $doesV3Exist = (new ClarificationDetailsCore)->hasClarificationDetails($merchant->getId());
+
+        }
+
+        $this->trace->info(TraceCode::CLARIFICATION_DETAILS_RESPONSE, [
+            'clarificationDetails'  => $clarificationDetails,
+            'doesV3Exist'         => $doesV3Exist
+        ]);
 
         $statusChangeLogs = (new MCore)->getActivationStatusChangeLog($merchant);
 
         $ncCount = (new DetailCore)->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
 
-        $clarificationDetails = [];
-
         if ($doesV3Exist === true)
         {
-            $clarificationDetails = (new ClarificationDetailsCore)->getCommunicationParams($merchant->getId());
 
             if ($isDeviceOrdered == true)
             {

@@ -4,7 +4,6 @@ namespace RZP\Mail\Payout;
 
 use App;
 use Carbon\Carbon;
-use RZP\Trace\TraceCode;
 use Symfony\Component\Mime\Email;
 
 
@@ -186,7 +185,7 @@ class PayoutProcessedContactCommunication extends Mailable
 
     public function shouldSendEmailViaStork():bool
     {
-        return ($this->isSendingPayoutServiceMailsSupported($this->merchant->getId()) ?? false);
+        return true;
     }
 
     protected function getParamsForStork(): array
@@ -197,30 +196,5 @@ class PayoutProcessedContactCommunication extends Mailable
             'org_id' => $this->merchant->getOrgId(),
             'params' => $this->data
         ];
-    }
-
-    public function isSendingPayoutServiceMailsSupported($merchantId) : bool {
-        $traceCode = TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_STORK;
-        $experimentId = 'app.send_payout_service_emails_via_stork';
-        try {
-            $app = \App::getFacadeRoot();
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchant_id' => $merchantId])
-            ];
-            $response = $app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $app['trace']->info($traceCode, [
-                'splitzUserResult' => $response,
-            ]);
-
-            return  $variant == "enable";
-
-        } catch (\Exception $e) {
-            $app['trace']->traceException($e, null, $traceCode);
-        }
-        return false;
     }
 }

@@ -10,6 +10,7 @@ class PaylaterProvider
     const DEFAULT_PAYLATER_PROVIDERS = 0;
 
     const GETSIMPL = 'getsimpl';
+    const SIMPL_PAY_IN_3 = 'simpl_pay_in_3';
     const GETSIMPLOPTIMIZER = 'getsimpl_optimizer';
     const LAZYPAY = 'lazypay';
     const ICIC = 'icic';

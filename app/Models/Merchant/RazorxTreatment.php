@@ -817,9 +817,6 @@ final class RazorxTreatment
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_VA_PAYMENT_REFUND_DELAY = 'unexpected_va_payment_refund_delay';
 
-    //Experiment to stop dual writes of refunds in API
-    const STOP_REFUNDS_DUAL_WRITE = 'stop_refunds_dual_write';
-
     const REFUND_READS_FOR_RECON_FROM_SCROOGE = 'refund_reads_for_recon_from_scrooge';
 
     const REFUND_READS_FOR_ADMIN_FROM_SCROOGE = 'refund_reads_for_admin_from_scrooge';
@@ -952,9 +949,6 @@ final class RazorxTreatment
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
     const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
 
-    // Experiment to support multiple frequencies for card recurring payment CAW
-    const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
-
     /**
      * Razorx flag to use merchant_refernce as an identifier to fetch unexpected payments
      */
@@ -986,15 +980,6 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
-    /*
-     * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
-     */
-    const NON_TWO_DECIMAL_CURRENCY_VALIDATION   = 'non_two_decimal_currency_validation';
-
-    /*
-     * Razorx flag to send dcc indicator value to gateway
-     */
-    const SEND_DCC_INDICATOR                    = 'send_dcc_indicator';
 
     const QR_CODE_BLOCK_PAYMENT = 'qr_code_block_payment';
 
@@ -1003,8 +988,6 @@ final class RazorxTreatment
     public const ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE = 'allow_bin_service_token_dual_write';
 
     public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
-
-    public const BIN_SERVICE_IIN_FETCH_PRIMARY = 'bin_service_iin_fetch_primary';
 
     const REFUND_FIND_MANY_RELATIONS = 'refund_find_many_relations';
 
@@ -1016,7 +999,6 @@ final class RazorxTreatment
 
     const TERMINALS_TIDB_QUERIES_MIGRATION = 'terminals_tidb_queries_migration';
 
-    const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
     // Razorx for checkout 2.0
     const HDFC_CHECKOUT_2 = 'hdfc_checkout_2';
@@ -1113,6 +1095,8 @@ final class RazorxTreatment
         "non_rearch_recurring_alt_id_VISA_hitachi_ratn",
         "non_rearch_recurring_alt_id_MC_hitachi_ratn",
         "non_rearch_recurring_alt_id_RUPAY_paysecure_ratn",
+        "non_rearch_recurring_alt_id_VISA_fulcrum_ratn",
+        "non_rearch_recurring_alt_id_MC_fulcrum_ratn",
         "non_rearch_alt__DICL_hdfc_hdfc"
     ];
 }

@@ -705,6 +705,8 @@ class UpiRecurringPaymentSharpTest extends TestCase
     {
         $mandate = $this->createFirstUpiRecurringPayment();
 
+        $this->fixtures->merchant->addFeatures(['cancel_token_v1']);
+
         $token = $this->getDbLastEntity('token');
 
         $this->revokeUpiRecurringMandate($token->getPublicId());
@@ -714,6 +716,21 @@ class UpiRecurringPaymentSharpTest extends TestCase
         $this->assertEquals(Status::REVOKED, $mandate['status']);
 
         $this->assertSame(RecurringStatus::CANCELLED, $mandate->token->getRecurringStatus());
+    }
+
+    public function testRevokeMandateNewFlow()
+    {
+        $mandate = $this->createFirstUpiRecurringPayment();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::CONFIRMED, $mandate['status']);
+
+        $this->assertSame(RecurringStatus::CANCELLATION_INITIATED, $mandate->token->getRecurringStatus());
     }
 
     public function testRevokeCreatedMandate()

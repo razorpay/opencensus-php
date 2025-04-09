@@ -75,11 +75,7 @@ class UfhService extends BaseUfhClient
         return self::MOCK_FILE_ID;
     }
 
-    public function uploadFileAndGetResponse(UploadedFile $file,
-                                             string $storageFileName,
-                                             string $type,
-                                             $entity,
-                                             array $metadata = []): array
+    public function uploadFileAndGetResponse(UploadedFile $file, string $storageFileName, string $type, $entity, array $metadata = [], string $merchantId = null): array
     {
 
         $storageFileName = strtolower($storageFileName);

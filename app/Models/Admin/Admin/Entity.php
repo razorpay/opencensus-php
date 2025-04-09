@@ -55,6 +55,7 @@ class Entity extends Base\Entity
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const PASSWORD_RESET_TOKEN  = 'password_reset_token';
     const PASSWORD_RESET_EXPIRY = 'password_reset_expiry';
+    const CREATED_AT            = 'created_at';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
     const ROLES                 = 'roles';

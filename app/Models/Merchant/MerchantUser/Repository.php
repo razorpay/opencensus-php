@@ -90,6 +90,19 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function returnMerchantUsersForUserIdOrderByRoleForAllProducts(string $userId, int $limit = 100): Base\PublicCollection|Collection
+    {
+        $sql = "CASE WHEN role='owner' THEN 1
+                     else 2 END";
+
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID, Entity::ROLE, Entity::PRODUCT, Entity::USER_ID)
+            ->where(Entity::USER_ID, $userId)
+            ->limit($limit)
+            ->orderByRaw($sql)
+            ->get();
+    }
+
     public function returnMerchantUserForUserIdMerchantIdOrderByRole(string $userId, string $merchantId)
     {
         return $this->newQuery()

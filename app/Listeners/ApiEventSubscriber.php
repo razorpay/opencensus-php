@@ -1261,6 +1261,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onTokenCancellationInitiated($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onSettlementProcessed($settlement)
     {
         $payload = $this->getSettlementPayload($settlement);
@@ -2412,7 +2419,7 @@ class ApiEventSubscriber extends Base\Core
         return $merchant;
     }
 
-    protected function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
+    public function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
     {
         $payload = $payment->toArrayAdmin();
 

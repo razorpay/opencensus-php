@@ -5,6 +5,7 @@ namespace RZP\Reconciliator;
 use Queue;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Exception\ReconciliationException;
 use RZP\Jobs\CardsPaymentRecon;
@@ -35,6 +36,7 @@ use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
+use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
@@ -44,6 +46,7 @@ use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 
 class Service extends Base\Service
 {
+    use UpiUnexpectedPaymentRefundHandler;
     use VirtualAccountUnexpectedPaymentRefundHandler;
 
     /**
@@ -649,13 +652,9 @@ class Service extends Base\Service
             {
                 try
                 {
+                    $env = $this->app->environment();
 
-                    $experimentVariable = UniqueIdEntity::generateUniqueId();
-                    $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
-                        RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
-                        $this->app['rzp.mode']);
-
-                    if ($variantFlag === 'on')
+                    if ($env === Environment::PRODUCTION)
                     {
                         $refund = $this->repo->refund->findByPublicId($refundId);
                     }
@@ -803,12 +802,9 @@ class Service extends Base\Service
             $refund->transaction->setGatewaySettledAt($refundData[Transaction\Entity::GATEWAY_SETTLED_AT]);
         }
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        $variantFlag = $this->app['razorx']->getTreatment($experimentVariable,
-            RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
-            $this->app['rzp.mode']);
+        $env = $this->app->environment();
 
-        if ($variantFlag !== 'on')
+        if ($env !== Environment::PRODUCTION)
         {
             $this->repo->saveOrFail($refund);
         }

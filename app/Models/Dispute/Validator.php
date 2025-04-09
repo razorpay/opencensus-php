@@ -17,6 +17,9 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use PhpParser\Node\Expr\AssignOp\Mod;
 use RZP\Exception\BadRequestValidationFailureException;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use RZP\Models\Dispute\Phase;
 
 class Validator extends Base\Validator
 {
@@ -81,6 +84,7 @@ class Validator extends Base\Validator
         Entity::DEDUCTION_REVERSAL_AT  => 'sometimes|epoch',
         Entity::RECOVERY_METHOD        => 'sometimes|in:adjustment,refund',
         Entity::ACCEPTED_AMOUNT        => 'sometimes|integer|min:100',
+        Entity::DISPUTE_OUTCOME_REASON_ID => 'sometimes|integer',
     ];
 
     protected static $processDisputeRefundRules = [
@@ -176,6 +180,15 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT,
                     Entity::AMOUNT,
                     ['input' => $input, 'payment_id' => $payment->getId()]);
+            }
+        }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true)
+        {
+            if ($this->isAutoClosureChargebackTimeValid($payment) && $this->isPhaseDispute($input)) {
+                throw new Exception\BadRequestValidationFailureException( PublicErrorDescription::BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_FAILURE);
             }
         }
     }
@@ -697,6 +710,55 @@ class Validator extends Base\Validator
             }
 
             $this->getTrace()->traceException($exception);
+        }
+    }
+
+    public function isAutoClosureChargebackTimeValid(Payment\Entity $payment): bool
+    {
+        $timezone = 'Asia/Kolkata';
+
+        // Parse timestamps with timezone
+        $paymentDate = Carbon::createFromTimestamp($payment->getCreatedAt(), $timezone); // Example: 2025-02-07 13:34:00
+        $disputeDate = Carbon::createFromTimestamp(Carbon::now()->getTimestamp(), $timezone); // Example: 2025-02-10 23:44:00
+
+        // Clone payment date for calculations
+        $validDate = clone $paymentDate;
+        $daysToAdd = 5; // T+5 working days
+
+        while ($daysToAdd > 0) {
+            $validDate->addDay(); // Move to the next day
+            if (!$this->isNonWorkingDay($validDate)) { // Skip weekends and public holidays
+                $daysToAdd--;
+            }
+        }
+
+        return $disputeDate->lessThanOrEqualTo($validDate); // Compare dispute date with calculated valid date
+    }
+
+    private function isNonWorkingDay(Carbon $date): bool
+    {
+        return $date->isWeekend() || in_array($date->format('Y-m-d'), $this->getPublicHolidays()); // Check if weekend or holiday
+    }
+
+    private function getPublicHolidays(): array
+    {
+        return [
+            '2025-01-01', '2025-01-14', '2025-02-26', '2025-03-14', '2025-03-31',
+            '2025-04-10', '2025-04-14', '2025-04-18', '2025-05-01', '2025-05-12',
+            '2025-06-07', '2025-08-09', '2025-08-15', '2025-08-16', '2025-09-27',
+            '2025-10-01', '2025-10-02', '2025-10-20', '2025-10-22', '2025-11-05',
+            '2025-12-25'
+        ]; // Return an array of holiday dates in YYYY-MM-DD format
+    }
+
+    static function isPhaseDispute(array $input): bool
+    {
+        $disputeString = 'dispute';
+        $extractedDisputeString = strtolower(substr($input[Entity::GATEWAY_DISPUTE_ID],0,7));
+        if ($extractedDisputeString === $disputeString) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

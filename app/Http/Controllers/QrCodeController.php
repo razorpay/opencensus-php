@@ -274,4 +274,13 @@ class QrCodeController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function UpdateSingleStackDevice(){
+        $input = Request::all();
+
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_SET_DEVICE], function () use ($input) {
+            return (new NonVAQrCodeService())->UpdateSingleStackDevice($input);
+        });
+
+        return ApiResponse::json($entity);
+    }
 }

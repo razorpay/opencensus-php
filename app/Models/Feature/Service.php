@@ -43,7 +43,8 @@ class Service extends Base\Service
         'loc',
         'magic_checkout_service',
         'payment_links',
-        'pgos'
+        'pgos',
+        'no_code_apps'
     ];
 
     public function addFeatures(

@@ -1252,6 +1252,39 @@ class Core extends Base\Core
         return (new Token\Repository())->fetchByEntityId($dualTokenMapperId);
     }
 
+    public function cancellationInitiatedTokenEvent($tokenId, $customerId)
+    {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CANCELLATION_INITIATED,
+            [
+                'token_id'    => $tokenId,
+                'customer_id' => $customerId,
+            ]);
+
+        $token = $this->repo->token->findByPublicId('token_' . $tokenId);
+
+        $oldRecurringStatus = $token->getRecurringStatus();
+
+        if ($oldRecurringStatus !== RecurringStatus::CANCELLED)
+        {
+            $token->setRecurringStatus(RecurringStatus::CANCELLATION_INITIATED);
+        }
+
+        $token->saveOrFail();
+
+        if(($token->getMethod() === Method::UPI) and ($token->isRecurring() === true))
+        {
+            $this->trace->count(Metrics::UPI_AUTOPAY_TOKEN_CANCELLATION_INITIATED, [
+                'method' => $token->getMethod(),
+                'is_tpv' => $token->merchant->isTPVRequired()
+            ]);
+        }
+
+        $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
+
+        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLATION_INITIATED);
+    }
+
     /**
      * Fetches global tokens associated with a global customer.
      *
@@ -2071,7 +2104,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createTokenAndTokenizedCard($input, $merchantPushProvisioning)
+    public function createTokenAndTokenizedCard($input, $merchantPushProvisioning, $isTokenContinuityFlow = false)
     {
         if($merchantPushProvisioning !== null) {
             $this->merchant = $merchantPushProvisioning;
@@ -2085,22 +2118,32 @@ class Core extends Base\Core
                 'authentication' => (isset($input['authentication']) === true) ? $input['authentication'] : null,
             ]);
 
-        (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
-
-        (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
-
-        if ($this->isNetworkRuPay($input[Entity::CARD]))
+        if($isTokenContinuityFlow === true)
         {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
-
+            //new validator for token continuity flow
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_CONTINUITY, $input);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_CONTINUITY_CARD, $input[Entity::CARD]);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL, $input['additional_detail']);
         }
-        else if ($this->isNetworkAmex($input[Entity::CARD]))
+        else
         {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AMEX, $input);
-        }
-        else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
-        {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
+
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
+
+            if ($this->isNetworkRuPay($input[Entity::CARD]))
+            {
+                (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
+
+            }
+            else if ($this->isNetworkAmex($input[Entity::CARD]))
+            {
+                (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AMEX, $input);
+            }
+            else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
+            {
+                (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
+            }
         }
 
         if (strlen($input[Entity::CARD]['expiry_year']) === 2)
@@ -2113,20 +2156,21 @@ class Core extends Base\Core
             $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
         }
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant);
 
-        return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $this->merchant, $customer, $input);
+        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant, $isTokenContinuityFlow);
+
+        return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $this->merchant, $customer, $input, $isTokenContinuityFlow);
     }
 
-    public function createTokenforTokenisedCard($card, $serviceProviderTokens, $merchant, $customer = null, $input = [])
+    public function createTokenforTokenisedCard($card, $serviceProviderTokens, $merchant, $customer = null, $input = [], $isTokenContinuityFlow = false)
     {
-        $this->trace->info(
-            TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
-        );
+        $this->trace->info(TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD);
+
+        if(empty($serviceProviderTokens) === true) $serviceProviderTokens = [];
 
         $token = new Token\Entity;
 
-        $noOfTokens = count($serviceProviderTokens);
+        $noOfTokens =  count($serviceProviderTokens);
 
         $tokenStatus = null;
 
@@ -2151,6 +2195,12 @@ class Core extends Base\Core
         $token->card()->associate($card);
 
         $token->setExpiredAt($card->getTokenExpiryTimestamp());
+
+        if($isTokenContinuityFlow ===  true)
+        {
+            $token->setStatus(Entity::ACTIVE);
+            $token->setUsedAt(Carbon::now()->getTimestamp());
+        }
 
         $token->merchant()->associate($merchant);
 

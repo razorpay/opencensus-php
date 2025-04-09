@@ -29,6 +29,56 @@ return [
         ],
     ],
 
+    'testCreateTokenForContinuity' => [
+        'request' => [
+            'url' => '/internal/tokens/continuity',
+            'method' => 'post',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'customer_id' => 'cust_100000customer',
+                "provider" => "juspay",
+                'card' => [
+                    'number' => '4143660000123456',
+                    'expiry_month' => '12',
+                    'expiry_year' => '2028',
+                    'token_iin' => '111111111',
+                    'par' => 'V0010013822201333986524123322',
+                    'vault' => 'juspay',
+                    'token_expiry_month' => '12',
+                    'token_expiry_year' => 2028
+                ],
+                'additional_detail' => [
+                    'terminal_id' => 'QBib2EABgTnx6S',
+                    'provider_reference_id1' => 'cth_u4GjWjd5DK7yef',
+                    'provider_reference_id2' => 'cref_17a1e34bfa454d03b30b82a8ba6439f7',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreateTokenForContinuityValidationFailure' => [
+        'request' => [
+            'url' => '/internal/tokens/continuity',
+            'method' => 'post',
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
     'testParApiWithCardNumber' => [
         'request' => [
             'url' => '/cards/fingerprints',

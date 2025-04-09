@@ -51,6 +51,12 @@ class Entity extends Base\PublicEntity
         self::REJECTION_COUNT => 0,
     ];
 
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert and update both.
+        'saved'   => EventSaved::class,
+        'deleted' => EventDeleted::class,
+    ];
+
     protected $public = [
         self::ID,
         self::ENTITY_ID,
@@ -61,6 +67,20 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::REJECTION_COUNT,
+    ];
+
+    public static array $prtsFillable = [
+        self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::PARTNER_ID,
+        self::STATE,
+        self::APPROVE_TOKEN,
+        self::REJECT_TOKEN,
+        self::TOKEN_EXPIRY,
+        self::REJECTION_COUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     public function getEntityId()

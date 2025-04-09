@@ -122,7 +122,7 @@ class BankingRole
         BankingRole::OPERATIONS            => 'Operations',
         BankingRole::OWNER                 => 'Owner',
         BankingRole::ADMIN                 => 'Admin',
-        BankingRole::PETTY_CASH_EMPLOYEE   => 'Employee - Petty Cash',
+        BankingRole::PETTY_CASH_EMPLOYEE   => 'Petty Cash Employee',
         BankingRole::BANKING_READONLY      => 'Owner - Read Only',
     ];
 
@@ -161,6 +161,11 @@ class BankingRole
     public static function getStandardRoleNameFromRoleId(string $roleId): string
     {
         return self::$standardRoleIdToNameMap[$roleId];
+    }
+
+    public static function isCACStandardRole(string $roleId): bool
+    {
+        return array_key_exists($roleId, self::$standardRoleIdToNameMap);
     }
 
     public static function getNamesForWorkflowRoles(array $roleIdentifiers): array

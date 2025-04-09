@@ -148,6 +148,7 @@ class Entity extends Base\PublicEntity
     protected $ignoredRelations = [
         // Required as customer entity will be created via CMS and may not be present in API DB
         ConstantsEntity::CUSTOMER,
+        'source'
     ];
 
     protected $fillable = [

@@ -248,7 +248,11 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForAmazonPay($mcc);
         }
 
-        if (isset($input[Entity::IN_APP]) or isset($input[Entity::IN_APP_CREDIT_CARD]) or isset($input[Entity::IN_APP_CREDIT_LINE]))
+        if (
+            isset($input[Entity::IN_APP]) or
+            isset($input[Entity::IN_APP_CREDIT_CARD]) or
+            isset($input[Entity::IN_APP_AUTOPAY]) or
+            isset($input[Entity::IN_APP_CREDIT_LINE]))
         {
             $this->handleEnableDisableForInAppPaymentMethods($methods, $input, $mcc);
         }
@@ -1763,6 +1767,14 @@ class Core extends Base\Core
 
             $providers = array_merge($providers, $enabledProviders);
 
+            $enabledPaylater = (array_column($terminals, 'enabled_paylaters'));
+            $enabledPaylater = array_unique(array_flatten($enabledPaylater));
+            $enabledPaylater = array_filter($enabledPaylater);
+
+            $enabledProviders = array_map('strtolower', $enabledPaylater);
+
+            $providers = array_merge($providers, $enabledProviders);
+
             $paylaterProviders = $methods->getEnabledPaylaterProviders();
 
             if (in_array(PaylaterProvider::GETSIMPLOPTIMIZER, $providers) and isset($paylaterProviders[PaylaterProvider::GETSIMPL]) === true and
@@ -1851,7 +1863,23 @@ class Core extends Base\Core
         if (isset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]) === true and
         $provider[PaylaterProvider::GETSIMPLOPTIMIZER] === true) {
             unset($provider[PaylaterProvider::GETSIMPLOPTIMIZER]);
-            $provider[PaylaterProvider::GETSIMPL]=true;
+            $terminals = array_filter($terminals, function($terminal) {
+                return $terminal['gateway_acquirer'] === PaylaterProvider::GETSIMPLOPTIMIZER;
+            });
+
+            $enabledPaylater = (array_column($terminals, 'enabled_paylaters'));
+            $enabledPaylater = array_unique(array_flatten($enabledPaylater));
+            $enabledPaylater = array_filter($enabledPaylater);
+
+            foreach ($enabledPaylater as $providerName)
+            {
+                $provider[$providerName] = true;
+            }
+            // If no paylater found then default  simpl and simpl pay in 3 enabled for backward compatibility
+            if (count($enabledPaylater) === 0) {
+                $provider[PaylaterProvider::GETSIMPL]=true;
+                $provider[PaylaterProvider::SIMPL_PAY_IN_3]=true;
+            }
         }
 
         return $provider;
@@ -2080,14 +2108,14 @@ class Core extends Base\Core
      */
     private function handleEnableDisableForInAppPaymentMethods(Entity $methods, $input, $mcc)
     {
-        // in_app cannot be disabled if in_app_credit_card is being enabled or already enabled
+        // in_app cannot be disabled if in_app subtypes are being enabled or already enabled
         if (isset($input[Entity::IN_APP]) and
             boolval($input[Entity::IN_APP]) === false)
         {
             if ($this->isInAppDisablementAllowed($methods, $input) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "in_app cannot be disabled when in_app_credit_card is enabled"
+                    "in_app cannot be disabled when in_app subtypes are enabled"
                 );
             }
         }
@@ -2100,6 +2128,19 @@ class Core extends Base\Core
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "in_app_credit_card cannot be enabled if in_app is not being enabled and not already enabled"
+                );
+            }
+        }
+
+
+        // in_app_autopay cannot be enabled if in_app is not being enabled and not already enabled
+        if (isset($input[Entity::IN_APP_AUTOPAY]) and
+            boolval($input[Entity::IN_APP_AUTOPAY]) === true)
+        {
+            if ($this->isInAppSubTypeEnablementAllowed($methods, $input) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "in_app_autopay cannot be enabled if in_app is not being enabled and not already enabled"
                 );
             }
         }
@@ -2123,17 +2164,50 @@ class Core extends Base\Core
         }
     }
 
+    private function isInAppSubTypeBeingEnabledOrAlreadyEnabled(
+        string $inAppSubType,
+        Entity $methods, $input
+    ): bool{
+        $isInAppSubTypeBeingEnabled = (isset($input[$inAppSubType]) and
+            boolval($input[$inAppSubType]) === true);
+
+        $isInAppSubTypeAlreadyEnabled = false;
+        switch ($inAppSubType)
+        {
+            case Entity::IN_APP_AUTOPAY:
+                $isInAppSubTypeAlreadyEnabled = $methods->isInAppAutopayEnabled();
+                break;
+            case Entity::IN_APP_CREDIT_CARD:
+                $isInAppSubTypeAlreadyEnabled = $methods->isInAppCreditCardEnabled();
+                break;
+            default:
+                $this->trace->error(TraceCode::UNIDENTIFIED_IN_APP_SUBTYPE,[
+                    'in_app_subtype', $inAppSubType,
+                ]);
+                break;
+        }
+
+        $isInAppSubTypeBeingDisabled = (isset($input[$inAppSubType]) and
+            boolval($input[$inAppSubType]) === false);
+
+        if ($isInAppSubTypeBeingEnabled or ($isInAppSubTypeAlreadyEnabled and !$isInAppSubTypeBeingDisabled))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private function isInAppDisablementAllowed(Entity $methods, $input): bool
     {
-        $isInAppCreditCardBeingEnabled = (isset($input[Entity::IN_APP_CREDIT_CARD]) and
-                                          boolval($input[Entity::IN_APP_CREDIT_CARD]) === true);
-
-        $isInAppCreditCardAlreadyEnabled = $methods->isInAppCreditCardEnabled() === true;
-
-        $isInAppCreditCardBeingDisabled = (isset($input[Entity::IN_APP_CREDIT_CARD]) and
-                                           boolval($input[Entity::IN_APP_CREDIT_CARD]) === false);
-
-        if ($isInAppCreditCardBeingEnabled or ($isInAppCreditCardAlreadyEnabled and !$isInAppCreditCardBeingDisabled))
+        if (
+            $this->isInAppSubTypeBeingEnabledOrAlreadyEnabled(
+                Entity::IN_APP_AUTOPAY, $methods, $input) or
+            $this->isInAppSubTypeBeingEnabledOrAlreadyEnabled(
+                Entity::IN_APP_CREDIT_CARD, $methods, $input) or
+            $this->isInAppSubTypeBeingEnabledOrAlreadyEnabled(
+                Entity::IN_APP_CREDIT_LINE, $methods, $input)
+        )
         {
             return false;
         }
@@ -2143,11 +2217,15 @@ class Core extends Base\Core
 
     private function isInAppSubTypeEnablementAllowed(Entity $methods, $input): bool
     {
-        $isInAppAlreadyEnabled = $methods->isInAppEnabled() === true;
-        $isInAppMethodChangeRequest = isset($input[Entity::IN_APP]);
-        $isInAppBeingDisabled = (isset($input[Entity::IN_APP]) and boolval($input[Entity::IN_APP]) === false);
+        $isInAppAlreadyDisabled = $methods->isInAppEnabled() === false;
+        $isInAppNotBeingEnabled = (
+            !isset($input[Entity::IN_APP]) or
+            (isset($input[Entity::IN_APP]) and boolval($input[Entity::IN_APP]) != true)
+        );
 
-        if ($isInAppAlreadyEnabled === false and (!$isInAppMethodChangeRequest or $isInAppBeingDisabled))
+        // in_app already enabled but being disabled case is covered in
+        // earlier step where we check is_in_app_disablement is allowed.
+        if ($isInAppAlreadyDisabled and $isInAppNotBeingEnabled)
         {
             return false;
         }

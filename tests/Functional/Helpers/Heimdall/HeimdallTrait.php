@@ -214,4 +214,19 @@ trait HeimdallTrait
             true
             );
     }
+
+    public function disableOrgAdminByDormancy($adminId)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/org/admins/disable/admin_'.$adminId,
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
 }

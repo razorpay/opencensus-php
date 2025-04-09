@@ -14,4 +14,5 @@ final class Constant
     const TRANSFER_PAYMENT_FETCH_ENDPOINT = '/v1/source_payments/%s';
     const TRANSFER_FETCH_MULTIPLE_INTERNAL_ENDPOINT = '/v1/internal/transfers';
     const SAVE_API_TRANSFER_PAYMENT_ENDPOINT = '/v1/source_payments/%s';
+    const DECREMENT_TRANSFER_PAYMENT_ENDPOINT = '/v1/source_payments/%s/decrement';
 }

@@ -46,6 +46,7 @@ class Event
     const TOKEN_REJECTED                    = 'token.rejected';
     const TOKEN_PAUSED                      = 'token.paused';
     const TOKEN_CANCELLED                   = 'token.cancelled';
+    const TOKEN_CANCELLATION_INITIATED      = 'token.cancellation_initiated';
     const SETTLEMENT_PROCESSED              = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED          = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED           = 'virtual_account.created';
@@ -228,6 +229,7 @@ class Event
         self::TOKEN_REJECTED,
         self::TOKEN_PAUSED,
         self::TOKEN_CANCELLED,
+        self::TOKEN_CANCELLATION_INITIATED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
@@ -407,6 +409,7 @@ class Event
         self::TOKEN_REJECTED,
         self::TOKEN_PAUSED,
         self::TOKEN_CANCELLED,
+        self::TOKEN_CANCELLATION_INITIATED,
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
@@ -695,6 +698,8 @@ class Event
 
         self::SUBSCRIPTION_CYCLE_STARTED                  => 67,
         self::SUBSCRIPTION_CYCLE_ENDED                    => 68,
+
+        self::TOKEN_CANCELLATION_INITIATED                => 69,
     ];
 
     /**
@@ -730,6 +735,7 @@ class Event
         self::TOKEN_REJECTED                    => [Product::PRIMARY],
         self::TOKEN_PAUSED                      => [Product::PRIMARY],
         self::TOKEN_CANCELLED                   => [Product::PRIMARY],
+        self::TOKEN_CANCELLATION_INITIATED      => [Product::PRIMARY],
         self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREDITED          => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREATED           => [Product::PRIMARY],
@@ -911,6 +917,7 @@ class Event
         self::TOKEN_REJECTED                    => Entity::TOKEN,
         self::TOKEN_PAUSED                      => Entity::TOKEN,
         self::TOKEN_CANCELLED                   => Entity::TOKEN,
+        self::TOKEN_CANCELLATION_INITIATED      => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED              => Entity::SETTLEMENT,
         self::PAYMENT_DISPUTE_WON               => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_LOST              => Entity::DISPUTE,
@@ -1022,6 +1029,7 @@ class Event
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_PAUSED                      => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_CANCELLED                   => Feature\Constants::CHARGE_AT_WILL,
+        self::TOKEN_CANCELLATION_INITIATED      => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED           => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CLOSED            => Feature\Constants::VIRTUAL_ACCOUNTS,

@@ -508,6 +508,7 @@ class Service extends Base\Service
                     unset($item['plan_replicated']);
 
                     $item = $this->setFeeBearerIfApplicable($item, $merchant);
+                    $item = $this->setInternational($item);
 
                     array_walk($item, function (&$value, &$key)
                     {
@@ -540,6 +541,14 @@ class Service extends Base\Service
                     $amountRangeActive = 0; //empty($item[Pricing\Entity::AMOUNT_RANGE_ACTIVE]) ? 0 : $item[Pricing\Entity::AMOUNT_RANGE_ACTIVE];
                     $procurer = empty($item[Pricing\Entity::PROCURER]) ? null : $item[Pricing\Entity::PROCURER];
                     $feeBearer = empty($item[Pricing\Entity::FEE_BEARER]) ? null : $item[Pricing\Entity::FEE_BEARER];
+
+                    if (in_array($feeBearer, [Merchant\FeeBearer::PLATFORM, Merchant\FeeBearer::CUSTOMER]) === true) {
+                        $feeBearer = Merchant\FeeBearer::getValueForBearerString($feeBearer);
+                    }
+                    else {
+                        $feeBearer = null;
+                    }
+
 
                     // the route is being used by terminalsService also for paypal onboarding pricing update, we don't send subtype from there
                     $methodSubtype = isset($item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE]) ? $item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE] : null;
@@ -848,14 +857,45 @@ class Service extends Base\Service
         ErrorCode::BAD_REQUEST_ANOTHER_PRICING_UPDATE_IN_PROGRESS);
     }
 
+    /**
+     * @throws BadRequestException
+     */
     protected function setFeeBearerIfApplicable(array $input, $merchant)
     {
-        if (isset($input[Pricing\Entity::FEE_BEARER])) {
-            return $input;
+        //If we are not getting fee bearer in input, set it to merchant's fee bearer
+        if (!isset($input[Pricing\Entity::FEE_BEARER])) {
+            $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
         }
 
-        $input[Pricing\Entity::FEE_BEARER] = $merchant->getFeeBearer();
+        if (in_array($input[Pricing\Entity::FEE_BEARER],
+            [Merchant\FeeBearer::PLATFORM, Merchant\FeeBearer::CUSTOMER, '0', '1', 0, 1] ))
+        {
+            if (in_array($input[Pricing\Entity::FEE_BEARER], ['0', '1', 0, 1] )){
+                $feeBearer = intval($input[Pricing\Entity::FEE_BEARER]);
+                // Converting fee bearer value to string
+                $input[Pricing\Entity::FEE_BEARER] = Merchant\FeeBearer::getBearerStringForValue($feeBearer);
+            }
+        }else{
+            $this->trace->error(TraceCode::INVALID_FEE_BEARER,
+                ['fee_bearer' => $input[Pricing\Entity::FEE_BEARER]]);
 
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FEE_BEARER);
+        }
+
+        return $input;
+    }
+
+    protected function setInternational(array $input)
+    {
+        if (!isset($input[Pricing\Entity::INTERNATIONAL]) || $input[Pricing\Entity::INTERNATIONAL] === ''){
+            $input[Pricing\Entity::INTERNATIONAL] = '0';
+        }else {
+            if ($input[Pricing\Entity::INTERNATIONAL] === 1){
+                $input[Pricing\Entity::INTERNATIONAL] = '1';
+            }else if ($input[Pricing\Entity::INTERNATIONAL] === 0){
+                $input[Pricing\Entity::INTERNATIONAL] = '0';
+            }
+        }
         return $input;
     }
 

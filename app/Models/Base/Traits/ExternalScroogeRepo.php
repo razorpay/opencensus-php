@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits;
 
 use RZP\Constants\Entity;
+use RZP\Constants\Environment;
 use RZP\Error\ErrorCode;
 use RZP\Services\Scrooge;
 use RZP\Models\Base\PublicCollection;
@@ -417,21 +418,14 @@ trait ExternalScroogeRepo
 
     public function validateExternalFetchEnabledForScroogeNonShadow($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
+        return $this->isProdEnv();
+    }
 
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW,
-            $mode);
+    public function isProdEnv(): bool
+    {
+        $env = $this->app->environment();
 
-        $this->trace->info(
-            TraceCode::SCROOGE_ENTITY_FETCH_NON_SHADOW_RAZORX_RESPONSE,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($env === Environment::PRODUCTION)
         {
             return true;
         }
@@ -441,21 +435,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigration($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -465,21 +445,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationForReversal($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_FOR_REVERSAL,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_FOR_REVERSAL,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -489,21 +455,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationEnabled($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -512,21 +464,7 @@ trait ExternalScroogeRepo
     }
     public function isScroogeReadMigrationEnabledForReversal($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_REVERSAL,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_REVERSAL,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -536,21 +474,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigration2($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_2,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -560,21 +484,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationEnabled2($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -584,21 +494,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationEnabledForFetchById($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            'SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_FETCH_BY_ID',
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_FOR_FETCH_BY_ID,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -608,21 +504,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationForFetchById($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            'SCROOGE_MISC_QUERIES_MIGRATION_FOR_FETCH_BY_ID',
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_FOR_FETCH_BY_ID,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -632,21 +514,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationForIrctc($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_IRCTC,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_IRCTC,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -656,21 +524,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationForGateways($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_GATEWAYS,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_GATEWAYS,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -681,21 +535,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationEnabledTidb($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -705,21 +545,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationTidb($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -729,21 +555,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationTidbForFetchCards($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_FETCH_CARDS,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -753,21 +565,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationTidbForLaReversals($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            'SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS',
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -777,21 +575,7 @@ trait ExternalScroogeRepo
 
     public function isScroogeReadMigrationTidbEnabledForLaReversals($id = null)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            'SCROOGE_MISC_QUERIES_MIGRATION_TIDB_ENABLED_LA_REVERSALS',
-            $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_LA_REVERSALS,
-            [
-                'result'    => $result,
-                'mode'      => $mode,
-            ]);
-
-        if ($result === 'on')
+        if ($this->isProdEnv())
         {
             return true;
         }
@@ -951,14 +735,7 @@ trait ExternalScroogeRepo
                           string $merchantId = null,
                           string $connectionType = null): PublicCollection
     {
-
-        $mode = $this->app['rzp.mode'] ?? 'live';
-        $result = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(),
-            'refund_reads_for_admin_multiple_from_scrooge',
-            $mode);
-
-        if ($result !== 'on')
+        if (!$this->isProdEnv())
         {
             return parent::fetch($params, $merchantId, $connectionType);
         }
@@ -1234,13 +1011,7 @@ trait ExternalScroogeRepo
     {
         if ($routeName === 'reconciliate_via_batch_service')
         {
-            $mode = $this->app['rzp.mode'] ?? 'live';
-            $result = $this->app['razorx']->getTreatment(
-                UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::REFUND_READS_FOR_RECON_FROM_SCROOGE,
-                $mode);
-
-            if ($result === 'on')
+            if ($this->isProdEnv())
             {
                 return false;
             }
@@ -1248,13 +1019,7 @@ trait ExternalScroogeRepo
 
         if ($routeName === 'admin_fetch_entity_by_id')
         {
-            $mode = $this->app['rzp.mode'] ?? 'live';
-            $result = $this->app['razorx']->getTreatment(
-                UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::REFUND_READS_FOR_ADMIN_FROM_SCROOGE,
-                $mode);
-
-            if ($result === 'on')
+            if ($this->isProdEnv())
             {
                 return false;
             }

@@ -44,12 +44,15 @@ class PdfGenerator extends Base\Core
     protected $invoicejsBaseUrl;
     protected $invoice;
     protected $cache;
+    protected $ncaInput;
 
-    public function __construct(Entity $invoice)
+    public function __construct(Entity $invoice, array $ncaInput = null)
     {
         parent::__construct();
 
         $this->invoice = $invoice;
+
+        $this->ncaInput = $ncaInput;
 
         $this->invoicejsBaseUrl = Config::get('app.cdn_v1_url');
 
@@ -58,7 +61,16 @@ class PdfGenerator extends Base\Core
 
     public function generate(): FileStore\Entity
     {
-        $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+
+        if ($this->ncaInput !== null)
+        {
+            $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForNCAProductsInternal($this->ncaInput);
+        }
+        else
+        {
+            $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
+        }
+
 
         $timeStarted = millitime();
 
@@ -143,7 +155,7 @@ class PdfGenerator extends Base\Core
         $templateKey = self::INVOICE_PDF_TEMPLATES_KEY;
         $templateCss = self::INVOICE_PDF_CSS_PATH;
 
-        if($this->invoice->isPaymentPageInvoice() === true)
+        if($this->invoice->isPaymentPageInvoice() === true || $this->invoice->isNCAPaymentPageInvoice() === true)
         {
             $templateType = self::INVOICE_PDF_PP_TEMPLATE_PATH;
             $templateKey = self::INVOICE_PDF_PP_TEMPLATES_KEY;

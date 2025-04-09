@@ -368,7 +368,8 @@ class Repository extends Base\Repository
                               RecurringStatus::REJECTED,
                               RecurringStatus::INITIATED,
                               RecurringStatus::PAUSED,
-                              RecurringStatus::CANCELLED
+                              RecurringStatus::CANCELLED,
+                              RecurringStatus::CANCELLATION_INITIATED
                           ]);
 
         // entity_type has subscription and null as values at the moment

@@ -365,6 +365,9 @@ class Generator extends Base\Core
         // to validate amount
         $invoice->entity()->associate($this->externalEntity);
 
+        // Setting this here as it's being used during validations
+        $invoice[Entity::TYPE] = $input[Entity::TYPE];
+
         $invoice->build($input);
 
         $validator = $invoice->getValidator();

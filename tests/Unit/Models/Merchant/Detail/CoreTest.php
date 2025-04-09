@@ -17,6 +17,8 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Detail\Entity as DE;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
@@ -32,13 +34,11 @@ use Illuminate\Support\Facades\Bus;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\KafkaProducerClient;
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\Merchant\Detail\Validator;
 use RZP\Models\ClarificationDetail\Service;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
-use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
@@ -4193,6 +4193,130 @@ class CoreTest extends TestCase
 
     }
 
+    public function testUpdatePosActivationStatusWithMutex()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate','updatePosActivationStatusOfMerchant'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('updatePosActivationStatusOfMerchant')
+            ->willReturn($merchantDetails);
+
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $input = [
+            DetailConstant::POS_ACTIVATION_STATUS => Status::KYC_QUALIFIED_STB,
+        ];
+
+        $mockBA = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getAdmin'])
+            ->getMock();
+
+        $mockBA->expects($this->any())
+            ->method('getAdmin')
+            ->willReturn($merchant);
+
+        $this->app->instance('basicauth', $mockBA);
+
+
+        $response = $detailService->updatePosActivationStatusOfMerchant($merchant->getId(), $input);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+    }
+
+
+    public function testUpdatePosActivationStatusWithoutMutex()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate','updatePosActivationStatusOfMerchant'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('shouldApplyMutexOnMerchantEntitiesUpdate')
+            ->willReturn(false);
+
+        $detailCoreMock->expects($this->any())
+            ->method('updatePosActivationStatusOfMerchant')
+            ->willReturn($merchantDetails);
+
+
+        $detailService = new MDS();
+        $detailService->replaceCoreForMocking($detailCoreMock);
+
+        $input = [
+            DetailConstant::POS_ACTIVATION_STATUS => Status::KYC_QUALIFIED_STB,
+        ];
+
+        $mockBA = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getAdmin'])
+            ->getMock();
+
+        $mockBA->expects($this->any())
+            ->method('getAdmin')
+            ->willReturn($merchant);
+
+        $this->app->instance('basicauth', $mockBA);
+
+
+        $response = $detailService->updatePosActivationStatusOfMerchant($merchant->getId(), $input);
+
+        $this->assertNotEmpty($response);
+
+        $this->assertIsArray($response);
+
+    }
     // Below test case is to check that the merchant(registered) should not go from nc to amp
     // if he has been in Nc already
 

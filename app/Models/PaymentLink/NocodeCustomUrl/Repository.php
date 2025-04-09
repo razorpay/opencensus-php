@@ -86,4 +86,16 @@ class Repository extends Base\Repository
 
         return $final;
     }
+
+    public function deleteNocodeCustomUrlsByProductId(string $productId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PRODUCT_ID, $productId)
+                    ->forceDelete();
+    }
+
+    public function insert(array $nocodeCustomUrl)
+    {
+        return $this->newQuery()->insert($nocodeCustomUrl);
+    }
 }

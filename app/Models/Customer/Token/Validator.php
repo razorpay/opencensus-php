@@ -21,6 +21,9 @@ class Validator extends Base\Validator
 {
     const CREATE_DIRECT                                 = 'create_direct';
     const CREATE_NETWORK_TOKEN                          = 'create_network_token';
+    const CREATE_NETWORK_TOKEN_CONTINUITY               = 'create_network_token_continuity';
+    const CREATE_NETWORK_TOKEN_CONTINUITY_CARD          = 'create_network_token_continuity_card';
+    const CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL = 'create_network_token_continuity_additional_detail';
     const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
     const CREATE_NETWORK_TOKEN_AMEX                    = 'create_network_token_amex';
     const CREATE_NETWORK_CARD                           = 'create_network_card';
@@ -132,6 +135,33 @@ class Validator extends Base\Validator
         Entity::AUTHENTICATION       => 'sometimes',
         Entity::NOTES                => 'sometimes|notes',
         'via_push_provisioning'      => 'sometimes|boolean'
+    ];
+
+    protected static $createNetworkTokenContinuityRules = [
+        Entity::MERCHANT_ID          => 'required',
+        Entity::CARD                 => 'required|array',
+        Entity::CUSTOMER_ID          => 'required|public_id',
+        'provider'                   => 'required|in:juspay',
+        'additional_detail'          => 'required|array',
+    ];
+
+    protected static $createNetworkTokenContinuityCardRules = [
+        'name'         => 'sometimes',
+        'number'       => 'required',
+        'expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'expiry_year'  => 'required|numeric|digits_between:2,4',
+        'token_iin' => 'required',
+        'iin' => 'required',
+        'par' => 'required',
+        'vault' => 'required',
+        'token_expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'token_expiry_year'  => 'required|numeric|digits_between:2,4',
+    ];
+
+    protected static $createNetworkTokenContinuityAdditionalDetailRules = [
+        'terminal_id'       => 'required',
+        'provider_reference_id1'       => 'required',
+        'provider_reference_id2'       => 'required',
     ];
 
     protected static $createNetworkTokenRupayRules = [

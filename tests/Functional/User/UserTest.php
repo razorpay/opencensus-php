@@ -93,6 +93,7 @@ use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use RZP\Tests\Functional\Helpers\BankingAccount\BankingAccountTrait;
 use function GuzzleHttp\json_decode;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Tests\Functional\Merchant\Partner\PartnerExperienceTest;
 
 class UserTest extends TestCase
 {
@@ -16675,4 +16676,47 @@ class UserTest extends TestCase
         $this->assertEquals($user['signup_via_email'], $merchantEntry->signup_via_email);
 
     }
+
+    public function testVerifyEmailWithCallForRazorpaySalesUser()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $merchant['id'],
+            'contact_name'  => 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $salesUser = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+            'id'                => '10000000000001',
+            'contact_mobile'    => '8888888888',
+            'email'          => null,
+        ], 'razorpay_sales');
+
+        $ownerUser = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+            'id'                => '10000000000004',
+            'contact_mobile'    => '8888888888',
+            'email'          => 'udittest@rzp.com',
+        ], 'owner');
+
+        $this->fixtures->create('user_device_detail', ["user_id" => '10000000000004',
+            'merchant_id' => $merchant['id'],
+            "signup_campaign" => 'easy_onboarding',
+            'metadata' => [
+                'service' => 'pgos'
+            ],
+        ]);
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $salesUser['id']);
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', '10000000000004');
+        $this->assertTrue($user->getConfirmedAttribute());
+        $this->assertTrue($user->confirmed);
+        $this->assertEquals($user->getEmail(), 'udittest@rzp.com');
+    }
+
 }

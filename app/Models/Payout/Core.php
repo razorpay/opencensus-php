@@ -504,6 +504,8 @@ class Core extends Base\Core
         if ($payout->getIsPayoutService() === false)
         {
             $this->postCreationForPayouts($payout);
+
+            $this->pushPayoutEventToBalanceService($payout);
         }
 
         return $payout;
@@ -6352,12 +6354,23 @@ class Core extends Base\Core
 
             $payout->setChannel($ftsChannel);
 
-            $transaction = $payout->transaction;
-
-            if (empty($transaction) === false)
+            try
             {
-                $transaction->setChannel($ftsChannel);
-                $this->repo->saveOrFail($transaction);
+                $transaction = $payout->transaction;
+
+                if (empty($transaction) === false)
+                {
+                    $transaction->setChannel($ftsChannel);
+                    $this->repo->saveOrFail($transaction);
+                }
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TXN_CHANNEL_UPDATE_FAILED, [
+                    'message' => $t->getMessage(),
+                    'balance_account_type' => $payout->getBalanceAccountType(),
+                    'payout_id' => $payout->getId(),
+                ]);
             }
         }
     }
@@ -8550,6 +8563,7 @@ class Core extends Base\Core
                     if ($isPayoutServicePayout === false)
                     {
                         $payout->setTransactionId($journalId);
+                        $payout->setTransactionType(Entity::TRANSACTION);
                         $this->repo->saveOrFail($payout);
                     }
                 });
@@ -9188,6 +9202,9 @@ class Core extends Base\Core
                         null,
                         $reversal,
                         true);
+
+                    $this->app->events->dispatch('api.payout.reversed', $reversal->entity);
+
                 }
                 else
                 {
@@ -11200,18 +11217,24 @@ class Core extends Base\Core
          */
         $accountDetailsMap = [];
 
+        //  Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = 0;
+
         // Count of valid Direct Accounts for Smart Routing
         $validDirectAccounts = 0;
 
         $this->fetchValidDirectAccountsForSmartRouting(
             $accountDetailsMap, $validDirectAccounts, $input, $merchant, $fundAccountType);
 
-        // Fetch Lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+        // Fetch Lite balances only if payouts via lite is not blocked
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUTS_BLOCKED_ON_LITE) === false)
+        {
+            $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+                $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
 
-        // Count of valid Lite Accounts for Smart Routing
-        $validLiteAccounts = count($liteBalances);
+            // Count of valid Lite Accounts for Smart Routing
+            $validLiteAccounts = count($liteBalances);
+        }
 
         $this->trace->info(TraceCode::PAYOUT_SMART_ROUTING_ACCOUNTS, [
             'active_direct_accounts' => $validDirectAccounts,
@@ -11918,13 +11941,23 @@ class Core extends Base\Core
         return $ftsRequest;
     }
 
-    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array {
+    public function getActiveChannelsWithFundAccountsForSmartRoutingRules($merchantID) : array
+    {
         $channelShared = strtoupper(Balance\AccountType::SHARED);
 
-        // Fetching lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
-        $validLiteAccounts = count($liteBalances);
+        $merchant = $this->repo->merchant->findOrFail($merchantID);
+
+        //  Count of valid Lite Accounts for Smart Routing
+        $validLiteAccounts = 0;
+
+        // Fetching lite balances if merchant is not blocked for lite payouts
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUTS_BLOCKED_ON_LITE) === false)
+        {
+            $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+                $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+            
+            $validLiteAccounts = count($liteBalances);
+        }
 
         // Fetch Active BasDetails
         $activeBasDetails = $this->repo->banking_account_statement_details->getActiveDirectAccountsForMerchantId($merchantID);
@@ -12651,5 +12684,39 @@ class Core extends Base\Core
         return $this->isSplitzExperimentEnable($properties, 'enable', TraceCode::FEE_RECOVERY_QUEUED_PAYOUT_FLAG_UNSET_ERROR);
     }
 
+    public function pushPayoutEventToBalanceService(Entity $payout): void
+    {
+        try
+        {
+            $balance = $payout->balance;
 
+            $properties = [
+                'id'            => $balance->getId(),
+                'experiment_id' => 'x_balances_payout_event',
+                'request_data'  => json_encode(['balance_id' => $balance->getId()])
+            ];
+            $expResult  = $this->isSplitzExperimentEnable($properties, 'enabled');
+
+            if ($expResult == true && $payout->balance->isAccountTypeDirect())
+            {
+                $pushData = [
+                    'entity_id'           => $payout->getId(),
+                    'event_creation_time' => $payout->getCreatedAt(),
+                    'merchant_id'         => $payout->getMerchantId(),
+                    'balance_id'          => $payout->getBalanceId()
+                ];
+
+                $queueName = $this->app['config']->get('queue.x_balances_payout_event.' . $this->mode);
+
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($pushData), $queueName);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::X_BALANCES_PAYOUT_EVENT_PUSH_ERROR, [
+                'payout_id' => $payout->getId(),
+                'error'     => $e->getMessage()
+            ]);
+        }
+    }
 }

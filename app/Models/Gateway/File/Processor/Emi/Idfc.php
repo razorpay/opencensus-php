@@ -316,13 +316,13 @@ class Idfc extends Base
     protected function getInstallmentCode($emiTenure)
     {
         $installmentCodeMap = [
-            3 =>  "016",
-            6 =>  "015",
-            9 =>  "015",
-            12 => "016",
-            18 => "016",
-            24 => "016",
-            36 => "016",
+            3 =>  "249",
+            6 =>  "249",
+            9 =>  "249",
+            12 => "249",
+            18 => "249",
+            24 => "249",
+            36 => "249",
         ];
         return 'INSTAP'. $installmentCodeMap[$emiTenure];
     }

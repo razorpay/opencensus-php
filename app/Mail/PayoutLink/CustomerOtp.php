@@ -3,11 +3,9 @@
 namespace RZP\Mail\PayoutLink;
 
 use App;
-use RZP\Mail\Base\EmailHelper;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Merchant\Entity;
-use RZP\Trace\TraceCode;
 
 class CustomerOtp extends Mailable
 {
@@ -108,21 +106,7 @@ class CustomerOtp extends Mailable
 
     public function shouldSendEmailViaStork():bool
     {
-        $app = \App::getFacadeRoot();
-
-        $merchantId = $this->merchantId;
-
-        $isStorkEmailVIAEnabled = (new EmailHelper())->isSendingPayoutServiceMailsSupported($merchantId,$this->view);
-
-        $traceData = [
-            'merchant_id' => $merchantId,
-            'should_create_via_stork' => $isStorkEmailVIAEnabled,
-            'template_view' => $this->view,
-        ];
-
-        $app['trace']->info(TraceCode::PAYOUT_SERVICE_EMAIL_ATTEMPT_STORK_ALL, $traceData);
-
-        return ($isStorkEmailVIAEnabled);
+        return true;
     }
 
     public function getParamsForStork(): array

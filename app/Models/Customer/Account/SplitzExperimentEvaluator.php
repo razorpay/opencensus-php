@@ -15,7 +15,7 @@ class SplitzExperimentEvaluator extends Base\Core
             return false;
 
         $experimentId = $this->mode == "test" ? "app.cms_create_override_test_experiment_id" : "app.cms_create_override_live_experiment_id";
-        return $this->isOverrideToCmsEnabled($experimentId, $merchant, 'enabled');
+        return $this->isOverrideToCmsEnabled($experimentId, $merchant);
     }
 
     public function isReadOverrideToCmsEnabled($merchant): bool
@@ -26,10 +26,10 @@ class SplitzExperimentEvaluator extends Base\Core
             return false;
 
         $experimentId = $this->mode == "test" ? "app.cms_read_override_test_experiment_id" : "app.cms_read_override_live_experiment_id";
-        return $this->isOverrideToCmsEnabled($experimentId, $merchant, 'disabled');
+        return $this->isOverrideToCmsEnabled($experimentId, $merchant);
     }
 
-    protected function isOverrideToCmsEnabled($experimentId, $merchant, $defaultVariant): bool
+    protected function isOverrideToCmsEnabled($experimentId, $merchant): bool
     {
         $properties = [
             'id'            => $merchant ? $merchant -> getId() : 'unknown',
@@ -50,7 +50,7 @@ class SplitzExperimentEvaluator extends Base\Core
             $this->trace->traceException($e, null, TraceCode::CMS_REQUEST_SPLITZ_ERROR);
         }
 
-        $variant = $response['response']['variant']['name'] ?? $defaultVariant;
+        $variant = $response['response']['variant']['name'] ?? 'enabled';
 
         return  $variant == "enabled";
     }

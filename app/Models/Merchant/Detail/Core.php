@@ -617,6 +617,8 @@ class Core extends Base\Core
 
         $oldActivationStatus = $merchantDetails->getActivationStatus();
 
+        $isBddVerificationNCSubmit =  $input[DEConstants::BDD_VERIFICATION_NC_SUBMIT] ?? false;
+
         $response = null;
 
         /**
@@ -632,6 +634,16 @@ class Core extends Base\Core
             ]);
 
             $this->submitMerchantInternalByOnboardingType($input, $merchant);
+        }
+
+        if ($isBddVerificationNCSubmit === true)
+        {
+            $this->trace->info(TraceCode::SUBMIT_BDD_VERIFICATION_NC_FLOW, [
+                "input"  => $input,
+                "merchant_id"  => $merchant->getId(),
+            ]);
+
+            $this->publishKakfaEventForBDDVerificationNeedsClarificationResponded($merchant->getId());
         }
 
         // Ignoring PG clarifications submit if merchant only submit POS clarifications
@@ -717,6 +729,31 @@ class Core extends Base\Core
             DifferEntity::ENTITY_ID                     => $merchantId,
             DifferEntity::ENTITY_NAME                   => Constants::MERCHANT,
             DEConstants::EVENT_TYPE                     => DEConstants::CMMA_POS_CASE_NC_EVENT_TYPE,
+            DEConstants::CASE_TYPE                      => $caseType,
+        ];
+
+        $cmmaCaseEventTopic = env(DetailConstants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
+
+        $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                                                                                  'data'        => $cmmaCaseEventData,
+                                                                                  'topic'       => $cmmaCaseEventTopic,
+                                                                                  'merchant_id' => $merchantId,
+                                                                              ]
+        );
+
+        (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+    }
+
+    private function publishKakfaEventForBDDVerificationNeedsClarificationResponded($merchantId)
+    {
+
+        $caseType = DEConstants::CMMA_POST_ACTIVATION_BUSINESS_DUE_DILIGENCE;
+
+        $cmmaCaseEventData = [
+            DEConstants::CMMA_CASE_STATUS_TYPE          => DEConstants::CMMA_OPEN_CASE_TYPE,
+            DifferEntity::ENTITY_ID                     => $merchantId,
+            DifferEntity::ENTITY_NAME                   => Constants::MERCHANT,
+            DEConstants::EVENT_TYPE                     => DEConstants::BDD_VERIFICATION_NC_EVENT_TYPE,
             DEConstants::CASE_TYPE                      => $caseType,
         ];
 
@@ -3066,6 +3103,69 @@ class Core extends Base\Core
             return $merchant->getMerchantDetail();
         }
 
+
+        if (isset($input[DetailConstants::BDD_VERIFICATION_STATUS]) === true)
+        {
+            $nextBddVerificationStatus =  $input[DetailConstants::BDD_VERIFICATION_STATUS];
+
+            $details = $service->getAdditionalDetailsFromASV($merchantId);
+
+            $pgOnboarding = $details[DetailConstants::PG_ONBOARDING] ?? null;
+            $bddVerification = $pgOnboarding[DetailConstants::BDD_VERIFICATION] ?? null;
+
+            if ($details!=null && $pgOnboarding!=null && is_array($bddVerification) && count($bddVerification)>0) {
+                $isValidTransition =  $service->isBddVerificationTransitionValid($details, $nextBddVerificationStatus);
+                if(!$isValidTransition){
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION, null, [
+                        'error' => 'Invalid state transition'
+                    ]);
+                }
+            }
+            else{
+                // handle transition to non-NC case if no previous state is present
+                if($nextBddVerificationStatus !== Status::NEEDS_CLARIFICATION){
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION, null, [
+                        'error' => 'Invalid state transition. Please move the merchant to Needs Clarification state first.'
+                    ]);
+                }
+            }
+
+            $this->trace->info(TraceCode::UPDATE_BDD_VERIFICATION_STATUS, [
+                'bdd_verification_status' => $nextBddVerificationStatus
+            ]);
+
+            $allowedNextStatusesWithoutWorkflow = [Status::NEEDS_CLARIFICATION,Status::UNDER_REVIEW];
+            if (in_array($nextBddVerificationStatus, $allowedNextStatusesWithoutWorkflow))
+            {
+                $service->transitionToNextBDDVerificationStatus($merchantId, $nextBddVerificationStatus, $merchant);
+            }
+            else {
+                // Create an instance of the WorkflowService class
+                $workflowService = new MakerCheckerWorkflowService();
+                $latestBddVerificationStatus = $service->getLatestBddVerificationStatus($details);
+
+                $workflowInput = [
+                    "permission_name" =>  DetailConstants::MERCHANT_BDD_VERIFICATION_STATUS_UPDATE,
+                    "route_name" =>  DetailConstants::ACTIVATION_ROUTE_NAME,
+                    "entity_name" => DetailConstants::MERCHANT,
+                    "entity_id"=> $merchantId,
+                    "admin_id" => $this->app['basicauth']->getAdmin()->getPublicId(),
+                    "input" =>  [
+                        "bdd_verification_status"=> $nextBddVerificationStatus,
+                    ],
+                    "input_old" => [
+                        "bdd_verification_status"=> $latestBddVerificationStatus,
+                    ],
+                    "tags" => [DetailConstants::BDD_VERIFICATION_STATUS_UPDATE_TAG]
+                ];
+
+                // Call the createWorkflow method
+                $workflowService->createWorkflow($workflowInput);
+            }
+
+            return $merchant->getMerchantDetail();
+        }
+
         // route request to PGOS update merchant details if merchant is not activated
         if ($activationStatus !== Detail\Status::ACTIVATED)
         {
@@ -4223,7 +4323,8 @@ class Core extends Base\Core
         }
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
-            $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED)
+            $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED or
+            $input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING)
         {
             // to check website validations for the merchant while fully activating or moving to KQU
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
@@ -6601,6 +6702,13 @@ class Core extends Base\Core
                 }
             }
 
+            $response['cross_border_product_opted'] = null;
+            if (isset($additionalDetailsFromASV['cross_border_onboarding'])) {
+                $response['cross_border_product_opted'] = !empty($additionalDetailsFromASV['cross_border_onboarding']['selected_product'])
+                    ? $additionalDetailsFromASV['cross_border_onboarding']['selected_product']
+                    : 'moneysaver';
+            }
+
             return $response;
         });
 
@@ -7316,12 +7424,12 @@ class Core extends Base\Core
                 case BusinessType::PARTNERSHIP:
                 case BusinessType::PROPRIETORSHIP:
                 case BusinessType::INDIVIDUAL:
-                    return $this->getApplicableActivationStatusForMerchant($merchantDetails);
+                    return $this->evaluateApplicableActivationStatus($merchantDetails);
 
                 case BusinessType::NGO:
                     if ($merchant->isLinkedAccount() === true)
                     {
-                        return $this->getApplicableActivationStatusForMerchant($merchantDetails);
+                        return $this->evaluateApplicableActivationStatus($merchantDetails);
                     }
             }
         }
@@ -7331,6 +7439,29 @@ class Core extends Base\Core
         ]);
 
         return Status::UNDER_REVIEW;
+    }
+
+    private function evaluateApplicableActivationStatus(Entity $merchantDetails): string
+    {
+        $applicableActivationStatus = $this->getApplicableActivationStatusForMerchant($merchantDetails);
+
+        if ($applicableActivationStatus === Status::ACTIVATED_MCC_PENDING && $this->mcore->isRegularMerchant($merchantDetails->merchant) === false)
+        {
+            $splitzVariant = $this->getSplitzResponse($merchantDetails->getId(), 'non_regular_merchant_to_under_review');
+
+            $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
+                'merchant_id'                   => $merchantDetails->getId(),
+                'splitzVariant'                 => $splitzVariant,
+                'applicableActivationStatus'    => $applicableActivationStatus,
+            ]);
+
+            if ($splitzVariant === 'enable')
+            {
+                $applicableActivationStatus = Status::UNDER_REVIEW;
+            }
+        }
+
+        return $applicableActivationStatus;
     }
 
     public function hasRiskTags($merchant): bool

@@ -178,7 +178,7 @@ class Service extends Base\Service
      * - Get or Update rates for the round off time
      * - convert currency to all supported currencies
      */
-    public function getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent, $method, $isZeroExponentCurrencySupported)
+    public function getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent, $method)
     {
         $roundedTime = $this->getCurrentRoundedTime();
 
@@ -187,7 +187,7 @@ class Service extends Base\Service
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
-        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails($isZeroExponentCurrencySupported);
+        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails();
 
         $denominationFactorInputCurr = Currency\Currency::DENOMINATION_FACTOR[$baseCurrency];
 
@@ -227,7 +227,7 @@ class Service extends Base\Service
         return $supportedCurrencies;
     }
 
-    public function getConvertedCurrenciesFromRearch($merchantID,$baseCurrency, $baseAmount, $merchantMarkupPercent, $method, $isZeroExponentCurrencySupported, &$dccInfo)
+    public function getConvertedCurrenciesFromRearch($merchantID,$baseCurrency, $baseAmount, $merchantMarkupPercent, $method, &$dccInfo)
     {
         $reqInput = [
             'currency' => $baseCurrency
@@ -245,7 +245,7 @@ class Service extends Base\Service
 
         $rates = $this->dualWriteTimeBasedRatesOnPgRouterResponse($baseCurrency, $rates, $currencyRequestId, $roundedTime);
 
-        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails($isZeroExponentCurrencySupported);
+        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails();
 
         $denominationFactorInputCurr = Currency\Currency::DENOMINATION_FACTOR[$baseCurrency];
 

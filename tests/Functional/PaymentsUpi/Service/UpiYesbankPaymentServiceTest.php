@@ -11,6 +11,14 @@ use RZP\Excel\Import as ExcelImport;
 
 class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+    }
 
     public function testPaymentYesbankReconciliation()
     {

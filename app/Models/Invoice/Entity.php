@@ -1084,6 +1084,11 @@ class Entity extends Base\PublicEntity
         return in_array($this->getType(), Type::getOPGSPInvoiceTypes(), true);
     }
 
+    public function isNCAPaymentPageInvoice(): bool
+    {
+        return $this->getType() === Type::NCA_INVOICE;
+    }
+
     public function isFullyPaid(Payment\Entity $payment)
     {
         $trace = App::getFacadeRoot()['trace'];
@@ -1240,7 +1245,8 @@ class Entity extends Base\PublicEntity
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
         $ext     = FileStore\Format::PDF;
 
-        $displayName = $this->isPaymentPageInvoice() ? "Receipt " : "Invoice ";
+        $displayName = $this->isPaymentPageInvoice() || $this->isNCAPaymentPageInvoice() ? "Receipt " : "Invoice ";
+
 
         $displayName = $displayName."$receipt from $from ($status).$ext";
 

@@ -6,6 +6,7 @@ use Neves\Events\TransactionalClosureEvent;
 use RZP\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Jobs\Transfers\TransferPaymentUpdate;
+use RZP\Jobs\Transfers\TransferPaymentDecrementer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Models\Base\Traits\ExternalTransferPaymentRepo;
@@ -79,6 +80,14 @@ class Repository extends BaseRepository
         {
             parent::saveOrFail($transferPayment, $options);
         }
+    }
+
+    public function decrementAmountTransferredExternal($transferPayment, $amountToDecrement)
+    {
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($transferPayment, $amountToDecrement)
+        {
+            TransferPaymentDecrementer::dispatchNow($transferPayment, $amountToDecrement);
+        }));
     }
 
 }

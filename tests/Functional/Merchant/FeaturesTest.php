@@ -377,6 +377,13 @@ class FeaturesTest extends OAuthTestCase
                     "description" => "Rectangular logo URLs will be stored here when the custom_merchant_upi_qr feature flag is enabled for the merchant."
                 ],
             ],
+            "rzp/pg/org/dashboard/banking_program/DormancyPeriodConfig" => [
+                DcsConfigConst::DormancyPeriod => [
+                    "type" => "int",
+                    "short_key" => DcsConfigConst::DormancyPeriod,
+                    "description" => "Dormancy period will be stored (in days) to determine user inactivity and auto-disable inactive admin users."
+                ],
+            ],
         ];
 
         $res = $this->startTest();

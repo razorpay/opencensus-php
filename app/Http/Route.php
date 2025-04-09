@@ -320,12 +320,8 @@ class Route
         'payment_card_recon_create_transaction'    => ['post',     'payments/recon/create/transaction',              'PaymentController@postReconCreateTransaction'                       ],
         'payment_nbplus_authorize_failed'          => ['post',     'payments/authorize/nbplus/failed',               'PaymentController@postAuthorizeFailedNetbankingPayment'            ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
-        'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                'PaymentController@getPaymentwithSubscription'                       ],
         'post_force_authorize_payments'            => ['post',     'payments/{id}/force_authorize_failed',           'PaymentController@postForceAuthorizePayments'                       ],
 
-        // TODO:remove after migration,
-        // Temporary route to copy email and contact in subscriptions table from payments table.
-        'subscription_fetch_by_id_data_fix'        => ['get',      'payments/data_fix/subscriptions/{subId}',        'PaymentController@getPaymentwithSubscriptionEmailAndContactNotNull'],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_fetch_multiple_internal'          => ['get',      'internal/payments',                              'PaymentController@getPaymentsInternal'                                     ],
         'payment_status_count'                     => ['get',      'payments/transaction/count',                     'PaymentController@getPaymentsStatusCount'                                     ],
@@ -848,6 +844,7 @@ class Route
         'create_sqr_for_single_stack'              => ['post',     'payments/singlestack/qr_codes',                  'QrCodeController@createSqrWithVPA'                           ],
         'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                   'QrCodeController@setDeviceIdForQr'                              ],
         'qr_code_device_id_unmap'                  => ['put',      'payments/qr_codes/device/unmap',                 'QrCodeController@unMapDeviceIdForQr'                               ],
+        'qr_code_device_update'                    => ['post',     'payments/single_stack/device/update',            'QrCodeController@UpdateSingleStackDevice'                               ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -1628,6 +1625,7 @@ class Route
         'payment_page_update'                      => ['patch',    'payment_pages/{id}',                             'PaymentLinkController@update'                                      ],
         'payment_page_notify'                      => ['post',     'payment_pages/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
         'payment_page_notify_nca'                  => ['post',     'payment_pages/{id}/notify_nca',                  'PaymentLinkController@sendNotificationNCA'                            ],
+        'payment_page_dual_write_internal'         => ['post',     'internal/payment_pages/dual_write',              'PaymentLinkController@dualWriteFromNCA'                            ],
         'payment_page_notify_all'                  => ['post',     'payment_pages/{id}/fetch_notify_details',        'PaymentLinkController@sendNotificationToAllRecords'                ],
         'payment_page_expire_cron'                 => ['post',     'payment_pages/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
         'payment_page_deactivate'                  => ['patch',    'payment_pages/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
@@ -1655,6 +1653,12 @@ class Route
 
         'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
         'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
+
+        // nca payment receipt routes
+        'payment_page_get_invoice_details_for_nca' => ['get',      'nca/{payment_id}/receipt',                          'PaymentLinkController@getInvoiceDetailsForNCA'                  ],
+        'payment_page_generate_receipt_for_nca'    => ['post',     'nca/{payment_id}/generate_receipt',                 'PaymentLinkController@createInvoiceForNCAProducts'              ],
+        'payment_page_send_receipt_for_nca'        => ['post',     'nca/{payment_id}/send_receipt',                     'PaymentLinkController@sendReceiptForNCA'                        ],
+        'payment_page_save_receipt_for_nca'        => ['post',     'nca/{payment_id}/save_receipt',                     'PaymentLinkController@saveReceiptForNCA'                        ],
 
         // Payment Handle Routes
         'payment_handle_precreate'                 => ['post',     'precreate_payment_handle',                                'PaymentLinkController@precreatePaymentHandle'             ],
@@ -1972,7 +1976,7 @@ class Route
         'org_admin_update'                         => ['put',      'org/admins/{unique_identifier}',                 'OrganizationController@updateOrgAdmin'                             ],
         'org_admin_get'                            => ['get',      'org/admins/{id}',                                'OrganizationController@getOrgAdmin'                                ],
         'org_admin_get_multiple'                   => ['get',      'org/admins',                                     'OrganizationController@getMultipleOrgAdmins'                       ],
-
+        'org_admin_disable_cron'                   => ['post',     'org/admins/disable/{id}',                        'OrganizationController@editAdmin'                                  ],
         // Admin Org Replications
         'admin_org_replications'                   => ['post',     'admin/org/replications',                         'OrganizationController@adminOrgReplications'                       ],
 
@@ -3652,7 +3656,8 @@ class Route
         'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'           ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'                        ],
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
-        'submerchant_partner_feature_check'        => ['get',      'submerchant/partner_feature_check/{featureName}', 'MerchantController@isFeatureEnabledForPartnerOfSubmerchant'                    ],
+        'submerchant_partner_feature_check'        => ['get',      'submerchant/partner_feature_check/{featureName}', 'MerchantController@isFeatureEnabledForPartnerOfSubmerchant'       ],
+        'partner_referral'                         => ['post',     'partner/referral',                                'PartnerController@processReferralCode'],
 
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
@@ -3706,6 +3711,7 @@ class Route
         'partner_kyc_revoke_access'               => ['post',     'partner/kyc_revoke_access',                      'PartnerKycAccessController@revokeKycAccess'                         ],
         'partner_kyc_access_consent'              => ['post',     'partner/kyc_access',                             'PartnerKycAccessController@CreateAndUpdateKycAccess'                ],
         'get_partner_kyc_access_status'           => ['get',      'partner/kyc_access',                             'PartnerKycAccessController@getKycAccessStatus'                      ],
+        'internal_upsert_partner_kyc_access'      => ['post',     'internal/partner_kyc_access',                    'PartnerKycAccessController@upsertFromPRTS'                          ],
 
         'nc_notifications_opt_out'                => ['post',     'partner/nc_notifications/opt_out',               'PartnerController@updateNcOptOutForPartner'                         ],
 
@@ -4790,6 +4796,8 @@ class Route
 
         // network tokenization
         'token_create'                            => ['post',        'tokens',                                                   'TokenController@create'                                   ],
+        // this api is getting used for migrating Juspay tokens only
+        'token_create_internal_for_continuity'    => ['post',        'internal/tokens/continuity',                                'TokenController@create'                                   ],
         'token_fetch'                             => ['post',        'tokens/fetch',                                             'TokenController@fetch'                                    ],
         'token_fetch_cryptogram'                  => ['post',        'tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGram'                          ],
         'token_fetch_cryptogram_internal'         => ['post',        'internal/tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGramInternal'         ],
@@ -6038,7 +6046,6 @@ class Route
         'payment_calculate_fees_with_gateway',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
-        'subscription_fetch_by_id_data_fix',
         'leegality_webhook',
         'gateway_first_data_pares_store',
         'vendor_payment_send_failure_email',
@@ -6880,6 +6887,7 @@ class Route
         'internal_capture_commission',
         'internal_entity_origin_fetch',
         'internal_process_commissions_invoice',
+        'internal_upsert_partner_kyc_access',
 
         'create_ledger_journal_batch',
 
@@ -6994,6 +7002,9 @@ class Route
         'set_qr_code_device',
         'qr_code_device_id_unmap',
 
+        // NoCodeApps
+        'payment_page_dual_write_internal',
+
         'settlement_ondemand_create_internal',
         'user_create_merchant_internal',
         'internal_payment_update_b2b_invoice',
@@ -7005,7 +7016,10 @@ class Route
         'create_sqr_for_single_stack',
         'internal_clear_unsettled_txns',
         'create_sqr_for_single_stack',
-        'acquirer_fetch'
+        'acquirer_fetch',
+        'token_create_internal_for_continuity',
+        'qr_code_device_update',
+        'org_admin_disable_cron'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -7142,6 +7156,7 @@ class Route
     //
 
     public static $proxy = [
+        'partner_referral',
         'add_sales_user_mapping',
         'merchant_activation_details_sales',
         'initiate_pos_onboarding',
@@ -7556,6 +7571,10 @@ class Route
         'payment_page_save_receipt_for_payment',
         'payment_page_get_pending_payments',
         'payment_page_get_batches',
+        'payment_page_generate_receipt_for_nca',
+        'payment_page_get_invoice_details_for_nca',
+        'payment_page_send_receipt_for_nca',
+        'payment_page_save_receipt_for_nca',
 
         // payment handle routes
         'payment_handle_precreate',
@@ -7691,7 +7710,6 @@ class Route
         'payment_page_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
-        'subscription_fetch_by_id',
         'subscription_cancel_token',
         'commissions_get',
         'currency_fetch_all_proxy',
@@ -12682,6 +12700,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'partner_referral',
             'add_sales_user_mapping',
             'merchant_activation_details_sales',
             'initiate_pos_onboarding',
@@ -13809,7 +13828,6 @@ class Route
             'subscription_create_addon',
             'subscription_delete_offer',
             'subscription_fetch',
-            'subscription_fetch_by_id',
             'subscription_fetch_changes',
             'subscription_fetch_due_addons',
             'subscription_fetch_hosted_live',
@@ -16298,7 +16316,6 @@ class Route
             'subscription_create_addon',
             'subscription_delete_offer',
             'subscription_fetch',
-            'subscription_fetch_by_id',
             'subscription_fetch_changes',
             'subscription_fetch_due_addons',
             'subscription_fetch_hosted_live',
@@ -17523,6 +17540,7 @@ class Route
 
             'expire_amount_credits',
             'pg_ledger_balance_analysis',
+            'org_admin_disable_cron'
         ],
 
         'subscriptions' => [
@@ -17545,8 +17563,6 @@ class Route
             'subscription_fetch_emandate_detail',
             'subscription_fetch_card_mandate_detail',
             'subscription_payment_fetch_by_id',
-            'subscription_fetch_by_id',
-            'subscription_fetch_by_id_data_fix',
             'subscription_cancel_token',
             'merchant_fetch_keys',
             'entity_origin_create',
@@ -17617,7 +17633,7 @@ class Route
             'payment_fetch_refund_by_id',
             'create_qr_for_single_stack',
             'create_sqr_for_single_stack',
-            'acquirer_fetch'
+            'acquirer_fetch',
         ],
 
         'billme' => [
@@ -17660,7 +17676,13 @@ class Route
             'payment_page_save_receipt_for_payment',
             'fetch_order_line_items',
             'fetch_product_details_for_order',
-            'payment_page_notify_nca'
+            'payment_page_dual_write_internal',
+            'payment_page_notify_nca',
+            'feature_add_internal',
+            'payment_page_get_invoice_details_for_nca',
+            'payment_page_generate_receipt_for_nca',
+            'payment_page_send_receipt_for_nca',
+            'payment_page_save_receipt_for_nca',
         ],
 
         'ucs' => [
@@ -18093,6 +18115,7 @@ class Route
             'irctc_settlement_batch_service',
             'payouts_bas_process_post_recon',
             'merchant_save_org_defined_merchant_fields',
+            'qr_code_device_update'
         ],
 
         'stork' => [
@@ -18149,6 +18172,7 @@ class Route
             'internal_capture_commission',
             'internal_process_commissions_invoice',
             'payment_fetch_by_id_internal',
+            'internal_upsert_partner_kyc_access',
             'internal_clear_unsettled_txns'
         ],
 
@@ -18217,7 +18241,7 @@ class Route
             'internal_merchant_details_fetch',
             'payment_fetch_by_id_internal',
             'qr_code_device_id_unmap',
-            'set_qr_code_device'
+            'set_qr_code_device',
         ],
 
         'spinnaker' => [
@@ -18260,7 +18284,11 @@ class Route
             'internal_recurring_method_details_fetch',
             'internal_token_create',
             'update_token_on_authorized',
-            'internal_transactions'
+            'internal_transactions',
+            'token_create_internal_for_continuity',
+            'internal_transactions',
+            'payment_fetch_by_id_internal',
+            'internal_order_payments'
         ],
 
         'otpelf' => [
@@ -18850,7 +18878,8 @@ class Route
             'setl_schedule_get_ids',
             'setl_merchant_config_update',
             'setl_merchant_config_get_internal',
-            'setl_schedule_create'
+            'setl_schedule_create',
+            'merchant_get_pricing'
         ],
 
         'route' => [
@@ -20464,6 +20493,7 @@ class Route
         'get_all_country_dashboard_config'                  => HeartBeatLagChecker::MASTER,
         'get_country_dashboard_config'                      => HeartBeatLagChecker::MASTER,
         'edit_country_dashboard_config'                     => HeartBeatLagChecker::MASTER,
+        'org_admin_disable_cron'                            => HeartBeatLagChecker::SLAVE,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [

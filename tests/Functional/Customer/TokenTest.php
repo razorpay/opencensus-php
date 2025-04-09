@@ -512,6 +512,73 @@ class TokenTest extends TestCase
         $this->assertEquals('2028', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
     }
 
+    public function testCreateTokenForContinuity()
+    {
+        $this->ba->optimizerInternalAppAuth();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+
+            $response['success'] = true;
+            $token = base64_encode($input['card']['number']);
+            $response['id'] = 'token_Ankit';
+            $response['token']  = $token;
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->merchant->addFeatures(['token_continuity']);
+
+        $this->fixtures->create('tokenised_iin', [
+            'iin' => '340169',
+            'high_range' => '111111111',
+            'low_range' => '111111111',
+            'token_iin_length' => 9,
+        ]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => 'credit',
+            'issuer'  => 'YesB'
+        ]);
+
+        $createPayload = $this->testData['testCreateTokenForContinuity'];
+
+        $response = $this->startTest($createPayload);
+
+        $this->assertNotNull($response['customer_id']);
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertEquals(true, $response['compliant_with_tokenisation_guidelines']);
+
+        $response2 = $this->startTest($createPayload);
+
+        $this->assertEquals($response['id'], $response2['id']);
+    }
+
+    public function testCreateTokenForContinuityInvalidInput()
+    {
+        $this->ba->optimizerInternalAppAuth();
+
+        $this->fixtures->merchant->addFeatures(['token_continuity']);
+
+        $createPayload = $this->testData['testCreateTokenForContinuityValidationFailure'];
+
+        $this->startTest($createPayload);
+    }
+
     public function testGetAllCustomerTokensWithNetworkTokenizedFlag()
     {
         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();

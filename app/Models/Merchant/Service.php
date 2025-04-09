@@ -2227,9 +2227,33 @@ class Service extends Base\Service
         }
         return $latestStatus;
     }
+
+    public function getLatestBddVerificationStatus(mixed $details){
+        $latestStatus = null;
+        $maxTimestamp = PHP_INT_MIN;
+
+        if ($details !== null && isset($details[DetailConstants::PG_ONBOARDING][DetailConstants::BDD_VERIFICATION]) && is_array($details[DetailConstants::PG_ONBOARDING][DetailConstants::BDD_VERIFICATION]))
+        {
+            $statuses = $details[DetailConstants::PG_ONBOARDING][DetailConstants::BDD_VERIFICATION];
+            foreach ($statuses as $item) {
+                if ($item[DetailConstants::CREATED_AT] > $maxTimestamp) {
+                    $maxTimestamp = $item[DetailConstants::CREATED_AT];
+                    $latestStatus = $item[DetailConstants::BDD_VERIFICATION_STATUS];
+                }
+            }
+        }
+        return $latestStatus;
+    }
+
+
     public function isValidTransitionForRekyc(mixed $details, string $nextStatus){
         $latestStatus = $this->getLatestRekycStatus($details);
         return (in_array($nextStatus, Merchant\Detail\Status::ALLOWED_NEXT_REKYC_STATUSES_MAPPING[$latestStatus], true) === true);
+    }
+
+    public function isBddVerificationTransitionValid(mixed $details, string $nextStatus){
+        $latestStatus = $this->getLatestBddVerificationStatus($details);
+        return (in_array($nextStatus, Merchant\Detail\Status::ALLOWED_NEXT_BDD_VERIFICATION_STATUSES_MAPPING[$latestStatus], true) === true);
     }
 
     public function transitionToNextRekycStatus(string $merchantId, mixed $details, string $nextStatus){
@@ -2284,6 +2308,23 @@ class Service extends Base\Service
         ]);
 
        return (new AccountSDKWrapper())->saveAccountAdditionalDetailWithDetails($merchantId, $detailsStruct, $fieldListForAsv);
+    }
+
+    public function transitionToNextBDDVerificationStatus(string $merchantId, string $nextStatus, $merchant)
+    {
+        $pgosPayload = [
+            "merchant_id"                            => $merchantId,
+            DetailConstants::BDD_VERIFICATION_STATUS => $nextStatus
+        ];
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests(DetailConstants::BDD_VERIFICATION_STATUS_UPDATE, $pgosPayload, $merchant, true);
+
+        $this->trace->info(TraceCode::PGOS_BDD_VERIFICATION_UPDATE_RESPONSE, [
+            'response'     => $response,
+        ]);
+
+        $this->pgosProxyController->errorHandler($response);
+
     }
 
     protected function invalidatePreviousRequestForEmailUpdate($merchant, $currentOwnerUser)
@@ -7565,13 +7606,9 @@ class Service extends Base\Service
 
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::HARVESTER_REFUND_FILTER,
-            $this->app['basicauth']->getMode() ?? "live"
-        );
+        $env = $this->app->environment();
 
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        if ($env === Environment::PRODUCTION)
         {
             $input = $this->addRefundFilterToQueryIfApplicable($input);
         }
@@ -10171,19 +10208,23 @@ class Service extends Base\Service
         }
     }
 
-    public function isEasyKycAccessReferralEnabledForPartner(Merchant\Entity $merchant): bool
-    {
-        if($merchant->isResellerPartner() === false)
-        {
-            return false;
+    public function isEasyKycAccessReferralEnabledForPartner(Merchant\Entity $merchant): bool {
+        $isEnabled = false;
+
+        if($merchant->isResellerPartner()) {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.easy_kyc_access_referral_experiment_id'),
+            ];
+
+            $isEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
         }
 
-        $properties = [
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.easy_kyc_access_referral_experiment_id'),
-        ];
+        else if ($merchant->isAggregatorPartner()) {
+            $isEnabled = (new Referral\Core())->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'));
+        }
 
-        return  $this->core()->isSplitzExperimentEnable($properties, 'enable');
+        return $isEnabled;
     }
 
     public function isReadFromTiDBExpEnabled($merchantId): bool

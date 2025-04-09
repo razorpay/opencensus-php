@@ -204,7 +204,13 @@ class SavedCardTokenisationJob extends Job
 
 
 
-            if ($this->asyncTokenisationJobId === "paymentmigrate" || $this->asyncTokenisationJobId === 'pushtokenmigrate') {
+            if ($this->asyncTokenisationJobId === "paymentmigrate"
+                ||  $this->asyncTokenisationJobId === 'pushtokenmigrate'
+                ||  $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate'
+                ||  $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate'
+                ||  $this->asyncTokenisationJobId === "visa_vcpp_token_provision"
+            ) {
+
                 try {
                     $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
                 } catch(Throwable $e) {
