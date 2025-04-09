@@ -14,7 +14,11 @@ class Authorized extends Base
     protected array $storkWhitelistedOrgs = [
         Org::RAZORPAY_ORG_ID,
         Org::CURLEC_ORG_ID,
-        Org::AXIS_ORG_ID
+        Org::AXIS_ORG_ID,
+        Org::YES_ORG_ID,
+        Org::HDFC_ORG_ID,
+        Org::INDUS_ORG_ID,
+        Org::IDFC_ORG_ID
     ];
 
     protected function addHtmlView()
