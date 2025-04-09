@@ -91,7 +91,6 @@ export class ShellRedirectionService {
   }
 
   private async getRedirectUrlBasedOnUserPersona(): Promise<string | null> {
-
     if (this.isRedirectionApplicable()) {
       let redirectionURL = process.env[AppConstants.EASY_DASHBOARD_URL] || '';
 
@@ -129,7 +128,8 @@ export class ShellRedirectionService {
     const signupCampaign = this.data?.user?.user?.signup_campaign ?? null;
     const submitted = this.data?.user?.submitted ?? null;
     const milestone = this.data?.user?.activation_form_milestone ?? null;
-    const isPosSalesAgentRedirectApplicable = this.data.user?.role === AppConstants.RAZORPAY_SALES_ROLE;
+    const isPosSalesAgentRedirectApplicable =
+      this.data.user?.role === AppConstants.RAZORPAY_SALES_ROLE;
 
     if (isPosSalesAgentRedirectApplicable) {
       const rzpSalesMid = this.data.user?.id ?? '';
@@ -417,7 +417,8 @@ export class ShellRedirectionService {
 
       if (
         (workflowType && workflowType === AppConstants.MODULAR_ONBOARDING) ||
-        workflowDetails.pg_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING
+        workflowDetails.pg_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING ||
+        workflowDetails.cross_border_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING
       ) {
         return false;
       }
@@ -533,9 +534,9 @@ export class ShellRedirectionService {
   private async switchToPosSalesAgent(details: any): Promise<boolean> {
     try {
       // Get the first merchant with the role of partner agent
-        const partnerAgentMerchant = Object.values(details.merchants || {}).find(
-            (merchant: any) => merchant.role === AppConstants.PARTNER_AGENT_ROLE,
-        );
+      const partnerAgentMerchant = Object.values(details.merchants || {}).find(
+        (merchant: any) => merchant.role === AppConstants.PARTNER_AGENT_ROLE,
+      );
 
       if (partnerAgentMerchant?.id) {
         await switchCurrentMerchant(
