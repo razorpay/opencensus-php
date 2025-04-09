@@ -2049,6 +2049,8 @@ class Processor
                         'merchant_id' => $merchant->getId(),
                     ]);
                     $result = 'on';
+                } else {
+                    return false;
                 }
             }
 
