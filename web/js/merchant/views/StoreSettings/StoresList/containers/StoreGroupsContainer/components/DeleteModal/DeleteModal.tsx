@@ -44,6 +44,7 @@ const DeleteModal = (): React.ReactElement => {
     },
     onSettled: (_, error) => {
       if (error) {
+        window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_group_deletion_failed' });
         const isStoreGroupDeleteAccessDenied = verifyGqlErrorResponse(error);
         return toast.show({
           type: 'informational',
@@ -58,6 +59,7 @@ const DeleteModal = (): React.ReactElement => {
         color: 'positive',
         content: 'Store Group deleted successfully',
       });
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'store_group_deleted' });
       // On successful deletion, 'selectedStoreGroupInfo' and 'storeGroupsList' are reset, in order to fetch the latest list with offset 0
       handleModalClose();
       resetStoreGroupsList();

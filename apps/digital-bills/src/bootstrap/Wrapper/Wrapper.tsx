@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BladeProvider, ToastContainer } from '@razorpay/blade/components';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
@@ -10,6 +10,9 @@ import {
   graphqlRequestQuery,
   graphqlRequestMutation,
 } from '@federated/apps/shell/graphql';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
+import { initRazorAnalytics } from '@libs/shared-utils';
 import App from '@apps/digital-bills/src/app';
 import ErrorPage from '@apps/digital-bills/src/common/components/ErrorPage';
 import { DIGITAL_BILLS, ERROR_PAGE_DESCRIPTION } from '@apps/digital-bills/src/utils/constants';
@@ -33,6 +36,16 @@ graphqlClient.setHeader(
 );
 
 const Wrapper = (): React.ReactElement => {
+  const user = useStore((state) => state.session.user);
+
+  useEffect(() => {
+    initRazorAnalytics({ product: DASHBOARD_TEAMS.BILLME, user });
+
+    return () => {
+      window.razorAnalytics?.disableTracking?.();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BladeProvider themeTokens={bladeTheme} colorScheme="light">

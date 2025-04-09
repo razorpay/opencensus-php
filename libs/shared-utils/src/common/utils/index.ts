@@ -193,4 +193,5 @@ export { maskContact } from './maskContact';
 export { isEmpty } from './isEmpty';
 export { ClientError, type ResponseWithErrors, type ErrorType } from './ClientError';
 export { getPhpBaseUrlForClient } from './getPhpBaseUrlForClient';
+export { initRazorAnalytics } from './initRazorAnalytics';
 export { isPhoneNumberIndia } from "./isPhoneNumberIndia";

@@ -122,6 +122,8 @@ class ProfileDropdown extends Component {
           },
         });
 
+        // Remove the identity set for RazorAnalytics
+        window.razorAnalytics?.removeIdentity?.();
         return window.location.reload();
       });
   };

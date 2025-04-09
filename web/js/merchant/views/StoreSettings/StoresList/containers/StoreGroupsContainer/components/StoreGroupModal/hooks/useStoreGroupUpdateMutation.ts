@@ -75,6 +75,7 @@ const useStoreGroupUpdateMutation = ({
             color: 'negative',
             content: response?.storeGroupUpdate?.message || 'Failed to update Store Group',
           });
+          window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_group_updation_failed' });
         } else {
           toast.show({
             type: 'informational',
@@ -82,6 +83,7 @@ const useStoreGroupUpdateMutation = ({
             content: 'Store Group updated successfully',
           });
           onSuccessHandler(response?.storeGroupUpdate?.storeGroup);
+          window.razorAnalytics?.trackStepEvent?.({ eventName: 'store_group_updated' });
         }
       },
     });

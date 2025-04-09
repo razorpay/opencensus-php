@@ -1,7 +1,10 @@
-import React, { Suspense } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { Box, ToastContainer } from '@razorpay/blade/components';
 import { Route, Routes } from 'react-router-dom';
 
+import { useStore } from '@federated/apps/shell/commonStore';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
+import { initRazorAnalytics } from '@libs/shared-utils';
 import Loader from 'common/components/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { RouteGuard } from 'merchant/components/ShowWhen';
@@ -19,6 +22,16 @@ const StoreCreateOrEdit = lazy(
 );
 
 const StoreSettings = (): React.ReactElement => {
+  const user = useStore((state) => state.session.user);
+
+  useEffect(() => {
+    initRazorAnalytics({ product: DASHBOARD_TEAMS.BILLME, user });
+
+    return () => {
+      window.razorAnalytics?.disableTracking?.();
+    };
+  }, []);
+
   const getRefRoute = (routePath: string) => {
     return `${routePath.replace('/store-settings/', '')}/*`;
   };

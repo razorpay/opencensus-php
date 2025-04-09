@@ -3,7 +3,7 @@ export const DASHBOARD_TEAMS = {
   APPS: 'Apps',
   AVAILABILITY_AND_DOWNTIME: 'Availability And Downtime',
   BANKING: 'Banking',
-  BILLME_INTEGRATION: 'BillMe Integration',
+  BILLME: 'BillMe',
   CAPITAL: 'Capital',
   CARE: 'Care',
   CHECKOUT: 'Checkout',

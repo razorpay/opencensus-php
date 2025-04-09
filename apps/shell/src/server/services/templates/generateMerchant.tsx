@@ -24,6 +24,7 @@ import {
   beMiscellaneousLinkElements,
   generateProductEntryScript,
   generateMountRemoteSafelyFnScriptElement,
+  generateRazorAnalyticsScriptElement,
 } from '@apps/shell/src/server/services/generator';
 
 type AppLocals = {
@@ -65,6 +66,7 @@ export const generateMerchantTemplate = async (
     generateHolidayScriptElement(),
     generateAnalyticsInitializationScriptElement(),
     generateProductEntryScript(),
+    generateRazorAnalyticsScriptElement(),
   ];
 
   if (

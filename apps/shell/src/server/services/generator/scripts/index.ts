@@ -18,3 +18,4 @@ export * from './generateSignUpRedirectScript';
 export * from './getGoogleAPIScriptElement';
 export * from './generateProductEntryScript';
 export * from "./generateMountRemoteSafelyFnScriptElement";
+export * from "./generateRazorAnalyticsScriptElement";

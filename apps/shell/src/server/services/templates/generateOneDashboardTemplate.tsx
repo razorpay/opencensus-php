@@ -27,6 +27,7 @@ import {
   generateHolidayScriptElement,
   beMiscellaneousLinkElements,
   generateMountRemoteSafelyFnScriptElement,
+  generateRazorAnalyticsScriptElement,
 } from '@apps/shell/src/server/services/generator';
 import { ShellServerProvider } from '@apps/shell/src/server/contexts/ShellServerProvider';
 import { IS_PRODUCTION } from '@apps/shell/src/env';
@@ -130,6 +131,7 @@ export const generateOneDashboardTemplate = async (
     generateAnalyticsBundleScriptElement(),
     generateHolidayScriptElement(),
     generateAnalyticsInitializationScriptElement(),
+    generateRazorAnalyticsScriptElement(),
   ];
 
   if (

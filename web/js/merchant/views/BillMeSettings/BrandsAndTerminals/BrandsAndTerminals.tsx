@@ -49,7 +49,7 @@ const BrandsAndTerminals = (): React.ReactElement => {
             <ErrorBoundary
               FallbackComponent={() => <ErrorPage />}
               rank={Ranks.P0}
-              team={Teams.BILLME_INTEGRATION}
+              team={Teams.BILLME}
               resetOnProps
             >
               <BrandsTableContainer />
@@ -59,7 +59,7 @@ const BrandsAndTerminals = (): React.ReactElement => {
             <ErrorBoundary
               FallbackComponent={() => <ErrorPage />}
               rank={Ranks.P0}
-              team={Teams.BILLME_INTEGRATION}
+              team={Teams.BILLME}
               resetOnProps
             >
               <TerminalsTableContainer />

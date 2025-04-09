@@ -67,6 +67,7 @@ const BillDetails = (): React.ReactElement => {
           onDeleteModalDismiss();
         },
       });
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'bill_deleted' });
       onDeleteModalDismiss();
       // Use relative routing to work in MFE
       navigate(new URL('..', window.origin + location.pathname));
@@ -83,6 +84,7 @@ const BillDetails = (): React.ReactElement => {
           ? 'Access denied to delete bill'
           : 'Something went wrong while deleting the bill!',
       });
+      window.razorAnalytics?.trackErrorResponse?.({ eventName: 'bill_deletion_failed' });
     },
   });
 
@@ -107,6 +109,7 @@ const BillDetails = (): React.ReactElement => {
           onResendModalDismiss();
         },
       });
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'bill_resent' });
     },
     onError: (error) => {
       const isBillResendAccessDenied = verifyGqlErrorResponse(error);
@@ -117,6 +120,7 @@ const BillDetails = (): React.ReactElement => {
           ? 'Access denied to resend bill'
           : 'Something went wrong while resending the bill!',
       });
+      window.razorAnalytics?.trackErrorResponse?.({ eventName: 'bill_resend_failed' });
     },
   });
 

@@ -87,6 +87,7 @@ const StoreCreateOrEdit = () => {
       });
       setSearchParams({ id: data?.storeCreate?.store?.id });
       setCurrentStep(1);
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'store_created' });
     },
     onErrorHandler: () => {
       toast.show({
@@ -94,6 +95,7 @@ const StoreCreateOrEdit = () => {
         color: 'negative',
         content: 'Failed to create store',
       });
+      window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_creation_failed' });
     },
   });
 
@@ -113,8 +115,11 @@ const StoreCreateOrEdit = () => {
         content: 'Store has been updated succesfully',
       });
       setCurrentStep(1);
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'store_updated' });
     },
-    onErrorHandler: () => {},
+    onErrorHandler: () => {
+      window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_updation_failed' });
+    },
   });
 
   const { mutate: storeTerminalsBulkUpdateMutate, isLoading: isBulkUpdateTerminalsLoading } =
@@ -130,6 +135,9 @@ const StoreCreateOrEdit = () => {
           color: 'positive',
           content: data?.storeTerminalsStatusBulkUpdate?.message,
         });
+        window.razorAnalytics?.trackStepEvent?.({
+          eventName: 'store_linked_product_removed',
+        });
       },
       onError: (error) => {
         const isTerminalsUpdateAccessDenied = verifyGqlErrorResponse(error);
@@ -140,6 +148,7 @@ const StoreCreateOrEdit = () => {
             ? "Access denied to update linked product's terminal status"
             : "Failed to update linked product's terminals status",
         });
+        window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_linked_product_removal_failed' });
       },
     });
   const { deleteStoreTerminal, isLoading: isDeleteStoreTerminalLoading } =
@@ -363,6 +372,7 @@ const StoreCreateOrEdit = () => {
                       storeCreateFormRef.current.handleSubmit();
                     }
                   }}
+                  type='submit'
                 >
                   Save and Next
                 </Button>
@@ -431,7 +441,7 @@ const StoreCreateOrEdit = () => {
               innerRef={storeCreateFormRef}
             >
               {(props: FormikProps<any>) => (
-                <form {...props}>
+                <form {...props} name="store-form">
                   <StoreBasicDetails isLoading={isLoading} />
                 </form>
               )}
@@ -444,7 +454,7 @@ const StoreCreateOrEdit = () => {
               onSubmit={() => undefined}
             >
               {(props: FormikProps<any>) => (
-                <form {...props}>
+                <form {...props} name="store-linked-products-form">
                   <StoreLinkedProducts isLoading={isLoading || isStoreTerminalsResponseFetching} />
                 </form>
               )}

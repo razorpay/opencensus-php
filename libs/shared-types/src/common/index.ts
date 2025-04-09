@@ -8,3 +8,4 @@ export { DASHBOARD_PRIORITY_RANKS } from './DASHBOARD_PRIORITY_RANKS';
 export { DASHBOARD_TEAMS } from './DASHBOARD_TEAMS';
 export { type DashboardSegmentAnalytics } from './DashboardSegmentAnalytics';
 export * from "./TYPE_UTILS";
+export * from "./RazorAnalytics";

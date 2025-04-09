@@ -66,6 +66,7 @@ const StoreDetails = (): React.ReactElement => {
         color: 'positive',
         content: 'A Store has been deleted.',
       });
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'store_deleted' });
       setShouldShowDeleteModal(false);
       navigate('/store-settings/stores-list');
     },
@@ -78,6 +79,7 @@ const StoreDetails = (): React.ReactElement => {
           ? 'Access Denied to delete Store'
           : 'Something went wrong. Please try again!',
       });
+      window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_deletion_failed' });
     },
   });
 

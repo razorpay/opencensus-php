@@ -17,7 +17,7 @@ export const DASHBOARD_ROUTES = {
   '/bank-accounts-settlements/firs': DASHBOARD_TEAMS.BANKING,
   '/bank-accounts-settlements/settlement-details': DASHBOARD_TEAMS.BANKING,
   '/bbps': DASHBOARD_TEAMS.PG_DASHBOARD,
-  '/billme-settings/brands-and-terminals': DASHBOARD_TEAMS.BILLME_INTEGRATION,
+  '/billme-settings/brands-and-terminals': DASHBOARD_TEAMS.BILLME,
   '/business-settings': DASHBOARD_TEAMS.PG_DASHBOARD,
   '/business-settings/account-activation-details': DASHBOARD_TEAMS.PG_DASHBOARD,
   '/business-settings/business': DASHBOARD_TEAMS.PG_DASHBOARD,
@@ -166,8 +166,8 @@ export const DASHBOARD_ROUTES = {
   '/smartcollect/payments': DASHBOARD_TEAMS.APPS,
   '/smartcollect/virtualaccounts': DASHBOARD_TEAMS.APPS,
 
-  '/store-settings/stores-list': DASHBOARD_TEAMS.BILLME_INTEGRATION,
-  '/store-settings/store-create': DASHBOARD_TEAMS.BILLME_INTEGRATION,
+  '/store-settings/stores-list': DASHBOARD_TEAMS.BILLME,
+  '/store-settings/store-create': DASHBOARD_TEAMS.BILLME,
 
   '/stores': DASHBOARD_TEAMS.APPS,
   '/stores/orders': DASHBOARD_TEAMS.APPS,

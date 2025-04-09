@@ -1,6 +1,8 @@
 import {
   DASHBOARD_CURRENCY_CODE_TYPE,
   DashboardSegmentAnalytics,
+  RazorAnalytics,
+  RazorAnalyticsPlugins,
   RazorpayUser,
 } from './src/common';
 
@@ -57,6 +59,8 @@ declare global {
     ONE_DASHBOARD?: boolean;
     RAZORPAY_ACCOUNTS_URL: string;
     analytics: DashboardSegmentAnalytics;
+    razorAnalytics: RazorAnalytics;
+    razorAnalyticsPlugins: RazorAnalyticsPlugins;
     /**
      * @warning Only to be used for cross-repo federated assets.
      */

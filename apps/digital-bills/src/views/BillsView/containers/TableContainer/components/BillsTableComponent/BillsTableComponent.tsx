@@ -61,7 +61,7 @@ const BillsTableComponent = ({
     onSuccess: () => {
       show({
         type: 'informational',
-        content: 'Bill deleted successfully!',
+        content: 'Bills deleted successfully!',
         onDismissButtonClick: () => {
           dismissDeleteModal();
           queryClient.invalidateQueries({
@@ -70,6 +70,7 @@ const BillsTableComponent = ({
         },
       });
       dismissDeleteModal();
+      window.razorAnalytics?.trackStepEvent?.({ eventName: 'bills_bulk_deleted' });
     },
     onError: (error) => {
       const isBulkDeleteAccessDenied = verifyGqlErrorResponse(error);
@@ -80,6 +81,7 @@ const BillsTableComponent = ({
           ? 'Access denied to bulk delete bills'
           : 'Something went wrong while deleting the bills!',
       });
+      window.razorAnalytics?.trackErrorResponse?.({ eventName: 'bills_bulk_deletion_failed' });
     },
   });
 

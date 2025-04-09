@@ -53,6 +53,7 @@ const useStoreGroupCreateMutation = ({
             color: 'negative',
             content: response?.storeGroupCreate?.message || 'Failed to create Store Group',
           });
+          window.razorAnalytics?.trackErrorResponse?.({ eventName: 'store_group_creation_failed' });
         } else {
           toast.show({
             type: 'informational',
@@ -60,6 +61,7 @@ const useStoreGroupCreateMutation = ({
             content: 'Store Group created successfully',
           });
           onSuccessHandler();
+          window.razorAnalytics?.trackStepEvent?.({ eventName: 'store_group_created' });
         }
       },
     });
