@@ -7,7 +7,7 @@
   "peerDependencies": {
     "bezier-easing": "2.1.0",
     "path-to-regexp": "6.2.1",
-    "@razorpay/blade": "12.8.2",
+    "@razorpay/blade": "12.17.1",
     "@razorpay/i18nify-js": "1.12.3",
     "@razorpay/universe-cli": "19.0.3",
     "@types/jest": "^29.4.1",
