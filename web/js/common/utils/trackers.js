@@ -1,4 +1,5 @@
 import moment from 'moment';
+import _refiner from 'refiner-js';
 
 import { getMode } from '@libs/shared-utils';
 import { initAnalytics } from 'common/utils/analytics';
@@ -80,19 +81,18 @@ export const initLumberjack = () => {
   });
 };
 
-// Refiner is not used in the project.
-// export const initRefiner = (user) => {
-//   if (
-//     window.REFINER_PROJECT_ID &&
-//     user &&
-//     user.user &&
-//     ['activated', 'activated_mcc_pending', 'instantly_activated'].includes(user?.activation_status)
-//   ) {
-//     _refiner('setProject', window.REFINER_PROJECT_ID);
-//     _refiner('identifyUser', {
-//       id: user.user?.id,
-//       merchant_id: user.current,
-//       created_at: user.user?.created_at,
-//     });
-//   }
-// };
+export const initRefiner = (user) => {
+  if (
+    window.REFINER_PROJECT_ID &&
+    user &&
+    user.user &&
+    ['activated', 'activated_mcc_pending', 'instantly_activated'].includes(user?.activation_status)
+  ) {
+    _refiner('setProject', window.REFINER_PROJECT_ID);
+    _refiner('identifyUser', {
+      id: user.user?.id,
+      merchant_id: user.current,
+      created_at: user.user?.created_at,
+    });
+  }
+};

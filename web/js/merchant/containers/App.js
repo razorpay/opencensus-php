@@ -31,7 +31,7 @@ import {
   mergeCurrencyFormatting,
   paiseToRupees,
 } from 'common/utils/rzp-utils';
-import { initLumberjack, initSegment } from 'common/utils/trackers';
+import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import {
   isPgMerchant,
   setRecommendedProduct,
@@ -130,6 +130,11 @@ const Content = lazy(() =>
 const IdleTimer = lazy(() =>
   import(/* webpackChunkName: "IdleTimer" */ 'merchant/containers/Home/IdleTimer'),
 );
+
+const lazyLoadRefiner = async () => {
+  const refiner = await import('refiner-js');
+  return refiner;
+};
 
 const scheduleIdleTask =
   window.requestIdleCallback ||
@@ -824,6 +829,13 @@ class App extends Component {
   async loadThirdPartyLibraries(user) {
     if (user?.user) {
       initSegment('Merchant', user, this.props.updateUserSegmentData);
+
+      try {
+        await lazyLoadRefiner();
+        initRefiner(user);
+      } catch (error) {
+        console.error('Failed to load Refiner:', error);
+      }
     }
   }
 

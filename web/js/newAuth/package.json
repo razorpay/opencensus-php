@@ -80,6 +80,7 @@
     "react-virtualized": "9.22.5",
     "redux": "4.0.5",
     "redux-form": "6.8.0",
+    "refiner-js": "1.0.2",
     "regenerator-runtime": "0.13.7",
     "styled-components": "5.3.11",
     "workbox-broadcast-update": "6.5.4",
@@ -166,18 +167,11 @@
     "targets": {
       "test:e2e:auth": {
         "executor": "nx:run-commands",
-        "inputs": [
-          "{projectRoot}/"
-        ],
-        "outputs": [
-          "{projectRoot}/.playwright-report"
-        ],
+        "inputs": ["{projectRoot}/"],
+        "outputs": ["{projectRoot}/.playwright-report"],
         "cache": true,
         "parallelism": true,
-        "dependsOn": [
-          "@libs/shared-core:build",
-          "@libs/shared-qsuite:build"
-        ],
+        "dependsOn": ["@libs/shared-core:build", "@libs/shared-qsuite:build"],
         "options": {
           "command": "pnpm exec playwright test",
           "cwd": "web/js/newAuth"
