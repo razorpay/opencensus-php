@@ -1389,7 +1389,6 @@ class PayoutTest extends OAuthTestCase
         // Manually pushing into the queue because this is the only way to do this.
         // Keeping the queueFlag as false for this test.
         // Payout should get processed since merchant has enough balance
-        s($payout->toArray());
         $this->fixtures->create(
             'fund_transfer_attempt',
             [
@@ -1403,7 +1402,6 @@ class PayoutTest extends OAuthTestCase
                 'initiate_at'   => '1725001621',
             ]);
         $fta1 = $this->getDbLastEntity('fund_transfer_attempt');
-        s($fta1->toArray());
 
         $splitzResp = [
             "response" => [

@@ -859,6 +859,8 @@ return array(
 
     'duplicate_payout_evaluate_splitz_experiment_id' => env('DUPLICATE_PAYOUT_EVALUATE_SPLITZ_EXPERIMENT_ID'),
 
+    'yesbank_ftx_balance_fetch_experiment_id' => env('YESBANK_FTX_BALANCE_FETCH_EXPERIMENT_ID'),
+
     'account_statements_source_event_experiment_id' => env('ACCOUNT_STATEMENTS_SOURCE_EVENT_EXPERIMENT_ID'),
 
     'mutex_lock_contact_experiment_id' => env('MUTEX_LOCK_CONTACT_EXPERIMENT_ID'),

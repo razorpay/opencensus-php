@@ -37,6 +37,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Jobs\ConnectedBankingAccountGatewayBalanceUpdate;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
+use RZP\Models\BankingAccount\Gateway\Yesbank\Action;
 
 class YesbankCaPayoutTest extends TestCase
 {
@@ -2009,5 +2010,146 @@ class YesbankCaPayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    protected function createProcessor(): Yesbank\Processor
+    {
+        return new Yesbank\Processor([
+            'merchant_id' => '10000000000000',
+            'account_number' => '2224440041626905',
+            'channel' => Channel::YESBANK,
+        ]);
+    }
+
+    protected function setupMocks($credentials = []) : void
+    {
+        $splitzMock = Mockery::mock('RZP\Services\SplitzService', [$this->app])->makePartial();
+        $this->app->instance('splitzService', $splitzMock);
+
+        $mozartMock = Mockery::mock('RZP\Services\Mozart', [$this->app])->makePartial();
+        $mozartMock->mode = 'test';
+        $this->app->instance('mozart', $mozartMock);
+    }
+
+    protected function resetMocks(): void
+    {
+        $this->app->forgetInstance('splitzService');
+        $this->app->forgetInstance('mozart');
+    }
+
+    protected function mockSplitzResponseForFtxFlow($isEnabled = false): void
+    {
+        $expId = $this->app['config']->get('app.yesbank_ftx_balance_fetch_experiment_id');
+        $variantName = $isEnabled ? 'enable' : 'control';
+
+        $this->app['splitzService']
+            ->shouldReceive('evaluateRequest')
+            ->with(Mockery::on(function($arg) use ($expId) {
+                return isset($arg['experiment_id']) && $arg['experiment_id'] === $expId;
+            }))
+            ->once()
+            ->andReturn([
+                "response" => [
+                    "variant" => [
+                        "name" => $variantName
+                    ]
+                ]
+            ]);
+    }
+
+    protected function mockMozartResponseForFtxFlowTests($isFtxFlowEnabled = false): void
+    {
+        $this->app->mozart->shouldReceive('sendMozartRequest')
+            ->with('fts', 'yesbank', 'account_balance', Mockery::any(), Mockery::any(), false, 10, 5)
+            ->andReturnUsing(function($namespace, $gateway, $action, $input, $version) use ($isFtxFlowEnabled) {
+                if ($action === Action::ACCOUNT_BALANCE) {
+                    if ($version === Action::V3) {
+                        return [
+                            'data' => [
+                                'balance' => 10, // 10 * 100 = 1000 paise
+                                'accountCurrencyCode' => 'INR',
+                                'faultValue' => null,
+                                'lowBalanceAlert' => false
+                            ]
+                        ];
+                    } else {
+                        return [
+                            'data' => [
+                                'accountBalanceAmount' => 20, // 20 * 100 = 2000 paise
+                                'accountCurrencyCode' => 'INR',
+                                'faultValue' => null,
+                                'lowBalanceAlert' => false
+                            ]
+                        ];
+                    }
+                }
+                return [];
+            });
+    }
+
+    public function testSplitzResponseForFtxFlowEnabled()
+    {
+        $this->setupMocks();
+        $this->mockSplitzResponseForFtxFlow(true);
+
+        $processor = $this->createProcessor();
+        $isFtxFlowEnabled = $processor->getSplitzResponseForFtxFlow();
+
+        $this->assertTrue($isFtxFlowEnabled);
+    }
+
+    public function testSplitzResponseForFtxFlowDisabled()
+    {
+        $this->setupMocks();
+        $this->mockSplitzResponseForFtxFlow(false);
+
+        $processor = $this->createProcessor();
+        $isFtxFlowEnabled = $processor->getSplitzResponseForFtxFlow();
+
+        $this->assertFalse($isFtxFlowEnabled);
+    }
+
+    public function testSplitzResponseForFtxFlowException()
+    {
+        $this->setupMocks();
+
+        $expId = $this->app['config']->get('app.yesbank_ftx_balance_fetch_experiment_id');
+
+        $this->app['splitzService']
+            ->shouldReceive('evaluateRequest')
+            ->with(Mockery::on(function($arg) use ($expId) {
+                return isset($arg['experiment_id']) && $arg['experiment_id'] === $expId;
+            }))
+            ->once()
+            ->andThrow(new \Exception('Splitz service error'));
+
+        $processor = $this->createProcessor();
+        $isFtxFlowEnabled = $processor->getSplitzResponseForFtxFlow();
+
+        $this->assertFalse($isFtxFlowEnabled);
+    }
+
+    public function testFetchGatewayBalanceWithFtxFlowEnabled()
+    {
+        $this->setupMocks();
+        $this->mockSplitzResponseForFtxFlow(true);
+        $this->mockMozartResponseForFtxFlowTests(true);
+
+        $processor = $this->createProcessor();
+        $balance = $processor->fetchGatewayBalance();
+
+        $this->assertEquals(1000, $balance);
+    }
+
+    public function testFetchGatewayBalanceWithFtxFlowDisabled()
+    {
+        $this->setupMocks();
+        $this->mockSplitzResponseForFtxFlow(false);
+        $this->mockMozartResponseForFtxFlowTests(false);
+
+        $processor = $this->createProcessor();
+        $balance = $processor->fetchGatewayBalance();
+
+        $this->assertEquals(2000, $balance);
     }
 }
