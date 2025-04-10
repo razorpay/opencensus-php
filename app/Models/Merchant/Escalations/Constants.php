@@ -67,6 +67,16 @@ class Constants
     const SETTLEMENT_BREACH = 'settlement_breach';
 
     const PAYMENTS_ESCALATION = 'payments_escalation';
+
+    const PAYMENTS_ESCALATION_TIMEBOUND = 'payments_escalation_timebound';
+
+    const MTU_COUPON_APPLY = 'mtu_coupon_apply';
+
+    const INSTANT_ACTIVATION_V2_API_WEBHOOK_ALERT = 'instant_activation_v2_api_webhook_alert';
+
+    const TRANSACTED_MERCHANTS = 'transacted_merchants';
+
+    const NO_MERCHANTS_FOUND = 'no_merchants_found';
     const NO_DOC_PAYMENTS_ESCALATION = 'no_doc_payments_escalation';
     const BANKING_ORG_PAYMENTS_ESCALATION = 'banking_org_payments_escalation';
 
