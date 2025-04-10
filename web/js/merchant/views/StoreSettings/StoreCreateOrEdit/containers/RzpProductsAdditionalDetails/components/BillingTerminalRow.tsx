@@ -201,7 +201,7 @@ const BillingTerminalRow = ({
           onSubmit={handleStatusChangeModalSubmission}
         />
       )}
-      <Card elevation="none" borderRadius="medium">
+      <Card elevation="none" borderRadius="medium" data-analytics-name="terminal-section">
         <CardBody>
           <Box display="flex" gap="spacing.5" flexDirection="column">
             <Box display="flex" justifyContent="space-between">
@@ -230,6 +230,8 @@ const BillingTerminalRow = ({
                       });
                     }}
                     color="negative"
+                    variant="button"
+                    data-analytics-name="remove-terminal"
                   >
                     Remove
                   </Link>
@@ -237,6 +239,8 @@ const BillingTerminalRow = ({
                     isDisabled={isUpdateStoreTerminalLoading}
                     icon={EditIcon}
                     onClick={() => setIsEditing(true)}
+                    variant="button"
+                    data-analytics-name="edit-terminal"
                   >
                     Edit
                   </Link>
@@ -298,6 +302,7 @@ const BillingTerminalRow = ({
                     }
                     setIsEditing(false);
                   }}
+                  data-analytics-name="cancel-terminal-changes"
                 >
                   Cancel
                 </Button>
@@ -311,6 +316,7 @@ const BillingTerminalRow = ({
                     meta?.value?.ipAddress?.length > 15
                   }
                   onClick={onSave}
+                  data-analytics-name="save-terminal-changes"
                 >
                   Save
                 </Button>

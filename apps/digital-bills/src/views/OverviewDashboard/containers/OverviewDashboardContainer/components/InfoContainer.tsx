@@ -8,10 +8,11 @@ import {
   InfoIcon,
   Tooltip,
   TooltipInteractiveWrapper,
+  Heading,
 } from '@razorpay/blade/components';
 
 type InfoContainerProps = PropsWithChildren<{
-  title: React.ReactElement;
+  title: string;
   info?: string;
   height?: CardProps['height'];
 }>;
@@ -23,7 +24,7 @@ const InfoContainer = ({
   height = '100%',
 }: InfoContainerProps): React.ReactElement => {
   return (
-    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate" height={height}>
+    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate" height={height} data-analytics-name={`${title}-section`}>
       <CardBody>
         <Box
           display="flex"
@@ -33,7 +34,7 @@ const InfoContainer = ({
           paddingY="spacing.4"
           maxHeight="17%"
         >
-          {title}
+          <Heading size="medium">{title}</Heading>
           {info ? (
             <Tooltip content={info} placement="top">
               <TooltipInteractiveWrapper>

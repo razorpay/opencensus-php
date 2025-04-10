@@ -88,6 +88,7 @@ const Features = ({ isInWaitlist, updateActiveScreen }: FeaturesProps) => {
           description="Your request has been recorded and we will get back to you as soon as possible."
           isDismissible={false}
           marginBottom="spacing.5"
+          data-analytics-name="request-recorded-info-alert"
         />
       ) : null}
       <Card
@@ -95,6 +96,7 @@ const Features = ({ isInWaitlist, updateActiveScreen }: FeaturesProps) => {
         padding="spacing.0"
         backgroundColor="surface.background.gray.moderate"
         accessibilityLabel="Digital Billing Features"
+        data-analytics-name="digital-bills-features"
       >
         <CardBody>
           <Box marginX="spacing.8" marginY="spacing.11">
@@ -131,7 +133,7 @@ const Features = ({ isInWaitlist, updateActiveScreen }: FeaturesProps) => {
             </Box>
             <Box display="flex" alignItems="center" justifyContent="flex-end" gap="spacing.8">
               {!isInWaitlist ? (
-                <Link icon={ArrowLeftIcon} iconPosition="left" onClick={updateActiveScreen}>
+                <Link variant="button" icon={ArrowLeftIcon} iconPosition="left" onClick={updateActiveScreen} data-analytics-name="back-to-landing-page">
                   Back
                 </Link>
               ) : null}
@@ -141,6 +143,7 @@ const Features = ({ isInWaitlist, updateActiveScreen }: FeaturesProps) => {
                 icon={ArrowRightIcon}
                 iconPosition="right"
                 onClick={() => setIsModalOpen(true)}
+                data-analytics-name="join-the-waitlist"
               >
                 Join The Waitlist
               </Button>

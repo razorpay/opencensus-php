@@ -154,7 +154,7 @@ const StoresSearchComponent = ({
               />
             </form>
           </Box>
-          <Button icon={SearchIcon} onClick={fetchFilteredStoresData} />
+          <Button icon={SearchIcon} onClick={fetchFilteredStoresData} data-analytics-name="stores-search-button"/>
         </Box>
       </Box>
     </Box>

@@ -60,11 +60,12 @@ const WaitlistModal = ({
               setSelectedStoresRange(selectedChip?.values[0] as SelectedStoresRangeType);
             }}
             selectionType="single"
+            data-analytics-name="stores-count-options"
           >
             {STORES_COUNT_OPTIONS.map((option) => {
               const { label, value } = option;
               return (
-                <Chip key={value} value={value}>
+                <Chip key={value} value={value} data-analytics-name={`${label}-stores`}>
                   {label}
                 </Chip>
               );
@@ -74,13 +75,14 @@ const WaitlistModal = ({
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.5" justifyContent="flex-end" width="100%">
-          <Button variant="tertiary" onClick={handleCancel} isDisabled={isLoading}>
+          <Button variant="tertiary" onClick={handleCancel} isDisabled={isLoading} data-analytics-name="cancel">
             Cancel
           </Button>
           <Button
             isDisabled={!selectedStoresRange || isInWaitlist}
             onClick={handleSubmit}
             isLoading={isLoading}
+            data-analytics-name="submit"
           >
             Submit
           </Button>

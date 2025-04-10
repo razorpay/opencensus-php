@@ -69,6 +69,7 @@ const SalesCard = ({
       isSelected={isSelected}
       accessibilityLabel={`${heading} Card`}
       onClick={onCardSelect}
+      data-analytics-name={`${heading}-card`}
     >
       <CardBody height="100%">
         <Box display="flex" justifyContent="center" height="100%">

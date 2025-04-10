@@ -19,6 +19,7 @@ const BreadcrumbBack = ({
       onClick={(e): void => navigate(e as React.MouseEvent<HTMLAnchorElement, MouseEvent>)}
       size={size}
       variant={variant}
+      data-analytics-name="back-to-previous-page"
     >
       {children}
     </Link>

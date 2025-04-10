@@ -66,7 +66,7 @@ const BillDetailContainer = (props: BillDetailsContainerProps): React.ReactEleme
   };
 
   return (
-    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate">
+    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate" data-analytics-name="bill-details-section">
       <CardBody>
         <Box marginY="spacing.2" padding="spacing.6">
           <Breadcrumbs items={pageBreadCrumbs} />

@@ -45,7 +45,7 @@ const Breadcrumbs = (props: BreadcrumbsProps): React.ReactElement => {
     <Box display="flex" alignItems="center" marginBottom="spacing.7">
       {!hideBackButton ? (
         <Fragment>
-          <BreadcrumbBack size="large" variant="anchor" />
+          <BreadcrumbBack size="large" variant="button" />
           <Divider
             orientation="vertical"
             variant="normal"
@@ -54,7 +54,7 @@ const Breadcrumbs = (props: BreadcrumbsProps): React.ReactElement => {
           />
         </Fragment>
       ) : null}
-      <Breadcrumb size="medium" color="primary">
+      <Breadcrumb size="medium" color="primary" data-analytics-name="page-breadcrumbs">
         <BreadcrumbNavLink icon={HomeIcon} to={homeHref} />
         {breadCrumbWithHrefs.map((breadCrumb) => (
           <BreadcrumbNavLink key={`${breadCrumb.href}-${breadCrumb.label}`} to={breadCrumb.href}>

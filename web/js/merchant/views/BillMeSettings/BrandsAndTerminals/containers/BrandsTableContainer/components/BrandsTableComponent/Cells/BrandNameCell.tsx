@@ -20,7 +20,7 @@ const BrandNameCell = ({ tableItem, onBrandNameClick }: BrandNameCellProps): Rea
         alt={`${name} logo`}
         style={{ borderRadius: 'medium', borderWidth: 'thin' }}
       />
-      <Link variant="button" onClick={() => onBrandNameClick(id)}>
+      <Link variant="button" onClick={() => onBrandNameClick(id)} data-analytics-name="store-brand">
         {name}
       </Link>
     </Box>

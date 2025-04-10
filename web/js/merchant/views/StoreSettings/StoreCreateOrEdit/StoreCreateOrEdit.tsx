@@ -348,7 +348,7 @@ const StoreCreateOrEdit = () => {
           );
         }}
       />
-      <Card backgroundColor="surface.background.gray.moderate">
+      <Card backgroundColor="surface.background.gray.moderate" data-analytics-name="store-form-controls-section">
         <CardBody>
           <Box
             display="flex"
@@ -372,7 +372,7 @@ const StoreCreateOrEdit = () => {
                       storeCreateFormRef.current.handleSubmit();
                     }
                   }}
-                  type='submit'
+                  data-analytics-name="store-form-save-and-next"
                 >
                   Save and Next
                 </Button>
@@ -383,6 +383,7 @@ const StoreCreateOrEdit = () => {
                     iconPosition="left"
                     variant="secondary"
                     onClick={onPreviousClick}
+                    data-analytics-name="store-form-previous"
                   >
                     Previous
                   </Button>
@@ -394,6 +395,7 @@ const StoreCreateOrEdit = () => {
                     type="submit"
                     color="positive"
                     onClick={onNextClick}
+                    data-analytics-name="store-form-next"
                   >
                     {id ? 'Update Store' : 'Stores List'}
                   </Button>
@@ -405,7 +407,7 @@ const StoreCreateOrEdit = () => {
       </Card>
       <Box display="flex" gap="spacing.4" flexDirection={{ base: 'column', l: 'row' }}>
         <Box width={{ base: '100%', l: '30%' }}>
-          <Card backgroundColor="surface.background.gray.moderate">
+          <Card backgroundColor="surface.background.gray.moderate" data-analytics-name="store-form-steps">
             <CardBody>
               <Heading size="medium" weight="semibold">
                 New Store

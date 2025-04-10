@@ -19,6 +19,7 @@ const LinkCard = ({ label, href }: LinkCardProps): React.ReactElement => {
         icon={ArrowRightIcon}
         iconPosition="right"
         onClick={handleRouteChange}
+        data-analytics-name={label}
       >
         {label}
       </Link>

@@ -25,6 +25,6 @@ describe('BillsOverviewContainer', () => {
     });
 
     const { getByRole } = renderWithWrappers(<BillsOverviewContainer />);
-    expect(getByRole('link', { name: 'View Graphical Data' })).toBeInTheDocument();
+    expect(getByRole('button', { name: 'View Graphical Data' })).toBeInTheDocument();
   });
 });

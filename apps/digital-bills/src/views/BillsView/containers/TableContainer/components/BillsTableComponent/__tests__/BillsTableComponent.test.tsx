@@ -12,7 +12,7 @@ describe('BillsTableComponent', () => {
     expect(getByText('Bill ID')).toBeInTheDocument();
     expect(getByText('Contact')).toBeInTheDocument();
 
-    expect(getByRole('link', { name: 'bill_1' })).toBeInTheDocument();
+    expect(getByRole('button', { name: 'bill_1' })).toBeInTheDocument();
     expect(getByText('+91 1234567890')).toBeInTheDocument();
   });
 });

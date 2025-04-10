@@ -113,6 +113,7 @@ const BrandsTableContainer = (): React.ReactElement => {
                 e.preventDefault();
                 applyFilters();
               }}
+              data-analytics-name="brands-search-filter-form"
             >
               <TextInput
                 placeholder="Search by brand name"
@@ -122,7 +123,7 @@ const BrandsTableContainer = (): React.ReactElement => {
               />
             </form>
           </Box>
-          <Button icon={SearchIcon} onClick={applyFilters} />
+          <Button icon={SearchIcon} onClick={applyFilters} data-analytics-name="brands-search-button"/>
         </Box>
         <BrandsTableComponent
           tableProps={{

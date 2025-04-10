@@ -115,7 +115,7 @@ const StoreDetails = (): React.ReactElement => {
           }}
         />
       )}
-      <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate">
+      <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate" data-analytics-name="store-details-section">
         <CardBody>
           <Box padding="spacing.7">
             <Breadcrumbs
@@ -135,6 +135,7 @@ const StoreDetails = (): React.ReactElement => {
                 variant="borderless"
                 value={activeTab}
                 onChange={(tab) => setActiveTab(tab)}
+                data-analytics-name="store-details-tabs"
               >
                 <TabList>
                   <TabItem value={STORE_DETAILS_TABS.OVERVIEW}>Overview</TabItem>
@@ -161,6 +162,7 @@ const StoreDetails = (): React.ReactElement => {
                   iconPosition="left"
                   icon={TrashIcon}
                   onClick={() => setShouldShowDeleteModal(true)}
+                  data-analytics-name="delete-store"
                 >
                   Delete
                 </Button>
@@ -168,6 +170,7 @@ const StoreDetails = (): React.ReactElement => {
                   iconPosition="left"
                   icon={EditIcon}
                   onClick={() => navigate(`/store-settings/store-create?id=${storeId}`)}
+                  data-analytics-name="edit-store"
                 >
                   Edit
                 </Button>

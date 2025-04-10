@@ -33,6 +33,7 @@ const BillVisitTable = ({ visits = [] }: BillVisitTableProps): React.ReactElemen
           ip: visit.ip,
         })),
       }}
+      data-analytics-name="bill-read-receipt-table"
     >
       {(tableData): React.ReactElement => {
         return (

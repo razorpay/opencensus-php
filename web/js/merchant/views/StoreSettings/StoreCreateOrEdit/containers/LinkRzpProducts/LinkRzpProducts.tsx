@@ -84,7 +84,7 @@ const LinkRzpProducts = (props: LinkRzpProductsProps) => {
           }}
         />
       )}
-      <Card>
+      <Card data-analytics-name="store-linked-products-section">
         <CardBody>
           <Heading>Link Razorpay Products</Heading>
           {isLoading ? (

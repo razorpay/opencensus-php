@@ -37,10 +37,10 @@ const DeleteStoreModal = (props: DeleteStoreModalProps): React.ReactElement => {
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.5" justifyContent="flex-end" width="100%">
-          <Button variant="tertiary" onClick={modalProps.onDismiss} isDisabled={isLoading}>
+          <Button variant="tertiary" onClick={modalProps.onDismiss} isDisabled={isLoading} data-analytics-name="cancel">
             Cancel
           </Button>
-          <Button onClick={onSubmit} isLoading={isLoading} color="negative">
+          <Button onClick={onSubmit} isLoading={isLoading} color="negative" data-analytics-name="delete">
             Delete
           </Button>
         </Box>

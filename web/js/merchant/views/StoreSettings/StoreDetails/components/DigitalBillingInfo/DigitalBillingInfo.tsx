@@ -94,6 +94,7 @@ const DigitalBillingInfo = ({ fetchedStoreInfo }: DigitalBillingInfoProps): Reac
             data={{
               nodes: terminalsData,
             }}
+            data-analytics-name="billing-terminals-table"
             rowDensity="comfortable"
           >
             {(tableData) => (

@@ -262,7 +262,7 @@ function LocationAndStoreInfoContainer({ isLoading }: LocationAndStoreInfoContai
     });
   };
   return (
-    <Card>
+    <Card data-analytics-name="store-location-and-contact-section">
       <CardBody>
         <Heading>Location & Store Contact Details</Heading>
         {isLoading ? (

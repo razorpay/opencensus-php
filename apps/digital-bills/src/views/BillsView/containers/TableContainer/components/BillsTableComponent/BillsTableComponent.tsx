@@ -109,6 +109,7 @@ const BillsTableComponent = ({
         }}
         selectionType={isTableSelectable ? 'multiple' : 'none'}
         onSelectionChange={({ values }) => setSelectedBills(values)}
+        data-analytics-name="bills-list-table"
         pagination={
           billsData.length > 0 ? (
             <TablePagination
@@ -158,7 +159,7 @@ const BillsTableComponent = ({
                 ) : (
                   <>
                     <Box>
-                      <Button variant="tertiary" onClick={openEditColumn}>
+                      <Button variant="tertiary" onClick={openEditColumn} data-analytics-name="edit-columns">
                         Edit Columns
                       </Button>
                     </Box>
@@ -167,6 +168,7 @@ const BillsTableComponent = ({
                         icon={CheckSquareIcon}
                         variant="tertiary"
                         onClick={() => setIsTableSelectable(true)}
+                        data-analytics-name="multi-select-bills"
                       />
                     </Box>
                   </>

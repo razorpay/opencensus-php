@@ -8,6 +8,6 @@ describe('InvoiceIdCell', () => {
     const { getByRole } = renderWithWrappers(
       <InvoiceIdCell billId="bill_1234" legacyEntityId="123" />,
     );
-    expect(getByRole('link', { name: 'bill_1234' })).toBeInTheDocument();
+    expect(getByRole('button', { name: 'bill_1234' })).toBeInTheDocument();
   });
 });

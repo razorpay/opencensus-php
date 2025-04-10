@@ -19,7 +19,7 @@ describe('Onboarding', () => {
     expect(getByText('What makes BillMe great?')).toBeInTheDocument();
 
     // Landing page redirection
-    await userEvent.click(getByRole('link', { name: /Back/ }));
+    await userEvent.click(getByRole('button', { name: /Back/ }));
     expect(queryByText('What makes BillMe great?')).not.toBeInTheDocument();
     expect(getByText('BillMe')).toBeInTheDocument();
   });
@@ -28,6 +28,6 @@ describe('Onboarding', () => {
     const { getByText, queryByText, queryByRole } = renderWithWrappers(<Onboarding isInWaitlist />);
     expect(queryByText('BillMe')).not.toBeInTheDocument();
     expect(getByText('What makes BillMe great?')).toBeInTheDocument();
-    expect(queryByRole('link', { name: /Back/ })).not.toBeInTheDocument();
+    expect(queryByRole('button', { name: /Back/ })).not.toBeInTheDocument();
   });
 });

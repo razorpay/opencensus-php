@@ -69,10 +69,11 @@ const TableContainer = () => {
       backgroundColor="surface.background.gray.moderate"
       marginTop="spacing.7"
       padding="spacing.0"
+      data-analytics-name="bills-and-stores-table-container"
     >
       <CardBody height="100%">
         <Box height="100%" marginBottom="spacing.6" marginTop="spacing.2" marginX="spacing.6">
-          <Tabs orientation="horizontal" size="medium" variant="bordered" isLazy>
+          <Tabs orientation="horizontal" size="medium" variant="bordered" isLazy data-analytics-name="bills-and-store-data-tabs">
             <TabList>
               <TabItem value="bills">Bills</TabItem>
               <TabItem value="store-data">Store Data</TabItem>

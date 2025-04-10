@@ -162,6 +162,7 @@ const StoreGroupsContainer = ({
           variant="tertiary"
           size="small"
           onClick={() => updateModalStatus(StoreGroupModalStatus.CREATE)}
+          data-analytics-name="add-new-store-group"
         >
           Add New Group
         </Button>

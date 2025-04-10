@@ -25,6 +25,7 @@ const StoreGroupCard = ({
       }
       elevation="none"
       onClick={onCardSelect}
+      data-analytics-name="store-group"
     >
       <CardBody>
         <Box

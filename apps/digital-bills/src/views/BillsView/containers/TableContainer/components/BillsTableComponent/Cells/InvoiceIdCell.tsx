@@ -10,7 +10,7 @@ type InvoiceIdCellProps = {
 const InvoiceIdCell = ({ billId, legacyEntityId }: InvoiceIdCellProps): React.ReactElement => {
   const navigate = useNavigate();
   return (
-    <Link onClick={() => navigate(`${billId}?legacyEntityId=${legacyEntityId}`)} size="medium">
+    <Link variant='button' onClick={() => navigate(`${billId}?legacyEntityId=${legacyEntityId}`)} size="medium" data-analytics-name="bill-id">
       {billId}
     </Link>
   );

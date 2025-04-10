@@ -105,6 +105,7 @@ const TerminalsTableComponent = ({
           data={{
             nodes: terminalsData,
           }}
+          data-analytics-name="store-terminals-table"
           pagination={
             terminalsData?.length > 0 ? (
               <TablePagination

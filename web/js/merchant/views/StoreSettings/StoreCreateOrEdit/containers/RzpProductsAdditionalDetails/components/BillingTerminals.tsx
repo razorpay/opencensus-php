@@ -42,6 +42,8 @@ const BillingTerminals = () => {
                 })
               }
               isDisabled={values?.billingTerminals?.length >= 30}
+              variant="button"
+              data-analytics-name="add-billing-terminal"
             >
               Add Billing Terminal
             </Link>

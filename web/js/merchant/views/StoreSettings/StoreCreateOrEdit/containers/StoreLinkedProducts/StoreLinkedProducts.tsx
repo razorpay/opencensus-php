@@ -12,7 +12,7 @@ const StoreLinkedProducts = (props: StoreLinkedProductsProps) => {
   const { isLoading } = props;
   const { basicInfoForm } = useStoresCreateStore();
   return (
-    <Card>
+    <Card data-analytics-name="store-linked-products-section">
       <CardBody>
         <Heading>Link Razorpay Products Additional Details</Heading>
         {isLoading ? (

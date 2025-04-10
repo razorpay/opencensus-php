@@ -33,6 +33,7 @@ const RetryOnError = ({ errorText, retryFn, justifyContent = 'center' }: RetryOn
           icon={RefreshIcon}
           iconPosition="right"
           onClick={retryFn}
+          data-alaytics-name="retry-action"
         >
           Retry
         </Link>

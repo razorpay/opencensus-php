@@ -65,7 +65,7 @@ const StoresList = (): React.ReactElement => {
   );
 
   return (
-    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate">
+    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate" data-analytics-name="store-management-settings">
       <CardBody>
         <Box padding="spacing.7">
           <Breadcrumbs items={PAGE_BREADCRUMBS} backPath="/account-settings" />
@@ -77,8 +77,8 @@ const StoresList = (): React.ReactElement => {
           flexDirection={{ base: 'column', l: 'row' }}
         >
           <Box flex={1} paddingBottom="spacing.5">
-            <Accordion variant="filled" expandedIndex={0}>
-              <AccordionItem>
+            <Accordion variant="filled" expandedIndex={0} data-analytics-name="store-settings-accordion">
+              <AccordionItem data-analytics-name="store-groups-section">
                 <AccordionItemHeader>
                   <Heading size="large">Store Groups</Heading>
                 </AccordionItemHeader>

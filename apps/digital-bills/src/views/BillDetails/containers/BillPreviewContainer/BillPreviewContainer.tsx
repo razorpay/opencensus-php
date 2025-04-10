@@ -20,7 +20,7 @@ const BillPreviewContainer = ({
   signedToken,
 }: BillPreviewContainerProps): React.ReactElement => {
   return (
-    <Card height="100%" backgroundColor="surface.background.gray.moderate">
+    <Card height="100%" backgroundColor="surface.background.gray.moderate" data-analytics-name="bill-preview-section">
       <CardBody height="100%">
         <Box display="flex" gap="spacing.4" flexDirection="column" height="100%">
           <Text weight="semibold">Bill Preview</Text>

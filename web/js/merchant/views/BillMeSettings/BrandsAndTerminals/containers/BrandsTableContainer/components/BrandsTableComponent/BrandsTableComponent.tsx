@@ -56,6 +56,7 @@ const BrandsTableComponent = ({
         data={{
           nodes: brandsData,
         }}
+        data-analytics-name="store-brands-table"
         pagination={
           brandsData.length > 0 ? (
             <TablePagination
@@ -83,6 +84,7 @@ const BrandsTableComponent = ({
                   icon={PlusIcon}
                   iconPosition="left"
                   onClick={onAddNewBrandClick}
+                  data-analytics-name="add-new-brand"
                 >
                   New Brand
                 </Button>

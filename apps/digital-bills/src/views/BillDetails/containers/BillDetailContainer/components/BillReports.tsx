@@ -34,7 +34,7 @@ const BillReports = (props: BillReportsProp): React.ReactElement => {
   );
 
   return (
-    <Tabs variant="borderless" isLazy>
+    <Tabs variant="borderless" isLazy data-analytics-name="bill-report-tabs">
       <TabList marginX="spacing.6">
         <TabItem value="channelStatusReport">Channel Status Report</TabItem>
         <TabItem value="billReadReceipt">Bill Read Receipt</TabItem>

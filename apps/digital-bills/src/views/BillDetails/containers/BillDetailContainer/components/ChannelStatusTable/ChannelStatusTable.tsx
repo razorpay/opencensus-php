@@ -34,6 +34,7 @@ const ChannelStatusTable = ({
       data={{
         nodes: Object.entries(TITLES).map(([id, { cellHeader }]) => ({ id, cellHeader })),
       }}
+      data-analytics-name="channel-status-report-table"
     >
       {(tableData): React.ReactElement => {
         return (

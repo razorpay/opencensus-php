@@ -65,6 +65,7 @@ const TransactionsCard = ({
         setSelectedOverviewCategory(TOTAL_TRANSACTIONS);
         expandGraph();
       }}
+      data-analytics-name="transactions-info-card"
     >
       <CardBody height="100%">
         <Box display="flex" justifyContent="center" height="100%">

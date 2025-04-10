@@ -18,7 +18,7 @@ type LandingProps = {
 
 const Landing = ({ updateActiveScreen }: LandingProps) => {
   return (
-    <Card elevation="lowRaised" padding="spacing.0" accessibilityLabel="Digital Billing Onboarding">
+    <Card elevation="lowRaised" padding="spacing.0" accessibilityLabel="Digital Billing Onboarding" data-analytics-name="digital-bills-landing-section">
       <CardBody>
         <Box
           display="flex"
@@ -56,6 +56,7 @@ const Landing = ({ updateActiveScreen }: LandingProps) => {
                   icon={ArrowRightIcon}
                   iconPosition="right"
                   onClick={updateActiveScreen}
+                  data-analytics-name="read-more"
                 >
                   Read More
                 </Button>

@@ -151,7 +151,7 @@ const BillsOverviewContainer = (): React.ReactElement => {
     : undefined;
 
   return (
-    <Card backgroundColor="surface.background.gray.moderate">
+    <Card backgroundColor="surface.background.gray.moderate" data-analytics-name="bill-overview-section">
       <CardBody>
         <Breadcrumbs items={pageBreadCrumbs} />
         <Divider variant="normal" thickness="thinner" />
@@ -228,10 +228,12 @@ const BillsOverviewContainer = (): React.ReactElement => {
 
           <Box display="flex" justifyContent="center">
             <Link
+              variant='button'
               size="medium"
               icon={isGraphExpanded ? ChevronUpIcon : ChevronDownIcon}
               iconPosition="right"
               onClick={() => graphTogglehandler(isGraphExpanded)}
+              data-analytics-name="view-graphical-data-toggle"
             >
               View Graphical Data
             </Link>

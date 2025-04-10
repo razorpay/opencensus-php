@@ -339,7 +339,7 @@ const BillsSearchComponent = ({
                     </ActionListSection>
                   </ActionList>
                   <DropdownFooter>
-                    <Link icon={ArrowRightIcon} iconPosition="right" onClick={openModal}>
+                    <Link variant="button" icon={ArrowRightIcon} iconPosition="right" onClick={openModal} data-analytics-name="manually-select-stores">
                       Manually Select Stores
                     </Link>
                   </DropdownFooter>
@@ -358,6 +358,7 @@ const BillsSearchComponent = ({
                   marginRight="spacing.5"
                   onClick={fetchFilteredBillsData}
                   isDisabled={Boolean(minAmountErrorMsg || maxAmountErrorMsg || searchErrorMsg)}
+                  data-analytics-name="search"
                 >
                   Search
                 </Button>
@@ -373,6 +374,7 @@ const BillsSearchComponent = ({
                     setSelectedSearchOption('');
                     resetBillsFilter();
                   }}
+                  data-analytics-name="reset"
                 >
                   Reset
                 </Button>

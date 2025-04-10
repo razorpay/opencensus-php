@@ -16,7 +16,7 @@ describe('Features', () => {
     expect(alertBanner).not.toBeInTheDocument();
     expect(getByText('What makes BillMe great?')).toBeInTheDocument();
     expect(getByRole('link', { name: 'Know More' })).toBeInTheDocument();
-    expect(getByRole('link', { name: /Back/ })).toBeInTheDocument();
+    expect(getByRole('button', { name: /Back/ })).toBeInTheDocument();
     const joinWaitlistBtn = getByRole('button', { name: 'Join The Waitlist' });
     expect(joinWaitlistBtn).toBeInTheDocument();
     expect(joinWaitlistBtn).not.toBeDisabled();
@@ -30,7 +30,7 @@ describe('Features', () => {
       'Your request has been recorded and we will get back to you as soon as possible.',
     );
     expect(alertBanner).toBeInTheDocument();
-    expect(queryByRole('link', { name: /Back/ })).not.toBeInTheDocument();
+    expect(queryByRole('button', { name: /Back/ })).not.toBeInTheDocument();
     const joinWaitlistBtn = getByRole('button', { name: 'Join The Waitlist' });
     expect(joinWaitlistBtn).toBeInTheDocument();
     expect(joinWaitlistBtn).toBeDisabled();
@@ -40,7 +40,7 @@ describe('Features', () => {
     const { getByRole } = renderWithWrappers(
       <Features updateActiveScreen={updateActiveScreen} isInWaitlist={false} />,
     );
-    const backBtn = getByRole('link', { name: /Back/ });
+    const backBtn = getByRole('button', { name: /Back/ });
     await userEvent.click(backBtn);
     expect(updateActiveScreen).toHaveBeenCalledTimes(1);
   });

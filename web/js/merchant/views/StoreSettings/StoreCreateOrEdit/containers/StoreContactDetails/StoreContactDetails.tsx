@@ -47,12 +47,14 @@ const StoreContactDetails = () => {
           setValue({});
           setIsStoreContactToggled(false);
         }}
+        variant="button"
+        data-analytics-name="remove-store-contact-details"
       >
         Remove Store Contact Details
       </Link>
     </Fragment>
   ) : (
-    <Link icon={PlusCircleIcon} onClick={() => setIsStoreContactToggled(true)}>
+    <Link icon={PlusCircleIcon} onClick={() => setIsStoreContactToggled(true)} variant="button" data-analytics-name="add-store-contact-details">
       Add Store Contact Details
     </Link>
   );

@@ -60,6 +60,7 @@ const BillInfo = (props: BillInfoProps): React.ReactElement => {
           onClick={onDeleteModalOpen}
           testID="delete-btn"
           size="small"
+          data-analytics-name="delete-bill"
         />
         <Button
           icon={SendIcon}
@@ -67,6 +68,7 @@ const BillInfo = (props: BillInfoProps): React.ReactElement => {
           onClick={onResendModalOpen}
           testID="resend-bill-btn"
           size="small"
+          data-analytics-name="resend-bill"
         >
           Resend Bill
         </Button>
@@ -85,6 +87,8 @@ const BillInfo = (props: BillInfoProps): React.ReactElement => {
         <Link
           testID="copy-icon"
           icon={CopyIcon}
+          variant="button"
+          data-analytics-name="copy-bill-url"
           onClick={(): void => {
             navigator.clipboard
               .writeText(`${legacyEntityId ? getBillUrl({ id: legacyEntityId }) : '#'}`)

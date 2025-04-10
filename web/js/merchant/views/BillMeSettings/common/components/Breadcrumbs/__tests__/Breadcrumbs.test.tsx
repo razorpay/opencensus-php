@@ -62,9 +62,9 @@ describe('Breadcrumbs', () => {
   test('should render breadcrumbs with correct links', () => {
     render(<App />);
     const breadCrumbs = screen.getAllByRole('link');
-    expect(breadCrumbs.length).toEqual(4);
-    expect(breadCrumbs[2]).toHaveAttribute('href', '/pageA/');
-    expect(breadCrumbs[3]).toHaveAttribute('href', '/pageA/pageB');
+    expect(breadCrumbs.length).toEqual(3);
+    expect(breadCrumbs[1]).toHaveAttribute('href', '/pageA/');
+    expect(breadCrumbs[2]).toHaveAttribute('href', '/pageA/pageB');
   });
 
   test('should go up one level route', () => {

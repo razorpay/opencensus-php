@@ -161,7 +161,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
       </Heading>
       {/* Summary Section */}
       <Box width="100%">
-        <InfoContainer title={<Heading size="medium">Summary</Heading>}>
+        <InfoContainer title="Summary">
           <Box
             flexWrap="wrap"
             display="flex"
@@ -205,7 +205,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
         {/* Bills section */}
         <Box flex="3.5">
           <InfoContainer
-            title={<Heading size="medium">Bills View</Heading>}
+            title="Bills View"
             info="The following figures are for the past 3 months"
           >
             <Box padding="spacing.7" paddingBottom="spacing.5">
@@ -245,6 +245,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
                   icon={ArrowRightIcon}
                   iconPosition="right"
                   onClick={() => navigate('bills/')}
+                  data-analytics-name="go-to-bills-view"
                 >
                   Go to Bills View
                 </Link>
@@ -255,7 +256,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
 
         {/* Your Customers section */}
         <Box flex={1}>
-          <InfoContainer title={<Heading size="medium">Your Customers</Heading>}>
+          <InfoContainer title="Your Customers">
             {IFRAME_LABELS_AND_LINKS.YOUR_CUSTOMERS.map((linkInfo, index) => {
               const { label, href } = linkInfo;
               return (
@@ -274,7 +275,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
       <Box display="flex" gap="spacing.5" flexWrap="wrap" width="100%">
         {/* Campaigns section */}
         <Box flex="1">
-          <InfoContainer title={<Heading size="medium">Campaigns</Heading>}>
+          <InfoContainer title="Campaigns">
             {IFRAME_LABELS_AND_LINKS.CAMPAIGNS.map((linkInfo, index) => {
               const { label, href } = linkInfo;
               return (
@@ -291,7 +292,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
 
         {/* Miscellaneous section */}
         <Box flex="1">
-          <InfoContainer title={<Heading size="medium">Miscellaneous</Heading>}>
+          <InfoContainer title="Miscellaneous">
             {IFRAME_LABELS_AND_LINKS.MISCELLANEOUS.map((linkInfo, index) => {
               const { label, href } = linkInfo;
               return (

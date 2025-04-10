@@ -124,6 +124,7 @@ const TerminalsSearchComponent = ({
           icon={SearchIcon}
           onClick={fetchFilteredTerminalsData}
           testID="terminals-search-button"
+          data-analytics-name="terminals-search-button"
         />
       </Box>
     </Box>

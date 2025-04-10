@@ -62,6 +62,7 @@ const StoresTableComponent = ({
       <Table
         isRefreshing={isRefreshing}
         data={{ nodes: storesData }}
+        data-analytics-name="stores-table"
         pagination={
           storesData.length > 0 ? (
             <TablePagination
@@ -90,6 +91,7 @@ const StoresTableComponent = ({
                     onClick={() => {
                       navigate('/store-settings/store-create');
                     }}
+                    data-analytics-name="add-new-store"
                   >
                     New Store
                   </Button>
@@ -140,6 +142,7 @@ const StoresTableComponent = ({
                           <Link
                             variant="button"
                             onClick={() => navigate(`/store-settings/stores-list/${tableItem?.id}`)}
+                            data-analytics-name="store"
                           >
                             {tableItem?.name}
                           </Link>

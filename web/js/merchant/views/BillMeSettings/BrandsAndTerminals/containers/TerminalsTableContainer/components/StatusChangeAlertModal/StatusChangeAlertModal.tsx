@@ -32,10 +32,10 @@ const StatusChangeAlertModal = (props: StatusChangeAlertModalProps): React.React
       </ModalBody>
       <ModalFooter>
         <Box display="flex" gap="spacing.5" justifyContent="flex-end" width="100%">
-          <Button variant="tertiary" onClick={onDismiss}>
+          <Button variant="tertiary" onClick={onDismiss} data-analytics-name="cancel">
             Cancel
           </Button>
-          <Button onClick={onSubmit}>OK</Button>
+          <Button onClick={onSubmit} data-analytics-name="terminal-status-change-confirmation">OK</Button>
         </Box>
       </ModalFooter>
     </Modal>

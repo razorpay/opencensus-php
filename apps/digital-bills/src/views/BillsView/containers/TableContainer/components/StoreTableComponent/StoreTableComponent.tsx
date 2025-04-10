@@ -54,6 +54,7 @@ const StoreTableComponent = ({
           nodes: storesData,
         }}
         gridTemplateColumns="20% 10% 15% 15% 10% 10% 10% 10%"
+        data-analytics-name="stores-list-table"
         pagination={
           storesData.length > 0 ? (
             <TablePagination

@@ -9,7 +9,7 @@ describe('InfoContainer', () => {
   test('should render InfoContainer component', async () => {
     const { getByText, getByTestId, getByRole } = renderWithWrappers(
       <InfoContainer
-        title={<Text>Test Title</Text>}
+        title="Test Title"
         info="Test Info"
         height="50px"
         children={<Text>Test Children</Text>}
@@ -41,7 +41,7 @@ describe('InfoContainer', () => {
 
   test("should render InfoContainer component without info and with default card height of '100%', when not passed in props", () => {
     const { getByText, queryByTestId } = renderWithWrappers(
-      <InfoContainer title={<Text>Test Title</Text>} />,
+      <InfoContainer title="Test Title" />,
     );
 
     // 'title' prop

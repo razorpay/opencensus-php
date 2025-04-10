@@ -249,6 +249,7 @@ const BrandModalComponent = ({
               variant="tertiary"
               onClick={onCloseModal}
               isDisabled={isCreateBrandLoading || isBrandLogoUploadingRef.current}
+              data-analytics-name="cancel"
             >
               Cancel
             </Button>
@@ -256,6 +257,7 @@ const BrandModalComponent = ({
               onClick={() => createBrand()}
               isLoading={isCreateBrandLoading || isBrandLogoUploadingRef.current}
               isDisabled={!brandPayload?.name?.length || brandPayload?.name?.length > 50}
+              data-analytics-name="add-brand"
             >
               Add
             </Button>

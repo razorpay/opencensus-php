@@ -32,12 +32,12 @@ const BrandsAndTerminals = (): React.ReactElement => {
   }, []);
 
   return (
-    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate">
+    <Card padding="spacing.0" backgroundColor="surface.background.gray.moderate" data-analytics-name="digital-billing-settings-section">
       <CardBody>
         <Box padding="spacing.7">
           <Breadcrumbs items={PAGE_BREADCRUMBS} backPath="/account-settings" />
         </Box>
-        <Tabs isLazy variant="borderless">
+        <Tabs isLazy variant="borderless" data-analytics-name="brands-and-terminals">
           <Box paddingX="spacing.7">
             <TabList>
               <TabItem value="brands">Store Brands</TabItem>

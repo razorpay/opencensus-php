@@ -27,9 +27,9 @@ describe('Breadcrumbs', () => {
 
     // should render breadcrumbs with correct links
     const breadCrumbs = getAllByRole('link');
-    expect(breadCrumbs.length).toEqual(4);
-    expect(breadCrumbs[2]).toHaveAttribute('href', '/home/');
-    expect(breadCrumbs[3]).toHaveAttribute('href', '/home/PageA/');
+    expect(breadCrumbs.length).toEqual(3);
+    expect(breadCrumbs[1]).toHaveAttribute('href', '/home/');
+    expect(breadCrumbs[2]).toHaveAttribute('href', '/home/PageA/');
 
     // should go up one level route
     const backButton = getByText('Back');
@@ -40,7 +40,7 @@ describe('Breadcrumbs', () => {
 
     // BreadcrumbNavLink
     const homeLink = getByText('Home');
-    expect(getAllByRole('link')[2]).toHaveAttribute('href', '/home/');
+    expect(getAllByRole('link')[1]).toHaveAttribute('href', '/home/');
     homeLink.click();
     expect(window.location.pathname).toEqual('/home/');
     expect(getByText('Home')).toBeInTheDocument();

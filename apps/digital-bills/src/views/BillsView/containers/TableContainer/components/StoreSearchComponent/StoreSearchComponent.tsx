@@ -306,7 +306,7 @@ const StoreSearchComponent = ({
                     </ActionListSection>
                   </ActionList>
                   <DropdownFooter>
-                    <Link icon={ArrowRightIcon} iconPosition="right" onClick={openModal}>
+                    <Link variant="button" icon={ArrowRightIcon} iconPosition="right" onClick={openModal} data-analytics-name="manually-select-stores">
                       Manually Select Stores
                     </Link>
                   </DropdownFooter>
@@ -332,6 +332,7 @@ const StoreSearchComponent = ({
                   marginRight="spacing.5"
                   onClick={fetchFilteredStoreData}
                   isDisabled={isSearchDisabled}
+                  data-analytics-name="search"
                 >
                   Search
                 </Button>
@@ -347,6 +348,7 @@ const StoreSearchComponent = ({
                     setSelectedSearchOption('');
                     resetStoreFilter();
                   }}
+                  data-analytics-name="reset"
                 >
                   Reset
                 </Button>

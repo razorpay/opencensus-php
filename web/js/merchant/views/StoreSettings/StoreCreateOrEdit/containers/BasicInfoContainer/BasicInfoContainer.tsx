@@ -47,6 +47,7 @@ const CustomFields = () => {
                   data={{ nodes: values?.customFields || [] }}
                   gridTemplateColumns="10% 40% 40% 10%"
                   rowDensity="comfortable"
+                  data-analytics-name="custom-fields-table"
                 >
                   {(tableData) => (
                     <Fragment>
@@ -93,6 +94,8 @@ const CustomFields = () => {
                                 onClick={() => {
                                   arrayHelpers.remove(index);
                                 }}
+                                variant="button"
+                                data-analytics-name="remove-custom-field"
                               />
                             </TableCell>
                           </TableRow>
@@ -119,6 +122,7 @@ const CustomFields = () => {
               onClick={() => {
                 arrayHelpers.push({ title: '', value: '' });
               }}
+              data-analytics-name="add-custom-field"
             >
               Add Custom Field
             </Link>
@@ -138,7 +142,7 @@ function BasicInfoContainer(props: BasicInfoContainerProps) {
   const [field] = useField('storeType');
   const { setFieldValue } = useFormikContext();
   return (
-    <Card>
+    <Card data-analytics-name="store-basic-info-section">
       <CardBody>
         <Heading>Basic Info</Heading>
         {isLoading ? (

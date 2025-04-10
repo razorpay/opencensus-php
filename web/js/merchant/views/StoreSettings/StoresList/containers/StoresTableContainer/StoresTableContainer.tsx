@@ -131,6 +131,7 @@ const StoresTableContainer = (): React.ReactElement => {
                 size="small"
                 icon={EditIcon}
                 onClick={() => updateModalStatus('update')}
+                data-analytics-name="edit-store-group"
               >
                 Edit Group
               </Button>
@@ -139,6 +140,7 @@ const StoresTableContainer = (): React.ReactElement => {
                 size="small"
                 icon={TrashIcon}
                 onClick={() => updateModalStatus('delete')}
+                data-analytics-name="delete-store-group"
               >
                 Delete Group
               </Button>
