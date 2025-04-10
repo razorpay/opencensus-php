@@ -4252,8 +4252,8 @@ class Service extends Base\Service
         }
 
         if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding') || ($signupCampaign === 'sg_signup')) and
-            ((empty($details['activation_form_milestone']) === true) ||
-            ($submitted == 0)))
+            (empty($details['activation_form_milestone']) === true) and
+            ($submitted == 0))
         {
             return true;
         }

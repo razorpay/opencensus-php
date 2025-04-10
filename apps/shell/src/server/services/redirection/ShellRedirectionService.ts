@@ -374,7 +374,7 @@ export class ShellRedirectionService {
       (signupCampaign === AppConstants.I18N_MY_SIGNUP ||
         signupCampaign === AppConstants.EASY_ONBOARDING ||
         signupCampaign === AppConstants.SG_SIGNUP) &&
-      (!this.data?.user?.activation_form_milestone || submitted === 0)
+      !this.data?.user?.activation_form_milestone && submitted === 0
     );
   }
 
