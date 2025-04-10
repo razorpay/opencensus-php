@@ -1798,8 +1798,20 @@ class Core extends Base\Core
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
 
         // if the merchant is eligible for fee based gating logic we would not update the activation status of the merchant
+        $isFeeBasedGatingEligible = false;
 
-        $isFeeBasedGatingEligible = $this->getUpdatedFeeBasedGatingResponse($merchant, $merchantDetails, $statusToBeUpdated);
+        if (isset($input[DEConstants::FEE_GATING_ELIGIBILITY_FROM_PGOS]) === true)
+        {
+            $this->trace->info(TraceCode::FEE_GATING_ELIGIBILITY_FETCHED_FROM_PGOS, [
+                'fee_gating_eligibility'      => $input[DEConstants::FEE_GATING_ELIGIBILITY_FROM_PGOS],
+            ]);
+
+            $isFeeBasedGatingEligible = $input[DEConstants::FEE_GATING_ELIGIBILITY_FROM_PGOS];
+        }
+        else
+        {
+            $isFeeBasedGatingEligible = $this->getUpdatedFeeBasedGatingResponse($merchant, $merchantDetails, $statusToBeUpdated);
+        }
 
         $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY, [
             'merchant_id'              => $merchant->getId(),
