@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
         Entity::APP_NAME                => 'sometimes|nullable|string',
-        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,nocodeapps,payment,affordability_widget,sms,buyer_protection|nullable|string',
+        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,nocodeapps,payment,affordability_widget,offer_prefunding_fee,sms,buyer_protection|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer,emi|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
