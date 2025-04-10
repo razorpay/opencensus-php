@@ -7013,7 +7013,6 @@ class Route
         'merchant_international_enablement_draft_internal',
         'merchant_fetch_bank_account_internal',
         'merchant_integration_get_by_param',
-        'create_sqr_for_single_stack',
         'internal_clear_unsettled_txns',
         'create_sqr_for_single_stack',
         'acquirer_fetch',
@@ -17631,9 +17630,7 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
-            'create_qr_for_single_stack',
-            'create_sqr_for_single_stack',
-            'acquirer_fetch',
+            'create_qr_for_single_stack'
         ],
 
         'billme' => [
@@ -18242,6 +18239,8 @@ class Route
             'payment_fetch_by_id_internal',
             'qr_code_device_id_unmap',
             'set_qr_code_device',
+            'create_sqr_for_single_stack',
+            'acquirer_fetch',
         ],
 
         'spinnaker' => [
