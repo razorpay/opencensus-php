@@ -16,9 +16,9 @@ const EmptyState = ({ text, retryHandler, analyticsProperties }: ErrorStateProps
     if (analyticsProperties) {
       const { screen, ...restAnalyticsProperties } = analyticsProperties;
       track({
-        objectName: 'EmptyState',
+        objectName: `Insights - ${text} EmptyState`,
         actionName: 'clicked',
-        screen: 'insightx/root',
+        screen: `${text}`,
         properties: restAnalyticsProperties,
       });
     }

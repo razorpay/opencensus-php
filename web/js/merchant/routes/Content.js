@@ -617,7 +617,7 @@ const SplitScreen = lazy(() =>
   import(/* webpackChunkName: "SplitScreen" */ 'merchant/views/Reconciliations/SplitScreen/index'),
 );
 
-const InsightX = lazy(() => import(/* webpackChunkName: "InsightX" */ 'merchant/views/InsightX'));
+const Insights = lazy(() => import(/* webpackChunkName: "Insights" */ 'merchant/views/Insights'));
 
 const MyDevices = lazy(() =>
   import(/* webpackChunkName: "MyDevices" */ 'merchant/views/MyDevices'),
@@ -2622,19 +2622,20 @@ class Content extends Component {
             }
           />
           <Route
-            path="insight-x"
+            path="insights/:insights_dashboard/:activetab"
             element={
               <RouteGuard
                 additionalCondition={() => {
                   return (
-                    isExperimentEnabled(this.props.splitz?.abExperiments.insight_x_experiment) &&
+                    isExperimentEnabled(this.props.splitz?.abExperiments.insights_experiment) &&
                     user.isOrgRZP &&
                     user.isCountryIndia &&
+                    isConnectedNavigation &&
                     !isMobileResolution()
                   );
                 }}
               >
-                <InsightX />
+                <Insights />
               </RouteGuard>
             }
           />

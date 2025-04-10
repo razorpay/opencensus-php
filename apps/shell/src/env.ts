@@ -42,6 +42,7 @@ export const STREAKS_REWARDS = process.env['STREAKS_REWARDS'];
 export const REFINER_PROJECT_ID = process.env['REFINER_PROJECT_ID'];
 export const EASY_ONBOARDING_URL = process.env['EASY_ONBOARDING_URL'];
 export const PP_ECOMMERCE_URL = process.env['PP_ECOMMERCE_URL'];
+export const INSIGHTS_SUPERSET_URL=process.env['INSIGHTS_SUPERSET_URL'];
 export const BANK_DETAILS_URL = process.env['BANK_DETAILS_URL'];
 export const APP_NAME = process.env['APP_NAME'];
 export const LUMBERJACK_METRICS_API_URL = process.env['LUMBERJACK_METRICS_API_URL'];
@@ -61,12 +62,7 @@ export const BANK_LMS_BANKING_SERVICE_URL = process.env['BANK_LMS_BANKING_SERVIC
 export const SPLITZ_INTERNAL_AUTH_TOKEN = process.env['SPLITZ_AUTH_DASHBOARDSHELLPASSWORD'];
 export const CURLEC_LINKED_ACCOUNT_ONBOARDING_URL =
   process.env['CURLEC_LINKED_ACCOUNT_ONBOARDING_URL'];
-export const INSIGHT_X_SUPERSET_URL = process.env['INSIGHT_X_SUPERSET_URL'];
-export const INSIGHT_X_SUPERSET_OVERVIEW_ID = process.env['INSIGHT_X_SUPERSET_OVERVIEW_ID'];
-export const INSIGHT_X_SUPERSET_UPI_ID = process.env['INSIGHT_X_SUPERSET_UPI_ID'];
-export const INSIGHT_X_SUPERSET_CARDS_ID = process.env['INSIGHT_X_SUPERSET_CARDS_ID'];
-export const INSIGHT_X_SUPERSET_NETBANKING_ID = process.env['INSIGHT_X_SUPERSET_NETBANKING_ID'];
-export const INSIGHT_X_SUPERSET_WALLETS_ID = process.env['INSIGHT_X_SUPERSET_WALLETS_ID'];
+
 
 // Available only in development
 export const LOCAL_DEV_REMOTES = process.env['LOCAL_DEV_REMOTES'];

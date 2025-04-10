@@ -485,18 +485,6 @@ function MerchantNavLinks(props) {
       />
 
       <MainNavLink
-        label="InsightX"
-        type="general"
-        icon="i i-sparkles text-info"
-        to="/insight-x"
-        additionalCondition={() =>
-          isExperimentEnabled(abExperiments?.insight_x_experiment) &&
-          user.isOrgRZP &&
-          user.isCountryIndia &&
-          !isMobileResolution()
-        }
-      />
-      <MainNavLink
         label="Account & Settings"
         icon="i i-settings text-warning"
         type="general"

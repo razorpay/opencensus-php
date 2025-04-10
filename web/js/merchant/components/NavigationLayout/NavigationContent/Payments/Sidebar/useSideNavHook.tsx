@@ -78,7 +78,7 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
           })
         ) {
           if (PRODUCTS_DATA[product.product_id]?.items?.length > 0) {
-            product.items = getL1ProductItems(product.product_id, user);
+            product.items = getL1ProductItems(product.product_id, user, abExperiments);
           }
 
           acc.push({

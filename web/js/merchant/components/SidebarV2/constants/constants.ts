@@ -80,7 +80,7 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   riskAndFraud: 'Risk and Fraud',
   reconciliations: 'Reconciliation',
   assisted_financing: 'Assisted Financing',
-  insight_x: 'InsightX',
+  insights: 'Insights',
 };
 
 export const ROUTE_L1_PRODUCTS_TITLES = {

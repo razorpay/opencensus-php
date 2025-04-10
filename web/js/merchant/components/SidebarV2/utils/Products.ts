@@ -28,6 +28,7 @@ import {
   RupeeIcon,
   SettingsIcon,
   SettlementsIcon,
+  ShieldIcon,
   ShoppingBagIcon,
   StorefrontIcon,
   TransactionsIcon,
@@ -39,7 +40,6 @@ import {
   SparklesIcon,
   MagicKonnectIcon,
   BillMeIcon,
-  ShieldIcon,
 } from '@razorpay/blade/components';
 import magicKonnectLogo from 'assets/magicKonnectLogo.png';
 
@@ -54,14 +54,17 @@ import {
 import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
-import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import {  canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
+import { INSIGHTS_L1_PRODUCTS_DATA, getInsightsL1Products } from 'merchant/components/SidebarV2/Products/Insights/Insights';
+import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 
 export type ExtraConfig = {
   abExperiments: any;
   isConfigTagEnabled: (path: ConfigTagType) => boolean;
 };
+
 
 const ROUTE_L1_PRODUCTS_DATA = [
   {
@@ -445,14 +448,16 @@ export const PRODUCTS_DATA = {
       );
     },
   },
-  insight_x: {
+  insights: {
     bladeIcon: SparklesIcon,
     icon: 'i i-sparkles text-info',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
-      isExperimentEnabled(abExperiments.insight_x_experiment) &&
+      isExperimentEnabled(abExperiments.insights_experiment) &&
       user.isOrgRZP &&
+      isConnectedNavigationEnabled({ user, abExperiments }) && 
       user.isCountryIndia &&
       !isMobileResolution(),
+    items: INSIGHTS_L1_PRODUCTS_DATA ,
   },
 };
 
@@ -490,8 +495,8 @@ export const COMMON_PRODUCTS: Array<ProductTypeProp> = [
     tags: [],
   },
   {
-    title: SIDEEBAR_PRODUCTS_TITLES.insight_x,
-    product_id: 'insight_x',
+    title: SIDEEBAR_PRODUCTS_TITLES.insights,
+    product_id: 'insights',
     tags: [],
   },
   {
@@ -569,9 +574,12 @@ const getRouteL1Products = (items: L1ProductItem[], user: any) => {
   return items.filter((product) => product.title !== ROUTE_L1_PRODUCTS_TITLES.batchupload);
 };
 
-export const getL1ProductItems = (productId: string, user: any) => {
+
+export const getL1ProductItems = (productId: string, user: any,abExperiments:any) => {
   switch (productId) {
-    // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
+    case 'insights':
+      return getInsightsL1Products(PRODUCTS_DATA[productId]?.items,user,abExperiments);
+      // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
     case 'route':
       if (user?.isOptimizerEnabled && user?.isOptimizerRouteEnabled) {
         return getRouteL1Products(PRODUCTS_DATA[productId]?.items, user);

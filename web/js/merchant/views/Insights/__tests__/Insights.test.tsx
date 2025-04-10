@@ -1,19 +1,21 @@
 import React from 'react';
 import { embedDashboard } from '@superset-ui/embedded-sdk';
-
 import { userEvent, render, screen, waitFor } from 'test-utils';
+import Insights from 'merchant/views/Insights/Insights';
+import { DOCUMENTATION_ROUTES, SUCCESS_RATE_TABS } from 'merchant/views/Insights/constants';
+import { useSupersetDashboard } from 'merchant/views/Insights/hooks/useSupersetDashboard';
+import { useInsightsSplitzExperiments } from 'merchant/views/Insights/hooks/useInsightsSplitzExperiments';
 
-import InsightX from '..';
-import { DOCUMENTATION_ROUTES, INSIGHTX_TABS } from '../constants';
-import { useSupersetDashboard } from '../hooks/useSupersetDashboard';
-
-// Mock external dependencies
 jest.mock('@superset-ui/embedded-sdk', () => ({
   embedDashboard: jest.fn(),
 }));
 
 jest.mock('../hooks/useSupersetDashboard', () => ({
   useSupersetDashboard: jest.fn(),
+}));
+
+jest.mock('../hooks/useInsightsSplitzExperiments', () => ({
+  useInsightsSplitzExperiments: jest.fn(),
 }));
 
 jest.mock('../DateRangePicker', () => ({
@@ -34,24 +36,33 @@ jest.mock('../DateRangePicker', () => ({
   ),
 }));
 
-const mockRefetch = jest.fn().mockResolvedValue({
-  data: 'mockToken',
-  isLoading: false,
-  isError: false,
-  error: null,
-});
+describe('Testing Insights Component', () => {
+  const mockRefetch = jest.fn().mockResolvedValue({
+    data: 'mockToken',
+    isLoading: false,
+    isError: false,
+    error: null,
+  });
 
-(useSupersetDashboard as jest.Mock).mockReturnValue({
-  refetch: mockRefetch,
-  data: 'mockToken',
-  isLoading: false,
-  isError: false,
-  error: null,
-});
+  beforeEach(() => {
+    (useInsightsSplitzExperiments as jest.Mock).mockReturnValue({
+      isExperimentEnabled: false,
+      isInsightsCheckoutMagicXEnabled: false,
+      isInsightsCheckoutEnabled: false,
+      isInsightsSuccessRateEnabled: false,
+    });
 
-describe('Testing InsightX Component', () => {
+    (useSupersetDashboard as jest.Mock).mockReturnValue({
+      refetch: mockRefetch,
+      data: 'mockToken',
+      isLoading: false,
+      isError: false,
+      error: null,
+    });
+  });
+
   const renderApp = () => {
-    return render(<InsightX />);
+    return render(<Insights />);
   };
 
   it('should render the component and removes the progressbar after some time', () => {
@@ -62,32 +73,27 @@ describe('Testing InsightX Component', () => {
       isError: false,
       error: null,
     };
+
     (useSupersetDashboard as jest.Mock).mockReturnValue(mockReturnValue);
+
     const { rerender } = renderApp();
+
     const progressBar = screen.getByRole('progressbar');
     expect(progressBar).toBeInTheDocument();
 
     (useSupersetDashboard as jest.Mock).mockReturnValue({ ...mockReturnValue, isLoading: false });
-    rerender(<InsightX />);
+
+    rerender(<Insights />);
 
     expect(progressBar).not.toBeInTheDocument();
   });
 
-  it('should change tabs successfully', () => {
-    renderApp();
-    const tab = screen.getByText('Cards');
-    userEvent.click(tab);
-    expect(screen.getByText('Cards')).toBeInTheDocument();
-  });
-
   it('should render documentation link correctly', () => {
     renderApp();
-    const tabName = INSIGHTX_TABS[0].name;
-    const tabButton = screen.getByText(tabName);
-    userEvent.click(tabButton);
-
+    const tabName = SUCCESS_RATE_TABS[0].name;
     const documentationButton = screen.getByText('Documentation');
     expect(documentationButton).toBeInTheDocument();
+    userEvent.click(documentationButton);
 
     const link = documentationButton.closest('a');
     expect(link).toHaveAttribute('href', DOCUMENTATION_ROUTES[tabName]);
@@ -129,20 +135,6 @@ describe('Testing InsightX Component', () => {
           }),
         }),
       );
-    });
-  });
-
-  it('should call guest token refetch and re-embeds the dashboard on tab change', async () => {
-    renderApp();
-
-    // Initially embedDashboard is called once during initial render
-    expect(embedDashboard).toHaveBeenCalledTimes(1);
-
-    const tab = screen.getByText('UPI'); // Change tab to "UPI" (or any other tab in INSIGHTX_TABS)
-    userEvent.click(tab);
-    expect(screen.getByText('UPI')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(embedDashboard).toHaveBeenCalledTimes(2); // Initial call + re-embed on tab change
     });
   });
 });

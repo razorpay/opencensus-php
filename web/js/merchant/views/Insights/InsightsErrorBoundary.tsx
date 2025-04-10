@@ -4,7 +4,7 @@ import { AlertTriangleIcon, Text } from '@razorpay/blade/components';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { CenteredEmptyContainer } from 'merchant_common/views/Reports/components/styled';
 
-export const InsightXErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const InsightsErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <ErrorBoundary
       FallbackComponent={() => (
