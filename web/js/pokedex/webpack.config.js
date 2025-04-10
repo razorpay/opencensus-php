@@ -14,7 +14,11 @@ module.exports = withDashboardCore({
     },
     moduleFederationConfig: {
       exposedDir: null,
-      remotes: [DASHBOARD_FEDERATED_MODULES.SHELL, DASHBOARD_FEDERATED_MODULES.PAYMENTS_DASHBOARD],
+      remotes: [
+        DASHBOARD_FEDERATED_MODULES.SHELL,
+        DASHBOARD_FEDERATED_MODULES.ONBOARDING_EXPERIENCE,
+        DASHBOARD_FEDERATED_MODULES.PAYMENTS_DASHBOARD,
+      ],
     },
   },
   extendBrowserWebpackConfig: (config, { isDev, externalDeps, sentryAppVersion }) => {

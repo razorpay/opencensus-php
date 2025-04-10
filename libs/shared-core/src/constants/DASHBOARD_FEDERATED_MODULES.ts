@@ -10,4 +10,5 @@ export enum DASHBOARD_FEDERATED_MODULES {
   SELF_SERVE = 'self_serve',
   POS = 'pos',
   DIGITAL_BILLS = 'digital_bills',
+  ONBOARDING_EXPERIENCE = 'onboarding_experience',
 }

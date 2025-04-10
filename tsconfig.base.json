@@ -41,6 +41,7 @@
       "@federated/apps/pos/*": ["apps/pos/src/exposed/*"],
       "@federated/apps/self-serve/*": ["apps/self-serve/src/exposed/*"],
       "@federated/apps/shell/*": ["apps/shell/src/client/exposed/*"],
+      "@federated/apps/onboarding-experience/*": ["apps/onboarding-experience/src/exposed/*"],
       "@federated/dashboards/la/*": ["web/js/merchantLA/exposed/*"],
       "@federated/dashboards/payments/*": ["web/js/merchant/exposed/*"],
       "@libs/shared-types": ["libs/shared-types/src/common/index.ts"],
@@ -78,20 +79,53 @@
     "**/*.stories.jsx"
   ],
   "references": [
-    { "path": "./web/js/merchant" },
-    { "path": "./web/js/common" },
-    { "path": "./web/js/merchant_common" },
-    { "path": "./web/js/merchantLA" },
-    { "path": "./web/js/merchantTnc" },
-    { "path": "./web/js/newAuth" },
-    { "path": "./web/js/pokedex" },
-    { "path": "./web/js/razorx" },
-    { "path": "./apps/digital-bills" },
-    { "path": "./apps/pos" },
-    { "path": "./apps/self-serve" },
-    { "path": "./apps/shell" },
-    { "path": "./libs/shared-utils" },
-    { "path": "./libs/shared-ui" },
-    { "path": "./libs/shared-types" }
+    {
+      "path": "./web/js/merchant"
+    },
+    {
+      "path": "./web/js/common"
+    },
+    {
+      "path": "./web/js/merchant_common"
+    },
+    {
+      "path": "./web/js/merchantLA"
+    },
+    {
+      "path": "./web/js/merchantTnc"
+    },
+    {
+      "path": "./web/js/newAuth"
+    },
+    {
+      "path": "./web/js/pokedex"
+    },
+    {
+      "path": "./web/js/razorx"
+    },
+    {
+      "path": "./apps/digital-bills"
+    },
+    {
+      "path": "./apps/pos"
+    },
+    {
+      "path": "./apps/self-serve"
+    },
+    {
+      "path": "./apps/shell"
+    },
+    {
+      "path": "./libs/shared-utils"
+    },
+    {
+      "path": "./libs/shared-ui"
+    },
+    {
+      "path": "./libs/shared-types"
+    },
+    {
+      "path": "./apps/onboarding-experience"
+    }
   ]
 }

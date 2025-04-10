@@ -17,3 +17,4 @@ packages:
   - apps/self-serve
   - apps/digital-bills
   - apps/pos
+  - apps/onboarding-experience

@@ -19,6 +19,7 @@
     { "path": "../../../apps/digital-bills" },
     { "path": "../../../apps/pos" },
     { "path": "../../../apps/self-serve" },
+    { "path": "../../../apps/onboarding-experience" },
     { "path": "../common" },
     { "path": "../merchant_common" },
     { "path": "../merchantLA" },

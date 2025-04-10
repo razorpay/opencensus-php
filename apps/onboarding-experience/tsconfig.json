@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "typeRoots": ["node_modules/@types"],
+    "outDir": "./dist"
+  },
+  "include": ["../../libs/shared-types/global.d.ts", "*.json", "**/*.json", "src"],
+  "exclude": ["node_modules", "build", ".playwright-analysis", ".jest-analysis"],
+  "types": ["resize-observer-browser", "jest", "jest-dom"],
+  "references": [
+    { "path": "../../libs/shared-utils" },
+    { "path": "../../libs/shared-ui" },
+    { "path": "../../libs/shared-types" },
+    { "path": "../../libs/shared-qsuite" },
+    { "path": "../../web/js/common" },
+    { "path": "../../web/js/merchant_common" },
+    { "path": "../../apps/shell" },
+    { "path": "../../web/js/merchant" }
+  ]
+}

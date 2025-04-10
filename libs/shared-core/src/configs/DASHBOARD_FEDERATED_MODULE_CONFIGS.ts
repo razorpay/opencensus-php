@@ -121,4 +121,14 @@ export const DASHBOARD_FEDERATED_MODULE_CONFIGS: Record<
       moduleName: DASHBOARD_FEDERATED_MODULES.SELF_SERVE,
     }),
   },
+  [DASHBOARD_FEDERATED_MODULES.ONBOARDING_EXPERIENCE]: {
+    appDirFromRoot: 'apps/onboarding-experience',
+    devStartCommand: 'pnpm nx start',
+    devServerPort: 8893,
+    buildType: DASHBOARD_APP_BUNDLE_TYPE.BROWSER,
+    ...generateBaseMfeBaseMeta({
+      moduleType: DASHBOARD_FEDERATED_MODULE_TYPE.APP,
+      moduleName: DASHBOARD_FEDERATED_MODULES.ONBOARDING_EXPERIENCE,
+    }),
+  },
 };

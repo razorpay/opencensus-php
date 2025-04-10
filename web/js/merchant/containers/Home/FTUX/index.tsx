@@ -1,13 +1,15 @@
 import React from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import lazyLoader from 'merchant/routes/LazyLoader';
+
+const FTUXLanding = lazyLoader(
+  () =>
+    import(
+      /* webpackChunkName: "FTUXLanding" */ '@federated/apps/onboarding-experience/entry/FTUX'
+    ),
+);
 
 const FTUXHomepage = (): JSX.Element => {
-  return (
-    <Box>
-      <Text>FTUX Home</Text>
-      <Text>Hello World!</Text>
-    </Box>
-  );
+  return <FTUXLanding />;
 };
 
 export default FTUXHomepage;
