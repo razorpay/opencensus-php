@@ -23,6 +23,7 @@ import { AccountAndSettingsHomePropInterface, SectionCardInterface } from './typ
 import { getSectionCards } from './utils/sectionCard';
 import { isApplicationEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { trackAccountAndSettingsLoad } from './tracking';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
 
 const feature = 'allow_cfb_international';
 
@@ -48,7 +49,8 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
   } = props;
 
   const [sections, setSections] = useState<SectionCardInterface[]>([]);
-  const { abExperiments } = useSplitzService();
+  const splitz = useSplitzService();
+  const { abExperiments } = splitz;
   const rbacExperiment = abExperiments?.rbacEnabled;
   const { isConfigTagEnabled } = useI18Service();
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
@@ -102,6 +104,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
         allowCFBInternational: featureData[feature],
         extraConfig,
         rbacExperiment,
+        isBillmeMerchant: isBillMeOnlyMerchant(splitz),
       });
       setSections(sectionCards);
     }

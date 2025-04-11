@@ -2,8 +2,10 @@ import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
 import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
 import { OrgData } from 'newAuth/signin/types';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
 
 export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
+  const splitz = useSplitzService();
   const {
     abExperiments: {
       Reports_Revamp_Recents,
@@ -12,13 +14,18 @@ export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
       Data_Sync_Advertisement_Banner_Experiment,
       create_custom_report,
     },
-  } = useSplitzService();
+  } = splitz;
+
+  
 
   // For JK org the schedules are disabled hence handling from hook
   const isJKORg = Boolean(user && org) && isJKOfflineMerchant(org, user);
+  const isBillMeMerchantOnly = isBillMeOnlyMerchant(splitz);
+
+  const disableReportsSchedules = isBillMeMerchantOnly || isJKORg;
 
   return {
-    isSchedulesEnabled: isJKORg ? false : Reports_Schedules?.variables?.result === 'on',
+    isSchedulesEnabled: disableReportsSchedules ? false : Reports_Schedules?.variables?.result === 'on',
     isRevampedLAReports: LA_Reports_Revamp?.variables?.result === 'on',
     isOverviewRecentsFilterEnabled: Reports_Revamp_Recents?.variables?.result === 'on',
     isDataSyncAdvertisementBannerEnabled:

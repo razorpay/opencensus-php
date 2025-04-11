@@ -63,10 +63,11 @@ import CustomerTrust from 'merchant/views/CustomerTrust';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import TncUpdateModal from 'merchant/components/TncUpdateModal';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
-import { isBillMeMerchant } from 'merchant/utils/omniUtils';
+import { isBillMeMerchant, isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
 import { BUSSINESS_TYPE } from 'merchant/views/CompanyRegistration/constant';
 import { DashboardLoader } from '@libs/shared-ui';
 import { compose } from 'redux';
+import { getBillMeRoutes } from 'merchant/routes/BillMeRoutes';
 
 const SelfServe = lazy(() =>
   import(/* webpackChunkName: "SelfServeRouter" */ '@federated/apps/self-serve/entry'),
@@ -846,6 +847,17 @@ class Content extends Component {
     }
   };
 
+  getRoutesByMerchantType = (merchantType, components) => {
+    switch (merchantType) {
+      case 'billme':
+        return getBillMeRoutes({ components });
+      // Add more cases for other merchant types here
+
+      default:
+        return [];
+    }
+  };
+
   getBaseView = () => {
     const {
       fullPageView,
@@ -876,6 +888,37 @@ class Content extends Component {
     const isJkOrg = isJKOfflineMerchant(org, user);
 
     const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
+    const isBillMeMerchantOnly = isBillMeOnlyMerchant({ abExperiments });
+
+    if (isBillMeMerchantOnly) {
+      const BillMeComponents = {
+        MerchantReports,
+        BillMeSettings,
+        StoreSettings,
+        AccountAndSettingsHome,
+      };    
+      const billMeRoutes = this.getRoutesByMerchantType('billme', BillMeComponents);
+      
+      return (
+        <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
+          <Routes location={this.baseLocation}>
+          <Route path="*" element={<HandleIndex isConnectedNavigation={isConnectedNavigation} />} />
+            {/* Adding base billme route here as if not added, it goes to dashboard route */}
+            <Route
+              path="billme/*"
+              element={
+                <RouteGuard>
+                  <DigitalBills />
+                </RouteGuard>
+              }
+            />
+            {billMeRoutes.map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
+            ))}
+          </Routes>
+        </Suspense>
+      );
+    }
 
     return (
       <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>

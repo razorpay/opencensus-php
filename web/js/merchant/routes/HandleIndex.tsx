@@ -9,6 +9,7 @@ import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { matchFullPageView } from 'merchant/routes';
 import { ONE_NAV_MOBILE_PATH } from 'merchant/components/NavigationLayout/constants';
 import { isMobileResolution } from 'common/utils/rzp-utils';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
 
 type HandleIndexProps = {
   user: User;
@@ -71,6 +72,8 @@ const HandleIndex = ({ user, isConnectedNavigation }: HandleIndexProps) => {
         return;
       }
       navigate('/partners');
+    } else if (isBillMeOnlyMerchant(splitz)) {
+      navigate('/billme');
     } else {
       if (isConnectedNavigation && isMobile) {
         navigate(ONE_NAV_MOBILE_PATH);

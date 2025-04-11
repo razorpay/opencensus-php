@@ -12,8 +12,10 @@ import { OverviewSection } from './OverView';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal } from 'merchant_common/reducers/modals';
 import { useI18Service } from 'common/i18';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
+import { useSplitzService } from 'common/splitz';
 
-const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
+const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18, isBillMeMerchantOnly }) => {
   const { allConfigs, recentConfigs } = reportsCore[dashboardType].overview.reportConfigs;
   const refDashboardConfig = getReportsDashboardConfig(
     dashboardType,
@@ -21,6 +23,7 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
     undefined,
     undefined,
     i18,
+    isBillMeMerchantOnly,
   );
 
   return {
@@ -50,6 +53,8 @@ const OverviewComponent = connect(mapStateToProps, mapDispatchToProps)(OverviewS
 export const OverView = (props) => {
   const dashboardType = useDashboardType();
   const i18 = useI18Service();
+  const splitz = useSplitzService();
+  const isBillMeMerchantOnly = isBillMeOnlyMerchant(splitz);
 
-  return <OverviewComponent dashboardType={dashboardType} i18={i18} {...props} />;
+  return <OverviewComponent dashboardType={dashboardType} i18={i18} isBillMeMerchantOnly={isBillMeMerchantOnly} {...props} />;
 };

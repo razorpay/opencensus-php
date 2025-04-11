@@ -1,8 +1,5 @@
-import React from 'react';
-import { Box } from '@razorpay/blade/components';
-
-const BillMe = () => {
-  return <Box>Bill me</Box>;
+const BillMe = ({ children }) => {
+  return children ?? null;
 };
 
 export default BillMe;

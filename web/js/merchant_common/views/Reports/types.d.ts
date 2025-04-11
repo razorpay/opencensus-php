@@ -1,4 +1,5 @@
 import { User } from 'common/typings';
+import { SpiltzContextState } from 'common/splitz/types';
 
 import { AccountStateType } from './types/account';
 import { BaseConfigType } from './types/config';
@@ -68,6 +69,7 @@ export interface ReportSectionProps {
   showNotification: (x: unknown) => void;
   fetchAccounts: () => Promise<void>;
   org?: OrgData;
+  splitz: SpiltzContextState;
 }
 
 export interface ReportsPropType {

@@ -12,3 +12,4 @@ export const MONTHLY_INVOICE_REPORT = 'Monthly Invoice Report';
 export const OPTIMISER_SETTLEMENTS = 'Optimiser Settlements';
 export const PAYMENTS_REPORTS = 'Payments Report';
 export const PAYMENTS = 'Payments';
+export const BILLING_REPORTS = 'bills'

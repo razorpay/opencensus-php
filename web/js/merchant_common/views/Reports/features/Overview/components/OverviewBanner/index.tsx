@@ -20,6 +20,8 @@ import { useDashboardType } from 'merchant_common/views/Reports/contexts/Reports
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { openModal } from 'merchant_common/reducers/modals';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
+import { useSplitzService } from 'common/splitz';
 
 const mapDispatchToProps = (dispatch) => ({
   openModal: (modal) => dispatch(openModal(modal)),
@@ -30,10 +32,15 @@ const mapStateToProps = (state) => ({
   org: state.session.org,
 });
 
-const OverviewBannerComponent = ({ loading, openModal, user, org }): JSX.Element => {
+const OverviewBannerComponent = ({ loading, openModal, user, org }): JSX.Element | null => {
   const { theme } = useTheme();
   const dashboardType = useDashboardType();
   const { isSchedulesEnabled } = useReportsSplitzExperiments(org, user);
+  const splitz = useSplitzService();
+
+  if (isBillMeOnlyMerchant(splitz)) {
+    return null;
+  };
 
   const handleDownloadClick = () => {
     trackOverviewSection({

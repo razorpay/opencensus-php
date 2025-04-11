@@ -51,6 +51,7 @@ export const OverviewSection = ({
   refDashboardConfig: { headers, basePath, parseConfigs, customConfigs },
   showNotification,
   dashboardType,
+  isBillMeMerchantOnly,
 }: OverViewPropsType): JSX.Element => {
   const { isOverviewRecentsFilterEnabled, isReportsSelfServeEnabled } =
     useReportsSplitzExperiments();
@@ -332,7 +333,7 @@ export const OverviewSection = ({
   return (
     <>
       <OverviewBanner loading={!isAllConfigLoaded} />
-      <AccessabilityToolbar theme={theme}>
+      <AccessabilityToolbar theme={theme} isBillMeMerchant={isBillMeMerchantOnly}>
         <DropdownWrapper>
           <Dropdown selectionType="single">
             <SelectInput

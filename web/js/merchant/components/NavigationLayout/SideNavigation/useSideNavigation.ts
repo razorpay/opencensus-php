@@ -2,9 +2,12 @@ import { useMemo, useState, useEffect } from 'react';
 import useConnectedProducts from '../hooks/useConnectedProducts';
 import usePaymentsSideNavHook from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import usePartnersSideNavHook from '../NavigationContent/Partner/Sidebar/useSideNavHook';
+import useBillMeSideNavHook from '../NavigationContent/BillMe/Sidebar/useSideNavHook';
 import getRizeSideTab from '../NavigationContent/Rize/SideBar/rizeSideNavHook';
 import type { IconComponent } from '@razorpay/blade/components';
 import { ProductAlias } from '../typings/component';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
+import { useSplitzService } from 'common/splitz';
 
 export type SideNavSectionList = {
   section_name?: string;
@@ -29,17 +32,20 @@ export interface useSideNavigationProps {
 }
 
 const useSideNavigation = (productAlias: ProductAlias): useSideNavigationProps => {
+  const splitz = useSplitzService();
   const { getProductAction } = useConnectedProducts();
 
   const partnersSideNav = usePartnersSideNavHook();
   const paymentsSideNav = usePaymentsSideNavHook();
+  const billMeSideNav = useBillMeSideNavHook();
+  const paymentSelectedSideNav = isBillMeOnlyMerchant(splitz) ? billMeSideNav : paymentsSideNav;
   const rizeSideNav = getRizeSideTab();
 
   const sideNavDataMap = useMemo(
     () => ({
       company_registration_top_navigation_item: rizeSideNav,
       partners_top_navigation_item: partnersSideNav,
-      payments_top_navigation_item: paymentsSideNav,
+      payments_top_navigation_item: paymentSelectedSideNav,
     }),
     [partnersSideNav, paymentsSideNav, rizeSideNav],
   );

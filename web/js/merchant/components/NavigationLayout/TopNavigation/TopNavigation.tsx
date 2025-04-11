@@ -58,6 +58,8 @@ import { productIconsMap, ExtendedListItems } from '../utils';
 import { useNavigationLayoutContext } from '../context';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
+import { useSplitzService } from 'common/splitz';
 import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const WhatsNew = lazyLoader(
@@ -80,6 +82,7 @@ const TopNavigation = ({
   isSidebarV2,
   renderFullPageView,
 }) => {
+  const splitz = useSplitzService();
   const isRTUXHomepageEnabled = useIsRTUXHomepageEnabled();
   const isFtuxV2ExpEnabled = useIsFtuxV2Enabled();
   const { selectedProduct, setProduct } = useConnectedNavigation();
@@ -191,7 +194,7 @@ const TopNavigation = ({
   const isTypeAccessGrowthOrErrorPage =
     type === 'growth_page' || type === 'access_denied_page' || type === 'error_page';
 
-  const shouldShowSearch = user?.isUniversalSearchEnabled && !isTypeAccessGrowthOrErrorPage;
+  const shouldShowSearch = user?.isUniversalSearchEnabled && !isTypeAccessGrowthOrErrorPage && !isBillMeOnlyMerchant(splitz);
 
   useEffect(() => {
     // If no product is selected, set the default product

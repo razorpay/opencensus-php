@@ -27,8 +27,8 @@ export const CardsWrapper = styled.div(
 );
 
 export const AccessabilityToolbar = styled.div(
-  ({ theme }) => `
-  display: flex;
+  ({ theme, isBillMeMerchant }) => `
+  display: ${isBillMeMerchant ? 'none' : 'flex'};
   border-top-left-radius: ${theme.border.radius.large}px;
   border-top-right-radius: ${theme.border.radius.large}px;
   padding: ${theme.spacing[4]}px;

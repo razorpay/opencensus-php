@@ -15,6 +15,7 @@ import {
   OPTIMISER_SETTLEMENTS,
   PAYMENTS,
   PAYMENTS_REPORTS,
+  BILLING_REPORTS
 } from 'merchant_common/views/Reports/constants';
 import {
   changeScheduleNumericsToString,
@@ -43,6 +44,7 @@ export const getReportsDashboardConfig = (
   accounts?,
   mode?: ModeType,
   i18?: I18ContextStateType,
+  isBillMeMerchantOnly: boolean = false,
 ): RefDashboardConfigType => {
   return {
     merchant: {
@@ -82,6 +84,8 @@ export const getReportsDashboardConfig = (
                 return isPaymentPageFileUploadEnabled;
               case isJKORg:
                 return name === PAYMENTS_REPORTS || name === PAYMENTS;
+              case isBillMeMerchantOnly:
+                return type === BILLING_REPORTS;
               default:
                 return true;
             }

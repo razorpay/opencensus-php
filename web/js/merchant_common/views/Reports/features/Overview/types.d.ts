@@ -23,6 +23,7 @@ export interface OverViewPropsType {
   refDashboardConfig: RefDashboardConfigType;
   showNotification: ShowNotificationType;
   dashboardType: DashboardType;
+  isBillMeMerchantOnly: boolean;
 }
 
 export type BaseDivType = {

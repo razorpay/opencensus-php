@@ -6,6 +6,7 @@ import {
   SubSection,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import {
+  BusinessSettingsFields,
   SectionCardDataFields,
   WebsiteAppSettingsFields,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
@@ -43,11 +44,30 @@ const showWhen = ({ additionalCondition, mode, ...rest }): boolean => {
   );
 };
 
+const getBillMeSectionCards = (sectionCards) => {
+  const billMeSectionCards = sectionCards.find(
+    (section) => section.id === SectionCardDataFields.BUSINESS_SETTINGS,
+  );
+  if (billMeSectionCards) {
+    billMeSectionCards.subSections = billMeSectionCards.subSections.filter(
+      (subSection) =>
+        subSection.id === BusinessSettingsFields.BILLME_SETTINGS ||
+        subSection.id === BusinessSettingsFields.STORE_SETTINGS,
+    );
+ 
+    if (billMeSectionCards.subSections.length > 0) {
+      return [billMeSectionCards];
+    }   
+  }
+  return [];
+};
+
 export const getSectionCards = ({
   user,
   instruments,
   shouldShowApplications,
   mode,
+  isBillmeMerchant,
   ...rest
 }: AdditionalContextInterface): SectionCardInterface[] => {
   const SectionCards = Sections.reduce((accumulator, eachSection) => {
@@ -86,5 +106,8 @@ export const getSectionCards = ({
     }
     return accumulator;
   }, [] as SectionCardInterface[]);
+  if (isBillmeMerchant) {
+    return getBillMeSectionCards(SectionCards);
+  }
   return SectionCards;
 };

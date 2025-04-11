@@ -22,6 +22,8 @@ import {
 } from './redux/reducer';
 import { ReportSectionProps } from './types';
 import { DataSyncAdvertisementBanner } from 'merchant/components/DataSyncAdvertisementBanner';
+import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
+import { withSplitzService } from 'common/splitz/hoc/withSplitzService';
 
 // Features Of Reports
 const getReportsFeatures = (isSchedulesEnabled: boolean) => {
@@ -52,8 +54,10 @@ const getReportsFeatures = (isSchedulesEnabled: boolean) => {
   return features;
 };
 
-const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
+const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18, splitz }) => {
+  const { abExperiments } = splitz || {};
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
+  const isBillMeReports = isBillMeOnlyMerchant({ abExperiments });
   return {
     allReportConfigs: allConfigs.data,
     user: session.user,
@@ -64,6 +68,7 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
       undefined,
       undefined,
       i18,
+      isBillMeReports,
     ),
   };
 };
@@ -83,16 +88,17 @@ export const ReportsSection = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(
-  ({
-    user,
-    refDashboardConfig: { basePath, headers, parseConfigs },
-    handleOverviewLoading,
-    fetchReportsConfigsSuccess,
-    fetchReportsConfigsFailed,
-    fetchAccounts,
-    dashboardType,
-    org,
-  }: ReportSectionProps): JSX.Element => {
+  withSplitzService(
+    ({
+      user,
+      refDashboardConfig: { basePath, headers, parseConfigs },
+      handleOverviewLoading,
+      fetchReportsConfigsSuccess,
+      fetchReportsConfigsFailed,
+      fetchAccounts,
+      dashboardType,
+      org,
+    }: ReportSectionProps): JSX.Element => {
     useFetchReportingConfig({
       handleOverviewLoading,
       headers,
@@ -101,6 +107,7 @@ export const ReportsSection = connect(
       dashboardType,
       parseConfigs,
     });
+
     const { isSchedulesEnabled, isDataSyncAdvertisementBannerEnabled } =
       useReportsSplitzExperiments(org, user);
 
@@ -129,4 +136,5 @@ export const ReportsSection = connect(
       </div>
     );
   },
+)
 );
