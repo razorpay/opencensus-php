@@ -2050,6 +2050,10 @@ class Processor
                     ]);
                     $result = 'on';
                 } else {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "offers_splitz_experiment_returned_false",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
                     return false;
                 }
             }
