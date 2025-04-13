@@ -1380,6 +1380,8 @@ return array(
 
     'cross_border_import_rearch_shadow_experiment_id' => env('CROSS_BORDER_IMPORT_REARCH_SHADOW_EXPERIMENT_ID'),
 
+    'cross_border_import_payment_shadow_citi_lrs' => env('CROSS_BORDER_IMPORT_PAYMENT_SHADOW_CITI_LRS_EXPERIMENT_ID'),
+
     'clarification_table_read_migration' => env('CLARIFICATION_TABLE_READ_MIGRATION'),
 
     'subscriptions_intl_auto_payments_handler_exp'  => env('SUBSCRIPTIONS_INTL_AUTO_PAYMENTS_HANDLER_EXP'),

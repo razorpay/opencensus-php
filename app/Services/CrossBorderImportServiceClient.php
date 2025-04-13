@@ -157,7 +157,7 @@ class CrossBorderImportServiceClient
         return $responseArray;
     }
 
-    public function validateImportPayment($input)
+    public function validateImportPayment($input,$flow=null)
     {
         $url = self::VALIDATE_PAYMENT;
 
@@ -172,7 +172,8 @@ class CrossBorderImportServiceClient
             'merchant_id' => $input['merchant_id'],
             'payment_id' => $input['id'],
             'recurring' => $input['recurring'],
-            'library' => (new PaymentService)->getLibraryFromPayment($input)
+            'library' => (new PaymentService)->getLibraryFromPayment($input),
+            'flow' => $flow
         ];
 
         try {
