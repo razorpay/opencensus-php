@@ -26,7 +26,7 @@ test.describe
 
     // Bills list page
     await expect(page.getByText('Overview')).toBeVisible();
-    await page.getByRole('link', { name: 'View Graphical Data' }).click();
+    await page.getByRole('button', { name: 'View Graphical Data' }).click();
     await expect(page.locator('canvas')).toBeVisible();
     await expect(
       page.locator('[data-blade-component="spinner"] >> [aria-label="Refreshing Table"]'),
@@ -64,7 +64,7 @@ test.describe
       await expect(iframeUrl).not.toBe(null);
       const parsedPathname = new URL(iframeUrl).pathname;
       await expect(parsedPathname).toBe(iframePath);
-      await page.getByRole('link', { name: 'Back' }).click();
+      await page.getByRole('button', { name: 'Back' }).click();
       await expect(page).toHaveURL(ROUTES.OVERVIEW_DASHBOARD);
     }
   });
