@@ -275,7 +275,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
     return (
       <Alert
         color="negative"
-        isDismissible={true}
+        isDismissible={false}
         isFullWidth
         title={title}
         description={
@@ -292,7 +292,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
     return (
       <Alert
         color="negative"
-        isDismissible={true}
+        isDismissible={false}
         isFullWidth
         title={title}
         description={

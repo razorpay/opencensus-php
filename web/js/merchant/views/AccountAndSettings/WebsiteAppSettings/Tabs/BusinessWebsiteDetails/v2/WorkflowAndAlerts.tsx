@@ -30,6 +30,8 @@ const WorkflowAndAlerts: React.FC<WorkflowAndAlertsProps> = ({
     });
   };
 
+  const { current_status, current_status_updated_at, main_page_url } = websiteUpdateData || {};
+
   return (
     <Box marginY="spacing.6">
       {/* Primary website workflow */}
@@ -46,6 +48,7 @@ const WorkflowAndAlerts: React.FC<WorkflowAndAlertsProps> = ({
                 : 'Update Business Website',
           })
         }
+        key={`${current_status}-${main_page_url}-${current_status_updated_at}`}
       />
 
       {/* Additonal website workflow */}
