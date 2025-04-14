@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState, useCallback } from 'react';
 import {
   Badge,
   Box,
@@ -9,6 +9,8 @@ import {
   PlusIcon,
   Text,
   useToast,
+  SearchIcon,
+  SearchInput,
 } from '@razorpay/blade/components';
 
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
@@ -18,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 
 import SalesTable from './SalesTable';
 import { SALES_ONBOARDED_MERCHANTS } from 'apps/pos/src/services/queries/SalesDashboard';
+import Search from './components/Search';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import {
   SalesOnboardedMerchants,
@@ -81,6 +84,7 @@ const DATE_PRESETS = [
 const SalesDashboard = (): JSX.Element => {
   const { isMobile } = useScreen();
   const [page, setPage] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const queryCache = useQueryClient();
   const toast = useToast();
@@ -248,6 +252,15 @@ const SalesDashboard = (): JSX.Element => {
     }
   }, [isPosEkycAgent]);
 
+  const handleSearchButtonClick = useCallback(() => {
+    setIsSearchOpen(true);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('toggle-search', handleSearchButtonClick);
+    return () => window.removeEventListener('toggle-search', handleSearchButtonClick);
+  }, [handleSearchButtonClick]);
+
   return (
     <Box display="flex" flexDirection="column" width="100%">
       <Box margin="spacing.5" marginTop={'spacing.2'}>
@@ -259,8 +272,7 @@ const SalesDashboard = (): JSX.Element => {
           marginBottom="spacing.5"
           alignItems="center"
         >
-          {
-            !isMobile &&
+          {!isMobile && (
             <Box display="flex" alignItems="center">
               <Heading color="surface.text.gray.normal" size="xlarge" marginRight="spacing.3">
                 Merchant Details
@@ -271,7 +283,7 @@ const SalesDashboard = (): JSX.Element => {
                 </Badge>
               ) : null}
             </Box>
-          }
+          )}
           <Box
             display="flex"
             justifyContent="center"
@@ -298,49 +310,62 @@ const SalesDashboard = (): JSX.Element => {
         </Box>
         <Suspense fallback={null}>
           <Box>
-            <Box maxWidth={{ m: '400px' }} marginBottom="spacing.7">
-              <DatePicker
-                // @ts-ignore
-                label={{
-                  end: 'End Date',
-                  start: 'Start Date',
-                }}
-                allowSingleDateInRange
-                value={[
-                  dateRangeFilter.startDate
-                    ? new Date(
-                        moment(dateRangeFilter.startDate * 1000).format(
-                          'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
-                        ),
-                      )
-                    : null,
-                  dateRangeFilter.endDate
-                    ? new Date(
-                        moment(dateRangeFilter.endDate * 1000).format(
-                          'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
-                        ),
-                      )
-                    : null,
-                ]}
-                onChange={(date: Array<Date | null>) => {
-                  setDateRangeFilter({
-                    startDate: date[0] ? moment(date[0]).unix() : null,
-                    endDate: date[1] ? moment(date[1]).endOf('day').unix() : null,
-                  });
-                }}
-                defaultValue={[
-                  moment(filters.dateRange.startDate * 1000).format(
-                    'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
-                  ),
-                  moment(filters.dateRange.endDate * 1000).format(
-                    'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
-                  ),
-                ]}
-                onApply={(date) => onDateApplyHandler(date)}
-                // @ts-ignore
-                selectionType="range"
-                presets={DATE_PRESETS}
-              />
+            <Box display="flex" alignItems="center">
+              <Box maxWidth={{ m: '500px' }} marginBottom="spacing.7">
+                <DatePicker
+                  // @ts-ignore
+                  label={{
+                    end: 'End Date',
+                    start: 'Start Date',
+                  }}
+                  allowSingleDateInRange
+                  value={[
+                    dateRangeFilter.startDate
+                      ? new Date(
+                          moment(dateRangeFilter.startDate * 1000).format(
+                            'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                          ),
+                        )
+                      : null,
+                    dateRangeFilter.endDate
+                      ? new Date(
+                          moment(dateRangeFilter.endDate * 1000).format(
+                            'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                          ),
+                        )
+                      : null,
+                  ]}
+                  onChange={(date: Array<Date | null>) => {
+                    setDateRangeFilter({
+                      startDate: date[0] ? moment(date[0]).unix() : null,
+                      endDate: date[1] ? moment(date[1]).endOf('day').unix() : null,
+                    });
+                  }}
+                  defaultValue={[
+                    moment(filters.dateRange.startDate * 1000).format(
+                      'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                    ),
+                    moment(filters.dateRange.endDate * 1000).format(
+                      'ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)',
+                    ),
+                  ]}
+                  onApply={(date) => onDateApplyHandler(date)}
+                  // @ts-ignore
+                  selectionType="range"
+                  presets={DATE_PRESETS}
+                />
+              </Box>
+
+              {!isMobile ? (
+                <SearchInput
+                  placeholder="Search in payments"
+                  name="search"
+                  size="medium"
+                  label=""
+                  onClick={handleSearchButtonClick}
+                  marginLeft={'spacing.4'}
+                />
+              ) : null}
             </Box>
             <StatusFilter
               defaultValue={filters.activationStatus}
@@ -374,6 +399,11 @@ const SalesDashboard = (): JSX.Element => {
           />
         </Box>
       </Box>
+      <Search
+        isSearchOpen={isSearchOpen}
+        setIsSearchOpen={setIsSearchOpen}
+        dateRange={filters.dateRange}
+      />
     </Box>
   );
 };

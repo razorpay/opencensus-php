@@ -39,7 +39,7 @@ export const salesOnboardedMerchantsMock = {
     {
       createdAt: '1725340683',
       merchantId: 'OsZjP3fjbIskDI',
-      merchantName: '',
+      merchantName: 'INFOPRIVATELIMITED',
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
@@ -48,7 +48,7 @@ export const salesOnboardedMerchantsMock = {
     {
       createdAt: '1725340679',
       merchantId: 'OsZjKQdNlLffFv',
-      merchantName: '',
+      merchantName: 'CHIZRINZ INFOWAY PRIVATE LIMITED',
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',
@@ -57,7 +57,7 @@ export const salesOnboardedMerchantsMock = {
     {
       createdAt: '1725340674',
       merchantId: 'OsZjEdjUnxCuyu',
-      merchantName: '',
+      merchantName: 'Razorpay pvt',
       merchantMobile: '',
       progressCompletion: '0',
       status: 'PENDING',

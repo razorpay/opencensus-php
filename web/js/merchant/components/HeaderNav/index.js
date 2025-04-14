@@ -39,6 +39,7 @@ import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
 import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import SearchButton from './SearchButton';
 import { isEligibleForFtuxV2 } from '@dashboards/payments/containers/Home/FTUX/utils';
 
 const WhatsNew = lazyLoader(() =>
@@ -67,6 +68,7 @@ const analyticsAction = (action) => {
 function toggleDropdown() {
   document.querySelector('#profile-dropdown .dropdown-toggle').click();
 }
+
 class HeaderNav extends Component {
   constructor(props) {
     super(props);
@@ -356,6 +358,7 @@ class HeaderNav extends Component {
                 </React.Fragment>
               ) : (
                 <ul className="nav navbar-nav navbar-right">
+                  <SearchButton />
                   <li id="profile-dropdown">
                     <ProfileDropdown
                       analytics={analytics}

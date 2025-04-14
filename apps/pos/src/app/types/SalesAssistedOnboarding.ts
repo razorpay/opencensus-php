@@ -161,6 +161,8 @@ export interface SalesOnboardedMerchant {
   merchantName?: string;
   progressCompletion: string;
   status?: SalesMerchantActivationStatusEnum;
+  billingLabel?: string;
+  email?: string;
   pricingNcStatus?: SalesMerchantPricingNcStatusEnum;
 }
 
@@ -192,3 +194,15 @@ export interface StatusTile {
 }
 
 export type StepProgressTypes = 'pending' | 'completed';
+
+export type OnboardingStatusTypes =
+  | 'activated'
+  | 'pending'
+  | 'under_review'
+  | 'rejected'
+  | 'kyc_qualified_stb'
+  | 'completed'
+  | 'payment_pending'
+  | 'payment_completed'
+  | 'kyc_completed'
+  | 'needs_clarification';

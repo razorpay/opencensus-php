@@ -12,3 +12,4 @@ export const POLICY_LINKS = {
 export const AXIS_BANK_MIGRATION_FAQ = `${window.RAZORPAY_WEBSITE}/docs/payments/smart-collect/axis-bank-migration/#frequently-asked-questions`;
 export const NEW_QR_URL = '/qr_codes/new';
 export const NEW_CUSTOMER_IDENTIFER_URL = '/smartcollect/virtualaccounts/new';
+export const POS_SALES_URL = '/app/pos-sales';

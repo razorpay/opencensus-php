@@ -2,6 +2,7 @@ import { gql } from 'graphql-tag';
 
 export const SALES_ONBOARDED_MERCHANTS = gql`
   query SalesOnboardedMerchants(
+    $search: String
     $limit: PositiveInt!
     $offset: NonNegativeInt!
     $startDate: PositiveInt!
@@ -10,6 +11,7 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
     $signupCampaign: UserSignupCampaignEnum!
   ) {
     salesOnboardedMerchants(
+      search: $search
       limit: $limit
       offset: $offset
       startDate: $startDate
@@ -41,6 +43,8 @@ export const SALES_ONBOARDED_MERCHANTS = gql`
           progressCompletion
           pricingNcStatus
           status
+          email
+          billingLabel
         }
       }
       ... on SalesOnboardedMerchantsError {

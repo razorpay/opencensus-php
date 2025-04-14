@@ -131,4 +131,58 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await page.getByRole('heading', { name: 'Merchant Details' })
     await expect(page.getByText("No data availableWe couldn't")).toBeVisible();
   });
+
+  test('should render the search bar and allow input (mobile view)', async ({ page, worker }) => {
+    await worker.use(queryMocks.EmptySalesOnboardedMerchantsMock);
+    await page.goto(routes.DASHBOARD);
+    await expect(page).toHaveTitle(/Razorpay Dashboard/);
+    await waitForSalesAssistedScreenToLoad({ page });
+    await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
+    await page.getByRole('heading', { name: 'Merchant Details' });
+
+    await page.getByPlaceholder('Search in payments').click();
+    await page.setViewportSize({ width: 375, height: 812 });
+
+    await expect(page.getByRole('img', { name: 'Empty search' })).toBeVisible();
+    const searchInput = page.getByPlaceholder('Search');
+    await searchInput.fill('Test');
+    await expect(page.getByRole('img', { name: 'No results found' })).toBeVisible();
+
+    await worker.use(queryMocks.SalesOnboardedMerchants);
+    await searchInput.fill('Razorpay');
+    const searchItem = page.getByText('Razorpay pvtOsZjEdjUnxCuyu').nth(1);
+    await searchItem.click();
+
+    await expect(page.getByText('Onboarding Details')).toBeVisible();
+    const completeNowButton = page.getByRole('button', { name: 'Complete now' });
+    await completeNowButton.click();
+
+    await expect(page).toHaveURL(/\/app\/pos-sales\/onboarding\/OsZjEdjUnxCuyu$/);
+  });
+
+  test('should render the search bar and allow input (desktop view)', async ({ page, worker }) => {
+    await worker.use(queryMocks.EmptySalesOnboardedMerchantsMock);
+    await page.goto(routes.DASHBOARD);
+    await expect(page).toHaveTitle(/Razorpay Dashboard/);
+    await waitForSalesAssistedScreenToLoad({ page });
+    await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
+    await page.getByRole('heading', { name: 'Merchant Details' });
+
+    await page.getByPlaceholder('Search in payments').click();
+    await expect(page.getByRole('img', { name: 'Empty search' })).toBeVisible();
+    const searchInput = page.getByTestId('modal-wrapper').getByPlaceholder('Search');
+    await searchInput.fill('Test');
+    await expect(page.getByRole('img', { name: 'No results found' })).toBeVisible();
+
+    await worker.use(queryMocks.SalesOnboardedMerchants);
+    await searchInput.fill('Razorpay');
+    const searchItem = page.getByText('Razorpay pvtOsZjEdjUnxCuyu');
+    await searchItem.click();
+
+    await expect(page.getByText('Onboarding Details')).toBeVisible();
+    const completeNowButton = page.getByRole('button', { name: 'Complete now' });
+    await completeNowButton.click();
+
+    await expect(page).toHaveURL(/\/app\/pos-sales\/onboarding\/OsZjEdjUnxCuyu$/);
+  });
 });
