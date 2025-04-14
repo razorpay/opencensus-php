@@ -63,6 +63,12 @@
   },
   "nx": {
     "targets": {
+      "test:e2e": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/digital-bills"
+        }
+      },
       "test:jest": {
         "executor": "nx:run-commands",
         "options": {
