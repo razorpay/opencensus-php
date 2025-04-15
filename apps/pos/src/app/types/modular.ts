@@ -363,6 +363,7 @@ export interface DeviceOrderSummaryItem {
   totalSetupCharge?: number;
   rentalChargeType?: string;
   setupChargeType?: string;
+  advancedRentalPeriod?: number;
 }
 
 // Rental Charge

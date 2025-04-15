@@ -50,6 +50,7 @@ export const TestAddedDevice: DeviceOrderSummaryItem = {
   totalPaperRollCharge: 1000,
   totalRentalCharge: 200,
   totalSetupCharge: 30000,
+  advancedRentalPeriod: 5,
 };
 
 export const TestAddedDeviceWithDeviceConfig: OrderSummaryItemWithDeviceConfig = {

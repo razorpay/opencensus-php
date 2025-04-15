@@ -171,7 +171,7 @@ export const getDeviceChargesFromModularConfig = ({
       orderSummaryItem?.setupCharge ?? '',
     ),
     [MODULAR_DEVICE_FIELDS.DEVICE_ADVANCE_RENTAL_PERIOD_FIELD]: String(
-      orderSummaryItem?.totalAdvanceRentalCharge ?? '',
+      orderSummaryItem?.advancedRentalPeriod ?? '',
     ),
     [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_TYPE]: orderSummaryItem?.rentalChargeType ?? '',
     [MODULAR_DEVICE_FIELDS.DEVICE_RENTAL_CUSTOM_AMOUNT]: String(

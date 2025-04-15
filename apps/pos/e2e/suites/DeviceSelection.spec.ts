@@ -108,6 +108,13 @@ test.describe
     await deviceRentalCharges.getByText('Custom').click();
     await deviceRentalCharges.locator('input[type="text"]').fill('500');
 
+    await page
+      .getByTestId('Collecting Rental Charges in Advance (in months)-optional-field')
+      .locator('svg')
+      .click();
+    const rentalChargesInput = page.locator('input[name="device_item_advanced_rental_periods_field"]');
+    await rentalChargesInput.fill('2');
+
     await worker.use(queryMocks.AddToCartMock);
     const addToCartButton = page.getByRole('button', { name: 'Add to Cart' });
     await addToCartButton.click();
@@ -127,6 +134,9 @@ test.describe
 
     await reduceDeviceQuantityButton.click();
     expect(deviceQuantity).toHaveText('2');
+    expect(deviceSetupFee.locator('input[type="text"]')).toHaveValue('500');
+    expect(deviceRentalCharges.locator('input[type="text"]')).toHaveValue('500');
+    expect(rentalChargesInput).toHaveValue('2');
 
     await page.getByRole('button', { name: 'Update Cart' }).click();
     expect(page.getByText('Device Selection', { exact: true })).not.toBeVisible();

@@ -155,7 +155,7 @@ describe('deviceSelection utils', () => {
       });
 
       expect(orderSummary).toEqual({
-        device_item_advanced_rental_periods_field: '1000',
+        device_item_advanced_rental_periods_field: '5',
         device_item_advanced_rental_field: true,
         device_item_custom_rental_charges_field: '200',
         device_item_custom_setup_fee_field: '13000',

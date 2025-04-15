@@ -155,6 +155,7 @@ export const MODULAR_CONFIG = gql`
                         totalSetupCharge
                         rentalChargeType
                         setupChargeType
+                        advancedRentalPeriod
                       }
                     }
 
@@ -391,6 +392,7 @@ export const UPDATE_MODULAR_CONFIG = gql`
                         totalSetupCharge
                         rentalChargeType
                         setupChargeType
+                        advancedRentalPeriod
                       }
                     }
 
