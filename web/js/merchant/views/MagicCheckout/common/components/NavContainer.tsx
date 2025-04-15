@@ -28,16 +28,23 @@ interface NavContainerProps {
   user: User;
   platform: Platform;
   isRCOD: boolean;
+  additionalStyles?: {
+    container?: React.CSSProperties;
+    header?: React.CSSProperties;
+    content?: React.CSSProperties;
+    tabItem?: React.CSSProperties;
+  };
+  children?: React.ReactNode;
 }
 
 /**
- * Common Component to render all L3 Navigations(Horizantal Navbar) and its respective
+ * Common Component to render all L3 Navigations (Horizontal Navbar) and its respective
  * content in a container as part of magic dashboard revamp
  */
 const NavContainer: React.FC<NavContainerProps> = (props) => {
   let redirectPath = '';
   const { abExperiments } = useSplitzService();
-  const { navItems, basePath, handleNavClick } = props; //props from parent
+  const { navItems, basePath, handleNavClick, additionalStyles = {}, children } = props; // props from parent
   const { user, platform, isRCOD } = props; // props from store
   const pathPrefix = checkMagicConfigurationFlow() ? `/configuration${basePath}` : basePath;
   const routes = checkMagicConfigurationFlow()
@@ -55,6 +62,7 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
         key={item.path}
         to={item.path}
         className="tabs-items pointer padding-8 font-bold"
+        style={additionalStyles.tabItem}
         onClick={() => handleNavClick && handleNavClick(item)}
       >
         <Box display="flex" alignItems="center">
@@ -67,11 +75,21 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
 
   return (
     <SuspenseWithLoader type="center">
-      <div className="tabbed-container" style={{ width: '100%', backgroundColor: '#fff' }}>
-        <header id="super-checkout-header" className="scrollable-tab-header">
+      <div
+        className="tabbed-container"
+        style={{ width: '100%', backgroundColor: '#fff', ...additionalStyles.container }}
+      >
+        <header
+          id="super-checkout-header"
+          className="scrollable-tab-header"
+          style={{
+            ...additionalStyles.header,
+          }}
+        >
           {routes?.[platform]?.map(renderNav)}
+          {children && <div style={{ marginLeft: 'auto' }}>{children}</div>}
         </header>
-        <div className="content ">
+        <div className="content" style={additionalStyles.content}>
           <Routes>
             {routes?.[platform]?.map((item: RouteItem) => {
               return (
@@ -97,6 +115,7 @@ const NavContainer: React.FC<NavContainerProps> = (props) => {
     </SuspenseWithLoader>
   );
 };
+
 const mapStateToProps = (state) => ({
   user: state.session.user,
   platform: state?.magic_settings?.platform,

@@ -1854,6 +1854,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'magic_sso',
+          experimentId: {
+            beta: 'QHETqkUvKAHJEj',
+            production: 'QHDWAdSMHio8An',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'magic_hide_cod_when_disabled',
           experimentId: {
             beta: 'NBmJ2kwae0JDrc',

@@ -26,6 +26,7 @@ import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import { convertPlatformRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 import RouteNewTag from 'merchant/views/MagicCheckout/common/components/RouteNewTag';
 import { useSplitzService } from 'common/splitz';
+import SSO from 'merchant/views/MagicCheckout/Settings/containers/SSO';
 
 const AnalyticsSettings = lazy(() =>
   import(
@@ -118,6 +119,14 @@ export const TABS = {
       label: 'RTO Settings',
       Component: MagicIntelligenceTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
+    },
+    {
+      className: 'sso-settings',
+      label: 'Login with Razorpay Setup',
+      path: '/magic/settings/sso',
+      Component: SSO,
+      condition: (_user, abExperiments) => abExperiments?.magic_sso?.variables?.result === 'on' && ACCESS_ROLES.includes(_user.role),
       onRCOD: true,
     },
     {
@@ -410,6 +419,14 @@ export const ROUTES = {
       path: '/magic/settings/cod-settings',
       Component: MagicXCodSetup,
       onRCODOnly: true,
+    },
+    {
+      className: 'sso-settings',
+      label: 'Login with Razorpay Setup',
+      path: '/magic/settings/sso',
+      Component: SSO,
+      condition: (_user, abExperiments) => abExperiments?.magic_sso?.variables?.result === 'on' && ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
     },
     {
       className: 'magic-checkout-settings',

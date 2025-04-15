@@ -19,6 +19,7 @@ describe('testing constants', () => {
       magic_hide_cod_when_disabled: { variables: { result: 'on' } },
       magic_x_store_settings: { variables: { result: 'on' } },
       magicx_publicapp_cod: { variables: { result: 'on' } },
+      magic_sso: { variables: { result: 'on' } },
     };
 
     Object.keys(TABS).forEach((platform) => {
