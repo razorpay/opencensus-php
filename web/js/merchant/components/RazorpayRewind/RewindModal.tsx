@@ -86,14 +86,16 @@ const RewindModal = ({ isOpen, onDismiss, slides, isMobile, isNativeWebShare, is
               {slides.map(({ imgOverlay, imgSrc, key }) => {
                 return (
                   <CarouselItem key={key}>
-                    {imgOverlay}
-                    <Image
-                      src={imgSrc}
-                      style={{
-                        maxWidth: isMobile ? '85%' : '100%',
-                        marginLeft: isMobile ? '6vw' : '0px',
-                      }}
-                    />
+                    <Box position="relative">
+                      {imgOverlay}
+                      <Image
+                        src={imgSrc}
+                        style={{
+                          maxWidth: isMobile ? '85%' : '100%',
+                          marginLeft: isMobile ? '6vw' : '0px',
+                        }}
+                      />
+                    </Box>
                   </CarouselItem>
                 );
               })}

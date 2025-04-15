@@ -940,11 +940,11 @@ class AnalyticsDesktop extends Component {
                   {this.props.user.isOndemandSettlementEnabled &&
                   this.props.user.isAllowedView('early_settlement') ? (
                     <div className="settlenow-container">
-                      <SettleNow 
+                      <SettleNow
                         settlementExists={settlementExists}
                         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
                         checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
-                        fromWhere={"Home"}
+                        fromWhere={'Home'}
                       />
                     </div>
                   ) : !isJKOmniFlow ? (

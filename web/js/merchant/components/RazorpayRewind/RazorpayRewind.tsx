@@ -1,16 +1,39 @@
 import React, { useEffect, useState, Suspense } from 'react';
-import { Box, useTheme } from '@razorpay/blade/components';
+import { Box, useTheme, Button } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 
-import { BannerBtn, StyledTextHeading, StyledTextHighlight } from './styled';
-import { getSlides, trackPaymentsRecapEvent, usePaymentsRecap } from './utils';
+import { BannerText, BannerWrapper } from './styled';
+import {
+  addFontLinkIfMissing,
+  getSlides,
+  trackPaymentsRecapEvent,
+  usePaymentsRecap,
+} from './utils';
 
-import RzpDesktopBanner from 'assets/razorpay_rewind/desktop-banner.png';
-import RzpMobileBanner from 'assets/razorpay_rewind/mobile-banner.png';
+import RewindLogo from 'assets/razorpay_rewind/rewind-logo.png';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { CarouselSlides } from './types';
 import lazy from 'merchant/routes/LazyLoader';
 import Loader from 'common/components/Loader';
+
+export enum RewindFonts {
+  TasaOrbiter = 'tasa-orbiter-font',
+  DMSerif = 'dm-serif-text',
+  SnugSharp = 'snug-sharp-variable',
+}
+
+export const RewindFontMapping = {
+  [RewindFonts.TasaOrbiter]: `'TASA Orbiter Display', sans-serif`,
+  [RewindFonts.DMSerif]: `"DM Serif Text", serif`,
+  [RewindFonts.SnugSharp]: `"snug-sharp-variable",sans-serif`,
+};
+
+export const SnugSharpFontVariants = {
+  BOLD: "'XHGT' 100, 'wdth' 100, 'wght' 700",
+  X_BOLD: "'XHGT' 100, 'wdth' 100, 'wght' 800",
+  L_NORMAL: "'XHGT' 1, 'wdth' 100, 'wght' 350",
+  L_MEDIUM: "'XHGT' 1, 'wdth' 100, 'wght' 500",
+};
 
 const RewindModal = lazy(
   () =>
@@ -29,8 +52,10 @@ const RazorpayRewind: React.FC<{
   });
   const isMobile = matchedBreakpoint && ['base', 'xs'].includes(matchedBreakpoint);
   const isTablet = matchedBreakpoint && ['s'].includes(matchedBreakpoint);
+  const isTabletModified = matchedBreakpoint && ['m', 'l'].includes(matchedBreakpoint);
   const isSmallMobile = window && window.innerWidth <= 400;
   const isMobileorTablet = isMobile || isTablet;
+  const isMobileorTabletModified = isMobileorTablet || isTabletModified;
 
   const isNativeWebShare = !!navigator.canShare;
   const bannerShownByDefault = localStorage.getItem('razorpay_rewind_banner');
@@ -39,6 +64,18 @@ const RazorpayRewind: React.FC<{
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isRazorpayRewind = searchParams.get('event') === 'razorpay_rewind';
+
+  useEffect(() => {
+    addFontLinkIfMissing(
+      RewindFonts.TasaOrbiter,
+      'https://fonts.cdnfonts.com/css/tasa-orbiter-display',
+    );
+    addFontLinkIfMissing(
+      RewindFonts.DMSerif,
+      'https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&display=swap',
+    );
+    addFontLinkIfMissing(RewindFonts.SnugSharp, 'https://use.typekit.net/inz8zop.css');
+  }, []);
 
   useEffect(() => {
     if (isRtux && location.pathname === '/dashboard' && isRazorpayRewind) {
@@ -87,41 +124,39 @@ const RazorpayRewind: React.FC<{
   return (
     <>
       {!isRtux ? (
-        <Box
-          display="flex"
-          flexDirection={isMobileorTablet ? 'column' : 'row'}
-          alignItems="center"
-          justifyContent="center"
-          gap={isMobileorTablet ? 'spacing.3' : 'spacing.7'}
-          padding="spacing.4"
-          backgroundImage={`url("${isMobileorTablet ? RzpMobileBanner : RzpDesktopBanner}")`}
-          backgroundRepeat="no-repeat"
-          backgroundSize="cover"
-          backgroundPosition={isMobileorTablet ? '0px calc(100% + 10px)' : 'center center'}
-          borderRadius="medium"
-          marginX={isMobileorTablet ? 'spacing.5' : 'spacing.6'}
-        >
-          <Box display="flex" flexDirection="row" alignItems="center">
-            <StyledTextHeading color={theme.colors.interactive.text.staticWhite.normal}>
-              We Captured Your Quarter At Razorpay {isMobileorTablet && <br />}
-              <StyledTextHighlight>IN&nbsp;A&nbsp;SNAPSHOT</StyledTextHighlight>
-            </StyledTextHeading>
-          </Box>
-          <Box padding="spacing.1">
-            <BannerBtn
-              onClick={() => {
-                setIsOpen(true);
-                trackPaymentsRecapEvent({
-                  objectName: 'RZP Rewind Banner',
-                  actionName: 'Clicked',
-                });
-              }}
-              isMobileBanner={isMobileorTablet}
-            >
-              Check it out now!
-            </BannerBtn>
-          </Box>
-        </Box>
+        <BannerWrapper isMobileorTablet={isMobileorTablet} isMobile={isMobile} isTablet={isTablet}>
+          {!isMobileorTabletModified ? (
+            <>
+              <BannerText>A look back at your year of wins and highs!</BannerText>
+              <img src={RewindLogo} alt="Rewind Logo" style={{ maxHeight: 70 }} />
+            </>
+          ) : (
+            <Box>
+              <img
+                src={RewindLogo}
+                alt="Rewind Logo"
+                style={{ maxHeight: 70, marginTop: isMobile ? 70 : undefined }}
+              />
+              <BannerText isMobileorTabletModified>
+                A look back at your year of wins and highs!
+              </BannerText>
+            </Box>
+          )}
+          <Button
+            type="button"
+            variant="primary"
+            color="white"
+            onClick={() => {
+              setIsOpen(true);
+              trackPaymentsRecapEvent({
+                objectName: 'RZP Rewind Banner',
+                actionName: 'Clicked',
+              });
+            }}
+          >
+            Check it out now!
+          </Button>
+        </BannerWrapper>
       ) : null}
       {isOpen ? (
         <Suspense fallback={<Loader />}>
