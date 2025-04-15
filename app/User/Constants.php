@@ -220,6 +220,8 @@ class Constants
     const PAYOUTS            = 'payouts';
     const FEATURES           = 'features';
     const MERCHANT_DETAILS   = 'merchant_details';
+
+    const SKIP_CACHED_DATA   = 'skip_cached_data';
     const USER_ONLY          = 'user_only';
 
     const CAMPAIGNS          = 'campaigns';

@@ -2453,6 +2453,7 @@ class Service extends Base\Service
         $experiments = $params[Constants::EXPERIMENTS] ?? "1";
         $payouts = $params[Constants::PAYOUTS] ?? "1";
         $fetchMerchantDetails = $params[Constants::MERCHANT_DETAILS] ?? "1";
+        $skipCachedData = $params[Constants::SKIP_CACHED_DATA] ?? "0";
 
         $user = Auth::user();
 
@@ -2471,7 +2472,11 @@ class Service extends Base\Service
             $userId = $user->id;
         }
 
-        [$error, $genericUser] = $this->getUserFromApiWithCache($userId);
+        $options = [
+            'skip_cache' => $skipCachedData === "1"
+        ];
+
+        [$error, $genericUser] = $this->getUserFromApiWithCache($userId,$options);
 
         if (empty($error) === false)
         {
@@ -3133,12 +3138,14 @@ class Service extends Base\Service
         {
             return [['User could not be determined'], null];
         }
+        $skipCache = $options['skip_cache'] ?? false;
 
         $cacheKey = $this->getUserCacheKey($userId, $options);
-        $data = Cache::get($cacheKey);
-        if (!empty($data))
-        {
-            return [null, $data];
+        if ($skipCache !== true) {
+            $data = Cache::get($cacheKey);
+            if (!empty($data)) {
+                return [null, $data];
+            }
         }
 
         [$error, $genericUser] = $this->getUserFromApi($userId);
@@ -3256,7 +3263,6 @@ class Service extends Base\Service
 
         return [$error, $genericUser];
     }
-
     public function getPartnerConfig(array $input): array
     {
         $this->trace->info(TraceCode::GET_PARTNER_CONFIG_GUEST, $input);
