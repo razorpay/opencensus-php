@@ -228,7 +228,7 @@ class Service extends Base\Service
 
         $response = [
             Merchant\Entity::ID                 => $this->merchant->getId(),
-            Entity::ACTIVATION_STATUS           => $merchantDetails->getActivationStatus(),
+            Entity::ACTIVATION_STATUS           => $merchantDetails->getActivationStatus()
         ];
 
         return $response;
@@ -333,6 +333,10 @@ class Service extends Base\Service
         if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
         {
             $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
+        }
+
+        if ($isActivationDetailsFlow == true){
+            $response[Merchant\Entity::AFA_MAX_AMOUNT_LIMIT] = $this->merchant->afaMaxAmountLimit();
         }
 
         return $response;
