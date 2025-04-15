@@ -8,8 +8,12 @@ import {
   emptySalesOnboardedMerchantsMock,
   incompleteSalesOnboardingDetailsDirectModelMock,
   MerchantVerifyMobileOtpResponse,
+  pendingStateAgreement,
+  agreementOnlineCompleteStateMock,
+  agreementOnlineMutionStateMock,
   salesActivatedMerchantsMock,
   PastSevenDaysMerchantsMock,
+  agreementOfflineCompleteStateMock,
 } from './fixtures';
 import {
   completedAdditionalDetailsAggregatorModelMock,
@@ -312,6 +316,72 @@ export const queryMocks = {
       },
     });
   }),
+
+  // agreement signing mocks
+
+  AgreementPendingState: graphql.query('MerchantModularOnboardingDetailsAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsAsSales: pendingStateAgreement,
+      },
+    });
+  }),
+
+  AgreementOnlineModeMutation: graphql.mutation(
+    'MerchantModularOnboardingDetailsUpdateAsSales',
+    () => {
+      return HttpResponse.json({
+        data: {
+          merchantModularOnboardingDetailsUpdateAsSales: agreementOnlineMutionStateMock,
+        },
+      });
+    },
+  ),
+
+  AgreementOnlineCompleted: graphql.query('MerchantModularOnboardingDetailsAsSales', () => {
+    return HttpResponse.json({
+      data: {
+        merchantModularOnboardingDetailsAsSales: agreementOnlineCompleteStateMock,
+      },
+    });
+  }),
+  AgreementFileUploadMock: http.post(
+    `${MERCHANT_API_LIVE_ENDPOINT}/merchant/documents/upload`,
+    () => {
+      return HttpResponse.json({
+        status_code: 200,
+        success: true,
+        data: {
+          merchant_agreement: {
+            file_id: 'Prdcm0g2rDxGdP',
+            source: 'UFH',
+            file_name: 'api/PmTPcHMAUczy56/77c74/custom-rates-proof',
+            original_file_name: 'test-document.png',
+          },
+        },
+      });
+    },
+  ),
+  AgreementFileUploadFailure: http.post(
+    `${MERCHANT_API_LIVE_ENDPOINT}/merchant/documents/upload`,
+    () => {
+      return HttpResponse.json({
+        status_code: 400,
+        success: false,
+        errors: ['The file must be a file of type: pdf, jpeg, jpg, png, jfif, heic, heif.'],
+      });
+    },
+  ),
+  AgreementOfflineCompleteState: graphql.mutation(
+    'MerchantModularOnboardingDetailsUpdateAsSales',
+    () => {
+      return HttpResponse.json({
+        data: {
+          merchantModularOnboardingDetailsUpdateAsSales: agreementOfflineCompleteStateMock,
+        },
+      });
+    },
+  ),
 };
 
 export const landingPageMocks = [...Object.values(queryMocks)];

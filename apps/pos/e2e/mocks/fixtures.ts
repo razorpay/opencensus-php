@@ -18,7 +18,12 @@ import {
   incompletePricingStepAggregatorModelMock,
   incompletePricingStepDirectModelMock,
 } from 'apps/pos/e2e/mocks/paymentMethodAndService';
-
+import {
+  PendingAgreementSigningStep,
+  AgreementOnlineCompleteStateMockSteps,
+  AgreementOnlineMutationStateSteps,
+} from './agreementSigning';
+import { AgreementOfflineCompleteStateMockSteps } from './agreementSigning/agreementOfflineCompleteStateMock';
 export const salesOnboardedMerchantsMock = {
   __typename: 'SalesOnboardedMerchants',
   limit: 10,
@@ -667,5 +672,102 @@ export const MerchantVerifyMobileOtpResponse = {
       },
     ],
     signup_campaign: 'assisted_onboarding',
+  },
+};
+
+// Fixtures for Agreement Signing Step
+export const pendingStateAgreement = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'OsZirE2foWT2uY',
+    progress: 60,
+    status: 'completed',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'executed',
+        steps: PendingAgreementSigningStep,
+      },
+    ],
+  },
+  onboardingState: {
+    milestones: ['sales_milestone'],
+    modularComponents: ['agreement_component', 'consent_component'],
+    steps: ['agreement_step', 'consent_step'],
+  },
+  countryCode: 'IN',
+  onboardingType: 'DEFAULT_ONBOARDING',
+  merchantType: 'Pos Payments',
+};
+
+export const agreementOnlineCompleteStateMock = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'OsZirE2foWT2uY',
+    progress: 100,
+    status: 'completed',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'executed',
+        steps: AgreementOnlineCompleteStateMockSteps,
+      },
+    ],
+  },
+  onboardingState: {
+    milestones: [],
+    modularComponents: [],
+    steps: [],
+  },
+  countryCode: 'IN',
+  onboardingType: 'DEFAULT_ONBOARDING',
+  merchantType: 'Pos Payments',
+};
+
+export const agreementOnlineMutionStateMock = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'PyFHEQSA635VPg',
+    progress: 80,
+    status: 'processing',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'processing',
+        steps: AgreementOnlineMutationStateSteps,
+      },
+    ],
+  },
+  onboardingState: {
+    milestones: ['sales_milestone'],
+    modularComponents: ['consent_component'],
+    steps: ['consent_step'],
+  },
+  countryCode: 'IN',
+  onboardingType: 'DEFAULT_ONBOARDING',
+  merchantType: 'Pos Payments',
+};
+
+export const agreementOfflineCompleteStateMock = {
+  __typename: 'merchantModularOnboardingDetailsSuccessResponse',
+  success: true,
+  workflowData: {
+    id: 'OsZirE2foWT2uY',
+    progress: 100,
+    status: 'completed',
+    milestones: [
+      {
+        canSubmit: false,
+        name: 'sales_milestone',
+        status: 'executed',
+        steps: AgreementOfflineCompleteStateMockSteps,
+      },
+    ],
   },
 };
