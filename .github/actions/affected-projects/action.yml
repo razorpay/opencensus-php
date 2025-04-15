@@ -1,7 +1,7 @@
 name: Identify Affected Projects with NX
 outputs:
   affected:
-    description: 'Affected Projects with NX'
+    description: "Affected Projects with NX"
     value: ${{ steps.action_output.outputs.affected }}
 runs:
   using: composite
@@ -15,6 +15,15 @@ runs:
       shell: bash
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
       id: extract_branch
+
+    - name: Log info for debugging
+      shell: bash
+      run: |
+        echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+        echo "GITHUB_REF: $GITHUB_REF"
+        echo "branch: ${{ steps.extract_branch.outputs.branch }}"
+        echo "Git ref: ${{ github.ref }}"
+        echo "Contains master: ${{ contains(github.ref, 'master') }}"
 
     - name: Identify Affected Projects for Master
       if: contains(github.ref, 'master')
@@ -33,8 +42,8 @@ runs:
     - name: Echo Affected Projects
       shell: bash
       run: echo "$AFFECTED"
-      
-    - name: Add Affected Projects In Output For Downstream Jobs 
+
+    - name: Add Affected Projects In Output For Downstream Jobs
       id: action_output
       shell: bash
       run: echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
@@ -42,6 +51,3 @@ runs:
     # - name: Remove .git
     #   shell: bash
     #   run: rm -rf .git
-
-
-    
