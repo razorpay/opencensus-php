@@ -17819,6 +17819,7 @@ class Route
             'merchant_fetch_bank_account_internal',
             'contact_create_internal',
             'fund_account_create_internal',
+            'merchant_integration_get_by_param',
         ],
 
         'leegality' => [

@@ -15,6 +15,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Jobs\ProcessCollectxTransfer;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
@@ -1891,37 +1892,50 @@ class Service extends Base\Service
         return (new InternationalIntegration\Core)->editMerchantInternationalIntegrations($mii);
     }
 
+    /**
+     * @throws GatewayErrorException
+     */
     protected function getFundingAccountDetailsByCurrency($request, $va_currency)
     {
-        try {
-            $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
-        } catch (\Exception $ex) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
+        $retryCountRemaining = 3;
+        $funding_accounts = null;
+
+        while ($retryCountRemaining > 0 && $funding_accounts == null) {
+            try {
+                $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
+                $isFundingDetailsEmpty = empty($response['data']) || empty($response['data']['funding_accounts']);
+                $isFundingAccountNumberEmpty = true;
+                if (!$isFundingDetailsEmpty && isset($response['data']['funding_accounts'][0]['account_number'])) {
+                    $isFundingAccountNumberEmpty = empty($response['data']['funding_accounts'][0]['account_number']);
+                }
+                
+                if ($isFundingDetailsEmpty || $isFundingAccountNumberEmpty) {
+                    // Response is again empty, retry as per retryLimit
+                    $this->trace->info(TraceCode::B2B_BANK_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                        'currency' => $va_currency
+                    ]);
+                } else {
+                    // Response is non-empty, so we can continue with normal flow
+                    $funding_accounts = $response['data']['funding_accounts'];
+                }
+            } catch (\Exception $ex) {
+                $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
+                    'currency' => $va_currency
+                ]);
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                    'currency' => $va_currency
+                ]);
+            }
+            $retryCountRemaining--;
+        }
+
+        if ($funding_accounts == null) {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
                 [
                     'error_data' => $ex->getData() ?? [],
                 ]);
         }
 
-        //   adding an alert if response comes empty from cc
-        //    "data": {
-        //            "_raw": "{\"funding_accounts\":[]}",
-        //            "status": "successful",
-        //            "funding_accounts": []
-        //    }
-        // slack ref :- https://razorpay.slack.com/archives/C7WEGELHJ/p1738922809860609?thread_ts=1738307080.571999&cid=C7WEGELHJ
-
-        if (empty($response['data']) || empty($response['data']['funding_accounts'])) {
-
-            $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
-                'currency' => $va_currency,
-            ]);
-
-            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
-                'currency' => $va_currency
-            ]);
-        }
-
-        $funding_accounts = $response['data']['funding_accounts'];
 
         $virtualAccountDetails = [
             'account_number' => $funding_accounts[0]['account_number'],
