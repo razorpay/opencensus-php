@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { Amount } from '@razorpay/blade/components';
 import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 
@@ -6,6 +6,7 @@ import {
   i18CurrencyConversionFromCommonUnitToMinorUnit,
   i18CurrencyConversionFromMinorUnitToCommonUnit,
   getFormattedAmount,
+  paiseToRupees,
 } from 'common/utils/rzp-utils';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
@@ -26,10 +27,25 @@ import {
   DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from './constants';
 
-export const getCardLabelAndLimits = (countryCode) => {
-  const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
+export const getCardLabelAndLimits = (user) => {
+  const countryCode = user?.merchant?.country_code ?? 'IN'; // If country code is not present then default value would be IN
+  const cardAfaMaxLimit = getCardAfaLimit(user);
   const cardTokenMaxAmount = CARD_MAX_AMOUNT_ALLOWED[countryCode];
   return { cardAfaMaxLimit, cardTokenMaxAmount };
+};
+
+export const getCardAfaLimit = (user) => {
+  if (!user) {
+    return CARD_AFA_MAX_AMOUNT['IN'];
+  }
+
+  const { afa_max_amount_limit, merchant } = user;
+  if (afa_max_amount_limit) {
+    return paiseToRupees(afa_max_amount_limit);
+  }
+
+  const countryCode = merchant?.country_code ?? 'IN';
+  return CARD_AFA_MAX_AMOUNT[countryCode];
 };
 
 export const getCardLabelText = (customCode) => {
@@ -43,10 +59,10 @@ export const shouldHideDebitPattern = (frequency) => {
 const getCardErrorDescription = (maxAmount, currency) => (
   <>
     You can <strong>automatically</strong> charge the customer upto{' '}
-    <Amount value={Number(maxAmount)} currency={currency} type="body" size="small" />
-    for each recurring payment. Payments above{' '}
-    <Amount value={Number(maxAmount)} currency={currency} type="body" size="small" />
-    will ask for OTP verification from the customer.
+    <Amount value={Number(maxAmount)} currency={currency} type="body" size="small" /> for each
+    recurring payment. Payments above{' '}
+    <Amount value={Number(maxAmount)} currency={currency} type="body" size="small" /> will ask for
+    OTP verification from the customer.
   </>
 );
 
@@ -113,7 +129,6 @@ export const cardMaxAmountValidator = (maxAllowedAmount, currency) => (value) =>
 
 export const getMaxAmountProps = (method, amount, user, mandateMaxAmount = 0) => {
   const { isCardMultipleFrequencyEnabled, merchant = {} } = user;
-  const { country_code: countryCode } = merchant;
   const {
     merchant: { currency },
   } = user;
@@ -142,7 +157,7 @@ export const getMaxAmountProps = (method, amount, user, mandateMaxAmount = 0) =>
 
   switch (method) {
     case PAYMENT_METHODS.CARD: {
-      const { cardAfaMaxLimit, cardTokenMaxAmount } = getCardLabelAndLimits(countryCode);
+      const { cardAfaMaxLimit, cardTokenMaxAmount } = getCardLabelAndLimits(user);
       maxAmountProps.validator = cardMaxAmountValidator(cardTokenMaxAmount, currency);
       let maxAmount = cardAfaMaxLimit;
       if (isCardMultipleFrequencyEnabled) {

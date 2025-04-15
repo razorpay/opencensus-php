@@ -34,7 +34,6 @@ import {
   FREQUENCY,
   MAX_TOKEN_AMOUNT,
   GATEWAY_MAX_LIMIT,
-  CARD_AFA_MAX_AMOUNT,
   CARD_MAX_AMOUNT_ALLOWED,
   topEmandateBankCodes,
   MAX_TOKEN_AMOUNT_NACH,
@@ -49,6 +48,7 @@ import { isAmountLiesInRange, isMonthlyDebitPattern } from 'merchant/views/Subsc
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { compose } from 'redux';
+import { getCardAfaLimit } from 'merchant/views/Subscriptions/helper';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -469,7 +469,8 @@ class NewRegistrationLink extends React.Component {
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
       {},
     );
-    const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[this.countryCode];
+    const { user } = this.props;
+    const cardAfaMaxLimit = getCardAfaLimit(user);
 
     const payload = {
       currency,

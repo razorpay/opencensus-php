@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 export const PAPER_NACH_CARD_BANNER_URL =
@@ -7,9 +7,9 @@ export const UPDATE_PAYMENT_METHOD_URL =
   'https://razorpay.com/docs/subscriptions/payment-retries/#update-the-payment-method-via-our-hosted-page';
 export const topEmandateBankCodes = ['SBIN', 'HDFC', 'ICIC', 'UTIB', 'KKBK'];
 export const CAW_TABS = ['Customer Details', 'Payment Details', 'Token Details'];
-export const CARD_AFA_MAX_LIMIT = 15000; // Rs
+export const CARD_AFA_MAX_LIMIT = 15000; // Rs, Default limit for India
 export const CARD_TOKEN_MAX_AMOUNT = 1000000; // Rs
-export const MY_CARD_MAX_AMOUNT = 30000; // RM
+export const MY_CARD_MAX_AMOUNT = 30000; // RM, Default limit for Malaysia
 export const MAX_TOKEN_AMOUNT = 1000000000; // in Paisa
 export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
 

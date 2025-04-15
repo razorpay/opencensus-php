@@ -9,8 +9,8 @@ import { AmountTooltip } from 'common/ui/Amount';
 import ModalHeader from 'common/ui/ModalHeader';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { chargeToken } from 'merchant/reducers/token';
-import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getCardAfaLimit } from 'merchant/views/Subscriptions/helper';
 
 class ChargeToken extends Component {
   state = {};
@@ -59,10 +59,14 @@ class ChargeToken extends Component {
     const isCard = token.method === 'card';
     let isDomesticCard = null;
     let maxAmount = null;
-    const defaultCardAFALimit = rupeesToPaise(CARD_AFA_MAX_LIMIT);
+    const { user } = this.props;
+    const cardAfaMaxLimit = getCardAfaLimit(user);
+    const defaultCardAFALimit = rupeesToPaise(cardAfaMaxLimit);
     if (isCard) {
       isDomesticCard = !token.card.international;
-      maxAmount = token?.subscription_registration?.max_amount || CARD_AFA_MAX_LIMIT;
+
+      //Here maxAmount expects paise value.
+      maxAmount = token?.subscription_registration?.max_amount || defaultCardAFALimit;
     }
     const amount = rupeesToPaise(this.state.amount);
     let isTwoFactorNeeded = false;

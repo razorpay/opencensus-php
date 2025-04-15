@@ -25,7 +25,6 @@ import { fetchSettings, saveSettings } from 'merchant/reducers/subscriptions';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import {
-  CARD_AFA_MAX_LIMIT,
   GATEWAY_MAX_LIMIT,
   UPI_AFA_MAX_LIMIT,
   EMANDATE_MAX_LIMIT,
@@ -33,6 +32,7 @@ import {
   DEFAULT_TOUCH_N_GO_MAX_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getCardAfaLimit } from 'merchant/views/Subscriptions/helper';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -195,7 +195,7 @@ class SubscriptionsSettings extends React.Component {
     const orgCode = org?.custom_code || 'rzp';
     const cardDescriptionText = cardDescription[orgCode] || cardDescription.rzp;
     const cardNoteText = cardNote[orgCode] || cardNote.rzp;
-
+    const cardAfaMaxLimit = getCardAfaLimit(user);
     const merchantCurrency = user?.merchant?.currency;
     if (settings.loading) {
       return (
@@ -277,7 +277,7 @@ class SubscriptionsSettings extends React.Component {
                           <br />
                           Payments above{' '}
                           <Amount
-                            value={rupeesToPaise(CARD_AFA_MAX_LIMIT)}
+                            value={rupeesToPaise(cardAfaMaxLimit)}
                             currency={merchantCurrency}
                             hidePaisa
                           />{' '}

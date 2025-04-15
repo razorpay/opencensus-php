@@ -25,7 +25,6 @@ import MandateBankAccountDetails from 'merchant/views/Subscriptions/components/M
 import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
 import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
 import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
-import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -36,6 +35,7 @@ import {
   trackClickResubmitNachForm,
   trackClickViewNACHForm,
 } from './ga';
+import { getCardAfaLimit } from 'merchant/views/Subscriptions/helper';
 
 class ErrorMessageComponent extends React.PureComponent {
   static defaultProps = {
@@ -269,13 +269,13 @@ class TokenDetailsContainer extends Component {
     let expireAt = entity.subscription_registration && entity.subscription_registration.expire_at;
     let maxAmount = null;
     let isDomesticCard = null;
-    let defaultAFAMaxAmount = rupeesToPaise(CARD_AFA_MAX_LIMIT);
+    const cardAfaMaxLimit = getCardAfaLimit(user);
+    let defaultAFAMaxAmount = rupeesToPaise(cardAfaMaxLimit);
     if (entity.method === 'card') {
       expireAt = entity.expired_at;
       isDomesticCard = !entity.card.international;
 
-      maxAmount =
-        entity?.subscription_registration?.max_amount || rupeesToPaise(CARD_AFA_MAX_LIMIT);
+      maxAmount = entity?.subscription_registration?.max_amount || defaultAFAMaxAmount;
       if (maxAmount <= defaultAFAMaxAmount) {
         defaultAFAMaxAmount = maxAmount;
       }
@@ -356,7 +356,7 @@ class TokenDetailsContainer extends Component {
                             <PopoverBody>
                               {`You can automatically charge the customer upto
                                 ${getFormattedAmountNew(
-                                  maxAmount,
+                                  defaultAFAMaxAmount,
                                   true,
                                   merchantCurrency,
                                 )} for each recurring payment. Payments above

@@ -1,10 +1,10 @@
 import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
-import { CARD_AFA_MAX_AMOUNT } from 'merchant/views/Subscriptions/constants';
-
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import moment from 'moment';
+import { getCardAfaLimit } from 'merchant/views/Subscriptions/helper';
+import { useMemo } from 'react';
 const CARD_EXPIRY_DATE_FORMAT = 'MMM YYYY';
 const CARD_EXPIRY_INPUTE_DATE_FORMAT = 'MM YYYY';
 
@@ -21,8 +21,7 @@ const BILLING_FREQUENCY = {
 
 export default function MandatePaymentMethod({ mandate, user }) {
   const { method, bank_account, card, bank: issuer, wallet } = mandate;
-  const countryCode = user.country_code;
-  const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
+  const cardAfaMaxLimit = useMemo(() => getCardAfaLimit(user), [user]);
   if (method === 'emandate') {
     return (
       <Definition>

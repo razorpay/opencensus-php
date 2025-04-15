@@ -6,7 +6,6 @@ import { AmountTooltip } from 'common/ui/Amount';
 import DocsLink from 'merchant/components/DocsLink';
 import {
   FREQUENCY_DESC_MAP,
-  CARD_AFA_MAX_AMOUNT,
   RECURRING_TYPE,
   FREQUENCY,
   PAYMENT_METHODS,
@@ -16,6 +15,7 @@ import {
   getBillingFrequencies,
   getMaxAmountProps,
   getCardLabelText,
+  getCardAfaLimit,
 } from 'merchant/views/Subscriptions/helper';
 import {
   getDebitPatternDesc,
@@ -23,6 +23,7 @@ import {
 } from 'merchant/views/Subscriptions/utils';
 
 import { checkIfAmountForFirstCharge } from './PaymentDetails/utils';
+import { useMemo } from 'react';
 
 export default function TokenDetailsForm({
   amount,
@@ -50,8 +51,7 @@ export default function TokenDetailsForm({
   // Need to hide debit pattern fields if as_presented or daily frequency choosen
   const hideDebitPattern = ![FREQUENCY.AS_PRESENTED, FREQUENCY.DAILY].includes(frequency);
 
-  const countryCode = user.merchant.country_code;
-  const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
+  const cardAfaMaxLimit = useMemo(() => getCardAfaLimit(user), [user]);
 
   const billingFrequency = getBillingFrequencies(method);
 

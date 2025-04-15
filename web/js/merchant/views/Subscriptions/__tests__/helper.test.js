@@ -3,7 +3,6 @@ import { convertToMajorUnit } from '@razorpay/i18nify-js/currency';
 
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import {
-  CARD_AFA_MAX_LIMIT,
   CARD_TOKEN_MAX_AMOUNT,
   MY_CARD_MAX_AMOUNT,
   FREQUENCY,
@@ -22,17 +21,99 @@ import {
   maxAmountValidator,
   cardMaxAmountValidator,
   getMaxAmountProps,
+  getCardAfaLimit,
 } from 'merchant/views/Subscriptions/helper';
 import { render } from 'test-utils';
 
 const maxAmountRenderer = (func) => render(func);
 
-test('getCardLabelAndLimits should return expected limits', () => {
-  expect(getCardLabelAndLimits('IN').cardAfaMaxLimit).toEqual(CARD_AFA_MAX_LIMIT);
-  expect(getCardLabelAndLimits('IN').cardTokenMaxAmount).toEqual(CARD_TOKEN_MAX_AMOUNT);
+describe('getCardLabelAndLimits', () => {
+  test('should return default IN limits when merchant is null', () => {
+    const result = getCardLabelAndLimits(null);
+    expect(result).toEqual({
+      cardAfaMaxLimit: 15000,
+      cardTokenMaxAmount: 1000000,
+    });
+  });
 
-  expect(getCardLabelAndLimits('MY').cardAfaMaxLimit).toEqual(MY_CARD_MAX_AMOUNT);
-  expect(getCardLabelAndLimits('MY').cardTokenMaxAmount).toEqual(MY_CARD_MAX_AMOUNT);
+  test('should return correct limits for IN country code', () => {
+    const user = {
+      merchant: {
+        country_code: 'IN',
+      },
+    };
+    const result = getCardLabelAndLimits(user);
+    expect(result).toEqual({
+      cardAfaMaxLimit: 15000,
+      cardTokenMaxAmount: 1000000,
+    });
+  });
+
+  test('should return correct limits for MY country code', () => {
+    const user = {
+      merchant: {
+        country_code: 'MY',
+      },
+    };
+    const result = getCardLabelAndLimits(user);
+    expect(result).toEqual({
+      cardAfaMaxLimit: 30000,
+      cardTokenMaxAmount: 30000,
+    });
+  });
+
+  test('should handle missing merchant object', () => {
+    const user = {};
+    const result = getCardLabelAndLimits(user);
+    expect(result).toEqual({
+      cardAfaMaxLimit: 15000,
+      cardTokenMaxAmount: 1000000,
+    });
+  });
+});
+
+describe('getCardAfaLimit', () => {
+  test('should return default IN limit when user is null', () => {
+    const result = getCardAfaLimit(null);
+    expect(result).toBe(15000);
+  });
+
+  test('should return custom afa_max_amount_limit when provided', () => {
+    const user = {
+      afa_max_amount_limit: 2000000,
+      merchant: {
+        country_code: 'IN',
+      },
+    };
+    const result = getCardAfaLimit(user);
+    expect(result).toBe(20000);
+  });
+
+  test('should return correct limit for IN country code', () => {
+    const user = {
+      merchant: {
+        country_code: 'IN',
+      },
+    };
+    const result = getCardAfaLimit(user);
+    expect(result).toBe(15000);
+  });
+
+  test('should return correct limit for MY country code', () => {
+    const user = {
+      merchant: {
+        country_code: 'MY',
+      },
+    };
+    const result = getCardAfaLimit(user);
+    expect(result).toBe(30000);
+  });
+
+  test('should handle missing merchant object', () => {
+    const user = {};
+    const result = getCardAfaLimit(user);
+    expect(result).toBe(15000);
+  });
 });
 
 test('getCardLabelText should return label text for curlec merchants', () => {
