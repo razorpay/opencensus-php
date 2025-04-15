@@ -23,6 +23,12 @@ class UserSessionTest extends IlluminateTestCase
         // clear the cache for an individual test case
         $this->cache->flush();
     }
+    
+    public function TearDown(): void
+    {
+        \Mockery::close();
+        parent::tearDown();
+    }
 
     public function createApplication()
     {

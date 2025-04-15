@@ -361,6 +361,9 @@ class TraceCode
 
     const NEW_AUTH_REARCH_ENABLED = 'NEW_AUTH_REARCH_ENABLED';
     const ORG_FETCH_ERROR = 'ORG_FETCH_ERROR';
+    const GET_CURRENT_MERCHANT_ORG_ID_START = 'GET_CURRENT_MERCHANT_ORG_ID_START';
+    const GET_CURRENT_MERCHANT_ORG_ID_END   = 'GET_CURRENT_MERCHANT_ORG_ID_END';
+    const ACCESS_DENIED_FOR_CROSS_ORG       = 'ACCESS_DENIED_FOR_CROSS_ORG';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

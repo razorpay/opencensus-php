@@ -286,5 +286,7 @@ return [
 
         // banking unified signup
         'BANKING_REDIRECTION_ENABLED' => env('BANKING_REDIRECTION_ENABLED', ''),
+        
+        'ABAC_ACCESS_DASHBOARD'   =>  env('ABAC_ACCESS_DASHBOARD', ''),
     ]
 ];

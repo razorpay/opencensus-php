@@ -38,6 +38,7 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\CacheControl::class,
             \App\Http\Middleware\OTPVerificationSession::class,
             \App\Edge\Middleware\RegionCookieHandler::class,
+            \App\Http\Middleware\ABACDashboardAccess::class,
         ],
         'jwt_session' => [
             \App\Http\Middleware\EncryptCookies::class,
