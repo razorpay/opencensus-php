@@ -733,7 +733,7 @@ class Repository extends Base\Repository
     {
         try
         {
-            $responseData = $this->app['cms']->getCustomerByReferenceId($id);
+            $responseData = $this->app['cms']->getCustomerById($id);
         }
         catch (\Exception)
         {
