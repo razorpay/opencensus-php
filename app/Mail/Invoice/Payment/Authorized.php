@@ -103,6 +103,17 @@ class Authorized extends Base
 
         return $isStorkEmailVIAEnabled;
     }
+
+    protected function getParamsForStork(): array
+    {
+        return [
+            'template_name' => $this->view,
+            'template_namespace' => 'payments_payment_links',
+            'org_id' => $this->data['org']['id'],
+            'params' => $this->data
+        ];
+    }
+
     public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
         $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_PAYMENT_AUTHORIZED;
 
