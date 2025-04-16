@@ -2951,9 +2951,9 @@ class Processor
                         'merchant_id' => $merchant->getId(),
                         'razorx_result' => $result,
                     ]);
+                    return false;
                 }
 
-                return ($result === 'on');
             }
 
             if ($iin->getNetworkCode() === Card\Network::AMEX && $this->isPaymentViaTokenisedCard($input) && (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true)) {
