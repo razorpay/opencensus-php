@@ -371,6 +371,7 @@ class Service extends Base
         {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
             $dcsResponse = $this->fetchByEntityIdAndEntityType($entityId, $entityType, $mode);
+
             return $dcsResponse;
         }
         catch (\Exception $e)
@@ -644,13 +645,11 @@ class Service extends Base
         $cacheKey = $env .'_'. $mode.'_dcs_fetch_by_id_type_'. $entityId.'_'.$entityType;
 
         $enabled_features = $this->cache->get($cacheKey);
-        $this->trace->info(TraceCode::DCS_FEATURES, ['enabledFeatures'=>$enabled_features]);
 
         if ($enabled_features === null)
         {
             $dcsFeatures = DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, true,
                 $this->app->runningUnitTests(), $this->app->isEnvironmentProduction());
-            $this->trace->info(TraceCode::DCS_FEATURES, ['dcsFeatures'=>$dcsFeatures]);
 
             if(sizeof($dcsFeatures) === 0)
             {
