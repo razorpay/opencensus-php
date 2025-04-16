@@ -563,6 +563,19 @@ class Validator extends Base\Validator
         Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file',
     ];
+
+    protected static $tokenContinuityCreateRules = [
+        Entity::TYPE                    => 'required|in:token_continuity',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
+
+
+    protected static $customerMigrationCreateRules = [
+        Entity::TYPE                    => 'required|in:customer_migration',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -916,6 +929,35 @@ class Validator extends Base\Validator
         Header::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID     => 'sometimes|nullable|string',
         Header::MANDATE_CONTINUITY_TERMINAL_ID                => 'sometimes|nullable|string',
     ];
+
+    protected static $tokenContinuityTypeRowRules = [
+        Header::TOKEN_CONTINUITY_JUSPAY_CUSTOMER_ID              => 'required|string',
+        Header::TOKEN_CONTINUITY_JUSPAY_MERCHANT_ID              => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MERCHANT_REFERENCE_ID           => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_EMAIL_ADDRESS                   => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_FIRST_NAME                      => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_LAST_NAME                       => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MOBILE_COUNTRY_CODE             => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MOBILE_NUMBER                   => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MERCHANT_ID                     => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_RAZORPAY_CUSTOMER_ID            => 'required|string',
+        Header::TOKEN_CONTINUITY_ERROR_MESSAGE                   => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_JUSPAY_MERCHANT_REFERENCE_ID    => 'required|string',
+        Header::TOKEN_CONTINUITY_TERMINAL_ID                     => 'required|string',
+    ];
+
+    protected static $customerMigrationTypeRowRules = [
+        Header::CUSTOMER_MIGRATION_JUSPAY_CUSTOMER_ID       => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_JUSPAY_MERCHANT_ID       => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MERCHANT_REFERENCE_ID    => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_EMAIL_ADDRESS           => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_FIRST_NAME                => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_LAST_NAME                 => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MOBILE_COUNTRY_CODE      => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MOBILE_NUMBER            => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MERCHANT_ID             => 'sometimes|nullable|string',
+    ];
+    
 
     protected static $sendMailRules = [
         Entity::BATCH            => 'required|array|custom',
@@ -3315,6 +3357,20 @@ class Validator extends Base\Validator
     {
         foreach ($entries as $entry) {
             $this->validateInput('mandateContinuityTypeRow', $entry);;
+        }
+    }
+
+    public function validateTokenContinuityEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry) {
+            $this->validateInput('tokenContinuityTypeRowRules', $entry);;
+        }
+    }
+
+    public function validateCustomerMigrationEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry) {
+            $this->validateInput('customerMigrationTypeRow', $entry);;
         }
     }
 }

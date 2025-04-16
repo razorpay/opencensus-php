@@ -335,6 +335,10 @@ class Type
 
     const MANDATE_CONTINUITY = 'mandate_continuity';
 
+    const TOKEN_CONTINUITY = 'token_continuity';
+
+    const CUSTOMER_MIGRATION = 'customer_migration';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -436,6 +440,8 @@ class Type
         self::QR_DEVICE_MAPPING,
         self::QR_DEVICE_UNMAPPING,
         self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     /**
@@ -686,7 +692,9 @@ class Type
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::ECOLLECT_IDFC,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
-        self::MANDATE_CONTINUITY
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     /**
@@ -807,6 +815,8 @@ class Type
         self::QR_DEVICE_MAPPING,
         self::QR_DEVICE_UNMAPPING,
         self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -920,6 +930,8 @@ class Type
         self::QR_DEVICE_MAPPING                       => Name::ADMIN_BATCH_CREATE,
         self::QR_DEVICE_UNMAPPING                     => Name::ADMIN_BATCH_CREATE,
         self::MANDATE_CONTINUITY                      => Name::ADMIN_BATCH_CREATE,
+        self::TOKEN_CONTINUITY                        => Name::ADMIN_BATCH_CREATE,
+        self::CUSTOMER_MIGRATION                      => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [
