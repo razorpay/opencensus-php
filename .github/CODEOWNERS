@@ -361,3 +361,6 @@ app/Models/Merchant/Detail/Validator.php                 @razorpay/pg-onboarding
 app/Models/Merchant/Detail/NeedsClarification            @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/DeDupe                        @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/Transformers                  @razorpay/pg-onboarding-service
+
+
+app/Models/Merchant/Methods/                             @razorpay/TechOnlinePaymentsOnboarding
