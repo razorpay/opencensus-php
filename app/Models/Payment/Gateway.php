@@ -5049,6 +5049,7 @@ class Gateway
         IFSC::BARB,
         IFSC::FDRL,
         IFSC::IDFB,
+        IFSC::AUBL
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -5069,6 +5070,7 @@ class Gateway
         IFSC::IDFB,
         IFSC::FDRL,
         IFSC::IDFB,
+        IFSC::AUBL,
     ];
 
     public static $emiBanksUsingCardAndEmiTerminals = [

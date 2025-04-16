@@ -591,7 +591,8 @@ class Entity extends Base\PublicEntity
             CreditEmiProvider::ONECARD,
             CreditEmiProvider::BAJAJ,
             CreditEmiProvider::FDRL,
-            CreditEmiProvider::IDFB
+            CreditEmiProvider::IDFB,
+            CreditEmiProvider::AUBL
         ],
         self::OFFLINE_CREDIT => [
             OfflineCreditEmiProvider::AMEX,

@@ -8,9 +8,11 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\BankingAccountStatement\Metric;
 use RZP\Trace\TraceCode;
+use Throwable;
 
 class Core extends Base\Core
 {
@@ -284,71 +286,165 @@ class Core extends Base\Core
         return ['status' => 'success'];
     }
 
-    public function handleDualWrite(array $input): array
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws Throwable
+     */
+    public function handleDualWrite(array $input): ?array
     {
+        if (empty($input)) {
+            return null;
+        }
+
         $balanceIds = [];
         $balanceIdToInputMap = [];
+        $validationErrors = [];
 
+        // Validate all items first and collect valid ones
         foreach ($input as $item) {
             try {
                 (new Validator)->validateXBalanceUpdateDualWriteInput($item);
-            } catch (\Throwable $e) {
-                $this->trace->error(
-                    TraceCode::X_BALANCE_DUAL_WRITE_INPUT_VALIDATION_FAILED,
-                    [
-                        'item' => $item,
-                        'error' => $e->getMessage()
-                    ]
-                );
-                continue;
+                $balanceId = $item[Entity::BALANCE_ID];
+                $balanceIds[] = $balanceId;
+                $balanceIdToInputMap[$balanceId] = $item;
+            } catch (Throwable $e) {
+                $validationErrors[] = [
+                    'item' => $item,
+                    'error' => $e->getMessage()
+                ];
             }
-
-            $balanceId = $item[Entity::BALANCE_ID];
-            $balanceIds[] = $balanceId;
-            $balanceIdToInputMap[$balanceId] = $item;
         }
 
-        $basDetailEntities = $this->repo->banking_account_statement_details->getAccountStatementDetailsByBalanceIds($balanceIds);
+        // Log validation errors if any
+        if (!empty($validationErrors)) {
+            $this->logValidationErrors($validationErrors);
+        }
 
+        if (empty($balanceIds)) {
+            return ['success' => 'true'];
+        }
+
+        // Fetch all entities in one query
+        $basDetailEntities = $this->repo->banking_account_statement_details->getAccountStatementDetailsByBalanceIds($balanceIds);
+        
+        // Process entities and collect updates
+        $missingBalanceIds = array_diff($balanceIds, array_map(function($entity) {
+            return $entity->getBalanceId();
+        }, $basDetailEntities));
+
+        // Log missing entities if any
+        if (!empty($missingBalanceIds)) {
+            $this->logMissingEntities($missingBalanceIds);
+        }
+
+        $updates = [];
+        $violatingBalanceIds = [];
         foreach ($basDetailEntities as $basDetailEntity) {
-            $inputData = $balanceIdToInputMap[$basDetailEntity->getBalanceId()];
+            $balanceId = $basDetailEntity->getBalanceId();
+            $inputData = $balanceIdToInputMap[$balanceId];
             $inputTimestamp = $inputData[Entity::BALANCE_LAST_FETCHED_AT];
 
             if ($basDetailEntity->getBalanceLastFetchedAt() <= $inputTimestamp) {
+                $updates[] = [
+                    'entity' => $basDetailEntity,
+                    'inputData' => $inputData
+                ];
+            } else {
+                $violatingBalanceIds[] = $balanceId;
+            }
+        }
+
+        // Log order violations if any
+        if (!empty($violatingBalanceIds)) {
+            $this->logOrderViolations($violatingBalanceIds);
+        }
+
+        if (empty($updates)) {
+            return ['success' => 'true'];
+        }
+
+        // Process updates in transaction
+        return $this->processUpdates($updates);
+    }
+
+    private function processUpdates(array $updates): array
+    {
+        $this->repo->beginTransaction();
+        try {
+            foreach ($updates as $update) {
+                $basDetailEntity = $update['entity'];
+                $inputData = $update['inputData'];
+
                 $basDetailEntity->setGatewayBalance($inputData[Entity::GATEWAY_BALANCE]);
-                $basDetailEntity->setBalanceLastFetchedAt($inputTimestamp);
+                $basDetailEntity->setBalanceLastFetchedAt($inputData[Entity::BALANCE_LAST_FETCHED_AT]);
                 if (!empty($inputData[Entity::GATEWAY_BALANCE_CHANGE_AT])) {
                     $basDetailEntity->setGatewayBalanceLastChangedAt($inputData[Entity::GATEWAY_BALANCE_CHANGE_AT]);
                 }
 
-                $this->repo->beginTransaction();
-                try {
-                    $this->repo->saveOrFail($basDetailEntity);
-                    $this->updateGatewayBalanceInPS($basDetailEntity);
-                } catch (\Throwable $e) {
-                    $this->repo->rollBack();
-                    $this->trace->error(
-                        TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATE_FAILED_UPDATE,
-                        [
-                            Entity::BALANCE_ID => $basDetailEntity->getBalanceId(),
-                            'error' => $e->getMessage()
-                        ]
-                    );
-                    continue;
-                }
-                $this->repo->commit();
-
-            } else {
-                $this->trace->count(Metric::DUAL_WRITE_MESSAGE_PROCESSING_ORDER_VIOLATION, [
-                    'entity' => EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
-                    'merchant_id' => $basDetailEntity->getMerchantId(),
-                    'channel' => $basDetailEntity->getChannel(),
-                ]);
+                $this->repo->saveOrFail($basDetailEntity);
+                $this->updateGatewayBalanceInPS($basDetailEntity);
             }
+            
+            $this->repo->commit();
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATED_SUCCESSFULLY);
+            
+            return ['success' => 'true'];
+        } catch (Throwable $e) {
+            $this->repo->rollBack();
+            $this->logUpdateFailure($e);
+            throw $e;
         }
+    }
 
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATED_SUCCESSFULLY);
+    private function logValidationErrors(array $errors): void
+    {
+        foreach ($errors as $error) {
+            $this->trace->error(
+                TraceCode::X_BALANCE_DUAL_WRITE_INPUT_VALIDATION_FAILED,
+                $error
+            );
 
-        return ['success' => 'true'];
+            $this->trace->count(Metric::BASD_DUAL_WRITE_ERROR_COUNT, [
+                'code' => TraceCode::X_BALANCE_DUAL_WRITE_INPUT_VALIDATION_FAILED,
+            ]);
+        }
+    }
+
+    private function logMissingEntities(array $balanceIds): void
+    {
+        foreach ($balanceIds as $balanceId) {
+            $this->trace->error(
+                TraceCode::X_BALANCE_DUAL_WRITE_BASD_ENTITY_NOT_FOUND_ERROR,
+                ['balance_id' => $balanceId]
+            );
+
+            $this->trace->count(Metric::BASD_DUAL_WRITE_ERROR_COUNT, [
+                'code' => TraceCode::X_BALANCE_DUAL_WRITE_BASD_ENTITY_NOT_FOUND_ERROR,
+            ]);
+        }
+    }
+
+    private function logOrderViolations(array $violatingBalanceIds): void
+    {
+        $this->trace->error(
+            TraceCode::X_BALANCE_DUAL_WRITE_MESSAGE_ORDER_VIOLATION,
+            ['balance_ids' => $violatingBalanceIds]
+        );
+
+        $this->trace->count(Metric::BASD_DUAL_WRITE_ERROR_COUNT, [
+            'code' => TraceCode::X_BALANCE_DUAL_WRITE_MESSAGE_ORDER_VIOLATION,
+        ]);
+    }
+
+    private function logUpdateFailure(Throwable $e): void
+    {
+        $this->trace->error(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATE_FAILED_UPDATE,
+            ['error' => $e->getMessage()]
+        );
+
+        $this->trace->count(Metric::BASD_DUAL_WRITE_ERROR_COUNT, [
+            'error_code' => TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATE_FAILED_UPDATE,
+        ]);
     }
 }

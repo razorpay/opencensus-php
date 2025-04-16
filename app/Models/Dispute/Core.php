@@ -3096,7 +3096,7 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true && $input[Entity::PHASE] === Phase::CHARGEBACK && !(new Validator)::isPhaseDispute($input)) {
+        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true && strtolower($input[Entity::PHASE]) === Phase::CHARGEBACK && !(new Validator)::isPhaseDispute($input)) {
 
             $isTPlus5ChargebackValid = (new Validator)->isAutoClosureChargebackTimeValid($payment);
 

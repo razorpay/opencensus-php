@@ -912,6 +912,7 @@ class Validator extends Base\Validator
     protected static $mandateContinuityTypeRowRules = [
         Header::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID            => 'required|string',
         Header::MANDATE_CONTINUITY_TRANSACTION_ID             => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_DATE_CREATED_UTC           => 'sometimes|nullable|string',
         Header::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID     => 'sometimes|nullable|string',
         Header::MANDATE_CONTINUITY_TERMINAL_ID                => 'sometimes|nullable|string',
     ];

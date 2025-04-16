@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Mail\Admin\PartnerInvitation as PartnerInvitationMail;
 use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 
@@ -35,6 +36,13 @@ class Core extends Base\Core
     public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation, $merchantType)
     {
         $org = $admin->org->toArrayPublic();
+
+        $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($org->getId(), Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+        
+        if ($permissionEnabled === true) {
+            return;
+        }
+
         $org['host_name'] = $admin->org->getPrimaryHostName();
 
         $admin = $admin->toArrayPublic();

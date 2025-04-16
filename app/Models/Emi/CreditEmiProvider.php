@@ -26,6 +26,7 @@ class CreditEmiProvider
     const BAJAJ   = 'BAJAJ';
     const FDRL    = 'FDRL';
     const IDFB    = 'IDFB';
+    const AUBL    = 'AUBL';
     const CREDIT_EMI = 'credit_emi';
     const CREDIT_EMI_PROVIDERS = 'credit_emi_providers';
 
@@ -46,7 +47,8 @@ class CreditEmiProvider
         self::ONECARD,
         self::BAJAJ,
         self::FDRL,
-        self::IDFB
+        self::IDFB,
+        self::AUBL
     ];
 
     public static function checkProviderValidity($provider)

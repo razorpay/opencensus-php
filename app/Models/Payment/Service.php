@@ -9177,7 +9177,7 @@ class Service extends Base\Service
      * @param string $gateway
      * @return bool
      */
-    private function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
+    public function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
     {
         try{
             $properties = [

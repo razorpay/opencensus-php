@@ -381,6 +381,7 @@ class ViewDataSerializerHosted extends Base\Core
             'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(', '),
             'support_email'                    => $supportDetails['support_email'],
             'support_mobile'                   => $supportDetails['support_mobile'],
+            'afa_max_amount_limit'             => $this->merchant->afaMaxAmountLimit(),
         ];
     }
 

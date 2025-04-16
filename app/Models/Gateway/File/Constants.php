@@ -72,6 +72,8 @@ class Constants
     const UCO              = 'uco';
     const DBS              = 'dbs';
     const ICICI_EMI        = 'icici_emi';
+    const AUBL_EMI        = 'aubl_emi';
+
     const HSBC             = 'hsbc';
     const SRCB             = 'srcb';
     const KARB             = 'karb';
@@ -126,6 +128,7 @@ class Constants
             self::UPI_AIRTEL,
             self::UPI_YESBANK,
             self::CARDLESS_EMI_LIQUILOANS,
+            self::AUBL_EMI,
 
         ],
         Type::CLAIM => [
@@ -148,6 +151,7 @@ class Constants
             self::SBI_NCE,
             self::FEDERAL,
             self::IDFC,
+            self::AUBL,
             self::AXIS_CITI,
         ],
         Type::COMBINED => [

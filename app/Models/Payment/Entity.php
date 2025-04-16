@@ -4735,11 +4735,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         list($errorCodeJson,) = $app['error_mapper']->getErrorMapping($internalErrorCode, $method);
 
-        $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
-
-        $array[self::ERROR_STEP] = $errorCodeJson['step'] ?: null;
-
-        $array[self::ERROR_REASON] = $errorCodeJson['reason'] ?: null;
+        if (empty( $array[self::ERROR_SOURCE] ))
+            $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
+        if (empty( $array[self::ERROR_STEP] ))
+            $array[self::ERROR_STEP] = $errorCodeJson['step'] ?: null;
+        if (empty( $array[self::ERROR_REASON] ))
+            $array[self::ERROR_REASON] = $errorCodeJson['reason'] ?: null;
     }
 
     public function setPublicDCCAttribute(array & $array)
@@ -7344,7 +7345,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $app = App::getFacadeRoot();
 
-        if ($this->getCpsRoute() === Payment\Entity::API && $this->shouldPopulateFlowForMerchant() === true) {
+        if (($this->getCpsRoute() === Payment\Entity::API || $this->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE) && $this->shouldPopulateFlowForMerchant() === true) {
 
         // Allow populating Flow in UPI block for all payments
         $upiMetadata = $this->getUpiMetadata();
@@ -7965,11 +7966,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
+        $forexRate = 1;
 
         if ((isset($paymentMeta) === true) and
             (empty($paymentMeta->getMccForexRate()) === false))
         {
-            $fee = (float)$this->getFee() / $paymentMeta->getMccForexRate();
+            $forexRate = $paymentMeta->getMccForexRate();
         }
         else
         {
@@ -7983,7 +7985,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $pxbResponse = $app['payments-cross-border']->getForexRates([], $param);
                 if(isset($pxbResponse) && isset($pxbResponse['base_forex_rate']))
                 {
-                    $fee = (float)$this->getFee() / $pxbResponse['base_forex_rate'];
+                    $forexRate = $pxbResponse['base_forex_rate'];
                 }
             }
             catch (\Exception $e)
@@ -7996,7 +7998,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
-        return (int)ceil($fee);
+        $denominationFactorToCurrency = Currency\Currency::DENOMINATION_FACTOR[Currency\Currency::INR];
+        $denominationFactorFromCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getCurrency()];
+        $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+        $convertedFee = ((float)$this->getFee() / $forexRate) * $denominationFactor;
+
+        $app['trace']->info(TraceCode::PAYMENT_FEE_CONVERSION_FOR_MCC,
+            [
+                'payment_id'  => $this->getId(),
+                'fee' => $this->getFee(),
+                'forex_rate' => $forexRate,
+                'converted_fee' => $convertedFee,
+            ]);
+
+        return (int)ceil($convertedFee);
     }
 
     public function getMccMarkDownCommisionAmount()

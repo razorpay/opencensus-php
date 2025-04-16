@@ -90,6 +90,8 @@ class Constants
 
     const IDFC_EMI_FILE_JOB_NAME      = 'idfc_emi_push';
 
+    const AUBL_EMI_FILE_JOB_NAME      = 'aubl_emi_push';
+
     const CANARA_NETBANKING_COMBINED_PUSH = "canara_netbanking_combined_push";
 
     const AXIS_CC_EMI_FILE_JOB_NAME      = 'axis_cc_emi_push';

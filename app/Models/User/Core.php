@@ -1527,7 +1527,29 @@ class Core extends Base\Core
 
         $this->applyReferralIfApplicable($input, $user);
 
-        $this->checkSecondFactorAuthAndSendOtp($user);
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === true)
+        {
+            $orgId = Org\Entity::RAZORPAY_ORG_ID;
+        }
+
+        // DISABLE_THE_CAPTCHA_YOU_SHALL if present in input means register flow if not early reject $input['captcha_disable'] === DISABLE_THE_CAPTCHA_YOU_SHALL
+        if (isset($input['captcha_disable']) === true && $input['captcha_disable'] === "DISABLE_THE_CAPTCHA_YOU_SHALL") 
+        {
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+            if ($permissionEnabled === false) {
+                $this->checkSecondFactorAuthAndSendOtp($user);
+            }
+
+        }
+        else
+        {
+            $this->checkSecondFactorAuthAndSendOtp($user);
+        }
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
@@ -1539,13 +1561,6 @@ class Core extends Base\Core
                 Constants::MEDIUM => Constants::EMAIL,
             ]
         );
-
-        $orgId = $this->app['basicauth']->getOrgId();
-
-        if(empty($orgId) === true)
-        {
-            $orgId = Org\Entity::RAZORPAY_ORG_ID;
-        }
 
         if($orgId === Org\Entity::BAJAJ_ORG_SIGNED_ID)
         {

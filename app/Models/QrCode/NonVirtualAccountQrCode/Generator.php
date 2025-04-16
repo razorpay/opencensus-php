@@ -1395,11 +1395,11 @@ class Generator extends QrCode\Generator
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrCode($qrCode)
+    protected function getBharatQrCode($qrCode, $terminal = null)
     {
         $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
 
-        $terminals = $this->getDedicatedTerminalForQrCreate($qrCode);
+        $terminals = $terminal === null ? $this->getDedicatedTerminalForQrCreate($qrCode) :  [0 => $terminal];
         $errorMessage = '';
         $errorCode    = '';
 

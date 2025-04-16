@@ -2032,40 +2032,26 @@ class Processor
                     'merchant_id' => $merchant->getId(),
                 ]);
 
-                $offerId = $input[Payment\Entity::OFFER_ID];
-
-                Offer\Entity::verifyIdAndStripSign($offerId);
-
-                $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
-
-                if ($offer->shouldBlockPayment() === true)
-                {
+                if ((empty($input[Payment\Entity::METHOD]) === true) or
+                    ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD)) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "offer_should_block_payment",
+                        'reason' => "empty_method_or_non_card_payment_with_offer",
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
                 }
 
-                $offerMethod = $offer->getPaymentMethod();
+                $divertOfferToCPSRearch = (new Payment\Service())->getSplitzExpResponse($merchant->getId(), 'app.cps_offers_rearch');
 
-                if ($offerMethod === Payment\Method::CARD || $offerMethod === Offer\Entity::MULTIPLE)
-                {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "card_or_multiple_offer_payment_blocked",
+                if ($divertOfferToCPSRearch === 'switch_on') {
+                    $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_OFFER_TO_REARCH, [
+                        'reason' => "splitz_experiment_redirecting_to_rearch",
                         'merchant_id' => $merchant->getId(),
                     ]);
-                    return false;
-                }
-
-                $experimentName = 'app.non_card_offer_payments_via_pg_router';
-                $offerExpResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$experimentName);
-
-                if ($offerExpResult !== 'enable' or ((empty($input[Payment\Entity::METHOD]) === false) and
-                    ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD)))
-                {
+                    $result = 'on';
+                } else {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "non_card_offer_payment_blocked",
+                        'reason' => "offers_splitz_experiment_returned_false",
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -2113,6 +2099,20 @@ class Processor
 
                 $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER,
                     $order->getId(), $this->merchant);
+
+                // PL uses discount entity from API DB. This entity isn’t populated for rearch flows.
+                // So temporarily blocking this payment type until offers engine fixes this.
+                // Condition: supposed to go to rearch and payment has offer id and order is not empty and product type id PL or PL2
+                if (($result === 'on' and empty($input[Payment\Entity::OFFER_ID]) === false and empty($order) === false) and
+                    ($order->getProductId() !== null and
+                        ($order->getProductType() === ProductType::PAYMENT_LINK or
+                            $order->getProductType() === ProductType::PAYMENT_LINK_V2))) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "temporary_block_PL",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
 
                 if ((empty($order) === false) and ($order->isDiscountApplicable() === true)) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
@@ -10356,17 +10356,7 @@ class Processor
 
         (new Payment\Metric)->pushFailedMetrics($payment);
 
-        $isUpiOtmPayment = false;
-
-        if(isset($this->payment->localToken->upiMandate) === true)
-        {
-            $isUpiOtmPayment = $this->isUpiOtmPayment($payment, $this->payment->localToken->upiMandate->toArray());
-        }
-
-        if($isUpiOtmPayment === false)
-        {
-            $this->eventPaymentFailed($exception);
-        }
+        $this->eventPaymentFailed($exception);
 
         (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
 
@@ -13553,7 +13543,7 @@ class Processor
     }
 
     protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)
-    {        
+    {
         // If total amount refund is 0, setting payment's refund status to null
         if ($payment->getAmountRefunded() === 0)
         {
@@ -15754,7 +15744,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
      * @return boolean
      */
     public function evaluateExeperimentForPaymentStatusRevertFromRefunded ($merchantId)
-    {  
+    {
         try
         {
             $properties = [
@@ -15767,7 +15757,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
             ];
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
-        
+
             $variant = $response['response']['variant']['name'] ?? '';
             $this->trace->info(TraceCode::PAYMENT_STATUS_REVERT_EXPERIMENT_RESPONSE, [
                 'merchant_id' => $merchantId,
@@ -15777,7 +15767,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
             ]);
 
             if ($variant === 'variant_on')
-            {   
+            {
                 return true;
             }
         }

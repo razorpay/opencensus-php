@@ -1317,7 +1317,7 @@ class FundAccountValidationTest extends TestCase
                             ],
                         'gateway_auth' =>
                             [
-                                'token' => ($retryCount === 0) ? 'gateway_auth_1234567890' : "gateway_auth_token_2",
+                                'token' => ($retryCount === 0) ? 'gateway_auth_1234567890' : "Z2F0ZXdheV9hdXRoX3Rva2VuXzI=",
                             ],
                         'gateway_session' =>
                             [
@@ -4512,6 +4512,32 @@ class FundAccountValidationTest extends TestCase
         $this->testCreateValidationWithComposite();
 
         $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCompositeFavByIdInAPI_withRegisteredNameAsNull()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->testCreateValidationWithComposite();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->edit(
+            'fund_account_validation',
+            $fav['id'],
+            [
+                'registered_name'    => null,
+            ]);
 
         $request = &$this->testData[__FUNCTION__]['request'];
 

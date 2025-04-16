@@ -2742,6 +2742,8 @@ class Service extends Base\Service
             $response['payment_apps_logo_url'] = $this->merchant->org->getPaymentAppLogo();
 
             $response['checkout_logo_url'] = $this->merchant->org->getCheckoutLogo();
+
+            $response['pricing_plan_id'] = $this->merchant->getPricingPlanId();
         }
 
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);

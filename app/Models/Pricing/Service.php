@@ -83,6 +83,12 @@ class Service extends Base\Service
             if (isset($item['amount_range_active']) && !is_bool($item['amount_range_active'])) {
                 $item['amount_range_active'] = (bool) $item['amount_range_active'];
             }
+            if (isset($item['fixed_rate']) && !is_int($item['fixed_rate'])) {
+                $item['fixed_rate'] = (int) $item['fixed_rate'];
+            }
+            if (isset($item['percent_rate']) && !is_int($item['percent_rate'])) {
+                $item['percent_rate'] = (int) $item['percent_rate'];
+            }
         }
 
         $input[Entity::ORG_ID] = $this->getRuleOrgId();
@@ -403,11 +409,11 @@ class Service extends Base\Service
         // Ensure 'update' field in each item is a string if it exists
         if (isset($input['items']) && is_array($input['items'])) {
             foreach ($input['items'] as &$item) {
-                if (isset($item['update']) && is_bool($item['update'])) {
+                if (isset($item['update']) && !is_string($item['update'])) {
                     $item['update'] = $item['update'] ? "true" : "false";
                 }
 
-                if (isset($item['international']) && is_bool($item['international'])) {
+                if (isset($item['international']) && !is_string($item['international'])) {
                     $item['international'] = $item['international'] ? "1" : "0";
                 }
 
@@ -419,8 +425,14 @@ class Service extends Base\Service
                     $item['fixed_rate'] = (string) $item['fixed_rate'];
                 }
 
-                if (isset($item['amount_range_active']) && is_bool($item['amount_range_active'])){
+                if (isset($item['amount_range_active']) && !is_string($item['amount_range_active'])){
                     $item['amount_range_active'] = $item['amount_range_active'] ? "1" : "0";
+                }
+                if (isset($item['amount_range_min']) && !is_string($item['amount_range_min'])){
+                    $item['amount_range_min'] = (string)$item['amount_range_min'];
+                }
+                if (isset($item['amount_range_max']) && !is_string($item['amount_range_max'])){
+                    $item['amount_range_max'] = (string)$item['amount_range_max'];
                 }
             }
         }

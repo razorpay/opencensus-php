@@ -148,8 +148,9 @@ class Constants
     const FRAUD_NOTIFY        = 'CYBER_HELPDESK';
     const CYBERCELL_SOURCES     = ['CyberSafe', 'CyberCell'];
     const BANK_SOURCES          = ['Visa', 'MasterCard', 'Issuer', 'Network'];
-    const CARD_NETWORK_SOURCES  = ['Visa', 'MasterCard'];
+    const CARD_NETWORK_SOURCES  = ['Visa', 'MasterCard', 'Network'];
     const SOURCE_BANK           = 'Bank';
+    const SOURCE_ISSUER         = 'Issuer';
     const SOURCE_CYBERCELL      = 'CyberCell';
     const MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION = 'source_of_notification';
 

@@ -566,7 +566,7 @@ trait ExternalTokensRepo
             ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
             ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)
             {
-                if (strtolower($isPassUnusedRejectedTokensExperimentEnabled) === 'on')
+                if ($isPassUnusedRejectedTokensExperimentEnabled === true)
                 {
                     $query->whereNull(Token\Entity::USED_AT)
                         ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);

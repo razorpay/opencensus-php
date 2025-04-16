@@ -39,6 +39,8 @@ class HarvesterClient extends AbstractEventClient
 
     const RETRY = true;
 
+    const DEFAULT_FLOW_TYPE = 'default_flow_type';
+
     const RETRY_TIMES = 3;
 
     public function __construct($app)
@@ -146,10 +148,12 @@ class HarvesterClient extends AbstractEventClient
 
         $config    = $this->app['config']->get('applications.harvester_v2');
 
-        return $this->sendRequest($queryPath, $data, $config, self::RETRY, self::RETRY_TIMES, $timeout);
+        return $this->sendRequest($queryPath, $data, $config, self::DEFAULT_FLOW_TYPE, self::RETRY, self::RETRY_TIMES, $timeout);
     }
 
-    public function getDataFromPinot($content, $timeout = self::REQUEST_TIMEOUT)
+    //Added a new argument "flowType" to determine the flow and add it as a metric.
+    //Currently, the flow is only being set for payment escalation flows.
+    public function getDataFromPinot($content, $timeout = self::REQUEST_TIMEOUT, $flowType = self::DEFAULT_FLOW_TYPE)
     {
         $queryPath  = self::PINOT_QUERY_API_PATH;
 
@@ -157,7 +161,7 @@ class HarvesterClient extends AbstractEventClient
 
         $headers    = [ 'content-type'  => 'application/json' ];
 
-        $result     =  $this->sendRequest($queryPath, $content, $config, self::RETRY, self::RETRY_TIMES, $timeout, $headers);
+        $result     =  $this->sendRequest($queryPath, $content, $config, $flowType, self::RETRY, self::RETRY_TIMES, $timeout, $headers);
 
         return $result['result'];
     }
@@ -205,7 +209,7 @@ class HarvesterClient extends AbstractEventClient
         return $value;
     }
 
-    protected function sendRequest(string $urlPath, $data, $config, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT, $customHeaders = [])
+    protected function sendRequest(string $urlPath, $data, $config, $flowType = self::DEFAULT_FLOW_TYPE, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT, $customHeaders = [])
     {
         $startTime       = microtime(true);
 
@@ -264,6 +268,11 @@ class HarvesterClient extends AbstractEventClient
                         'type'    => $e->getType(),
                         'data'    => $e->getData()
                     ]);
+
+                $this->trace->count(Metric::HARVESTER_RETRY_FAILURE_COUNT,
+                    [
+                        'flow_type' => $flowType
+                    ]);
             }
 
             $retryCount++;
@@ -274,7 +283,7 @@ class HarvesterClient extends AbstractEventClient
             }
         }
 
-        $this->checkErrors($urlPath, $data ,$response);
+        $this->checkErrors($urlPath, $data ,$response, $flowType);
 
         $this->trace->info(
         TraceCode::HARVESTER_RESPONSE_TIME,
@@ -285,7 +294,7 @@ class HarvesterClient extends AbstractEventClient
         return json_decode($response->body, true);
     }
 
-    protected function checkErrors($urlPath, $data, $response)
+    protected function checkErrors($urlPath, $data, $response, $flowType)
     {
         if ($response === null)
         {
@@ -294,6 +303,11 @@ class HarvesterClient extends AbstractEventClient
                 [
                     'url'       => $urlPath,
                     'data'      => $data,
+                ]);
+
+            $this->trace->count(Metric::HARVESTER_CLIENT_FAILURE_COUNT,
+                [
+                    'flow_type' => $flowType
                 ]);
 
             throw new IntegrationException(
@@ -315,6 +329,11 @@ class HarvesterClient extends AbstractEventClient
                     'status'    => $response->status_code,
                     'body'      => $response->body
                 ]);
+
+            $this->trace->count(Metric::HARVESTER_CLIENT_FAILURE_COUNT, [
+                'status' => $response->status_code,
+                'flow_type' => $flowType
+            ]);
         }
 
         // TODO : Send email/slack message for $response->status_code != 200

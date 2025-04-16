@@ -21,6 +21,7 @@ use RZP\Base\ConnectionType;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\ServerErrorException;
 use Rzp\Wda_php\WDARegisterQueryRequestBuilder;
 use RZP\Models\Base\Traits\ExternalTokensRepo;
@@ -45,18 +46,14 @@ class Repository extends Base\Repository
 
     public function getByCustomer($customer, bool $withVpas = false, $merchantId = null, $mode = 'test')
     {
-        $isPassUnusedRejectedTokensExperimentEnabled = '';
+        $isPassUnusedRejectedTokensExperimentEnabled = false;
 
         if ($merchantId !== null)
         {
-            $isPassUnusedRejectedTokensExperimentEnabled = $this->app->razorx->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::PASS_REJECTED_UNUSED_TOKENS,
-                $mode
-            );
+            $isPassUnusedRejectedTokensExperimentEnabled = $this->evaluateSplitzExperimentForPassRejectedUnusedTokens($merchantId);
         }
 
-        if($withVpas and $isPassUnusedRejectedTokensExperimentEnabled != 'on')
+        if($withVpas and $isPassUnusedRejectedTokensExperimentEnabled === false)
         {
             return $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas);
         }
@@ -76,7 +73,7 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)
                     {
-                        if (strtolower($isPassUnusedRejectedTokensExperimentEnabled) === 'on')
+                        if ($isPassUnusedRejectedTokensExperimentEnabled === true)
                         {
                             $query->whereNull(Token\Entity::USED_AT)
                                   ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
@@ -1226,5 +1223,47 @@ EOT;
         $tokenEntityId = $this->repo->token->dbColumn(Token\Entity::ENTITY_ID);
 
         return $this->newQuery()->where($tokenEntityId, '=', $entityId)->get();
+    }
+
+    /**
+     * Evaluates the Splitz experiment for Pass Rejected Unused Tokens.
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    protected function evaluateSplitzExperimentForPassRejectedUnusedTokens($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.pass_rejected_unused_tokens'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PASS_REJECTED_UNUSED_TOKENS
+            );
+        }
+
+        return false;
     }
 }

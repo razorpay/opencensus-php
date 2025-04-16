@@ -4996,59 +4996,6 @@ trait Authorize
         }
     }
 
-    protected function validateCitiLrsImportFlowDataInCrossBorderImportService(Payment\Entity $payment){
-        if ($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
-        {
-            return;
-        }
-        $apiLrsTravelCitiValidationResult = null;
-        $shadowExperimentResult = $this->evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($payment->merchant->getId());
-
-        if($shadowExperimentResult){
-            try {
-                $this->trace->info(
-                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
-                        'payment_id'  => $payment['payment_id'],
-                        'merchant_id' => $payment['merchant_id'],
-                    ]
-                );
-                //call to import service
-                $payment['flow']= 'lrs_travel_citi_flow';
-                $response = $this->app['cross_border_import_service']->validateImportPayment($payment);
-                $this->trace->info(
-                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
-                        'response' => $response,
-                    ]
-                );
-
-            } catch (\Throwable $e) {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
-                );
-                $shadowExperimentResultCrossBorderImportService = $e->getMessage();
-            }
-        }
-        try
-        {
-            $this->validateLRSTravelCitiDataIfApplicable($payment);
-            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::API_CITI_LRS_VALIDATION_ERROR,[
-                    'lrs_travel_citi_validation_response' => $e->getMessage()
-                ]
-            );
-            $apiLrsTravelCitiValidationResult = $e->getMessage();
-            $this->traceMismatchInResult($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
-            throw $e;
-        }
-    }
 
     protected function traceMismatchInResult($apiResult, $crossBorderImportServiceResult)
     {
@@ -5057,18 +5004,6 @@ trait Authorize
         }
         $this->trace->error(
             TraceCode::CROSS_BORDER_IMPORT_API_JPMC_VALIDATIONS_MISMATCH, [
-                'api_result' => $apiResult ?? 'success',
-                'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
-            ]
-        );
-    }
-    protected function traceMismatchInResultForLrsCiti($apiResult, $crossBorderImportServiceResult)
-    {
-        if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
-            return;
-        }
-        $this->trace->error(
-            TraceCode::CROSS_BORDER_IMPORT_API_CITI_LRS_VALIDATIONS_MISMATCH, [
                 'api_result' => $apiResult ?? 'success',
                 'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
             ]
@@ -5406,6 +5341,72 @@ trait Authorize
         }
     }
 
+    protected function validateCitiLrsImportFlowDataInCrossBorderImportService(Payment\Entity $payment){
+        if ($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
+        {
+            return;
+        }
+        $apiLrsTravelCitiValidationResult = null;
+        $shadowExperimentResultCrossBorderImportService = null;
+        $shadowExperimentResult = $this->evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($payment->merchant->getId());
+
+        if($shadowExperimentResult){
+            try {
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                        'payment_id'  => $payment['id'],
+                        'merchant_id' => $payment['merchant_id'],
+                    ]
+                );
+                //call to import service
+                $response = $this->app['cross_border_import_service']->validateImportPayment($payment,'lrs_travel_citi_flow');
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                        'response' => $response,
+                    ]
+                );
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+                );
+                $shadowExperimentResultCrossBorderImportService = $e->getMessage();
+            }
+        }
+        try
+        {
+            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::API_CITI_LRS_VALIDATION_ERROR,[
+                    'lrs_travel_citi_validation_response' => $e->getMessage()
+                ]
+            );
+            $apiLrsTravelCitiValidationResult = $e->getMessage();
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+            throw $e;
+        }
+    }
+
+    protected function traceMismatchInResultForLrsCiti($apiResult, $crossBorderImportServiceResult)
+    {
+        if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
+            return;
+        }
+        $this->trace->error(
+            TraceCode::CROSS_BORDER_IMPORT_API_CITI_LRS_VALIDATIONS_MISMATCH, [
+                'api_result' => $apiResult ?? 'success',
+                'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
+            ]
+        );
+    }
 
     private function evaluateSplitzExperimentforCrossBorderImportRearch($merchantId)
     {
@@ -5478,6 +5479,7 @@ trait Authorize
 
         return false;
     }
+
     private function evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($merchantId)
     {
         try
@@ -5492,6 +5494,7 @@ trait Authorize
             ];
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
+
 
             $variant = $response['response']['variant']['name'] ?? '';
 
@@ -5510,7 +5513,6 @@ trait Authorize
                 TraceCode::CROSS_BORDER_IMPORT_PAYMENT_CITI_SHADOW_EXPERIMENT_SPLITZ_ERROR
             );
         }
-
         return false;
     }
 
@@ -12681,7 +12683,7 @@ trait Authorize
                             ]);
                     }
 
-                    if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                    if (($payment->isCard() === false) || !(isset($payment["original_cps_route"]) === true) || $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
                     {
                        $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
                     }

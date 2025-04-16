@@ -136,16 +136,56 @@ class MerchantIssued extends Mailable
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $app = \App::getFacadeRoot();
+
+        $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
+
         $traceData = [
             'merchant_id' => $this->data['merchant']['id'],
             'view' => $this->view,
-            'data' => $this->data
+            'data' => $this->data,
+            'isStorkEmailVIAEnabled' => $isStorkEmailVIAEnabled
         ];
 
-        $app = \App::getFacadeRoot();
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_MERCHANT_ISSUED , $traceData);
 
-        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_MERCHANT_ISSUED , $traceData);
+        return $isStorkEmailVIAEnabled;
+    }
 
+    protected function getParamsForStork(): array
+    {
+        return [
+            'template_name' => $this->view,
+            'template_namespace' => 'payments_payment_links',
+            'org_id' => $this->data['org']['id'],
+            'params' => $this->data
+        ];
+    }
+
+    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
+        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_MERCHANT_ISSUED;
+
+        $experimentId = 'app.send_payment_link_emails_via_stork_merchant_issued';
+
+        try {
+            $app = \App::getFacadeRoot();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
+            ];
+            $response = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+
+        } catch (\Exception $e) {
+            $app['trace']->traceException($e, null, $traceCode);
+        }
         return false;
     }
 }

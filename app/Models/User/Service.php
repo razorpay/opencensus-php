@@ -134,6 +134,8 @@ class Service extends Base\Service
             Org\Entity::HDFC_ORG_ID,
             Org\Entity::AXIS_ORG_ID,
             Org\Entity::YES_ORG_ID,
+            Org\Entity::INDUS_ORG_ID,
+            Org\Entity::IDFC_ORG_ID,
         ];
 
         $orgId = $this->app['basicauth']->getOrgId();
@@ -3083,6 +3085,18 @@ class Service extends Base\Service
                             break;
                         case env('AXIS_ORG_ID'):
                             $unified_hostname = env('AXIS_ACCOUNTS_URL');
+                            break;
+                        case env('HDFC_ORG_ID'):
+                            $unified_hostname = env('HDFC_ACCOUNTS_URL');
+                            break;
+                        case env('YES_ORG_ID'):
+                            $unified_hostname = env('YES_ACCOUNTS_URL');
+                            break;
+                        case env('INDUS_ORG_ID'):
+                            $unified_hostname = env('INDUS_ACCOUNTS_URL');
+                            break;
+                        case env('IDFC_ORG_ID'):
+                            $unified_hostname = env('IDFC_ACCOUNTS_URL');
                             break;
                         case env('RAZORPAY_ORG_ID'):
                             $unified_hostname = env('RAZORPAY_ACCOUNTS_URL');

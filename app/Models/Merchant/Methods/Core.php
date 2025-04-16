@@ -91,7 +91,9 @@ class Core extends Base\Core
             CreditEmiProvider::ONECARD => '1',
             CreditEmiProvider::BAJAJ => '0',
             CreditEmiProvider::FDRL => '1',
-            CreditEmiProvider::IDFB => '1'
+            CreditEmiProvider::IDFB => '1',
+            CreditEmiProvider::AUBL => '1'
+
 
         ]
     ];

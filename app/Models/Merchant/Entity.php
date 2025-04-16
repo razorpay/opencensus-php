@@ -65,6 +65,7 @@ use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 use RZP\Models\Payment\Processor as PaymentProcessor;
 use RZP\Services\BankingAccountService;
+use RZP\Models\Customer\Token;
 
 /**
  * @property Org\Entity               $org
@@ -130,6 +131,8 @@ class Entity extends Base\PublicEntity
     // this is same as mcc in legal entity table.
     // This will be removed after migrating to legal entity
     const CATEGORY                       = 'category';
+
+    const AFA_MAX_AMOUNT_LIMIT                 = 'afa_max_amount_limit';
 
     const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
     const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
@@ -407,6 +410,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::CATEGORY,
         self::CATEGORY2,
+        self::AFA_MAX_AMOUNT_LIMIT,
         self::FEE_MODEL,
         self::REFUND_SOURCE,
         self::LOGO_URL,
@@ -521,6 +525,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
+        self::AFA_MAX_AMOUNT_LIMIT,
         self::INTERNATIONAL,
         self::LINKED_ACCOUNT_KYC,
         self::HAS_KEY_ACCESS,
@@ -737,6 +742,11 @@ class Entity extends Base\PublicEntity
             self::MAX_PAYMENT_AMOUNT_DEFAULT                    => 3000000,
             self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED   => 60000,
             self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT      => 3000000
+        ],
+        "SG" => [
+            self::MAX_PAYMENT_AMOUNT_DEFAULT                    => 1000000,
+            self::MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED   => 1000000,
+            self::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT      => 1500000
         ]
     ];
 
@@ -755,6 +765,52 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::CUSTOM_MERCHANT_UPI_QR);
     }
 
+    public function afaMaxAmountLimit()
+    {
+        $app = App::getFacadeRoot();
+        $experimentName = $app['config']->get('app.afa_splitz');
+
+        $merchantID = $this->getMerchantId();
+        $splitzResponse = $this->getSplitzResponse($merchantID, $experimentName);
+
+        $mcc = $this->getCategory();
+        $countryCode = $this->getCountry();
+
+        if ( $splitzResponse === 'enable') {
+            if ($countryCode === 'MY') {
+                $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                    'afa_limit' => 3000000,
+                ]);
+                return 3000000;
+            }
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                'afa_limit' => in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS) ? 10000000 : 1500000,
+            ]);
+            return in_array($mcc, Token\Entity::EXTENDED_AFA_MERCHANTS) ? 10000000 : 1500000;
+        }else{
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                'default_limit' => 1500000,
+            ]);
+            return 1500000;
+        }
+    }
+
+    public function getSplitzResponse(string $id, string $experimentId)
+    {   $app = App::getFacadeRoot();
+        $properties = [
+            'id'            => $id,
+            'experiment_id' => $experimentId,
+        ];
+
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        return $response['response']['variant']['name'] ?? '';
+    }
 
     public function getMaxPaymentAmountDefault()
     {
