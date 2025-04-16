@@ -3118,4 +3118,13 @@ class AdminTest extends TestCase
 
     }
 
+    public function testAdminOrgReplicationsFeatureSuccess(){
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
 }
