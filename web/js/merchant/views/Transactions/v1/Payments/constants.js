@@ -13,6 +13,7 @@ export const FETCH_EZETAP_KEY_NAME = 'ezetap_appkey';
 
 export const ADDRESS =
   '1st Floor, SJR Cyber, 22, Laskar Hosur Road,\nAdugodi, Bangalore, Karnataka, India - 560030';
+
 export const MAIL = 'contact@razorpay.com';
 export const WEBSITE = 'https://razorpay.com';
 export const INFO = 'This document is electronically generated and does not require a signature';

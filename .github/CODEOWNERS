@@ -62,9 +62,9 @@ web/js/merchant_common/views/Reports/redux/reducer.ts                    @1995na
 web/js/merchant/views/POS/PartnerExclusiveContainer                      @1995navinkumar @shashi-vc
 
 # Optimizer folders
-web/js/merchant/views/Navigator                                          @parth-p-ui @ravid7000 @sanchit-razorpay
-web/js/merchant/views/Optimizer                                          @parth-p-ui @ravid7000 @sanchit-razorpay
-web/js/merchant/views/Marketplace/OptimizerAccounts                      @parth-p-ui @ravid7000 @sanchit-razorpay
+web/js/merchant/views/Navigator                                          @parth-p-ui @vamsi-rzp
+web/js/merchant/views/Optimizer                                          @parth-p-ui @vamsi-rzp
+web/js/merchant/views/Marketplace/OptimizerAccounts                      @parth-p-ui @vamsi-rzp
 
 web/js/merchant/views/AccountAndSettings/PaymentMethods/Tabs/International @parth-p-ui @ravid7000
 web/js/merchant/views/AccountAndSettings/InternationalSettings           @parth-p-ui @ravid7000
