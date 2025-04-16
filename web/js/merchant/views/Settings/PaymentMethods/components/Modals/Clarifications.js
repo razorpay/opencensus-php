@@ -300,7 +300,7 @@ const Clarifications = (props) => {
         {!loading && clarifications && clarifications.length > 0 ? (
           <div className="form">
             {filteredClarifications.map(({ discrepancy_comment, answerable, sub_category }) => {
-              if (answerable) return null;
+              if (answerable || !sub_category) return null;
               return (
                 <UnanswerableClarifications
                   key={sub_category}
@@ -320,7 +320,7 @@ const Clarifications = (props) => {
                     answerable,
                     sub_category,
                   }) => {
-                    if (!answerable) return null;
+                    if (!answerable || !sub_category) return null;
                     return (
                       <ClarificationInput
                         subCategory={humanize(sub_category)}
