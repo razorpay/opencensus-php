@@ -7025,8 +7025,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testFailedLogin2faNotSetupWithCustomInviteMerchantFlow()
-    {   
+    public function testSkipLogin2faNotSetupWithCustomInviteMerchantFlow()
+    {
         $this->enableRazorXTreatmentForRazorX();
 
         $org = $this->fixtures->create('org', [
@@ -7067,12 +7067,304 @@ class UserTest extends TestCase
             'role'        => 'owner',
         ]);
 
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
             'email'                 => $user['email'],
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => $adminLead['token'],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faRequiredWithCustomInviteMerchantFlowIncorrectInviteToken()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => 'token',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faRequiredWithCustomInviteMerchantFlowEmptyToken()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => '',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faRequiredWithCustomInviteMerchantFlowNoToken()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+    public function testLogin2faRequiredSetupWithCustomInviteMerchantFlowNoPermission()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        // create admin_
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => $adminLead['token'],
         ];
 
         $testData['request']['content'] = $content;
