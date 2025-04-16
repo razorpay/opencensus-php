@@ -5105,6 +5105,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRTS_MERCHANT_ENTITIES_FETCH                          = 'PRTS_MERCHANT_ENTITIES_FETCH';
     const PRTS_API_PARITY_CHECK_FAILED                          = 'PRTS_API_PARITY_CHECK_FAILED';
     const PRTS_READ_API_PROXY_REUEST                            = 'PRTS_READ_API_PROXY_REUEST';
+    const PRTS_PKYC_WRITE_API_PROXY_REQUEST                     = 'PRTS_PKYC_WRITE_API_PROXY_REQUEST';
+    const PRTS_PKYC_WRITE_API_PROXY_ERROR                      = 'PRTS_PKYC_WRITE_API_PROXY_ERROR';
 
 
     const SEGMENTATION_CONFIG                                   = 'SEGMENTATION_CONFIG';

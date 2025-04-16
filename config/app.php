@@ -426,6 +426,7 @@ return array(
     'partner_entities_partnership_service_sync' => env('PARTNER_ENTITIES_PARTNERSHIP_SERVICE_SYNC'),
 
     'partner_kyc_access_state_partnership_service_sync' => env('PARTNER_KYC_ACCESS_STATE_PARTNERSHIP_SERVICE_SYNC'),
+    'prts_kyc_access_status_writes_exp_id'              => env('PRTS_KYC_ACCESS_STATUS_WRITES_EXP_ID'),
 
     'sub_merchant_activation_auto_approval_checker' => env('SUB_MERCHANT_ACTIVATION_AUTO_APPROVAL_CHECKER'),
 
