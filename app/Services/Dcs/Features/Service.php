@@ -371,7 +371,6 @@ class Service extends Base
         {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
             $dcsResponse = $this->fetchByEntityIdAndEntityType($entityId, $entityType, $mode);
-            $this->trace->info(TraceCode::DCS_FEATURES, ['dcsResponse' => $dcsResponse]);
             return $dcsResponse;
         }
         catch (\Exception $e)

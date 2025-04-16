@@ -1246,7 +1246,7 @@ class Service extends Base\Service
         }
 
         $replicationType = $input[Constant::REPLICATIONS_TYPE];
-        $this->trace->info(TraceCode::FETCHED_REPLICATION_TYPE, [$replicationType]);
+        $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$replicationType]);
 
         // Validate replication type; throw an exception for invalid types
         if (!in_array($replicationType, ['feature', 'permission'])) {
@@ -1270,83 +1270,91 @@ class Service extends Base\Service
         // Retrieve the target organization's name for success message
         $toOrgName = $this->repo->org->findOrFailPublic($toOrgId);
 
-        $this->trace->info(TraceCode::ACS_ENTITY_FETCH, [$toOrgName]);
+        $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$toOrgName]);
 
-        if ($replicationType === 'permission') {
-            // Retrieve permissions of the source organization
-            $orgPermissions = $this->repo->admin->getOrgPermissionsList($fromOrgId);
+        switch ($replicationType) {
+            case 'permission':
+                // Retrieve permissions of the source organization
+                $orgPermissions = $this->repo->admin->getOrgPermissionsList($fromOrgId);
 
-            // Extract permission IDs for processing
-            $permissionIds = array_column($orgPermissions, 'id');
+                // Extract permission IDs for processing
+                $permissionIds = array_column($orgPermissions, 'id');
 
-            // Retrieve existing permission IDs of the target organization
-            $existingPermissionIds = $this->repo->admin->existingPermissionIds($toOrgId);
+                // Retrieve existing permission IDs of the target organization
+                $existingPermissionIds = $this->repo->admin->existingPermissionIds($toOrgId);
 
-            // Prepare data for batch insertion (only new permissions)
-            $insertData = collect($permissionIds)
-                ->diff($existingPermissionIds)
-                ->map(function ($permissionId) use ($toOrgId) {
-                    return [
-                        'permission_id' => $permissionId,
-                        'entity_type'   => 'org',
-                        'entity_id'     => $toOrgId,
-                    ];
-                })
-                ->toArray();
+                // Prepare data for batch insertion (only new permissions)
+                $insertData = collect($permissionIds)
+                    ->diff($existingPermissionIds)
+                    ->map(function ($permissionId) use ($toOrgId) {
+                        return [
+                            'permission_id' => $permissionId,
+                            'entity_type'   => 'org',
+                            'entity_id'     => $toOrgId,
+                        ];
+                    })
+                    ->toArray();
 
-            // Throw exception if there are no new permissions to insert
-            if (empty($insertData)) {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_PERMISSIONS);
-            }
+                // Throw exception if there are no new permissions to insert
+                if (empty($insertData)) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_PERMISSIONS);
+                }
 
-            // Perform the permission replication process
-            $replicatePermissions = $this->repo->admin->replicatePermissionsToOrg($insertData);
+                // Perform the permission replication process
+                $replicatePermissions = $this->repo->admin->replicatePermissionsToOrg($insertData);
 
-            // Log the completion of permission replication if successful
-            if ($replicatePermissions) {
-                $this->trace->info(TraceCode::ADMIN_ORG_PERMISSIONS_REPLICATIONS, [
-                    'replicationData' => $insertData,
-                    'status'          => $replicatePermissions,
-                    'method_name'     => __FUNCTION__,
-                    'route_name'      => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-            }
-        } else if ($replicationType === 'feature') {
-            // Retrieve features of the source organization
-            $orgFeatures = $this->repo->admin->getOrgFeaturesList($fromOrgId);
-            $this->trace->info(TraceCode::ACS_ENTITY_FETCH, [$orgFeatures]);
-            // Extract feature IDs and name for processing
-            $featureNames = array_column($orgFeatures, 'feature_name');
+                // Log the completion of permission replication if successful
+                if ($replicatePermissions) {
+                    $this->trace->info(TraceCode::ADMIN_ORG_PERMISSIONS_REPLICATIONS, [
+                        'replicationData' => $insertData,
+                        'status'          => $replicatePermissions,
+                        'method_name'     => __FUNCTION__,
+                        'route_name'      => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+                }
+                break;
 
-            // Retrieve existing feature IDs of the target organization
-            $existingFeatureNames = $this->repo->admin->existingFeatureNames($toOrgId);
+            case 'feature':
+                // Retrieve features of the source organization
+                $orgFeatures = $this->repo->admin->getOrgFeaturesList($fromOrgId);
+                $this->trace->info(TraceCode::ACS_ENTITY_FETCH, [$orgFeatures]);
 
-            $insertFeaturesData = collect($featureNames)
-                ->diff($existingFeatureNames)
-                ->map(function ($featureName) use ($featureNames, $toOrgId) {
-                    return [
-                        'name'          => $featureName,
-                    ];
-                })
-                ->toArray();
+                // Extract feature names for processing
+                $featureNames = array_column($orgFeatures, 'feature_name');
 
-            // Throw exception if there are no new feature to insert
-            if (empty($insertFeaturesData)) {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_FEATURES);
-            }
+                // Retrieve existing feature names of the target organization
+                $existingFeatureNames = $this->repo->admin->existingFeatureNames($toOrgId);
 
-            $colors = $insertFeaturesData;
+                $insertFeaturesData = collect($featureNames)
+                    ->diff($existingFeatureNames)
+                    ->map(function ($featureName) {
+                        return [
+                            'name' => $featureName,
+                        ];
+                    })
+                    ->toArray();
 
-            $enableFeatures = [
-                "names" => $colors,
-                "entity_type" => "org",
-                "should_sync" => "1",
-                "entity_id" => $toOrgId,
-            ];
+                // Throw exception if there are no new features to insert
+                if (empty($insertFeaturesData)) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_FEATURES);
+                }
 
-            (new FeatureService())->addFeatures($enableFeatures);
+                $colors = $insertFeaturesData;
 
+                $enableFeatures = [
+                    "names"       => $colors,
+                    "entity_type" => "org",
+                    "should_sync" => "1",
+                    "entity_id"   => $toOrgId,
+                ];
+
+                (new FeatureService())->addFeatures($enableFeatures);
+                break;
+
+            default:
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPLICATION_TYPE);
         }
+
 
         // Set the success response
         $response = [

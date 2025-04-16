@@ -511,8 +511,6 @@ class Entity extends Base\Entity
 
         $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
 
-        $this->getTrace()->info(TraceCode::DCS_RESPONSE, ['cacheTTL' => $cacheTtl, 'cacheTags' => $cacheTags]);
-
         $apiResponse = $this->features()
                             ->remember($cacheTtl)
                             ->cacheTags($cacheTags)
