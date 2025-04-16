@@ -19,7 +19,7 @@ class Service {
     const REQUEST_TIMEOUT = 5;
     const CMS_ROUTES = [
         'create_customer' => 'v2/internal/customers',
-        'get_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s',
+        'get_customer_by_id' => 'v2/internal/customers/%s',
         'update_customer_by_reference_id' => 'v2/internal/customers/by/reference/%s',
         'list_customers' => 'v2/internal/customers'
     ];
@@ -67,9 +67,9 @@ class Service {
         return $this->sendRequest(self::CMS_ROUTES['create_customer'], 'post', $input);
     }
 
-    public function getCustomerByReferenceId($customerId)
+    public function getCustomerById($customerId)
     {
-        return $this->sendRequest(sprintf(self::CMS_ROUTES['get_customer_by_reference_id'], $customerId), 'get');
+        return $this->sendRequest(sprintf(self::CMS_ROUTES['get_customer_by_id'], $customerId), 'get');
     }
 
     public function updateCustomerByReferenceId($customerId, $payload)
