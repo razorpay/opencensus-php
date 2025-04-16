@@ -1246,10 +1246,10 @@ class Service extends Base\Service
         }
 
         $replicationType = $input[Constant::REPLICATIONS_TYPE];
-        $this->trace->info(TraceCode::ACS_ENTITY_FETCH, [$replicationType]);
+        $this->trace->info(TraceCode::FETCHED_REPLICATION_TYPE, [$replicationType]);
 
         // Validate replication type; throw an exception for invalid types
-        if ($replicationType !== 'feature') {
+        if (!in_array($replicationType, ['feature', 'permission'])) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REPLICATION_TYPE,
                 null,

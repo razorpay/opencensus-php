@@ -13118,6 +13118,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DCS_RESPONSE = 'DCS_RESPONSE';
     const DCS_FEATURES = 'DCS_FEATURES';
+    const FETCHED_REPLICATION_TYPE = 'FETCHED_REPLICATION_TYPE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
