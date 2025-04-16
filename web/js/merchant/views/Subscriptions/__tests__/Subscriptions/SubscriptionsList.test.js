@@ -38,7 +38,6 @@ describe('Subscriptions List', () => {
     const initialState = {
       session: {
         user: {
-          isSubscriptionExpiryEnabled: true,
           isOrgAllowedFunctionality: () => true,
           findTag: () => false,
         },
@@ -135,7 +134,7 @@ describe('Subscriptions List', () => {
   });
 });
 
-describe('Subscriptions Fetch with isSubscriptionExpiryEnabled enabled', () => {
+describe('Subscriptions Fetch', () => {
   let initialState, analyticsSpy;
   beforeEach(() => {
     window.rzpQ = {
@@ -144,7 +143,6 @@ describe('Subscriptions Fetch with isSubscriptionExpiryEnabled enabled', () => {
     initialState = {
       session: {
         user: {
-          isSubscriptionExpiryEnabled: true,
           isOrgAllowedFunctionality: () => true,
           findTag: () => false,
         },

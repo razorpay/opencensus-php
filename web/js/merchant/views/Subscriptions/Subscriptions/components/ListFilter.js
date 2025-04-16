@@ -49,7 +49,6 @@ export default function SubscriptionsListFilter(props) {
         </Field>
       </div>
 
-      {props.showSubscriptionExpiryFilter && (
         <div className="form-group list-filter-item">
           <label>Subscriptions Completing In</label>
           <Field
@@ -64,7 +63,6 @@ export default function SubscriptionsListFilter(props) {
             <option value={next60DaysEpoch}>Next 60 days</option>
           </Field>
         </div>
-      )}
 
       <div className="form-group list-filter-item">
         <label>Subscription Id</label>

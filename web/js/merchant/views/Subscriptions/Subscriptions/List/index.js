@@ -112,15 +112,13 @@ class SubscriptionsListContainer extends ListContainer {
           </div>
         </HeaderAction>
 
-        {user.isSubscriptionExpiryEnabled && (
-          <ExpirySubscriptions
-            location={this.props.location}
-            history={this.props.history}
-            selectedQuickFilter={this.selectedQuickFilter}
-            changeFilterField={this.props.changeListFilterField}
-            ref={(filter) => (this.quickFilterEle = filter)}
-          />
-        )}
+        <ExpirySubscriptions
+          location={this.props.location}
+          history={this.props.history}
+          selectedQuickFilter={this.selectedQuickFilter}
+          changeFilterField={this.props.changeListFilterField}
+          ref={(filter) => (this.quickFilterEle = filter)}
+        />
 
         <SubscriptionsListFilter
           form="subscriptionsListFilter"
@@ -129,7 +127,6 @@ class SubscriptionsListContainer extends ListContainer {
           onFieldChange={this.onFilterChange}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
-          showSubscriptionExpiryFilter={user.isSubscriptionExpiryEnabled}
         />
 
         <DataTable

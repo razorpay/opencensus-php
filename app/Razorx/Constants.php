@@ -27,7 +27,6 @@ class Constants
         'emandate_subscription',
         'subscription_offers_reports',
         'allow_yesbank_va_on_x',
-        'subscription_expiry',
         'rbl_migration_banner',
         'qr_code',
         'caw_tpv',

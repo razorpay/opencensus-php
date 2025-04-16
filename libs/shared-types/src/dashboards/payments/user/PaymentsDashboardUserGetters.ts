@@ -210,7 +210,7 @@ export type PaymentsDashboardUserGetters = {
   isMagicKonnectEnabled: boolean;
   isMerchantExpiryPPEnabled: boolean;
   isCustomerAmountEnabled: boolean;
-  isCbImportMerchant:boolean;
+  isCbImportMerchant: boolean;
   isCreateOwnTemplateEnabled: boolean;
   isRiskAndFraudEnabled: boolean;
   isNoExpiryMandatoryPP: boolean;
@@ -383,7 +383,6 @@ export type PaymentsDashboardUserGetters = {
   isEmandateOnSubscriptionEnabled: boolean;
   isDirectTransferEnabled: boolean;
   isSubscriptionButtonEnabled: boolean;
-  isSubscriptionExpiryEnabled: boolean;
   isBharatQREnabled: boolean;
   isPaymentLinkCreationV2Enabled: boolean;
   isRefundPendingStatusEnabled: boolean;

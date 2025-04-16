@@ -505,7 +505,7 @@ export default class User {
   get isRiskAndFraudEnabled() {
     return this.isFeatureEnabled('show_intl_risk_dashboard');
   }
-  
+
   get isCbImportMerchant() {
     return this.isFeatureEnabled('enable_import_flow');
   }
@@ -1348,10 +1348,6 @@ export default class User {
 
   get isSubscriptionButtonEnabled() {
     return this.isSubscriptionsEnabled;
-  }
-
-  get isSubscriptionExpiryEnabled() {
-    return this.getExpStatus('subscription_expiry');
   }
 
   get isBharatQREnabled() {
