@@ -26,7 +26,13 @@ import {
   MainPageFormData,
   MainFormFields,
 } from '../types';
-import { mainPageFormValidator, snapPoints, validators, getWebsiteCount } from '../utils';
+import {
+  mainPageFormValidator,
+  snapPoints,
+  validators,
+  getWebsiteCount,
+  getSuggestionStep,
+} from '../utils';
 
 interface WebsiteInputModalProps {
   isMobile: boolean;
@@ -70,11 +76,6 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
         ...properties,
         loginRequired: value,
       });
-      setSuggestionStep(
-        value === RequireCredsValues.YES
-          ? SuggestionSteps.CREDS_REQUIRED
-          : SuggestionSteps.CREDS_NOT_REQUIRED,
-      );
     }
     if (name === MainFormFields.PLATFORM) {
       trackAcceptPaymentToggleButtonClick({
@@ -82,6 +83,15 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
         acceptOn: value,
       });
     }
+
+    const newSuggestionStep = getSuggestionStep({
+      name,
+      value,
+    });
+    if (suggestionStep !== newSuggestionStep) {
+      setSuggestionStep(newSuggestionStep);
+    }
+
     setFormState((formState) => {
       return {
         ...formState,
@@ -117,7 +127,6 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               <Radio value={Platform.APP}>App</Radio>
             </RadioGroup>
             <TextInput
-              helpText={`This is the ${formState.platform.value} where you would like to accept payments`}
               label={`Add your ${formState.platform.value} link`}
               labelPosition="top"
               name={MainFormFields.URL}
@@ -125,10 +134,15 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               type="url"
               validationState={formState.url.valid}
               value={formState.url.value}
-              errorText="Enter a valid website link"
+              errorText={
+                formState.url.value.startsWith('http:')
+                  ? 'Please ensure your website is HTTPS compliant (https://)'
+                  : 'Enter a valid website link'
+              }
+              onFocus={() => setSuggestionStep(SuggestionSteps.URL_FIELD)}
             />
             <RadioGroup
-              label={`Does your ${formState.platform.value} require login from user to complete payment?`}
+              label={`Does your ${formState.platform.value} require users to login to complete a payment?`}
               name={MainFormFields.REQUIRE_CREDS}
               onChange={onChange}
               validationState={formState.requireCreds.valid}
@@ -155,6 +169,8 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
                   validationState={formState.credsUsername.valid}
                   value={formState.credsUsername.value}
                   errorText="Enter valid username/email"
+                  onFocus={() => setSuggestionStep(SuggestionSteps.CREDS_FIELDS)}
+                  autoFocus={false}
                 />
                 <PasswordInput
                   label="Add test account password"
@@ -165,6 +181,8 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
                   validationState={formState.credsPassword.valid}
                   value={formState.credsPassword.value}
                   errorText="Enter valid password"
+                  onFocus={() => setSuggestionStep(SuggestionSteps.CREDS_FIELDS)}
+                  autoFocus={false}
                 />
               </Box>
             ) : null}
@@ -177,7 +195,11 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               display="flex"
               justifyContent="center"
             >
-              <SuggestionsBox step={suggestionStep} type="ADD_WEBSITE" />
+              <SuggestionsBox
+                step={suggestionStep}
+                type="ADD_WEBSITE"
+                platform={formState.platform.value}
+              />
             </Box>
           )}
         </Box>

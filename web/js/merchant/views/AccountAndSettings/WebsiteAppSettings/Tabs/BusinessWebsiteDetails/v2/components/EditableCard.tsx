@@ -189,7 +189,11 @@ export default function EditableCard({
                         isError && isRadioSelected ? ValidationState.ERROR : ValidationState.NONE
                       }
                       value={value}
-                      errorText="Enter a valid website link"
+                      errorText={
+                        value.startsWith('http:')
+                          ? 'Please ensure your website is HTTPS compliant (https://)'
+                          : 'Enter a valid website link'
+                      }
                       key={page}
                       testID="webpage-link"
                     />

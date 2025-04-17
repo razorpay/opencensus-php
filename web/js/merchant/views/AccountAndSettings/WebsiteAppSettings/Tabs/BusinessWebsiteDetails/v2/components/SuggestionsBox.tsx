@@ -7,6 +7,7 @@ import { SuggestionSteps } from '../types';
 interface AddWebsiteProps {
   step: SuggestionSteps;
   type: 'ADD_WEBSITE';
+  platform: string;
 }
 
 interface AddMissingAndAdditionalWebsiteProps {
@@ -17,7 +18,7 @@ interface AddMissingAndAdditionalWebsiteProps {
 type SuggestionsBoxProps = AddWebsiteProps | AddMissingAndAdditionalWebsiteProps;
 
 const SuggestionsBox: React.FC<SuggestionsBoxProps> = (props) => {
-  const { type, children } = props;
+  const { type, children, platform } = props;
   if (type === 'ADD_MISSING') {
     return (
       <Card
@@ -51,21 +52,29 @@ const SuggestionsBox: React.FC<SuggestionsBoxProps> = (props) => {
 
   if (type === 'ADD_WEBSITE') {
     const { step } = props;
-    return Object.keys(suggestionBoxVariants).includes(step) ? (
-      <Card
-        backgroundColor="surface.background.gray.intense"
-        borderRadius="medium"
-        elevation="none"
-        padding="spacing.5"
-      >
-        <CardBody>
-          <Box display="flex" flexDirection="column" gap="spacing.4">
-            {suggestionBoxVariants[step]}
-          </Box>
-        </CardBody>
-      </Card>
-    ) : /* istanbul ignore next */
-    null;
+
+    /* istanbul ignore next */
+    if (!Object.keys(suggestionBoxVariants).includes(step)) {
+      return null;
+    }
+
+    const { element: Element, positioningStyles } = suggestionBoxVariants[step];
+    return (
+      <Box {...(positioningStyles ?? {})} width="100%">
+        <Card
+          backgroundColor="surface.background.gray.intense"
+          borderRadius="medium"
+          elevation="none"
+          padding="spacing.5"
+        >
+          <CardBody>
+            <Box display="flex" flexDirection="column" gap="spacing.4">
+              <Element platform={platform} />
+            </Box>
+          </CardBody>
+        </Card>
+      </Box>
+    );
   }
 
   return null;

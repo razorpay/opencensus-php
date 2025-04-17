@@ -44,7 +44,7 @@ describe('ModalForm', () => {
         id: PersonalProfileFields.CONTACT_MOBILE,
       },
     });
-    await userEvent.type(screen.getByText('Enter new mobile number'), '1233dfsf');
+    await userEvent.type(screen.getByText('Enter new mobile number'), 's');
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(screen.getByText('Invalid mobile number')).toBeInTheDocument();
   });

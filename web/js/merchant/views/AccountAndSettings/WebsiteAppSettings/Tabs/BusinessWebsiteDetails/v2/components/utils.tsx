@@ -8,6 +8,7 @@ import {
   ShieldIcon,
   Heading,
   Button,
+  Box,
 } from '@razorpay/blade/components';
 
 import ListSuggestionBox from './ListSuggestionBox';
@@ -232,83 +233,73 @@ export const loaderVariant = {
 };
 
 export const suggestionBoxVariants = {
-  [SuggestionSteps.POLICY_PAGES]: (
-    <>
+  [SuggestionSteps.POLICY_PAGES]: {
+    element: ({ platform = 'website' }) => (
+      <>
+        <Text
+          color="surface.text.gray.subtle"
+          wordBreak="break-word"
+          marginBottom="spacing.2"
+          weight="medium"
+        >
+          Mandatory details required on your {platform}:
+        </Text>
+        <ListSuggestionBox listItems={PolicyPagesSuggestionsList.POLICY_PAGES} />
+      </>
+    ),
+    positioningStyles: {
+      alignContent: 'flex-start',
+    },
+  },
+  [SuggestionSteps.URL_FIELD]: {
+    element: ({ platform = 'website' }) => (
       <Text color="surface.text.gray.subtle" wordBreak="break-word">
-        Make sure these pages are available on your website with the required details
+        This should be the {platform} where you intend to collect payments.
       </Text>
-      <ListSuggestionBox listItems={PolicyPagesSuggestionsList.POLICY_PAGES} />
-    </>
-  ),
-  [SuggestionSteps.CREDS_NOT_REQUIRED]: (
-    <Text color="surface.text.gray.subtle" wordBreak="break-word">
-      If your website requires login from user to complete payment, provide a ‘Test account’ for us
-      to verify your website
-    </Text>
-  ),
-  [SuggestionSteps.CREDS_REQUIRED]: (
-    <Text color="surface.text.gray.subtle" wordBreak="break-word">
-      Provide a ‘Test account’ for us to verify your website
-    </Text>
-  ),
-  // [SuggestionSteps.MISSING_POLICY_PAGES_terms]: (
-  //   <>
-  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
-  //       A <b>Terms and Conditions page</b> outlines the conditions of use for your website or app.
-  //     </Text>
-  //     <Text color="surface.text.gray.subtle" weight="medium">
-  //       Details required:
-  //     </Text>
-  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_terms} />
-  //   </>
-  // ),
-  // [SuggestionSteps.MISSING_POLICY_PAGES_privacy]: (
-  //   <>
-  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
-  //       A <b>Privacy Policy page</b> discloses how your company will handle and protect user
-  //       information.
-  //     </Text>
-  //     <Text color="surface.text.gray.subtle" weight="medium">
-  //       Details required:
-  //     </Text>
-  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_privacy} />
-  //   </>
-  // ),
-  // [SuggestionSteps.MISSING_POLICY_PAGES_contact]: (
-  //   <>
-  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
-  //       A <b>Contact Us page</b> should contain information through which customers can reach you.
-  //     </Text>
-  //     <Text color="surface.text.gray.subtle" weight="medium">
-  //       Details required:
-  //     </Text>
-  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_contact} />
-  //   </>
-  // ),
-  // [SuggestionSteps.MISSING_POLICY_PAGES_refund]: (
-  //   <>
-  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
-  //       A <b>Cancellations and Refunds page</b> outlines rules about how customers can return and
-  //       exchange products/services they purchased.
-  //     </Text>
-  //     <Text color="surface.text.gray.subtle" weight="medium">
-  //       Details required:
-  //     </Text>
-  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_refund} />
-  //   </>
-  // ),
-  // [SuggestionSteps.MISSING_POLICY_PAGES_shipping]: (
-  //   <>
-  //     <Text color="surface.text.gray.subtle" wordBreak="break-word">
-  //       A <b>Shipping Policy</b> contains information about rules, timelines, and processes for
-  //       shipped items.
-  //     </Text>
-  //     <Text color="surface.text.gray.subtle" weight="medium">
-  //       Details required:
-  //     </Text>
-  //     <ListSuggestionBox listItems={PolicyPagesSuggestionsList.MISSING_POLICY_PAGES_shipping} />
-  //   </>
-  // ),
+    ),
+    positioningStyles: {
+      alignContent: 'flex-start',
+      marginTop: '25%',
+    },
+  },
+  [SuggestionSteps.CREDS_NOT_REQUIRED]: {
+    element: ({ platform = 'website' }) => (
+      <Text color="surface.text.gray.subtle" wordBreak="break-word">
+        If your {platform} requires users to log in before making a purchase or payment, then please
+        provide us test credentials for us to verify your {platform}.
+      </Text>
+    ),
+    positioningStyles: {
+      alignContent: 'center',
+      marginTop: '15%',
+    },
+  },
+  [SuggestionSteps.CREDS_REQUIRED]: {
+    element: () => (
+      <Text color="surface.text.gray.subtle" wordBreak="break-word">
+        Please share the credentials to a test account. This helps Razorpay understand your checkout
+        flow, so we can ensure accurate integration, user tracking, and support for features like
+        refunds, order mapping, and fraud prevention.
+      </Text>
+    ),
+    positioningStyles: {
+      alignContent: 'center',
+      marginTop: '10%',
+    },
+  },
+  [SuggestionSteps.CREDS_FIELDS]: {
+    element: () => (
+      <Text color="surface.text.gray.subtle" wordBreak="break-word">
+        Please share the credentials to a test account. This helps Razorpay understand your checkout
+        flow, so we can ensure accurate integration, user tracking, and support for features like
+        refunds, order mapping, and fraud prevention.
+      </Text>
+    ),
+    positioningStyles: {
+      alignContent: 'flex-end',
+      marginBottom: '6%',
+    },
+  },
 };
 
 export const policySuggestionStep = {

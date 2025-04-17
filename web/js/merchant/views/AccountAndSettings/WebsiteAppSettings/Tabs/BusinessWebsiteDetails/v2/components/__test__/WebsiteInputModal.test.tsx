@@ -23,6 +23,9 @@ jest.mock(
       getWebsiteCount: jest.fn(() => {
         return 0;
       }),
+      getSuggestionStep: jest.fn(() => {
+        return '';
+      }),
     };
   },
 );
@@ -80,7 +83,7 @@ describe('Business website automation - WebsiteInputModal', () => {
 
     expect(
       screen.getByRole('radiogroup', {
-        name: 'Does your website require login from user to complete payment?',
+        name: 'Does your website require users to login to complete a payment?',
       }),
     ).toBeInTheDocument();
     const crdsRadio = screen.getByRole('radio', {
