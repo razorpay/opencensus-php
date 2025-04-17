@@ -69,7 +69,7 @@ export const createPaymentPage = async ({ page, productData, type }) => {
 
     await page.getByRole('button', { name: 'Publish page' }).click();
 
-    await expect(page.getByText('Storefront created successfully')).toBeVisible();
+    await expect(page.getByText('Razorpay Webstore created successfully')).toBeVisible();
   }
 };
 

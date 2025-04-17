@@ -168,15 +168,15 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
             </div>
             {/* TODO: Refactor after blade's heading component allows multiple children */}
             <TemplateSelectionHeading>
-              Storefront page
+              Razorpay Webstore
               <NewLabel marginLeft="8px">
                 <i className="i i-star-outline mt-2" />
                 <span>New</span>
               </NewLabel>
             </TemplateSelectionHeading>
             <p>
-              Showcase products on your online storefront and start accepting orders. Add multiple
-              images and detailed descriptions for your products & do lots more
+              Showcase products on your online Razorpay Webstore and start accepting orders. Add
+              multiple images and detailed descriptions for your products & do lots more
             </p>
             <Button
               variant="primary"
@@ -186,7 +186,7 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
               iconPosition="right"
               isFullWidth={isMobile}
             >
-              Select Storefront page
+              Select Razorpay Webstore
             </Button>
           </div>
         </TemplateSelectionWrapper>

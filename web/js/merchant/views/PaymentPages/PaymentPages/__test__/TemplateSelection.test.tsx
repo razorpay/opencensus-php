@@ -49,7 +49,7 @@ describe('TemplateSelectionV2 Component Tests', () => {
 
       expect(screen.getByText('Select a page according to your needs')).toBeInTheDocument();
 
-      expect(screen.getByText('Storefront')).toBeInTheDocument();
+      expect(screen.getByText('Razorpay Webstore')).toBeInTheDocument();
       expect(screen.getByText('Best for businesses selling multiple products')).toBeInTheDocument();
 
       expect(screen.getByText('Payment Page')).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe('TemplateSelectionV2 Component Tests', () => {
       render(<TemplateSelectionV2 {...defaultProps} isMobile={true} />);
 
       expect(screen.getByText('Select a page according to your needs')).toBeInTheDocument();
-      expect(screen.getByText('Storefront')).toBeInTheDocument();
+      expect(screen.getByText('Razorpay Webstore')).toBeInTheDocument();
       expect(screen.getByText('Payment Page')).toBeInTheDocument();
       expect(screen.getByText('Online store with checkout—no coding needed!')).toBeInTheDocument();
     });
@@ -87,7 +87,7 @@ describe('TemplateSelectionV2 Component Tests', () => {
     test('clicking storefront button triggers correct handlers and analytics', () => {
       render(<TemplateSelectionV2 {...defaultProps} />);
 
-      const createButtons = screen.getByText('Create Storefront');
+      const createButtons = screen.getByText('Create Razorpay Webstore');
       fireEvent.click(createButtons);
 
       expect(defaultProps.handlePageType).toHaveBeenCalledWith(PAYMENT_PAGES_TYPES.storefront);

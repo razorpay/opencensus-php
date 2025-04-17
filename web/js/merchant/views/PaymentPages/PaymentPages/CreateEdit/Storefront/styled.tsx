@@ -70,7 +70,7 @@ export const StoreFrontWrapper = styled.div`
 
 export const StoreFrontName = styled.div`
   background: linear-gradient(90deg, rgba(21, 102, 241, 0.08) 3.73%, rgba(21, 102, 241, 0) 97.01%);
-  width: 200px;
+  width: 220px;
   height: 34px;
   position: relative;
   padding-left: 24px;

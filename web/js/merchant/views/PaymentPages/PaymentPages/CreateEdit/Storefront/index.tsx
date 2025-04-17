@@ -640,7 +640,7 @@ const StoreFront = ({
           if (res.success) {
             showNotification({
               type: 'success',
-              message: 'Storefront created successfully',
+              message: 'Razorpay Webstore created successfully',
               closeTimeout: 2500,
             });
             track.publishPageLoadedSucessfully({
@@ -669,7 +669,7 @@ const StoreFront = ({
         if (res.success) {
           showNotification({
             type: 'success',
-            message: 'Storefront updated successfully',
+            message: 'Razorpay Webstore updated successfully',
             closeTimeout: 2500,
           });
           track.publishPageLoadedSucessfully({
@@ -692,12 +692,12 @@ const StoreFront = ({
       });
   };
 
-  let pageTitle: string | React.ReactElement = 'Create a new storefront page';
+  let pageTitle: string | React.ReactElement = 'Create a new Razorpay Webstore';
 
   if (id) {
     pageTitle = (
       <>
-        Edit storefront <span> - {id}</span>
+        Edit Razorpay Webstore <span> - {id}</span>
       </>
     );
   }
@@ -831,7 +831,7 @@ const StoreFront = ({
                               ? 'Add your first product'
                               : 'Add products to this page'}
                           </h4>
-                          <p> Showcase the product that you want to sell on this storefront</p>
+                          <p> Showcase the product that you want to sell on this Razorpay Webstore</p>
                         </AddProductBox>
                         {isSampleProduct && (
                           <SampleProducts removeProduct={removeSampleProduct} isMobile={isMobile}>
@@ -931,7 +931,7 @@ const StoreFront = ({
                   <DescriptionWrapper>
                     <DescriptionLeftWrapper>
                       <Heading weight="semibold" size="small" color="surface.text.gray.normal">
-                        Preview of your store
+                        Preview of your Razorpay Webstore
                       </Heading>
                       <Box>
                         <Text

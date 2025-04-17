@@ -6,7 +6,7 @@ import {
   CarouselItem,
   Button,
   ArrowRightIcon,
-  Heading
+  Heading,
 } from '@razorpay/blade/components';
 import { FeatureListProps, ImageCarouselProps, PageCardProps } from './types';
 import { PAYMENT_PAGES_TYPES } from './PageConfig';
@@ -17,12 +17,17 @@ export const FeatureList: React.FC<FeatureListProps> = ({ features, isMobile }) 
       display="flex"
       flexDirection="column"
       gap={isMobile ? 'spacing.4' : 'spacing.5'}
-      marginBottom={isMobile ? "spacing.7" :"spacing.9"}
+      marginBottom={isMobile ? 'spacing.7' : 'spacing.9'}
     >
       {features.map((feature, index) => (
         <Box key={index} display="flex" alignItems="center" gap="spacing.3">
           {feature.icon}
-          <Text variant='body' size={isMobile ? 'small' : 'large'} weight={isMobile ? "regular" : "medium"}>
+          <Text
+            variant="body"
+            size={isMobile ? 'small' : 'large'}
+            weight={isMobile ? 'regular' : 'medium'}
+            color='surface.text.gray.subtle'
+          >
             {isMobile ? feature.textMobile : feature.textDesktop}
           </Text>
         </Box>
@@ -61,23 +66,32 @@ export const PageCard: React.FC<PageCardProps> = ({ config, onCreateClick, type,
         marginBottom="spacing.7"
       >
         <Box display="flex" flexDirection="column" gap="spacing.2">
-          <Heading size={isMobile ? "small" :"medium"} weight="semibold" color="surface.text.gray.normal">
+          <Heading
+            size={isMobile ? 'small' : 'medium'}
+            weight="semibold"
+            color="surface.text.gray.normal"
+          >
             {config.title}
           </Heading>
           <Text
             size={isMobile ? 'small' : 'large'}
             weight="semibold"
             variant="body"
-            color="surface.text.gray.normal"
+            color="surface.text.gray.subtle"
           >
             {config.subtitle}
           </Text>
         </Box>
         {!isMobile ? (
-          <Button variant="primary" onClick={onCreateClick} icon={ArrowRightIcon}>
+          <Button
+            variant="primary"
+            onClick={onCreateClick}
+            icon={ArrowRightIcon}
+            iconPosition="right"
+          >
             {type === PAYMENT_PAGES_TYPES.payment_page
               ? 'Create Payment Page'
-              : 'Create Storefront'}
+              : 'Create Razorpay Webstore'}
           </Button>
         ) : null}
       </Box>
@@ -90,8 +104,9 @@ export const PageCard: React.FC<PageCardProps> = ({ config, onCreateClick, type,
           onClick={onCreateClick}
           icon={ArrowRightIcon}
           marginBottom="spacing.7"
+          iconPosition='right'
         >
-          {type === PAYMENT_PAGES_TYPES.payment_page ? 'Create Payment Page' : 'Create Storefront'}
+          {type === PAYMENT_PAGES_TYPES.payment_page ? 'Create Payment Page' : 'Create Razorpay Webstore'}
         </Button>
       ) : null}
 

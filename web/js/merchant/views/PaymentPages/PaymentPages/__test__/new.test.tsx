@@ -39,20 +39,20 @@ describe('Payment Pages -> Create (razorx on)', () => {
     // test if mock is working properly
     expect(window.PP_ECOMMERCE_URL).toBe('https://example.com');
     expect(screen.getByText('Select page of your choice')).toBeInTheDocument();
-    expect(screen.getByText('Select Storefront page')).toBeInTheDocument();
+    expect(screen.getByText('Select Razorpay Webstore')).toBeInTheDocument();
     expect(screen.getByText('Select Payment page')).toBeInTheDocument();
   });
 
   test('should open create storefront screen on selecting storefront template', async () => {
     renderApp();
 
-    const storefrontTemplateButton = screen.getByText('Select Storefront page');
+    const storefrontTemplateButton = screen.getByText('Select Razorpay Webstore');
     expect(storefrontTemplateButton).toBeInTheDocument();
 
     await userEvent.click(storefrontTemplateButton);
 
     expect(storefrontTemplateButton).not.toBeInTheDocument();
-    expect(screen.getByText('Create a new storefront page')).toBeInTheDocument();
+    expect(screen.getByText('Create a new Razorpay Webstore')).toBeInTheDocument();
   });
 
   test('should open create payment pages screen on selecting payment pages template', async () => {
@@ -73,7 +73,7 @@ describe('Payment Pages -> Create (razorx off)', () => {
   test('should not render template selection screen', () => {
     renderApp(false);
     expect(screen.queryByText('Select page of your choice')).not.toBeInTheDocument();
-    expect(screen.queryByText('Select Storefront page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Select Razorpay Webstore')).not.toBeInTheDocument();
   });
 
   test('should render PP templates popup', () => {

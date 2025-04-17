@@ -95,7 +95,7 @@ const PaymentsAndStorefrontTab = ({
           <i className="i i-done" />
         </CustomRadio>
         {/* <b>{totalStorefrontLength}</b> &nbsp;  */}
-        Storefront pages
+        Razorpay Webstore
       </Tab>
     </Wrapper>
   );

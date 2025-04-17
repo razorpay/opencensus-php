@@ -16,7 +16,7 @@ export const PAYMENT_PAGES_TYPES = {
 export const PAGE_CONFIGS = {
   [PAYMENT_PAGES_TYPES.storefront]: {
     id: PAYMENT_PAGES_TYPES.storefront,
-    title: 'Storefront',
+    title: 'Razorpay Webstore',
     subtitle: 'Best for businesses selling multiple products',
     features: [
       {

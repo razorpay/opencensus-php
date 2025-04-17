@@ -61,7 +61,7 @@ const StorefrontPageTitle = ({ title, editStorefront, user }: IStorefrontPageTit
     <PageTitleWrapper>
       <StoreFrontName>
         <StoreFrontentIcon src={StorefrontIcon} alt="Storefront" />
-        Storefront name
+        Razorpay Webstore name
       </StoreFrontName>
       {isEditing ? (
         <EditPageTitleWrapper>
@@ -72,11 +72,11 @@ const StorefrontPageTitle = ({ title, editStorefront, user }: IStorefrontPageTit
               name="pageTitle"
               onChange={updateTitle}
               value={pageTitle}
-              placeholder="Add Storefront name"
+              placeholder="Add Razorpay Webstore name"
               validationState={isValid ? 'none' : 'error'}
               isRequired
               autoFocus
-              errorText="Please enter storefront name"
+              errorText="Please enter Razorpay Webstore name"
             />
           </EditPageInputWrapper>
           <EditButtonWrapper>
