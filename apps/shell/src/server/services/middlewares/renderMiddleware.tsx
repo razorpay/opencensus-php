@@ -27,10 +27,8 @@ export const renderMiddleware: ExpressMiddleware =
       }
 
       const isLinkedAccountDashboard = Boolean(res.locals.user?.linked_account);
-      const isOneDashboard = Boolean(
-        res.locals?.server_evaluated_experiments?.['render-via-shell-client'],
-      );
-
+      const isOneDashboard = false;
+      
       const getTemplate = () => {
         switch (true) {
           case isLinkedAccountDashboard:
