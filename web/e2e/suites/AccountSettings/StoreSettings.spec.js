@@ -13,6 +13,7 @@ const ELEMENT_CONFIG = {
   DELETE_STORE_GROUP_BUTTON: 'button >> text="Delete Group"',
   DELETE_STORE_GROUP_MODAL_MESSAGE:
     '[data-blade-component="text"]:has-text("Group once deleted cannot be recovered.")',
+  STORE_GROUP_MODAL_CANCEL_BUTTON: 'button >> text="Cancel"',
   STORES_TABLE_COLUMN_NAME: '[data-blade-component="text"]:has-text("Store Name")',
   STORES_ONLINE_TYPE_FILTER_OPTION: 'button >> [data-blade-component="text"]:has-text("Online")',
   TABLE_LOADER: '[data-blade-component="spinner"] >> [aria-label="Refreshing Table"]',
@@ -46,32 +47,42 @@ test.describe
       await page.locator(ELEMENT_CONFIG.ADD_NEW_STORE_GROUP_BUTTON).click();
       await expect(page.locator(ELEMENT_CONFIG.ADD_STORE_GROUP_MODAL_TITLE)).toBeVisible();
 
-      await page.getByPlaceholder('Enter Group Name').fill('Test Store Group Name');
+      // 'Add' button should be disabled when Store Group name is empty and when no Store is selected
+      await expect(page.locator(ELEMENT_CONFIG.ADD_STORE_GROUP_MODAL_SUBMIT_BUTTON)).toBeDisabled();
+
+      const storeGroupName = `Store Group - ${Date.now()} - ${Math.floor(Math.random() * 1000)}`;
+      await page.getByPlaceholder('Enter Group Name').fill(storeGroupName);
       await page.getByPlaceholder('Enter Group Description').fill('Test Store Group Description');
       const storeChip = await page.locator(ELEMENT_CONFIG.STORE_CHIP).first();
       if (storeChip) {
         await storeChip.click();
+
+        // 'Add' button should be enabled when Store Group name is not empty and when a Store is selected
+        await expect(page.locator(ELEMENT_CONFIG.ADD_STORE_GROUP_MODAL_SUBMIT_BUTTON)).toBeEnabled();
+
         await page.locator(ELEMENT_CONFIG.ADD_STORE_GROUP_MODAL_SUBMIT_BUTTON).click();
         await expect(page.locator(ELEMENT_CONFIG.ADD_STORE_GROUP_MODAL_TITLE)).not.toBeVisible();
 
         // View and update newly created Store Group
         await page
           .locator(ELEMENT_CONFIG.STORE_GROUP_CARD)
-          .filter({ hasText: /Test Store Group Name/ })
+          .filter({ hasText: storeGroupName })
           .nth(1)
           .click();
         await page.locator(ELEMENT_CONFIG.EDIT_STORE_GROUP_BUTTON).click();
         await expect(page.locator(ELEMENT_CONFIG.EDIT_STORE_GROUP_MODAL_TITLE)).toBeVisible();
-        await expect(page.getByPlaceholder('Enter Group Name')).toHaveValue('Test Store Group Name');
-        await page.locator(ELEMENT_CONFIG.EDIT_STORE_GROUP_MODAL_SUBMIT_BUTTON).click();
+        await expect(page.getByPlaceholder('Enter Group Name')).toHaveValue(storeGroupName);
+        await page.locator(ELEMENT_CONFIG.STORE_GROUP_MODAL_CANCEL_BUTTON).click();
         await expect(page.locator(ELEMENT_CONFIG.ADD_STORE_GROUP_MODAL_TITLE)).not.toBeVisible();
 
         // Delete created Store Group
+        await expect(await page.locator(ELEMENT_CONFIG.STORE_GROUP_CARD).filter({ hasText: storeGroupName }).nth(1)).toBeVisible();
         await page.locator(ELEMENT_CONFIG.DELETE_STORE_GROUP_BUTTON).click();
         await expect(page.locator(ELEMENT_CONFIG.DELETE_STORE_GROUP_MODAL_MESSAGE)).toBeVisible();
         await page.locator(ELEMENT_CONFIG.DELETE_BUTTON).click();
         await expect(page.locator(ELEMENT_CONFIG.DELETE_STORE_GROUP_MODAL_MESSAGE)).not.toBeVisible();
         await expect(page.locator(ELEMENT_CONFIG.DELETE_STORE_GROUP_BUTTON)).not.toBeVisible();
+        await expect(await page.locator(ELEMENT_CONFIG.STORE_GROUP_CARD).filter({ hasText: storeGroupName }).nth(1)).not.toBeVisible();
       }
     });
 

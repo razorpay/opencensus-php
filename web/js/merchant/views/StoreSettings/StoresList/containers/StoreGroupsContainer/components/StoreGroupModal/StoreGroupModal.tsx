@@ -249,6 +249,7 @@ const StoreGroupModal = ({
             isDisabled={
               isStoreGroupInfoFetching || isCreateStoreGroupLoading || isUpdateStoreGroupLoading
             }
+            data-analytics-name="cancel-store-group-changes"
           >
             Cancel
           </Button>
@@ -258,6 +259,7 @@ const StoreGroupModal = ({
             }
             onClick={handleModalSubmit}
             isLoading={isCreateStoreGroupLoading || isUpdateStoreGroupLoading}
+            data-analytics-name="save-store-group-changes"
           >
             {submitBtnText}
           </Button>

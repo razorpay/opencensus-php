@@ -25,12 +25,6 @@ const ConsumerProfiling = React.lazy(
       /* webpackChunkName: "ConsumerProfiling" */ '@apps/digital-bills/src/views/ConsumerProfiling'
     ),
 );
-const UsageAndInvoices = React.lazy(
-  () =>
-    import(
-      /* webpackChunkName: "UsageAndInvoices" */ '@apps/digital-bills/src/views/UsageAndInvoices'
-    ),
-);
 const BillCampaigns = React.lazy(
   () =>
     import(/* webpackChunkName: "BillCampaigns" */ '@apps/digital-bills/src/views/BillCampaigns'),
@@ -88,7 +82,6 @@ function DigitalBillsRouter(): React.ReactElement {
         <Route path="coupon-management" element={<CouponManagement />} />
         <Route path="survey-management" element={<SurveyManagement />} />
         <Route path="consumer-segmentation" element={<CustomerSegmentation />} />
-        <Route path="usage-and-invoices" element={<UsageAndInvoices />} />
         <Route path="bill-campaigns" element={<BillCampaigns />} />
         <Route path="communication-campaigns" element={<CommunicationCampaigns />} />
         <Route path="auto-engagement" element={<AutoEngagement />} />

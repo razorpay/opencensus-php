@@ -41,10 +41,6 @@ export const IFRAME_LABELS_AND_LINKS = {
       href: 'media-bank',
     },
     {
-      label: 'Usage & Invoice',
-      href: 'usage-and-invoices',
-    },
-    {
       label: 'Settings',
       href: 'settings',
     },

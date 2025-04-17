@@ -73,6 +73,17 @@ const LinkRzpProducts = (props: LinkRzpProductsProps) => {
     setShouldShowAlertModal(false);
   };
 
+  const handleDigitalBillingProductSelection = ({ isChecked }) => {
+    if (isChecked) {
+      setFieldValue('linkedProducts', [
+        ...(formValues.linkedProducts || []),
+        DIGITAL_BILLING,
+      ]);
+    } else {
+      setShouldShowAlertModal(true);
+    }
+  };
+
   return (
     <>
       {shouldShowAlertModal && (
@@ -101,28 +112,38 @@ const LinkRzpProducts = (props: LinkRzpProductsProps) => {
               <Box width="70%" display="flex" gap="spacing.4" flexDirection="column">
                 <Box display="flex" gap="spacing.3">
                   <Heading>Digital Billing</Heading>
-                  <Switch
-                    key={formValues?.digitalBilling?.brandId}
-                    isChecked={isDigitalBillingSelected}
-                    onChange={({ isChecked }) => {
-                      if (isChecked) {
-                        setFieldValue('linkedProducts', [
-                          ...(formValues.linkedProducts || []),
-                          DIGITAL_BILLING,
-                        ]);
-                      } else {
-                        setShouldShowAlertModal(true);
-                      }
-                    }}
-                    accessibilityLabel="Digital Billing"
-                  />
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    gap="spacing.2"
+                  >
+                    <Switch
+                      key={formValues?.digitalBilling?.brandId}
+                      isChecked={isDigitalBillingSelected}
+                      onChange={handleDigitalBillingProductSelection}
+                      accessibilityLabel="Digital Billing"
+                    />
+                    {errors.linkedProducts ? (
+                      <Text
+                        size="medium"
+                        color="feedback.text.negative.intense"
+                      >
+                        {errors.linkedProducts}
+                      </Text>
+                    ) : null}
+                  </Box>
                 </Box>
                 <Dropdown>
                   <AutoComplete
                     isDisabled={!isDigitalBillingSelected}
                     inputValue={searchTerm}
                     onChange={({ values }) => {
-                      setFieldValue('digitalBilling.brandId', values[0]);
+                      const brandId = brands.find((brand) => brand.name === values[0])?.id || '';
+                      setFieldValue('digitalBilling', {
+                        brandId,
+                        brandName: values[0],
+                      });
                     }}
                     onInputValueChange={({ value = '' }) => {
                       setSearchTerm(value);
@@ -146,7 +167,7 @@ const LinkRzpProducts = (props: LinkRzpProductsProps) => {
                     ) : (
                       <ActionList>
                         {brands.map((brand) => (
-                          <ActionListItem title={brand.name} value={brand.id} key={brand.id} />
+                          <ActionListItem title={brand.name} value={brand.name} key={brand.id} />
                         ))}
                       </ActionList>
                     )}
@@ -154,7 +175,7 @@ const LinkRzpProducts = (props: LinkRzpProductsProps) => {
                       <Link
                         icon={ArrowRightIcon}
                         iconPosition="right"
-                        onClick={() => navigate('/app/billme-settings/brands-and-terminals')}
+                        onClick={() => navigate('/billme-settings/brands-and-terminals')}
                       >
                         Create New Brand
                       </Link>

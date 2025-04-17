@@ -102,5 +102,5 @@ export const StoreCreateSchema = Yup.object().shape({
         return customFields.every((field) => field!.title && field!.value);
       },
     ),
-  linkedProducts: Yup.array().of(Yup.string()).notRequired(),
+  linkedProducts: Yup.array().of(Yup.string()).required('Linked Products is required'),
 });

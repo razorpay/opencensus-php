@@ -11,7 +11,6 @@ export const ROUTES = {
   SURVEY_MANAGEMENT: '/app/billme/survey-management',
   COUPON_MANAGEMENT: '/app/billme/coupon-management',
   MEDIA_BANK: '/app/billme/media-bank',
-  USAGE_AND_INVOICES: '/app/billme/usage-and-invoices',
   SETTINGS: '/app/billme/settings',
 };
 
@@ -60,11 +59,6 @@ export const IFRAME_PATH_INFO = [
     linkTitle: 'Media Bank',
     pathname: ROUTES.MEDIA_BANK,
     iframePath: '/auto-engage/uploadedData',
-  },
-  {
-    linkTitle: 'Usage & Invoice',
-    pathname: ROUTES.USAGE_AND_INVOICES,
-    iframePath: '/usage-and-invoices',
   },
   {
     linkTitle: 'Settings',

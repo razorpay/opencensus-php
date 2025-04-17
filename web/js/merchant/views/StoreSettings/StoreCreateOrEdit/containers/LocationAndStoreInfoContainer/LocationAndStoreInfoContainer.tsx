@@ -14,6 +14,7 @@ import {
 } from '@razorpay/blade/components';
 import { getCities, getStates, getAllCountries } from '@razorpay/i18nify-js';
 import { useFormikContext } from 'formik';
+import { useSearchParams } from 'react-router-dom';
 
 import StoreContactDetails from 'merchant/views/StoreSettings/StoreCreateOrEdit/containers/StoreContactDetails';
 import { useStoresCreateStore } from 'merchant/views/StoreSettings/StoreCreateOrEdit/stores/storesCreateFormStore';
@@ -50,9 +51,12 @@ function LocationAndStoreInfoContainer({ isLoading }: LocationAndStoreInfoContai
 
   const { basicInfoForm, neglectStateAndCityCheck, setNeglectStateAndCityCheck } =
     useStoresCreateStore();
+  
+  const [searchParams] = useSearchParams();
+  const storeId = searchParams.get('id');
 
   useEffect(() => {
-    if (basicInfoForm.country) {
+    if (basicInfoForm.country && storeId) {
       getAllCountries().then((data) => {
         const countries = Object.keys(data).map((key) => ({
           label: data[key].country_name,
@@ -143,7 +147,7 @@ function LocationAndStoreInfoContainer({ isLoading }: LocationAndStoreInfoContai
         });
       });
     }
-  }, [basicInfoForm]);
+  }, [basicInfoForm, storeId]);
 
   const isLocationFieldsMandatory = formValues.storeType === 'OFFLINE';
 

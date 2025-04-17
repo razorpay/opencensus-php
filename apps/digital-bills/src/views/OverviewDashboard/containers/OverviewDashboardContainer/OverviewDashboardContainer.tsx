@@ -298,9 +298,7 @@ const OverviewDashboardContainer = (): React.ReactElement => {
               return (
                 <Box key={href}>
                   <LinkCard label={label} href={href} />
-                  {index < IFRAME_LABELS_AND_LINKS.MISCELLANEOUS.length - 1 ? (
-                    <Divider dividerStyle="dashed" variant="normal" thickness="thinner" />
-                  ) : null}
+                  <Divider dividerStyle="dashed" variant="normal" thickness="thinner" />
                 </Box>
               );
             })}
