@@ -1324,7 +1324,7 @@ class Service extends Base\Service
                 $featureNames = array_column($orgFeatures, 'feature_name');
 
                 // Retrieve existing feature names of the target organization
-                $existingFeatureNames = $this->repo->admin->existingFeatureNames($toOrgId);
+                $existingFeatureNames =$this->merchant->org->getEnabledFeatures();
 
                 $insertFeaturesData = collect($featureNames)
                     ->diff($existingFeatureNames)
