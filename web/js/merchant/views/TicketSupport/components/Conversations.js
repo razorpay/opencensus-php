@@ -59,6 +59,7 @@ class Conversations extends React.Component {
     isReplyAdded: false,
     shouldCreateNewTicketForWorkflow: false,
     workflow: {},
+    isLoadMoreVisible: true,
   };
 
   goNext = (page) => {
@@ -75,7 +76,7 @@ class Conversations extends React.Component {
     this.setState({ conversations: c });
 
     merchantFetch({
-      url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations?per_page=40`,
+      url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations?per_page=40&page=${page}`,
       mode: 'live',
     })
       .then((e) => {
@@ -84,7 +85,14 @@ class Conversations extends React.Component {
         conversations.loading = false;
         conversations.data[page] =
           e.data instanceof Array ? e.data : Object.entries(e.data).map((C) => C[1]);
-        this.setState({ conversations });
+
+        const isDataEmpty = Array.isArray(e.data)
+          ? e.data.length === 0
+          : typeof e.data === 'object'
+          ? Object.keys(e.data ?? {}).length === 0
+          : true;
+
+        this.setState({ conversations, isLoadMoreVisible: !isDataEmpty, current_page: page });
         this.setTimerToReload(conversations.data[page]);
       })
       .catch(() => {
@@ -425,6 +433,7 @@ class Conversations extends React.Component {
       loadingTicket,
       error,
       isReplyAdded,
+      isLoadMoreVisible,
     } = this.state;
 
     const isWorkflow = match?.params?.instance === 'workflow';
@@ -704,6 +713,14 @@ class Conversations extends React.Component {
                       ) : null}
                     </div>
                   )}
+                  {isLoadMoreVisible ? (
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => this.goNext(this.state.current_page + 1)}
+                    >
+                      Load more
+                    </button>
+                  ) : null}
                   {toggleReply ? (
                     <Reply
                       email={user?.contact_email}
