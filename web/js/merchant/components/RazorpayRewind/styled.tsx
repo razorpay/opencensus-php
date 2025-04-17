@@ -66,8 +66,9 @@ export const StyledIcon = styled.div(
 export const BannerText = styled.div<{ isMobileorTabletModified?: boolean }>`
   color: white;
   font-family: 'TASA Orbiter Display', sans-serif;
-  font-size: ${({ isMobileorTabletModified }) => (isMobileorTabletModified ? '16px' : '30px')};
+  font-size: ${({ isMobileorTabletModified }) => (isMobileorTabletModified ? '16px' : '26px')};
   width: ${({ isMobileorTabletModified }) => (!isMobileorTabletModified ? '300px' : undefined)};
+  line-height: 108%;
 `;
 
 export const BannerBtn = styled.button<{ isMobileBanner: boolean }>(

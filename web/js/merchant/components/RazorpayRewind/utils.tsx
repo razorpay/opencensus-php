@@ -31,7 +31,7 @@ import { captureImage } from './imageUtils';
 import { RewindFonts } from './RazorpayRewind';
 
 export const postContent =
-  'My numbers have quite the story to share this quarter! #RazorpaySnapshot';
+  'Just relived my year in payments. Spoiler alert: we crushed it in FY2024! #RazorpayRewind2025';
 
 export const trackPaymentsRecapEvent = ({
   objectName,
@@ -661,16 +661,16 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           <TextWrapper
             top={getSize({
               mobileValue: '37vw',
-              tabletValue: '10vw',
-              defaultValue: '70px',
+              tabletValue: '7vw',
+              defaultValue: '50px',
               smallMobileValue: '36vw',
             })}
             right={getSize({ mobileValue: 'auto', tabletValue: 'auto', defaultValue: 'auto' })}
             left={getSize({ mobileValue: '14vw', tabletValue: '12vw', defaultValue: '80px' })}
             fontSize={getSize({
               mobileValue: '16vw',
-              tabletValue: '18vw',
-              defaultValue: '150px',
+              tabletValue: '23vw',
+              defaultValue: '165px',
               smallMobileValue: '16vw',
             })}
             fontFamily={RewindFonts.SnugSharp}
@@ -691,16 +691,16 @@ export const getSlides = ({ data, isMobile = false, isTablet = false, isSmallMob
           <TextWrapper
             top={getSize({
               mobileValue: '37vw',
-              tabletValue: '10vw',
-              defaultValue: '70px',
+              tabletValue: '7vw',
+              defaultValue: '50px',
               smallMobileValue: '36vw',
             })}
             right={getSize({ mobileValue: 'auto', tabletValue: 'auto', defaultValue: 'auto' })}
             left={getSize({ mobileValue: '14vw', tabletValue: '12vw', defaultValue: '80px' })}
             fontSize={getSize({
               mobileValue: '16vw',
-              tabletValue: '18vw',
-              defaultValue: '150px',
+              tabletValue: '23vw',
+              defaultValue: '165px',
               smallMobileValue: '16vw',
             })}
             fontFamily={RewindFonts.SnugSharp}
@@ -731,7 +731,7 @@ const linkedinBase = 'https://www.linkedin.com/shareArticle';
 export const socialShare = ({ componentRef, isMobile, isTablet = false, type }) => {
   let mediaUrl;
 
-  const mediaMsg = window.encodeURIComponent(`"${postContent}"`);
+  const mediaMsg = window.encodeURIComponent(`${postContent}`);
 
   if (['facebook', 'twitter', 'linkedin'].includes(type) && !isMobile) {
     captureImage(componentRef, isTablet, 'download');
