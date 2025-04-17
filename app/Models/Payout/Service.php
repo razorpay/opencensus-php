@@ -6857,23 +6857,19 @@ class Service extends Base\Service
                     break;
 
                 case 'approve_workflow_payouts':
-
                     $payoutIds = $bulk_input['payout_ids'];
-
-                    $processFunction(function($payoutIds) {
-                        $this->approveRejectWorkflowPayouts($payoutIds, 'approve');
+                    $queueIfBalanceLow = $bulk_input['queue_if_low_balance'] ?? true;
+                    $processFunction(function($payoutId) use ($queueIfBalanceLow)  {
+                        $this->approveRejectWorkflowPayouts($payoutId,'approve',$queueIfBalanceLow);
                     }, $payoutIds);
-
                     break;
 
                 case 'reject_workflow_payouts':
-
                     $payoutIds = $bulk_input['payout_ids'];
-
-                    $processFunction(function($payoutIds) {
-                        $this->approveRejectWorkflowPayouts($payoutIds,'reject');
-                    },$payoutIds);
-
+                    $queueIfBalanceLow = $bulk_input['queue_if_low_balance'] ?? true;
+                    $processFunction(function($payoutId) use ($queueIfBalanceLow) {
+                        $this->approveRejectWorkflowPayouts($payoutId,'reject',$queueIfBalanceLow);
+                    }, $payoutIds);
                     break;
 
                 case 'process_bank_transfer':
@@ -6958,52 +6954,44 @@ class Service extends Base\Service
         }
     }
 
-    public function approveRejectWorkflowPayouts($payoutIds, $action)
+    public function approveRejectWorkflowPayouts($payoutId, $action, $queueIfBalanceLow=true)
     {
-        foreach ($payoutIds as $payoutId) {
+        if (!str_starts_with($payoutId, 'pout_')) {
+            $payoutId = 'pout_' . $payoutId;
+        }
 
-            $attributes = [];
+        $attributes = [];
+        if ($queueIfBalanceLow) {
 
-            $payoutDetails = $this->repo->payouts_details->find($payoutId);
+            $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
+        }
 
-            $queueIfBalanceLow = $payoutDetails->getQueueIfLowBalanceFlag();
+        if ($action === 'approve') {
+            $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
 
-            if (!empty($queueIfBalanceLow)) {
+        } elseif ($action === 'reject') {
+            $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
 
-                $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
-            }
-
-            if ($action === 'approve') {
-
-                $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
-
-            } elseif ($action === 'reject') {
-
-                $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
-
-            } else {
-
-                $this->trace->warning(
-                    TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
-                    [
-                        'payout_id' => $payoutId,
-                        'action' => $action,
-                        'message' => 'Invalid action provided'
-                    ]
-                );
-
-                return;
-            }
-
-            $this->trace->info(
-                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+        } else {
+            $this->trace->warning(
+                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
                 [
-                    'payoutId' => $payoutId,
-                    'action' => $action
+                    'payout_id' => $payoutId,
+                    'action' => $action,
+                    'message' => 'Invalid action provided'
                 ]
             );
 
+            return;
         }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+            [
+                'payoutId' => $payoutId,
+                'action' => $action
+            ]
+        );
     }
 
     private function isMobileNumberPayout(array $input): bool {
