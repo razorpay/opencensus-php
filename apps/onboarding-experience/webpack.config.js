@@ -18,6 +18,12 @@ module.exports = withDashboardCore({
   },
   extendBrowserWebpackConfig: (config) => {
     config.entry.push('./src/bootstrap/bootstrap');
+
+    config.resolve.alias = {
+      'apps/onboarding-experience': path.resolve(__dirname),
+      '@FTUX': path.resolve(__dirname, 'src/pages/FTUX'),
+    };
+
     return config;
   },
 });

@@ -5,6 +5,12 @@ module.exports = withDashboardCore({
     moduleName: DASHBOARD_FEDERATED_MODULES.ONBOARDING_EXPERIENCE,
   },
   extendBrowserJestConfig: (config) => {
+    config.moduleNameMapper = {
+      ...config.moduleNameMapper,
+      '^apps/onboarding-experience/(.*)$': '<rootDir>/$1',
+      '^@FTUX/(.*)$': '<rootDir>/src/pages/FTUX/$1',
+    };
+
     config.coverageThreshold = {
       global: {
         statements: 0,

@@ -3,7 +3,12 @@
   "compilerOptions": {
     "composite": true,
     "typeRoots": ["node_modules/@types"],
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@libs/shared-qsuite/playwright": ["libs/shared-qsuite/dist/playwright.cjs.js"],
+      "@federated/apps/shell/*": ["apps/shell/src/client/exposed/*"],
+      "@FTUX/*": ["apps/onboarding-experience/src/pages/FTUX/*"]
+    }
   },
   "include": ["../../libs/shared-types/global.d.ts", "*.json", "**/*.json", "src"],
   "exclude": ["node_modules", "build", ".playwright-analysis", ".jest-analysis"],
