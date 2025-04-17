@@ -49,7 +49,8 @@ export const getCTACondition = ({
   additionalWebsiteWorkflow,
   user,
 }: GetCtaConditionArgs): GetCtaConditionData => {
-  let ctaDisabledReason = 'Your updation request is in progress';
+  let ctaDisabledReason =
+    "We're reviewing your website. You can add a new one once this request is approved.";
   const isKLA = !user.has_key_access;
   const ctaText =
     isKLA || !Boolean(user.business_website)
@@ -141,7 +142,7 @@ export const getCTACondition = ({
 
 export const mainPageFormDefaultValue = {
   platform: {
-    value: '',
+    value: Platform.WEBSITE,
     valid: ValidationState.NONE,
   },
   url: {
@@ -463,6 +464,10 @@ export function getWebsiteWorkflowStatus({
     [WebsiteUpdateAutomationStatus.IN_PROGRESS].includes(current_status)
   ) {
     status = Status.BvsInProgress;
+  } else if (ocr_automated_check_enable || hasReviewStatus || hasCustomerRespondedStatus) {
+    status = Status.WorkflowInReview;
+  } else if (hasAwaitingCustomerResponseStatus) {
+    status = Status.WorkflowNeedsClarification;
   } else if (
     current_status === WebsiteUpdateAutomationStatus.WEBSITE_UPDATE_FAILED ||
     current_status === WebsiteUpdateAutomationStatus.WORKFLOW_CREATION_FAILED
@@ -470,10 +475,6 @@ export function getWebsiteWorkflowStatus({
     status = Status.WebsiteUpdateFailed;
   } else if (current_status === WebsiteUpdateAutomationStatus.WEBSITE_LIVENESS_FAILED) {
     status = Status.WebsiteLivenessFailed;
-  } else if (ocr_automated_check_enable || hasReviewStatus || hasCustomerRespondedStatus) {
-    status = Status.WorkflowInReview;
-  } else if (hasAwaitingCustomerResponseStatus) {
-    status = Status.WorkflowNeedsClarification;
   } else if (hasRejectedStatus) {
     status = Status.Rejected;
   }
@@ -672,4 +673,36 @@ export function extractTextFromHtmlElement(htmlContent, className = '') {
   const extractedText = arrayOfElements.map((element) => element.textContent?.trim()).join('\n');
 
   return extractedText;
+}
+
+const tryAgainErrorMessage =
+  'Oops, something went wrong. Please try adding the website again. If the issue persists, reach out to our support team for assistance.';
+
+export const genericBackendErrorMessage =
+  'Something went wrong on our end. Please try again shortly or reach out to support if the issue continues.';
+
+const errorMapping = {
+  'validation_failure: invalid_additional_data_contact_number_detail':
+    'The phone number seems invalid. Please double-check and enter a valid number.',
+  'validation_failure: invalid_email_address':
+    'The email provided seems invalid. Please double-check and enter a valid email address.',
+  'validation_failure: enter_valid_website':
+    'The website link (URL) seems invalid. Please enter a valid link (URL) to continue.',
+
+  'bad_request: policy_link_not_found_in_website':
+    'We couldn’t locate the policy pages you shared. Please update the links or create them using Razorpay (recommended).',
+
+  'validation_failure: merchant_not_activated': tryAgainErrorMessage,
+  'validation_failure: merchant_single_policy_page_bvs_data_empty': tryAgainErrorMessage,
+  'validation_failure: main_page_doesnt_exist': tryAgainErrorMessage,
+};
+
+export function getErrorMessage(error) {
+  if (error && errorMapping[error]) {
+    return errorMapping[error];
+  }
+  if (error && typeof error === 'string') {
+    return error;
+  }
+  return genericBackendErrorMessage;
 }

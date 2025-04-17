@@ -125,10 +125,10 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               type="url"
               validationState={formState.url.valid}
               value={formState.url.value}
-              errorText="Enter valid website link starting with https://"
+              errorText="Enter a valid website link"
             />
             <RadioGroup
-              label={`Does your ${formState.platform.value} require login form user to complete payment?`}
+              label={`Does your ${formState.platform.value} require login from user to complete payment?`}
               name={MainFormFields.REQUIRE_CREDS}
               onChange={onChange}
               validationState={formState.requireCreds.valid}

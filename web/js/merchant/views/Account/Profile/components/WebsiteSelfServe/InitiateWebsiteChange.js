@@ -156,7 +156,7 @@ function InitiateWebsiteChange(props) {
             padding="spacing.6"
           >
             <Box display="flex" justifyContent="center" alignItems="center" margin="spacing.6">
-              <img height="148px" width="148px" src={wwwImg} />
+              <img height="100%" width="100%" src={wwwImg} />
             </Box>
             <Alert
               title="Please note:"

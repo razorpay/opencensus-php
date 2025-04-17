@@ -21,6 +21,7 @@ import {
   policyPageFormCreationValidator,
   getMerchantWebsiteDetailsPayload,
   getWebsiteCount,
+  getErrorMessage,
 } from '../utils';
 import CreatePolicyPagesIllustration from './assets/createPolicyPages.svg';
 
@@ -137,7 +138,7 @@ function Questionare({
         setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW);
       })
       .catch((error) => {
-        const message = error?.message || 'Failed to submit details. Please try again.';
+        const message = getErrorMessage(error?.message);
         trackQuestionaire('Failed', {
           errorMessage: message,
         });

@@ -24,6 +24,7 @@ import {
 } from './mocks/handlers';
 import WebsiteSubmitModal from '../WebsiteSubmitModal';
 import { WebsiteSubmitModalSteps } from '../types';
+import { genericBackendErrorMessage } from '../utils';
 
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 
@@ -280,7 +281,7 @@ describe('WebsiteSubmitModal', () => {
       });
       await waitFor(() => {
         expect(showNotificationSpy).toHaveBeenCalledWith({
-          message: 'Failed to submit details. Please try again.',
+          message: genericBackendErrorMessage,
           type: 'error',
         });
       });
@@ -475,7 +476,7 @@ describe('WebsiteSubmitModal', () => {
       await waitFor(() => {
         expect(showNotificationSpy).toHaveBeenCalledWith({
           type: 'error',
-          message: 'Failed to submit details. Please try again.',
+          message: genericBackendErrorMessage,
         });
       });
     });

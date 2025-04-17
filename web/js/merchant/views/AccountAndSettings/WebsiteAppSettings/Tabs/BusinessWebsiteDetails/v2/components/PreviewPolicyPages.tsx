@@ -33,7 +33,7 @@ import {
   WebsiteSubmitModalSteps,
   WebsiteUpdateAutomationStatus,
 } from '../types';
-import { extractTextFromHtmlElement, snapPoints } from '../utils';
+import { extractTextFromHtmlElement, getErrorMessage, snapPoints } from '../utils';
 import { policyPagePublishDisclaimer } from './constants';
 
 const SkeletonWrapper = styled.div(
@@ -135,6 +135,7 @@ function PreviewPages({
                 });
                 setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_COMPLETE);
               } else {
+                // TODO: will check if it also needs to be updated
                 const message = 'Something went wrong. Please try again.';
                 trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
                 showNotification({
@@ -144,7 +145,7 @@ function PreviewPages({
               }
             })
             .catch((error) => {
-              const message = error?.message || 'Failed to submit details. Please try again.';
+              const message = getErrorMessage(error?.message);
               trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
               showNotification({
                 type: 'error',
@@ -152,6 +153,7 @@ function PreviewPages({
               });
             });
         } else {
+          // TODO: will check if it also needs to be updated
           const message = 'Failed to provide consent. Please try again';
           trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
           showNotification({
@@ -161,7 +163,7 @@ function PreviewPages({
         }
       })
       .catch((error) => {
-        const message = error?.message || 'Failed to submit details. Please try again.';
+        const message = getErrorMessage(error?.message);
         trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
         showNotification({
           type: 'error',

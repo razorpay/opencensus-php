@@ -80,7 +80,7 @@ describe('Business website automation - WebsiteInputModal', () => {
 
     expect(
       screen.getByRole('radiogroup', {
-        name: 'Does your website require login form user to complete payment?',
+        name: 'Does your website require login from user to complete payment?',
       }),
     ).toBeInTheDocument();
     const crdsRadio = screen.getByRole('radio', {

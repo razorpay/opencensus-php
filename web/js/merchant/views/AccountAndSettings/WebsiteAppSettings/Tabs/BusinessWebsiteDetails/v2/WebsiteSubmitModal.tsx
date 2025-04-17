@@ -49,6 +49,7 @@ import {
   handleAppAndWebsiteSubmitForNonActivated,
   handleAppSubmitForActivated,
   isMainPageSubmitPayloadValid,
+  getErrorMessage,
 } from './utils';
 import { getInitialPolicyPagesFormState } from './components/utils';
 import { defaultPolicyPageCreationFormField } from './components/constants';
@@ -223,6 +224,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               });
               setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_SUCCESS);
             } else {
+              // TODO: this required backend input, will be handled in next PR
               const errorMessage = 'Invalid Response. Please try again.';
               trackBasicWebsiteCheckFailureModalLoad({
                 basicCheckPassed: 'no',
@@ -250,7 +252,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               return;
             }
             /* @ts-expect-error error-message-check */
-            const errorMessage = error?.message || 'Failed to submit details. Please try again.';
+            const errorMessage = getErrorMessage(error?.message);
             trackBasicWebsiteCheckFailureModalLoad({
               basicCheckPassed: 'no',
               websiteCount: getWebsiteCount(user),
@@ -366,23 +368,31 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               actionFrom: 'policyPages',
             });
           } else {
-            const errorMessage = 'Invalid Response. Please try again.';
-            trackBasicWebsiteCheckFailureModalLoad({
-              basicCheckPassed: 'no',
-              websiteCount: getWebsiteCount(user),
-              actionFrom: 'policyPages',
-              errorMessage,
-            });
-            showNotification({
-              type: 'error',
-              message: errorMessage,
-            });
-            onDismiss();
+            if (
+              WebsiteUpdateAutomationStatus.WEBSITE_UPDATE_FAILED === current_status ||
+              WebsiteUpdateAutomationStatus.WORKFLOW_CREATION_FAILED === current_status
+            ) {
+              // we don't need to show toast message for these statuses as we show dedicated banner
+              onDismiss();
+            } else {
+              const errorMessage = 'Invalid Response. Please try again.';
+              trackBasicWebsiteCheckFailureModalLoad({
+                basicCheckPassed: 'no',
+                websiteCount: getWebsiteCount(user),
+                actionFrom: 'policyPages',
+                errorMessage,
+              });
+              showNotification({
+                type: 'error',
+                message: errorMessage,
+              });
+              onDismiss();
+            }
           }
         },
         onError: (error) => {
           /* @ts-expect-error error-message-check */
-          const errorMessage = error?.message || 'Failed to submit details. Please try again.';
+          const errorMessage = getErrorMessage(error?.message);
           trackBasicWebsiteCheckFailureModalLoad({
             basicCheckPassed: 'no',
             websiteCount: getWebsiteCount(user),
