@@ -3118,13 +3118,79 @@ class AdminTest extends TestCase
 
     }
 
-    public function testAdminOrgReplicationsFeatureSuccess(){
-
+    public function testAdminOrgReplications_AddsMissingFeaturesOnly()
+    {
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->dashboardGuestAppAuth();
 
+        $this->fixtures->create('org_feature', [
+        'org_id' => 'BhdZPkeM3ZQVl0',
+        'feature_name' => 'feature_existing',
+        ]);
+
+        // Source org has two features (one same + one new)
+        $this->fixtures->create('org_feature', [
+            'org_id' => '100000razorpay',
+            'feature_name' => 'feature_existing',
+        ]);
+        $this->fixtures->create('org_feature', [
+            'org_id' => '100000razorpay',
+            'feature_name' => 'feature_new',
+        ]);
+
         $this->startTest($testData);
     }
+
+    public function testAdminOrgReplications_CopiesAllFeaturesWhenDestinationEmpty()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
+
+
+        // Source org has multiple features
+        $this->fixtures->create('org_feature', [
+            'org_id' => '100000razorpay',
+            'feature_name' => 'feature1',
+        ]);
+        $this->fixtures->create('org_feature', [
+            'org_id' => '100000razorpay',
+            'feature_name' => 'feature2',
+        ]);
+
+
+        $this->startTest($testData);
+    }
+
+    public function testAdminOrgReplications_ThrowsErrorWhenAllFeaturesExist()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        // Destination org has the same features as source org
+        $this->fixtures->create('org_feature', [
+            'org_id' => 'BhdZPkeM3ZQVl0',
+            'feature_name' => 'featureA',
+        ]);
+        $this->fixtures->create('org_feature', [
+            'org_id' => 'BhdZPkeM3ZQVl0',
+            'feature_name' => 'featureB',
+        ]);
+
+        $this->fixtures->create('org_feature', [
+            'org_id' => '100000razorpay',
+            'feature_name' => 'featureA',
+        ]);
+        $this->fixtures->create('org_feature', [
+            'org_id' => '100000razorpay',
+            'feature_name' => 'featureB',
+        ]);
+
+        $this->startTest($testData);
+    }
+
+
 
 }

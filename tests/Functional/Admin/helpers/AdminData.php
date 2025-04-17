@@ -2537,4 +2537,61 @@ return [
         ]
     ],
 
+    'testAdminOrgReplications_AddsMissingFeaturesOnly' => [
+        'request' => [
+            'url'    => '/admin/org/replications',
+            'method' => 'post',
+            'content' => [
+                'from_org_id' => '100000razorpay',
+                'to_org_id'   => 'BhdZPkeM3ZQVl0',
+                'replications_type' => 'feature'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testAdminOrgReplications_CopiesAllFeaturesWhenDestinationEmpty' => [
+        'request' => [
+            'url'    => '/admin/org/replications',
+            'method' => 'post',
+            'content' => [
+                'from_org_id' => '100000razorpay',
+                'to_org_id'   => 'BhdZPkeM3ZQVl0',
+                'replications_type' => 'feature'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testAdminOrgReplications_ThrowsErrorWhenAllFeaturesExist' => [
+        'request' => [
+            'url'    => '/admin/org/replications',
+            'method' => 'post',
+            'content' => [
+                'from_org_id' => '100000razorpay',
+                'to_org_id'   => 'BhdZPkeM3ZQVl0',
+                'replications_type' => 'feature'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'BAD_REQUEST_NO_NEW_FEATURES',
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+
 ];
