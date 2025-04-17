@@ -2536,6 +2536,16 @@ class Service extends Base\Service
         {
             $input["ip"]       = $this->app['request']->ip();
 
+            $input["merchant_id"] = $merchantId;
+
+            //Extracting Passport Details
+            $config  = $this->app['config']->get('applications.route');
+
+            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
+            $input["passport"] = $passport;
+
+
             $this->pushFetchMultipleDataForParity($response, $input);
         }
 

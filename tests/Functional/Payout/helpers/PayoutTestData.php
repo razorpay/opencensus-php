@@ -26002,6 +26002,22 @@ return [
             ]
         ]
     ],
+    'testRedisSetBalanceBlacklist' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'config:balance_fetch_merchants_blacklist',
+                    'value' => [
+                        'rbl' => ['test1', 'test2']
+                    ]
+                ]]
+            ]
+        ]
+    ],
     'testRedisSetValidationsKeyFail' => [
         'request' => [
             'method' => 'POST',

@@ -267,6 +267,7 @@ class Validator extends Base\Validator
         Entity::APP               => 'sometimes|string',
         MDEntity::REFERRAL_CODE   => 'filled|string',
         Entity::DEFAULT_MERCHANT_ID => 'sometimes|alpha_num|size:14',
+        'merchant_invitation'       => 'sometimes|string',
     ];
 
     protected static $loginMobileRules = [

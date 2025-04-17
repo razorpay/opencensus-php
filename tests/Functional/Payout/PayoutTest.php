@@ -45437,6 +45437,19 @@ class PayoutTest extends OAuthTestCase
         $this->makeRequestAndGetContent($request);
     }
 
+    public function testRedisSetBalanceBlacklist()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     public function testRedisSetValidationsKeyFail()
     {
         $this->ba->adminAuth();

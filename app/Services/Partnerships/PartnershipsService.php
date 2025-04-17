@@ -94,6 +94,7 @@ class PartnershipsService extends Base\Service
 
     const DELETE_MERCHANT_ACCESS_MAP = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
 
+    const CREATE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Create';
     const UPDATE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Upsert';
     const DELETE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Delete';
 

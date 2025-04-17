@@ -4113,7 +4113,7 @@ return [
         ],
     ],
 
-    'testFailedLogin2faNotSetupWithCustomInviteMerchantFlow' => [
+    'testSkipLogin2faNotSetupWithCustomInviteMerchantFlow' => [
         'request' => [
             'url'     => '/users/login',
             'method'  => 'POST',
@@ -4124,7 +4124,7 @@ return [
             'headers'    => [
                 'X-Org-Id'          => 'org_100000yessbank',
                 'X-Org-Hostname'    => 'yesbank.in'
-            ], 
+            ],
         ],
         'response' => [
             'status_code' => 200,
@@ -4132,6 +4132,114 @@ return [
                 'contact_mobile' => '9949939921',
             ]
         ]
+    ],
+
+    'testLogin2faRequiredWithCustomInviteMerchantFlowIncorrectInviteToken' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faRequiredWithCustomInviteMerchantFlowEmptyToken' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faRequiredWithCustomInviteMerchantFlowNoToken' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faRequiredSetupWithCustomInviteMerchantFlowNoPermission' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
     ],
 
     'testSSWFSmsOtpViaStork' => [

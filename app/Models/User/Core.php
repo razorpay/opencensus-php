@@ -1534,19 +1534,7 @@ class Core extends Base\Core
             $orgId = Org\Entity::RAZORPAY_ORG_ID;
         }
 
-        // DISABLE_THE_CAPTCHA_YOU_SHALL if present in input means register flow if not early reject $input['captcha_disable'] === DISABLE_THE_CAPTCHA_YOU_SHALL
-        if (isset($input['captcha_disable']) === true && $input['captcha_disable'] === "DISABLE_THE_CAPTCHA_YOU_SHALL") 
-        {
-            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-            $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
-
-            if ($permissionEnabled === false) {
-                $this->checkSecondFactorAuthAndSendOtp($user);
-            }
-
-        }
-        else
+        if ($this->shouldSkip2faForCustomMerchantInviteFlow($input, $orgId) === false)
         {
             $this->checkSecondFactorAuthAndSendOtp($user);
         }
@@ -1579,6 +1567,57 @@ class Core extends Base\Core
         }
 
         return $this->get($user, true, $input);
+    }
+
+
+    public function shouldSkip2faForCustomMerchantInviteFlow ($input, $orgId) : bool
+    {
+        $skip = false;
+
+        try
+        {
+            if (isset($input['merchant_invitation']) === true)
+            {
+
+                $token = $input['merchant_invitation'];
+
+                // verify if invitation is valid
+                $invitation = $this->repo->admin_lead->findByToken($token);
+
+                if (empty($invitation) === true)
+                {
+                    return false;
+                }
+
+                $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+                $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                if ($permissionEnabled === true)
+                {
+                    $skip = true;
+                }
+
+            }
+        }
+        catch (\Throwable $ex ){
+
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_SKIPPED,
+                [
+                    'org_id' => $orgId
+                ]);
+
+
+            return false;
+        }
+
+        $this->trace->info(TraceCode::USER_LOGIN_2FA_SKIPPED,
+            [
+                'org_id' => $orgId,
+                'skip'   => $skip
+            ]);
+
+        return $skip;
     }
 
     /**

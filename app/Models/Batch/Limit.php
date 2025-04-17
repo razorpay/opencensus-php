@@ -120,6 +120,8 @@ class Limit
         Type::CREATE_GIFT_CARD_TRANSFERS            => 10000,
         Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 => 50000,
         Type::MANDATE_CONTINUITY                    => 1000000,
+        Type::TOKEN_CONTINUITY                    => 1000000,
+        Type::CUSTOMER_MIGRATION                    => 1000000,
     ];
 
     /**

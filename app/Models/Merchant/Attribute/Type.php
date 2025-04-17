@@ -56,6 +56,8 @@ class Type
     const CAPITAL_LOC_EMI               = 'capital_loc_emi';
     const OTHERS                        = 'others';
 
+    const API_PAYOUTS                   = 'api_payouts';
+
     //SOURCE Types
     const PG                            = 'pg';
     const WEBSITE                       = 'website';
@@ -80,7 +82,7 @@ class Type
 
     const X = 'X';
 
-    // Activation 
+    // Activation
     const DEACTIVATED_AT = 'deactivated_at';
 
     // X Account Statement Types

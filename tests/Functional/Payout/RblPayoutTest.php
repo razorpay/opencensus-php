@@ -1367,9 +1367,11 @@ class RblPayoutTest extends TestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BALANCE_FETCH_MERCHANTS_BLACKLIST => [
+            'rbl' => [
             '10000000000000',
             '10000000000001',
             '10000000000002'
+            ]
         ]]);
 
         $request = [

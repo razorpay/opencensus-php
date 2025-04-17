@@ -4328,6 +4328,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_OTP_SMS_VALIDATION_FAILURE                     = 'VERIFY_OTP_SMS_VALIDATION_FAILURE';
     const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
     const USER_CHECK_HAS_PASSWORD_ACTION                        = 'USER_CHECK_HAS_PASSWORD_ACTION';
+    const USER_LOGIN_2FA_SKIPPED                                =  'USER_LOGIN_2FA_SKIPPED';
 
     const OTP_CONTEXT                                           = 'OTP_CONTEXT';
     const USER_SET_PASSWORD_ACTION                              = 'USER_SET_PASSWORD_ACTION';
@@ -5105,6 +5106,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRTS_MERCHANT_ENTITIES_FETCH                          = 'PRTS_MERCHANT_ENTITIES_FETCH';
     const PRTS_API_PARITY_CHECK_FAILED                          = 'PRTS_API_PARITY_CHECK_FAILED';
     const PRTS_READ_API_PROXY_REUEST                            = 'PRTS_READ_API_PROXY_REUEST';
+    const PRTS_PKYC_WRITE_API_PROXY_REQUEST                     = 'PRTS_PKYC_WRITE_API_PROXY_REQUEST';
+    const PRTS_PKYC_WRITE_API_PROXY_ERROR                      = 'PRTS_PKYC_WRITE_API_PROXY_ERROR';
 
 
     const SEGMENTATION_CONFIG                                   = 'SEGMENTATION_CONFIG';

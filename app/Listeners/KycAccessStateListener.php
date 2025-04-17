@@ -122,7 +122,7 @@ class KycAccessStateListener extends BaseListener
             'experiment_id' => app('config')->get('app.partner_kyc_access_state_partnership_service_sync'),
         ];
 
-        return $this->$merchantCore->isSplitzExperimentEnable($properties, 'enable');
+        return $merchantCore->isSplitzExperimentEnable($properties, 'enable');
     }
 
     private function getTraceInfo(KycAccessState\Entity $entity): array
