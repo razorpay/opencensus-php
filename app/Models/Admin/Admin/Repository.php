@@ -101,15 +101,6 @@ class Repository extends Base\Repository
             ->get()->toArray();
     }
 
-    public function getOrgFeaturesList($orgId): array
-    {
-        return DB::table('features as f')
-            ->join('orgs as o', 'o.id', '=', 'f.entity_id')
-            ->select('f.id', 'f.name as feature_name', 'f.entity_id as org_id', 'o.business_name as org_name')
-            ->where('f.entity_id', $orgId)
-            ->where('f.entity_type', 'org')
-            ->get()->toArray();
-    }
 
     public  function replicatePermissionsToOrg($insertData): bool
     {
@@ -125,14 +116,6 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function existingFeatureNames($toOrgId): array
-    {
-        return DB::table('features')
-            ->where('entity_type', 'org')
-            ->where('entity_id', $toOrgId)
-            ->pluck('name')
-            ->toArray();
-    }
 
     public function fetchMerchantsWithAdminPivot($id)
     {
