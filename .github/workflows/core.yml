@@ -3,7 +3,7 @@ name: Dashboard Core | CI
 on: push
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/master' && format('master-{0}', github.sha) || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
@@ -15,6 +15,19 @@ env:
   VERSION: ${{ github.sha }}
 
 jobs:
+  debug-workflow:
+    name: Debug Workflow Settings
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Debug Info
+        run: |
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Is Master?: ${{ github.ref == 'refs/heads/master' }}"
+          echo "Cancel in Progress?: ${{ github.ref != 'refs/heads/master' }}"
+          echo "Concurrency Group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/master' && format('master-{0}', github.sha) || github.ref }}"
+
   initialize:
     name: Initialize CI
     secrets: inherit
