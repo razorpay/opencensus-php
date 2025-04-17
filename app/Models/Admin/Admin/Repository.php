@@ -114,7 +114,6 @@ class Repository extends Base\Repository
             ->pluck('permission_id')
             ->toArray();
     }
-        
     public function fetchMerchantsWithAdminPivot($id)
     {
         $merchantIds = DB::table(Table::MERCHANT_MAP)
