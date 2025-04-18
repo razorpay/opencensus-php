@@ -383,6 +383,14 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
     ];
 
+    protected static $getOnboardingServiceRules = [
+        Entity::MERCHANT_ID                     => 'required|alpha_num|size:14',
+        Entity::USER_ID                         => 'required|alpha_num|size:14',
+        Merchant\Entity::COUNTRY_CODE           => 'required|string|max:2|in:IN,MY,SG',
+        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => 'sometimes|string',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
+    ];
+
     protected static $createMerchantRules = self::CREATE_MERCHANT_RULES;
 
     protected static $createMerchantInternalRules = self::CREATE_MERCHANT_RULES + [

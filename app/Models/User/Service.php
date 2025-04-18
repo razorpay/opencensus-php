@@ -1073,29 +1073,23 @@ class Service extends Base\Service
         return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING]);
     }
 
-    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    private function shouldOnboardViaPGOSForNonOAuthMerchants(MerchantEntity $merchant, $signupCampaign, $countryCode): bool
     {
         $shouldOnboardViaPGOS = false;
 
+        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
+        {
+            return true;
+        }
+
         $merchantCore = new Merchant\Core();
 
-        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
-
-        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
-            'merchant_id'    => $merchant->getId(),
-            'workflowType'   => $workflowType,
-            'signupCampaign' => $signupCampaign,
-            'countryCode'    => $countryCode,
-            'input'          => $input
-        ]);
-
-        //Determine whether onboarding should be done via PGOS or not
         if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING AND $countryCode === 'IN')
         {
 
             if ($merchantCore->isPOSSubMerchant($merchant))
             {
-                $shouldOnboardViaPGOS = true;
+                return true;
             }
             else
             {
@@ -1107,14 +1101,14 @@ class Service extends Base\Service
                 {
                     if ($merchantCore->isRegularMerchant($merchant))
                     {
-                        $shouldOnboardViaPGOS = true;
+                        return true;
                     }
                     else if (
                         $merchantCore->isRegularSubmerchant($merchant)
                         and $this->pgosProxyController->isPGOSEnabledForPGSubmerchant($merchant)
                     )
                     {
-                        $shouldOnboardViaPGOS = true;
+                        return true;
                     }
                 }
             }
@@ -1135,11 +1129,34 @@ class Service extends Base\Service
             }
         }
 
-        // TODO Phantom Onboarding should also go to PGOS
-        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
-        {
-            $shouldOnboardViaPGOS = true;
-        }
+        return $shouldOnboardViaPGOS;
+    }
+
+    private function shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $signupCampaign): bool
+    {
+        $countryCode = $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN';
+
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        return (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
+            and (new Merchant\Core)->isRegularMerchant($merchant) === true
+            and $countryCode === 'IN') || ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
+            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
+            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION));
+    }
+
+    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    {
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
+            'merchant_id'    => $merchant->getId(),
+            'workflowType'   => $workflowType,
+            'signupCampaign' => $signupCampaign,
+            'countryCode'    => $countryCode,
+            'input'          => $input
+        ]);
+
         if (empty(DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign]) === false)
         {
             $input[DeviceDetail\Constants::PRODUCT] = $input[DeviceDetail\Constants::PRODUCT] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? '');
@@ -1147,11 +1164,11 @@ class Service extends Base\Service
             $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? '');
         }
 
+        $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForNonOAuthMerchants($merchant, $signupCampaign, $countryCode);
         if ($workflowType === DeviceDetail\Constants::MODULAR_ONBOARDING)
         {
             $shouldOnboardViaPGOS = true;
         }
-
         if ($shouldOnboardViaPGOS === false)
         {
             return;
@@ -1412,13 +1429,7 @@ class Service extends Base\Service
         //Determine whether onboarding should be done via PGOS or not
         //Not checking the experiment here because FE checks the experiment
         //All merchants who onboard via OAuth and FE sends signup campaign as EASY_ONBOARDING, needs to be onboarded via PGOS
-        if (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
-            and (new Merchant\Core)->isRegularMerchant($merchant) === true
-                and $countryCode === 'IN') ||
-            ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
-            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
-            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION))
-
+        if ($this->shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $signupCampaign))
         {
             $shouldOnboardViaPGOS = true;
         }
@@ -2509,6 +2520,11 @@ class Service extends Base\Service
      */
     public function createMerchantForUser(array $input, bool $isInternal=false): array
     {
+        // if skip_workflow_create is true then don't create
+        // workflow return after merchant is created
+        $skipWorkflowCreate = $input['skip_workflow_create'];
+        unset($input['skip_workflow_create']);
+
         if ($isInternal)
         {
             $this->validator->validateInput('createMerchantInternal', $input);
@@ -2581,6 +2597,20 @@ class Service extends Base\Service
             (new DeviceDetail\Core)->createDeviceDetail($ddInput);
         }
 
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1)
+        {
+            $this->signUpSuccess($user, false, Constants::PASSWORD, null, $merchantId);
+        }
+        else if (empty($user[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $this->signUpSuccess($user, false, Constants::OTP, null, $merchantId);
+        }
+
+        if ($skipWorkflowCreate)
+        {
+            return $data;
+        }
+
         // Start the onboarding of merchant via PGOS
         if ($user[Entity::SIGNUP_VIA_EMAIL] === 1) {
             $input[Entity::EMAIL] = $user[Entity::EMAIL];
@@ -2598,9 +2628,6 @@ class Service extends Base\Service
                     'error_message' => $exception->getMessage()
                 ]);
             }
-
-            $signupMethod = Constants::PASSWORD;
-            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
             $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
             if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
@@ -2616,12 +2643,31 @@ class Service extends Base\Service
                     ]);
                 }
             }
-
-            $signupMethod = Constants::OTP;
-            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         }
 
         return $data;
+    }
+
+    public function getOnboardingService($input): array {
+        $this->validator->validateInput('getOnboardingService', $input);
+        $userId = $input[Entity::USER_ID];
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $user = $this->repo->user->findOrFail($userId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $shouldOnboardViaPGOS = false;
+
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1)
+        {
+            $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
+        }
+        else if (empty($user[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForNonOAuthMerchants($merchant, $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN], $input[Merchant\Entity::COUNTRY_CODE]);
+        }
+
+        $service = $shouldOnboardViaPGOS === true ? "pgos" : "api";
+        return ['service' => $service];
     }
 
     public function get(string $id, array $input = []): array
@@ -2722,6 +2768,14 @@ class Service extends Base\Service
                 {
                     $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = null;
                 }
+            }
+        }
+
+        if ($this->auth->getInternalApp() === 'pgos')
+        {
+            if (empty($user[Entity::OAUTH_PROVIDER]) === false)
+            {
+                $response[Entity::OAUTH_PROVIDER] = json_decode($user[Entity::OAUTH_PROVIDER]);
             }
         }
 

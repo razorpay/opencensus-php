@@ -394,6 +394,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOnboardingService()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getOnboardingService($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getActorInfo(string $id)
     {
         $data = $this->service()->getActorInfo($id);

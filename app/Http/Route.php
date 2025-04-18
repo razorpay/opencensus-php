@@ -2787,6 +2787,7 @@ class Route
         'user_create_merchant'                     => ['post',     'users/merchants',                                'UserController@createMerchant'                                     ],
         'user_create_merchant_internal'            => ['post',     'users/merchants/internal',                       'UserController@createMerchantInternal'                             ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
+        'fetch_onboarding_service'                 => ['get',      'users/onboarding/service',                       'UserController@getOnboardingService'                               ],
         // this route is a replica of the above 2 routes except that auth is done via app auth on edge
         'fetch_users_internal'                     => ['get',      'users/internal/{id}',                            'UserController@getUser'                                            ],
         'multiple_users_fetch_internal'            => ['post',     'users_internal',                                 'UserController@getMultipleUsers'                                   ],
@@ -7018,7 +7019,8 @@ class Route
         'acquirer_fetch',
         'token_create_internal_for_continuity',
         'qr_code_device_update',
-        'org_admin_disable_cron'
+        'org_admin_disable_cron',
+        'fetch_onboarding_service'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18521,6 +18523,7 @@ class Route
             'internal_get_all_features',
             'internal_qr_code_merchant_create',
             'merchant_international_enablement_draft_internal',
+            'fetch_onboarding_service',
         ],
 
         'disputes' => [

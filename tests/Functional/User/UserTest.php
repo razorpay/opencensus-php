@@ -1384,6 +1384,172 @@ class UserTest extends TestCase
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
     }
 
+    public function testCreateMerchantWithWorkflowCreate()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['email'], $merchant->email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $merchantUserEntry->merchant_id]);
+        $this->assertEquals('pgos', $userDeviceDetails["metadata"]["service"]);
+        $this->assertEquals('MODULAR_ONBOARDING', $userDeviceDetails["metadata"]['workflow_type']);
+    }
+
+    public function testGetUserOnboardingServiceFailWithEmptyMerchantID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithEmptyUserID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithEmptyCountryCode()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithInvalidMerchantID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithInvalidUserID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithInvalidCountryCode()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithOAuthAPIMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 1]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithOAuthPGOSMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 1]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithNonOAuthAPIMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 0]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithNonOAuthPGOSMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 0]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantWithoutWorkflowCreate()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['email'], $merchant->email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetailsEntry = DB::table('user_device_detail')->where('merchant_id', '=', $merchantUserEntry->merchant_id);
+        $this->assertEmpty($userDeviceDetailsEntry->metadata);
+    }
+
     public function testCreateMerchantForNewUserWithMobileNumber()
     {
         $user = $this->fixtures->create('user', ['contact_mobile' => '+919000000002', 'email'  => null]);

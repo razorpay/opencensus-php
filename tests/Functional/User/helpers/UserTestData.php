@@ -685,6 +685,282 @@ return [
         ],
     ],
 
+    'testCreateMerchantWithWorkflowCreate' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+                'product' => 'pos_onboarding'
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithEmptyMerchantID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The merchant id field is required.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "merchant_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithEmptyUserID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mXM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The user id field is required.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "user_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithEmptyCountryCode' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mXM',
+                'user_id' => 'Prcm3AR7aQ9mXM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The country code field is required.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "country_code",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithInvalidMerchantID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mX',
+                'user_id' => 'Prcm3AR7aQ9mXM',
+                'country_code' => 'IN',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The merchant id must be 14 characters.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "merchant_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithInvalidUserID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mXo',
+                'user_id' => 'Prcm3AR7aQ9mX',
+                'country_code' => 'IN',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The user id must be 14 characters.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "user_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithInvalidCountryCode' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mX0',
+                'user_id' => 'Prcm3AR7aQ9mXM',
+                'country_code' => 'UK',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The selected country code is invalid.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "country_code",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithOAuthAPIMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'easy_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'api',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithOAuthPGOSMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'pgos',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithNonOAuthAPIMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'phantom_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'api',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithNonOAuthPGOSMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'assisted_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'pgos',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateMerchantWithoutWorkflowCreate' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+                'product' => 'pos_onboarding',
+                'skip_workflow_create' => true
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
     'testCreateUserInternal' => [
         'request' => [
             'url'       => '/users/internal',
