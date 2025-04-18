@@ -330,6 +330,160 @@ const deleteReconRun = async ({ runId }) => {
   return deleteReconRunRes;
 };
 
+const getPreSignedUrl = async ({ sourceId }) => {
+  const payload = {
+    source_id: sourceId,
+  };
+
+  const preSignelUrlResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/file_detail/config/get_upload_url`,
+    method: 'post',
+    data: payload,
+  });
+
+  if (preSignelUrlResp.status_code !== 200) {
+    throw preSignelUrlResp;
+  }
+
+  return preSignelUrlResp;
+};
+
+const uploadFileToPresignedUrl = async ({ s3Url, file, sourceId }) => {
+  const headers = new Headers();
+  headers.append('Content-Type', `binary/octet-stream`);
+  const requestOptions = {
+    method: 'PUT',
+    headers,
+    body: file,
+  };
+
+  const response = await fetch(s3Url, requestOptions);
+
+  if (response.status !== 200) {
+    throw response;
+  }
+
+  return {
+    success: true,
+    status_code: response.status,
+    data: {
+      source_id: sourceId,
+    },
+  };
+};
+
+const createMlReconConfig = async ({ sources, processName }) => {
+  const payload = {
+    source_config:
+      sources && sources.length > 0
+        ? sources.map((source) => ({ upload_path: source.fileUploadPath, name: source.name }))
+        : [],
+    process_name: processName,
+  };
+
+  const mlReconConfigResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/mlconfig`,
+    method: 'post',
+    data: payload,
+  });
+
+  if (mlReconConfigResp.status_code !== 200) {
+    throw mlReconConfigResp;
+  }
+
+  return mlReconConfigResp;
+};
+
+const fetchMlConfig = async ({ sessionId, auditLogId }) => {
+  const payload = {
+    session_id: sessionId,
+    audit_log_id: auditLogId,
+  };
+
+  const fetchMlConfigResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/mlconfig/fetch_config`,
+    method: 'post',
+    data: payload,
+  });
+
+  if (fetchMlConfigResp.status_code !== 200) {
+    throw fetchMlConfig;
+  }
+
+  return fetchMlConfigResp;
+};
+
+const generateMlReconConfig = async ({ columnConfig, auditLogId, created = true }) => {
+  const payload = {
+    column_config: columnConfig,
+    audit_log_id: auditLogId,
+    create_config: created,
+  };
+
+  const generateMlReconConfigResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/mlconfig/generate_config`,
+    method: 'post',
+    data: payload,
+  });
+
+  if (generateMlReconConfigResp.status_code !== 200) {
+    throw generateMlReconConfigResp;
+  }
+
+  return generateMlReconConfigResp;
+};
+
+const getMlReconStats = async ({ auditLogId }) => {
+  const payload = {
+    audit_log_id: auditLogId,
+  };
+
+  const mlReconStatsResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/mlconfig/recon_stats`,
+    method: 'post',
+    data: payload,
+  });
+
+  if (mlReconStatsResp.status_code !== 200) {
+    throw mlReconStatsResp;
+  }
+
+  return mlReconStatsResp;
+};
+
+const saveMlGeneratedProcess = async ({ auditLogId }) => {
+  const payload = {
+    audit_log_id: auditLogId,
+  };
+
+  const saveProcessResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/mlconfig/confirm_process`,
+    method: 'post',
+    data: payload,
+  });
+
+  if (saveProcessResp.status_code !== 200) {
+    throw saveProcessResp;
+  }
+
+  return saveProcessResp;
+};
+
+const downloadReconReport = async ({ runId }) => {
+  const downloadReportResp = await merchantFetch({
+    url: `${RECON_API_BASE_URL}/file_detail/report/signed_url?file_detail_workflow_id=${runId}`,
+    mode: 'live',
+    method: 'GET',
+  });
+
+  if (downloadReportResp.status_code !== 200) {
+    throw downloadReportResp;
+  }
+
+  return downloadReportResp;
+}
+
+
 const downloadSplitScreenReport = async ({ runId, sources, fromDate, toDate, filter }: DownloadReportParams) => {
   const downloadReportPayload = {
     trigger_type: 'multi-sheet-manual',
@@ -381,5 +535,13 @@ export {
   fetchReconProcessDetail,
   fetchingSplitScreenMatchingRecord,
   deleteReconRun,
+  getPreSignedUrl,
+  uploadFileToPresignedUrl,
+  createMlReconConfig,
+  fetchMlConfig,
+  generateMlReconConfig,
+  getMlReconStats,
+  saveMlGeneratedProcess,
+  downloadReconReport,
   downloadSplitScreenReport,
 };

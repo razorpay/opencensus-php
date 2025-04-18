@@ -56,13 +56,8 @@ const Processes = () => {
     }
   };
 
-  const createConfig = () => {
-    analyticsTrackWithUserInfo({
-      screen: ReconScreens.ProcessListing,
-      objectName: 'recon new configuration',
-      actionName: 'click',
-    });
-    navigate(`/reconciliations/create-config/2`);
+  const goToAiIngestion = () => {
+    navigate('processes/ai-ingestion');
   };
 
   const goToCreateReport = () => {
@@ -102,7 +97,7 @@ const Processes = () => {
             Create Report
           </Button>
         ) : null}
-        <Button variant="primary" icon={PlusIcon} onClick={createConfig}>
+        <Button variant="primary" icon={PlusIcon} onClick={goToAiIngestion}>
           New Process
         </Button>
       </Box>

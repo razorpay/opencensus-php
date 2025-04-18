@@ -595,6 +595,10 @@ const ReconRunDetail = lazy(() =>
     /* webpackChunkName: "ReconRunDetail" */ 'merchant/views/Reconciliations/Dashboard/RunDetail'
   ),
 );
+const ReconAiIngestion = lazy(() =>
+  import(/* webpackChunkName: "ReconAiIngestion" */ 'merchant/views/Reconciliations/AiIngestion'),
+);
+
 const PosMerchantAgreement = lazy(() =>
   import(/* webpackChunkName: "PosMerchantAgreement" */ 'merchant/views/POS/MerchantAgreement'),
 );
@@ -2578,6 +2582,14 @@ class Content extends Component {
                   }
                 >
                   <EditReport />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="dashboard/processes/ai-ingestion"
+              element={
+                <RouteGuard additionalCondition={() => checkReconSaasEnabled(splitz)}>
+                  <ReconAiIngestion />
                 </RouteGuard>
               }
             />

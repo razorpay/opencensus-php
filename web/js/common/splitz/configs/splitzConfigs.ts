@@ -2851,7 +2851,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['/reconciliations/dashboard'],
+      routesToMatch: ['/reconciliations/dashboard/*'],
       abExperiments: [
         {
           uniqueHashKey: 'enable_split_screen',
