@@ -1214,4 +1214,25 @@ class Service extends Base\Service
 
         return (new Card\TokenisedIIN\Service())->checkIfSplitzExperimentIsEnabled($properties);
     }
+
+    public function shouldFetchDashboardIINFromBinService($iin)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $iin,
+            'experiment_id' => $this->app['config']->get('app.fetch_dashboard_iin_from_bin_service'),
+            'request_data' => json_encode([
+                "bin" => $iin
+            ]),
+        ];
+
+        return (new Card\TokenisedIIN\Service)->checkIfSplitzExperimentIsEnabled($properties);
+
+    }
 }

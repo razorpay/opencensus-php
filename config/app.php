@@ -1331,6 +1331,8 @@ return array(
 
     'read_token_iin_bin_service_shadow' => env('READ_TOKEN_IIN_BIN_SERVICE_SHADOW'),
 
+    'fetch_dashboard_iin_from_bin_service' => env('FETCH_DASHBOARD_IIN_FROM_BIN_SERVICE'),
+
     'force_iin_fetch_from_api_for_recon' => env('FORCE_IIN_FETCH_FROM_API_FOR_RECON'),
 
     'allow_bin_service_bulk_feature_update' => env('ALLOW_BIN_SERVICE_BULK_FEATURE_UPDATE'),
