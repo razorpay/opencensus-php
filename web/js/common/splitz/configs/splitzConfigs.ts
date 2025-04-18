@@ -937,7 +937,7 @@ export const splitzConfig: SplitzInitConfig = {
         uniqueHashKey: 'allow_merchant_to_delete_recon_run',
         experimentId: {
           beta: 'PCUe7zTtMjYUD1',
-          production: 'I2XXDaIwDQaA6P',
+          production: 'PD9AzhtOfiy1vC',
         },
         defaultVariant: {
           name: 'variables',
