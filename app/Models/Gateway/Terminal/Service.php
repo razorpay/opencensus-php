@@ -190,17 +190,6 @@ class Service extends Base\Service
             return false;
         }
 
-        if ($checkFeatureEnabled === true)
-        {
-            $response = $this->app->razorx->getTreatment($merchantId, 'merchant_onboard_terminal', $this->mode);
-
-            if (($response === 'control') or
-                ($response === 'off'))
-            {
-                return false;
-            }
-        }
-
         return true;
     }
 
