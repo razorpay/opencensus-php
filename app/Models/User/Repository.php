@@ -146,6 +146,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /***
+    It is for checking the uniqueness of the mobile number
+     ***/
+    public function getUserFromMobile(string $mobile)
+    {
+        return $this->newQuery()
+            ->where(Entity::CONTACT_MOBILE, '=', $mobile)
+            ->first();
+    }
+
     public function getUserIdsFromEmail(string $email, string $userIdToBeExcluded)
     {
         return $this->newQuery()
