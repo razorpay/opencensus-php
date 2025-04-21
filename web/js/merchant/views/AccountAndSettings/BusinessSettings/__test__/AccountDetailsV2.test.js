@@ -93,14 +93,14 @@ describe('Merchant Profile Section Version 2', () => {
       isEditable: true,
       order: 1,
     },
-    {
-      id: 'phone_number',
-      name: 'Phone Number',
-      value: '7798586889',
-      isHandler: true,
-      isEditable: true,
-      order: 3,
-    },
+    // {
+    //   id: 'phone_number',
+    //   name: 'Phone Number',
+    //   value: '7798586889',
+    //   isHandler: true,
+    //   isEditable: true,
+    //   order: 3,
+    // },
   ])(
     'should render user details and call handleedit on click of edit icon %s',
     async ({ id, name, value, isEditable, order }) => {

@@ -24,6 +24,8 @@ import {
   WebsitePolicyPagesDetailsKeys,
   WebsitePolicyPages,
   MerchantWebsiteDetails,
+  MainFormFields,
+  SuggestionSteps,
 } from './types';
 
 export const WEBSITE_UPDATE_API_BASE_URL =
@@ -546,6 +548,26 @@ const alertText: Record<NonNullableStatus, string> = {
   [Status.Rejected]: 'Our team has rejected your website upon careful verification',
   [Status.WebsiteUpdateFailed]: 'Oops, something went wrong',
   [Status.WebsiteLivenessFailed]: 'Attention: We noticed that your website is currently not live.',
+};
+
+export const getSuggestionStep = ({ name, value }) => {
+  switch (name) {
+    case MainFormFields.REQUIRE_CREDS:
+      return value === RequireCredsValues.YES
+        ? SuggestionSteps.CREDS_REQUIRED
+        : SuggestionSteps.CREDS_NOT_REQUIRED;
+
+    case MainFormFields.CREDS_USERNAME:
+    case MainFormFields.CREDS_PASSWORD:
+      return SuggestionSteps.CREDS_FIELDS;
+
+    case MainFormFields.URL:
+      return SuggestionSteps.URL_FIELD;
+
+    case MainFormFields.PLATFORM:
+    default:
+      return SuggestionSteps.POLICY_PAGES;
+  }
 };
 
 export const getAlertText = (status, mainPageUrl): string => {
