@@ -39,7 +39,8 @@ class QrPaymentController extends Controller
         $response = Tracer::inspan(['name' => HyperTrace::QR_PAYMENT_FETCH_PAYMENT_STATUS_BY_QR_CODE_ID], function () use ($qrCodeId) {
             return (new Service())->fetchPaymentStatusByQrCodeId($qrCodeId);
         });
-        $this->pushForBarricade($response, $qrCodeId);
+//         Removing this as we are not using barricade anymore
+//         $this->pushForBarricade($response, $qrCodeId);
 
         return ApiResponse::json($response);
 

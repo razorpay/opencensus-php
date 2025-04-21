@@ -9766,7 +9766,8 @@ class Processor
 //                'data'      => $payment,
 //            ]);
 
-        $this->publishMessageToSqsBarricade($payment);
+  //         Removing this as we are not using barricade anymore
+  //      $this->publishMessageToSqsBarricade($payment);
     }
 
     protected function publishMessageToSqsBarricade($payment)

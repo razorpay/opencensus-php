@@ -2254,10 +2254,12 @@ class PaymentCreateController extends Controller
     protected function returnMerchantFullRedirectView($data)
     {
         $merchant = $this->app['basicauth']->getMerchant();
-        if ($merchant->isFeatureEnabled(Feature::AUTH_SPLIT) !== true)
-        {
-            $this->pushForBarricade($data);
-        }
+//       Removing this as we are not using barricade anymore
+//      if ($merchant->isFeatureEnabled(Feature::AUTH_SPLIT) !== true)
+//         {
+//
+//              $this->pushForBarricade($data);
+//         }
 
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
         {
