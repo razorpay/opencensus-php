@@ -506,9 +506,13 @@ class Core extends Base\Core
             $subrInput[Entity::CURRENCY] = $input[Order\Entity::CURRENCY];
         }
 
+        $description = $input[Constants\Entity::Description];
+
         $validator = new Validator;
 
         $validator->validateInput('create_subscription_registration',$subrInput);
+
+        $validator->validateDescription($description);
 
         if (isset($input[Entity::NOTES]) === true)
         {
