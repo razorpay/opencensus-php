@@ -316,6 +316,11 @@ class Processor
     const NETBANKING_PAYMENTS_VIA_PGROUTER = 'netbanking_payments_via_pg_router';
 
     /**
+     * Splitz experiment to determine if NB+ wallet payments should go via PG Router and CPS or just via API service
+     */
+    const NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER = 'nbplus_wallet_payments_via_pg_router';
+
+    /**
      * Splitz Experiment to control gift_cards traffic to rearch
      */
     const GIFTCARDS_PAYMENTS_VIA_PGROUTER_EXPERIMENT_ID = 'app.gift_cards_payments_via_pg_router_experiment_id';
@@ -4678,6 +4683,335 @@ class Processor
         return $response;
     }
 
+    /**
+     * canRouteINRWalletThroughNbPlusRearchFlow checks if INR wallet payment is eligible to route via Nb rearch flow
+     * @param $input
+     * @return bool
+     */
+    private function canRouteINRWalletThroughNbPlusRearchFlow($input): bool {
+        // sanity check
+        if (empty($input[Payment\Entity::WALLET]) || empty($input[Payment\Entity::METHOD]) || empty($input[Payment\Entity::CURRENCY])) {
+            return false;
+        }
+
+        // if method is not wallet then return false
+        if ($input[Payment\Entity::METHOD] !== Payment\METHOD::WALLET) {
+            return false;
+        }
+
+        // if currency is not INR then return false
+        if ($input[Payment\Entity::CURRENCY] !== Currency\Currency::INR) {
+            return false;
+        }
+
+        // test mode payments on prod are not supported via rearch
+        if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST)) {
+            return false;
+        }
+
+        // live mode payments for QA environment are not supported via rearch
+        if ((app()->isEnvironmentQA() === true) and ($this->mode === Mode::LIVE)){
+            return false;
+        }
+
+        $currentRouteName = $this->route->getCurrentRouteName();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        // 0. Master control flag. If it returns false, then don't route via rearch. Else, proceed for further checks
+        $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER;
+        $variant = $this->getWalletRearchVariant($featureFlag);
+        if ($variant === "variant_off") {
+            return false;
+        }
+
+        // 1. Custom checks
+        // Commenting this for now. Will be added later
+        // $customChecks = $this->performCustomChecksToRouteNbPlusWalletViaRearchFlow($input, $merchant, $currentRouteName);
+        // $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
+        // $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA, [
+        //         "merchant_id"       => $merchant->getId(),
+        //         "dimensions"        => $customChecks["dimensions"],
+        //         "route"             => $currentRouteName,
+        //         "route_via_nbplus"  => $customChecks["route_via_nbplus"],
+        //         "is_dfb"            => $isNbPlusDFB,
+        // ]);
+        // if ($customChecks["route_wallet_via_nbplus"] === false) {
+        //     return false;
+        // }
+
+        // 1.1 Experiment to allow only PFB merchants for INR wallets
+        // Will be removed later as this check is already present in custom checks
+        if ($this->checkFeeBearerRoutingForWalletOnNbPlusRearch($merchant) === false) {
+            return false;
+        }
+
+        // 2. Experiment to allow enabled wallets
+        $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER . "_supported_wallets";
+        $variant = $this->getWalletRearchVariant($featureFlag, ["wallet" => $input[Payment\Entity::WALLET],]);
+        if ($variant !== "variant_on") {
+            $this->trace->info(TraceCode::NBPLUS_WALLET_NOT_SUPPORTED_ON_REARCH, [
+                'merchant_id'       => $merchant->getId(),
+                'wallet'            => $input[Payment\Entity::WALLET],
+                'route'             => $currentRouteName,
+            ]);
+            return false;
+        }
+
+        // 3. Experiment to allow merchants
+        $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER . "_allow_merchants";
+        $variant = $this->getWalletRearchVariant($featureFlag, ["merchant_id" => $merchant->getId()]);
+        if ($variant !== "variant_on") {
+            $this->trace->info(TraceCode::NBPLUS_WALLET_MERCHANT_NOT_SUPPORTED_ON_REARCH, [
+                'merchant_id'       => $merchant->getId(),
+                'wallet'            => $input[Payment\Entity::WALLET],
+                'route'             => $currentRouteName,
+            ]);
+            return false;
+        }
+
+        if ((app()->runningUnitTests() === true) and ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)) {
+            return false;
+        }
+
+        $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_VIA_REARCH, [
+            'merchant_id'       => $merchant->getId(),
+            'wallet'            => $input[Payment\Entity::WALLET],
+            'route'             => $currentRouteName,
+        ]);
+
+        // default to true
+        return true;
+    }
+
+    // will be used later when we add the custom checks logic in canRouteINRWalletThroughNbPlusRearchFlow
+    private function performCustomChecksToRouteNbPlusWalletViaRearchFlow(array $input, Merchant\Entity $merchant, string $currentRouteName): array {
+        $routeViaReArch = true;
+        $dimensions = array_fill(0, 38, 0);
+        $response = ["route_wallet_via_nbplus" => $routeViaReArch];
+
+        if (!$this->route->isNbRearchRoute($currentRouteName))
+        {
+            $routeViaReArch = false;
+            $dimensions[0] = 1;
+        }
+
+        if (!$merchant->isRazorpayOrgId() && !$this->isNBPlusRearchNonRzpOrgMerchant()) {
+            $routeViaReArch = false;
+            $dimensions[1] = 1;
+        }
+
+        if ((empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or ((isset($input[Payment\Entity::RECURRING]) === true) and
+            (($input[Payment\Entity::RECURRING] === "1") or ($input[Payment\Entity::RECURRING] === 1)))) {
+                $routeViaReArch = false;
+                $dimensions[2] = 1;
+        }
+
+        if ($this->checkFeeBearerRoutingForWalletOnNbPlusRearch($merchant) === false) {
+            $routeViaReArch = false;
+            $dimensions[3] = 1;
+        }
+
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) {
+            $routeViaReArch = false;
+            $dimensions[4] = 1;
+        }
+
+        if (empty($input[Payment\Entity::INVOICE_ID]) === false) {
+            $routeViaReArch = true;
+            $dimensions[5] = 1;
+        }
+
+        if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false) {
+            $routeViaReArch = false;
+            $dimensions[6] = 1;
+        }
+
+        if (empty($input["reward_ids"]) === false) {
+            $routeViaReArch = true;
+            $dimensions[7] = 1;
+        }
+
+        if ($merchant->isFeatureEnabled("raas") === true) {
+            $routeViaReArch= false;
+            $dimensions[8]=1;
+        }
+
+        if ($merchant->isFeatureEnabled('tpv')===true && $this->isWalletRearchTpv($merchant) === false)
+        {
+            $routeViaReArch = false;
+            $dimensions[9] = 1;
+        }
+
+        if ($merchant->isFeatureEnabled("openwallet") === true) {
+            $routeViaReArch=false;
+            $dimensions[10]=1;
+        }
+
+        if (empty($input[Payment\Entity::META]) === false) {
+            $routeViaReArch=true;
+            $dimensions[11]=1;
+        }
+
+        if (empty($input['signature']) === false) {
+            $routeViaReArch=true;
+            $dimensions[12]=1;
+        }
+
+        if (empty($input[Payment\Entity::BILLING_ADDRESS]) === false) {
+            $routeViaReArch=true;
+            $dimensions[13]=1;
+        }
+
+        if (empty($input[Payment\Entity::OFFER_ID]) === false) {
+            $routeViaReArch = false;
+            $dimensions[14] = 1;
+        }
+
+        // TODO: add experiment
+        if ($merchant->isMarketplace() === true && $this->isWalletRearchMarketPlace($merchant) === false) {
+            $routeViaReArch = false;
+            $dimensions[15] = 1;
+        }
+
+        $library = null;
+        if((isset($input['_']) === true) and (isset($input['_']['library']) === true)) {
+            $library = $input['_']['library'];
+        }
+
+        // TODO: add experiment
+        if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS)
+        {
+            $library = strtolower($library);
+            if ($this->isLibrarySupportedForNbplusRearch($library) === false){
+                $routeViaReArch = false;
+                $dimensions[16] = 1;
+            }
+        }
+
+        // TODO: add experiment
+        if (empty($input[Payment\Entity::ORDER_ID]) === false)
+        {
+            $order = $this->fetchOrderFromInput($input);
+            if (empty($order) === false) {
+                // Check if offers exist in the order and can be routed to nbplus
+                if (($order->hasOffers() === true) and ($this->canRouteOfferThroughNbplusRearch($input, $order) === false))
+                {
+                    $routeViaReArch = false;
+                    $dimensions[17] = 1;
+                }
+
+                // Check if discounts are applicable to the order
+                if ($order->isDiscountApplicable() === true)
+                {
+                    $routeViaReArch = false;
+                    $dimensions[18] = 1;
+                }
+
+                // Check if product ID exists in the order
+                if ($order->getProductId() !== null)
+                {
+                    if ($this->shouldRouteAppsViaNbplus($order) === false) {
+                        $routeViaReArch = false;
+                        $dimensions[19] = 1;
+                    }
+                }
+
+                // Check if fee config ID exists in the order
+                if ($order->getFeeConfigId() !== null)
+                {
+
+                    if ($this->isFeeConfigIDRampedForNbPlus() === false)
+                    {
+                        $routeViaReArch = false;
+                        $dimensions[20] = 1;
+                    }
+                }
+
+            }
+
+            $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $order->getId(), $this->merchant);
+
+            // Check if there are any order transfers
+            if ((empty($orderTransfers) === false) and (count($orderTransfers) > 0)) {
+                if ($this->shouldRouteOrderTransfersViaNBPlus($this->merchant->getId()) === false)
+                {
+                    $routeViaReArch = false;
+                    $dimensions[21] = 1;
+                }
+            }
+        }
+
+        $dimensions[22] = (string) strtolower($input['_']['library'] ?? 'unknown');
+        $dimensions[23] = (string) $currentRouteName;
+        $dimensionsString = implode(', ', $dimensions);
+
+        $response["route_wallet_via_nbplus"] = $routeViaReArch;
+        $response["dimensions"] = $dimensionsString;
+
+        return $response;
+    }
+
+    // wallet custom checks helper functions
+    private function isWalletRearchMarketPlace($merchant): bool {
+        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_marketplace';
+        $variant = $this->getWalletRearchVariant($featureFlag, ["merchant_id" => $merchant->getId()]);
+
+        // Log the feature variant for debugging
+        $this->trace->info(TraceCode::NBPLUS_WALLET_MARKET_PLACE_SPLITZ_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $featureFlag,
+        ]);
+
+        return $variant === 'variant_on';
+    }
+
+    private function isWalletRearchTpv(Merchant\Entity $merchant): bool {
+        $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER . '_tpv';
+        $variant = $this->getWalletRearchVariant($featureFlag, ["merchant_id" => $merchant->getId()]);
+
+        // Log the feature variant for debugging
+        $this->trace->info(TraceCode::NBPLUS_WALLET_TPV_PAYMENT_SPLITZ_VARIANT, [
+            'merchant_id' => $merchant->getId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $featureFlag,
+        ]);
+
+        return $variant === 'variant_on';
+    }
+
+    private function checkFeeBearerRoutingForWalletOnNbPlusRearch(Merchant\Entity $merchant): bool {
+        $fee = $merchant->getFeeBearer();
+        $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER . "_fee_bearer";
+
+        $variant = $this->getWalletRearchVariant($featureFlag, ["fee" => $fee]);
+
+        // Log the feature variant for debugging
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_CFB_SPLITZ_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $featureFlag,
+            'fee'         => $fee,
+        ]);
+
+        return $variant === 'variant_on';
+    }
+
+    private function getWalletRearchVariant(string $featureFlag, mixed $value = []): string {
+        $properties = [
+            'id'            => $this->app['request']->getTaskId(),
+            'experiment_id' => $featureFlag,
+            'request_data'  => json_encode($value),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] ?? 'control';
+    }
+    
+    
 
     private function canRouteWalletThroughRearchFlow($input): bool
     {
@@ -5114,6 +5448,7 @@ class Processor
                 ($this->processPaymentRoutingForCrossBorderImport($input) === true) and
                 ($this->isOptimizerCFBInternalFlow() === false ) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
+                ($this->canRouteINRWalletThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
                 ($this->canRouteRecurringThroughOptimizerRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
