@@ -8640,7 +8640,7 @@ return [
         ],
     ],
 
-    'testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testMerchantGetTagsRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/merchants/10000000000000/tags',
             'method'  => 'GET',
@@ -8656,7 +8656,7 @@ return [
         ]
     ],
 
-    'testCurrencyFetchAllProxyRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testCurrencyFetchAllProxyRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/currency/all/proxy',
             'method'  => 'GET',
@@ -8672,7 +8672,7 @@ return [
         ]
     ],
 
-    'testMerchantPartnerConfigsFetchProxyRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testMerchantPartnerConfigsFetchProxyRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/merchants/me/partner/configs',
             'method'  => 'GET',
@@ -8688,7 +8688,7 @@ return [
         ]
     ],
 
-    'testSettlementHolidaysRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testSettlementHolidaysRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/settlement/holidays',
             'method'  => 'GET',
@@ -8704,7 +8704,7 @@ return [
         ]
     ],
 
-    'testSettlementAmountRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testSettlementAmountRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/settlements/amount',
             'method'  => 'GET',
@@ -8720,7 +8720,7 @@ return [
         ]
     ],
 
-    'testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testUserFetchPurposeCodeRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/users/purpose/code',
             'method'  => 'GET',

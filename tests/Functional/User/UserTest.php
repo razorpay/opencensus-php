@@ -10838,26 +10838,6 @@ class UserTest extends TestCase
                 }));
     }
 
-    protected function enableRazorXTreatmentForBlockBankingRoutes()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function($mid, $feature, $mode) {
-                    if ($feature === 'block_banking_requests')
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
-    }
 
     protected function enableRazorXTreatmentForRxAclDenyUnauthorized()
     {
@@ -15735,9 +15715,8 @@ class UserTest extends TestCase
         $this->assertEquals('deactivated', $mii['notes']['status']);
     }
 
-    public function testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testMerchantGetTagsRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15748,9 +15727,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testCurrencyFetchAllProxyRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testCurrencyFetchAllProxyRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15761,9 +15739,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantPartnerConfigsFetchProxyRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testMerchantPartnerConfigsFetchProxyRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15774,9 +15751,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testSettlementHolidaysRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testSettlementHolidaysRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15787,9 +15763,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testSettlementAmountRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testSettlementAmountRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15800,9 +15775,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testUserFetchPurposeCodeRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 

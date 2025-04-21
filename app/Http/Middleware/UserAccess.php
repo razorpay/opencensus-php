@@ -308,20 +308,7 @@ class UserAccess
 
     private function isBankingDisabledRoute(string $route): bool
     {
-        // if the feature is enabled, then only the routes will be blocked
-        $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
-                                               RazorxTreatment::BLOCK_BANKING_REQUESTS,
-                                               $this->ba->getMode());
-
-        if (strtolower($variant) === 'on')
-        {
-            if (in_array($route, Route::$bankingDisabledRoutes) === true)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return in_array($route, Route::$bankingDisabledRoutes);
     }
 
     private function validateUser2FaStatus()
