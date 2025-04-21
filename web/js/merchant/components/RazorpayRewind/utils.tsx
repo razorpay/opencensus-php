@@ -31,7 +31,7 @@ import { captureImage } from './imageUtils';
 import { RewindFonts } from './RazorpayRewind';
 
 export const postContent =
-  'Just relived my year in payments. Spoiler alert: we crushed it in FY2024! #RazorpayRewind2025';
+  'Just relived my year in payments. Spoiler alert: we crushed it in the last financial year! #RazorpayRewind2025';
 
 export const trackPaymentsRecapEvent = ({
   objectName,
