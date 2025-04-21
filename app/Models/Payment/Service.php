@@ -9,6 +9,7 @@ use Crypt;
 use Config;
 use Monolog\Logger;
 use RZP\Constants\Metric as Metrics;
+use RZP\Jobs\PaymentFetchByIdParity;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\OrderPaymentsParity;
 use RZP\Listeners\ApiEventSubscriber;
@@ -2567,7 +2568,7 @@ class Service extends Base\Service
         }
         catch (\Throwable $ex)
         {
-            $this->trace->error(TraceCode::ORDER_PAYMENTS_PARITY_SPLITZ_FAILURE, [
+            $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_PARITY_SPLITZ_FAILURE, [
                 "error" => $ex->getMessage(),
             ]);
 
@@ -2816,6 +2817,7 @@ class Service extends Base\Service
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
+        $hasCallbackCall = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2932,6 +2934,7 @@ class Service extends Base\Service
         {
             if($this->app['basicauth']->isPrivateAuth())
             {
+                $hasCallbackCall = true;
                 $secret = $this->app->config->get('app.key');
                 $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
                 if(isset($payment['cps_route']) && $payment['cps_route'] === 5)
@@ -2967,7 +2970,69 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        if ($this->checkSplitzForPaymentFetchByIdParity() === true)
+        {
+            $config  = $this->app['config']->get('applications.route');
+            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
+            $input["payment_id"] = $id;
+            $input["ip"] = $this->app['request']->getClientIp();
+            $input["passport"] = $passport;
+            $input["hasCallbackCall"] = $hasCallbackCall;
+            $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
+            $input["internalApp"] = $this->app['basicauth']->getInternalApp();
+            $input["isProxyAuth"] = $this->app['basicauth']->$this->isProxyAuth();
+
+            $this->pushPaymentFetchByIdForParity($payment, $input);
+        }
+
         return $entity;
+    }
+
+    public function checkSplitzForPaymentFetchByIdParity(): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.payment_fetch_by_id_parity_producer'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::PAYMENT_FETCH_BY_ID_PARITY_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function pushPaymentFetchByIdForParity($payments, $input)
+    {
+        try
+        {
+            $microtime = microtime(true);
+
+            // Convert seconds to milliseconds
+            $milliseconds = round($microtime * 1000);
+
+            PaymentFetchByIdParity::dispatchNow($this->mode, $input, $payments, $milliseconds);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::PAYMENT_FETCH_BY_ID_PARITY_EXCEPTION,
+                [
+                    "message" => $ex->getMessage()
+                ]);
+        }
     }
 
     public function getPaymentTimeline(string $id, array $input = []): array

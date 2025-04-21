@@ -1423,6 +1423,8 @@ return array(
 
     'api_migration_v3' => env('API_MIGRATION_V3'),
 
+    'payment_fetch_by_id_parity_producer' => env('PAYMENT_FETCH_BY_ID_PARITY_PRODUCER'),
+
     'appending_userid_in_sendsms_payload' => env('APPENDING_USERID_IN_SENDSMS_PAYLOAD'),
 
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
