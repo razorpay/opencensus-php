@@ -165,6 +165,7 @@ class Cors
             $allowHeaders = [
                 'X-Requested-With',
                 Headers::CSRF_TOKEN,
+                Headers::CSRF_TOKEN_V2,
                 'Content-Type',
                 'X-Report-Type',
                 'X-Product-Type',
@@ -193,12 +194,17 @@ class Cors
                 Headers::X_PAYOUT_IDEMPOTENCY,
             ];
 
+            $exposedHeaders = [
+                Headers::CSRF_TOKEN,
+                Headers::CSRF_TOKEN_V2,
+            ];
+
             $headers = [
                 'Access-Control-Allow-Origin'       => $originDomain,
                 'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PATCH, PUT, DELETE',
                 'Access-Control-Allow-Credentials'  => 'true',
                 'Access-Control-Allow-Headers'      => implode(',', $allowHeaders),
-                'Access-Control-Expose-Headers'     => Headers::CSRF_TOKEN,
+                'Access-Control-Expose-Headers'     => implode(',', $exposedHeaders),
             ];
 
             //

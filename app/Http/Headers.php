@@ -41,4 +41,6 @@ class Headers
     const APOLLOGRAPHQL_CLIENT_NAME     = 'apollographql-client-name';
 
     const X_AB_USER_ID                  = 'x-ab-user-id';
+
+    const CSRF_TOKEN_V2                 = 'X-CSRF-TOKEN-V2';
 }
