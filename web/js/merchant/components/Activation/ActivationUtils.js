@@ -584,7 +584,9 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
           activationState = 'needs_clarification_payments_settlement_enabled';
         } else if (activationData.activated && merchant.hold_funds) {
           activationState = 'needs_clarification_with_payments_enabled';
-        } else if (!activationData.activated || bdd_verification_status === 'needs_clarification') {
+        } else if (bdd_verification_status === 'needs_clarification') {
+          activationState = 'bdd_needs_clarification';
+        } else if (!activationData.activated) {
           activationState = 'needs_clarification_with_payment_disabled';
         }
       } else if (activationStatusChangeLogs.includes('activated_mcc_pending')) {
@@ -792,6 +794,7 @@ const isNewNcActivationStatus = (activationStatus) => {
     'needs_clarification_with_payments_enabled',
     'needs_clarification_with_payment_disabled',
     'needs_clarification_for_pos',
+    'bdd_needs_clarification',
   ];
 
   return newNcActivationStatus.includes(activationStatus);

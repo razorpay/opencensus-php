@@ -22,7 +22,7 @@ const NCModal = ({
   const activationUrl = isActivationFormFullView ? '/kyc' : '/activation';
 
   const sessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
-  
+
   const getContent = () => {
     switch (activationState) {
       case 'needs_clarification_payments_settlement_enabled': {
@@ -68,6 +68,23 @@ const NCModal = ({
             <div>
               You’ll be able to collect payments and receive them in your bank account only after
               the required details are updated
+            </div>
+          ),
+          pill: 'ACTION REQUIRED',
+          button: (
+            <button className="btn btn-primary nc-button" type="button" onClick={goToNCOnEasy}>
+              Resolve now
+            </button>
+          ),
+        };
+      }
+      case 'bdd_needs_clarification': {
+        return {
+          title: 'Action Required: Update Your KYC Details',
+          body: (
+            <div>
+              You won’t be able to collect payments from customers or receive settlements in your
+              bank account until you update the required KYC details.
             </div>
           ),
           pill: 'ACTION REQUIRED',

@@ -167,6 +167,7 @@ const KYCStatusModal = ({
       activationState === 'needs_clarification_with_payments_enabled' ||
       activationState === 'needs_clarification_with_payment_disabled' ||
       activationState === 'rejected' ||
+      activationState === 'bdd_needs_clarification' ||
       activationState === 'needs_clarification_for_pos';
     if (content) {
       trackEvents({

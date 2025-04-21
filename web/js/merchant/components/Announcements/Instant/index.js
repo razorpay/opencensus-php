@@ -435,6 +435,7 @@ class InstantActivationAnnouncements extends Component {
           );
           break;
         }
+        case 'bdd_needs_clarification':
         case 'needs_clarification_with_payment_disabled': {
           theme = 'danger';
           title = 'Action required';
@@ -757,7 +758,10 @@ class InstantActivationAnnouncements extends Component {
               </button>
             </div>
           );
-        } else if (activationState === 'needs_clarification_with_payment_disabled') {
+        } else if (
+          activationState === 'needs_clarification_with_payment_disabled' ||
+          activationState === 'bdd_needs_clarification'
+        ) {
           theme = 'danger';
           title = 'Action required';
           content = (

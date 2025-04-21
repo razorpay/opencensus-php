@@ -626,6 +626,7 @@ export const isNewNcActivationStatus = (activationStatus) => {
     'needs_clarification_payments_settlement_enabled',
     'needs_clarification_with_payments_enabled',
     'needs_clarification_with_payment_disabled',
+    'bdd_needs_clarification',
   ];
 
   return newNcActivationStatus.includes(activationStatus);

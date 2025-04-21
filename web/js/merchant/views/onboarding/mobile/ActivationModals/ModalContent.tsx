@@ -37,6 +37,7 @@ export type ModalTypeT =
   | 'needs_clarification_payments_settlement_enabled'
   | 'needs_clarification_with_payments_enabled'
   | 'needs_clarification_with_payment_disabled'
+  | 'bdd_needs_clarification'
   | '';
 
 const InlineText = styled(View)`
@@ -502,6 +503,23 @@ export const getModalContent = (
       button = (
         <Button onClick={handleNcButton} block>
           {Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
+        </Button>
+      );
+      return { title, pill, description, image, button };
+
+    case 'bdd_needs_clarification':
+      title = Message.BDD_NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
+      image = <NCImg src={ImgNcKyc} />;
+      description = (
+        <>
+          You won’t be able to collect payments from customers or receive settlements in your bank
+          account until you update the required KYC details.
+        </>
+      );
+      pill = Message.BDD_NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill;
+      button = (
+        <Button onClick={handleNcButton} block>
+          {Message.BDD_NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
         </Button>
       );
       return { title, pill, description, image, button };

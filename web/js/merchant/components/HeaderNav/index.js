@@ -401,10 +401,10 @@ class HeaderNav extends Component {
           </Suspense>
         ) : null}
 
-        {user.isBddNcRequired ? (
+        {user.bdd_verification_status === 'needs_clarification' ? (
           <Suspense fallback={null}>
             <NCModal
-              activationState="needs_clarification_with_payment_disabled"
+              activationState="bdd_needs_clarification"
               goToNCOnEasy={this.goToNCOnEasy}
               user={user}
             />

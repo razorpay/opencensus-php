@@ -584,6 +584,23 @@ export const kycModalContent = (args = {}, navigate) => {
         ),
       };
     }
+    case 'bdd_needs_clarification': {
+      return {
+        title: 'Action Required: Update Your KYC Details',
+        body: (
+          <div>
+            You won’t be able to collect payments from customers or receive settlements in your bank
+            account until you update the required KYC details.
+          </div>
+        ),
+        pill: 'ACTION REQUIRED',
+        button: (
+          <button type="button" className="btn btn-primary nc-button" onClick={args.goToNCOnEasy}>
+            Resolve now
+          </button>
+        ),
+      };
+    }
 
     case 'needs_clarification_for_pos': {
       if (latestOrder) {

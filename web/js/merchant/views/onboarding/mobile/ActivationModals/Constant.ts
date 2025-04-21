@@ -81,3 +81,9 @@ export const NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS = {
   buttonText: 'Resolve now',
   pill: 'ACTION REQUIRED',
 };
+
+export const BDD_NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS = {
+  title: 'Action Required: Update Your KYC Details',
+  buttonText: 'Resolve now',
+  pill: 'ACTION REQUIRED',
+};
