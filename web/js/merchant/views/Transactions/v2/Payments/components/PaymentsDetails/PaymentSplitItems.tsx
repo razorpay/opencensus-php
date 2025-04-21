@@ -10,6 +10,7 @@ import {
   TableHeaderCell,
   TableHeaderRow,
   TableRow,
+  Text,
 } from '@razorpay/blade/components';
 import { CurrencyCodeType } from '@razorpay/i18nify-js';
 
@@ -90,7 +91,11 @@ function PaymentSplitItems({ order_id }: IPaymentSplitItems): React.ReactElement
             <TableBody>
               {tableData.map((tableItem, index) => (
                 <TableRow key={index} item={tableItem}>
-                  <TableCell>{tableItem.name}</TableCell>
+                  <TableCell>
+                    <Box whiteSpace="normal">
+                      <Text wordBreak="break-word">{tableItem.name}</Text>
+                    </Box>
+                  </TableCell>
                   <TableCell>
                     <Amount
                       value={i18nifyConvertToMajorUnit(tableItem.amount, tableItem.currency)}
