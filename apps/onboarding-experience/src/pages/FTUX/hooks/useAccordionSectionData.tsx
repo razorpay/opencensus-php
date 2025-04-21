@@ -1,5 +1,5 @@
 import React from 'react';
-import { AccordionDataType } from '../types/common';
+import { AccordionDataType } from '@FTUX/types/homepage';
 
 const useAccordionSectionData = (): { activeStep: number; accordionData: AccordionDataType[] } => {
   // To be replaced with data from GQL calls and conditions

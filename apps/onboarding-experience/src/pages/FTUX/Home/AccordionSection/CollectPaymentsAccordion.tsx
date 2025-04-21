@@ -8,7 +8,7 @@ import {
   CheckIcon,
   Avatar,
 } from '@razorpay/blade/components';
-import { AccordionDataType } from '@FTUX/types/common';
+import { AccordionDataType } from '@FTUX/types/homepage';
 
 const CollectPaymentsAccordion = ({
   data,

@@ -1,1 +1,1 @@
-export { default } from '@apps/onboarding-experience/src/pages/FTUX';
+export { default } from 'apps/onboarding-experience/src/pages/FTUX';

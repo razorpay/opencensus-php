@@ -10,7 +10,7 @@ import {
   graphqlRequestQuery,
   graphqlRequestMutation,
 } from '@federated/apps/shell/graphql';
-import { APP_CONSTANTS } from '@apps/onboarding-experience/src/constants';
+import { APP_CONSTANTS } from 'apps/onboarding-experience/src/constants';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
