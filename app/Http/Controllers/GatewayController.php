@@ -480,17 +480,6 @@ class GatewayController extends Controller
             [$payment, $mode] = $paymentRepo->fetchPaymentLiveOrTestModeWithGateway($paymentId, $gatewayDriver);
         }
 
-        if ($this->shouldSkipOptimizerCardsCallback($gatewayDriver, $payment) === true)
-        {
-            $this->trace->info(TraceCode::OPTIMIZER_CARD_STATIC_CALLBACK_SKIPPED, [
-                'gateway'   => $gatewayDriver,
-                'payment_id'   => $payment->getId(),
-            ]);
-
-            return [
-                'success' => true,
-            ];
-        }
 
         try
         {
@@ -640,6 +629,17 @@ class GatewayController extends Controller
                             'success' => true,
                         ];
 
+                    }
+                    if ($this->shouldSkipOptimizerCardsCallback($gatewayDriver, $payment) === true)
+                    {
+                        $this->trace->info(TraceCode::OPTIMIZER_CARD_STATIC_CALLBACK_SKIPPED, [
+                            'gateway'   => $gatewayDriver,
+                            'payment_id'   => $payment->getId(),
+                        ]);
+
+                        return [
+                            'success' => true,
+                        ];
                     }
 
                     $data = (new Payment\Service)->s2sCallback($paymentId, $input);
