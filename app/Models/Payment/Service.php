@@ -1616,6 +1616,12 @@ class Service extends Base\Service
                         $payment->setAmountCaptured($paymentMap['amount_captured']);
                     }
 
+                    if ((isset($paymentMap['flow']) === true) and
+                        ($paymentMap['method'] === Payment\Method::UPI))
+                    {
+                        $payment->setAttribute(Entity::FLOW, $paymentMap['flow']);
+                    }
+
                     return $payment;
                 },
                 20,
@@ -2894,12 +2900,6 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        if (isset($entity['upi']) and
-            ($payment->isRoutedThroughPaymentsUpiPaymentService() === true ||
-             $payment->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)
-        ) {
-            $entity['upi']['flow'] = $payment->getFlow();
-        }
 
         if (isset($entity['card']) and
            ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))

@@ -469,7 +469,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STORE_ID, // Added here to support store management feature for pos.
         self::SOURCE_CHANNEL,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
-        self::FLOW,
     ];
 
     protected $visible = [
@@ -639,7 +638,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD,
         self::REWARD_ID,
         self::AMOUNT_CAPTURED,
-        self::FLOW,
     ];
 
     protected $webhook = [
@@ -3415,15 +3413,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
-    public function shouldPopulateFlowForMerchant(): bool
+    public function shouldPopulateFlowForMerchant(string $paymentId, string $merchantId): bool
     {
         $app = \App::getFacadeRoot();
 
         try
         {
-            $merchantId=$this->getMerchantId();
             $properties = [
-                'id'            => $merchantId,
+                'id'            => $paymentId,
                 'experiment_id' => $app['config']->get('app.flow_in_payment_response_id'),
                 'request_data'  => json_encode(['merchant_id' => $merchantId]),
             ];
@@ -3432,7 +3429,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $app['trace']->info(TraceCode::FLOW_IN_PAYMENT_RESPONSE_SPLITZ_RESPONSE, [
                 'properties'    => $properties,
-                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
                 'variant'       => $variant,
             ]);
 
@@ -7345,7 +7342,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $app = App::getFacadeRoot();
 
-        if (($this->getCpsRoute() === Payment\Entity::API || $this->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE) && $this->shouldPopulateFlowForMerchant() === true) {
+        if (($this->getCpsRoute() === Payment\Entity::API || $this->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE) && $this->shouldPopulateFlowForMerchant($this->getId(), $this->getMerchantId()) === true) {
 
         // Allow populating Flow in UPI block for all payments
         $upiMetadata = $this->getUpiMetadata();
@@ -7353,6 +7350,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if (isset($upiMetadata) === true)
             {
                 $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
+            }
+        }
+        elseif ($this->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)
+        {
+            if (empty($this->getFlow()) === false)
+            {
+                $data[self::UPI][UpiMetadata\Entity::FLOW] = $this->getFlow();
             }
         }
 
@@ -7373,6 +7377,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             {
                 return;
             }
+
+            $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
 
             $reference17 = json_decode($this->getReference17(), true) ?? [];
 
