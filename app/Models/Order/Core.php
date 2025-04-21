@@ -224,6 +224,8 @@ class Core extends Base\Core
 
             $config['is_default'] = false;
 
+            $config['mutex_order_id'] = $order->getAttribute(Entity::ID);
+
             $configCore = new Config\Core();
 
             if ($configCore->merchant === null)
