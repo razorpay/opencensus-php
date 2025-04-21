@@ -18,6 +18,6 @@ export const METHODS = {
 };
 
 export const PAYLATER_LABELS = {
-  getsimpl: 'Simpl',
+  getsimpl: 'Simpl Paylater',
   simpl_pay_in_3: 'Simpl Pay in 3',
 };

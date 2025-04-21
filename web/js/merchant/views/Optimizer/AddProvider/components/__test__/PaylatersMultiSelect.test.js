@@ -22,6 +22,6 @@ describe('PaylatersMultiSelect Component', () => {
 
   test('should show comma separated selected paylaters', () => {
     render(<PaylatersMultiSelect {...props} />);
-    expect(screen.getByText('Simpl, Simpl Pay in 3')).toBeInTheDocument();
+    expect(screen.getByText('Simpl Paylater, Simpl Pay in 3')).toBeInTheDocument();
   });
 });

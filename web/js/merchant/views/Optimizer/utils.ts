@@ -1353,6 +1353,7 @@ export const PARAMETERS: Parameter[] = [
     id: 19,
     values: [
       {
+        label: 'Simpl Paylater',
         value: 'getsimpl',
       },
       {
