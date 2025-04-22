@@ -2107,6 +2107,15 @@ trait Capture
             {
                 $count = $this->repo->transaction(function() use ($payment, $orderId)
                 {
+                    $updates = $this->repo
+                        ->transfer
+                        ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+
+                    if ($updates < 1)
+                    {
+                        return 0;
+                    }
+
                     $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled(
                         $payment->getId(), $this->merchant->getId());
 
@@ -2115,10 +2124,7 @@ trait Capture
                         // create transfer payment during order payment capture itself
                         $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
                     }
-
-                    return $this->repo
-                        ->transfer
-                        ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+                    return $updates;
                 });
 
                 return $count;
