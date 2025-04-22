@@ -28,6 +28,7 @@ import {
   options,
   trackSearchTypeInitiated,
   TRACK_TYPE_DEBOUNCE_DURATION,
+  getResultsForAnalytics,
 } from './utils';
 import { entitySearch } from './utils/EntitySearch';
 import { getProductSearchResults } from './utils/productSearch';
@@ -219,6 +220,7 @@ const UniversalSearch = ({
         queryTyped: searchQuery,
         optionSet: products.length ? 1 : 0,
         optionSetTotal: products.length,
+        results: getResultsForAnalytics(products),
       });
     } else {
       // Incase nothing is present in searchbar, we show only popular products

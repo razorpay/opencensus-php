@@ -101,7 +101,7 @@ const AccountDetails = (props): JSX.Element => {
             info={userDetails}
             handleAction={handleEditAction}
           />
-          {ownerDetails && <DetailsViewCard title="Owner’s Account Details" info={ownerDetails} />}
+          {ownerDetails && <DetailsViewCard title="Owner's Account Details" info={ownerDetails} />}
         </Box>
       </TriggerOnQueryParamMatch>
     </WrapperComponent>

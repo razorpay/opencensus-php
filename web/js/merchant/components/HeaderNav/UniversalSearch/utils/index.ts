@@ -5,6 +5,7 @@ import {
   EligibleProducts,
   EligibleProductsTypes,
   ObjType,
+  ProductType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 
 export const options = {
@@ -140,4 +141,14 @@ export const handleTestModeVisibility = (isFocussed: boolean): void => {
       testModeBanner.style.visibility = 'visible';
     }
   }
+};
+
+export const getResultsForAnalytics = (results: ProductType[]): { title: string; group: string | null }[] => {
+  return results.map((result) => {
+    const group = result.item.group?.length ? result.item.group[0] : null;
+    return {
+      title: result.item.title,
+      group: group ? group.replace('in: ', '') : null,
+    }
+  })
 };

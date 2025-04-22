@@ -7,7 +7,7 @@ import {
   ProductItem,
   ProductType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
-import { trackSearchResultClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
+import { getResultsForAnalytics, trackSearchResultClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
 import React from 'react';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import {
@@ -52,6 +52,8 @@ const ProductListing = ({
                 optionChosen: index + 1,
                 optionSet: products.length ? 1 : 0,
                 optionSetTotal: products.length,
+                optionGroup: item.group?.length ? item.group[0].replace('in: ', '') : null,
+                results: getResultsForAnalytics(products),
               })}
               key={`product-listing-${index}`}
             >

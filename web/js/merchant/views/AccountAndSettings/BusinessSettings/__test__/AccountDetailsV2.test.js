@@ -120,6 +120,7 @@ describe('Merchant Profile Section Version 2', () => {
       if (id === 'phone_number')
         expect(screen.getByText(getI18FormattedPhoneNumber(value))).toBeInTheDocument();
       else expect(screen.getByText(value)).toBeInTheDocument();
+      
       if (isEditable) {
         const editButton = screen.getAllByRole('button');
         await userEvent.click(editButton[order]);
@@ -152,7 +153,7 @@ describe('Merchant Profile Section Version 2', () => {
     renderApp({
       initialState,
     });
-    expect(screen.getByText('Owner’s Account Details')).toBeInTheDocument();
+    expect(screen.getByText(`Owner's Account Details`)).toBeInTheDocument();
     expect(screen.getByText(value)).toBeInTheDocument();
   });
 });
