@@ -3,7 +3,6 @@ import Input from 'common/new-ui/Input';
 import { BankDetails, AccountDetails } from './commonFields';
 
 export default function NACHForm({
-  showNACHAccountTypes,
   formReference1,
   formReference2,
   accountType,
@@ -23,7 +22,6 @@ export default function NACHForm({
 
       <AccountDetails
         required
-        isNACHPayment={showNACHAccountTypes}
         beneficiaryName={beneficiaryName}
         bankAccountNumber={bankAccountNumber}
         accountType={accountType}

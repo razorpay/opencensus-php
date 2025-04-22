@@ -27,9 +27,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import {
-  setRecommendedProduct,
-} from 'merchant/components/Activation/ActivationUtils';
+import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import LakshmiVilasBankBanner from 'merchant/components/Announcements/LakshmiVilasBankBanner';
 import FraudDetectionModal from 'merchant/components/Home/FraudDetectionModal';
 import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
@@ -947,23 +945,15 @@ class HomeContainer extends Component {
     const hasLakhmiVilasBankAcc =
       user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
 
-    const showRBIChangesBanners =
-      user.isCardRecurringPaymentsBlocked &&
-      user.isAccepted &&
-      (user.isSubscriptionsEnabled || user.isChargeAtWillEnabled) &&
-      !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc');
     return (
       <div className="react-root dashboard-home">
         <FestiveAnimation isMobile={isMobile} user={user.user} />
         <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.onboarding')}>
-          {showRBIChangesBanners ? (
-            <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
-          ) : (
-            <>
-              {/* Lakshmi Vilas Bank Moratorium */}
-              {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
-            </>
-          )}
+          <>
+            {/* Lakshmi Vilas Bank Moratorium */}
+            {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
+          </>
+
           {isShowBankAccountWokrflow && <WorkflowStatus isHomepageWorkflow />}
           {/* Show Diwali Promotional Banner */}
 
@@ -1176,8 +1166,6 @@ class HomeContainer extends Component {
             <Desktop {...commonProps} />
           </SuspenseWithLoader>
         )}
-
-        {showRBIChangesBanners && <CardPaymentsBlockedModal />}
       </div>
     );
   }

@@ -807,7 +807,6 @@ class NewRegistrationLink extends React.Component {
         return (
           <PaymentDetailsForm
             showNACHAccountTypes={this.props.user.isRecurringMoreAccountType}
-            showAmountField={this.props.user.isEmandateNonzeroAmountEnabled}
             amount={formFields.amount}
             accountType={formFields.accountType}
             availableMethods={this.state.availableMethods}
@@ -899,16 +898,6 @@ class NewRegistrationLink extends React.Component {
               </Form>
             </main>
             <footer>
-              {this.props.user.isCardRecurringPaymentsBlocked && (
-                <div className="card-blocked-banner">
-                  <i className="i i-info-circle" /> Cards issued by Indian banks are temporarily
-                  disabled for new registration links.{' '}
-                  <DocsLink
-                    url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
-                    title="Learn more"
-                  />
-                </div>
-              )}
               {currentTab > 0 && (
                 <Button onClick={this.changeTab(-1)} type="button">
                   Previous

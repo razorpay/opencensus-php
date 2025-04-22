@@ -11,7 +11,6 @@ import {
   createRegistrationLinkBatch,
   validateRegistrationLinkBatch,
 } from 'merchant/reducers/batches';
-import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 import RegistrationLinksBatchForm from './components/RegistrationLinkBatchCreationForm';
@@ -27,7 +26,7 @@ class CreateHostedMandateBatch extends React.Component {
       gaEvents={gaEvents}
       maxRows="5,00,000"
       maxFileSize={57671680} // 55 MB
-      batchType={getRecurringChargeAPILabel()}
+      batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/dashboard-operations/batch-operations/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
       processingOptions={true}

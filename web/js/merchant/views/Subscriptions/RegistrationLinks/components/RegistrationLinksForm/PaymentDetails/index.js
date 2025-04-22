@@ -39,13 +39,11 @@ export default function PaymentDetailsForm(props) {
     skipBankDetails,
     isEsignEnabled,
     bankAccountIFSC,
-    showAmountField,
     beneficiaryName,
     isEmandatePayment,
     handleNotesChange,
     bankAccountNumber,
     handlePaymentMethod,
-    showNACHAccountTypes,
     isTPVEnabledMerchant,
     trackReceivedNACHForm,
     trackNACHToolTipHover,
@@ -70,7 +68,6 @@ export default function PaymentDetailsForm(props) {
       {isEmandatePayment && (
         <Emandate
           amount={amount}
-          showAmountField={showAmountField}
           emandateBanks={emandateBanks}
           skipBankDetails={skipBankDetails}
           bankName={bankName}
@@ -117,7 +114,6 @@ export default function PaymentDetailsForm(props) {
 
       {isNACHPayment && (
         <NACH
-          showNACHAccountTypes={showNACHAccountTypes}
           isNachFormAval={isNachFormAval}
           bankName={bankName}
           accountType={accountType}

@@ -3,7 +3,6 @@ import { getActionName, makeActionCollectionReducer } from 'merchant/reducers/co
 import store from 'merchant/store';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
-import { getRecurringChargeAPILabel } from 'merchant/views/Subscriptions/utils';
 import {
   makeEntityReducer,
   entityFetchPendingState,
@@ -477,8 +476,8 @@ export const validateRefundBatch = validateBatch('refund');
 export const createRefundBatch = createBatch('refund', 'REFUND');
 export const validateVABatch = validateBatch('virtual_account_edit');
 export const createVABatch = createBatch('virtual_account_edit', 'VIRTUAL_ACCOUNT');
-export const createRecurringChargeBatch = createBatch(getRecurringChargeAPILabel());
-export const validateRecurringChargeBatch = validateBatch(getRecurringChargeAPILabel());
+export const createRecurringChargeBatch = createBatch('recurring_charge');
+export const validateRecurringChargeBatch = validateBatch('recurring_charge');
 export const createRecurringChargeAxisBatch = createBatch('recurring_charge_axis');
 export const validateRecurringChargeAxisBatch = validateBatch('recurring_charge_axis');
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();

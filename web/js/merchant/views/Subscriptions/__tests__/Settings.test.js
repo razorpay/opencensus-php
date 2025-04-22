@@ -119,11 +119,6 @@ describe('Subscription Settings', () => {
     expect(within(view).getByText(viewValue)).toBeInTheDocument();
   });
 
-  test('Should not render Emandate settings if payment method is not enabled for merchant', () => {
-    renderAppWithoutEmandate(defaultProps);
-    expect(screen.queryByText(/emandate/i)).not.toBeInTheDocument();
-  });
-
   // enable after fixing subscription toggle - https://github.com/razorpay/dashboard/pull/14691
   test.skip('Settings - Toggle Card Action: API Success', async () => {
     server.use(saveSettings());

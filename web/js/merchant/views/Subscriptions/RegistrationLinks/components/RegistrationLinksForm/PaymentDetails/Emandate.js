@@ -4,7 +4,6 @@ import { checkIfAmount } from './utils';
 import { BankDetails, AccountDetails } from './commonFields';
 
 export default function Emandate({
-  showAmountField,
   amount,
   emandateBanks,
   skipBankDetails,
@@ -18,26 +17,6 @@ export default function Emandate({
 }) {
   return (
     <>
-      {showAmountField && (
-        <Input.Group className="InputGroup--inline" label="Amount">
-          <div className="Input-content">
-            <Input
-              required
-              name="amount"
-              type="tel"
-              placeholder="0.00"
-              description="Amount of Registration Link Payment"
-              value={amount}
-              validator={checkIfAmount}
-              size="half_big"
-              className="Input--Amount"
-              onBlur={onBlurElement}
-              data-name="amount"
-            />
-          </div>
-        </Input.Group>
-      )}
-
       <Input.Check
         name="skipBankDetails"
         checked={skipBankDetails}

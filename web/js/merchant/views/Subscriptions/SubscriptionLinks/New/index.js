@@ -597,22 +597,6 @@ class NewSubscriptionLink extends React.Component {
               </Form>
             </main>
             <footer>
-              {this.props.user.isCardRecurringPaymentsBlocked && (
-                <div
-                  className={classList(
-                    'card-blocked-banner',
-                    showUPIUnAvlBanner && 'upi-banner-visible',
-                  )}
-                >
-                  <i className="i i-info-circle" /> Cards issued by Indian banks are temporarily
-                  disabled for new subscriptions.{' '}
-                  <DocsLink
-                    url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
-                    title="Learn more"
-                  />
-                </div>
-              )}
-
               {showUPIUnAvlBanner && <UPIBanner />}
 
               {currentTab > 0 && (

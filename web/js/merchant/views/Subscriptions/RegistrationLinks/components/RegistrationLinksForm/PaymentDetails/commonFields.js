@@ -28,12 +28,8 @@ const NACH_OPTIONS = [
   },
 ];
 
-const getAccountTypes = (isNACHPayment) => {
-  if (isNACHPayment) {
-    return [...OPTIONS, ...NACH_OPTIONS];
-  }
-
-  return OPTIONS;
+const getAccountTypes = () => {
+  return [...OPTIONS, ...NACH_OPTIONS];
 };
 
 export const BankDetails = ({
@@ -82,7 +78,6 @@ export const BankDetails = ({
 export const AccountDetails = ({
   required,
   disabled,
-  isNACHPayment = false,
   accountType,
   beneficiaryName,
   bankAccountNumber,
@@ -118,7 +113,7 @@ export const AccountDetails = ({
     <Input.Select
       name="accountType"
       data-name="account_type"
-      options={['--Select Account Type--', ...getAccountTypes(isNACHPayment)]}
+      options={['--Select Account Type--', ...getAccountTypes()]}
       onBlur={onBlurElement}
       placeholder="Account Type"
       value={accountType}

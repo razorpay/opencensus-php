@@ -93,9 +93,6 @@ class PaymentButtonsContainer extends React.Component {
       <>
         <div className="banner-container">
           <DashboardBanner />
-          {user.isSubscriptionButtonEnabled && user.isCardRecurringPaymentsBlocked && (
-            <CardPaymentsBlockedBanner />
-          )}
         </div>
 
         {isQuickGuideOpen && (

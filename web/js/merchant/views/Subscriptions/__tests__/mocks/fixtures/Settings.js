@@ -67,7 +67,6 @@ export const renderAppWithError = (props = {}) => {
     initialState: {
       session: {
         user: {
-          isEmandateOnSubscriptionEnabled: true,
           isOrgAllowedFunctionality: () => true,
           findTag: () => false,
         },
@@ -85,7 +84,6 @@ export const renderApp = (props = {}) => {
     initialState: {
       session: {
         user: {
-          isEmandateOnSubscriptionEnabled: true,
           isOrgRZP: true,
           isOrgAllowedFunctionality: () => true,
           findTag: () => false,
@@ -104,7 +102,6 @@ export const renderAppWithoutEmandate = (props = {}) => {
     initialState: {
       session: {
         user: {
-          isEmandateOnSubscriptionEnabled: false,
           isOrgAllowedFunctionality: () => true,
           findTag: () => false,
         },

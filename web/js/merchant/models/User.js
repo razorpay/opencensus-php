@@ -1309,10 +1309,6 @@ export default class User {
     return this.getExpStatus('emandate_nonzero_amount');
   }
 
-  get isCardRecurringPaymentsBlocked() {
-    return this.getExpStatus('card_recurring_payments_blocked');
-  }
-
   get isSubscriptionOffersEnabled() {
     return !this.isChargeAtWillEnabled;
   }
@@ -1323,19 +1319,12 @@ export default class User {
   }
 
   get isCAWRecurringChargeAxisEnabled() {
-    return (
-      this.isFeatureEnabled('caw_recurring_charge_axis') ||
-      this.getExpStatus('caw_recurring_charge_axis')
-    );
+    return this.isFeatureEnabled('caw_recurring_charge_axis');
   }
 
   // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonEnabledByRazorX() {
     return true;
-  }
-
-  get isEmandateOnSubscriptionEnabled() {
-    return this.getExpStatus('emandate_subscription');
   }
 
   get isDirectTransferEnabled() {
@@ -1717,10 +1706,6 @@ export default class User {
 
   get isSyncExperimentEnabled() {
     return this.isOrgRZP || this.isOrgFeatureEnabled('kyc_verification_for_vas');
-  }
-
-  get isRecurringMoreAccountType() {
-    return this.getExpStatus('recurring_more_account_type');
   }
 
   get autoOpenOnboardingCoupon() {

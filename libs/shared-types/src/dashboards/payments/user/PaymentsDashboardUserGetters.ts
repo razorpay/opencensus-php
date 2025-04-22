@@ -373,14 +373,12 @@ export type PaymentsDashboardUserGetters = {
   missedOrderPLBanner: boolean;
   isPaymentsExtraRefundDetailsEnabled: boolean;
   isEmandateNonzeroAmountEnabled: boolean;
-  isCardRecurringPaymentsBlocked: boolean;
   isSubscriptionOffersEnabled: boolean;
   isSubscriptionOffersReportsEnabled: boolean;
   isCAWRecurringChargeAxisEnabled: boolean;
   isPaymentButtonEnabledByRazorX: boolean;
   isCriticalRouteExperimentEnabled: boolean;
   isBatchSchedulingOptionsExperimentEnabled: boolean;
-  isEmandateOnSubscriptionEnabled: boolean;
   isDirectTransferEnabled: boolean;
   isSubscriptionButtonEnabled: boolean;
   isBharatQREnabled: boolean;
@@ -450,7 +448,6 @@ export type PaymentsDashboardUserGetters = {
   isGstinAddFlowEnabled: boolean;
   isGstinEditFlowEnabled: boolean;
   isSyncExperimentEnabled: boolean;
-  isRecurringMoreAccountType: boolean;
   isCreditSelfServeDisabled: boolean;
   isOnboardingCouponEnabled: boolean;
   autoOpenOnboardingCoupon: boolean;

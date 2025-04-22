@@ -223,9 +223,7 @@ class SubscriptionsSettings extends React.Component {
 
         <div
           className="panel panel-default panel-theme"
-          style={
-            user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled ? {} : { maxWidth: '854px' }
-          }
+          style={refConfigTagEnabled ? {} : { maxWidth: '854px' }}
         >
           {settings.error ? (
             <Alert type="error" message={settings.errors} showDismiss={false} />
@@ -241,12 +239,7 @@ class SubscriptionsSettings extends React.Component {
               <div className="panel-body">
                 <div className="row">
                   <div
-                    className={classList(
-                      user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
-                        ? 'col-md-4'
-                        : 'col-md-6',
-                      'column',
-                    )}
+                    className={classList(refConfigTagEnabled ? 'col-md-4' : 'col-md-6', 'column')}
                   >
                     <ToggleCard
                       title={
@@ -291,12 +284,7 @@ class SubscriptionsSettings extends React.Component {
 
                   {!user.isOrgCurlec && (
                     <div
-                      className={classList(
-                        user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
-                          ? 'col-md-4'
-                          : 'col-md-6',
-                        'column',
-                      )}
+                      className={classList(refConfigTagEnabled ? 'col-md-4' : 'col-md-6', 'column')}
                     >
                       <ToggleCard
                         title={
@@ -349,12 +337,7 @@ class SubscriptionsSettings extends React.Component {
 
                   {user.isOrgCurlec && (
                     <div
-                      className={classList(
-                        user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
-                          ? 'col-md-4'
-                          : 'col-md-6',
-                        'column',
-                      )}
+                      className={classList(refConfigTagEnabled ? 'col-md-4' : 'col-md-6', 'column')}
                     >
                       <ToggleCard
                         title={
@@ -394,7 +377,7 @@ class SubscriptionsSettings extends React.Component {
                     </div>
                   )}
 
-                  {user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled && (
+                  {refConfigTagEnabled && (
                     <div className="col-md-4 column">
                       <ToggleCard
                         title={
