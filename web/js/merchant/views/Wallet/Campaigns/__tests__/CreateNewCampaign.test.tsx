@@ -196,7 +196,9 @@ describe('<CreateNewCampaign />', () => {
     });
 
     expect(
-      await screen.findByText('Error in creating campaign, please try again.'),
+      await screen.findByText(
+        "Dear merchant, We're currently fixing an unexpected issue. Sorry for any inconvenience!",
+      ),
     ).toBeInTheDocument();
   });
 });

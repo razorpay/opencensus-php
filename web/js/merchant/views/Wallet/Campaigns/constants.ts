@@ -375,4 +375,6 @@ export const AMOUNT_ATTRIBUTES = [
   'balance',
   'order.amount',
   'order.line_items_total',
+  'shopify.order.amount',
+  'shopify.order.line_items_total',
 ];

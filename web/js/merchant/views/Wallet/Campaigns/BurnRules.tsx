@@ -35,7 +35,7 @@ const BurnRules = ({ viewOnly }: BurnRulesProps) => {
       >
         Burn Rules
       </Heading>
-      <Box display="flex" marginBottom="spacing.4" alignItems="center">
+      <Box display="flex" marginBottom="spacing.3" alignItems="center">
         <Text
           marginRight="spacing.2"
           variant="body"
@@ -63,7 +63,7 @@ const BurnRules = ({ viewOnly }: BurnRulesProps) => {
                 {...field}
                 label=""
                 placeholder="Enter Duration"
-                marginRight="spacing.2"
+                marginRight="spacing.3"
                 errorText={fieldState.error?.message}
                 validationState={fieldState.error ? 'error' : 'none'}
                 onChange={({ value }) => {
@@ -105,7 +105,7 @@ const BurnRules = ({ viewOnly }: BurnRulesProps) => {
           )}
         />
       </Box>
-      <Box display="flex" marginBottom="spacing.4" alignItems="center">
+      <Box display="flex" marginBottom="spacing.3" alignItems="center">
         <Text
           marginRight="spacing.2"
           variant="body"

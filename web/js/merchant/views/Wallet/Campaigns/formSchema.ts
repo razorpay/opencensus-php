@@ -75,7 +75,7 @@ export const formSchema = yup.object().shape({
       then: (schema) =>
         schema
           .typeError('Credit amount must be a number')
-          .min(1, 'Credit amount must be greater than 0')
+          .min(1, 'Credit amount must be greater than 1')
           .required('Required'),
       otherwise: (schema) =>
         schema
@@ -99,8 +99,7 @@ export const formSchema = yup.object().shape({
       then: (schema) =>
         schema
           .typeError('Max credit must be a number')
-          .min(1, 'Maximum credit amount must be greater than 0')
-          .required('Required'),
+          .min(1, 'Maximum credit amount must be greater than 1'),
       otherwise: (schema) => schema.notRequired(),
     }),
 
@@ -111,7 +110,7 @@ export const formSchema = yup.object().shape({
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .typeError('Must be a number')
     .required('Required')
-    .min(1, 'Required')
+    .min(1, 'Expiry duration must be greater than 1')
     .when('expiryDurationPreset', {
       is: 'years',
       then: (schema) => schema.max(10, 'Expiry duration cannot be more than 10 years'),

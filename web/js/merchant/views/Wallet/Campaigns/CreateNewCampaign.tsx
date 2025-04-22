@@ -37,6 +37,7 @@ import { CampaignType, CampaignTypeEnum, FormData, Wallet } from './types';
 import { createProgramForCampaign, createCampaign } from '../queries';
 import { combineEpochAndTime, generateRuleString, createUsageLimits } from './utils';
 import { CONSTANT_ACTION_CONFIGS, DURATION_PRESETS } from './constants';
+import { rupeesToPaise } from '@libs/shared-utils';
 
 const FORM_STEPS = {
   0: {
@@ -251,7 +252,7 @@ const CreateNewCampaign = ({ mode, merchant_id }) => {
 
       const programCreationPayload = {
         points_expiry: daysToExpiry,
-        minimum_order_value: data.minOrderValue * 100,
+        minimum_order_value: rupeesToPaise(data.minOrderValue),
         wallet_name: selectedWalletName,
       };
 
@@ -281,13 +282,13 @@ const CreateNewCampaign = ({ mode, merchant_id }) => {
             actions: [
               {
                 type: data.triggerAction,
-                max_points: data.noMaxLimit ? null : data.maxCredit * 100,
+                max_points: data.noMaxLimit ? null : rupeesToPaise(data.maxCredit),
                 config: {
                   amount: {
                     type: data.creditType === 'flat' ? 'constant' : 'expression',
                     value:
                       data.creditType === 'flat'
-                        ? data.creditAmount * 100
+                        ? rupeesToPaise(data.creditAmount)
                         : `${data.creditAmount}*${data.triggerActionAttribute}/100`,
                     is_points_field: true,
                   },
@@ -353,7 +354,8 @@ const CreateNewCampaign = ({ mode, merchant_id }) => {
     } catch (error) {
       show({
         type: 'informational',
-        content: 'Error in creating campaign, please try again.',
+        content:
+          error instanceof Error ? error.message : 'Error in creating campaign, please try again.',
         color: 'negative',
       });
       setCampaignCreating(false);

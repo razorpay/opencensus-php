@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { AMOUNT_ATTRIBUTES, NUMBER_TYPES, TIME_PRESETS } from './constants';
+import { rupeesToPaise } from '@libs/shared-utils';
 
 export function normalizeEvents(events) {
   const normalizeAttributes = (config, prefix = '') => {
@@ -54,6 +55,7 @@ export const getAvailableStartTimes = (startDate) => {
     return hours > currentHours || (hours === currentHours && minutes > currentMinutes);
   });
 };
+
 // Get available end time options based on selected start time
 export const getAvailableEndTimes = (startTime, isSameDay) => {
   if (!startTime || !isSameDay) return getAvailableStartTimes(null);
@@ -63,16 +65,31 @@ export const getAvailableEndTimes = (startTime, isSameDay) => {
   });
 };
 
-export const combineEpochAndTime = (epochTimestamp, timeString) => {
-  const epochInSeconds = Math.floor(epochTimestamp / 1000);
-
-  const date = moment.unix(epochInSeconds).utc();
-
+export const combineEpochAndTime = (dateObj, timeString) => {
   const [hours, minutes] = timeString.split(':').map(Number);
 
-  date.set({ hour: hours, minute: minutes, second: 0 });
+  const combinedTimestamp = moment(dateObj).set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0,
+  });
 
-  return date.unix();
+  return combinedTimestamp.utc().unix();
+};
+
+//Sanitize values for attributes which requires special formatting
+export const sanitizeRuleValues = (field, value) => {
+  switch (field) {
+    case 'program_id':
+      if (value.startsWith('iprog_')) {
+        return value; // Return as it is if the prefix is already present
+      } else {
+        return `iprog_${value}`; // Prefix with 'iprog_' if not present
+      }
+    default:
+      return value;
+  }
 };
 
 export const generateRuleString = (rules) => {
@@ -80,13 +97,14 @@ export const generateRuleString = (rules) => {
     .map((rule) => {
       const { field, operator, minValue, maxValue, value, type } = rule;
       const eventField = `Event.${field}`; // Prefix field with "Event."
-
       // Multiply amount values by 100 to convert to paise
-      const finalValue = AMOUNT_ATTRIBUTES.includes(field) ? value * 100 : value;
+      const finalValue = AMOUNT_ATTRIBUTES.includes(field)
+        ? rupeesToPaise(value)
+        : sanitizeRuleValues(field, value);
       const finalMinValue =
-        AMOUNT_ATTRIBUTES.includes(field) && minValue ? minValue * 100 : minValue;
+        AMOUNT_ATTRIBUTES.includes(field) && minValue ? rupeesToPaise(minValue) : minValue;
       const finalMaxValue =
-        AMOUNT_ATTRIBUTES.includes(field) && maxValue ? maxValue * 100 : maxValue;
+        AMOUNT_ATTRIBUTES.includes(field) && maxValue ? rupeesToPaise(maxValue) : maxValue;
 
       // Convert backend types to JavaScript types
       const isNumberType = NUMBER_TYPES.includes(type);
@@ -164,7 +182,7 @@ export const createUsageLimits = ({
   }> = [];
   if (campaignLimitAmountEnabled) {
     campaignConfig.push({
-      budget: campaignLimitAmount * 100,
+      budget: rupeesToPaise(campaignLimitAmount),
       frequency: campaignLimitAmountPeriod,
     });
   }
@@ -195,7 +213,7 @@ export const createUsageLimits = ({
 
   if (userLimitAmountEnabled) {
     userConfig.push({
-      budget: userLimitAmount * 100,
+      budget: rupeesToPaise(userLimitAmount),
       frequency: userLimitAmountPeriod,
     });
   }

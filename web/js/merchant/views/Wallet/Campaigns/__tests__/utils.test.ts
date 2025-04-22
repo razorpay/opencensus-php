@@ -4,6 +4,7 @@ import {
   combineEpochAndTime,
   generateRuleString,
   createUsageLimits,
+  sanitizeRuleValues,
 } from '../utils';
 
 describe('normalizeEvents', () => {
@@ -130,64 +131,34 @@ describe('normalizeEvents', () => {
 });
 
 describe('combineEpochAndTime', () => {
-  it('should combine epoch timestamp and time string correctly', () => {
-    const epochTimestamp = 1675356345000; // Example timestamp in milliseconds
-    const timeString = '15:30'; // Example time string (HH:MM)
+  const testCases = [
+    { date: '2025-04-19', time: '02:00' },
+    { date: '2025-04-20', time: '00:00' },
+    { date: '2025-04-21', time: '23:59' },
+    { date: '2025-04-22', time: '12:00' },
+    { date: '2025-04-24', time: '5:30' },
+    { date: '2025-04-25', time: '09:05' },
+  ];
 
-    const expected = moment
-      .unix(Math.floor(epochTimestamp / 1000))
-      .utc()
-      .set({ hour: 15, minute: 30, second: 0 })
-      .unix();
+  testCases.forEach(({ date, time }) => {
+    it(`should correctly combine ${date} and ${time}`, () => {
+      const dateObj = new Date(`${date}T00:00:00`);
+      const [hour, minute] = time.split(':').map(Number);
 
-    const result = combineEpochAndTime(epochTimestamp, timeString);
+      const expected = moment(dateObj)
+        .set({
+          hour,
+          minute,
+          second: 0,
+          millisecond: 0,
+        })
+        .utc()
+        .unix();
 
-    expect(result).toBe(expected);
-  });
+      const actual = combineEpochAndTime(dateObj, time);
 
-  it('should correctly handle midnight time (00:00)', () => {
-    const epochTimestamp = 1675356345000; // Example timestamp in milliseconds
-    const timeString = '00:00'; // Midnight time
-
-    const expected = moment
-      .unix(Math.floor(epochTimestamp / 1000))
-      .utc()
-      .set({ hour: 0, minute: 0, second: 0 })
-      .unix();
-
-    const result = combineEpochAndTime(epochTimestamp, timeString);
-
-    expect(result).toBe(expected);
-  });
-
-  it('should correctly handle time after midnight (e.g., 01:15)', () => {
-    const epochTimestamp = 1675356345000; // Example timestamp in milliseconds
-    const timeString = '01:15'; // Time after midnight
-
-    const expected = moment
-      .unix(Math.floor(epochTimestamp / 1000))
-      .utc()
-      .set({ hour: 1, minute: 15, second: 0 })
-      .unix();
-
-    const result = combineEpochAndTime(epochTimestamp, timeString);
-
-    expect(result).toBe(expected);
-  });
-
-  it('should handle time with single digit hour and minutes', () => {
-    const epochTimestamp = 1675356345000; // Example timestamp in milliseconds
-    const timeString = '9:05'; // Single digit hour and minute
-
-    const expected = moment
-      .unix(Math.floor(epochTimestamp / 1000))
-      .utc()
-      .set({ hour: 9, minute: 5, second: 0 })
-      .unix();
-
-    const result = combineEpochAndTime(epochTimestamp, timeString);
-
-    expect(result).toBe(expected);
+      expect(actual).toBe(expected);
+    });
   });
 });
 
@@ -565,5 +536,22 @@ describe('createUsageLimits', () => {
         },
       ],
     });
+  });
+});
+
+describe('sanitizeRuleValues', () => {
+  it('should return the value with "iprog_" prefix if not present', () => {
+    const result = sanitizeRuleValues('program_id', '12345');
+    expect(result).toBe('iprog_12345');
+  });
+
+  it('should return the value as is if it already has "iprog_" prefix', () => {
+    const result = sanitizeRuleValues('program_id', 'iprog_12345');
+    expect(result).toBe('iprog_12345');
+  });
+
+  it('should return the value unchanged for fields other than "program_id"', () => {
+    const result = sanitizeRuleValues('other_field', 'value');
+    expect(result).toBe('value');
   });
 });
