@@ -115,6 +115,7 @@ configure_dark(){
     echo "ELIGIBILITY_SERVICE_LIVE_URL=\"https://checkout-affordability-api-dark.razorpay.com\""  >> ./environment/.env.production
     echo "APP_SUBSCRIPTIONS_URL=\"https://subscriptions-dark.concierge.razorpay.com/\"" >> ./environment/.env.production
     echo "APP_OPTIMIZER_CORE_SERVICE_URL=\"https://optimizer-core-dark-live.razorpay.com/\"" >> ./environment/.env.production
+    echo "TOKENS_LIVE_URL=\"https://tokens-live-dark-int.razorpay.com/v1/\"" >> ./environment/.env.production
 }
 
 configure_hallmark(){
