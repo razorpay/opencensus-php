@@ -720,7 +720,8 @@ class OffersEngine
         sort($modifiedInput);
         sort($ids);
 
-        $key = hash('sha256', $this->userType . ':' . implode(':', $modifiedInput) . ':' .
+        $key = hash('sha256', $this->mode . ':' . $this->userType . ':' .
+                              implode(':', $modifiedInput) . ':' .
                               implode(':', $ids) . ':' . self::OffersEngineGetOffers);
 
         $response = $this->getCache($key, $enableCache);
