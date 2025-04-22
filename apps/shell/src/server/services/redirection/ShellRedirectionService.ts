@@ -561,6 +561,13 @@ export class ShellRedirectionService {
     return false;
   }
 
+  /**
+   * Determines if cookies (RZP_MERCHANT_ID, RZP_USER_ID) should be set for easy onboarding merchants
+   * after they have submitted the L1 form or later stages, but are not yet activated.
+   * Excludes cases originating directly from the website auth source.
+   * @param details - Merchant details object.
+   * @returns boolean - True if cookies can be set, false otherwise.
+   */
   private canCookieSetForEasyOnboardingPostL1Submit(details: any): boolean {
     if (this.isAuthSourceWebsite()) {
       return false;

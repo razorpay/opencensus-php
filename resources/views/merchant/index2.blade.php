@@ -73,7 +73,7 @@
     trackScriptEvent('signup.google_onetap_script_attach', 'success');
   </script>
   <script defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
-  @if($isNewAuthReArch)
+  @if($isNewAuthReArch ?? false)
     <script src="{{$cdnDashboardAssetsUrl}}/dashboard/core-bundles/newauth-dashboard/newauth-dashboard.entry.js"></script>
   @else
     <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
