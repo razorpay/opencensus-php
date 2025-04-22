@@ -27,9 +27,8 @@ export const CUSTOMER_CONSENT_OPTIONS = [
 
 export const EMAIL_FLOW_OPTIONS = [
   {
-    label: 'Collect Missing Emails',
+    label: 'Collect Missing Emails (recommended)',
     value: 'collect_missing_email_flow',
-    toolTipText: 'Force customers to always enter email',
   },
   {
     label: 'Email-Less Customers',
@@ -79,7 +78,7 @@ export const FONT_FAMILY_NAMES = [
 ];
 
 export const SSO_IFRAME_URL =
-  'https://api.razorpay.com/v1/magic/widgets/sso?build=8a6faa79978507c893c21923ae5cb70b1f64674e&key_id=';
+  'https://api.razorpay.com/v1/magic/widgets/sso?build=fe0617f1d6388fe4e8fa6a83e883b00a07bdf300&key_id=';
 
 export const SSO_FIRST_TIME_USER_CONFIG = {
   sso_enabled: true,

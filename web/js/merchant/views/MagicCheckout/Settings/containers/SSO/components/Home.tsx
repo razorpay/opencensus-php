@@ -81,7 +81,7 @@ const SSOHome: React.FC<{
     fetchSSOSettings()
       .then((response) => {
         const updatedConfig = (
-          response?.success ? response.data?.configs?.sso_config : SSO_FIRST_TIME_USER_CONFIG
+          response?.success && response?.data?.configs?.sso_config  ? response.data?.configs?.sso_config : SSO_FIRST_TIME_USER_CONFIG
         ) as SSOConfigs;
         updateSSOStore(updatedConfig, ssoContext);
       })

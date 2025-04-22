@@ -51,7 +51,7 @@ describe('Customise Component', () => {
 
   it('should render the Customise component correctly', () => {
     render(<Customise />);
-    expect(screen.getByRole('button', { name: /edit mode/i })).toBeInTheDocument();
+    expect(screen.getByText('Edit Mode')).toBeInTheDocument();
   });
 
   it('should handle save changes correctly', async () => {
@@ -67,23 +67,26 @@ describe('Customise Component', () => {
     });
   });
 
-  // // Test for toggling between Edit Mode and Live Mode
+  // Test for toggling between Edit Mode and Live Mode
   it('should toggle between edit and live mode', () => {
     render(<Customise />);
 
     // Initial state should be "Edit Mode"
-    const editModeButton = screen.getByRole('button', { name: /edit mode/i });
-    expect(editModeButton).toBeInTheDocument();
+    expect(screen.getByText('Edit Mode')).toBeInTheDocument();
 
-    // Click to switch to "Live Mode"
-    fireEvent.click(editModeButton);
+    // Find and click the edit mode button
+    const editModeButton = screen.getByText('Edit Mode').closest('div');
+    fireEvent.click(editModeButton!);
 
-    // Use getByText since it's a div, not an actual button
-    expect(screen.getByText(/Live Mode/i)).toBeInTheDocument();
+    // Should now show "Live Mode"
+    expect(screen.getByText('Live Mode')).toBeInTheDocument();
 
-    // Click to switch back to "Edit Mode"
-    fireEvent.click(screen.getByText(/Live Mode/i));
-    expect(screen.getByRole('button', { name: /edit mode/i })).toBeInTheDocument();
+    // Find and click the live mode button
+    const liveModeButton = screen.getByText('Live Mode').closest('div');
+    fireEvent.click(liveModeButton!);
+
+    // Should now show "Edit Mode"
+    expect(screen.getByText('Edit Mode')).toBeInTheDocument();
   });
 
   // Test for changing background color, button color, and font

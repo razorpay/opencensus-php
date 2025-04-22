@@ -4,7 +4,6 @@ import {
   ArrowRightIcon,
   Box,
   EditIcon,
-  IconButton,
   Dropdown,
   DropdownOverlay,
   SelectInput,
@@ -34,6 +33,9 @@ const WidgetCustomisationButtons: React.FC<WidgetCustomisationButtonsProps> = ({
   const [btnColor, setBtnColor] = useState<string>(ssoWidget.buttonColor);
   const [font, setFont] = useState<string>(ssoWidget.fontFamily);
   const [showFontSelector, setShowFontSelector] = useState<boolean>(false);
+
+  const bgColorInputRef = useRef<HTMLInputElement>(null);
+  const btnColorInputRef = useRef<HTMLInputElement>(null);
 
   const { updateSSOWidgetCss } = useSSOContext();
 
@@ -69,31 +71,42 @@ const WidgetCustomisationButtons: React.FC<WidgetCustomisationButtonsProps> = ({
 
   return (
     <CustomisationButtonsWrapper>
-      <ButtonContainer>
+      <ButtonContainer onClick={() => bgColorInputRef.current?.click()}>
         <ColorButton color={bgColor}>
-          <input type="color" onChange={(e) => setBgColor(e.target.value)} value={bgColor} />
+          <input
+            ref={bgColorInputRef}
+            type="color"
+            onChange={(e) => setBgColor(e.target.value)}
+            value={bgColor}
+          />
         </ColorButton>
         <span>Change Background Colour</span>
       </ButtonContainer>
 
-      <ButtonContainer>
+      <ButtonContainer onClick={() => btnColorInputRef.current?.click()}>
         <ColorButton color={btnColor}>
-          <input type="color" onChange={(e) => setBtnColor(e.target.value)} value={btnColor} />
+          <input
+            ref={btnColorInputRef}
+            type="color"
+            onChange={(e) => setBtnColor(e.target.value)}
+            value={btnColor}
+          />
         </ColorButton>
         <span>Change Button Color</span>
       </ButtonContainer>
 
-      <ButtonContainer>
-        <StyledSpan
+      <div>
+        <ButtonContainer
+          style={{ paddingLeft: '12px' }}
           onClick={() => {
             setShowFontSelector(!showFontSelector);
           }}
         >
-          Change Font
-        </StyledSpan>
-        <ArrowRightIcon />
+          <StyledSpan>Change Font</StyledSpan>
+          <ArrowRightIcon />
+        </ButtonContainer>
         {showFontSelector && (
-          <Box marginTop="100px" minWidth="160px" position={'absolute'}>
+          <Box marginTop="10px" minWidth="160px" position="absolute">
             <Dropdown selectionType="single">
               <SelectInput
                 defaultValue={ssoWidget.fontFamily}
@@ -115,16 +128,13 @@ const WidgetCustomisationButtons: React.FC<WidgetCustomisationButtonsProps> = ({
             </Dropdown>
           </Box>
         )}
-      </ButtonContainer>
-
-      <ButtonContainer>
-        <IconButton
-          onClick={() => setIsEditable(!isEditable)}
-          icon={isEditable ? DotIcon : EditIcon}
-          emphasis="intense"
-          size="large"
-          accessibilityLabel="edit mode"
-        />
+      </div>
+      <ButtonContainer onClick={() => setIsEditable(!isEditable)} style={{ paddingLeft: '12px' }}>
+        {isEditable ? (
+          <DotIcon color="surface.icon.gray.normal" size="medium" />
+        ) : (
+          <EditIcon color="surface.icon.gray.normal" size="medium" />
+        )}
         <span>{isEditable ? 'Live Mode' : 'Edit Mode'}</span>
       </ButtonContainer>
     </CustomisationButtonsWrapper>

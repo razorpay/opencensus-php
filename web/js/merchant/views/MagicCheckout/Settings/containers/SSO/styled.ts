@@ -94,23 +94,24 @@ export const VideoGuideWrapper = styled.div`
 export const CustomisationButtonsWrapper = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 10px;
   padding: 4px 60px; // Keep 28px side padding to match iframe container
   width: 100%;
   background: transparent;
 `;
 
-export const ButtonContainer = styled.div`
+export const ButtonContainer = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 5px;
   background: white;
   border-radius: 20px;
-  padding: 8px 8px;
-  cursor: default;
+  padding: 2px 12px 2px 2px;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
+  border: none;
+  outline: none;
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -161,7 +162,7 @@ export const SwitchPreviewWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   background-color: ${theme.colors.popup.background.subtle};
   border-radius: ${theme.border.radius.max}px;
-  padding: 12px;
+  padding: 8px 12px;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -308,11 +308,13 @@ const Settings = () => {
                   <Radio key={value} value={value}>
                     {label}
                   </Radio>
-                  <Tooltip content={toolTipText} placement="top">
-                    <TooltipInteractiveWrapper>
-                      <InfoIcon size="medium" color="surface.icon.gray.muted" />
-                    </TooltipInteractiveWrapper>
-                  </Tooltip>
+                  {toolTipText ? (
+                    <Tooltip content={toolTipText} placement="top">
+                      <TooltipInteractiveWrapper>
+                        <InfoIcon size="medium" color="surface.icon.gray.muted" />
+                      </TooltipInteractiveWrapper>
+                    </Tooltip>
+                  ) : null}
                 </Box>
               ))}
             </RadioGroup>
