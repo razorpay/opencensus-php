@@ -11,6 +11,7 @@ import {
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
 import { getCookie } from 'common/utils/cookies';
+import { isOrgFeatureExist } from '../models/User';
 
 export default ({ onCloseClick, user }) => {
   const activationName =
@@ -61,7 +62,7 @@ export default ({ onCloseClick, user }) => {
           : isSGMerchant
           ? 'Sales will reach out to you for more details'
           : `Please fill and submit the ${activationName} Form to access live mode.`}
-        {!user.isOrgAxis && !isSGMerchant ? (
+        {!user.isOrgAxis && !isOrgFeatureExist('hide_activation_form') && !isSGMerchant ? (
           <div className="Modal__actions text-right">
             {!shouldRedirectToEasyFlow ? (
               <button className="btn btn-primary btn-block" onClick={redirectToEasyAfter1sec}>
