@@ -38,6 +38,7 @@ web/js/merchant/views/PartnerDashboard                                   @razorp
 web/js/merchant/views/Transactions/v1/SuccessRate                        @akash-sachan @NarasimhaSwamy
 config/splitz.php                                                        @razorpay/ssab-fe
 web/js/merchant/views/Transactions/v2                                    @razorpay/ssab-fe
+web/js/merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2 @razorpay/ssab-fe
 web/js/merchant/views/POS                                                @razorpay/omni-acquisition-fe
 web/js/merchant/components/NavigationLayout                              @shridhar52war @vinilvasani @joel-jaimon
 plugins/i18n-rules                                                       @razorpay/i18n-fe

@@ -9,6 +9,7 @@ import {
   Alert,
   List,
   ListItem,
+  Heading,
 } from '@razorpay/blade/components';
 import wwwImg from 'assets/www.svg';
 
@@ -154,9 +155,21 @@ function InitiateWebsiteChange(props) {
             justifyContent="center"
             alignItems="center"
             padding="spacing.6"
+            gap="spacing.7"
           >
-            <Box display="flex" justifyContent="center" alignItems="center" margin="spacing.6">
-              <img height="100%" width="100%" src={wwwImg} />
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              margin="spacing.6"
+              marginBottom="0"
+            >
+              <img height="100%" width="150%" src={wwwImg} />
+            </Box>
+            <Box>
+              <Heading size="large" textAlign="center">
+                Connect your website or app to accept payments
+              </Heading>
             </Box>
             <Alert
               title="Please note:"
@@ -189,7 +202,9 @@ function InitiateWebsiteChange(props) {
             >
               Cancel
             </Button>
-            <Button onClick={onProceedClick}>Proceed to update website/app</Button>
+            <Button onClick={onProceedClick}>
+              {isMobile ? 'Proceed' : 'Proceed to update website/app'}
+            </Button>
           </Box>
         </BladeModalFooter>
       </BladeModal>

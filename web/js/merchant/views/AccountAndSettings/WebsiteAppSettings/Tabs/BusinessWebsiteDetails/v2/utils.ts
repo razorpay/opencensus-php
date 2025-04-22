@@ -3,6 +3,7 @@ import { autoPrefixUrls } from 'common/utils/rzp-utils';
 import { isEmail, isPhoneNumberIndia, isValidWebsite } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
+import { Environments } from 'common/typings';
 
 import { getBusinessPlatformType } from './components/utils';
 import {
@@ -24,6 +25,7 @@ import {
   WebsitePolicyPagesDetailsKeys,
   WebsitePolicyPages,
   MerchantWebsiteDetails,
+  PartialPolicyPages,
   MainFormFields,
   SuggestionSteps,
 } from './types';
@@ -538,18 +540,6 @@ export const getWebsiteCount = (user: User) => {
   return count;
 };
 
-type NonNullableStatus = NonNullable<Status>;
-const alertText: Record<NonNullableStatus, string> = {
-  [Status.Success]: 'Your website has been successfully verified',
-  [Status.BvsNeedsClarification]: 'We found a few policy details missing on your website',
-  [Status.BvsInProgress]: 'Your website verification request is under review',
-  [Status.WorkflowInReview]: 'Your website verification request is under review',
-  [Status.WorkflowNeedsClarification]: 'Our team needs a few more details to verify your website',
-  [Status.Rejected]: 'Our team has rejected your website upon careful verification',
-  [Status.WebsiteUpdateFailed]: 'Oops, something went wrong',
-  [Status.WebsiteLivenessFailed]: 'Attention: We noticed that your website is currently not live.',
-};
-
 export const getSuggestionStep = ({ name, value }) => {
   switch (name) {
     case MainFormFields.REQUIRE_CREDS:
@@ -570,30 +560,67 @@ export const getSuggestionStep = ({ name, value }) => {
   }
 };
 
-export const getAlertText = (status, mainPageUrl): string => {
-  if (!mainPageUrl) {
-    return alertText[status] ?? '';
+type NonNullableStatus = NonNullable<Status>;
+const alertText: Record<NonNullableStatus, string> = {
+  [Status.Success]: 'Your website has been successfully verified',
+  [Status.BvsNeedsClarification]: 'We found a few policy details missing on your website',
+  [Status.BvsInProgress]: 'Your website verification request is under review',
+  [Status.WorkflowInReview]: 'Your website verification request is under review',
+  [Status.WorkflowNeedsClarification]: 'Our team needs a few more details to verify your website',
+  [Status.Rejected]: 'Our team has rejected your website upon careful verification',
+  [Status.WebsiteUpdateFailed]: 'Oops, something went wrong',
+  [Status.WebsiteLivenessFailed]: 'Attention: We noticed that your website is currently not live.',
+};
+
+const alertTextWithUrl: Record<NonNullableStatus, Function> = {
+  [Status.Success]: (mainPageUrl) => `Your website ${mainPageUrl} has been successfully verified`,
+  [Status.BvsNeedsClarification]: (mainPageUrl) =>
+    `We found a few policy details missing on your website ${mainPageUrl}`,
+  [Status.BvsInProgress]: (mainPageUrl) =>
+    `Your website verification request for ${mainPageUrl} is under review`,
+  [Status.WorkflowInReview]: (mainPageUrl) =>
+    `Your website verification request for ${mainPageUrl} is under review`,
+  [Status.WorkflowNeedsClarification]: (mainPageUrl) =>
+    `Our team needs a few more details to verify your website (${mainPageUrl})`,
+  [Status.Rejected]: (mainPageUrl) =>
+    `Our team has rejected your website (${mainPageUrl}) upon careful verification`,
+  [Status.WebsiteUpdateFailed]: (mainPageUrl) =>
+    `Oops, something went wrong with your website (${mainPageUrl})`,
+  [Status.WebsiteLivenessFailed]: (mainPageUrl) =>
+    `Attention: We noticed that your website (${mainPageUrl}) is currently not live.`,
+};
+
+export const getAlertText = ({
+  status,
+  mainPageUrl,
+  websiteUpdateData,
+}: {
+  status: NullableStatus;
+  mainPageUrl: string;
+  websiteUpdateData: WebsiteUpdateApiData;
+}): string => {
+  if (!status) {
+    return '';
   }
 
-  switch (status) {
-    case Status.Success:
-      return `Your website ${mainPageUrl} has been successfully verified`;
-    case Status.BvsNeedsClarification:
-      return `We found a few policy details missing on your website ${mainPageUrl}`;
-    case Status.BvsInProgress:
-    case Status.WorkflowInReview:
-      return `Your website verification request for ${mainPageUrl} is under review`;
-    case Status.WorkflowNeedsClarification:
-      return `Our team needs a few more details to verify your website (${mainPageUrl})`;
-    case Status.Rejected:
-      return `Our team has rejected your website (${mainPageUrl}) upon careful verification`;
-    case Status.WebsiteUpdateFailed:
-      return `Oops, something went wrong with your website (${mainPageUrl})`;
-    case Status.WebsiteLivenessFailed:
-      return `Attention: We noticed that your website (${mainPageUrl}) is currently not live.`;
-    default:
-      return alertText[status] ?? '';
-  }
+  const hasOnlyAutomationFlowStatus = [
+    Status.Success,
+    Status.BvsInProgress,
+    Status.BvsNeedsClarification,
+    Status.WebsiteLivenessFailed,
+    Status.WebsiteUpdateFailed,
+  ].includes(status);
+
+  const hasWorkflowFromAutomationFlow =
+    (status === Status.Rejected &&
+      websiteUpdateData?.current_status === WebsiteUpdateAutomationStatus.WORKFLOW_REJECTED) ||
+    ([Status.WorkflowInReview, Status.WorkflowNeedsClarification].includes(status) &&
+      websiteUpdateData?.current_status === WebsiteUpdateAutomationStatus.WORKFLOW_IN_PROGRESS);
+
+  const shouldShowUrl =
+    !!mainPageUrl && (hasOnlyAutomationFlowStatus || hasWorkflowFromAutomationFlow);
+
+  return shouldShowUrl ? alertTextWithUrl[status](mainPageUrl) : alertText[status];
 };
 
 export const alertCTAText: Partial<Record<NonNullableStatus, string>> = {
@@ -606,8 +633,10 @@ export const getBusinessWebsitesToShow = ({
   user,
   websiteUpdateData,
   businessWebsiteWorkflow,
+  isKLA,
 }): Array<BusinessWebsiteCardData> => {
   const websites = [] as BusinessWebsiteCardData[];
+  const webstiesToShowForKLA = [] as BusinessWebsiteCardData[];
 
   if (user.business_website) {
     websites.push({
@@ -626,7 +655,7 @@ export const getBusinessWebsitesToShow = ({
     ].includes(websiteUpdateData.current_status) &&
     websiteUpdateData.main_page_url
   ) {
-    websites.push({
+    const inProgressWebsiteData = {
       url: websiteUpdateData.main_page_url,
       status: getInProgressWebsiteStatusBadge({
         businessWebsiteWorkflow,
@@ -634,7 +663,9 @@ export const getBusinessWebsitesToShow = ({
       }),
       platform: getBusinessPlatformType(websiteUpdateData.main_page_url),
       isPrimary: false,
-    });
+    };
+    websites.push(inProgressWebsiteData);
+    webstiesToShowForKLA.push(inProgressWebsiteData);
   }
   if (user.appstore_url) {
     websites.push({
@@ -665,15 +696,44 @@ export const getBusinessWebsitesToShow = ({
     });
   }
 
-  return websites;
+  return isKLA ? webstiesToShowForKLA : websites;
 };
 
-export const getMerchantWebsiteDetailsPayload = (policyPagesToBeMade) => {
+const getMerchantWebsiteDetailsPayload = (policyPagesToBeMade) => {
   const result: MerchantWebsiteDetails = {} as MerchantWebsiteDetails;
   policyPagesToBeMade.forEach((page: WebsitePolicyPages) => {
     result[page] = { section_status: 3 };
   });
   return result;
+};
+
+export const getPayloadForPolicyPageSubmission = ({
+  mode,
+  formState,
+  policyPagesToBeMade,
+}: {
+  mode: Environments;
+  formState: PolicyPageCreationFormFieldType;
+  policyPagesToBeMade: PartialPolicyPages;
+}) => {
+  return {
+    mode,
+    data: {
+      additional_data: {
+        [WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER]:
+          formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].value,
+        [WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL]:
+          formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].value,
+      },
+      [WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD]:
+        formState[WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD].value,
+      [WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD]:
+        formState[WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD].value,
+      [WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD]:
+        formState[WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD].value,
+      merchant_website_details: getMerchantWebsiteDetailsPayload(policyPagesToBeMade),
+    },
+  };
 };
 
 export const shouldShowNotApplicableOption = (pageKey: WebsitePolicyPages): boolean =>
@@ -703,6 +763,9 @@ const tryAgainErrorMessage =
 export const genericBackendErrorMessage =
   'Something went wrong on our end. Please try again shortly or reach out to support if the issue continues.';
 
+const policyCreationFailedSuggestToCreateViaRzpErrorMessage =
+  'We couldn’t locate the policy pages you shared. Please update the links or create them using Razorpay (recommended).';
+
 const errorMapping = {
   'validation_failure: invalid_additional_data_contact_number_detail':
     'The phone number seems invalid. Please double-check and enter a valid number.',
@@ -712,7 +775,8 @@ const errorMapping = {
     'The website link (URL) seems invalid. Please enter a valid link (URL) to continue.',
 
   'bad_request: policy_link_not_found_in_website':
-    'We couldn’t locate the policy pages you shared. Please update the links or create them using Razorpay (recommended).',
+    policyCreationFailedSuggestToCreateViaRzpErrorMessage,
+  'bad_request: liveness_check_failed': policyCreationFailedSuggestToCreateViaRzpErrorMessage,
 
   'validation_failure: merchant_not_activated': tryAgainErrorMessage,
   'validation_failure: merchant_single_policy_page_bvs_data_empty': tryAgainErrorMessage,
@@ -728,3 +792,8 @@ export function getErrorMessage(error) {
   }
   return genericBackendErrorMessage;
 }
+
+export const errorSuggestsToGeneratePolicyPages = [
+  'bad_request: policy_link_not_found_in_website',
+  'bad_request: liveness_check_failed',
+];

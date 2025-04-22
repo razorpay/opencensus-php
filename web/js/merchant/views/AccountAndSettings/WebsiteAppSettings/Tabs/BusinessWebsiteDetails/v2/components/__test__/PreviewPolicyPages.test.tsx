@@ -146,13 +146,28 @@ describe('PreviewPages', () => {
     expect(screen.getByTestId('loading-terms')).toBeInTheDocument();
   });
 
-  it('should go back on cta click', async () => {
-    renderApp();
+  it('should go back on cta click to policy creation', async () => {
+    renderApp({
+      policyPagesToBeMade: [WebsitePolicyPages.TERMS, WebsitePolicyPages.PRIVACY],
+    });
     const goBackBtn = screen.getByRole('button', { name: 'Go back' });
     expect(goBackBtn).toBeInTheDocument();
     await userEvent.click(goBackBtn);
 
     expect(mockSetCurrentStep).toHaveBeenCalledWith(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+  });
+
+  it('should go back on cta click to add missing pages when only terms page is missing', async () => {
+    renderApp({
+      policyPagesToBeMade: [WebsitePolicyPages.TERMS],
+    });
+    const goBackBtn = screen.getByRole('button', { name: 'Go back' });
+    expect(goBackBtn).toBeInTheDocument();
+    await userEvent.click(goBackBtn);
+
+    expect(mockSetCurrentStep).toHaveBeenCalledWith(
+      WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES,
+    );
   });
 
   it('should disable submit button if consent checkbox is not ticked', async () => {

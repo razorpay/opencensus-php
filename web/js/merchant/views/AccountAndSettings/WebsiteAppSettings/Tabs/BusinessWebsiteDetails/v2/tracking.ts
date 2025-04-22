@@ -33,10 +33,11 @@ export const track = ({
   });
 };
 
-export const trackBusinessWebsitePageLoad = () => {
+export const trackBusinessWebsitePageLoad = (properties: Properties) => {
   track({
     objectName: 'Business Website Details Page',
     actionName: 'Displayed',
+    properties,
   });
 };
 

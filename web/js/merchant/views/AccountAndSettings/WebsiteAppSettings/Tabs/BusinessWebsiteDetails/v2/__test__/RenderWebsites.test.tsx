@@ -105,7 +105,9 @@ describe('Business website automation - RenderWebsites', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Verified websites/apps appear here')).toBeInTheDocument();
+      expect(
+        screen.getByText('Your websites and apps linked to Razorpay appear here'),
+      ).toBeInTheDocument();
     });
   });
 

@@ -33,8 +33,11 @@ const BusinessWebsiteDetailsWrapper: React.FC<BusinessWebsiteDetailsWrapperProps
   } = useGetWebsiteUpdate(mode);
 
   useEffect(() => {
-    trackBusinessWebsitePageLoad();
-  }, []);
+    trackBusinessWebsitePageLoad({
+      mode,
+      websiteUpdateData,
+    });
+  }, [isWebsiteDetailsFetching]);
 
   useEffect(() => {
     if (isWebsiteDetailsFetchError)

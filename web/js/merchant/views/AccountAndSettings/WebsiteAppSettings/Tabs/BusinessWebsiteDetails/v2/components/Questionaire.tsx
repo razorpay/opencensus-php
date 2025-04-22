@@ -19,7 +19,7 @@ import {
 import {
   snapPoints,
   policyPageFormCreationValidator,
-  getMerchantWebsiteDetailsPayload,
+  getPayloadForPolicyPageSubmission,
   getWebsiteCount,
   getErrorMessage,
 } from '../utils';
@@ -115,24 +115,13 @@ function Questionare({
 
   const onContinueClick = () => {
     questionareCTAtrack({ clickedButton: 'submit' });
-    savePolicyPagesMutate({
-      mode,
-      data: {
-        additional_data: {
-          [WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER]:
-            formState[WebsitePolicyPagesDetailsKeys.SUPPORT_CONTACT_NUMBER].value,
-          [WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL]:
-            formState[WebsitePolicyPagesDetailsKeys.SUPPORT_EMAIL].value,
-        },
-        [WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD]:
-          formState[WebsitePolicyPagesDetailsKeys.SHIPPING_PERIOD].value,
-        [WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD]:
-          formState[WebsitePolicyPagesDetailsKeys.REFUND_REQUEST_PERIOD].value,
-        [WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD]:
-          formState[WebsitePolicyPagesDetailsKeys.REFUND_PROCESS_PERIOD].value,
-        merchant_website_details: getMerchantWebsiteDetailsPayload(policyPagesToBeMade),
-      },
-    })
+    savePolicyPagesMutate(
+      getPayloadForPolicyPageSubmission({
+        mode,
+        formState,
+        policyPagesToBeMade,
+      }),
+    )
       .then(() => {
         trackQuestionaire('Submitted');
         setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW);
@@ -141,6 +130,7 @@ function Questionare({
         const message = getErrorMessage(error?.message);
         trackQuestionaire('Failed', {
           errorMessage: message,
+          backendErrorMsg: error?.message,
         });
         showNotification({
           type: 'error',

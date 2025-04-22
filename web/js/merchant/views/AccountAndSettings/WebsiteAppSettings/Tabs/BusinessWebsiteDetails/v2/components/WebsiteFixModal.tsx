@@ -36,6 +36,8 @@ interface WebsiteFixModalProps {
   missingPages: Record<WebsitePolicyPages, MissingPagesFormFieldType>;
   verifiedPagesKeys: WebsitePolicyPages[];
   missingPagesKeys: WebsitePolicyPages[];
+
+  isSubmittingPolicyPages: boolean;
 }
 
 const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
@@ -51,6 +53,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
   verifiedPages,
   verifiedPagesKeys,
   missingPagesKeys,
+  isSubmittingPolicyPages,
 }) => {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
 
@@ -149,7 +152,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               >
                 <Box>
                   <Text size="large" weight="medium">
-                    Policy pages found on your website
+                    Policy pages found on your website ✅
                   </Text>
                   <Text size="small" color="surface.text.gray.subtle">
                     The details have been saved and are ready for verification{' '}
@@ -232,6 +235,7 @@ const WebsiteFixModal: React.FC<WebsiteFixModalProps> = ({
               }
               handlePolicyPageSubmit(newFormState);
             }}
+            isLoading={isSubmittingPolicyPages}
           >
             {isMobile ? 'Proceed' : 'Submit'}
           </Button>

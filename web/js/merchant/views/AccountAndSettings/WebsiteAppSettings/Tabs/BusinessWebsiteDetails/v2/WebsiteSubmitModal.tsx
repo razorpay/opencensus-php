@@ -28,6 +28,7 @@ import {
   trackBasicWebsiteCheckInProgressModalLoad,
   trackBasicWebsiteCheckFailureModalLoad,
   track,
+  trackQuestionaire,
 } from './tracking';
 import {
   Platform,
@@ -50,10 +51,13 @@ import {
   handleAppSubmitForActivated,
   isMainPageSubmitPayloadValid,
   getErrorMessage,
+  getPayloadForPolicyPageSubmission,
+  errorSuggestsToGeneratePolicyPages,
 } from './utils';
 import { getInitialPolicyPagesFormState } from './components/utils';
 import { defaultPolicyPageCreationFormField } from './components/constants';
 import { useSplitzService } from '@libs/web-nexus/common/splitz';
+import { usePolicyPagesDetails } from './hooks/usePolicyPagesDetails';
 
 interface WebsiteSubmitModalProps {
   isOpen: boolean;
@@ -78,6 +82,9 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
 }) => {
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
+  const { mutate: savePolicyPagesMutate, isPosting: isSubmittingPolicyPages } =
+    usePolicyPagesDetails();
+
   const {
     abExperiments: { merchant_kla_same_website_bypass },
   } = useSplitzService();
@@ -155,8 +162,50 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     }
   }
 
+  const createTermsPolicyPage = async () => {
+    savePolicyPagesMutate(
+      getPayloadForPolicyPageSubmission({
+        mode,
+        formState: policyCreationState,
+        policyPagesToBeMade: [WebsitePolicyPages.TERMS],
+      }),
+    )
+      .then(() => {
+        trackQuestionaire('Submitted Terms');
+        setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_PREVIEW);
+      })
+      .catch((error) => {
+        const message = getErrorMessage(error?.message);
+        trackQuestionaire('Failed Terms', {
+          errorMessage: message,
+          backendErrorMsg: error?.message,
+        });
+        showNotification({
+          type: 'error',
+          message,
+        });
+      });
+  };
+
+  const setNextStepForPolicyPages = ({ newPolicyPagesToBeMade }) => {
+    setPolicyPagesToBeMade(newPolicyPagesToBeMade);
+    if (
+      newPolicyPagesToBeMade.length === 1 &&
+      newPolicyPagesToBeMade[0] === WebsitePolicyPages.TERMS
+    ) {
+      createTermsPolicyPage();
+    } else {
+      setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+    }
+  };
+
   const handleMainPageSubmit = async (formState) => {
-    const { has_key_access: hasKeyAccess, business_website, isActivated } = user;
+    const {
+      has_key_access: hasKeyAccess,
+      business_website,
+      isActivated,
+      activation_status: activationStatus,
+    } = user;
     const isKLAMerchant = !Boolean(hasKeyAccess);
     const [isInputValid, inputValidationError] = isMainPageSubmitPayloadValid({
       formState,
@@ -187,6 +236,9 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
         formState.requireCreds.value === 'yes' ? (isCredsFilled ? 'yes' : 'no') : 'na',
       newWebsiteLink: formState.url.value,
       websiteCount: getWebsiteCount(user),
+      stateIsActivated: isActivated,
+      stateHasKeyAccess: hasKeyAccess,
+      stateActivationStatus: activationStatus,
     };
     trackSubmitWebsiteDetailsVerificationRequestClick({
       ...analyticsProperties,
@@ -258,6 +310,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               websiteCount: getWebsiteCount(user),
               actionFrom: 'websiteFlow',
               errorMessage,
+              backendErrorMsg: error?.message,
             });
             showNotification({
               type: 'error',
@@ -306,8 +359,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
 
     // if no user provided links exist, then directly go to the policy pages creation step
     if (pagesFilled.length === 0 && notApplicablePages.length === 0) {
-      setPolicyPagesToBeMade(newPolicyPagesToBeMade);
-      setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+      setNextStepForPolicyPages({ newPolicyPagesToBeMade });
       return;
     }
     setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_SUBMIT_IN_PROGRESS);
@@ -336,7 +388,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
                 newPolicyPagesToBeMade.push(page);
               }
             });
-            setPolicyPagesToBeMade(newPolicyPagesToBeMade);
+
             trackBasicWebsiteCheckCompleteModalLoad({
               basicCheckPassed: 'no',
               newWebsiteLink: main_page_url,
@@ -345,7 +397,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
               isWorkflowRaised: true,
               actionFrom: 'policyPages',
             });
-            setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+            setNextStepForPolicyPages({ newPolicyPagesToBeMade });
           } else if (current_status === WebsiteUpdateAutomationStatus.COMPLETED) {
             updateMainPageUrl();
             trackBasicWebsiteCheckCompleteModalLoad({
@@ -398,12 +450,16 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
             websiteCount: getWebsiteCount(user),
             actionFrom: 'policyPages',
             errorMessage,
+            backendErrorMsg: error?.message,
           });
           showNotification({
             type: 'error',
             message: errorMessage,
           });
-          onDismiss();
+          // do not dismiss modal if error is related to policy pages generation
+          if (!errorSuggestsToGeneratePolicyPages.includes(error?.message)) {
+            onDismiss();
+          }
         },
       },
     );
@@ -466,8 +522,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   const onCreateAllPolicyPagesButtonClick = (formState: PolicyPageFormData) => {
     const newPolicyPagesToBeMade = Object.keys(formState) as PartialPolicyPages;
     setPagesBeingVerified(Object.keys(formState) as WebsitePolicyPages[]);
-    setPolicyPagesToBeMade(newPolicyPagesToBeMade);
-    setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+    setNextStepForPolicyPages({ newPolicyPagesToBeMade });
   };
 
   const onWebsiteChangeClick = () => {
@@ -503,6 +558,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           missingPagesKeys={missingPagesKeys}
           verifiedPages={verifiedPages}
           verifiedPagesKeys={verifiedPagesKeys}
+          isSubmittingPolicyPages={isSubmittingPolicyPages}
         />
       );
     case WebsiteSubmitModalSteps.POLICY_PAGES_CREATION:

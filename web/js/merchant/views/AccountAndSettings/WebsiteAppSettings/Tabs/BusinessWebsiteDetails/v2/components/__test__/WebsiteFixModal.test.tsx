@@ -97,7 +97,7 @@ describe('Business website automation -  WebsiteFixModal', () => {
   it('should render verified pages & links', () => {
     renderApp();
 
-    expect(screen.getByText('Policy pages found on your website')).toBeInTheDocument();
+    expect(screen.getByText('Policy pages found on your website ✅')).toBeInTheDocument();
     expect(screen.getByText(`Cancellations and Refunds`)).toBeInTheDocument();
     expect(screen.getByText(`Contact Us`)).toBeInTheDocument();
     expect(screen.getByText(`Shipping Policy`)).toBeInTheDocument();

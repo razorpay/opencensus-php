@@ -30,6 +30,7 @@ import { trackPreviewPolicyPages } from '../tracking';
 import {
   PartialPolicyPages,
   ValidationState,
+  WebsitePolicyPages,
   WebsiteSubmitModalSteps,
   WebsiteUpdateAutomationStatus,
 } from '../types';
@@ -97,7 +98,12 @@ function PreviewPages({
 
   const onGoBack = () => {
     trackPreviewPolicyPages('Filled', { ...commonProperties, clickedButton: 'cancel' });
-    setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+
+    if (policyPagesToBeMade.length === 1 && policyPagesToBeMade[0] === WebsitePolicyPages.TERMS) {
+      setCurrentStep(WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES);
+    } else {
+      setCurrentStep(WebsiteSubmitModalSteps.POLICY_PAGES_CREATION);
+    }
   };
 
   const onContinueClick = () => {
@@ -146,7 +152,11 @@ function PreviewPages({
             })
             .catch((error) => {
               const message = getErrorMessage(error?.message);
-              trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
+              trackPreviewPolicyPages('Error', {
+                ...commonProperties,
+                errorMessage: message,
+                backendErrorMsg: error?.message,
+              });
               showNotification({
                 type: 'error',
                 message,
@@ -164,7 +174,11 @@ function PreviewPages({
       })
       .catch((error) => {
         const message = getErrorMessage(error?.message);
-        trackPreviewPolicyPages('Error', { ...commonProperties, errorMessage: message });
+        trackPreviewPolicyPages('Error', {
+          ...commonProperties,
+          errorMessage: message,
+          backendErrorMsg: error?.message,
+        });
         showNotification({
           type: 'error',
           message,

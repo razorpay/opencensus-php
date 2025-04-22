@@ -15,6 +15,7 @@ import BusinessWebsiteCard from './components/BusinessWebsiteCard';
 import { AddWebsiteClickArgs, WebsiteUpdateApiData, WebsiteUpdateActionOn } from './types';
 import { getBusinessWebsitesToShow } from './utils';
 import WebsiteCardLoadingState from './components/WebsiteCardLoadingState';
+import EmptyStateIllustration from './components/assets/EmptyStateIllusration.svg';
 
 interface RenderWebsitesProps {
   isMobile: boolean;
@@ -37,13 +38,13 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
   ctaDisabledReason,
   isWebsiteDetailsFetching,
 }) => {
+  const isKLA = !user.has_key_access;
   const businessWebsitesToShow = getBusinessWebsitesToShow({
     user,
     websiteUpdateData,
     businessWebsiteWorkflow,
+    isKLA,
   });
-
-  const isKLA = !user.has_key_access;
 
   const EditCta = (
     <Box>
@@ -78,22 +79,23 @@ const RenderWebsites: React.FC<RenderWebsitesProps> = ({
     return <WebsiteCardLoadingState isMobile={isMobile} cardsNumber={cardsNumber} />;
   }
 
-  return isKLA || businessWebsitesToShow.length === 0 ? (
+  return businessWebsitesToShow.length === 0 ? (
     <Box
       display="flex"
       flexDirection="column"
-      gap="spacing.5"
       alignItems="center"
       justifyContent="center"
       width="100%"
       minHeight="400px"
     >
-      <LinkIcon size="2xlarge" color="surface.icon.gray.muted" />
+      <Box>
+        <img src={EmptyStateIllustration} />
+      </Box>
       <Box>
         <Text size="medium" weight="semibold" color="surface.text.gray.normal" textAlign="center">
-          Verified websites/apps appear here
+          Your websites and apps linked to Razorpay appear here
         </Text>
-        <Text color="surface.text.gray.muted">
+        <Text color="surface.text.gray.muted" textAlign="center">
           Our team takes 1-2 days to verify your website/app
         </Text>
       </Box>

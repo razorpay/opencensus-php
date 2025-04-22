@@ -62,7 +62,11 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const mainPageUrl = websiteUpdateData?.main_page_url ?? '';
-  const title = getAlertText(status, mainPageUrl);
+  const title = getAlertText({
+    status,
+    mainPageUrl,
+    websiteUpdateData,
+  });
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const ctaText: string = alertCTAText[status] || '';
@@ -258,7 +262,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
     return (
       <Alert
         color="negative"
-        isDismissible={true}
+        isDismissible={false}
         isFullWidth
         title={title}
         description={
