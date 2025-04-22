@@ -72,7 +72,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $entities = $this->entity->fetch($params, null, ConnectionType::REPLICA);
+            $entities = parent::fetch($params, null, ConnectionType::REPLICA);
         }
 
         return $entities;
