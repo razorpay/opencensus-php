@@ -7959,6 +7959,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1677061101772369?thread_ts=1675832734.858449&cid=C7WEGELHJ
     public function getFeeInMcc()
     {
+        $app = \App::getFacadeRoot();
+        
         $fee = 0;
 
         if ($this->getCurrency() === Currency\Currency::INR)
@@ -7981,7 +7983,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else
         {
-            $app = \App::getFacadeRoot();
             try
             {
                 $param = [
