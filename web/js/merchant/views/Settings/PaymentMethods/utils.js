@@ -1,8 +1,16 @@
-import { DISABLED_INSTRUMENT, GETSIMPL } from 'merchant/views/Settings/PaymentMethods/constants';
+import { DISABLED_INSTRUMENT, GETSIMPL, PHONEPE } from 'merchant/views/Settings/PaymentMethods/constants';
 
 export const getDisabledInstruments = (user) => {
-  if (user?.isOptimizerEnabled) {
-    return DISABLED_INSTRUMENT.filter((instrument) => instrument !== GETSIMPL);
+  let disabledInstruments = DISABLED_INSTRUMENT;
+
+  // Exclude PhonePe for specific merchant
+  if (user?.merchant?.id === 'H4haEBYeiS12pR') {
+    disabledInstruments = disabledInstruments.filter(instrument => instrument !== PHONEPE);
   }
-  return DISABLED_INSTRUMENT;
+
+  // Handle optimizer case
+  if (user?.isOptimizerEnabled) {
+    disabledInstruments = disabledInstruments.filter((instrument) => instrument !== GETSIMPL);
+  }
+  return disabledInstruments;
 };

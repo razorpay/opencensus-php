@@ -1,5 +1,5 @@
 import { getDisabledInstruments } from 'merchant/views/Settings/PaymentMethods/utils';
-import { DISABLED_INSTRUMENT, GETSIMPL } from 'merchant/views/Settings/PaymentMethods/constants';
+import { DISABLED_INSTRUMENT, GETSIMPL, PHONEPE } from 'merchant/views/Settings/PaymentMethods/constants';
 
 describe('getDisabledInstruments', () => {
   test('should return DISABLED_INSTRUMENT without GETSIMPL when user is optimizer enabled', () => {
@@ -16,5 +16,25 @@ describe('getDisabledInstruments', () => {
     const disabledInstruments = getDisabledInstruments(user);
 
     expect(disabledInstruments).toEqual(DISABLED_INSTRUMENT);
+  });
+  test('should exclude PhonePe for merchant H4haEBYeiS12pR', () => {
+    const user = { 
+      isOptimizerEnabled: false,
+      merchant: { id: 'H4haEBYeiS12pR' }
+    };
+    const disabledInstruments = getDisabledInstruments(user);
+
+    expect(disabledInstruments).not.toContain(PHONEPE);
+  });
+
+  test('should exclude both PhonePe and GETSIMPL for merchant H4haEBYeiS12pR with optimizer enabled', () => {
+    const user = { 
+      isOptimizerEnabled: true,
+      merchant: { id: 'H4haEBYeiS12pR' }
+    };
+    const disabledInstruments = getDisabledInstruments(user);
+
+    expect(disabledInstruments).not.toContain(PHONEPE);
+    expect(disabledInstruments).not.toContain(GETSIMPL);
   });
 });
