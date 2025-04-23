@@ -1908,12 +1908,22 @@ class Header
 
     // headers for mandate continuity
 
-    const MANDATE_CONTINUITY_JUSPAY_TOKEN_ID = 'mandate_id';
-    const MANDATE_CONTINUITY_TRANSACTION_ID = 'epg_txn_id';
-    const MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID = 'external_pa_mandate_id';
-    const MANDATE_CONTINUITY_TERMINAL_ID = 'terminal_id';
-
+    const MANDATE_CONTINUITY_JUSPAY_MANDATE_ID = 'juspay_mandate_id';
+    const MANDATE_CONTINUITY_EPG_TXN_ID = 'epg_txn_id';
     const MANDATE_CONTINUITY_DATE_CREATED_UTC = 'date_created_utc';
+    const MANDATE_CONTINUITY_RZP_MERCHANT_ID = 'rzp_merchant_id';
+    const MANDATE_CONTINUITY_GATEWAY = 'gateway';
+    const MANDATE_CONTINUITY_RZP_TERMINAL_ID = 'rzp_terminal_id';
+    const MANDATE_CONTINUITY_PG_MANDATE_ID = 'pg_mandate_id';
+    const MANDATE_CONTINUITY_MAX_AMOUNT = 'max_amount';
+    const MANDATE_CONTINUITY_START_DATE = 'start_date';
+    const MANDATE_CONTINUITY_EXPIRY_DATE = 'expiry_date';
+    const MANDATE_CONTINUITY_METHOD = 'method';
+    const MANDATE_CONTINUITY_CUSTOMER_NAME = 'customer_name';
+    const MANDATE_CONTINUITY_CUSTOMER_EMAIL = 'customer_email';
+    const MANDATE_CONTINUITY_CUSTOMER_CONTACT = 'customer_contact';
+
+
 
     // headers for merchant onboarding
     const CUSTOMER_MIGRATION_JUSPAY_CUSTOMER_ID = 'juspay_customer_id';
@@ -7740,11 +7750,20 @@ class Header
         ],
         Type::MANDATE_CONTINUITY => [
             self::INPUT => [
-                self::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID,
-                self::MANDATE_CONTINUITY_TRANSACTION_ID,
+                self::MANDATE_CONTINUITY_JUSPAY_MANDATE_ID,
+                self::MANDATE_CONTINUITY_EPG_TXN_ID,
                 self::MANDATE_CONTINUITY_DATE_CREATED_UTC,
-                self::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID,
-                self::MANDATE_CONTINUITY_TERMINAL_ID
+                self::MANDATE_CONTINUITY_RZP_MERCHANT_ID,
+                self::MANDATE_CONTINUITY_PG_MANDATE_ID,
+                self::MANDATE_CONTINUITY_GATEWAY,
+                self::MANDATE_CONTINUITY_RZP_TERMINAL_ID,
+                self::MANDATE_CONTINUITY_MAX_AMOUNT,
+                self::MANDATE_CONTINUITY_START_DATE,
+                self::MANDATE_CONTINUITY_EXPIRY_DATE,
+                self::MANDATE_CONTINUITY_METHOD,
+                self::MANDATE_CONTINUITY_CUSTOMER_NAME,
+                self::MANDATE_CONTINUITY_CUSTOMER_EMAIL,
+                self::MANDATE_CONTINUITY_CUSTOMER_CONTACT,
             ],
             self::OUTPUT => [],
         ],
