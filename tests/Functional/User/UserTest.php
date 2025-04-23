@@ -16706,25 +16706,39 @@ class UserTest extends TestCase
             Entity::EMAIL => 'abc-3@example.com',
         ]);
 
+        $user4 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser4',
+            Entity::CONTACT_MOBILE => '9876543111',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['content']['user_ids'][0] = $user1->getId();
         $testData['request']['content']['user_ids'][1] = $user2->getId();
+        $testData['request']['content']['user_ids'][2] = $user4->getId();
 
         $response = $this->startTest();
 
         $this->assertNotEmpty($response[$user1->getId()]);
         $this->assertNotEmpty($response[$user2->getId()]);
+        $this->assertNotEmpty($response[$user4->getId()]);
         $this->assertEquals($response[$user1->getId()]['name'], $user1['name']);
         $this->assertEquals($response[$user2->getId()]['name'], $user2['name']);
+        $this->assertEquals($response[$user4->getId()]['name'], $user4['name']);
 
         $requestWithEmails = [
             'user_ids' => [
                 $user1->getId(),
                 $user2->getId(),
+                $user4->getId()
             ],
             'user_emails' => [
                 $user2->getEmail(),
                 $user3->getEmail(),
+            ],
+            'user_contacts' => [
+                $user4->getContactMobile()
             ]
         ];
 
@@ -16741,6 +16755,8 @@ class UserTest extends TestCase
 
         $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
         $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
+
+        $this->assertEquals($user4->getName(), $response[$user4->getContactMobile()]['name']);
 
         $requestWithOnlyEmails = [
             'user_emails' => [
@@ -16759,6 +16775,59 @@ class UserTest extends TestCase
 
         $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
         $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
+    }
+
+    public function testFetchMultipleUsersByContact(){
+        $this->ba->idpInternalAuth();
+
+        $user1 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '9876543210',
+            Entity::EMAIL => 'user1@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $user2 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '9876543211',
+            Entity::EMAIL => 'user2@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['user_contacts'][0] = $user1->getContactMobile();
+        $testData['request']['content']['user_contacts'][1] = $user2->getContactMobile();
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($user1->getName(), $response[$user1->getContactMobile()]['name']);
+        $this->assertEquals($user2->getName(), $response[$user2->getContactMobile()]['name']);
+
+        $this->assertEquals($user1->getEmail(), $response[$user1->getContactMobile()]['email']);
+        $this->assertEquals($user2->getEmail(), $response[$user2->getContactMobile()]['email']);
+
+        $requestWithOnlyContacts = [
+            'user_contacts' => [
+                $user1->getContactMobile(),
+                $user2->getContactMobile(),
+            ]
+        ];
+
+        $request = [
+            'url'       => '/users_internal',
+            'method'    => 'POST',
+            'content'   => $requestWithOnlyContacts
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($user1->getName(), $response[$user1->getContactMobile()]['name']);
+        $this->assertEquals($user2->getName(), $response[$user2->getContactMobile()]['name']);
+
+        $this->assertEquals($user1->getEmail(), $response[$user1->getContactMobile()]['email']);
+        $this->assertEquals($user2->getEmail(), $response[$user2->getContactMobile()]['email']);
     }
 
     public function testResellerPartnerMerchantRegister()

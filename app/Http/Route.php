@@ -2892,6 +2892,7 @@ class Route
 
         'user_fetch_for_merchant'                  => ['get',      'users/fetch_for_merchant/{id}',                  'UserController@getUserForMerchant'                                 ],
         'update_submerchant_user_contact'          => ['put',      'submerchant/user/contact_no',                     'UserController@updateContactNumberForSubMerchantUser'],
+        'user_fetch_merchants'                     => ['get',      'users/{id}/merchants',                            'UserController@getMerchantsOfUser'                                 ],
 
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
@@ -7020,7 +7021,8 @@ class Route
         'token_create_internal_for_continuity',
         'qr_code_device_update',
         'org_admin_disable_cron',
-        'fetch_onboarding_service'
+        'fetch_onboarding_service',
+        'user_fetch_merchants',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18892,6 +18894,11 @@ class Route
             'payment_transfer',
             'transfer_transaction_create',
             'payment_fetch_by_id_internal',
+        ],
+
+        'identity_provider' => [
+            'user_fetch_merchants',
+            'multiple_users_fetch_internal'
         ]
     ];
 

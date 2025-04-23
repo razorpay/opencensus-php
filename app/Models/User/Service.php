@@ -4688,6 +4688,17 @@ class Service extends Base\Service
             }
         }
 
+        // Fetch users by mobile numbers if provided
+        if (isset($input['user_contacts']) === true and empty($input['user_contacts']) === false)
+        {
+            $users = $this->repo->user->getMultipleUsersByMobiles($input['user_contacts']);
+
+            foreach ($users as $user)
+            {
+                $userMapping[$user[Entity::CONTACT_MOBILE]] = $user;
+            }
+        }
+
         return $userMapping;
     }
 
@@ -4762,4 +4773,48 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @param array{
+     *     id: int,
+     *     product: string,
+     *     product_restricted: bool,
+     *     DEFAULT_MERCHANT_ID : string
+     * } $input Associative array with specific fields
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function getMerchantsOfUser(string $id,array $input) : array
+    {
+            (new Validator)->validateInput('get_users_merchants', $input);
+
+            $user = $this->repo->user->findOrFail($id);
+
+            if (empty($user)){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+            }
+
+            // core->get gets list of merchants using using following params in the input
+            // DEFAULT_MERCHANT_ID - parsed and handled in side the core->get
+            // X-ORG-HOSTNAME - added to context from basic auth middleware and used inside core->get
+            $userMerchants = $this->core->get($user,true,$input);
+
+            if( empty($userMerchants['merchants']) || count($userMerchants['merchants']) == 0 ){
+                $userMerchants['merchants'] = [];
+                return $userMerchants;
+            }
+
+            //if intent is auth/login, select the merchants with which user can login
+            if ($input['intent'] == 'auth') {
+
+                $product = empty($input['product']) ? "" : $input['product'];
+                $merchants = $this->core->selectMerchantsToLogin($userMerchants['merchants'], $product);
+                $userMerchants['merchants'] = $merchants;
+                return $userMerchants;
+            }
+
+            $userMerchants['merchants'] = $userMerchants[Entity::MERCHANTS];
+
+            return $userMerchants;
+    }
 }

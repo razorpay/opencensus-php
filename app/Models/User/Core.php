@@ -3,6 +3,7 @@
 namespace RZP\Models\User;
 
 use DB;
+use Illuminate\Support\Collection;
 use Mail;
 use Hash;
 use Cache;
@@ -4246,6 +4247,62 @@ class Core extends Base\Core
             }
         }
         return true;
+    }
+
+    /**
+     * @param $userMerchants array - type of data returned from getUnifiedMerchants
+     * @prams $product string      - primary, banking
+     *
+     * below logic of selecting merchant to login for a given product sits in dashboard BE as of now.
+     * https://github.com/razorpay/dashboard/blob/67d589a9aac3f5b2332e68b18e80af3ec7732fda/app/User/Helper.php#L64
+     * Unifying it here so it will be directly moved to user service. And we have only one place which determines.
+     * with which merchant user should login with.
+     *
+     * if no product is passed, it will return the merchants with owner role for any products.
+     * if $product is passes it will return the merchants with any role for the given product.
+     *
+    */
+    public function selectMerchantsToLogin(array $userMerchants, string $product): array
+    {
+
+        //if product is passed, it will only try to select a merchant for the given product.
+        $restricted = empty($product) === false;
+
+        //if product is not passed, select default as primary.
+        $product    = empty($product) === true ? Product::PRIMARY : $product;
+
+        // which fileds of merchant entity to check for matching role
+        // if product is primary, check 'role' field else check 'banking_role' field
+        $productRole = $product === Product::PRIMARY ? Entity::ROLE : Entity::BANKING_ROLE;
+        $switchProductRole = $productRole === Entity::ROLE ? Entity::BANKING_ROLE : Entity::ROLE;
+
+        $userMerchants=collect($userMerchants);
+
+        // Select owner if it exists on given product
+        $merchants = $userMerchants->filter(function ($item) use ($productRole)
+        {
+            return $item[$productRole]  === Role::OWNER;
+        });
+
+        // we do not want to by default switch to another product unless specifically asked.
+        if (!$restricted && count($merchants->all()) == 0){
+            // If owner doesn't existing on product, check switch product, if it exists we'll allow switch-product
+                $merchants = $userMerchants->filter(function ($item) use ($switchProductRole)
+                {
+                    return $item[$switchProductRole] === Role::OWNER;
+                });
+        }
+
+        // If owner doesn't exist, check if user is associated to any merchant on given product
+        if (count($merchants->all()) == 0)
+        {
+            $merchants = $userMerchants->filter(function ($item) use ($productRole)
+            {
+                return !empty($item[$productRole]);
+            });
+        }
+
+        return array_values($merchants->all());
     }
 
     /**

@@ -2204,4 +2204,8 @@ return [
             'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
         ],
     ],
+    
+    'identity_provider' => [
+        'secret' => env('APP_IDP_SECRET'),
+    ]
 ];

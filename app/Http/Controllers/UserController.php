@@ -832,4 +832,15 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+    
+    ///user/:id/merchant
+    //getMerchantsOfUser return list of a merchants for a given user.
+    // for now this is primary used for login api
+    public function getMerchantsOfUser(string $id){
+        $input = Request::all();
+        /** @var Service $userService */
+        $userService = $this->service();
+        $data = $userService->getMerchantsOfUser($id,$input);
+        return ApiResponse::json($data);
+    }
 }

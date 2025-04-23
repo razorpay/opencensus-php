@@ -245,4 +245,12 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function getMultipleUsersByMobiles(array $mobileNumbers): array
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::CONTACT_MOBILE, $mobileNumbers)
+            ->get()
+            ->toArray();
+    }
+
 }

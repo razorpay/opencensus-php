@@ -9127,6 +9127,22 @@ return [
         ],
     ],
 
+    'testFetchMultipleUsersByContact' => [
+        'request' => [
+            'url'       => '/users_internal',
+            'method'    => 'POST',
+            'content'   => [
+                'user_contacts' => [
+                    '10000000000',
+                    '10000000001',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'   => []
+        ],
+    ],
+
     'testResellerPartnerMerchantRegister' => [
         'request' => [
             'url'     => '/register/merchant/otp/verify',

@@ -626,6 +626,14 @@ class Validator extends Base\Validator
         'user_ids.*' => 'required|alpha_num|size:14',
         'user_emails' => 'sometimes|array|max:20',
         'user_emails.*' => 'required|email',
+        'user_contacts' => 'sometimes|array|max:20',
+        'user_contacts.*' => 'required|contact_syntax',
+    ];
+
+    protected static $getUsersMerchantsRules = [
+        'product'                    => 'sometimes|in:primary,banking,billing',
+        'intent'                     => 'sometimes|in:auth',
+        'default_merchant_id'        => 'sometimes',
     ];
 
     protected static $teamManagementValidators = [
