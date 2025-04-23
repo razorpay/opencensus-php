@@ -253,6 +253,8 @@ class Constants
     const PAYMENT_STATUS               = 'payment_status';
     const INVOICE_SENT                 = 'invoice_sent';
     const FEE_BASED_GATING_DESCRIPTION = 'Fee for KYC verification request';
+    const FEE_COLLECTION_PAYMENT_TYPE = 'payment_type';
+    CONST MO_FEE_COLLECTION_PAYMENT_TYPE = 'mo_fee_collection';
 
     const CATEGORY_MODULE_PLACEMENT    = 'category_module_placement';
 

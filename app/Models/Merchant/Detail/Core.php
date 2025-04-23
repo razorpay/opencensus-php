@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
@@ -51,7 +52,6 @@ use RZP\Models\SalesforceConverge\SalesforceConvergeService;
 use RZP\Models\SalesforceConverge\SalesforceMerchantUpdatesRequest;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Services\KafkaProducer;
@@ -13157,18 +13157,28 @@ class Core extends Base\Core
 
         $paymentId = $body['payload']['payment']['entity']['id'];
 
+        $receivedSignature = $this->app['request']->headers->get('x-razorpay-signature');
+
         $isWhiteGloveOnboardingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::WHITE_GLOVE_ONBOARDING_MANAGER_FEE] ?? null;
+        $feeCollectionOnboardingPaymentType = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_COLLECTION_PAYMENT_TYPE] ?? null;
 
         $body = [
-            'order_id'       => $orderId,
-            'payment_status' => $paymentStatus,
-            'amount'         => $amount,
-            'payment_id'     => $paymentId
+            'order_id'              => $orderId,
+            'payment_status'        => $paymentStatus,
+            'amount'                => $amount,
+            'payment_id'            => $paymentId,
+            'payment_signature'     => $receivedSignature,
+            'webhook_payload'       => json_encode($body),
         ];
 
         if (isset($isWhiteGloveOnboardingHook) === true)
         {
             $body['payment_type'] = DetailConstants::ONBOARDING_MANAGER;
+        }
+
+        if ((isset($feeCollectionOnboardingPaymentType) === true && $feeCollectionOnboardingPaymentType === DetailConstants::MO_FEE_COLLECTION_PAYMENT_TYPE))
+        {
+            $body['payment_type'] = DetailConstants::MO_FEE_COLLECTION_PAYMENT_TYPE;
         }
 
         $this->trace->info(TraceCode::FEE_BASED_GATING_WEBHOOK_PROCESSING, [
@@ -13191,13 +13201,15 @@ class Core extends Base\Core
         // If fee based description is set in the request , this means it is a gating request and return true, else false
         $feeBasedGatingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_BASED_GATING_DESCRIPTION] ?? null;
         $whiteGloveOnboardingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::WHITE_GLOVE_ONBOARDING_MANAGER_FEE] ?? null;
+        $feeCollectionOnboardingPaymentType = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_COLLECTION_PAYMENT_TYPE] ?? null;
 
         $this->trace->info(TraceCode::ONBOARDING_PAYMENT_WEBHOOK_PROCESSING, [
             'feeBasedGatingHook'       => $feeBasedGatingHook,
             'whiteGloveOnboardingHook' => $whiteGloveOnboardingHook,
+            'feeCollectionOnboardingPaymentType' => $feeCollectionOnboardingPaymentType,
         ]);
 
-        if (isset($feeBasedGatingHook) === true or isset($whiteGloveOnboardingHook) === true)
+        if (isset($feeBasedGatingHook) === true or isset($whiteGloveOnboardingHook) === true or (isset($feeCollectionOnboardingPaymentType) === true && $feeCollectionOnboardingPaymentType === DetailConstants::MO_FEE_COLLECTION_PAYMENT_TYPE))
         {
             return true;
         }
