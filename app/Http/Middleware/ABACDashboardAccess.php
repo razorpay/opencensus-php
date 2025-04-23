@@ -52,6 +52,7 @@ class ABACDashboardAccess
         "x.razorpay.com",
         "partner-lms.razorpay.com",
         "x.dev.razorpay.in",
+        "admin-dashboard-int.razorpay.com",
     ];
     
     /**
@@ -59,9 +60,10 @@ class ABACDashboardAccess
      * Format: route_pattern => [http_methods => [allowed_methods]]
      */
     public static array $globalAccessRouteUrl = [
-        "app/*"         => ["http_method" => ["GET"]],
-        "user"          => ["http_method" => ["GET"]],
-        "user/details"  => ["http_method" => ["GET"]],
+        "app/*"                                     => ["http_method" => ["GET"]],
+        "user"                                      => ["http_method" => ["GET"]],
+        "user/details"                              => ["http_method" => ["GET"]],
+        "merchant/api/*/merchants/config/store"     => ["http_method" => ["GET"]],
     ];
     
     /**
@@ -93,6 +95,7 @@ class ABACDashboardAccess
         "user_logout",
         "admin_getIndex",
         "merchants_switch",
+        "get_org_by_domain"
     ];
     
     /**
@@ -297,12 +300,14 @@ class ABACDashboardAccess
         $currentMerchantDetails = $this->merchantDetailsService->getDetailsFromAPIWithCache($currentMerchantId);
         if (empty($currentMerchantDetails) === true)
         {
+            $this->app['trace']->info(TraceCode::GET_CURRENT_MERCHANT_DETAILS_NULL, ['merchant_id' => $currentMerchantId, 'endTime' => self::millitime() - $startTime]);
             return null;
         }
         
         $currentMerchantOrgId = $currentMerchantDetails["merchant"]["org_id"] ?? null;
         if ($currentMerchantOrgId === null)
         {
+            $this->app['trace']->info(TraceCode::GET_CURRENT_MERCHANT_ORG_ID_NULL, ['merchant_id' => $currentMerchantId, 'endTime' => self::millitime() - $startTime]);
             return null;
         }
         
@@ -355,7 +360,8 @@ class ABACDashboardAccess
         }
         
         $currentMerchantOrgId = $this->getCurrentMerchantOrgId($currentMerchantId, $orgMerchantSessionTTL);
-        if ($currentMerchantOrgId === $currentOrgId)
+        if (($currentMerchantOrgId === null) ||
+            ($currentMerchantOrgId === $currentOrgId))
         {
             return $next($request);
         }
