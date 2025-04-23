@@ -2491,7 +2491,7 @@ class GatewayController extends Controller
             return null;
         }
 
-        if ($payment->isUpi() === false && $payment->isRoutedThroughOptimizerService() === false)
+        if ($payment->isUpi() === false)
         {
             return null;
         }

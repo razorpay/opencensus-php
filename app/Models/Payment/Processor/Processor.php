@@ -2947,18 +2947,6 @@ class Processor
                         return true;
                     }
                 }
-
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                if ($result !== 'on') {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "not_engaged_in_raas_card_payments_via_pg_router",
-                        'merchant_id' => $merchant->getId(),
-                        'razorx_result' => $result,
-                    ]);
-                    return false;
-                }
-
             }
 
             if ($iin->getNetworkCode() === Card\Network::AMEX && $this->isPaymentViaTokenisedCard($input) && (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true)) {
@@ -5010,8 +4998,8 @@ class Processor
 
         return $response['response']['variant']['name'] ?? 'control';
     }
-    
-    
+
+
 
     private function canRouteWalletThroughRearchFlow($input): bool
     {
