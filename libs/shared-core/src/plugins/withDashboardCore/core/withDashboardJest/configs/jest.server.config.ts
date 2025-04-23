@@ -86,8 +86,7 @@ export const withDashboardServerJestConfig: withDashboardServerJestConfigType = 
 
     // @ts-ignore
     reporters: [
-      !isCI && 'default',
-      isCI && [externalDeps['jest-silent-reporter'], { useDots: true, showPaths: true }],
+      'default',
       isCI && externalDeps['jest-sonar'],
       !Boolean(shard) &&
         isCI &&
@@ -128,7 +127,6 @@ export const withDashboardServerJestConfig: withDashboardServerJestConfigType = 
           pageTitle: `${displayName} (Jest Report)${Boolean(shard) ? ` - Shard ${shard}` : ''}`,
           darkTheme: false,
           includeConsoleLog: true,
-          // logoImgPath: "https://framerusercontent.com/images/CU1m0xFonUl76ZeaW0IdkQ0M.png",
         },
       ],
     ].filter(Boolean),
@@ -163,8 +161,8 @@ export const withDashboardServerJestConfig: withDashboardServerJestConfigType = 
     setupFilesAfterEnv: ['<rootDir>/src/services/test/setupTests.tsx'],
     globalSetup: '<rootDir>/src/services/test/global-setup.ts',
     testTimeout: 15000,
-    workerThreads: Boolean(maxWorkers),
-    maxWorkers: Boolean(maxWorkers) ? maxWorkers : require('os').cpus().length / 2, // This is not working as expected
+    maxWorkers: Boolean(maxWorkers) ? maxWorkers : '50%',
+    logHeapUsage: isCI,
   };
 
   const consumerJestConfiguration = extendServerJestConfig?.(dashboardServerJestConfig);

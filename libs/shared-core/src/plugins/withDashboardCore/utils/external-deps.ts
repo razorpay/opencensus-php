@@ -55,7 +55,6 @@ const externalDepsResolvedFromRootNodeModules = [
   // Jest
   'jest-canvas-mock',
   'jest-location-mock',
-  'jest-silent-reporter',
   'jest-sonar',
   'jest-html-reporters',
   'jest-environment-jsdom',

@@ -4,13 +4,7 @@ inputs:
     required: true
 runs:
   using: composite
-  steps:        
-    - name: Setup PNPM v9.0.0
-      uses: pnpm/action-setup@v4
-      with:
-        version: 9.0.0
-        run_install: false
-
+  steps:
     - name: Setup Node v18.12.1
       uses: actions/setup-node@v4
       with:
@@ -18,10 +12,11 @@ runs:
         # cache: 'pnpm'
 
       # required because universe needs yarn internally  
-    - name: Install Yarn
+    - name: Install Yarn/pnpm
       shell: bash
       run: |
         npm install -g yarn
+        npm install -g pnpm@9.0.0
 
     - name: Cache Workspace Node Modules
       uses: actions/cache@v4

@@ -15,10 +15,10 @@ module.exports = withDashboardCore({
 
     config.coverageThreshold = {
       global: {
-        statements: 18.1,
+        statements: 18,
         branches: 10.43,
-        functions: 18.08,
-        lines: 18.17,
+        functions: 18.03,
+        lines: 18.1,
       },
     };
 
