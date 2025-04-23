@@ -811,32 +811,4 @@ class Validator extends Base\Validator
             }
         }
     }
-
-    public function validateDescription($value): void
-    {
-        if (empty($value) === true)
-        {
-            return;
-        }
-
-        // Sanitize the description to prevent XSS
-        $sanitizedValue = htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-
-        // If the sanitized value is different from the original, it means there was HTML/JS content
-        if ($sanitizedValue !== $value)
-        {
-            $this->getTrace()->count(
-                Metric::SUBSCRIPTION_REGISTRATION_VALIDATION_FAILED,
-                [
-                    'message' => 'Description contains invalid characters',
-                    'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
-                ]
-            );
-
-            throw new BadRequestValidationFailureException(
-                'Description contains invalid characters',
-                'description'
-            );
-        }
-    }
 }

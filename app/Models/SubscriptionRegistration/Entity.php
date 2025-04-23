@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     const FREQUENCY         = 'frequency';
     const RECURRING_TYPE    = "recurring_type";
     const RECURRING_VALUE   = "recurring_value";
+
     // Allowed frequencies for card recurring
     const AS_PRESENTED          = 'as_presented';
     const WEEKLY                = 'weekly';
