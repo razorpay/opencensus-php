@@ -2345,20 +2345,7 @@ trait Authorize
                 $payment->merchant->isRazorpayOrgId() === true and
                 $payment->card->getNetwork() === Network::getFullName(Network::MC)))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, $this->mode);
-
-            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
-                'payment_id'     => $payment->getId(),
-                'merchant_id'    => $payment->getMerchantId(),
-                'razorx_variant' => $variant,
-            ]);
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         if(($payment->isGatewayCaptured() === false) and
