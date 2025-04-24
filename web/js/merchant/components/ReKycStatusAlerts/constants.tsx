@@ -68,21 +68,22 @@ export const getModalContent = (user: User): ModalContent | null => {
           onClick: onClickRedirectNC,
         },
       };
-    case REKYC_STATUS_OPTIONS.EDD_PENDING:
-      return {
-        title: `Update Video KYC by ${REKYC_DEADLINE_SHORT}`,
-        description: (
-          <>
-            Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong> (between 10 AM and 7 PM).
-            Please request the <Strong>authorized signatory</Strong> to do the Video KYC to ensure
-            smooth operations.
-          </>
-        ),
-        action: {
-          text: 'Update Video KYC',
-          onClick: onClickRedirectVKYC,
-        },
-      };
+    // @see https://razorpay.slack.com/archives/C07QWA96SPQ/p1745397986674959?thread_ts=1745391181.288029&cid=C07QWA96SPQ
+    // case REKYC_STATUS_OPTIONS.EDD_PENDING:
+    //   return {
+    //     title: `Update Video KYC by ${REKYC_DEADLINE_SHORT}`,
+    //     description: (
+    //       <>
+    //         Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong> (between 10 AM and 7 PM).
+    //         Please request the <Strong>authorized signatory</Strong> to do the Video KYC to ensure
+    //         smooth operations.
+    //       </>
+    //     ),
+    //     action: {
+    //       text: 'Update Video KYC',
+    //       onClick: onClickRedirectVKYC,
+    //     },
+    //   };
     case REKYC_STATUS_OPTIONS.REJECTED:
       return {
         title: 'Your KYC is Rejected',
@@ -160,20 +161,32 @@ export const getBannerContent = (user: User): BannerContent | null => {
           onClick: onClickRedirectNC,
         },
       };
+    // @see https://razorpay.slack.com/archives/C07QWA96SPQ/p1745397986674959?thread_ts=1745391181.288029&cid=C07QWA96SPQ
+    // case REKYC_STATUS_OPTIONS.EDD_PENDING:
+    //   return {
+    //     description: (
+    //       <Text>
+    //         <Strong>Important!</Strong> Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong>{' '}
+    //         (between 10 AM and 7 PM). Please request the <Strong>authorized signatory</Strong> to
+    //         update this.
+    //       </Text>
+    //     ),
+    //     importance: 'notice',
+    //     action: {
+    //       text: 'Update Video KYC',
+    //       onClick: onClickRedirectVKYC,
+    //     },
+    //   };
     case REKYC_STATUS_OPTIONS.EDD_PENDING:
       return {
         description: (
           <Text>
-            <Strong>Important!</Strong> Update Video KYC before <Strong>{REKYC_DEADLINE}</Strong>{' '}
-            (between 10 AM and 7 PM). Please request the <Strong>authorized signatory</Strong> to
-            update this.
+            <Strong>Great news!</Strong> Your KYC has been approved and is now complete. No further
+            action required. Thank you! 🎉
           </Text>
         ),
-        importance: 'notice',
-        action: {
-          text: 'Update Video KYC',
-          onClick: onClickRedirectVKYC,
-        },
+        importance: 'positive',
+        dismissible: true,
       };
     case REKYC_STATUS_OPTIONS.VKYC_UNDER_REVIEW:
       return {
