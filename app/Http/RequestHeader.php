@@ -136,5 +136,7 @@ class RequestHeader
 
     const X_PG_ROUTER_MERCHANT_IP        = "X-PG-Router-Merchant-Ip";
 
+    const X_PG_ROUTER_API_PAYMENT        = "X-PG-Router-Api-Payment";
+  
     const X_AB_USER_ID                  = 'x-ab-user-id';
 }

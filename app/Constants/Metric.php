@@ -351,6 +351,9 @@ class Metric
     const IRCTC_PAYOUTS_CLS_NON_RECOVERABLE_ERROR               = 'IRCTC_PAYOUTS_CLS_NON_RECOVERABLE_ERROR';
 
     const API_DECOMP_AUTH_DISTRIBUTION                          = 'api_decomp_auth_distribution';
+
+    const PAYMENT_FETCH_BY_ID_DISTRIBUTION                      = 'payment_fetch_by_id_decomp';
+
     const INTERNAL_ORDER_PAYMENTS_FETCH_ERROR                   = 'internal_order_payments_fetch_error';
 
     const CREDCASE_READ_COUNT_MISMATCH = 'credcase_read_count_mismatch';

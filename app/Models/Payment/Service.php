@@ -8,6 +8,7 @@ use Mail;
 use Crypt;
 use Config;
 use Monolog\Logger;
+use RZP\Constants\Metric;
 use RZP\Constants\Metric as Metrics;
 use RZP\Jobs\PaymentFetchByIdParity;
 use RZP\Http\RequestHeader;
@@ -2823,7 +2824,7 @@ class Service extends Base\Service
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
-        $hasCallbackCall = false;
+        $callbackPresent = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2934,7 +2935,7 @@ class Service extends Base\Service
         {
             if($this->app['basicauth']->isPrivateAuth())
             {
-                $hasCallbackCall = true;
+                $callbackPresent = true;
                 $secret = $this->app->config->get('app.key');
                 $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
                 if(isset($payment['cps_route']) && $payment['cps_route'] === 5)
@@ -2970,6 +2971,13 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        $this->trace->count(Metric::PAYMENT_FETCH_BY_ID_DISTRIBUTION, [
+            'private'          => $this->app['basicauth']->isPrivateAuth(),
+            'app'              => $this->app['basicauth']->getInternalApp(),
+            'proxy'            => $this->app['basicauth']->isProxyAuth(),
+            'callbackPresent'  => $callbackPresent,
+        ]);
+
         if ($this->checkSplitzForPaymentFetchByIdParity() === true)
         {
             $config  = $this->app['config']->get('applications.route');
@@ -2978,7 +2986,7 @@ class Service extends Base\Service
             $input["payment_id"] = $id;
             $input["ip"] = $this->app['request']->getClientIp();
             $input["passport"] = $passport;
-            $input["hasCallbackCall"] = $hasCallbackCall;
+            $input["callbackPresent"] = $callbackPresent;
             $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
             $input["internalApp"] = $this->app['basicauth']->getInternalApp();
             $input["isProxyAuth"] = $this->app['basicauth']->$this->isProxyAuth();
