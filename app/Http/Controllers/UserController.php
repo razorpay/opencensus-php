@@ -2334,7 +2334,7 @@ class UserController extends Controller
             $workflowDetails = array_get($details, 'workflow_details');
 
             if ((isset($workflowType) === true and $workflowType === MerchantConstants::MODULAR_ONBOARDING) or (is_array($workflowDetails) and ((isset($workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING) or
-                (isset($workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING)))) 
+                (isset($workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING))))
             {
                 return false;
             }
@@ -2540,23 +2540,49 @@ class UserController extends Controller
         return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 
-    private function transformUrl($currentUrl) {
+    private function queryParamHasTrustedUrl(string $url, &$host = null): bool
+    {
+        $decodedUrl = urldecode($url);
+        $parsedNextUrl = parse_url($decodedUrl);
+        $host = $parsedNextUrl['host'] ?? '';
 
-        $parsedUrl = parse_url($currentUrl);
-
-        $baseHost = $parsedUrl['host'] ?? '';
-
-        // Extract query parameters
-        parse_str($parsedUrl['query'] ?? '', $queryParams);
-
-        // Check if the URL contains only the 'next' query parameter
-        if (count($queryParams) === 1 && isset($queryParams['next'])) {
-            $redirectUrl = 'https://' . $baseHost . '/' . ltrim(urldecode($queryParams['next']), '/');
-        } else {
-            $redirectUrl = $currentUrl; // Keep original URL if condition isn't met
-        }
-
-        return $redirectUrl;
+        // Check if the domain is razorpay.com or razorpay.in (including subdomains)
+        return preg_match('/^(?:[\w-]+\.)*razorpay\.(com|in)$/', $host);
     }
 
+    private function transformUrl($currentUrl): string
+    {
+        $parsedUrl = parse_url($currentUrl);
+        $baseHost = $parsedUrl['host'] ?? '';
+        $baseUrl = 'https://' . $baseHost;
+        
+        // Extract query parameters
+        parse_str($parsedUrl['query'] ?? '', $queryParams);
+        
+        // Return original URL if we don't have exactly one 'next' parameter
+        if (count($queryParams) !== 1 || !isset($queryParams['next'])) {
+            return $currentUrl;
+        }
+        
+        $nextParam = urldecode($queryParams['next']);
+        
+        // Handle relative URLs
+        if (!str_starts_with($nextParam, 'https')) {
+            return $baseUrl . '/' . ltrim($nextParam, '/');
+        }
+        
+        // Handle https URLs - check if trusted
+        $host = null;
+        if ($this->queryParamHasTrustedUrl($nextParam, $host)) {
+            return $nextParam;
+        }
+        
+        // Log and return base URL for untrusted domains
+        $this->trace->info(TraceCode::INVALID_DOMAIN_REDIRECT, [
+            'attempted_redirect' => $nextParam,
+            'invalid_domain' => $host,
+        ]);
+        
+        return $baseUrl;
+    }
 }

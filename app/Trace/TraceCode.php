@@ -366,6 +366,7 @@ class TraceCode
     const GET_CURRENT_MERCHANT_DETAILS_NULL  = 'GET_CURRENT_MERCHANT_DETAILS_NULL';
     const GET_CURRENT_MERCHANT_ORG_ID_NULL   = 'GET_CURRENT_MERCHANT_ORG_ID_NULL';
     const ACCESS_DENIED_FOR_CROSS_ORG       = 'ACCESS_DENIED_FOR_CROSS_ORG';
+    const INVALID_DOMAIN_REDIRECT = 'INVALID_DOMAIN_REDIRECT';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
