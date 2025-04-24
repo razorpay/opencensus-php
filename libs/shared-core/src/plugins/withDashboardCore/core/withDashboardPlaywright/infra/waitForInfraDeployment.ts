@@ -2,7 +2,7 @@ async function checkArgoStatus(): Promise<boolean> {
   const assignedArgoWorkflowName = process.env.ASSIGNED_ARGO_WORKFLOW_NAME;
   try {
     const response = await fetch(
-      `https://argo.dev.razorpay.in/api/v1/workflows/argo-workflows-test/${assignedArgoWorkflowName}`,
+      `https://argo.dev.razorpay.in/api/v1/workflows/argo-workflows/${assignedArgoWorkflowName}`,
       {
         method: 'GET',
         headers: {
