@@ -713,6 +713,23 @@ class Service extends Base\Service
             $orgID = $input[Merchant\Entity::ORG_ID];
         }
 
+        $requestedProduct =$input['product']??null;
+
+        //For X on USL if requested product is banking_onboarding then setting the originproduct and
+        //x_verify_email flag(used at multiple places for X) to true
+        if($requestedProduct == DeviceDetailConstants::PRODUCT_BANKING_ONBOARDING) {
+
+            $this->auth->setRequestOriginProduct(Product::BANKING);
+            $input[Entity::X_VERIFY_EMAIL]="true";
+        }
+
+        $this->trace->info(TraceCode::USER_REGISTER, [
+            'signup_source'          =>$input[DeviceDetail\Entity::SIGNUP_SOURCE],
+            'signup_campaign'        =>$input[DeviceDetail\Entity::SIGNUP_CAMPAIGN],
+            'merchant_product'       =>$this->auth->getRequestOriginProduct(),
+            'x_verify_email'         =>$input[Entity::X_VERIFY_EMAIL] ?? null,
+        ]);
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??

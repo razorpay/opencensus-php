@@ -211,7 +211,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|string|max:200|utf8',
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
-//        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
+        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
         Entity::METADATA              => 'sometimes|array',
     ];
@@ -369,7 +369,7 @@ class Validator extends Base\Validator
     protected static $preSignupRules = [
         Entity::NAME                  => 'sometimes|alpha_space|max:200|utf8',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15|contact_syntax',
-//        Entity::EMAIL                 => 'sometimes|email'
+        Entity::EMAIL                 => 'sometimes|email'
     ];
 
     protected static $teamManagementRules = [

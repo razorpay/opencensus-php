@@ -566,6 +566,29 @@ return [
         ],
     ],
 
+    'testRegisterForSignUpFlowInXViaUSL' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'abc@rzp.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'product'               => 'banking_onboarding'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://accounts.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@rzp.com',
+            ],
+        ],
+    ],
+
     'testRegisterWithOauthPayload'  => [
         'request'  => [
             'url'     => '/users/register',

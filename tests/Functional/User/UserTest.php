@@ -1237,6 +1237,86 @@ class UserTest extends TestCase
         });
     }
 
+    public function testRegisterForSignUpFlowInXViaUSL()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
+
+        $row = DB::table('merchant_map')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('entity_id', '=', $adminId)
+            ->where('entity_type', '=', 'admin')
+            ->first();
+
+        $this->assertNotNull($row);
+
+        //business_banking should be true and signup_source should be banking
+        $this->assertEquals(true, $merchant['business_banking']);
+
+        $this->assertEquals($merchant['signup_source'], "banking");
+
+
+        $this->assertArrayHasKey('token', $response);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('x_verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.razorpayx.otp_email_verify', $mail->view);
+
+            $mailSubject = "Verify your Email for RazorpayX";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+
+            return true;
+        });
+    }
+
     protected function mockDCS()
     {
         $dcsMock = $this->getMockBuilder(DCSService::class)
