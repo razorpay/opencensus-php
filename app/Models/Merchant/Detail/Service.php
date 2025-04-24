@@ -330,7 +330,8 @@ class Service extends Base\Service
 
         $response[DetailConstants::RISK_DETAILS] = $additionalDetails[DetailConstants::RISK_DETAILS] ?? null;
 
-        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
+        $pgOrCbModularResult=$this->pgosProxyController->getIndiaPgOrCbIndiaModularResult($this->merchant);
+        if (($pgOrCbModularResult[DetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR]??false) === true)
         {
             $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
         }

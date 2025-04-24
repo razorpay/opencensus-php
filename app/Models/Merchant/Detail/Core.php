@@ -1181,6 +1181,43 @@ class Core extends Base\Core
         }
     }
 
+    public function shouldApplyMutexOnOnboardingSave(string $merchantId): bool
+    {
+        $mode = 'enable';
+        $routeName = $this->app['request.ctx']->getRoute() ?? 'NA';
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.apply_mutex_on_onboarding_save_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::APPLY_MUTEX_ON_ONBOARDING_SAVE_REQUEST, [
+                'splitz_output' => $variant,
+                'route'         => $routeName,
+                'merchant_id'   => $merchantId
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'experiment_id' => $this->app['config']->get('app.apply_mutex_on_onboarding_save_experiment_id'),
+                'route'         => $routeName,
+                'merchant_id'   => $merchantId
+            ]);
+
+            return false;
+        }
+    }
+
+
     public function triggerOCRService($input, $ocrServiceName, $merchant)
     {
         try
@@ -1527,6 +1564,11 @@ class Core extends Base\Core
             // Catching exception because we do not want to abort the code flow
             $workflowActionData = json_decode($e->getMessage(), true);
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->count(DetailMetric::NEEDS_CLARIFICATION_RESPONDED_WORKFLOW_FAILURE);
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::NEEDS_CLARIFICATION_RESPONDED_WORKFLOW_FAILURE);
         }
     }
 
@@ -4896,7 +4938,57 @@ class Core extends Base\Core
             'start_time'  => $startTime
         ]);
 
+        $fromActivationStatus = $oldMerchantDetails->getActivationStatus();
+        $toActivationStatus = $newMerchantDetails->getActivationStatus();
+        $this->pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants($merchant, $fromActivationStatus, $toActivationStatus);
+
         return $merchantDetails;
+    }
+
+    private function pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants(MerchantEntity $merchant, $fromActivationStatus, $toActivationStatus) : void
+    {
+        $adminEmail = \Request::header(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+
+        if ($this->isIndiaPgRegularMerchant($merchant) === false and empty($adminEmail) === true)
+        {
+            return;
+        }
+
+        $product = DetailConstants::PG_ONBOARDING;
+        $version = DetailConstants::NON_MODULAR_VERSION;
+        $countryCode = DetailConstants::INDIA_COUNTRY_CODE;
+
+        // TODO: Handle multiple versions for MODULAR flow
+        if ($this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
+        {
+            $version = DetailConstants::MODULAR_VERSION_V1;
+        }
+
+        $this->trace->count(DetailMetric::MANUAL_ACTIVATION_STATUS_CHANGE_METRIC, [
+            'source'                 => 'admin',
+            'product'                => $product,
+            'version'                => $version,
+            'country_code'           => $countryCode,
+            'from_activation_status' => $fromActivationStatus,
+            'to_activation_status'   => $toActivationStatus,
+        ]);
+
+        $this->trace->info(TraceCode::MERCHANT_ACTIVATION_STATUS_CHANGE_BY_ADMIN, [
+            'merchant_id' => $merchant->getId(),
+        ]);
+    }
+
+    public function isIndiaPgRegularMerchant(MerchantEntity $merchant) : bool
+    {
+        $merchantDetails = $merchant->merchantDetail;
+        $merchantBusinessDetails = $merchantDetails->businessDetail;
+
+        return ($merchant->getOrgId() === ORG_ENTITY::RAZORPAY_ORG_ID and
+            strtolower($merchant->getCountry()) === Country::IN and
+            $this->isPGOSMerchant($merchant) === true and
+            $this->isPOSMerchant($merchantBusinessDetails) === false and
+            $this->pgosProxyController->getIndiaPgOrCbIndiaModularResult($merchant)[DetailConstants::PRODUCT] !== DetailConstants::CROSS_BORDER_ONBOARDING
+        );
     }
 
     /**
@@ -7389,7 +7481,7 @@ class Core extends Base\Core
     {
         $merchant = $merchantDetails->merchant;
 
-        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant) === true)
+        if (($this->pgosProxyController->getIndiaPgOrCbIndiaModularResult($merchant)[DetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR] ?? false) === true)
         {
             // todo: the activation_status should be calculated by calling PGOS. This logic will be subsequently migrated.
             // we are hardcoding the activation_status as Under-Review for now for India PG modular merchants to avoid network calls
@@ -12788,7 +12880,7 @@ class Core extends Base\Core
         // Malaysian Merchants should not be eligible for fee based gating
         $isMalaySianMerchant = $this->isMalaysianMerchant($merchant);
 
-        $isIndiaPgOrCrossBorderIndiaModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
+        $isIndiaPgOrCrossBorderIndiaModularMerchant = $this->pgosProxyController->getIndiaPgOrCbIndiaModularResult($merchant)[DetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR] ?? false;
 
         $splitzResultWebsiteMerchant = $this->getSplitzResponse($merchant->getId(), 'fee_based_gating_website_exp_id');
 
@@ -13761,7 +13853,7 @@ class Core extends Base\Core
             DetailConstants::ENABLE
         );
 
-        $isModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
+        $isModularMerchant = $this->pgosProxyController->getIndiaPgOrCbIndiaModularResult($merchant)[DetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR] ?? false;
 
         return ($isExperimentEnabled and $isModularMerchant);
     }

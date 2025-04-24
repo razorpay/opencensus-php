@@ -474,6 +474,8 @@ return array(
 
     'apply_mutex_on_merchant_entities_update_experiment_id' => env('APPLY_MUTEX_ON_MERCHANT_ENTITIES_UPDATE_EXPERIMENT_ID'),
 
+    'apply_mutex_on_onboarding_save_experiment_id' => env('APPLY_MUTEX_ON_ONBOARDING_SAVE_EXPERIMENT_ID'),
+
     'easy_submerchant_pgos_live_mode_experiment_id' => env('EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID'),
 
     'linked_account_modular_onboarding_activate_experiment_id' => env('LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID', false),

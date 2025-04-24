@@ -149,6 +149,10 @@ class Constants
     const RISK_DETAILS                      = 'risk_details';
     const ADDITIONAL_ONBOARDING_DETAILS     = 'additional_onboarding_details';
     const PG_ONBOARDING                     = 'pg_onboarding';
+    const NON_MODULAR_VERSION               = 'non-modular';
+    const MODULAR_VERSION_V1                = 'v1';
+    const PRODUCT                           = 'PRODUCT';
+    const CROSS_BORDER_ONBOARDING           = 'cross_border_onboarding';
     const MANUAL_REKYC                      = "manual_rekyc";
     const REKYC_STATUS                      = "rekyc_status";
     const BDD_VERIFICATION_STATUS           = "bdd_verification_status";
@@ -936,5 +940,7 @@ class Constants
     const DEDUPE_IS_UNDER_REVIEW        = "is_under_review";
     const IS_FORM_LOCKED                = "is_form_locked";
     const IS_FORM_SUBMITTED             = "is_form_submitted";
+    const IS_INDIA_PG_OR_CB_INDIA_MODULAR = "is_modular";
+    const PRODUCT_PG_OR_CB_INDIA = "product";
 }
 

@@ -47,7 +47,9 @@ final class Metric
     const BVS_PROBE_API_FAILURE              = 'bvs_probe_api_failure';
     const COMPANY_SEARCH_EXHAUSTED           = 'company_search_exhausted';
     const REWARD_VALIDATION_EXHAUSTED        = 'reward_validation_exhausted';
-    const DEDUPE_WORKFLOW_FAILURE            = 'dedupe_workflow_failure';
+
+    const DEDUPE_WORKFLOW_FAILURE                           = 'dedupe_workflow_failure';
+    const NEEDS_CLARIFICATION_RESPONDED_WORKFLOW_FAILURE    = 'needs_clarification_responded_workflow_failure';
 
     const BVS_CREATE_DOCUMENT_RECORD_REQUEST_TOTAL      = 'bvs_create_document_record_request_total';
     const BVS_CREATE_DOCUMENT_RECORD_RESPONSE_TOTAL     = 'bvs_create_document_record_response_total';
@@ -62,6 +64,6 @@ final class Metric
     const AUTOFILL_BVS_DETAILS_ATTEMPT_EXHAUSTED = 'autofill_bvs_details_attempt_exhausted';
 
     const FETCH_CONSENT_SUCCESS                  = 'bvs_fetch_consent_success';
+    const MANUAL_ACTIVATION_STATUS_CHANGE_METRIC = 'manual_activation_status_change_metric';
     const ACTIVATION_FORM_SUBMIT_EVENT_FOR_CMMA_CASE_CREATION = 'activation_form_submit_event_for_cmma_case_creation';
-
 }
