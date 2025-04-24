@@ -2,8 +2,10 @@
 
 namespace RZP\Mail\Invoice;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\Stork;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
@@ -164,7 +166,36 @@ class Issued extends Base
         {
             $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
 
-            return ($isStorkEmailVIAEnabled);
+            if($this->view == "emails.invoice.customer.notification")
+            {
+                return $isStorkEmailVIAEnabled;
+            }
+            else if($this->view == "emails.mjml.customer.payment_page.payment" && $this->fileData !== null && $this->fileData['path'] !== null)
+            {
+                try
+                {
+                    $params = $this->getParamsForFile();
+                    $path = $this->fileData['path'];
+                    $file_id = (new Stork($this->mode, $this->originProduct))->getFileId($params,$path);
+
+                    if (!empty($file_id))
+                    {
+                        $this->fileData['file_id'] = $file_id;
+
+                        return $isStorkEmailVIAEnabled;
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    $app['trace']->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::GET_FILE_ID_EXCEPTION,
+                        ['file_data' => $this->fileData]
+                    );
+                    return false;
+                }
+            }
         }
 
         if ($data['invoice']['type'] === 'link')
@@ -180,12 +211,31 @@ class Issued extends Base
         if(($this->view == "emails.invoice.customer.notification" || $this->view == "emails.mjml.customer.payment_page.payment")
             && $this->data['invoice']['type'] !== 'link' )
         {
-            return [
-                'template_name' => $this->view,
-                'template_namespace' => 'payments_payment_links',
-                'org_id' => $this->data['org']['id'],
-                'params' => $this->data
-            ];
+            if($this->view == "emails.mjml.customer.payment_page.payment")
+            {
+                return [
+                    'template_name' => $this->view,
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $this->data['org']['id'],
+                    'params' => $this->data,
+                    'attachments' => [
+                        [
+                            "file_id" => $this->fileData['file_id'],
+                            "display_name" => $this->fileData['name'],
+                            "extension" => "pdf"
+                        ]
+                    ]
+                ];
+            }
+            else
+            {
+                return [
+                    'template_name' => $this->view,
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $this->data['org']['id'],
+                    'params' => $this->data
+                ];
+            }
         }
 
         $data = $this->data;
@@ -263,6 +313,16 @@ class Issued extends Base
         }
 
         return $storkParams;
+    }
+
+    protected function getParamsForFile(): array
+    {
+        return [
+            'channel'            => 'email',
+            'owner_id'           => $this->mid,
+            'owner_type'         => 'merchant',
+            'url_count'          => '1'
+        ];
     }
 
     public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {

@@ -6574,6 +6574,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SEND_EMAIL_ATTEMPT_STORK                              = 'SEND_EMAIL_ATTEMPT_STORK';
     const SEND_EMAIL_ATTEMPT_STORK_FAILED                       = 'SEND_EMAIL_ATTEMPT_STORK_FAILED';
     const SEND_EMAIL_ATTEMPT_STORK_EXCEPTION                    = 'SEND_EMAIL_ATTEMPT_STORK_EXCEPTION';
+    const GET_PRESIGNED_URL_EXCEPTION                           = 'GET_PRESIGNED_URL_EXCEPTION';
+    const GET_FILE_ID_EXCEPTION                                 = 'GET_FILE_ID_EXCEPTION';
+    const FILE_READ_FAILED                                      =  'FILE_READ_FAILED';
+    const FILE_UPLOAD_FAILED                                    =  'FILE_UPLOAD_FAILED';
     const SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL                   = 'SEND_EMAIL_ATTEMPT_STORK_SUCCESSFUL';
     const SEND_EMAIL_SUCCESSFUL                                 = 'SEND_EMAIL_SUCCESSFUL';
     const SEND_EMAIL_FAILED_INVALID_RECIPIENT                   = 'SEND_EMAIL_FAILED_INVALID_RECIPIENT';
