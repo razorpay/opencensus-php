@@ -99,6 +99,7 @@ final class AsvFlows
         'user_register' => true,
         'user_verify_and_update_mobile_otp' => true,
         'verify_user_otp_register' => true,
+        'merchant_international_enablement_draft_internal' => true,
         'worker:auto_linked_account_creation' => true,
         'worker:auto_update_merchant_products' => true,
         'worker:batch' => true,

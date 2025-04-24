@@ -58,5 +58,4 @@ class Repository extends Base\Repository
             ->get();
     }
 
-
 }

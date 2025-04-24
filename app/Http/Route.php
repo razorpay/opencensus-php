@@ -12552,6 +12552,8 @@ class Route
 
         'payments_bank_transfer_service' => [
             'merchant_integration_get_by_param',
+            'internal_merchant_methods_edit',
+            'pricing_add_plan_rule_bulk',
         ],
 
         'xperience' => [
