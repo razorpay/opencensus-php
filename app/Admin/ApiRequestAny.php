@@ -145,7 +145,9 @@ class ApiRequestAny
         'admin_dashboard/tags',
         'dashboard/blocks',
         'engage',
-        'dcs'
+        'dcs',
+        'admin/offers',
+        'admin/usage-limits'
     ];
 
     /**
@@ -1219,7 +1221,7 @@ class ApiRequestAny
     public function getApiErrorDescription($exceptionData)
     {
         $errorDescription = 'Something went wrong';
-        
+
         if (is_null($exceptionData) === true)
         {
             return $errorDescription;
@@ -1248,7 +1250,7 @@ class ApiRequestAny
         {
             return $errors;
         }
-        
+
         // Handle the errors from Admin-experience-service
         if (empty($exceptionData) === false &&
             array_key_exists('meta', $exceptionData) === true &&

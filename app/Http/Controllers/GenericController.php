@@ -29,7 +29,8 @@ class GenericController extends Controller
         'x-cross-org-id',
         'x-org-id',
         'accept-version',
-        'x-razorpay-nca-transform'
+        'x-razorpay-nca-transform',
+        'x-user-type'
     ];
 
     const WHITELISTED_ROUTES_REGEX = [
@@ -95,7 +96,7 @@ class GenericController extends Controller
     const UNSUSPEND                  = 'unsuspend';
 
     const EMANDATE_SERVICE = 'emandate/report/bounce-memo';
-    
+
     const URL_PATH_REFINEMENT_EXPERIMENT_NAME = "URL_PATH_REFINEMENT_EXPERIMENT_NAME";
 
     public function handleAny($mode, $path = null)
@@ -162,7 +163,7 @@ class GenericController extends Controller
                 $headers[$key] = $value[0];
             }
         }
-    
+
         $refineUrlPathExpEnable = $this->isRefinedUrlPathExpEnabled();
         $request = new App\Admin\ApiRequestAny([
             'mode'                  => $mode,
@@ -221,7 +222,7 @@ class GenericController extends Controller
         {
             $request->addCookiesForPath(self::PATH_VS_COOKIE[$path]);
         }
-        
+
         list($error, $data, $httpCode) = $request->send($path, $method);
 
         if (($path === self::MERCHANT_BULK_ACTION_ROUTE) and
@@ -237,19 +238,19 @@ class GenericController extends Controller
 
         return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
     }
-    
+
     public function getMerchantId()
     {
         $sessionMerchantId = Session::get('current_merchant_id');
-        
+
         if (app('request.ctx')->isOauthRequest() === true)
         {
             $sessionMerchantId = app('request.ctx')->getMerchantId();
         }
-        
+
         return $sessionMerchantId;
     }
-    
+
     public function isRefinedUrlPathExpEnabled(): bool
     {
         $currentMerchantId = $this->getMerchantId();
@@ -257,24 +258,24 @@ class GenericController extends Controller
         {
             return false;
         }
-        
+
         $concurrentApiCallExperimentId = config('splitz.experiments')[self::URL_PATH_REFINEMENT_EXPERIMENT_NAME] ?? null;
         if ($concurrentApiCallExperimentId === null)
         {
             return false;
         }
-        
+
         $experimentIds = [$concurrentApiCallExperimentId];
-        
+
         $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, isSplitzCachingEnabled: true);
         if (!array_key_exists($concurrentApiCallExperimentId, $data))
         {
             return false;
         }
-        
+
         return ($data[$concurrentApiCallExperimentId]['variables']['result'] ?? null) === 'on';
     }
-    
+
     public function bounceMemo()
     {
         $allRequestHeaders = Request::header();
