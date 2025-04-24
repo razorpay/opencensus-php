@@ -112,6 +112,10 @@ class Base
         {
             $request['content'] = $data;
         }
+        else if ($method === Requests::PATCH) 
+        {
+            $request['content'] = json_encode($data);
+        }
 
         $this->traceRequest($request);
 

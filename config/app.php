@@ -1193,6 +1193,8 @@ return array(
 
     'payment_transfer_rearch_exp_id' => env('PAYMENT_TRANSFER_REARCH_EXP_ID'),
 
+    'patch_transfer_rearch_exp_id' => env('PATCH_TRANSFER_REARCH_EXP_ID'),
+
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
     'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
