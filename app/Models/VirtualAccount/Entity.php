@@ -673,7 +673,7 @@ class Entity extends Base\PublicEntity
         {
             if (empty($value) === false)
             {
-                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 39));
+                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 40));
 
                 if (strlen($sanitizedValue) > 2)
                 {
