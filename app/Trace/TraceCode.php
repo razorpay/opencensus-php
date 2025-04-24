@@ -7590,6 +7590,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_PRODUCT_SET_FAILED                              = 'STORK_PRODUCT_SET_FAILED';
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
     const STORK_DISPATCH_EVENT_REQUEST_DEBUG_LOG                = 'STORK_DISPATCH_EVENT_REQUEST_DEBUG_LOG';
+    const STORK_BUILD_EVENT_PAYLOAD_DEBUG_LOG                   = 'STORK_BUILD_EVENT_PAYLOAD_DEBUG_LOG';
+
     const STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING          = 'STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING';
     const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
     const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';
@@ -13127,7 +13129,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_FEE_RECOVERY_STATUS = "UPDATE_FEE_RECOVERY_STATUS";
     const FEE_RECOVERY_NEGATIVE_FEES = "FEE_RECOVERY_NEGATIVE_FEES";
     const TASK_RUN_UPDATE = "TASK_RUN_UPDATE";
-
+    const WEBHOOK_PAYMENT_PAYLOAD_ERROR = "WEBHOOK_PAYMENT_PAYLOAD_ERROR";
+    const STORK_DISPATCH_EVENT_BUILD_FAILED                           = 'STORK_DISPATCH_EVENT_BUILD_FAILED';
+    const TRANSACTION_ISOLATION_EXPERIMENT_ENABLED_FOR_WEBHOOK         = 'TRANSACTION_ISOLATION_EXPERIMENT_ENABLED_FOR_WEBHOOK';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

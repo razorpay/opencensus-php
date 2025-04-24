@@ -13,6 +13,9 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Razorpaywallet;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
+use RZP\Jobs\WebhookEvent;
+use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Offer\OffersEngine;
@@ -134,7 +137,10 @@ use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Services\ThirdWatchService;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Models\QrPayment\Constants as QrConstants;
-
+use RZP\Models\Event;
+use RZP\Models\Base;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Product;
 
 class Processor
 {
@@ -712,6 +718,13 @@ class Processor
         "enach_npci_netbanking_icici"         => "npci_icici",
     ];
 
+
+
+    /**
+     * @var array|string[]
+     */
+    protected $context;
+
     public function __construct(Merchant\Entity $merchant, $paymentInput = null)
     {
         $this->app  = App::getFacadeRoot();
@@ -762,6 +775,11 @@ class Processor
         $this->refund       = null;
         $this->type         = null;
         $this->subscription = null;
+    }
+
+    private function getMode()
+    {
+        return $this->app['rzp.mode'];
     }
 
 
@@ -5961,34 +5979,22 @@ class Processor
     {
         $payment = $this->payment;
 
-        $payload = $this->getPaymentPayloadForWebhook($payment);
+
+        $payload = $this->getPaymentPayloadForWebhook($payment,$eventName);
 
         if ($eventName === "order.paid")
         {
             $payload = $this->getOrderPayloadForWebhook($payment);
         }
 
-        $merchantId = $payment->getMerchantId();
-
-        $accountId = "";
-
-        if (isset($merchantId) === true)
-        {
-            $accountId = Merchant\Account\Entity::getSignedId($merchantId);
-        }
-
-        $webhookPayload = array(
-            "account_id" => $accountId,
-            "payload" => $payload,
-        );
 
         if(($eventName === "payment.authorized") and (($payment->merchant->isFeatureEnabled(Feature::SILENT_REFUND_LATE_AUTH) === true))
             and ($payment->isLateAuthorized() === true))
         {
-            $webhookPayload = null;
+            $payload = null;
         }
 
-        return $webhookPayload;
+        return $payload;
     }
 
     protected function getOrderPayloadForWebhook($payment)
@@ -6006,17 +6012,17 @@ class Processor
         return $partialPayload;
     }
 
-    protected function getPaymentPayloadForWebhook($payment)
+    protected function getPaymentPayloadForWebhook($payment,$eventName)
     {
-        $payload = [
-            E::PAYMENT => [
-                'entity' => $payment->toArrayWebhook(),
-            ],
-        ];
+        try {
+            $payload = [
+                E::PAYMENT => [
+                    'entity' => $payment->toArrayWebhook(),
+                ],
+            ];
 
-        $order = $payment->order;
-
-        $merchant = $payment->merchant;
+            $order = $payment->order;
+            $merchant = $payment->merchant;
 
         // for backward compatibility with new pl service, payment entity needs to have invoice_id in webhook payload
         // as few merchants depend on this field.
@@ -6057,7 +6063,132 @@ class Processor
             $payload[E::PAYMENT]['entity'][Payment\Entity::GIFT_CARDS] = $giftCards;
         }
 
-        return $payload;
+            // Add context and dispatch to stork
+            $this->setContextForEntityForWebhook(merchantId: $payment->getMerchantId(), entityType: "payment", entityId: $payment->getId(),eventName : $eventName);
+
+            return $this->buildStorkEventPayload(payment: $payment,payload: $payload, merchant:$merchant,eventName:$eventName);
+        } catch (\Throwable $e) {
+            $this->trace->error(
+                TraceCode::WEBHOOK_PAYMENT_PAYLOAD_ERROR,
+                [
+                    'message' => 'Failed to build webhook payload for payment',
+                    'payment_id' => $payment->getId() ?? null,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]
+            );
+
+            throw $e;
+        }
+    }
+
+    protected function buildStorkEventPayload(Payment\Entity  $payment, array $payload, Merchant\Entity $merchant,  string $eventName,string $ownerType =  \RZP\Constants\Entity::MERCHANT)
+    {
+        $event = $this->createEventEntityForWebhook($payment,$payload,$merchant,$eventName);
+
+        $merchant = $event->merchant;
+
+        $payload = $event->toArrayPublic();
+
+        $applicationId = null;
+
+        if($ownerType === E::APPLICATION)
+        {
+            $applicationId = (new Stork($this->getMode(),  Product::PRIMARY))->extractAndRemoveApplicationFromPayloadIfApplicable( $payload);
+        }
+
+        $payload = json_encode($payload);
+
+        if (empty($merchant) === false)
+        {
+            $response = (new Merchant\Core)->translateWebhookPayloadIfApplicable($merchant, $payload, $this->getMode());
+
+            $payload  = $response['content'];
+        }
+
+        $config = config('stork');
+        $service = $config['service_prefix'] . $config['auth'][Product::PRIMARY][app('rzp.mode')]['user'];
+
+        $processEventReq = [
+            'event' => [
+                'id'         => $event->getId(),
+                'service'    => $service,
+                'owner_id'   => $ownerType === E::MERCHANT ? $event->getMerchantId() : $applicationId,
+                'owner_type' => $ownerType,
+                'name'       => $event->event,
+                'payload'    => $payload,
+            ],
+        ];
+
+
+        if($merchant->isOmniEnabled() === true)
+        {
+            if (empty($processEventReq['event']['context']) === false)
+            {
+                $processEventReq['event']['context']['omni_enabled'] = '1';
+            }
+            else
+            {
+                $processEventReq['event']['context'] = [ 'omni_enabled' => '1'];
+            }
+        }
+
+        $eventTrace = $processEventReq;
+
+        if ((isset($event->payload) === true) and
+            (isset($event->payload['payment']) === true) and
+            (isset($event->payload['payment']['entity']) === true) and
+            (isset($event->payload['payment']['entity']['id']) === true))
+        {
+            $eventTrace['event']['payment_id'] = $event->payload['payment']['entity']['id'];
+        }
+
+
+        $this->trace->info(TraceCode::STORK_BUILD_EVENT_PAYLOAD_DEBUG_LOG, $eventTrace);
+        return $eventTrace;
+    }
+
+
+
+    private function setContextForEntityForWebhook(string $merchantId, string $entityType, string $entityId, string $eventName): void
+    {
+        $isExperimentEnabled = (new PartnerCore())->isTransactionIsolationExpEnabledForSubmerchant($merchantId, $eventName);
+
+        $this->trace->debug(TraceCode::TRANSACTION_ISOLATION_EXPERIMENT_ENABLED_FOR_WEBHOOK, [
+            'is_experiment_enabled' => $isExperimentEnabled,
+            'merchant_id'           => $merchantId,
+        ]);
+
+        if ($isExperimentEnabled) {
+            $this->context = [
+                'id'          => $entityId,
+                'entity_type' => $entityType,
+                'event_type'  => 'partnership'
+            ];
+        }
+    }
+
+
+    protected function createEventEntityForWebhook(Payment\Entity $payment,array $payload,Merchant\Entity $merchant, string $eventName): Event\Entity
+    {
+        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
+
+        $attributes = array(
+            Event\Entity::EVENT      => $eventName,
+            Event\Entity::CONTEXT    => $this->context,
+            Event\Entity::ACCOUNT_ID => $signedAccountId,
+            Event\Entity::CONTAINS   => array_keys($payload),
+            Event\Entity::CREATED_AT => $payment->getUpdatedAt(),
+        );
+
+        $event = new Event\Entity($attributes);
+        $event->generateId();
+
+        $event->setPayload($payload);
+
+        $event->merchant()->associate($merchant);
+
+        return $event;
     }
 
     protected function appendMetadataForPayment(array & $input)
