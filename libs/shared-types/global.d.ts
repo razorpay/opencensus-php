@@ -49,6 +49,8 @@ declare global {
     PP_ECOMMERCE_URL: string;
     INSIGHTS_SUPERSET_URL: string;
     EASY_ONBOARDING_URL: string;
+    EASY_DASHBOARD_CURLEC_URL: string;
+    EASY_DASHBOARD_SG_URL: string;
     RAZORPAY_WEBSITE: string;
     STREAKS_REWARDS?: string;
     ONE_DASHBOARD?: boolean;

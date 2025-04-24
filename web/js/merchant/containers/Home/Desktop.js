@@ -122,9 +122,9 @@ const RazorpayRewind = lazy(() =>
 );
 
 const ReKycStatusBanner = lazy(() =>
-  import(/* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts').then(
-    (module) => ({ default: module.ReKycStatusBanner }),
-  ),
+  import(
+    /* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts'
+  ).then((module) => ({ default: module.ReKycStatusBanner })),
 );
 
 class AnalyticsDesktop extends Component {
@@ -487,7 +487,6 @@ class AnalyticsDesktop extends Component {
       data: { items },
     } = lateAuthConfig;
 
-    const { abExperiments: { CURLEC_M2_BANNER } = {} } = splitz;
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
 
@@ -559,10 +558,7 @@ class AnalyticsDesktop extends Component {
     return (
       <div className="home-analytics-desktop">
         <PricingSubscriptionWrapper />
-        {user.activation_form_milestone === 'L1' &&
-        user.isOrgCurlec &&
-        isExperimentActive(CURLEC_M2_BANNER) ? (
-          // curlec onboarding banner
+        {['MY', 'SG'].includes(user.country_code) ? (
           <Announcement
             mode={mode}
             user={user}

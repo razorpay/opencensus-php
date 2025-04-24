@@ -20,7 +20,7 @@ import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
+import { getNCUrlOnEasyOrPhantom, getCountryOnboardingUrl } from 'merchant/utils/urls';
 import { compose } from 'redux';
 
 class InstantActivationAnnouncements extends Component {
@@ -104,7 +104,7 @@ class InstantActivationAnnouncements extends Component {
 
     const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
-    if (user?.isOrgCurlec && !user?.merchant?.activated) {
+    if (['MY', 'SG'].includes(user?.country_code) && !user?.merchant?.activated) {
       theme = 'warning';
       title = 'Complete KYC details';
       content = (
@@ -114,7 +114,10 @@ class InstantActivationAnnouncements extends Component {
             payments{' '}
           </div>
           <div className="big-circle-seprator" />
-          <Link to={window.EASY_DASHBOARD_CURLEC_URL} onClick={() => this.sendL2StartEvent()}>
+          <Link
+            to={getCountryOnboardingUrl(user?.country_code)}
+            onClick={() => this.sendL2StartEvent()}
+          >
             Complete KYC
           </Link>
         </div>
