@@ -966,7 +966,7 @@ class Validator extends Base\Validator
         Header::CUSTOMER_MIGRATION_MOBILE_NUMBER            => 'sometimes|nullable|string',
         Header::CUSTOMER_MIGRATION_MERCHANT_ID             => 'sometimes|nullable|string',
     ];
-    
+
 
     protected static $sendMailRules = [
         Entity::BATCH            => 'required|array|custom',
@@ -3372,7 +3372,7 @@ class Validator extends Base\Validator
     public function validateTokenContinuityEntries(array &$entries, array $params, ME $merchant)
     {
         foreach ($entries as $entry) {
-            $this->validateInput('tokenContinuityTypeRowRules', $entry);;
+            $this->validateInput('tokenContinuityTypeRow', $entry);;
         }
     }
 
