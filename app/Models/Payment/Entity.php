@@ -7960,7 +7960,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getFeeInMcc()
     {
         $app = \App::getFacadeRoot();
-        
+
         $fee = 0;
 
         if ($this->getCurrency() === Currency\Currency::INR)
@@ -8005,8 +8005,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
-        $denominationFactorToCurrency = Currency\Currency::DENOMINATION_FACTOR[Currency\Currency::INR];
-        $denominationFactorFromCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getCurrency()];
+        $denominationFactorFromCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->merchant->getCurrency()];
+        $denominationFactorToCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getCurrency()];
         $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
         $convertedFee = ((float)$this->getFee() / $forexRate) * $denominationFactor;
 
