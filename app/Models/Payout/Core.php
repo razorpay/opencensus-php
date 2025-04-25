@@ -7944,11 +7944,25 @@ class Core extends Base\Core
                                 if (in_array($beneBankIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true)
                                 {
                                     unset($eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc]);
+
+                                    $this->trace->gauge(Metric::BENE_BANK_UP_REDIS_KEY_UNSET, time(),
+                                        [
+                                            'bene_code' => $beneBankIfsc,
+                                            'downtime_id' => $input['payload']['id'],
+                                        ]
+                                    );
                                 }
                             }
                             else
                             {
                                 $eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc] = array('status' => $status);
+
+                                $this->trace->gauge(METRIC::BENE_BANK_DOWN_REDIS_KEY_SET, time(),
+                                    [
+                                        'bene_code' => $beneBankIfsc,
+                                        'downtime_id' => $input['payload']['id'],
+                                    ]
+                                );
                             }
 
                             (new Admin\Service)->setConfigKeys(
@@ -11955,7 +11969,7 @@ class Core extends Base\Core
         {
             $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
                 $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
-            
+
             $validLiteAccounts = count($liteBalances);
         }
 

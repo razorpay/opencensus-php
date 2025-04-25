@@ -158,6 +158,10 @@ final class Metric
     const FUND_LOADING_VA_CALLBACK = 'fund_loading_va_callback';
     const FUND_LOADING_VA_CALLBACK_FAILURE = 'fund_loading_va_callback_failure';
 
+    //Gauge Metrics
+    const BENE_BANK_UP_REDIS_KEY_UNSET = 'bene_bank_up_redis_key_unset';
+    const BENE_BANK_DOWN_REDIS_KEY_SET = 'bene_bank_down_redis_key_set';
+
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {
