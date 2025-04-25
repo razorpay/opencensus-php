@@ -54,6 +54,10 @@ class Cors
             'url_config'    => 'app.rzp_website_url'
         ],
 
+        'smart_assist_domain' => [
+            'url_config'    => 'app.smart_assist_url'
+        ],
+
         'next_rzp_domain'   => [
             'url_config'    => 'app.next_rzp_url'
         ],

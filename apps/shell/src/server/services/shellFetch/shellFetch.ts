@@ -14,7 +14,7 @@ import { PROM_HISTOGRAM_API_TIME_IN_SEC_BUCKETS } from '../promMetrics/utils';
 import { INSTANCE_TYPE } from '@apps/shell/src/env';
 
 /**
- * Reverses the SHELL_EXTERNAL_API_ROUTES for quick lookup
+ * Reverses the SHELL_EXTERNAL_API_ROUTES for quick lookup.
  */
 const REVERSED_API_ROUTE_MAP: Record<string, keyof typeof SHELL_EXTERNAL_API_ROUTES> =
   Object.entries(SHELL_EXTERNAL_API_ROUTES).reduce((acc, [key, path]) => {

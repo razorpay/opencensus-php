@@ -279,6 +279,7 @@ return array(
     'ezetap_base_url'     => env('EZETAP_BASE_URL'),
 
     'rzp_website_url'     => env('RZP_WEBSITE_URL'),
+    'smart_assist_url'    => env('SMART_ASSIST_URL'),
     'next_rzp_url'        => env('NEXT_WEBSITE_URL'),
     'static_web_url'      => env('STATIC_WEBSITE_URL'),
     'easy_onboarding_url' => env('EASY_ONBOARDING_URL'),
