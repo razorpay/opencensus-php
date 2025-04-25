@@ -68,8 +68,6 @@ class PGRouter
 
     const PGRouterFetchPayment = 'v1/payments/';
 
-    const PGRouterInternalFetchPayment = 'v1/internal/payments/';
-
     const PGRouterFetchCard    = 'v1/cards/';
 
     const PGRouterInitiatePayment = 'v1/payments/initiate';
@@ -147,6 +145,7 @@ class PGRouter
         Requests::GET.'_'.self::PGRouterPaymentCancel               => false,
         Requests::GET.'_'.self::PGRouterPaymentVerify               => false,
         Requests::GET.'_'.self::PGRouterFetchCard                   => false,
+        Requests::GET.'_'.self::PGRouterFetchOrderPayments          => false,
         Requests::GET.'_'.self::PGRouterFetchPayment                => false,
         Requests::GET.'_'.self::PGRouterFetchOrder                  => false,
         Requests::PATCH.'_'.self::PGRouterFetchOrder                => false,
@@ -566,14 +565,14 @@ class PGRouter
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
-
-        $endpoint = 'v1/internal/payments/' . $id;
-        $this->currentEndPoint = self::PGRouterInternalFetchPayment;
+        $endpoint = 'v1/payments/' . $id;
 
         if (empty($merchantId) === false)
         {
             $endpoint .= '?merchant_id='.$merchantId;
         }
+
+        $this->currentEndPoint = self::PGRouterFetchPayment;
 
         $card = null;
         $emiPlan = null;

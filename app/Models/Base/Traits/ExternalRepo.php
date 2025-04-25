@@ -5,7 +5,6 @@ namespace RZP\Models\Base\Traits;
 use App;
 use RZP\Constants\Metric;
 use RZP\Exception;
-use RZP\Http\RequestHeader;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -286,17 +285,13 @@ trait ExternalRepo
 
     public function findOrFailByPublicIdWithParams($id, array $params, string $connectionType = null): PublicEntity
     {
-        $app = App::getFacadeRoot();
         $this->entityName = $this->entity;
 
         if ($this->entity === Entity::PAYMENT)
         {
             try
             {
-                $request = $app['request'];
-                $isApiPaymentFetchRequest = $request->headers->get(RequestHeader::X_PG_ROUTER_API_PAYMENT);
-
-                if ($this->validateExternalFetchEnabled() === true and $isApiPaymentFetchRequest !== "true")
+                if ($this->validateExternalFetchEnabled() === true)
                 {
                     return $this->fetchExternalEntity($id, "", $params);
                 }
