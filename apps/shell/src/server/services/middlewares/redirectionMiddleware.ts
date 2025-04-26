@@ -17,10 +17,13 @@ export const redirectionMiddleware: RedirectionMiddleware =
     const dashboardBackendBaseUrl = getPhpBaseUrl(req);
     let dashboardBackendRequestId: any;
 
-    return await shellFetch(`${dashboardBackendBaseUrl}${SHELL_EXTERNAL_API_ROUTES.SHELL_REDIRECT}`, {
-      method: 'GET',
-      headers: getMandatoryHeaders(req) as unknown as HeadersInit,
-    })
+    return await shellFetch(
+      `${dashboardBackendBaseUrl}${SHELL_EXTERNAL_API_ROUTES.SHELL_REDIRECT}`,
+      {
+        method: 'GET',
+        headers: getMandatoryHeaders(req) as unknown as HeadersInit,
+      },
+    )
       .then((response) => {
         const setCookiesForRedirection = response.headers.raw()['set-cookie'];
         dashboardBackendRequestId = response.headers.get('x-request-id');

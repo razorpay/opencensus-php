@@ -117,7 +117,9 @@ async function trackBodyConsumption<T>(
         ? 'network'
         : 'unknown';
 
-    shellFetchErrorCounter.labels(context.method, context.apiRouteKey, errorType, INSTANCE_TYPE).inc();
+    shellFetchErrorCounter
+      .labels(context.method, context.apiRouteKey, errorType, INSTANCE_TYPE)
+      .inc();
 
     shellFetchTotalTimeHistogram
       .labels(context.method, context.apiRouteKey, context.status, INSTANCE_TYPE)
@@ -207,7 +209,7 @@ export async function shellFetch(url: string, options: RequestInit = {}): Promis
     shellFetchErrorCounter.labels(method, apiRouteKey, errorType, INSTANCE_TYPE).inc();
 
     shellFetchResponseTimeHistogram
-      .labels(method, apiRouteKey, 'error')
+      .labels(method, apiRouteKey, 'error', INSTANCE_TYPE)
       .observe(errorDuration[0] + errorDuration[1] / 1e9);
 
     throw error;

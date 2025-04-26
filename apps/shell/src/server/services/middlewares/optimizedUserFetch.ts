@@ -21,10 +21,13 @@ export const optimizedUserFetchMiddleware: OptimizedUserFetchMiddleware =
     let dashboardBackendRequestId: any;
 
     // &payouts=0&credits=0
-    return await shellFetch(`${dashboardBackendBaseUrl}${SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED}`, {
-      method: 'GET',
-      headers: getMandatoryHeaders(req) as unknown as HeadersInit,
-    })
+    return await shellFetch(
+      `${dashboardBackendBaseUrl}${SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED}`,
+      {
+        method: 'GET',
+        headers: getMandatoryHeaders(req) as unknown as HeadersInit,
+      },
+    )
       .then((response) => {
         const setCookies = response.headers.raw()['set-cookie'];
         dashboardBackendRequestId = response.headers.get('x-request-id');
