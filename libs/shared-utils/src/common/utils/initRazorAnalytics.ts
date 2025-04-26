@@ -15,7 +15,6 @@ export const initRazorAnalytics = ({ product, user }: {
 
       // Initialize RazorAnalytics will happen once as it is guarded in SDK
       window.razorAnalytics?.init?.({
-        coreVersion: '13.2.11',
         plugins: [lumberjack?.({
           // since type of 'APP_ENV' is string, we are using ternary check instead of assigning 'APP_ENV' value directly to 'environment' to avoid TS error
           environment: isProd ? 'production' : 'staging',

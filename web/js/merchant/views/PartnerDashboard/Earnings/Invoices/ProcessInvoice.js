@@ -6,11 +6,21 @@ import { updateCommissionInvoiceDetail } from 'merchant/reducers/commissionInvoi
 import { updateCommissionInvoiceInList } from 'merchant/reducers/commissionInvoices/list';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { initRazorAnalytics } from '@libs/shared-utils';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
 
 class ProcessInvoice extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
+
+  componentDidMount() {
+    initRazorAnalytics({ product: DASHBOARD_TEAMS.PARTNERSHIP, user: this.props.user });
+  }
+
+  componentWillUnmount() {
+    window.razorAnalytics?.disableTracking?.();
+  }
 
   processCommissionInvoice = (commissionInvoice) => {
     const url = `commissions/invoice/${commissionInvoice.id}`;
@@ -34,6 +44,9 @@ class ProcessInvoice extends Component {
       action: async () => {
         const resp = await this.processCommissionInvoice(this.props.commissionInvoice);
         if (resp.success) {
+          window.razorAnalytics?.trackStepEvent?.({
+            eventName: 'process_invoice_initiated',
+          });
           const updatedCommInvoice = {
             ...this.props.commissionInvoice,
             status: 'under_review',
@@ -49,6 +62,9 @@ class ProcessInvoice extends Component {
             type: 'error',
             message: 'Could not submit request to process invoice.',
           });
+          window.razorAnalytics?.trackErrorResponse?.({
+            eventName: 'process_invoice_initiation_failed',
+          });
         }
       },
       abort: () => {},
@@ -60,6 +76,7 @@ class ProcessInvoice extends Component {
       <button
         className={`btn btn-primary ${this.props.className || ''}`}
         onClick={this.handleProcessInvoice}
+        data-analytics-name="process_invoice"
       >
         Process Invoice
       </button>
@@ -67,8 +84,13 @@ class ProcessInvoice extends Component {
   }
 }
 
-export default connect(null, {
-  updateCommissionInvoiceInList,
-  updateCommissionInvoiceDetail,
-  showNotification,
-})(ProcessInvoice);
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {
+    updateCommissionInvoiceInList,
+    updateCommissionInvoiceDetail,
+    showNotification,
+  },
+)(ProcessInvoice);
