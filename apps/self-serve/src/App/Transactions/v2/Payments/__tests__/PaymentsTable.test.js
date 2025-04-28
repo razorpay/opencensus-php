@@ -26,6 +26,27 @@ describe('PaymentsTable', () => {
     });
   });
 
+  test('Should render correct columns for desktop for VAS org', () => {
+    const items = mockFetchPaymentItems();
+    renderApp({ items, isVASOrg: true });
+    [
+      'Payment ID',
+      'POS Order ID',
+      'Bank RRN',
+      'Customer detail',
+      'Created on',
+      'Amount',
+      'Status',
+      'Actions',
+    ].forEach((column) => {
+      expect(
+        screen.getByRole('columnheader', {
+          name: column,
+        }),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('source channel', () => {
     test('should show source channel when user is omni', () => {
       const items = mockFetchPaymentItems();

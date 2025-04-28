@@ -34,12 +34,11 @@ export const happyFlowProps = {
     vpa: null,
     email: 'qa.testing@razorpay.com',
     contact: '+918888888888',
-    notes: [
-      {
-        Test: true,
-        name: 'Aakash',
-      },
-    ],
+    notes: {
+      Test: true,
+      name: 'Aakash',
+      external_ref_id1: '12345678901234',
+    },
     fee: 200,
     tax: 0,
     error_code: null,

@@ -7,7 +7,7 @@ import store from 'merchant/store';
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
 import PaymentDetailsSection from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentDetailsSection';
 import { happyFlowProps } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/__tests__/mocks/fixtures/PaymentDetailsSection';
-import { render, screen, fireEvent, waitFor, userEvent } from 'test-utils';
+import { render, screen, fireEvent, waitFor, userEvent, within } from 'test-utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { fetchBouncememo } from 'merchant/views/Transactions/v1/Payments/BounceMemo.types';
 
@@ -86,10 +86,37 @@ describe('Payment Details Section component', () => {
     });
 
     test('should render Order Id', () => {
+      const globalState = store.getState();
+      const user = globalState.session.user;
+      jest.spyOn(user, 'isVASOrg', 'get').mockReturnValue(false);
+      
       render(<App props={happyFlowProps} />);
 
       expect(screen.getByText('Order ID')).toBeInTheDocument();
       expect(screen.getByText(`${happyFlowProps.paymentDetails.order_id}`)).toBeInTheDocument();
+    });
+
+    test('should render POS Order ID when VAS org feature flag is enabled', () => {
+      const globalState = store.getState();
+      const user = globalState.session.user;
+      jest.spyOn(user, 'isVASOrg', 'get').mockReturnValue(true);
+      
+      render(<App props={happyFlowProps} />);
+      
+      const posOrderIdLabel = screen.getByText("POS Order ID");
+      const posOrderIdValue = happyFlowProps.paymentDetails.notes.external_ref_id1;
+      expect(posOrderIdLabel).toBeInTheDocument();
+      
+      const container = posOrderIdLabel.closest('[class*="RowWrapper"]') || 
+                       posOrderIdLabel.parentElement.closest('div');
+      
+      if (container) {
+        const value = within(container).getByText(posOrderIdValue);
+        expect(value).toBeInTheDocument();
+      } else {
+        const allMatches = screen.queryAllByText(posOrderIdValue);
+        expect(allMatches.length).toBeGreaterThanOrEqual(2);
+      }
     });
 
     test('should render Fee bearer', () => {

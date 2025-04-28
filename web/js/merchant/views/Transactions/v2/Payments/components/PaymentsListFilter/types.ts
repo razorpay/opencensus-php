@@ -111,4 +111,5 @@ export interface DesktopColumns {
   selectedColumnsList: string[];
   shouldDisplayOptimizerColumn: boolean;
   isJnKOmniEnabled: boolean;
+  isVASOrg: boolean;
 }

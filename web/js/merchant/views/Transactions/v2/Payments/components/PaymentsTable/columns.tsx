@@ -372,6 +372,33 @@ export const getMobileColumns = (
   return mobileColumns;
 };
 
+export const posOrderId = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      POS Order ID
+    </Text>
+  ),
+  value: (item: Item): JSX.Element => {
+    const external_ref_id1 = item.notes?.external_ref_id1;
+    return (
+      <Box display="flex" testID="external-ref-id1" columnGap="spacing.2">
+        <Text>{external_ref_id1 || '--'}</Text>
+      </Box>
+    );
+  },
+};
+
+export const vasDesktopColumns = [
+  paymentId,
+  posOrderId,
+  bankRRN,
+  customerDetail,
+  createdOn,
+  amount,
+  status,
+  actions,
+];
+
 export const desktopColumns = [
   paymentId,
   bankRRN,
@@ -401,6 +428,7 @@ export const getDesktopColumns = ({
   selectedColumnsList,
   shouldDisplayOptimizerColumn,
   isJnKOmniEnabled,
+  isVASOrg,
 }: DesktopColumns) => {
   const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
   let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
@@ -427,6 +455,10 @@ export const getDesktopColumns = ({
       selectedColumnsList,
       true,
     );
+  }
+
+  if (isVASOrg) {
+    return vasDesktopColumns;
   }
 
   return updatedDesktopColumns;

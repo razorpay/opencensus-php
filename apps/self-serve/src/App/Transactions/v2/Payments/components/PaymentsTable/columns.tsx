@@ -225,11 +225,39 @@ export const desktopColumns = [
   actions,
 ];
 
+export const posOrderId = {
+  title: (
+    <Text size="medium" weight="semibold" color="surface.text.gray.normal">
+      POS Order ID
+    </Text>
+  ),
+  value: (item: Item): JSX.Element => {
+    const external_ref_id1 = item.notes?.external_ref_id1;
+    return (
+      <Box display="flex" testID="external-ref-id1" columnGap="spacing.2">
+        <Text>{external_ref_id1 || '--'}</Text>
+      </Box>
+    );
+  },
+};
+
+export const vasDesktopColumns = [
+  paymentId,
+  posOrderId,
+  bankRRN,
+  customerDetail,
+  createdOn,
+  amount,
+  status,
+  actions,
+];
+
 export const getDesktopColumns = (
   isOmniView: boolean,
   shouldShowCustomTransactionTabView: boolean,
   selectedColumnsList: string[],
   shouldDisplayOptimizerColumn: boolean,
+  isVASOrg: boolean,
 ) => {
   let updatedDesktopColumns = desktopColumns;
   if (isOmniView) {
@@ -244,6 +272,10 @@ export const getDesktopColumns = (
 
   if (shouldShowCustomTransactionTabView) {
     updatedDesktopColumns = createCustomColumnView(updatedDesktopColumns, selectedColumnsList);
+  }
+
+  if (isVASOrg) {
+    return vasDesktopColumns;
   }
 
   return updatedDesktopColumns;

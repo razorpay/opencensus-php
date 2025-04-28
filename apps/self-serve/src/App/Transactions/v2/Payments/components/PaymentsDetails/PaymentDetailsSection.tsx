@@ -110,7 +110,7 @@ function PaymentDetailsSection({
   const {
     id,
     acquirer_data = {},
-    notes,
+    notes = {},
     order_id,
     card,
     contact,
@@ -136,6 +136,8 @@ function PaymentDetailsSection({
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&
     (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
+
+  const posOrderId = notes?.external_ref_id1 || null;
 
   const onDownloadClick = async (e) => {
     e.stopPropagation();
@@ -230,6 +232,18 @@ function PaymentDetailsSection({
                   tooltipType="bankRRN"
                 />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                {user?.isVASOrg && posOrderId ? (
+                  <DetailRow
+                    label="POS Order ID"
+                    data-testid="pos-order-id-row"
+                    value={posOrderId}
+                    copyable
+                    onCopyAction={onCopy('POS Order ID', { transactionIDActual }).bind(
+                      null,
+                      posOrderId,
+                    )}
+                  />
+                ) : (
                 <DetailRow
                   label="Order ID"
                   value={order_id || '--'}
@@ -240,6 +254,7 @@ function PaymentDetailsSection({
                     order_id,
                   )}
                 />
+                )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Invoice ID"

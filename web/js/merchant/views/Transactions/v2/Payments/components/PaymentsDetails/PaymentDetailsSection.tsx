@@ -171,7 +171,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const {
     id,
     acquirer_data = {},
-    notes,
+    notes = {},
     order_id,
     card,
     contact,
@@ -218,6 +218,8 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const isOmniChannelMerchant = isPosTransaction(source_channel) && _isOmniChannelMerchant(user);
 
   const bankReferenceNumber = bankTransfer?.details?.bank_reference;
+
+  const posOrderId = notes?.external_ref_id1 || null;
 
   const isBounceMemoDownloadEnabled = isBounceMemoSingleTransactionEnabled(splitz);
 
@@ -388,6 +390,18 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                   tooltipType="bankRRN"
                 />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
+                {user?.isVASOrg && posOrderId ? (
+                  <DetailRow
+                    label="POS Order ID"
+                    data-testid="pos-order-id-row"
+                    value={posOrderId}
+                    copyable
+                    onCopyAction={onCopy('POS Order ID', { transactionIDActual }).bind(
+                      null,
+                      posOrderId,
+                    )}
+                  />
+                ) : (
                 <DetailRow
                   label="Order ID"
                   value={
@@ -409,6 +423,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     order_id,
                   )}
                 />
+                )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Invoice ID"

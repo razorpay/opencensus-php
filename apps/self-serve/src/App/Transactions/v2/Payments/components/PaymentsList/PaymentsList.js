@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import { withZustand } from '@federated/apps/shell/commonStore';
-import ListContainer from 'apps/self-serve/src/legacy/containers/ListContainer';
 import { bindActionCreators, compose } from 'redux';
 import { Box, Link, SettingsIcon } from '@razorpay/blade/components';
 import { SpiltzContext } from '@federated/dashboards/payments/services/splitzService';
@@ -14,6 +13,7 @@ import {
   OPTIONAL_COLUMNS_TRANSACTIONS_V2,
 } from './constants';
 import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
+import ListContainer from 'apps/self-serve/src/legacy/containers/ListContainer';
 import { fetchTerminalProviders } from 'apps/self-serve/src/bootstrap/Store/reducers/navigatorReducer';
 import { fetchPayments as fetchAll } from 'apps/self-serve/src/bootstrap/Store/reducers/paymentsReducer';
 import PaymentsListFilter from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter';
@@ -120,6 +120,7 @@ class PaymentsList extends ListContainer {
           isCustomTransactionTabView,
           isSingleReconEnabled,
           isOptimizerEnabled,
+          isVASOrg,
         },
       },
     } = store;
@@ -165,6 +166,7 @@ class PaymentsList extends ListContainer {
           }
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
+          isVASOrg={isVASOrg}
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
           onRowClick={({ id, paymentMethod, sourceChannel }) =>

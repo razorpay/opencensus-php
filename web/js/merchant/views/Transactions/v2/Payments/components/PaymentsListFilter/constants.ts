@@ -88,6 +88,7 @@ export const searchByOptionsMap = {
         notes: 'Notes',
       }),
   ...(user?.isRRNSearchEnabled || user?.isJnKOmniEnabled ? { rrn: 'Payment Reference Number' } : {}),
+  ...(user?.isVASOrg ? { pos_order_id: 'POS Order ID' } : {}),
 };
 
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);

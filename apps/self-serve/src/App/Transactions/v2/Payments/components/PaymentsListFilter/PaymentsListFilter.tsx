@@ -125,7 +125,7 @@ const PaymentsListFilter = ({
       ...newSearchParams,
     };
     if (searchByValue) {
-      searchParams[searchBy] = searchByValue;
+      searchParams[searchBy === SearchQueryParam.POS_ORDER_ID ? SearchQueryParam.NOTES : searchBy] = searchByValue;
     }
     onSubmit(searchParams);
   };

@@ -52,6 +52,18 @@ describe('Payment Details Section component', () => {
       expect(screen.getByText(`${happyFlowProps.paymentDetails.order_id}`)).toBeInTheDocument();
     });
 
+    test('should render POS Order ID when VAS org feature flag is enabled', () => {
+      render(<App props={happyFlowProps} />, {
+        initialState: { session: { user: { isVASOrg: true } } },
+      });
+
+      const posOrderRow = screen.getByTestId('pos-order-id-row');
+      expect(posOrderRow).toBeInTheDocument();
+      expect(
+        within(posOrderRow).getByText(`${happyFlowProps.paymentDetails.notes.external_ref_id1}`),
+      ).toBeInTheDocument();
+    });
+
     test('should render Fee bearer', () => {
       render(<App props={happyFlowProps} />);
 

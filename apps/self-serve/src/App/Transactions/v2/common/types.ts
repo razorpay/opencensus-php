@@ -26,6 +26,7 @@ export interface ListContainerProps<T> {
   isOmniView: boolean;
   shouldShowCustomTransactionTabView: boolean;
   selectedColumnsList: string[];
+  isVASOrg: boolean;
 }
 
 export interface Collection<T> {

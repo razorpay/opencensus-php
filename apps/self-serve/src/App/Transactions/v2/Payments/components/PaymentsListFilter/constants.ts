@@ -82,6 +82,7 @@ export const searchByOptionsMap = {
   id: 'Payment ID',
   notes: 'Notes',
   ...(user?.isRRNSearchEnabled ? { rrn: 'Payment Reference Number' } : null),
+  ...(user?.isVASOrg ? { pos_order_id: 'POS Order ID' } : {}),
 };
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);
 export const searchBySectionName = 'Search by';

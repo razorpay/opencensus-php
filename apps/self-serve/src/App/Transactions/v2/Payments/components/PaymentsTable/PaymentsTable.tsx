@@ -17,6 +17,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
     shouldShowCustomTransactionTabView,
     selectedColumnsList,
     shouldDisplayOptimizerColumn,
+    isVASOrg,
   } = props;
   const isMobile = useMobile(mobileBreakoints);
   const { user, app } = useStore((state) => ({ user: state.session.user, app: state.app }));
@@ -28,6 +29,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
         shouldShowCustomTransactionTabView,
         selectedColumnsList,
         shouldDisplayOptimizerColumn,
+        isVASOrg,
       );
 
   return (
