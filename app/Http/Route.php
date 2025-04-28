@@ -18676,6 +18676,7 @@ class Route
             'customer_fetch_by_id_internal',
             'internal_merchant_details_fetch',
             'pricing_fetch_plan',
+            'internal_merchant_fetch',
         ],
 
         'checkout_service' => [
