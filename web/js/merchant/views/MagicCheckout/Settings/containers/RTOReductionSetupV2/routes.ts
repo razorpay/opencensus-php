@@ -107,6 +107,7 @@ export const RTO_REDUCTION_ROUTES: PlatformSpecificRoutes = {
       path: '/magic/settings/rto-reduction-setup/allow-list',
       condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
       Component: AllowList,
+      onRCOD: true,
     },
     {
       label: 'Block List',
