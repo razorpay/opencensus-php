@@ -173,6 +173,8 @@ final class Constants
     const CREATE_OFFER_DUAL_WRITE_EXP = 'app.offers_engine_dual_write_experiment_id';
 
     const OFFERS_ENGINE_FETCH_EXP              = 'app.offers_engine_fetch_offers_exp_id';
+
+    const OE_VALIDATE_DUMMY_ORDER_EXP = 'app.oe_validate_dummy_order_exp_id';
     const OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP = 'app.offers_engine_admin_fetch_offers_exp_id';
 
     const OFFERS_ENGINE_VALIDATE_OFFER_EXP = 'app.offers_engine_validate_offer_exp_id';

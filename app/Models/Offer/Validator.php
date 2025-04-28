@@ -169,7 +169,7 @@ class Validator extends Base\Validator
         'card.number'                   => 'sometimes|min:6',
         'card.token'                    => 'sometimes',
         'offers'                        => 'required|array',
-        'order_id'                      => 'required|string',
+        'order_id'                      => 'sometimes|string',
     ];
 
     protected static $fetchOfferCreateInfoRules = [

@@ -689,7 +689,7 @@ return array(
     'checkout_netbanking_corporate_splitz_experiment_id' => env('CHECKOUT_NETBANKING_CORPORATE_SPLITZ_EXPERIMENT_ID'),
 
     'sync_orghostname_experiment' => env('SYNC_ORGHOSTNAME_EXPERIMENT'),
-    
+
     'gifu_custom_experiment' => env('GIFU_CUSTOM_EXPERIMENT'),
 
     'upi_rrn_search_experiment_id' => env('UPI_RRN_SEARCH_EXPERIMENT_ID'),
@@ -992,6 +992,8 @@ return array(
     'offers_engine_dual_write_experiment_id' => env('OFFERS_ENGINE_DUAL_WRITE_EXP_ID'),
 
     'offers_engine_fetch_offers_exp_id' => env('OFFERS_ENGINE_FETCH_OFFERS_EXP'),
+
+    'oe_validate_dummy_order_exp_id' => env('OE_VALIDATE_DUMMY_ORDER_EXP_ID'),
 
     'offers_engine_admin_fetch_offers_exp_id' => env('OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP'),
 
