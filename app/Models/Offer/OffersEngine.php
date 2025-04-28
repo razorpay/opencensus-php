@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Order\OrderMeta\CartInfo\Fields as CartInfoFields;
 
 class OffersEngine extends Base\Core
 {
@@ -1426,8 +1427,15 @@ class OffersEngine extends Base\Core
         // ORDER
         $fact[Constants::ORDER_FACT] = [
             Constants::ORDER_TOTAL_AMOUNT => $this->order->getAmount(),
-            Constants::ORDER_CURRENCY  => 'INR', // setting default INR as API offers does not have currency
+            Constants::ORDER_CURRENCY     => 'INR', // setting default INR as API offers does not have currency
+            Constants::ORDER_CREATED_AT   => $this->order->getCreatedAt(),
         ];
+
+        $skuData = $this->getSKUDataFromOrder();
+        if (!empty($skuData))
+        {
+            $fact[Constants::PRODUCT] = $skuData;
+        }
 
         $method = $this->payment->getMethod();
 
@@ -1545,5 +1553,86 @@ class OffersEngine extends Base\Core
         $core = new Core();
 
         return $core->getParValue($this->payment, $this->isDummyPayment);
+    }
+
+    public function validateOfferForOrder(string $merchantId, Order\Entity $order, String $offerId)
+    {
+        $this->order = $order;
+
+        try
+        {
+            $fact = $this->buildValidateFactForOrder();
+
+            $response = $this->app['offers_engine']->validateOffer($merchantId, [
+                'offer_id' => $offerId,
+                'fact' => $fact,
+                'stage' => Constants::STAGE_DISCOVER,
+            ]);
+            return $response;
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::OFFERS_ENGINE_VALIDATE_OFFER_FAIL,
+                [
+                    'offer_id' => $offerId,
+                    'order_id' => $order->getId(),
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
+
+            $this->trace->traceException(
+                $exception,
+                Logger::ERROR,
+                TraceCode::OFFERS_ENGINE_VALIDATE_OFFER_FAIL, [
+                'exception' => $exception->getMessage(),
+            ]);
+
+            throw new Exception\ServerErrorException(
+                'Unable to process this request.', ErrorCode::SERVER_ERROR);
+        }
+    }
+
+    private function buildValidateFactForOrder(): array
+    {
+        $fact = array();
+
+        // ORDER
+        $fact[Constants::ORDER_FACT] = [
+            Constants::ORDER_TOTAL_AMOUNT => $this->order->getAmount(),
+            Constants::ORDER_CURRENCY     => 'INR', // setting default INR as API offers does not have currency
+            Constants::ORDER_CREATED_AT   => $this->order->getCreatedAt(),
+        ];
+
+        $fact[Constants::CUSTOMER_FACT] = [
+            Constants::CARD_NUMBER => Constants::DUMMY_PAYMENT_CARD_NUMBER
+        ];
+
+        $skuData = $this->getSKUDataFromOrder();
+        if (!empty($skuData))
+        {
+            $fact[Constants::PRODUCT] = $skuData;
+        }
+
+        return $fact;
+    }
+
+    private function getSKUDataFromOrder(): array
+    {
+        $skuData = [];
+        if ($this->order != null)
+        {
+            foreach ($this->order[CartInfoFields::ORDER_METAS] as $orderMeta)
+            {
+                if ($orderMeta[CartInfoFields::TYPE] !== CartInfoFields::CART_INFO)
+                {
+                    continue;
+                }
+                $skuData = [
+                    CartInfoFields::SKU_ID => $orderMeta[CartInfoFields::VALUE][CartInfoFields::LINE_ITEMS][0][CartInfoFields::LINE_ITEM_SKU] ?? null,
+                    CartInfoFields::SKU_PRICE => $orderMeta[CartInfoFields::VALUE][CartInfoFields::LINE_ITEMS][0][CartInfoFields::LINE_ITEM_PRICE] ?? null,
+                ];
+                break;
+            }
+        }
+        return $skuData;
     }
 }

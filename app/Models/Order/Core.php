@@ -1231,47 +1231,68 @@ class Core extends Base\Core
 
         if (isset($input[Entity::OFFERS]) === true)
         {
+            $this->trace->info(TraceCode::OFFER_VALIDATION_LOGGER, [
+                'offers_to_validate' => count(array_unique($input[Entity::OFFERS]))
+            ]);
+
             $orderFailureResult = null;
 
-            foreach (array_unique($input[Entity::OFFERS]) as $offerId)
+            $isValidationViaOEEnabled = $this->shouldValidateOfferForOrderViaOE($merchant);
+
+            if (($isValidationViaOEEnabled === true) and
+                (count(array_unique($input[Entity::OFFERS])) === 1))
             {
-                $offer = null;
+                $resp = $offerCore->fetchAndValidateOfferForOrderOnOffersEngine(
+                    $order, $merchant, array_unique($input[Entity::OFFERS])[0]);
 
-                try
-                {
-                    $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
-                }
-                catch (\Exception $e)
-                {
-                    if ($orderFailureResult === null)
-                    {
-                        $orderFailureResult = $this->skipOrderOfferFailure($merchant);
+                $offer = $resp[Offer\Constants::OFFER];
 
-                        $this->trace->info(
-                            TraceCode::ORDER_OFFER_FAILURE_SKIP,
-                            [
-                                'order_id' => $order->getId(),
-                                'offer_id' => $offerId,
-                                'order_failure_experiment_result' => $orderFailureResult,
-                            ]
-                        );
-                    }
-
-                    if (!$orderFailureResult)
-                    {
-                        throw $e;
-                    }
-                }
-
-                // no need to fail the order in case offer is not valid for order
-                if ($offer === null)
-                {
-                    continue;
-                }
-
-                if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+                if ($order->isOfferForced() === true)
                 {
                     array_push($offers, $offer);
+                }
+            }
+            else
+            {
+                foreach (array_unique($input[Entity::OFFERS]) as $offerId)
+                {
+                    $offer = null;
+                    try
+                    {
+                        $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+                    }
+                    catch (\Exception $e)
+                    {
+                        if ($orderFailureResult === null)
+                        {
+                            $orderFailureResult = $this->skipOrderOfferFailure($merchant);
+
+                            $this->trace->info(
+                                TraceCode::ORDER_OFFER_FAILURE_SKIP,
+                                [
+                                    'order_id'                        => $order->getId(),
+                                    'offer_id'                        => $offerId,
+                                    'order_failure_experiment_result' => $orderFailureResult,
+                                ]
+                            );
+                        }
+
+                        if (!$orderFailureResult)
+                        {
+                            throw $e;
+                        }
+                    }
+
+                    // no need to fail the order in case offer is not valid for order
+                    if ($offer === null)
+                    {
+                        continue;
+                    }
+
+                    if (($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+                    {
+                        array_push($offers, $offer);
+                    }
                 }
             }
         }
@@ -1404,4 +1425,40 @@ class Core extends Base\Core
             $this->repo->saveOrFail($order);
         }
     }
+
+    public function shouldValidateOfferForOrderViaOE(Merchant\Entity $merchant): bool
+    {
+        $mode = 'enable';
+        $merchantID = $merchant->getId();
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.validate_offer_via_offer_engine_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::VALIDATE_OFFER_VIA_OFFER_ENGINE_SPLITZ_EXPERIMENT, [
+                'splitz_output' => $variant,
+                'response' => $response,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::VALIDATE_OFFER_VIA_OFFER_ENGINE_SPLITZ_ERROR, [
+                'merchant_id'   => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.validate_offer_via_offer_engine_exp_id_') ?? null,
+            ]);
+        }
+
+        return false;
+    }
+
 }

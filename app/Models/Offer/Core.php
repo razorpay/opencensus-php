@@ -1542,6 +1542,43 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchAndValidateOfferForOrderOnOffersEngine(Order\Entity $order, Merchant\Entity $merchant, String $offerId)
+    {
+        $offer = new Entity();
+        try
+        {
+            $oeResp = $this->offersEngine->validateOfferForOrder(
+                $merchant->getId(),
+                $order,
+                $offerId);
+
+            $offer->setAttribute(Entity::ID, Entity::verifyIdAndStripSign($oeResp['offer_id']));
+
+            $isOfferValidAtOE = isset($oeResp) === true && isset($oeResp['calculated_benefits']) === true;
+
+            if ($isOfferValidAtOE === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                    null);
+            }
+
+            return [
+                Constants::VALIDATE_OFFER_RESPONSE => $oeResp,
+                Constants::VALIDATE_OFFER_CALLED => true,
+                Constants::OFFER => $offer  // Dummy entity only containing offer_id
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            // do nothing
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                [
+                    'offer_id' => $offerId,
+                    'order_id' => $order->getPublicId(),
+                ]);
+        }
+    }
+
     public function extractCardIinForSavedCard($payment)
     {
 

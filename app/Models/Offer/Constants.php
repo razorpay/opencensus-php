@@ -255,4 +255,7 @@ final class Constants
 
     const IS_CARD_SAVED = 'is_saved';
 
+    const PRODUCT = "product";
+
+    const ORDER_CREATED_AT = 'created_at';
 }
