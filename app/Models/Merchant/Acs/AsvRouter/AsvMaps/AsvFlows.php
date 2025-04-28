@@ -65,6 +65,7 @@ final class AsvFlows
         'merchant_details_patch' => true,
         'merchant_document_upload' => true,
         'merchant_edit' => true,
+        'merchant_edit_config' => true,
         'merchant_edit_email_create_user' => true,
         'merchant_edit_pre_signup_details' => true,
         'merchant_gstin_self_serve_update' => true,
