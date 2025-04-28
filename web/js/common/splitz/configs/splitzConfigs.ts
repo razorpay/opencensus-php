@@ -2122,22 +2122,6 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
-        {
-          uniqueHashKey: 'merchant_kla_same_website_bypass',
-          experimentId: {
-            beta: 'OAjeLeTYDObyns',
-            production: 'QB7pMpxml8Mq7t',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
       ],
     },
     {

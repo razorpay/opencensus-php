@@ -9,7 +9,7 @@ import {
 } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
-
+import { autoPrefixUrls, isDuplicateWebsite } from 'common/utils/rzp-utils';
 import SuggestionsBox from './SuggestionsBox';
 import useModalComponents from '../hooks/useModalComponents';
 import {
@@ -55,6 +55,11 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
 }) => {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
   const [suggestionStep, setSuggestionStep] = useState(SuggestionSteps.POLICY_PAGES);
+  const [urlError, setUrlError] = useState('');
+
+  const alreadyAddedWebsites = [user.business_website, ...(user.additional_websites || [])].filter(
+    Boolean,
+  ) as string[];
 
   useEffect(() => {
     if (isOpen) {
@@ -92,12 +97,32 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
       setSuggestionStep(newSuggestionStep);
     }
 
+    let validationState = validators[name](value, formState)
+      ? ValidationState.NONE
+      : ValidationState.ERROR;
+
+    if (name === MainFormFields.URL) {
+      if (validationState === ValidationState.ERROR) {
+        setUrlError(
+          value?.startsWith('http:')
+            ? 'Please ensure your website is HTTPS compliant (https://)'
+            : 'Enter a valid website link',
+        );
+      } else if (isDuplicateWebsite(alreadyAddedWebsites, autoPrefixUrls(value, true))) {
+        validationState = ValidationState.ERROR;
+        setUrlError(`This ${formState.platform.value ?? 'website'} is already added`);
+      } else {
+        validationState = ValidationState.NONE;
+        setUrlError('');
+      }
+    }
+
     setFormState((formState) => {
       return {
         ...formState,
         [name]: {
           value,
-          valid: validators[name](value, formState) ? ValidationState.NONE : ValidationState.ERROR,
+          valid: validationState,
         },
       };
     });
@@ -134,11 +159,7 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
               type="url"
               validationState={formState.url.valid}
               value={formState.url.value}
-              errorText={
-                formState.url.value.startsWith('http:')
-                  ? 'Please ensure your website is HTTPS compliant (https://)'
-                  : 'Enter a valid website link'
-              }
+              errorText={urlError}
               onFocus={() => setSuggestionStep(SuggestionSteps.URL_FIELD)}
             />
             <RadioGroup

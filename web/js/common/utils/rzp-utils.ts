@@ -99,7 +99,6 @@ export const getFormattedAmountWithSymbol = (amount, currency: CurrencyCodeType 
 export const is2FaExperimentEnabled = (experimenets) =>
   experimenets?.enable_2fa_for_protected_flows?.variables.result === 'on';
 
-
 export const colors = ['primary', 'success', 'info', 'warn', 'danger'];
 
 export const paymentStatusColor = {
@@ -170,7 +169,6 @@ export const getEventCategoryFromPath = (pathname) => {
 export function getTableTemplateColumnsValue(...args) {
   return args.filter((value) => typeof value === 'string' && value !== '').join(' ') || undefined;
 }
-
 
 export const is2faRouteExperimentEnabled = (experimenets) =>
   experimenets?.two_fa_route?.variables.result === 'on';
@@ -356,5 +354,7 @@ export {
   getAmountFieldPlaceholder,
   shortenTextBasedOnDashboardAcronyms as shortenText,
   acronymsForShorteningText as acronyms,
-  isElementXPercentInViewport
+  isElementXPercentInViewport,
+  isDuplicateWebsite,
+  getCanonicalUrl,
 } from '@libs/shared-utils';

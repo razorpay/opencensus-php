@@ -38,7 +38,7 @@ export default function TicketBriefMessage(props) {
           </div>
         ) : (
           <div className="Ticket-Brief-Message-Status-Desc">
-            <i className="i i-clock ticket-message-icn" /> Response expected before{' '}
+            <i className="i i-clock ticket-message-icn" /> Response expected within{' '}
             <b>4-8 business hours</b>
           </div>
         )

@@ -192,8 +192,7 @@ describe('WebsiteSubmitModal', () => {
     await waitFor(() => {
       expect(showNotificationSpy).toHaveBeenCalledWith({
         type: 'error',
-        message:
-          'Provided URL is same as the existing business website Url. Please provide a different URL.',
+        message: 'This website is already added',
       });
     });
   });

@@ -20,7 +20,11 @@ import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-utils';
+import {
+  getCommonAnalyticsProperties,
+  autoPrefixUrls,
+  isDuplicateWebsite,
+} from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import FileUpload from 'merchant/components/File/Upload';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
@@ -557,29 +561,20 @@ function UpdateWebsiteDetails(props) {
       setisLinkValid(false);
       setErrorMessages((prev) => ({ ...prev, url: errorMessage }));
       return errorMessage;
-    } else {
-      setisLinkValid(true);
     }
-    if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) {
-      const { user } = props;
+    const { user } = props;
+    const alreadyAddedWebsites = [
+      user.business_website,
+      ...(user.additional_websites || []),
+    ].filter(Boolean);
 
-      // if additional website doesn't exits => Normal flow
-      if (!user.additional_websites) {
-        setErrorMessages((prev) => ({ ...prev, url: '' }));
-        return '';
-      } else {
-        // Additional websites exists, check if new website already exists
-        if (user.additional_websites.includes(input)) {
-          const errorMessage = 'You have already added this website';
-          setisLinkValid(false);
-          setErrorMessages((prev) => ({ ...prev, url: errorMessage }));
-          return errorMessage;
-        }
-        setisLinkValid(true);
-        setErrorMessages((prev) => ({ ...prev, url: '' }));
-        return '';
-      }
+    if (isDuplicateWebsite(alreadyAddedWebsites, autoPrefixUrls(input, true))) {
+      const errorMessage = `This ${type} is already added`;
+      setisLinkValid(false);
+      setErrorMessages((prev) => ({ ...prev, url: errorMessage }));
+      return errorMessage;
     }
+    setisLinkValid(true);
     setErrorMessages((prev) => ({ ...prev, url: '' }));
     return '';
   };

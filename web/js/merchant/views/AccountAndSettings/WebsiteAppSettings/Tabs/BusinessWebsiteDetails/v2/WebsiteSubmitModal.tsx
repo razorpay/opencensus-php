@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 
 import { useMobile } from 'common/hooks/useMobile';
 import { Environments, ShowNotificationType, User as UserType } from 'common/typings';
-import { isExperimentActive, noop } from 'common/utils/rzp-utils';
+import { noop } from 'common/utils/rzp-utils';
 import User from 'merchant/models/User';
 import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
@@ -56,7 +56,6 @@ import {
 } from './utils';
 import { getInitialPolicyPagesFormState } from './components/utils';
 import { defaultPolicyPageCreationFormField } from './components/constants';
-import { useSplitzService } from '@libs/web-nexus/common/splitz';
 import { usePolicyPagesDetails } from './hooks/usePolicyPagesDetails';
 
 interface WebsiteSubmitModalProps {
@@ -86,11 +85,6 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     usePolicyPagesDetails();
 
   const {
-    abExperiments: { merchant_kla_same_website_bypass },
-  } = useSplitzService();
-  const bypassSameWebsiteCheckForKLA = isExperimentActive(merchant_kla_same_website_bypass);
-
-  const {
     currentStep,
     setCurrentStep,
     websiteUpdateData: { main_page_url, website_verification_page_status } = {},
@@ -116,7 +110,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     }
   }, [missingPagesKeys]);
 
-  async function submitAppForActivated(formState) {
+  async function submitAppForActivated(formState: MainPageFormData) {
     try {
       await handleAppSubmitForActivated(formState);
       refetchData();
@@ -133,7 +127,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     }
   }
 
-  async function submitAppAndWebsiteForNonActivated(formState) {
+  async function submitAppAndWebsiteForNonActivated(formState: MainPageFormData) {
     try {
       const response = await handleAppAndWebsiteSubmitForNonActivated(formState);
       const newUser = new User({
@@ -187,7 +181,11 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       });
   };
 
-  const setNextStepForPolicyPages = ({ newPolicyPagesToBeMade }) => {
+  const setNextStepForPolicyPages = ({
+    newPolicyPagesToBeMade,
+  }: {
+    newPolicyPagesToBeMade: PartialPolicyPages;
+  }) => {
     setPolicyPagesToBeMade(newPolicyPagesToBeMade);
     if (
       newPolicyPagesToBeMade.length === 1 &&
@@ -199,19 +197,22 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     }
   };
 
-  const handleMainPageSubmit = async (formState) => {
+  const handleMainPageSubmit = async (formState: MainPageFormData) => {
     const {
       has_key_access: hasKeyAccess,
       business_website,
+      additional_websites,
       isActivated,
       activation_status: activationStatus,
     } = user;
     const isKLAMerchant = !Boolean(hasKeyAccess);
+    const alreadyAddedWebsites = [business_website, ...(additional_websites || [])].filter(
+      Boolean,
+    ) as string[];
     const [isInputValid, inputValidationError] = isMainPageSubmitPayloadValid({
       formState,
-      userBusinessWebsite: business_website,
+      userWebsites: alreadyAddedWebsites,
       isKLAMerchant,
-      bypassSameWebsiteCheckForKLA,
     });
     if (!isInputValid) {
       showNotification({

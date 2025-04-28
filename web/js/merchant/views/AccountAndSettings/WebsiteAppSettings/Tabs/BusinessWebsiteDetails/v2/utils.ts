@@ -1,5 +1,5 @@
 import { User } from 'common/typings';
-import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, isDuplicateWebsite } from 'common/utils/rzp-utils';
 import { isEmail, isPhoneNumberIndia, isValidWebsite } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
@@ -28,6 +28,7 @@ import {
   PartialPolicyPages,
   MainFormFields,
   SuggestionSteps,
+  MainPageFormData,
 } from './types';
 
 export const WEBSITE_UPDATE_API_BASE_URL =
@@ -243,23 +244,23 @@ export const policyPageFormCreationValidator = (
 
 export const isMainPageSubmitPayloadValid = ({
   formState,
-  userBusinessWebsite,
+  userWebsites,
   isKLAMerchant,
-  bypassSameWebsiteCheckForKLA,
+}: {
+  formState: MainPageFormData;
+  userWebsites: string[];
+  isKLAMerchant: boolean;
 }): [boolean, string] => {
   if (!mainPageFormValidator(formState)) {
     return [false, 'Please enter valid inputs.'];
   }
 
-  if (bypassSameWebsiteCheckForKLA && isKLAMerchant) {
+  if (isKLAMerchant) {
     return [true, ''];
   }
 
-  if (autoPrefixUrls(formState.url.value, true) === userBusinessWebsite) {
-    return [
-      false,
-      'Provided URL is same as the existing business website Url. Please provide a different URL.',
-    ];
+  if (isDuplicateWebsite(userWebsites, autoPrefixUrls(formState.url.value, true))) {
+    return [false, `This ${formState.platform.value ?? 'website'} is already added`];
   }
 
   return [true, ''];
