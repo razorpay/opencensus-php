@@ -79,6 +79,8 @@ class OffersEngine
 
     const ValidateOffer = 'v1/offers/validate';
 
+    const GetOfferBenefits = 'v1/offers/txn';
+
     // Offers Engine Actions for Tracing
     const CREATE_OFFER       = 'create_offer';
     const ADMIN_CREATE_OFFER = 'admin_create_offer';
@@ -911,5 +913,44 @@ class OffersEngine
             'offer_benefits' => $response['offer']['offer_benefits'][0],
             'calculated_benefits' => $response['offer']['calculated_benefits'][0],
         ];
+    }
+    public function getTotalDiscountApplied(string $offerId, string $paymentId, string $orderId)
+    {
+        $benefits = $this->getOfferBenefits($offerId, $paymentId, $orderId);
+        if (isset($benefits[Constants::BENEFIT_APPLIED]) === true) {
+            if(isset($benefits[Constants::BENEFIT_APPLIED][Constants::TOTAL_DISCOUNT])) {
+                return $benefits[Constants::BENEFIT_APPLIED][Constants::TOTAL_DISCOUNT];
+            }
+        }
+        return null;
+    }
+    public function getOfferBenefits(string $offerId, string $paymentId, string $orderId)
+    {
+        if (empty($offerId) === true || empty($paymentId) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, [
+                'offer_id' => $offerId,
+                'payment_id' => $paymentId,
+                'order_id' => $orderId
+            ]);
+        }
+
+        $endpoint = self::GetOfferBenefits . "?offer_id=$offerId&transaction_id=$paymentId&reference_id1=$orderId";
+        try {
+            $response = $this->sendRequest($endpoint, Requests::GET);
+            return $response;
+
+
+            return 0;
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::OFFERS_ENGINE_GET_OFFER_BENEFIT_FAIL, [
+                "operation" => "Get Benefits for Offer",
+                "offerId" => $offerId,
+                "transactionId" => $paymentId,
+                'orderId' => $orderId,
+            ]);
+
+            throw $e;
+        }
     }
 }

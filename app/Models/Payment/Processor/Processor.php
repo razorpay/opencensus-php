@@ -6493,10 +6493,9 @@ class Processor
      * @return bool
      * @throws Exception\ServerErrorException
      */
-    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer): bool
+    public function setOfferBenefitAndAvailOnOE(Payment\Entity $payment, $calculated_benefits, Offer\Entity $offer, $useCalculatedBenefits): bool
     {
-        // Fetch discounted amount from api for nc emi offers
-        if ($this->offer->isNoCostEmi()) {
+        if ($this->offer->isNoCostEmi() && !$useCalculatedBenefits) {
 
             if (!empty($calculated_benefits[Offer\Constants::NO_COST_EMI])) {
 
@@ -8563,6 +8562,10 @@ class Processor
         }
     }
 
+    private function isInstantOfferApplicable(): bool
+    {
+        return $this->offer !== null && $this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER;
+    }
     protected function modifyAmountForDiscountedOfferIfApplicable(Payment\Entity $payment, array & $input)
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
@@ -8582,71 +8585,66 @@ class Processor
             $this->offer = $offer;
         }
 
-        $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input);
+        try {
 
-        if ($valid === false)
-        {
-            $this->offer = null;
-        }
+            $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId()) ;
 
-        if ($valid and ($this->offer !== null) and
-            ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
-        {
-            $orderAmount = $this->order->getAmount();
+            $valid = $this->setOfferForPaymentFromOrderOrInput($payment, $input, $oeBenefitsExpEnabled);
 
-            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
+            if ($valid === false){
 
-            $payment->setAmount($discountedAmount);
+                $this->offer = null;
 
-            // Reverse shadow is always enabled for production environment
-            $isReverseShadowEnabled = !((app()->isEnvironmentQA() === true) or
-                                        (app()->runningUnitTests() === true));
-
-            if (isset($payment[Payment\Entity::OFFER_BENEFITS]))
-            {
-                $mismatch = $this->offer->checkDiscountMismatch($orderAmount - $discountedAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
-
-                // perform parity
-                if ($mismatch === true)
-                {
-                    $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
-                                        [
-                                            'offer_type'     => $this->offer->getOfferType(),
-                                            'emi_subvention' => $this->offer->getEmiSubvention(),
-                                            'route'          => app('api.route')->getCurrentRouteName(),
-                                        ]);
-
-                    $this->trace->info(
-                        TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
-                        [
-                            'API_DISCOUNT'    => $orderAmount - $discountedAmount,
-                            'OFFERS_DISCOUNT' => $payment->getAttribute(Payment\Entity::OFFER_BENEFITS),
-                        ]);
-
-                    if ($isReverseShadowEnabled)
-                    {
-                        throw new Exception\ServerErrorException(
-                            'Unable to process this request.', ErrorCode::BAD_REQUEST_OFFERS_ENGINE_DISCOUNT_MISMATCH);
-                    }
-                }
-                else if ($isReverseShadowEnabled)
-                {
-                    $discount = $this->offer->getDiscountAmountForPaymentFromOE(
-                        $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
-
-                    $payment->setAmount($orderAmount - $discount);
-                }
             }
 
-            //setting original order amount to input array to set back the original amount as payment
-            //amount in case of offer validation fails.
-            $input['order_amount'] = $orderAmount;
-        }
+            if (!$valid || !$this->isInstantOfferApplicable()) {
 
-        unset($payment[Payment\Entity::OFFER_BENEFITS]);
+                return;
+
+            }
+
+            $orderAmount = $this->order->getAmount();
+
+            $discountedAmountFromOE = $this->offer->calculateDiscountedAmountFromCalculatedBenefits(
+                $orderAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
+
+            $discountedAmountFromAPI = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
+
+            if ($oeBenefitsExpEnabled) {
+                $payment->setAmount($discountedAmountFromOE);
+
+            } else {
+                $payment->setAmount($discountedAmountFromAPI);
+            }
+
+            if ($discountedAmountFromOE !== $discountedAmountFromAPI) {
+
+                $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
+                                    [
+                                        'offer_type' => $this->offer->getOfferType(),
+                                        'emi_subvention' => $this->offer->getEmiSubvention(),
+                                        'route' => app('api.route')->getCurrentRouteName(),
+                                    ]);
+
+                $this->trace->info(
+                    TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
+                    [
+                        'API_DISCOUNT' => $discountedAmountFromAPI,
+                        'OFFERS_DISCOUNT' => $discountedAmountFromOE,
+                    ]);
+            }
+
+            $input['order_amount'] = $orderAmount;
+
+        }
+        finally
+        {
+            unset($payment[Payment\Entity::OFFER_BENEFITS]);
+
+        }
     }
 
-    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input): bool
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input, bool $useCalculatedBenefits): bool
     {
         $valid = false;
 
@@ -8682,7 +8680,7 @@ class Processor
 
         $this->offer = $offer;
 
-        if (!$this->validateOffersViaOffersEngine($payment, $offer, $input))
+        if (!$this->validateOffersViaOffersEngine($payment, $offer, $input,$useCalculatedBenefits))
         {
             // validateOffersViaOffersEngine should always throw an exception in the account these
             // parameters checked below are true. If the code flow comes here, it's a P0 issue.
@@ -8725,7 +8723,7 @@ class Processor
         return $valid;
     }
 
-    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, $input = []): bool
+    private function validateOffersViaOffersEngine(Payment\Entity $payment, Offer\Entity $offer, $input = [], $useCalculatedBenefits): bool
     {
         $core = New Offer\Core();
 
@@ -8759,7 +8757,10 @@ class Processor
             try
             {
                 $isOfferAvailed = $this->setOfferBenefitAndAvailOnOE(
-                    $payment, $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'], $offer);
+                    $payment,
+                    $resp[Offer\Constants::VALIDATE_OFFER_RESPONSE]['calculated_benefits'],
+                    $offer,
+                    $useCalculatedBenefits);
             }
             catch (\Exception $ex)
             {
@@ -15140,6 +15141,7 @@ class Processor
 
         return false;
     }
+
 
     private function canRouteOfferThroughNbplusRearch(array $input, Order\Entity $order): bool
     {

@@ -10090,7 +10090,19 @@ trait Authorize
 
         $order = $payment->order;
 
-        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+        $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId());
+
+        if ($oeBenefitsExpEnabled)
+        {
+            $discountAmount = $this->app["offers_engine"]->getTotalDiscountApplied(
+                $payment->getOffer()->getPublicId(), $payment->getPublicId(),$order->getPublicId());
+        }
+        else
+        {
+            $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
+        }
+
 
         $discountInput = [
             Discount\Entity::AMOUNT => $discountAmount,

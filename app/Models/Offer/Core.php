@@ -1237,7 +1237,44 @@ class Core extends Base\Core
 
         return $fetchExperimentEnabled;
     }
+     //Offer Benefits can be used to modify final amount
+    public function shouldUseBenefitsFromOffersEngine($merchantId): bool
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return false;
+        }
 
+        if ($merchantId === "") {
+            return false;
+        }
+
+        try {
+
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get(Constants::OFFERS_ENGINE_BENEFITS_DECOMP_EXP),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            return ($variant === 'variant_on');
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+        }
+        return false;
+    }
     public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool
     {
         if (app()->runningUnitTests() === true)
@@ -1329,6 +1366,10 @@ class Core extends Base\Core
         $exception = null;
 
         $success = 0;
+        if($input[Entity::TYPE] == Entity::CLUBBED)
+        {
+            $input[Entity::TYPE] = Entity::INSTANT;
+        }
 
         // both no cost and low cost requests are empty
         if (empty($input[Entity::EMI_DURATIONS]) === true && empty($input[Entity::LOW_COST_EMI]) === true)

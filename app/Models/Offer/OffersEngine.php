@@ -284,10 +284,16 @@ class OffersEngine extends Base\Core
                 Constants::SPEC     => $this->getOffersEngineSpec($offer, $subscriptionInput, $tenureDiscountMap, $input),
             ];
 
-        return [
+        $request = [
             Constants::OFFER => $offersEngineRequest,
             Constants::PUBLISH => $this->getOfferChannelProperties($offer),
         ];
+        if (isset($input[Entity::RULES]) && !empty($input[Entity::RULES]))
+        {
+            $request[Constants::RULES] = $input[Entity::RULES];
+        }
+
+        return $request;
     }
 
     private function getOffersEngineMetadata(Entity $offer): array
@@ -362,15 +368,18 @@ class OffersEngine extends Base\Core
             ],
         ];
 
-        $spec[Constants::BENEFITS_TYPES] = [$this->getOfferSpecBenefitType($offer)];
 
         $spec[Constants::USAGE_LIMITS] = $this->getUsageLimits($offer);
 
-        $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer,
-            $tenureDiscountMap,
-            $subscriptionInput,
-            $spec[Constants::BENEFITS_TYPES][0],
-            $input);
+        if (!isset($input[Constants::RULES]))
+        {
+            $spec[Constants::BENEFITS_TYPES] = [$this->getOfferSpecBenefitType($offer)];
+            $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer,
+                                                             $tenureDiscountMap,
+                                                             $subscriptionInput,
+                                                             $spec[Constants::BENEFITS_TYPES][0],
+                                                             $input);
+        }
 
         return $spec;
     }
@@ -1388,13 +1397,24 @@ class OffersEngine extends Base\Core
         try
         {
             $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
-
-            // adding skip_whitelisting attribute to bypass the whiteisting for dummy details
-            $response = $this->app['offers_engine']->validateOffer($merchantId, [
+            $request = [
                 'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
                 'skip_whitelisting'=> $isDummyPayment,
-            ]);
+            ];
+            if ($payment->isEmi() && $payment->emiPlan != null) {
+                $request['emi_plan'] = [
+                    'issuer' => $payment->emiPlan->getBank(),
+                    'network' => $payment->emiPlan->getNetwork(),
+                    'rate'=> $payment->emiPlan->getRate(),
+                    'duration' => $payment->emiPlan->getDuration(),
+                    'min_amount' => $payment->emiPlan->getMinAmount(),
+                    'merchant_payback' => $payment->emiPlan->getMerchantPayback(),
+                    'type' => $payment->emiPlan->getType(),
+                ];
+            }
+            // adding skip_whitelisting attribute to bypass the whiteisting for dummy details
+            $response = $this->app['offers_engine']->validateOffer($merchantId, $request);
             return $response;
         }
         catch (\Exception $exception)

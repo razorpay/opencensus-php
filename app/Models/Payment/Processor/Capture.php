@@ -696,7 +696,30 @@ trait Capture
             $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
         }
 
-        $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+        $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId());
+
+        if (!$oeBenefitsExpEnabled)
+        {
+            $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+        }
+        else
+        {
+            $offerId = $offer->getPublicId();
+
+            $paymentId = $payment->getPublicId();
+
+            $orderAmount = $order->getAmount();
+
+            $discount = $this->app["offers_engine"]->getTotalDiscountApplied($offerId, $paymentId,$order->getPublicId());
+
+            if ($discount === null)
+            {
+                $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+            } else {
+                $captureAmount = $orderAmount - $discount;
+            }
+
+        }
     }
 
     /**
