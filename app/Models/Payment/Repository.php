@@ -5413,7 +5413,7 @@ GROUP BY
 
     public function getPaymentsWithReferenceId($gateway, $status, $limit)
     {
-        $payments = $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::GATEWAY, $gateway)
             ->status($status)
             ->whereNotNull(Entity::REFERENCE2)
@@ -5421,29 +5421,6 @@ GROUP BY
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit)
             ->get();
-
-        $fetchedCount = $payments->count();
-
-        if ($fetchedCount === $limit) {
-            return $payments;
-        }
-
-        $fetchedIds = $payments->pluck(Entity::ID)->toArray();
-
-        $remainingLimit = $limit - $fetchedCount;
-        $dwConnection = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-
-        $paymentsByDataWarehouse = $this->newQueryWithConnection($dwConnection)
-            ->where(Entity::GATEWAY, $gateway)
-            ->status($status)
-            ->whereNotNull(Entity::REFERENCE2)
-            ->whereNull(Entity::REFERENCE16)
-            ->whereNotIn(Entity::ID, $fetchedIds)
-            ->orderBy(Entity::CREATED_AT, 'desc')
-            ->limit($remainingLimit)
-            ->get();
-
-        return $this->mergeCollectionsBasedOnKey($payments, $paymentsByDataWarehouse, Entity::ID);
     }
 
     public function getPaymentsDuplicateReferenceId($gateway, $merchantId, $referenceId, $statuses, $from, $to)
