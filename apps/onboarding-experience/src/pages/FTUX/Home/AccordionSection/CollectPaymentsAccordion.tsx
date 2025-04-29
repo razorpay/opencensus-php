@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Accordion,
@@ -17,9 +17,16 @@ const CollectPaymentsAccordion = ({
   data: AccordionDataType[];
   activeStep?: number;
 }) => {
+  const [expandedIndex, setExpandedIndex] = useState(activeStep);
+
+  const handleExpandChange = ({ expandedIndex: newExpandedIndex }: { expandedIndex: number }) => {
+    setExpandedIndex(newExpandedIndex);
+  };
+
   return (
     <Accordion
-      defaultExpandedIndex={activeStep}
+      expandedIndex={expandedIndex}
+      onExpandChange={handleExpandChange}
       variant="filled"
       maxWidth="auto"
       marginTop="spacing.4"
@@ -48,6 +55,7 @@ const CollectPaymentsAccordion = ({
                 )
               }
               title={item.title}
+              titleSuffix={item.getTitleSuffix?.(expandedIndex === index)}
             />
             <AccordionItemBody>{item.content}</AccordionItemBody>
           </AccordionItem>

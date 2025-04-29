@@ -4,6 +4,10 @@ import {
   PG_PAGE_LAYOUT,
   PG_PLUS_NO_CODE_PAGE_LAYOUT,
 } from '@FTUX/constants/homepage';
+import {
+  PaymentAcceptanceChannelsType,
+  PAYMENT_CHANNEL_OPTIONS,
+} from 'apps/onboarding-experience/src/common/types/merchant';
 
 interface LayoutOptions {
   isPgMerchant: boolean;
@@ -34,4 +38,28 @@ export const getLayoutByMerchantType = ({
     return [...NO_CODE_PAGE_LAYOUT];
   }
   return [];
+};
+
+/**
+ * Determines the appropriate accordion title based on the merchant's payment acceptance channels
+ */
+export const getAccordionWebsiteTitle = (
+  paymentChannels?: PaymentAcceptanceChannelsType,
+): string => {
+  // Check if merchant intends to accept payments through different channels
+  const isWebsiteIntent = paymentChannels?.[PAYMENT_CHANNEL_OPTIONS.Websites]?.accept;
+  const isAndroidIntent = paymentChannels?.[PAYMENT_CHANNEL_OPTIONS.Android]?.accept;
+  const isIosIntent = paymentChannels?.[PAYMENT_CHANNEL_OPTIONS.IOS]?.accept;
+
+  // Both website and at least one mobile platform
+  if (isWebsiteIntent && (isIosIntent || isAndroidIntent)) {
+    return 'Add your website/app details';
+  }
+  // Only mobile platforms (iOS and/or Android)
+  if (isIosIntent || isAndroidIntent) {
+    return 'Add your app links';
+  }
+
+  // Default case: only website or no specific intent indicated
+  return 'Add your website details';
 };

@@ -1,6 +1,0 @@
-import { FEATURE_FLAGS } from '../types/common';
-
-export const REQUIRED_FEATURE_FLAGS = [
-  FEATURE_FLAGS.SHOW_PG_V3,
-  FEATURE_FLAGS.PG_V3_ONBOARDING_COMPLETE,
-];

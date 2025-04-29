@@ -35,7 +35,9 @@ const Home = () => {
       <WelcomeHeader />
       <Box paddingY="spacing.1" display="flex" flexDirection="column" gap="spacing.7">
         {/* Dynamically render components based on the homepage state */}
-        {homepageState.map((element: HOMEPAGE_ELEMENTS) => ELEMENTS_MAP[element])}
+        {homepageState.map((element: HOMEPAGE_ELEMENTS) => (
+          <React.Fragment key={element}>{ELEMENTS_MAP[element]}</React.Fragment>
+        ))}
       </Box>
     </Box>
   );

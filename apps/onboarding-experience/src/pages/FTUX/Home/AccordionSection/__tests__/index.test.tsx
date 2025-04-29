@@ -4,7 +4,10 @@ import renderWithWrappers from 'apps/onboarding-experience/src/services/test/ren
 import AccordionSection from '../index';
 import useAccordionSectionData from '@FTUX/hooks/useAccordionSectionData';
 
-jest.mock('@FTUX/hooks/useAccordionSectionData');
+jest.mock('@FTUX/hooks/useAccordionSectionData', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
 
 describe('Tests for AccordionSection component', () => {
   beforeEach(() => {
@@ -12,11 +15,17 @@ describe('Tests for AccordionSection component', () => {
   });
 
   test('Should render CollectPaymentsAccordion with correct props', () => {
-    const mockData = { activeStep: 1, accordionData: [{ id: 1 }, { id: 2 }] };
+    const mockData = {
+      activeStep: 1,
+      accordionData: [
+        { title: 'Step 1', content: <div>Content 1</div> },
+        { title: 'Step 2', content: <div>Content 2</div> },
+      ],
+    };
     (useAccordionSectionData as jest.Mock).mockReturnValue(mockData);
 
     renderWithWrappers(<AccordionSection />);
-    expect(screen.getByText(/2\/2 COMPLETED/)).toBeInTheDocument(); // Updated values from mock
+    expect(screen.getByText('1/2 COMPLETED')).toBeInTheDocument();
     expect(screen.getByText('Start collecting payments in 3 easy steps')).toBeInTheDocument();
   });
 
@@ -27,16 +36,20 @@ describe('Tests for AccordionSection component', () => {
     });
 
     renderWithWrappers(<AccordionSection />);
-    expect(screen.getByText(/1\/0 COMPLETED/)).toBeInTheDocument();
+    expect(screen.getByText('0/0 COMPLETED')).toBeInTheDocument();
   });
 
   test('Should handle multiple steps in accordionData', () => {
     (useAccordionSectionData as jest.Mock).mockReturnValue({
-      activeStep: 2,
-      accordionData: [{ id: 1 }, { id: 2 }, { id: 3 }],
+      activeStep: 3,
+      accordionData: [
+        { title: 'Step 1', content: <div>Content 1</div> },
+        { title: 'Step 2', content: <div>Content 2</div> },
+        { title: 'Step 3', content: <div>Content 3</div> },
+      ],
     });
 
     renderWithWrappers(<AccordionSection />);
-    expect(screen.getByText(/3\/3 COMPLETED/)).toBeInTheDocument();
+    expect(screen.getByText('3/3 COMPLETED')).toBeInTheDocument();
   });
 });

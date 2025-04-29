@@ -8,34 +8,41 @@ const AccordionSection = () => {
   const { activeStep, accordionData } = useAccordionSectionData();
 
   return (
-    <Box
-      backgroundColor="surface.background.gray.intense"
-      borderRadius="medium"
-      borderColor="surface.border.gray.muted"
-      padding="spacing.5"
-    >
+    <Box>
       <Box
         display="flex"
         flexDirection={{
           base: 'column-reverse',
-          m: 'row',
+          l: 'row',
         }}
         gap="spacing.4"
+        marginBottom="spacing.5"
       >
-        <Box flex="1" display="flex" flexDirection="column" gap="spacing.3">
+        <Box
+          flex="1"
+          display="flex"
+          flexDirection="column"
+          gap="spacing.3"
+          paddingLeft={{
+            base: 'spacing.5',
+            m: 'spacing.7',
+          }}
+        >
           <Heading weight="semibold" size="medium">
             Start collecting payments in 3 easy steps
           </Heading>
           <Badge color="neutral" size="large">
-            {(activeStep || 0) + 1}/{accordionData.length || 0} COMPLETED
+            {activeStep || 0}/{accordionData.length || 0} COMPLETED
           </Badge>
         </Box>
         <Box
-          flex="1"
-          width="100%"
+          width={{
+            base: '100%',
+            l: 'fit-content',
+          }}
           maxHeight={{
             base: 'auto',
-            m: 'spacing.11',
+            l: 'spacing.11',
           }}
         >
           <img src={AccordionHeaderBg} alt="accordionHeader" width="100%" height="100%" />

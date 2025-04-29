@@ -19,4 +19,5 @@ export type AccordionDataType = {
   content: ReactNode;
   /** Flag indicating whether this step is incomplete to keep unchecked any previous step */
   isIncomplete?: boolean;
+  getTitleSuffix?: (isExpanded: boolean) => ReactNode | null;
 };
