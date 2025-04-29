@@ -68,3 +68,4 @@ export const CURLEC_LINKED_ACCOUNT_ONBOARDING_URL =
 
 // Available only in development
 export const LOCAL_DEV_REMOTES = process.env['LOCAL_DEV_REMOTES'];
+export const RAZORPAY_ACCOUNTS_URL = process.env['RAZORPAY_ACCOUNTS_URL'];

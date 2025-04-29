@@ -29,6 +29,7 @@ import {
   STREAKS_REWARDS,
   WEBSITE_SEGMENT_API_KEY,
   X_WEBSITE_SEGMENT_API_KEY,
+  RAZORPAY_ACCOUNTS_URL,
 } from '@apps/shell/src/env';
 
 export const generateEnvironmentKeysGetterScriptElement = () => {
@@ -64,6 +65,8 @@ export const generateEnvironmentKeysGetterScriptElement = () => {
         window.LUMBERJACK_METRICS_API_URL = "${LUMBERJACK_METRICS_API_URL}";
         window.RAZORPAY_WEBSITE = "${RAZORPAY_WEBSITE}";
         window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL = "${CURLEC_LINKED_ACCOUNT_ONBOARDING_URL}";
+        window.RAZORPAY_ACCOUNTS_URL = "${RAZORPAY_ACCOUNTS_URL}";
+
         // Sentry related configs
         window.APP_ENV = "${APP_ENV}";
         window.INSTANCE_TYPE = "${INSTANCE_TYPE}";
