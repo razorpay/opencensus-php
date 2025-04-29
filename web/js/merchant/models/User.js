@@ -634,6 +634,13 @@ export default class User {
     return this.getExpStatus('1cc_wooc_magic_enable');
   }
 
+  get isCustomerTrustEnabled() {
+    return (
+      this.isOrgRZP &&
+      this.isCountryIndia
+    );
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 

@@ -227,6 +227,7 @@ export type PaymentsDashboardUserGetters = {
   isMagicOrderAnalyticsCREnabled: boolean;
   isMagicShopifyOrderEditEnabled: boolean;
   isMagicCODOrderAutomationEnabled: boolean;
+  isCustomerTrustEnabled: boolean;
   isCardMultipleFrequencyEnabled: boolean;
   isDebitPatternEnabled: boolean;
   isMagicCODEngineEnabled: boolean;

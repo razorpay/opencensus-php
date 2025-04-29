@@ -194,7 +194,7 @@ function MerchantNavLinks(props) {
           icon="i i-customer-trust text-primary"
           to={routes.customerTrust}
           isNew={true}
-          additionalCondition={() => showCustomerTrustTab}
+          additionalCondition={(currentUser) => currentUser.isCustomerTrustEnabled && showCustomerTrustTab}
         />
 
         <MainNavLink
@@ -391,7 +391,7 @@ function MerchantNavLinks(props) {
         />
 
         <MainNavLink
-          label={user.isFeatureEnabled('optimizer_hosted') ? "Hosted Optimizer" : "Optimizer"}
+          label={user.isFeatureEnabled('optimizer_hosted') ? 'Hosted Optimizer' : 'Optimizer'}
           type="product"
           icon="i i-routing text-warm temp-icon-style"
           to="/optimizer"

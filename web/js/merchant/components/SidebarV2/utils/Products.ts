@@ -224,6 +224,7 @@ export const PRODUCTS_DATA = {
     bladeIcon: ShieldIcon,
     icon: 'i-customer-trust',
     additionalCondition: (user: any, extraConfig: ExtraConfig) =>
+      user.isCustomerTrustEnabled &&
       isExperimentEnabled(extraConfig?.abExperiments?.customer_trust),
   },
   smart_collect: {

@@ -1487,7 +1487,8 @@ class Content extends Component {
             path="customer-trust/*"
             element={
               <RouteGuard
-                additionalCondition={() =>
+                additionalCondition={(user) =>
+                  user.isCustomerTrustEnabled &&
                   isExperimentEnabled(this.props.splitz?.abExperiments.customer_trust)
                 }
               >
