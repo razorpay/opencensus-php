@@ -186,7 +186,6 @@ class Validator extends Base\Validator
         'recurring_status'       => 'required',
         'frequency'       => 'required',
         'method'       => 'required',
-        'start_time'       => 'required',
         'expire_at'       => 'required',
         'status'       => 'required',
     ];
