@@ -20,7 +20,8 @@ const deepUpdate = (
   zustandState: State,
   keysToSync: string[],
 ): void => {
-  const updatedState = zustandStore.getState();
+  //TODO: check with lodash cloneDeep
+  const updatedState = { ...zustandStore.getState() };
 
   keysToSync.forEach((key) => {
     const reduxValue = get(reduxState, key);

@@ -6,11 +6,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ShellCommonProvider } from '@apps/shell/src/shared/contexts/ShellCommonProvider';
 import { STAGE } from '@apps/shell/src/env';
+import { DASHBOARD_TEAMS, DASHBOARD_PRIORITY_RANKS } from '@libs/shared-types';
 
-//dummy comment
 export const ShellBrowserProvider = ({ children, queryClient }) => {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary rank={DASHBOARD_PRIORITY_RANKS.P0} team={DASHBOARD_TEAMS.CROSS_SELL_EXPERIENCE}>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter basename="/app">

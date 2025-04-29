@@ -124,7 +124,7 @@ interface ConnectedNavigationEnabled {
 export const isConnectedNavigationEnabled = ({
   user,
   abExperiments,
-}: ConnectedNavigationEnabled): boolean => {
+}: ConnectedNavigationEnabled): boolean | undefined => {
   const isActivated = user?.isAccepted;
   const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({ user, abExperiments });
 

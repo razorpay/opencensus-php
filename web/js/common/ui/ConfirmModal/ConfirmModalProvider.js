@@ -1,6 +1,13 @@
 import React, { Component, Children } from 'react';
 import PropTypes from 'prop-types';
 import ConfirmModal from './ConfirmModal';
+import styled from 'styled-components';
+
+const Wrapper = styled.div`
+  height: ${(props) => (props.isFullHeight ? '100%' : 'auto')};
+  min-height: ${(props) => (props.isFullHeight ? '0px' : '')};
+  flex-grow: ${(props) => (props.isFullHeight ? '1' : '')};
+`;
 
 export default class ConfirmModalProvider extends Component {
   getChildContext() {
@@ -95,12 +102,14 @@ export default class ConfirmModalProvider extends Component {
 
   render() {
     const { show, options } = this.state;
+    const isOpenedInOneDashboard = Boolean(window?.ONE_DASHBOARD);
+
     return (
-      <div>
+      <Wrapper isFullHeight={isOpenedInOneDashboard}>
         <ConfirmModal show={show} options={options} onAffirm={this.affirm} onAbort={this.abort} />
 
         {Children.only(this.props.children)}
-      </div>
+      </Wrapper>
     );
   }
 }

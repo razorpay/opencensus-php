@@ -1,29 +1,15 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
+
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
     padding: 0;
   };
-
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: linear-gradient(180deg, #cbd5e2 44%, #f1f5fa 72%, #fff 100%);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: gray;
-    border-radius: 4px;
-  }
-  
-
-  // To be removed after resolving webpack error overlay issue
-  iframe {
-    display: none;
-  }
 
   #splash {
     width: 24px;
@@ -108,9 +94,8 @@ export const GlobalStyle = createGlobalStyle`
     background-color: #2f96b4;
     color: #fff;
   }
-  
 
   .ReactModal__Overlay {
-    z-index: 5 !important;
+    z-index: 5;
   }
 `;

@@ -11,6 +11,9 @@ import { SpiltzServiceProvider } from '@federated/dashboards/payments/services/s
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import store from './store';
+import { ThemeProvider } from 'styled-components';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
+// import store from '@federated/dashboards/payments/store';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
 import '@razorpay/blade/fonts.css';
@@ -19,14 +22,10 @@ import { DashboardLoader } from '@libs/shared-ui';
 import {
   QueryClient,
   QueryClientProvider as ReactQueryClientProvider,
-  MutationFunction
+  MutationFunction,
 } from '@tanstack/react-query';
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  graphqlRequestQuery,
-  graphqlRequestMutation,
-} from '@federated/apps/shell/graphql';
-
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { graphqlRequestQuery, graphqlRequestMutation } from '@federated/apps/shell/graphql';
 
 const MainApp = lazy(() => import(/* webpackChunkName: "ProductDashboard" */ './containers/App'));
 
@@ -55,31 +54,33 @@ const ProductDashboard = ({ children }: { children?: JSX.Element }) => {
     <ErrorBoundary resetOnProps>
       <BladeProvider themeTokens={bladeTheme}>
         <I18nProvider>
-          <Provider store={store}>
-            <ShellZustandToReduxSyncProvider store={store}>
-              <ReactQueryClientProvider client={queryClient}>
-                <Suspense fallback={<DashboardLoader />}>
-                  {checkViaBrowserRouter(
-                    <ConfirmModalProvider>
-                      <SpiltzServiceProvider
-                        customLoader={() => <DashboardLoader />}
-                        dashboardType="merchant"
-                      >
-                        <I18ServiceProvider>
-                          <Routes>
-                            <Route path="*" element={<MainApp>{children}</MainApp>} />
-                          </Routes>
-                        </I18ServiceProvider>
-                      </SpiltzServiceProvider>
-                    </ConfirmModalProvider>,
-                  )}
-                </Suspense>
-                {process.env.PUBLIC_ENV == 'development' ? (
-                  <ReactQueryDevtools initialIsOpen={false} />
-                ) : null}
-              </ReactQueryClientProvider>
-            </ShellZustandToReduxSyncProvider>
-          </Provider>
+          <ThemeProvider theme={theme}>
+            <Provider store={store}>
+              <ShellZustandToReduxSyncProvider store={store}>
+                <ReactQueryClientProvider client={queryClient}>
+                  <Suspense fallback={<DashboardLoader />}>
+                    {checkViaBrowserRouter(
+                      <ConfirmModalProvider>
+                        <SpiltzServiceProvider
+                          customLoader={() => <DashboardLoader />}
+                          dashboardType="merchant"
+                        >
+                          <I18ServiceProvider>
+                            <Routes>
+                              <Route path="*" element={<MainApp>{children}</MainApp>} />
+                            </Routes>
+                          </I18ServiceProvider>
+                        </SpiltzServiceProvider>
+                      </ConfirmModalProvider>,
+                    )}
+                  </Suspense>
+                  {process.env.PUBLIC_ENV == 'development' ? (
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  ) : null}
+                </ReactQueryClientProvider>
+              </ShellZustandToReduxSyncProvider>
+            </Provider>
+          </ThemeProvider>
         </I18nProvider>
       </BladeProvider>
     </ErrorBoundary>

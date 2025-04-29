@@ -1,6 +1,8 @@
 import React, { useState, type Dispatch, useContext } from 'react';
 import { bladeTheme, ThemeTokens } from '@razorpay/blade/tokens';
 import { BladeProvider } from '@razorpay/blade/components';
+import { useGetActiveProduct } from '../../client/components/Navigation/hooks';
+import '@razorpay/blade/fonts.css';
 
 type BladeThemeType = 'blade';
 
@@ -17,6 +19,16 @@ export const useBladeTheme = () => useContext(BladeThemeContext);
 
 export const BladeThemeProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
   const [theme, setTheme] = useState<BladeThemeType>('blade');
+  const { isBankingActive } = useGetActiveProduct();
+
+  const getInitialColorScheme = () => {
+    if (isBankingActive) {
+      return 'dark';
+    } else {
+      return 'light';
+    }
+  };
+
   return (
     <BladeThemeContext.Provider
       value={{
@@ -24,7 +36,9 @@ export const BladeThemeProvider = ({ children }: { children: JSX.Element | JSX.E
         setTheme,
       }}
     >
-      <BladeProvider themeTokens={themeMap[theme]}>{children}</BladeProvider>
+      <BladeProvider themeTokens={themeMap[theme]} colorScheme={getInitialColorScheme()}>
+        {children}
+      </BladeProvider>
     </BladeThemeContext.Provider>
   );
 };

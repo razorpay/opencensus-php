@@ -1,67 +1,63 @@
-import HeaderNavigation from './HeaderNav/HeaderNav';
-import React from 'react';
-import {Sidebar} from './Sidebar';
-import { Box } from '@razorpay/blade/components';
-import { Error } from '../Error';
-import { IOneNavigationResponse } from '@apps/shell/src/client/widgets/Sidebar/types';
-import { Loader } from '@apps/shell/src/client/components/Loader';
-import { MASTER_CONFIG } from './masterConfig';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, Suspense, lazy } from 'react';
+import { Box, useTheme, BladeProvider } from '@razorpay/blade/components';
+import { useBreakpoint } from '@razorpay/blade/utils';
+import { bladeTheme } from '@razorpay/blade/tokens';
+import { getItemFromLocalStorage } from '@libs/shared-utils';
+import { useStore } from '@federated/apps/shell/commonStore';
 
-const Navigation = ({ children }): JSX.Element => {
-  const { data, isLoading, isError } = useQuery<IOneNavigationResponse>({
-    queryKey: ['master-config'],
-    queryFn: () => {
-      return new Promise((resolve) => setTimeout(() => resolve(MASTER_CONFIG), 2000));
-    },
+const TopNavigation = lazy(() => import('./TopNavigation'));
+const FTUXBanner = lazy(() => import('./TopNavigation/FTUXBanner'));
+
+export const ConnectedNavigationContainer = ({ children }): JSX.Element => {
+  const { theme } = useTheme();
+  const { matchedDeviceType } = useBreakpoint({
+    breakpoints: theme.breakpoints,
   });
+  const isMobile = matchedDeviceType === 'mobile';
+  const userId = useStore((state) => state?.session?.user?.user?.id || '');
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  if (isError) {
-    return <Error />;
-  }
+  const [showFtuxBanner, setShowFtuxBanner] = useState(
+    getItemFromLocalStorage(`showOnenavFtuxBanner_${userId}`) !== 'false',
+  );
 
   return (
     <Box
-      backgroundColor="surface.background.gray.moderate"
+      backgroundColor="surface.background.gray.subtle"
       height="100vh"
       display="flex"
       flexDirection="column"
     >
+      <Suspense fallback={null}>
+        <TopNavigation />
+      </Suspense>
       <Box
-        paddingX="spacing.4"
-        backgroundColor={{
-          base: 'surface.background.cloud.subtle',
-          m: 'transparent',
-        }}
-      >
-        <HeaderNavigation brandImage={data.one_nav_config.brand_image} />
-      </Box>
-      <Box
-        marginX={{ base: 'spacing.0', m: 'spacing.4' }}
-        borderRadius="large"
+        marginX={{ base: 'spacing.0', m: 'spacing.3' }}
         overflow="hidden"
-        flex="1"
-        borderWidth={{ base: 'none', m: 'thin' }}
-        borderColor={{ base: undefined, m: 'surface.border.gray.muted' }}
-        elevation={{ base: 'none', m: 'midRaised' }}
-        backgroundColor="surface.background.gray.intense"
-        borderBottomWidth="none"
-        borderBottomRightRadius="none"
-        borderBottomLeftRadius="none"
+        backgroundColor="surface.background.gray.moderate"
+        borderTopLeftRadius="medium"
+        display="flex"
+        flexDirection="column"
+        flexGrow="1"
       >
-        <Box display="flex" flexDirection="row" position="relative" height="100%" gap="spacing.2">
-          <Sidebar data={data} />
-          <Box marginLeft={{ base: 'spacing.0', m: '256px' }} width="100%" overflowY="auto">
-            {children}
-          </Box>
+        <Box
+          overflow="hidden"
+          position="relative"
+          height="100%"
+          display="flex"
+          flexDirection="column"
+        >
+          {showFtuxBanner && !isMobile && (
+            <Suspense fallback={null}>
+              <BladeProvider themeTokens={bladeTheme} colorScheme="dark">
+                <FTUXBanner handleClose={() => setShowFtuxBanner(false)} />
+              </BladeProvider>
+            </Suspense>
+          )}
+          {children}
         </Box>
       </Box>
     </Box>
   );
 };
 
-export default Navigation;
+export default ConnectedNavigationContainer;

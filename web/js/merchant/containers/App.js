@@ -79,6 +79,12 @@ const PartnerActivationRequiredModal = lazy(() =>
   ),
 );
 
+const PartnerOnbr = lazy(() =>
+  import(
+    /* webpackChunkName: 'PartnerOnbr' */ 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr'
+  ),
+);
+
 const AddGST = lazy(() =>
   import(/* webpackChunkName: 'AddGST' */ 'merchant/views/Account/Profile/components/AddGST'),
 );
@@ -253,6 +259,16 @@ class App extends Component {
       isPartnerKYCActivated: isCurrentPartnerKYCActivated,
       partnerActivationStatus: data?.partner_activation?.activation_status,
     });
+
+    // Update session with the isPartnerKYCActivated property to consume in shell for partner mode toggle
+    this.props.updateSession({
+      user: new User({
+        ...this.props.user,
+        isPartnerKYCActivated: isCurrentPartnerKYCActivated,
+        partnerActivationStatus: data?.partner_activation?.activation_status,
+      }),
+    });
+
     if (!currentPartnerMode) {
       currentPartnerMode = isPartnerKYCActivated ? 'live' : 'test';
     } else if (
@@ -715,6 +731,29 @@ class App extends Component {
       }
     });
   }
+
+  handleOpenModal() {
+    const { search } = this.props.location;
+    const queryParams = qs.parse(search);
+    const { openModal: openModalParam } = queryParams;
+    const { openModal, isMobileResolution } = this.props;
+
+    if (openModalParam === 'partners_onboarding_modal') {
+      openModal({
+        size: 'xlarge',
+        disableClose: false,
+        component: (
+          <Suspense fallback={null}>
+            <PartnerOnbr closeModal={closeModal} disableClose={false} />
+          </Suspense>
+        ),
+        className: isMobileResolution
+          ? 'partner-onboarding-popup mobile-app-popup'
+          : 'partner-onboarding-popup',
+      });
+    }
+  }
+
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
     this.createFeedbackForms();
@@ -742,6 +781,8 @@ class App extends Component {
       this.fetchSupportedCurrencies();
       this.loadThirdPartyLibraries(user);
     }
+
+    this.handleOpenModal();
   }
   componentDidUpdate(prevProps) {
     const { isFeedbackFormCreated, goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm } =
@@ -767,6 +808,7 @@ class App extends Component {
         }
       });
     }
+    this.handleOpenModal();
   }
   UNSAFE_componentWillReceiveProps({ user, location, baseLocation, org }) {
     const { goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm, isPartnerModeEnabled } =
@@ -1402,6 +1444,8 @@ class App extends Component {
     const isTimeoutEnabled = org?.features?.indexOf('logout_admin_inactivity') > -1;
     const timeoutInMilliseconds =
       (org?.merchant_session_timeout_in_seconds ?? DEFAULT_TIMEOUT_IN_SECONDS) * 1000;
+    const isOpenedInOneDashboard = Boolean(window?.ONE_DASHBOARD);
+
     if (this.state.isLoading || !user.isAuthenticated) {
       return <DashboardLoader />;
     }
@@ -1462,6 +1506,7 @@ class App extends Component {
               this.orgCode,
               this.renderFullPageView && 'layout--fp',
               showNewHomePage && 'layout--rtux--background',
+              isOpenedInOneDashboard && 'layout--one-dashboard',
               isConnectedNavigation && 'layout--connected-navigation',
             )}
           >
@@ -1480,9 +1525,21 @@ class App extends Component {
                 >
                   {this.getSurveyForm()}
                   <SplitzRoutesBasedService
-                    customLoader={() => <DashboardLoader loaderType="wrt-product" />}
+                    customLoader={() => (
+                      <DashboardLoader
+                        loaderType="wrt-product"
+                        fullWidth={isConnectedNavigation || isOpenedInOneDashboard}
+                      />
+                    )}
                   >
-                    <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
+                    <Suspense
+                      fallback={
+                        <DashboardLoader
+                          loaderType="wrt-product"
+                          fullWidth={isConnectedNavigation || isOpenedInOneDashboard}
+                        />
+                      }
+                    >
                       <Content
                         user={user}
                         modeFormatted={currentModeFormatted} // not being used by the Content
@@ -1531,6 +1588,7 @@ const mapStateToProps = (state) => {
     windowWidth: state.app.windowWidth,
     merchant_gst: state.profile.merchant_gst,
     isWebView: state.app.isWebView,
+    isMobileResolution: state.app.isMobileResolution,
   };
 };
 

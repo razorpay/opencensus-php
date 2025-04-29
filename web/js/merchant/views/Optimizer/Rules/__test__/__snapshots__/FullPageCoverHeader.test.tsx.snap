@@ -2,8 +2,12 @@
 
 exports[`FullPageCoverHeader should render 1`] = `
 <div>
-  <div>
-    <div>
+  <div
+    class="LayerContext__Wrapper-sc-1aos3gl-1 cBBXXb"
+  >
+    <div
+      class="ConfirmModalProvider__Wrapper-sc-61ybn0-0 jhIRov"
+    >
       <div />
       <div
         data-testid="component-wrapper"
@@ -19,6 +23,7 @@ exports[`FullPageCoverHeader should render 1`] = `
     </div>
   </div>
   <div
+    class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
     data-testid="layerTestId"
     id="layerHost"
   />

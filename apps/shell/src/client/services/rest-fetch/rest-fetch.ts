@@ -13,7 +13,7 @@ const restInstance = axios.create({});
  * Only for UTs to mock with api handlers
  */
 restInstance.defaults.baseURL = `${
-  Boolean(typeof process?.env?.hostName != "undefined")
+  Boolean(typeof process?.env?.hostName != 'undefined')
     ? process.env.hostName
     : getPhpBaseUrlForClient()
 }`;

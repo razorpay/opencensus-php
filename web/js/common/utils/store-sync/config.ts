@@ -3,7 +3,15 @@
  *
  * @constant {string[]} ReduxToShellZustandKeys
  */
-export const ReduxToShellZustandKeys: string[] = ['session.mode', 'session.user', 'session.org', 'session.partnerMode'];
+export const ReduxToShellZustandKeys: string[] = [
+  'session.mode',
+  'session.user',
+  'session.org',
+  'session.partnerMode',
+  'trustedBadge',
+  'app.isWebView',
+  'app.windowWidth',
+];
 
 /**
  * Keys to synchronize state from Zustand to Redux.

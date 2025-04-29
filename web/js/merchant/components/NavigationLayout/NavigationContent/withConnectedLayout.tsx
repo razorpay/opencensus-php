@@ -32,19 +32,6 @@ const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
     const isMobile = matchedDeviceType === 'mobile';
     const { isConnectedFullPageView = false, ...restProps } = props;
 
-    const getTopNavHeight = () => {
-      // 110px is the height of the top navigation bar and mobile search
-      const currentPath = location.pathname;
-      const isConnectedMobileHome = currentPath === ONE_NAV_MOBILE_PATH; // Define ONE_NAV_MOBILE_PATH appropriately
-
-      if (isMobile) {
-        if (!isConnectedFullPageView && !isConnectedMobileHome) {
-          return '110px';
-        }
-      }
-      return '58px';
-    };
-
     const marginLeftMediumValue = isConnectedFullPageView ? '0px' : '245px';
     const marginLeftXLValue = isConnectedFullPageView ? '0px' : '264px';
 

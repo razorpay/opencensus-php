@@ -33,6 +33,7 @@ const MicroFrontendLoader: React.FC<{ renderFullPageView?: boolean } & Record<st
   const { selectedProduct } = useConnectedNavigationStore();
   const product = selectedProduct?.product;
   const alias = product?.alias;
+
   const { renderFullPageView = false } = props;
 
   const { Component, componentProps } = useMemo(() => {

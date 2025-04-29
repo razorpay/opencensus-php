@@ -5,10 +5,12 @@ import {
   generateMerchantTemplate,
 } from '@apps/shell/src/server/services/templates';
 import { ShellError } from '@apps/shell/src/server/utils/error-utils';
+import { checkIfPosSalesAgent } from '@apps/shell/src/server/services/helpers/posAgentUtil';
 
 type AppLocals = {
   user: any;
   org: any;
+  server_evaluated_experiments?: Record<string, any>;
   clientTemplate: string;
 };
 
@@ -27,8 +29,28 @@ export const renderMiddleware: ExpressMiddleware =
       }
 
       const isLinkedAccountDashboard = Boolean(res.locals.user?.linked_account);
-      const isOneDashboard = false;
-      
+      const isUserActivated = res.locals.user?.activation_status === 'activated';
+      const isUserCountryIndia = res.locals.user?.merchant?.country_code === 'IN';
+      const isUserOrgRZP = res.locals.org?.custom_code?.toLowerCase() === 'rzp';
+
+      const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({
+        user: res.locals.user,
+        serverEvaluatedExperiments: res.locals?.server_evaluated_experiments || {},
+      });
+
+      // Production: https://admin-dashboard.razorpay.com/razorx/splitz/experiments/OWpgdX3tJs6kZo
+      // Devstack: https://dashboard.dev.razorpay.in/razorx/splitz/experiments/OWphI2FwA0dqSz
+
+      //TODO: Remove connected_navigation once one-dashboard is ramped up 100%
+      const isOneDashboard =
+        isUserActivated &&
+        isUserCountryIndia &&
+        isUserOrgRZP &&
+        !isPosSalesAgent &&
+        !isPosEkycAgent &&
+        Boolean(res.locals?.server_evaluated_experiments?.['connected_navigation']) &&
+        Boolean(res.locals?.server_evaluated_experiments?.['one-dashboard']);
+
       const getTemplate = () => {
         switch (true) {
           case isLinkedAccountDashboard:

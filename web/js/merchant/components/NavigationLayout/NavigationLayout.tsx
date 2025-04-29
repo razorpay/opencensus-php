@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardBody, useTheme, BladeProvider } from '@razorpay/blade/components';
+import { Box, Card, CardBody, useTheme, BladeProvider, Button } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import styled from 'styled-components';
 import SideNavigation from 'merchant/components/NavigationLayout/SideNavigation/SideNavigation';
@@ -20,7 +20,9 @@ import { bladeTheme } from '@razorpay/blade/tokens';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { HOTJAR_TRIGGERS } from './constants';
+import { WorkspaceWrapper } from '@federated/apps/shell/connected-navigation/WorkspaceWrapper';
 import TopLevelModals from './TopNavigation/TopLevelModals';
+import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 
 const DashboardBackground = styled.div(() => {
   return {
@@ -43,12 +45,25 @@ function NavigationLayout({
   isRTUXHomepage,
   isConnectedNavigation,
 }): JSX.Element {
-  const [isSideNavOpenOnMobile, setIsSideNavOpenOnMobile] = useState(false);
+  const { isSideNavOpenOnMobile, setIsSideNavOpenOnMobile } = useConnectedNavigationStore(
+    (state) => state,
+  );
   const userId = window.rzp_user?.user?.id || '';
   const [showFtuxBanner, setShowFtuxBanner] = useState(
     getItem(`showOnenavFtuxBanner_${userId}`) !== 'false',
   );
   const org = useStore((state) => state.session.org);
+  const { theme } = useTheme();
+  const { matchedDeviceType } = useBreakpoint({
+    breakpoints: theme.breakpoints,
+  });
+  const isMobile = matchedDeviceType === 'mobile';
+  const isOpenedInOneDashboard = Boolean(window?.ONE_DASHBOARD);
+  const commonProps = {
+    renderFullPageView,
+    user,
+    org,
+  };
 
   const showHeaderInWebview = () => {
     if (isWebView && isJKOfflineMerchant(org, user)) {
@@ -58,16 +73,6 @@ function NavigationLayout({
     return !isWebView;
   };
 
-  const { theme } = useTheme();
-  const { matchedDeviceType } = useBreakpoint({
-    breakpoints: theme.breakpoints,
-  });
-  const isMobile = matchedDeviceType === 'mobile';
-
-  if (Boolean(window?.ONE_DASHBOARD)) {
-    return <>{children}</>;
-  }
-  
   useEffect(() => {
     if (isConnectedNavigation) {
       const userSeenConnectedNavigation = (viewType: string) => {
@@ -82,13 +87,23 @@ function NavigationLayout({
     }
   }, []);
 
-  if (isConnectedNavigation) {
-    const commonProps = {
-      renderFullPageView,
-      user,
-      org,
-    };
+  if (isOpenedInOneDashboard) {
+    return (
+      <NavigationLayoutContext.Provider
+        value={{
+          isSideNavOpenOnMobile,
+          setIsSideNavOpenOnMobile,
+          onSwitchMode: headerProps.onSwitchMode,
+          isConnectedNavigation,
+        }}
+      >
+        <SideNavigation {...commonProps} />
+        <WorkspaceWrapper isFullPage={renderFullPageView}>{children}</WorkspaceWrapper>
+      </NavigationLayoutContext.Provider>
+    );
+  }
 
+  if (isConnectedNavigation) {
     return (
       <NavigationLayoutContext.Provider
         value={{

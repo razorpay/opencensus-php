@@ -12,7 +12,6 @@ export const initialState = {
     user: window?.rzp_user,
     org: window?.rzp_org,
     mode: getMode(window?.rzp_user?.current),
-    
   } as Store['session'],
   app: {} as Store['app'],
   notifications: {

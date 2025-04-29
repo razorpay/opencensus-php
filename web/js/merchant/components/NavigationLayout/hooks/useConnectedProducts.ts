@@ -21,7 +21,8 @@ type ConnectedProducts = {
 const useConnectedProducts = (): ConnectedProducts => {
   const isPartner = useStore((state) => state.session.user.isPartner?.());
 
-  const { data, isLoading, isError, error } = useQuery(['topNavData'], {
+  //TODO: Check this, possible that 2 API calls are being made one from top nav and one from side nav because of the nature of this hook
+  const { data, isLoading, isError, error, ...rest } = useQuery(['topNavData'], {
     queryFn: async () => {
       try {
         const response = await fetchUCSData({

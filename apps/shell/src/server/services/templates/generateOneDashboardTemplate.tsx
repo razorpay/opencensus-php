@@ -27,6 +27,7 @@ import {
   generateHolidayScriptElement,
   beMiscellaneousLinkElements,
   generateMountRemoteSafelyFnScriptElement,
+  generateSplitzExperimentsScriptElement,
   generateRazorAnalyticsScriptElement,
 } from '@apps/shell/src/server/services/generator';
 import { ShellServerProvider } from '@apps/shell/src/server/contexts/ShellServerProvider';
@@ -39,6 +40,7 @@ type AppLocals = {
   user: any;
   org: any;
   clientTemplate: string;
+  server_evaluated_experiments?: Record<string, any>;
 };
 
 export const generateOneDashboardTemplate = async (
@@ -52,9 +54,7 @@ export const generateOneDashboardTemplate = async (
     moduleName: '@generateOneDashboardTemplate',
   });
 
-  const shellClientsStatsMetaUrl = `${getAppsBaseAssetUrl(
-    'shell',
-  )}/shell.loadable-stats.json`;
+  const shellClientsStatsMetaUrl = `${getAppsBaseAssetUrl('shell')}/shell.loadable-stats.json`;
 
   const shellStatsMetaPromise = await shellFetch(shellClientsStatsMetaUrl);
 
@@ -122,6 +122,7 @@ export const generateOneDashboardTemplate = async (
     ...extractor.getScriptElements(),
     generateReactQueryScriptElement(dehydratedState),
     generateRzpUserScriptElement(appLocals.user),
+    generateSplitzExperimentsScriptElement(appLocals),
     generateDCSScriptElement(),
     generateBankingServicePGClientScript(),
     generateInterfaceInitializerScript(),
@@ -144,10 +145,9 @@ export const generateOneDashboardTemplate = async (
   }
 
   if (IS_PRODUCTION) {
-    [
-      generateHotjarScript(),
-      generateBladeCoverageScriptElement(),
-    ].forEach((script) => scriptTags.push(script));
+    [generateHotjarScript(), generateBladeCoverageScriptElement()].forEach((script) =>
+      scriptTags.push(script),
+    );
   }
 
   const appLinkTags = extractor.getLinkElements().map((linkTag) => {

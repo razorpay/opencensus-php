@@ -373,7 +373,7 @@ class WhatsNewOld extends Component {
           option_name: 'Announcements/Notification',
           icon_name: 'Notification',
           page: location.pathname?.replace('/app/', ''),
-          bu_title: this.props?.selectedProduct?.product?.title,
+          bu_title: this.props?.selectedProductTitle,
           experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
         },
       });

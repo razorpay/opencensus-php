@@ -6,6 +6,7 @@ type DashboardLoaderProps = {
   labelPosition?: SpinnerProps['labelPosition'];
   accessibilityLabel?: string;
   loaderType?: 'wrt-product' | 'wrt-viewport';
+  fullWidth?: boolean;
 };
 
 export const DashboardLoader: React.FC<DashboardLoaderProps> = ({
@@ -13,6 +14,7 @@ export const DashboardLoader: React.FC<DashboardLoaderProps> = ({
   labelPosition = 'bottom',
   accessibilityLabel = 'Loading...',
   loaderType = Boolean(window?.ONE_DASHBOARD) ? 'wrt-product' : 'wrt-viewport',
+  fullWidth = false,
 }) => {
   const positionStyles =
     loaderType === 'wrt-viewport'
@@ -26,7 +28,7 @@ export const DashboardLoader: React.FC<DashboardLoaderProps> = ({
         }
       : {
           position: 'absolute',
-          width: 'calc(100% - 264px)',
+          width: `${fullWidth ? '100%' : 'calc(100% - 264px)'}`,
           height: '100%',
           right: '0',
         };
@@ -43,8 +45,8 @@ export const DashboardLoader: React.FC<DashboardLoaderProps> = ({
       <Spinner
         labelPosition={labelPosition}
         label={label}
-        color='primary'
-        size='large'
+        color="primary"
+        size="large"
         accessibilityLabel={accessibilityLabel}
       />
     </Box>

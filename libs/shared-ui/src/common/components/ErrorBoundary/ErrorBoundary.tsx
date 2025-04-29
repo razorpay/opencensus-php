@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import errorService from '@razorpay/universe-cli/errorService';
 import { DASHBOARD_PRIORITY_RANKS, DASHBOARD_TEAMS } from '@libs/shared-types'; // Failing to load in .ts format
-import {DASHBOARD_ROUTES, getTeamName} from "@libs/shared-utils";
+import { DASHBOARD_ROUTES, getTeamName } from '@libs/shared-utils';
 
 interface FallbackComponentProps {
   /** Optional event ID associated with the error */
@@ -17,19 +17,19 @@ interface FallbackComponentProps {
  */
 interface Props {
   /** The components to wrap with the Error Boundary */
-  children: ReactNode; 
+  children: ReactNode;
   /** Optional fallback component to render on error */
-  FallbackComponent?: React.FC<FallbackComponentProps>; 
+  FallbackComponent?: React.FC<FallbackComponentProps>;
   /** Additional tags for error reporting */
-  tags?: Record<string, any>; 
+  tags?: Record<string, any>;
   /** Priority rank for the error (defined in shared types) */
-  rank?: DASHBOARD_PRIORITY_RANKS; 
+  rank?: DASHBOARD_PRIORITY_RANKS;
   /** Team associated with the error (defined in shared types) */
-  team?: DASHBOARD_TEAMS; 
+  team?: DASHBOARD_TEAMS;
   /** Reset error state when this prop changes */
-  resetOnProps?: boolean; 
+  resetOnProps?: boolean;
   /** Optional location object (if using with routing) */
-  location?: any; 
+  location?: any;
 }
 
 /**
@@ -37,11 +37,11 @@ interface Props {
  */
 interface State {
   /** Indicates if an error has occurred */
-  error?: boolean; 
+  error?: boolean;
   /** Error information if an error has occurred */
-  info: ErrorInfo | null; 
+  info: ErrorInfo | null;
   /** Event ID for the captured error */
-  eventId: string | null; 
+  eventId: string | null;
 }
 
 /**
@@ -97,10 +97,7 @@ export class ErrorBoundary extends Component<Props, State> {
         return <FallbackComponent eventId={eventId} error={error} info={info} />;
       } else {
         return (
-          <div
-            ref={this.node}
-            className="rzp-error-boundary has-raven"
-          >
+          <div ref={this.node} className="rzp-error-boundary has-raven">
             <div className="js-error-container">
               <div className="js-error-content">
                 <div className="js-error-illustration m-b" />

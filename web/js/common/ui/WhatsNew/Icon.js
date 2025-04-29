@@ -18,6 +18,7 @@ const WhatsNewLazyComponent = lazy(() =>
   import(/* webpackChunkName: "WhatsNewLazyComponent" */ 'common/ui/WhatsNew'),
 );
 
+//TODO: add analytics main from clicked l0 event here, seems to have been missed
 const WhatsNewIcon = ({
   user,
   showMobileNav,

@@ -2,7 +2,7 @@ if (!__STAGE__) {
   throw new Error('Env variable not set - STAGE');
 }
 
-// ENVS
+// ENVS...
 export const STAGE = __STAGE__;
 export const IS_PRODUCTION = ['production', 'canary'].includes(STAGE);
 export const UNIVERSE_PUBLIC_ASSETS_URL = process.env['UNIVERSE_PUBLIC_ASSETS_URL'];

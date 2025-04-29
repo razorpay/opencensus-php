@@ -34,13 +34,14 @@ import { getRole } from 'merchant/views/AccountAndSettings/AccountAndSettingsHom
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownSlug';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { CopyWrapper } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 
 import { Mode } from './types';
 import { getCurrentMode, trackProfileDropdownClicks } from './utils';
 import SwitchMerchantTypeaheadV2 from '../HeaderNav/SwitchMerchantTypeaheadV2';
-import useConnectedNavigationStore from '../NavigationLayout/navigationStore';
+import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
+
 import ShowWhen from '../ShowWhen';
+import { CopyWrapper } from '../CopyWrapper';
 
 interface ConnectedProfileDropdownProps {
   user: any;
@@ -73,33 +74,31 @@ function ConnectedProfileDropdown({
   onSwitchMerchantDismiss,
   onSwitchMerchant,
 }: ConnectedProfileDropdownProps): JSX.Element {
-  const { selectedProduct } = useConnectedNavigationStore();
-  const [shouldShowMobileBottomSheet, setShouldShowMobileBottomSheet] = useState(false);
+  const { products } = useConnectedNavigationStore();
 
+  const [shouldShowMobileBottomSheet, setShouldShowMobileBottomSheet] = useState(false);
   const { user: loggedInUser, name, id: merchantId } = user;
-  const { name: loggedInUserName } = loggedInUser;
+  const loggedInUserName = loggedInUser?.name || '';
   const { isConfigTagEnabled } = i18;
   const userRole = getRole({ user });
   const currentMode = getCurrentMode({
     mode,
     partnerMode,
-    selectedProduct: selectedProduct?.product?.alias,
+    selectedProduct: products.selectedProduct?.alias,
   });
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
   });
   const isMobile = matchedDeviceType === 'mobile';
-
   const showSwitchMerchant = user.merchants && Object.keys(user.merchants).length > 1;
-
   const invertMode = currentMode === 'live' ? 'test' : 'live';
 
   const handleSwitchMerchant = () => {
     trackProfileDropdownClicks({
       objectName: 'Profile Options',
       optionName: 'Switch Merchant',
-      bu_title: selectedProduct?.product?.title,
+      bu_title: products.selectedProduct?.title as string,
       type: 'option',
     });
     if (isMobile) {
@@ -113,17 +112,16 @@ function ConnectedProfileDropdown({
     trackProfileDropdownClicks({
       objectName: 'Profile Options',
       optionName: 'Copy MID',
-      bu_title: selectedProduct?.product?.title,
+      bu_title: products.selectedProduct?.title as string,
       type: 'option',
     });
     copyToClipboard(merchantId);
   };
-
   const handleModeSwitch = () => {
     trackProfileDropdownClicks({
       objectName: 'Profile Options',
       optionName: `Enable ${titleCase(invertMode)} Mode`,
-      bu_title: selectedProduct?.product?.title,
+      bu_title: products.selectedProduct?.title as string,
       type: 'option',
     });
     onSwitchMode(invertMode);
@@ -133,7 +131,7 @@ function ConnectedProfileDropdown({
     trackProfileDropdownClicks({
       objectName: 'Profile Options',
       optionName: 'Help & Support',
-      bu_title: selectedProduct?.product?.title,
+      bu_title: products.selectedProduct?.title as string,
       type: 'option',
     });
     CreateTicketEmitter.emit('toggle-help-section');
@@ -143,7 +141,7 @@ function ConnectedProfileDropdown({
     trackProfileDropdownClicks({
       objectName: 'Profile Options',
       optionName: 'Log out',
-      bu_title: selectedProduct?.product?.title,
+      bu_title: products.selectedProduct?.title as string,
       type: 'option',
     });
     onLogout();
@@ -198,7 +196,6 @@ function ConnectedProfileDropdown({
             </Box>
           </MenuItem>
         </Link>
-
         <Box
           marginX={isMobile ? 'spacing.0' : 'spacing.4'}
           paddingX="spacing.3"
@@ -218,7 +215,6 @@ function ConnectedProfileDropdown({
                   <TrustedBadgeIcon size="small" />
                 </Link>
               </Tooltip>
-
               <Box marginLeft="spacing.2">
                 <Text
                   variant="caption"
@@ -249,12 +245,9 @@ function ConnectedProfileDropdown({
             </Button>
           )}
         </Box>
-
-        {/* TODO: check payment slug layout shift post initial release */}
         {user.isPaymentHandleSplitzEnabled && !isConfigTagEnabled('profile.razorpay_me') && (
           <PaymentHandleSlug isConnectedNavigation={true} />
         )}
-
         <Box marginTop="spacing.3" paddingX={isMobile ? 'spacing.0' : 'spacing.3'}>
           {/* TODO: Replace with bigger icons post initial release */}
           {/* TODO: Make changes for this to reflect the current selected product mode post initial release */}
@@ -270,13 +263,11 @@ function ConnectedProfileDropdown({
               onClick={handleModeSwitch}
             />
           </Box>
-
           <Box marginY={isMobile ? 'spacing.3' : 'spacing.1'}>
             <Link to={ROUTES_INFO.SUPPORT_TICKETS_MERCHANT}>
               <MenuItem leading={<HeadphonesIcon />} title="View Support Tickets" />
             </Link>
           </Box>
-
           <Box marginY={isMobile ? 'spacing.3' : 'spacing.1'}>
             <MenuItem
               leading={<LogOutIcon color="interactive.icon.negative.normal" />}
@@ -286,7 +277,6 @@ function ConnectedProfileDropdown({
             />
           </Box>
         </Box>
-
         <ShowWhen
           additionalCondition={(user) =>
             user.role === rolesList.OWNER &&
@@ -314,7 +304,7 @@ function ConnectedProfileDropdown({
             trackProfileDropdownClicks({
               objectName: 'L0 Main Frame Icons',
               optionName: 'Profile Icon/Button',
-              bu_title: selectedProduct?.product?.title,
+              bu_title: products.selectedProduct?.title as string,
               type: 'icon',
             });
             setShouldShowMobileBottomSheet(true);
@@ -349,7 +339,7 @@ function ConnectedProfileDropdown({
             trackProfileDropdownClicks({
               objectName: 'L0 Main Frame Icons',
               optionName: 'Profile Icon/Button',
-              bu_title: selectedProduct?.product?.title,
+              bu_title: products.selectedProduct?.title as string,
               type: 'icon',
             });
           }

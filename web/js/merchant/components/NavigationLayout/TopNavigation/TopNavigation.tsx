@@ -54,6 +54,7 @@ import isPaymentsPath from './utils/isPaymentsPath';
 import openProductModal from './utils/openProductModal';
 import useConnectedProducts from '../hooks/useConnectedProducts';
 import useConnectedNavigation from '../navigationStore';
+import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 import { productIconsMap, ExtendedListItems } from '../utils';
 import { useNavigationLayoutContext } from '../context';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -86,6 +87,8 @@ const TopNavigation = ({
   const isRTUXHomepageEnabled = useIsRTUXHomepageEnabled();
   const isFtuxV2ExpEnabled = useIsFtuxV2Enabled();
   const { selectedProduct, setProduct } = useConnectedNavigation();
+  const setSelectedProduct = useConnectedNavigationStore((state) => state.setSelectedProduct);
+
   const showNewHomePage = isSidebarV2 && (isRTUXHomepageEnabled || isFtuxV2ExpEnabled);
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
@@ -181,6 +184,7 @@ const TopNavigation = ({
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const selectedProductAlias = selectedProduct.product?.alias;
+  const selectedProductTitle = selectedProduct.product?.title;
 
   const {
     loading: connectedProductsLoading,
@@ -205,9 +209,15 @@ const TopNavigation = ({
 
       if (activeProduct) {
         setProduct(activeProduct.datum);
+
+        // Sync selected product with shell store
+        setSelectedProduct({
+          title: activeProduct?.datum?.title,
+          alias: activeProduct?.datum?.alias,
+        });
       }
     }
-  }, [connectedProductsListItems, selectedProductAlias, setProduct]);
+  }, [connectedProductsListItems, selectedProductAlias, setProduct, setSelectedProduct]);
 
   //Effect to set the product based on path
   useEffect(() => {
@@ -230,15 +240,34 @@ const TopNavigation = ({
 
         const { defaultPath } = productConfigMap[activeProduct?.datum?.alias!];
         setProduct(activeProduct?.datum);
+
+        // Sync selected product with shell store
+        setSelectedProduct({
+          title: activeProduct?.datum?.title,
+          alias: activeProduct?.datum?.alias,
+        });
+
         navigate(defaultPath);
         return;
       }
 
       if (currentTopNavProductSelected) {
         setProduct(currentTopNavProductSelected.datum);
+
+        // Sync selected product with shell store
+        setSelectedProduct({
+          title: currentTopNavProductSelected?.datum?.title,
+          alias: currentTopNavProductSelected?.datum?.alias,
+        });
       }
     }
-  }, [currentPath, connectedProductsListItems, selectedProductAlias, setProduct]);
+  }, [
+    currentPath,
+    connectedProductsListItems,
+    selectedProductAlias,
+    setProduct,
+    setSelectedProduct,
+  ]);
 
   if (
     connectedProductsLoading ||
@@ -486,7 +515,6 @@ const TopNavigation = ({
           width={{ base: 'auto', m: `${shouldShowSearch ? '300px' : 'auto'}`, l: 'auto' }}
         >
           {shouldShowSearch && <UniversalSearch isConnectedNavigation={true} />}
-
           <AnnouncementsAndEcosystemDowntimeWrapper />
           <ProfileDropdown showMobileNav={showMobileNav} mode={mode} {...commonProps} />
         </Box>

@@ -1,11 +1,18 @@
 import React from 'react';
 import { Box } from '@razorpay/blade/components';
-import Navigation from '../Navigation';
+import { ConnectedNavigationContainer } from '../Navigation';
 import { ShellNotificationManager } from '../ShellNotificationsManager';
+import { ShellBackground } from './styled';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
-export const ShellLayout = ({ children }) => (
-  <Box minHeight="100vh">
-    <Navigation>{children}</Navigation>
+interface ShellLayoutProps {
+  children: React.ReactNode;
+}
+
+export const ShellLayout = ({ children }: ShellLayoutProps) => (
+  <>
+    <ThemeSwitcher />
+    <ConnectedNavigationContainer>{children}</ConnectedNavigationContainer>
     <ShellNotificationManager />
-  </Box>
+  </>
 );

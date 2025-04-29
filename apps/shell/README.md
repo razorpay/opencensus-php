@@ -19,7 +19,7 @@
 
 This project comes with a set of scripts that can be used to run your app.
 
-Learn more about them here in our detailed guide: [Running Project Scripts](https://universe.razorpay.com/docs/running-project-scripts)
+Learn more about them here in our detailed guide: [Running Project Scripts](https://universe.razorpay.com/docs/running-project-scripts).
 
 ### 🖌 Git Commit Guidelines
 

@@ -2,8 +2,12 @@
 
 exports[`TextHighlighter children should have background color applied and removed after 5 sec 1`] = `
 <div>
-  <div>
-    <div>
+  <div
+    class="LayerContext__Wrapper-sc-1aos3gl-1 cBBXXb"
+  >
+    <div
+      class="ConfirmModalProvider__Wrapper-sc-61ybn0-0 jhIRov"
+    >
       <div />
       <div
         data-testid="component-wrapper"
@@ -17,6 +21,7 @@ exports[`TextHighlighter children should have background color applied and remov
     </div>
   </div>
   <div
+    class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
     data-testid="layerTestId"
     id="layerHost"
   />
@@ -25,8 +30,12 @@ exports[`TextHighlighter children should have background color applied and remov
 
 exports[`TextHighlighter children should have background color applied and removed after 5 sec 2`] = `
 <div>
-  <div>
-    <div>
+  <div
+    class="LayerContext__Wrapper-sc-1aos3gl-1 cBBXXb"
+  >
+    <div
+      class="ConfirmModalProvider__Wrapper-sc-61ybn0-0 jhIRov"
+    >
       <div />
       <div
         data-testid="component-wrapper"
@@ -40,6 +49,7 @@ exports[`TextHighlighter children should have background color applied and remov
     </div>
   </div>
   <div
+    class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
     data-testid="layerTestId"
     id="layerHost"
   />
@@ -48,8 +58,12 @@ exports[`TextHighlighter children should have background color applied and remov
 
 exports[`TextHighlighter children should not have background color applied 1`] = `
 <div>
-  <div>
-    <div>
+  <div
+    class="LayerContext__Wrapper-sc-1aos3gl-1 cBBXXb"
+  >
+    <div
+      class="ConfirmModalProvider__Wrapper-sc-61ybn0-0 jhIRov"
+    >
       <div />
       <div
         data-testid="component-wrapper"
@@ -63,6 +77,7 @@ exports[`TextHighlighter children should not have background color applied 1`] =
     </div>
   </div>
   <div
+    class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
     data-testid="layerTestId"
     id="layerHost"
   />

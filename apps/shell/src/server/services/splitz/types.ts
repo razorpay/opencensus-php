@@ -47,7 +47,7 @@ export type VariantConfigArgs = {
   uniqueHashKey: string;
   experimentId: Partial<Record<EnvironmentType, string>> & Record<MandatoryEnvironmentType, string>;
   defaultVariant: DefaultVariantType;
-  evaluater: (variables: ParsedABVariable) => boolean;
+  evaluater: (variables: ParsedABVariable) => boolean | { enabled: boolean; [key: string]: any };
 };
 
 // The type and api res is not in sync. So creating a synced one.

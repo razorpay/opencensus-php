@@ -1,4 +1,11 @@
 import React, { createContext, ReactNode, useRef, useEffect } from 'react';
+import styled from 'styled-components';
+
+type LayerHostPosition = 'absolute';
+
+const LayerHost = styled.div<{ position?: LayerHostPosition }>`
+  position: ${({ position }) => position || 'static'};
+`;
 
 export interface DocClickHandlerT {
   (event: MouseEvent): void;
@@ -28,7 +35,12 @@ export const useLayer = (): LayerContextT => {
 
 interface ProviderPropsT {
   children: ReactNode;
+  layerHostPosition?: LayerHostPosition;
 }
+
+const Wrapper = styled.div<{ isFullHeight: boolean }>`
+  height: ${(props) => (props.isFullHeight ? '100%' : 'auto')};
+`;
 
 export const LayerProvider: React.FC<ProviderPropsT> = (props) => {
   let docClickHandlers: Array<DocClickHandlerT> = [];
@@ -46,6 +58,7 @@ export const LayerProvider: React.FC<ProviderPropsT> = (props) => {
     escapeKeyHandlers = escapeKeyHandlers.filter((handler) => handler !== escapeKeyHandler);
   };
   const hostEl = useRef<HTMLDivElement | null>(null);
+  const isOpenedInOneDashboard = Boolean(window?.ONE_DASHBOARD);
 
   useEffect(() => {
     const docHandler = (event: MouseEvent) => {
@@ -80,8 +93,13 @@ export const LayerProvider: React.FC<ProviderPropsT> = (props) => {
         onRemoveEscapeKeyHandler,
       }}
     >
-      <div>{props.children}</div>
-      <div id="layerHost" data-testid="layerTestId" ref={hostEl} />
+      <Wrapper isFullHeight={isOpenedInOneDashboard}>{props.children}</Wrapper>
+      <LayerHost
+        id="layerHost"
+        data-testid="layerTestId"
+        ref={hostEl}
+        position={props.layerHostPosition}
+      />
     </layerContext.Provider>
   );
 };

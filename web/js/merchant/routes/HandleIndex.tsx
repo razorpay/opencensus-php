@@ -66,6 +66,8 @@ const HandleIndex = ({ user, isConnectedNavigation }: HandleIndexProps) => {
         return;
       }
       navigate('/partners/submerchants/pos');
+    } else if (Boolean(window?.IS_ONE_HOME_ENABLED)) {
+      navigate('/home');
     } else if (user.isPartner()) {
       if (isConnectedNavigation && isMobile) {
         navigate(ONE_NAV_MOBILE_PATH);

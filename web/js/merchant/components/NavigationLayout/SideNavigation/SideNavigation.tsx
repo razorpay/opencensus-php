@@ -11,7 +11,6 @@ import {
 import { Link, matchPath, useLocation } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import useConnectedNavigationStore from '../navigationStore';
 import { useNavigationLayoutContext } from '../context';
 import { FALLBACK_PRODUCTS } from 'merchant/components/SidebarV2/utils/Fallback';
 import {
@@ -22,6 +21,7 @@ import {
 import useSideNavigation from './useSideNavigation';
 import { ANALYTICS_ONENAV } from '../constants';
 import { useStore } from '@federated/apps/shell/commonStore';
+import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 
 interface ProductOptions {
   title: string;
@@ -102,13 +102,14 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
   const location = useLocation();
   const active = isItemActive({ href, routeRegex, items, icon }, location.pathname);
   const { session } = useStore();
-  const { selectedProduct } = useConnectedNavigationStore();
+
+  const { products } = useConnectedNavigationStore();
 
   const trackNavItemClick = () => {
     let toggleMode = '';
     const page = location.pathname?.replace(/[\/_-]/g, '');
     const { mode, partnerMode } = session;
-    const alias = selectedProduct?.product?.alias;
+    const alias = products.selectedProduct?.alias;
 
     if (alias === 'payments_top_navigation_item') {
       toggleMode = mode;
@@ -126,7 +127,7 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
         option_name: title,
         page,
         section: section_id ? getSection(section_id) : '',
-        bu_title: selectedProduct.product?.title,
+        bu_title: products.selectedProduct?.title,
         toggle_mode: toggleMode,
         experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
       },
@@ -194,9 +195,9 @@ const SideBar: React.FC<{ renderFullPageView: React.ReactNode }> = ({ renderFull
   const { isSideNavOpenOnMobile, setIsSideNavOpenOnMobile } = useNavigationLayoutContext();
   const location = useLocation();
 
-  const { selectedProduct } = useConnectedNavigationStore();
+  const { products } = useConnectedNavigationStore();
 
-  const { listItems, footer } = useSideNavigation(selectedProduct?.product?.alias);
+  const { listItems, footer } = useSideNavigation(products.selectedProduct?.alias);
 
   // Determine if a section should be expanded based on any nested active items
   const isSectionExpanded = (items: any[]): boolean =>

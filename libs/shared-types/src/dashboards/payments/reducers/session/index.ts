@@ -1,1 +1,1 @@
-export * from "./PaymentsDashboardSessionReducerState"
+export * from './PaymentsDashboardSessionReducerState';

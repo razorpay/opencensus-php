@@ -170,4 +170,11 @@ $slider-width = 500px
 
 .connectednav-announcement {
   top: 56px !important;
+  
+  // The modal had z-index: 200000, but since it's inside topnav (z-index: 101), it caused a stacking issue. 
+  // The drawer uses z-index: 1030 on mobile. To overcome this, we set z-index: 100 for the drawer to match topnav's z-index (101).
+  
+   @media screen and (max-width: $screen-sm-min) {
+    z-index: 100 !important;
+  }
 }

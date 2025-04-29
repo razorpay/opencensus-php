@@ -6,12 +6,11 @@ import '@fontsource/lato/400.css';
 import '@fontsource/lato/700.css';
 import React from 'react';
 import { loadableReady } from '@loadable/component';
-import { hydrate } from '@tanstack/react-query';
+import { hydrate, DehydratedState } from '@tanstack/react-query';
 import { queryClient } from '@apps/shell/src/shared/store/queryClient';
 import hydrateApp from './utils/hydrateApp';
 import { ShellBrowserProvider } from './contexts/ShellBrowserProvider';
 import App from '@apps/shell/src/app';
-import { DehydratedState } from '@tanstack/react-query';
 import { initSentry } from './utils/sentry';
 import { IS_PRODUCTION } from '../env';
 
