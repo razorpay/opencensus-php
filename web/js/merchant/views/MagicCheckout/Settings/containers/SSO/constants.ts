@@ -81,7 +81,7 @@ export const SSO_IFRAME_URL =
   'https://api.razorpay.com/v1/magic/widgets/sso?build=fe0617f1d6388fe4e8fa6a83e883b00a07bdf300&key_id=';
 
 export const SSO_FIRST_TIME_USER_CONFIG = {
-  sso_enabled: true,
+  sso_enabled: false,
   sso_settings: {
     login_screen_options: [{ type: 'landing_page', delay: 2 }],
     customer_consent: 'single_selector',
