@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature;
 use Illuminate\Support\Facades\Bus;
+use RZP\Constants\Country;
+use RZP\models\Merchant\Utility;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -36,6 +38,27 @@ class BankAccount extends Base
         $accountHolderNames = (new DetailsPennyTesting())->getAllowedMerchantAttributesDetails($this->merchantDetails);
 
         $accountHolderNames = array_values($accountHolderNames);
+        
+        $merchantCountry = strtolower($this->merchantDetails != null ? $this->merchantDetails->getBusinessRegisteredCountry() : Country::IN);  
+
+        if (empty($merchantCountry) === true)
+        {
+            $merchantCountry = Country::IN;
+        }
+
+        if ($merchantCountry == Country::MY){
+
+            return [
+                Constant::ARTEFACT_TYPE   => Constant::BANK_ACCOUNT,
+                Constant::CONFIG_NAME     => $this->getConfigName(),
+                Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
+                Constant::DETAILS         => [
+                    Constant::ACCOUNT_NUMBER       => $this->merchantDetails->getBankAccountNumber(),
+                    Constant::BIC_CODE             => $this->merchantDetails->getBankBranchCode(),
+                    Constant::CREDITOR_NAME        => $this->merchantDetails->getBankAccountName(),
+                ],
+            ];
+        }
 
         return [
             Constant::ARTEFACT_TYPE   => Constant::BANK_ACCOUNT,
@@ -63,6 +86,18 @@ class BankAccount extends Base
 
     public function getConfigName()
     {
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN);
+        
+        if ($this->merchant === null)
+        {
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if($merchantCountry == Country::MY)
+        {
+            return Constant::BANK_ACCOUNT_MY;
+        }
+
         if ($this->merchant->isNoDocOnboardingEnabled() === true)
         {
             switch ($this->merchantDetails->getBusinessType())

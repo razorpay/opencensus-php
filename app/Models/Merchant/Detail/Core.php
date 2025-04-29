@@ -387,36 +387,41 @@ class Core extends Base\Core
 
             $verificationStartTime = microtime(true);
             // do pan validation
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS] === false)
-            {
-                $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($this->isIndianMerchant($merchant)){
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS] === false)
+                {
+                    $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS] === false)
+                {
+                    $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_GST_FOR_VAS] === false)
+                {
+                    $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CIN_FOR_VAS] === false)
+                {
+                    $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_BAN_FOR_VAS] === false)
+                {
+                    $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+                }
+
+                $this->triggerSyncValidationRequests($merchant, $merchantDetails);
             }
-
-            $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS] === false)
-            {
-                $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
-            }
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_GST_FOR_VAS] === false)
-            {
-                $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
-            }
-
-            $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CIN_FOR_VAS] === false)
-            {
-                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
-            }
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_BAN_FOR_VAS] === false)
-            {
+            else{
                 $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
             }
-
-            $this->triggerSyncValidationRequests($merchant, $merchantDetails);
 
             $this->trace->info(TraceCode::MERCHANT_KYC_VERIFICATION_LATENCY, [
                 'merchant_id' => $merchant->getId(),
@@ -1948,7 +1953,7 @@ class Core extends Base\Core
         // - and new account status 'activated'.
         // - TODO:: Remove this check  once we migrate the Dasboard flows to this in future.
         //
-        if ($this->isSubmittedViaProductConfigApi() === false)
+        if ($this->isSubmittedViaProductConfigApi() === false || strtolower($this->merchant->getCountry()) === Country::MY)
         {
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
         }
@@ -10172,7 +10177,7 @@ class Core extends Base\Core
             $validation->setArtefactType($artefactDetails[Constant::ARTEFACT_TYPE]);
 
             $statusUpdateFactory = new DocumentStatusUpdater\Factory();
-
+            
             $statusUpdater = $statusUpdateFactory->getInstance($merchant, $merchantDetail, $validation);
 
             $statusUpdater->updateStatusToPending();

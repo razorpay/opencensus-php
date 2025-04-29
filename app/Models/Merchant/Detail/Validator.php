@@ -24,6 +24,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
 use libphonenumber\NumberParseException;
+use RZP\Models\Merchant\Utility;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
@@ -104,6 +105,8 @@ class Validator extends Base\Validator
     protected static $pinValidationRules = [
         Country::IN => 6,
         Country::MY => 5,
+        Country::US => 5,
+        Country::SG => 6
     ];
 
     protected static $createRules = [
@@ -959,7 +962,11 @@ class Validator extends Base\Validator
             return;
         }
 
-        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : 'IN');
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+
+        if ($this->entity === null || $this->entity->merchant === null){    
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
 
         if (array_key_exists($merchantCountry, self::$pinValidationRules))
         {
@@ -984,7 +991,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : 'IN');
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);
 
         if (array_key_exists($merchantCountry, self::$pinValidationRules))
         {
@@ -1198,6 +1205,16 @@ class Validator extends Base\Validator
 
     public function validateBankBranchIfsc($attribute, $value)
     {
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+
+        if ($this->entity === null || $this->entity->merchant === null){
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if ($merchantCountry != Country::IN){
+            return;
+        }
+
         if (IFSC::validate($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
@@ -1205,12 +1222,34 @@ class Validator extends Base\Validator
     }
 
     public function validateBankBranchCode($input)
-    {
-        if(isset($input[Entity::BANK_BRANCH_CODE]) === true){
-            if ($input[Entity::BANK_BRANCH_CODE_TYPE] === BankBranchCodeType::IFSC && IFSC::validate($input[Entity::BANK_BRANCH_CODE]) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(self::INVALID_BANK_BRANCH_CODE_MESSAGE);
+    {   
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+
+        if ($this->entity === null || $this->entity->merchant === null){
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if ($merchantCountry === Country::IN){
+
+            if(isset( $input[Entity::BANK_BRANCH_CODE] ) === true){
+                if ($input[Entity::BANK_BRANCH_CODE_TYPE] === BankBranchCodeType::IFSC && IFSC::validate($input[Entity::BANK_BRANCH_CODE]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(self::INVALID_BANK_BRANCH_CODE_MESSAGE);
+                }
             }
+
+        }
+
+        else if ($merchantCountry === Country::MY){
+            
+            if(isset( $input[Entity::BANK_BRANCH_CODE] ) === true){
+
+                if (Utility::isValidMalaysianBIC($input[Entity::BANK_BRANCH_CODE]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(self::INVALID_BANK_BRANCH_CODE_MESSAGE);
+                }
+            }
+
         }
     }
 

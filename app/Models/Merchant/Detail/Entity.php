@@ -27,6 +27,7 @@ use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Utility;
 
 /**
  * Class Entity
@@ -1818,10 +1819,30 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     protected function modifyBankBranchInput(& $input)
     {
-        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
-        {
-            $input[Entity::BANK_BRANCH_CODE] = $input[Entity::BANK_BRANCH_IFSC];
-            $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::IFSC;
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN); 
+
+        if ($this->merchant === null)
+        {    
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if ($merchantCountry === Country::IN){
+            
+            if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+            {
+                $input[Entity::BANK_BRANCH_CODE] = $input[Entity::BANK_BRANCH_IFSC];
+                $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::IFSC;
+            }
+
+        }
+
+        if ($merchantCountry === Country::MY){
+
+            if (isset($input[Entity::BANK_BRANCH_CODE]) === true)
+            {
+                $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::BIC;
+            }
+
         }
     }
 

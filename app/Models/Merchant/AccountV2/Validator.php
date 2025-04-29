@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\AccountV2;
 use App;
 
 use Illuminate\Support\Str;
-use RZP\Constants\IndianStates;
+use RZP\Models\Merchant\Utility;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\User\Core as UserCore;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
+use RZP\Constants\Country;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Constants\Product as ProductConstants;
 use RZP\Models\Merchant\Detail\ValidationFields;
@@ -548,10 +549,22 @@ class Validator extends Merchant\Validator
 
     protected function validateState(string $attribute, string $value)
     {
-        //check if a valid state code exists for the input
-        if(IndianStates::getStateCode($value) === null)
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+
+        if ($this->entity === null || $this->entity->merchant === null){
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        $stateClass = Utility::getRowStateClass($merchantCountry);
+
+        if (!($stateClass::getStateCode($value))) 
         {
-            throw new Exception\BadRequestValidationFailureException('State name entered is incorrect. Please provide correct state name.', Constants::STATE);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'State name entered is incorrect. Please provide correct state name.',
+                Constants::STATE
+            );
+
         }
     }
 

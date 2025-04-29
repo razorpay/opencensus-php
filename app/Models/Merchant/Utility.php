@@ -2,13 +2,15 @@
 
 namespace RZP\Models\Merchant;
 
-
+use App;
 use DOMXPath;
 use ZipArchive;
 use DOMDocument;
 use Response;
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use Illuminate\Support\Facades\File;
+use RZP\Constants\InternationalStates;
 
 class Utility
 {
@@ -59,5 +61,42 @@ class Utility
     {
     //please don't change, it's live date of policy v2
         return  Carbon::create(2023, 12, 8,0,0,0);
+    }
+
+    public static function getRowMerchantCountry(): string 
+    {
+        
+        $merchant = app('basicauth')->getMerchant();
+
+        return strtolower($merchant?->getCountry() ?? 'IN');
+    }
+
+    public static function getRowStateClass(?string $merchantCountry = null)
+    {
+        if (!$merchantCountry) 
+        {
+            $merchantCountry = self::getRowMerchantCountry();
+        }
+
+        $stateClasses = InternationalStates::$rowCountryStateMap;
+        
+        return $stateClasses[$merchantCountry] ?? \RZP\Constants\IndianStates::class;
+    }
+
+    public static function addDummyIfsccode(): string
+    {
+        if (self::getRowMerchantCountry() === Country::IN) 
+        {
+            return '';
+        }
+
+        return 'HDFC0000001';
+    }
+
+    public static function isValidMalaysianBIC($bic): bool 
+    {
+        $pattern = '/^[A-Z]{4}MY[A-Z0-9]{2}([A-Z0-9]{3})?$/';
+        
+        return (preg_match($pattern, $bic) === 1) && (strlen($bic) === 8 || strlen($bic) === 11);
     }
 }

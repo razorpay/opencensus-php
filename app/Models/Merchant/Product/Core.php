@@ -20,6 +20,8 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityName;
+use RZP\Models\Merchant\Utility;
+use RZP\Models\Merchant\Product\Util\Constants as ProductConstants;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
@@ -436,7 +438,17 @@ class Core extends Base\Core
     {
         $response = [];
 
+        if (!isset($input[Util\Constants::IFSC_CODE]))
+        {
+            $dummyIfsc = Utility::addDummyIfsccode();
+            
+            if ($dummyIfsc)
+            {
 
+                $input[ProductConstants::BANK_DETAILS][ProductConstants::BANK_BRANCH_IFSC] = $dummyIfsc;
+
+            }
+        }
         list($input, $response) = Tracer::inspan(['name' => HyperTrace::ACCEPT_OR_FETCH_PRODUCT_TNC], function () use ($input, $response, $merchantProduct, $merchant) {
 
             $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
