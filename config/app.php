@@ -1415,6 +1415,8 @@ return array(
 
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS'),
 
+    'is_balance_separation_experiment_id' => env('IS_BALANCE_SEPARATION_EXPERIMENT_ID'),
+
     'payouts_to_phone_number_splitz_experiment' => env('PAYOUTS_TO_PHONE_NUMBER_SPLITZ_EXPERIMENT_ID'),
 
     'payouts_to_phone_number_name_match_threshold' => env('PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD'),
