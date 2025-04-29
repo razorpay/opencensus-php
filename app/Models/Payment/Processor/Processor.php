@@ -1739,6 +1739,38 @@ class Processor
         return false;
     }
 
+    private function evaluateSplitzExperimentForCardRecurringRearchCardMandateMigrateDate($merchant)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_mandate_ts');
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+        return "0";
+    }
+
     private function isOpgspImportMerchant(): bool
     {
         return $this->merchant->isOpgspImportEnabled();
@@ -2330,7 +2362,8 @@ class Processor
                 if (self::isCardRecurringAutoRearchRoute($currentRouteName)) {
                     // Check card mandate created date and mandate hub for ramp up
                     $cardMandate = (new CardMandate\Repository())->findByCardMandateId($token->getCardMandateId());
-                    if ($cardMandate !== null and $cardMandate->getCreatedAt() > 1733920200) {
+                    $cardMandateCreatedAtCutoffTs = (int) $this->evaluateSplitzExperimentForCardRecurringRearchCardMandateMigrateDate($merchant);
+                    if ($cardMandate !== null and $cardMandate->getCreatedAt() > $cardMandateCreatedAtCutoffTs) {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                             'reason' => "card_mandate_not_migrated",
                             'merchant_id' => $merchant->getId(),
