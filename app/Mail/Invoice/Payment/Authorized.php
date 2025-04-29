@@ -42,7 +42,7 @@ class Authorized extends Base
 
         $amount = $this->data['payment']['amount'];
 
-        $subject = "Payment of Rs. {$amount} is successful (via Razorpay)";
+        $subject = "Payment of {$amount} is successful (via Razorpay)";
 
         $this->subject($subject);
 
