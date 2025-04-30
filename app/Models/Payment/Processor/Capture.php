@@ -778,8 +778,8 @@ trait Capture
         }
 
         $this->triggerPaymentCapturedEvents($fee, $tax);
-
-        $this->publishMessageToSqsBarricade($this->payment);
+    //      Removing this as we are not using barricade anymore
+    //    $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyPaymentCaptured();
 
@@ -2445,8 +2445,8 @@ trait Capture
         [$fee, $tax] = $this->recordCapture(true);
 
         $this->triggerPaymentCapturedEvents($fee, $tax);
-
-        $this->publishMessageToSqsBarricade($this->payment);
+      //         Removing this as we are not using barricade anymore
+      //  $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyPaymentCaptured();
 

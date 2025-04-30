@@ -9695,8 +9695,8 @@ trait Authorize
         (new Payment\Metric)->pushAuthMetrics($this->payment);
 
         $this->eventPaymentAuthorized();
-
-        $this->publishMessageToSqsBarricade($this->payment);
+         //         Removing this as we are not using barricade anymore
+       // $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyIfCardSaved();
 
