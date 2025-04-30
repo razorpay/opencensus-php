@@ -78,11 +78,11 @@ import {
   iaActivations,
 } from './ga';
 import { isEligibleForFtuxV2 } from './FTUX/utils';
+import FTUXHomepage from './FTUX';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
 const RTUXHomepage = lazyLoader(() => import(/* webpackChunkName: 'RTUXHomepage' */ './RTUX'));
-const FTUXHomepage = lazyLoader(() => import(/* webpackChunkName: 'FTUXHomepage' */ './FTUX'));
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -1150,9 +1150,7 @@ class HomeContainer extends Component {
           )}
         </ShowWhen>
         {isFtuxV2Enabled ? (
-          <SuspenseWithLoader type={isMobile ? 'full' : 'centerToMainContent'}>
-            <FTUXHomepage />
-          </SuspenseWithLoader>
+          <FTUXHomepage />
         ) : isRTUXHomepage ? (
           <SuspenseWithLoader type={isMobile ? 'full' : 'centerToMainContent'}>
             <RTUXHomepage />

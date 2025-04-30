@@ -1,16 +1,28 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, Suspense, lazy } from 'react';
 import { Box } from '@razorpay/blade/components';
 import useHomepageState from '@FTUX/hooks/useHomepageState';
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
+import { PageLayoutLoader } from 'apps/onboarding-experience/src/common/components/PageLayoutLoader';
 
-import AccordionSection from './AccordionSection';
-import NocodeSection from './NoCodeSection';
-import BrowseAllProducts from './BrowseAllProducts';
-import PaymentHandle from './PaymentHandle';
-import TransactionBanner from './TransactionBanner';
-import AddWebsiteNudge from './AddWebsiteNudge';
-import WaysToCollectPayment from './WaysToCollectPayment';
-import WelcomeHeader from './WelcomeHeader';
+// Lazy load components
+const AccordionSection = lazy(
+  () => import(/* webpackChunkName: 'AccordionSection' */ './AccordionSection'),
+);
+const NocodeSection = lazy(() => import(/* webpackChunkName: 'NoCodeSection' */ './NoCodeSection'));
+const BrowseAllProducts = lazy(
+  () => import(/* webpackChunkName: 'BrowseAllProducts' */ './BrowseAllProducts'),
+);
+const PaymentHandle = lazy(() => import(/* webpackChunkName: 'PaymentHandle' */ './PaymentHandle'));
+const TransactionBanner = lazy(
+  () => import(/* webpackChunkName: 'TransactionBanner' */ './TransactionBanner'),
+);
+const AddWebsiteNudge = lazy(
+  () => import(/* webpackChunkName: 'AddWebsiteNudge' */ './AddWebsiteNudge'),
+);
+const WaysToCollectPayment = lazy(
+  () => import(/* webpackChunkName: 'WaysToCollectPayment' */ './WaysToCollectPayment'),
+);
+const WelcomeHeader = lazy(() => import(/* webpackChunkName: 'WelcomeHeader' */ './WelcomeHeader'));
 
 const ELEMENTS_MAP: Record<HOMEPAGE_ELEMENTS, ReactNode> = {
   [HOMEPAGE_ELEMENTS.ACCORDION]: <AccordionSection />,
@@ -32,13 +44,21 @@ const Home = () => {
 
   return (
     <Box paddingX="spacing.5" paddingY="spacing.1">
-      <WelcomeHeader />
-      <Box paddingY="spacing.1" display="flex" flexDirection="column" gap="spacing.7">
-        {/* Dynamically render components based on the homepage state */}
-        {homepageState.map((element: HOMEPAGE_ELEMENTS) => (
-          <React.Fragment key={element}>{ELEMENTS_MAP[element]}</React.Fragment>
-        ))}
-      </Box>
+      {homepageState.length < 1 ? (
+        <PageLayoutLoader />
+      ) : (
+        <Suspense fallback={<PageLayoutLoader />}>
+          <WelcomeHeader />
+          <Box paddingY="spacing.1" display="flex" flexDirection="column" gap="spacing.7">
+            {/* Dynamically render components based on the homepage state */}
+            {homepageState.map((element: HOMEPAGE_ELEMENTS, idx: number) => (
+              <Suspense key={idx} fallback={<PageLayoutLoader />}>
+                {ELEMENTS_MAP[element]}
+              </Suspense>
+            ))}
+          </Box>
+        </Suspense>
+      )}
     </Box>
   );
 };

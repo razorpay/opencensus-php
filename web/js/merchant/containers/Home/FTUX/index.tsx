@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import { Box } from '@razorpay/blade/components';
 import lazyLoader from 'merchant/routes/LazyLoader';
+import LayoutLoader from './Loader';
 
 const FTUXLanding = lazyLoader(
   () =>
@@ -9,7 +11,15 @@ const FTUXLanding = lazyLoader(
 );
 
 const FTUXHomepage = (): JSX.Element => {
-  return <FTUXLanding />;
+  return (
+    <Box display="flex" justifyContent="center">
+      <Box maxWidth="920px" width="100%">
+        <Suspense fallback={<LayoutLoader />}>
+          <FTUXLanding />
+        </Suspense>
+      </Box>
+    </Box>
+  );
 };
 
 export default FTUXHomepage;

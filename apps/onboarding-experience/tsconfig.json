@@ -10,7 +10,8 @@
       "@FTUX/*": ["apps/onboarding-experience/src/pages/FTUX/*"],
       "@libs/shared-types": ["libs/shared-types/src/common/index.ts"],
       "@libs/shared-types/la": ["libs/shared-types/src/dashboards/la/index.ts"],
-      "@libs/shared-types/payments": ["libs/shared-types/src/dashboards/payments/index.ts"]
+      "@libs/shared-types/payments": ["libs/shared-types/src/dashboards/payments/index.ts"],
+      "@libs/shared-utils": ["libs/shared-utils/src/common/index.ts"]
     }
   },
   "include": ["../../libs/shared-types/global.d.ts", "*.json", "**/*.json", "src"],
