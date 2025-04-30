@@ -73,6 +73,8 @@ final class AsvFlows
         'merchant_mtu_update_dashboard' => true,
         'merchant_onboarding_crons' => true,
         'merchant_patch_purpose_code' => true,
+        'merchant_pos_activation_status' => true,
+        'internal_merchant_pos_activation_status' => true,
         'merchant_requests_create' => true,
         'merchant_sub_create' => true,
         'merchant_sub_create_batch' => true,
