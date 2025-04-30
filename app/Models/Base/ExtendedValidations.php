@@ -10,6 +10,8 @@ use Lib\PhoneBook;
 use RZP\Models\Feature;
 use RZP\Models\Admin\Org;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail\ActivationFields;
+use RZP\Models\Merchant\Detail\Service as MerchantDetailService;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Currency\Currency;
@@ -48,6 +50,16 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const PAN_NUMBER_REGEX          = '/^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/';
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
     const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
+    const COMPANY_PAN_NUMBER_REGEX_BY_BUSINESS_TYPE = [
+        'private_limited' => '/^[A-Za-z]{3}[CcGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'public_limited'  => '/^[A-Za-z]{3}[CcGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'llp'            => '/^[A-Za-z]{3}[FfGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'partnership'    => '/^[A-Za-z]{3}[FfGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'trust'          => '/^[A-Za-z]{3}[AaBbTtGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'society'        => '/^[A-Za-z]{3}[AaBbTtGgLl][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'ngo'            => '/^[A-Za-z]{3}[AaBbTtGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+        'huf'            => '/^[A-Za-z]{3}[HhGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/',
+    ];
     const COMPANY_CIN_REGEX         = '/^([A-Z|a-z]{3}-\d{4}|[F|f]\w{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})$/';
 
     /**
@@ -590,8 +602,41 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             {
                 if((empty($value) === false) and (is_null($value) === false))
                 {
+                    $merchantId = $this->app['basicauth']->getMerchantId();
+                    $merchant = $this->app['basicauth']->getMerchant();
+
+                    if (empty($merchant) === false && $merchantId !== null)
+                    {
+                        //checking if merchant has product = banking (for RazorpayX users)
+                        $merchantUser = $this->repo->merchant_user->fetchProductUsedForMerchantIds([$merchantId], 'banking');
+                        $hasBankingProduct = !empty($merchantUser);
+
+                        //fetching business type from merchant_details
+                        $merchantDetail = $merchant->merchantDetail;
+                        $businessType = $merchantDetail ? $merchantDetail->getBusinessType() : null;
+
+                        $this->app->trace->info(TraceCode::COMPANY_PAN_VALIDATION_BY_BUSINESS_TYPE,[
+                            'businessType' => $businessType,
+                            'hasBankingProduct' => $hasBankingProduct
+                        ]);
+
+                        $regex = ($hasBankingProduct && $businessType && isset(self::COMPANY_PAN_NUMBER_REGEX_BY_BUSINESS_TYPE[$businessType])) ?
+                            self::COMPANY_PAN_NUMBER_REGEX_BY_BUSINESS_TYPE[$businessType] :
+                            self::COMPANY_PAN_NUMBER_REGEX;
+
+                        if (preg_match($regex, $value) !== 1)
+                        {
+                            throw new BadRequestValidationFailureException(
+                                'The company pan field is invalid for business type: ' . $businessType
+                            );
+                        }
+
+                        return true;
+                    }
+
                     return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1);
-                }else
+                }
+                else
                 {
                     throw new BadRequestValidationFailureException("The company pan field is required.");
                 }
