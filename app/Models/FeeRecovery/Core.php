@@ -2418,7 +2418,7 @@ class Core extends Base\Core
                 'input' => $input
             ]);
             throw new Exception\BadRequestException(
-                ErrorCode::BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT,
+                ErrorCode::BAD_REQUEST_BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT,
                 null,
                 $input,
                 $msg
