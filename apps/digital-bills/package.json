@@ -14,7 +14,7 @@
     "prettier": "universe prettier -- --write ."
   },
   "dependencies": {
-    "@razorpay/universe-cli": "19.0.3",
+    "@razorpay/universe-cli": "20.2.13",
     "@razorpay/blade": "12.17.1",
     "@razorpay/i18nify-js": "1.12.3",
     "prop-types": "15.7.2",
@@ -59,7 +59,7 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.1.2",
-    "pnpm": "^9.0.0"
+    "pnpm": ">=10.10.0"
   },
   "nx": {
     "targets": {

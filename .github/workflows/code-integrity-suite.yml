@@ -62,7 +62,7 @@ jobs:
       - name: Setup Node v18.12.1
         uses: actions/setup-node@v4
         with:
-          node-version: 18.12.1
+          node-version: 22.15.0
 
       - name: Generate Jest Analysis Report Summary
         env:
@@ -154,10 +154,10 @@ jobs:
           sparse-checkout: |
             .github/
 
-      - name: Setup Node v22.11.0
+      - name: Setup Node v22.15.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.11.0
+          node-version: 22.15.0
 
       - name: Remove all package.json files (Fail Safe)
         run: |

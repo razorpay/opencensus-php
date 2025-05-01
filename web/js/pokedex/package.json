@@ -5,13 +5,13 @@
   "private": true,
   "license": "ISC",
   "engines": {
-    "node": ">=18.12.1",
+    "node": ">=22.15.0",
     "yarn": ">=1.22.0",
     "npm": ">=8.1.2",
-    "pnpm": "~9.0.0"
+    "pnpm": ">=10.10.0"
   },
   "dependencies": {
-    "@razorpay/universe-cli": "19.0.3",
+    "@razorpay/universe-cli": "20.2.13",
     "browser-detect": "0.2.28",
     "@razorpay/blade": "12.17.1",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
@@ -92,7 +92,7 @@
     "workbox-strategies": "6.1.5",
     "workbox-webpack-plugin": "6.5.4",
     "workbox-window": "6.1.5",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz",
+    "xlsx": "0.18.5",
     "xss": "1.0.11",
     "yup": "0.29.3",
     "zustand": "3.1.2",

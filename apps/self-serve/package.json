@@ -6,10 +6,10 @@
   "author": "razorpay",
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=18.12.1",
+    "node": ">=22.15.0",
     "yarn": ">=1.22.0",
     "npm": ">=8.1.2",
-    "pnpm": "~9.0.0"
+    "pnpm": ">=10.10.0"
   },
   "scripts": {
     "start": "STAGE=development universe dev",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@razorpay/blade": "12.17.1",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
-    "@razorpay/universe-cli": "19.0.3",
+    "@razorpay/universe-cli": "20.2.13",
     "@tanstack/react-query": "4.33.0",
     "@razorpay/i18nify-js": "1.12.3",
     "@types/jsdom": "16.2.15",

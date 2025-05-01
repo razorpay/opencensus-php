@@ -1,4 +1,4 @@
-FROM c.rzp.io/proxy_dockerhub/library/node:18.20-alpine AS builder
+FROM c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-node-22-alpine3.21 AS builder
 
 ARG APP_NAME
 ARG STAGE
@@ -9,7 +9,7 @@ ENV STAGE=$STAGE
 RUN apk add --no-cache libc6-compat \
     && mkdir -p /dashboard
 
-RUN npm install -g pnpm@~9.0 && \
+RUN npm install -g pnpm@~10.10.0 && \
  pnpm config set unsafe-perm true 
 
 COPY pnpm-workspace.yaml .npmrc package.json /dashboard/
@@ -46,7 +46,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
 
 ##############################################################################################################################
 
-FROM c.rzp.io/proxy_dockerhub/library/node:18.20-alpine AS runtime
+FROM c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-node-22-alpine3.21 AS runtime
 
 ARG APP_NAME
 ARG STAGE

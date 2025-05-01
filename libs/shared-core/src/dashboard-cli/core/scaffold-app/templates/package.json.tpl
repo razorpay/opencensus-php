@@ -14,7 +14,7 @@
     "react": "17.0.2",
     "graphql-tag": "2.12.6",
     "react-dom": "17.0.2",
-    "@razorpay/universe-cli": "19.0.3",
+    "@razorpay/universe-cli": "20.2.13",
     "@razorpay/blade": "12.8.2",
     "@razorpay/i18nify-js": "1.12.3",
     "react-router-dom": "6.14.2",
@@ -42,9 +42,9 @@
     "@types/testing-library__jest-dom": "5.14.9"
   },
   "engines": {
-    "node": ">=18.12.1",
+    "node": ">=22.15.0",
     "npm": ">=8.1.2",
-    "pnpm": "^9.0.0"
+    "pnpm": "10.10.0"
   },
   "nx": {
     "targets": {

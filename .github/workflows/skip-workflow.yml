@@ -62,10 +62,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
           aws-region: ${{ secrets.ACTIONS_CACHE_AWS_REGION }}
 
-      - name: Setup Node v18.12.1
+      - name: Setup Node v22.15.0
         uses: actions/setup-node@v4
         with:
-          node-version: 18.12.1
+          node-version: 22.15.0
 
       - name: Skip Trigger
         run: |

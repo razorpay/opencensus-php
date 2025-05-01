@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "dependencies": {
     "react-dates": "21.8.0",
-    "@razorpay/universe-cli": "19.0.3",
+    "@razorpay/universe-cli": "20.2.13",
     "@razorpay/i18nify-js": "1.12.3",
     "@razorpay/blade": "12.17.1",
     "moment": "2.29.4",
