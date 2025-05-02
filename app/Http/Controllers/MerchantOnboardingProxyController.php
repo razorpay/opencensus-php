@@ -546,6 +546,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return true;
         }
 
+        if ($this->isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
+        {
+            return true;
+        }
+
         $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
 
         return (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING);
@@ -604,6 +609,16 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::CROSS_BORDER_ONBOARDING)
             === DeviceDetailConstants::MODULAR_ONBOARDING;
     }
+    protected function isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
+    {
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::SUBMERCHANT_ONBOARDING)
+            === DeviceDetailConstants::MODULAR_ONBOARDING;
+    }
 
     public function isCrossBorderIndiaModularMerchant($merchant): bool
     {
@@ -623,13 +638,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
     }
 
     // Adding a common check , as for cross border all the checks are similar to pgIndia Modular Merchant
-    public function getIndiaPgOrCbIndiaModularResult($merchant): array
+    public function getIndiaModularMerchantResult($merchant): array
     {
         if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
         {
             return [
-                MerchantDetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR => false,
-                MerchantDetailConstants::PRODUCT_PG_OR_CB_INDIA => '',
+                MerchantDetailConstants::IS_MODULAR_INDIA => false,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA => '',
             ];
         }
 
@@ -637,30 +652,38 @@ class MerchantOnboardingProxyController extends BaseProxyController
         if (empty($userDeviceDetail) === true)
         {
             return [
-                MerchantDetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR => false,
-                MerchantDetailConstants::PRODUCT_PG_OR_CB_INDIA => '',
+                MerchantDetailConstants::IS_MODULAR_INDIA => false,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA => '',
             ];
         }
 
         $indiaPgResult = $this->isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
         if (!empty($indiaPgResult)) {
             return [
-                MerchantDetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR => true,
-                MerchantDetailConstants::PRODUCT_PG_OR_CB_INDIA    => 'pg_onboarding',
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'pg_onboarding',
             ];
         }
 
         $cbResult = $this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
         if (!empty($cbResult)) {
             return [
-                MerchantDetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR => true,
-                MerchantDetailConstants::PRODUCT_PG_OR_CB_INDIA    => 'cross_border_onboarding',
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'cross_border_onboarding',
+            ];
+        }
+
+        $subMOnboardingResult = $this->isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        if (!empty($subMOnboardingResult)) {
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'submerchant_onboarding',
             ];
         }
 
         return [
-            MerchantDetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR => false,
-            MerchantDetailConstants::PRODUCT_PG_OR_CB_INDIA    => ''
+            MerchantDetailConstants::IS_MODULAR_INDIA => false,
+            MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => ''
         ];
 
     }
@@ -1146,7 +1169,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     {
         $merchant = $this->app['basicauth']->getMerchant();
 
-        if (($this->getIndiaPgOrCbIndiaModularResult($merchant)[MerchantDetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR] ?? false) === false)
+        if (($this->getIndiaModularMerchantResult($merchant)[MerchantDetailConstants::IS_MODULAR_INDIA] ?? false) === false)
         {
             return;
         }

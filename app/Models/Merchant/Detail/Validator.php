@@ -1315,8 +1315,8 @@ class Validator extends Base\Validator
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        $pgOrCbModularResult=$merchantOnboardingProxyController->getIndiaPgOrCbIndiaModularResult($this->entity->merchant);
-        if (($pgOrCbModularResult[DetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR]??false) === true)
+        $indiaModularResult=$merchantOnboardingProxyController->getIndiaModularMerchantResult($this->entity->merchant);
+        if (($indiaModularResult[DetailConstants::IS_MODULAR_INDIA]??false) === true)
         {
             $validActivationStatuses =  array_keys((new Core())->getActivationStatusMappingForModularMerchants());
         }
@@ -1380,8 +1380,8 @@ class Validator extends Base\Validator
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        $pgOrCbModularResult = $merchantOnboardingProxyController->getIndiaPgOrCbIndiaModularResult($this->entity->merchant);
-        if (($pgOrCbModularResult[DetailConstants::IS_INDIA_PG_OR_CB_INDIA_MODULAR] ?? false) === true)
+        $indiaModularResult = $merchantOnboardingProxyController->getIndiaModularMerchantResult($this->entity->merchant);
+        if (($indiaModularResult[DetailConstants::IS_MODULAR_INDIA] ?? false) === true)
         {
             $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
             $allowedNextActivationStatus = $allowedNextActivationStatusMap[$currentStatus];

@@ -940,7 +940,7 @@ class Constants
     const DEDUPE_IS_UNDER_REVIEW        = "is_under_review";
     const IS_FORM_LOCKED                = "is_form_locked";
     const IS_FORM_SUBMITTED             = "is_form_submitted";
-    const IS_INDIA_PG_OR_CB_INDIA_MODULAR = "is_modular";
-    const PRODUCT_PG_OR_CB_INDIA = "product";
+    const IS_MODULAR_INDIA = "is_modular";
+    const MODULAR_PRODUCT_INDIA = "product";
 }
 

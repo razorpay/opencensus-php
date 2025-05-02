@@ -123,7 +123,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
         $productType = '';
         if ($routeKey==self::MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE || $routeKey==self::MERCHANT_ACTIVATION_CLARIFICATION_FETCH)
         {
-            $productType = $this->getIndiaPgOrCbIndiaModularResult( $merchant)[MerchantDetailConstants::PRODUCT_PG_OR_CB_INDIA] ?? 'non_modular';
+            $productType = $this->getIndiaModularMerchantResult( $merchant)[MerchantDetailConstants::MODULAR_PRODUCT_INDIA] ?? 'non_modular';
             $this->trace->info(TraceCode::PRODUCT_TYPE_INDIA_PG_OR_CB_INDIA_MODULAR, [
                 'productType' => $productType,
             ]);
