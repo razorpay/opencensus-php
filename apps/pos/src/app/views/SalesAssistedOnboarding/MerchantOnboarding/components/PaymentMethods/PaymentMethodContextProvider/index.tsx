@@ -58,7 +58,7 @@ import {
   updateValuesForUncheckedRates,
   validatePricingRates,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
-import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
+import { isPricingFormDisabled } from 'apps/pos/src/app/utils/merchantActivation';
 import {
   AggregatorModelFormKeys,
   CheckboxEnabledFormKeys,
@@ -298,7 +298,7 @@ const populateNACHFormWithModularConfigData = (
       }
     });
   }
-  return newForm;
+  return { nachForm: newForm, nachFields: component?.fields };
 };
 
 const populateBrandEmiFormWithModularConfigData = (
@@ -383,11 +383,11 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   const { states, handlers } = useOnboardingContext();
   const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
     states;
-  const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
+  const isFormDisabled = isPricingFormDisabled(merchantDetails?.activation?.posActivationStatus);
   const isPricingNcRaised =
     merchantDetails?.activation?.posPricingNcStatus?.toLowerCase() ===
     pricingNcStatusMap.pending_agent_action;
-
+  const [nachFields, setNachFields] = useState<ModularOnboardingField[]>();
   const [paymentMethodType, setPaymentMethodType] = useState<PaymentMethodFormType>(
     PaymentMethodFormType.AGGREGATOR,
   );
@@ -425,8 +425,9 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     const { handleProceedToNextComponent, updateModularConfig } = handlers;
 
     const redirectToNextPage = (data) => {
-      const newNACH = populateNACHFormWithModularConfigData(data);
+      const { nachForm: newNACH, nachFields } = populateNACHFormWithModularConfigData(data);
       setNachForm(newNACH);
+      setNachFields(nachFields);
       if (!methodForm.form[PaymentMethodsFieldKeyNames.BRAND_EMI_RATE_ENABLED_FIELD].checked) {
         handleProceedToNextComponent({
           __typeName: 'custom_routing',
@@ -499,8 +500,10 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     delete updatedPayload[PaymentMethodsFieldKeyNames.CUSTOM_RATES_ENABLED_FIELD];
 
     if (isFormDisabled) {
-      const newNACH = populateNACHFormWithModularConfigData(modularConfig);
-      setNachForm(newNACH);
+      const { nachForm: newNach, nachFields } =
+        populateNACHFormWithModularConfigData(modularConfig);
+      setNachForm(newNach);
+      setNachFields(nachFields);
       handleProceedToNextComponent({
         __typeName: 'custom_routing',
         routerConditions: {
@@ -736,6 +739,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
     onNachSubmitClick,
     onNachSkipClick,
     nachForm,
+    nachFields,
 
     //props for brand emi
     brandEmiForm,
@@ -779,8 +783,10 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
         setPaymentMethodType(initialMethodType);
         setAquisitionModelFields(aquisitionModelFields);
       }
-      const newNach = populateNACHFormWithModularConfigData(modularConfig);
+      const { nachForm: newNach, nachFields } =
+        populateNACHFormWithModularConfigData(modularConfig);
       setNachForm(newNach);
+      setNachFields(nachFields);
       setMethodFormValue('form', newForm.form);
       setMethodFormValue('type', initialMethodType);
       const newBrandEmiForm = populateBrandEmiFormWithModularConfigData(modularConfig);

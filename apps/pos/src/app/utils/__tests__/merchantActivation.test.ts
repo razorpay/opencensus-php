@@ -1,5 +1,5 @@
 import { DashboardGraphQLMerchant } from '@libs/shared-types';
-import { checkIfKycComplete, isKycQualified } from '../merchantActivation';
+import { checkIfKycComplete, isKycQualified, isPricingFormDisabled } from '../merchantActivation';
 
 const COMMON_PAYMENT_ACCEPTANCE_CHANNELS = {
   websites: {
@@ -138,5 +138,39 @@ describe('isKycQualified', () => {
 
   test('returns false for non-string input (number)', () => {
     expect(isKycQualified(123)).toBe(false);
+  });
+});
+
+describe('isPricingFormDisabled', () => {
+  test('returns true for "ACTIVATED"', () => {
+    expect(isPricingFormDisabled('ACTIVATED')).toBe(true);
+  });
+
+  test('returns true for "REJECTED"', () => {
+    expect(isPricingFormDisabled('REJECTED')).toBe(true);
+  });
+
+  test('returns false for "KYC_QUALIFIED_STB"', () => {
+    expect(isPricingFormDisabled('KYC_QUALIFIED_STB')).toBe(false);
+  });
+
+  test('returns false for "NEEDS_CLARIFICATION"', () => {
+    expect(isPricingFormDisabled('NEEDS_CLARIFICATION')).toBe(false);
+  });
+
+  test('returns false for an unknown status', () => {
+    expect(isPricingFormDisabled('UNKNOWN_STATUS')).toBe(false);
+  });
+
+  test('returns false for an empty string', () => {
+    expect(isPricingFormDisabled('')).toBe(false);
+  });
+
+  test('returns false for undefined input', () => {
+    expect(isPricingFormDisabled(undefined)).toBe(false);
+  });
+
+  test('returns false for null input', () => {
+    expect(isPricingFormDisabled(null)).toBe(false);
   });
 });

@@ -302,6 +302,7 @@ describe('<NachForm/>', () => {
       onNachSkipClick: jest.fn(),
       isFormDisabled: false,
       removeExistingPricingDocs: jest.fn(),
+      nachFields: [],
     };
     render(<NACHForm {...props} />);
     expect(screen.getByRole('heading', { name: /Upload NACH Form/i })).toBeInTheDocument();

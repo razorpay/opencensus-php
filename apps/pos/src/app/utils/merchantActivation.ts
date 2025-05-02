@@ -31,7 +31,9 @@ export const checkIfKycComplete = ({ merchant }: CheckIfKycCompleteProps): boole
 };
 
 export const isKycQualified = (posActivationStatus) => {
-  return ['ACTIVATED', 'REJECTED', 'KYC_QUALIFIED_STB'].includes(
-    posActivationStatus ?? '',
-  );
+  return ['ACTIVATED', 'REJECTED', 'KYC_QUALIFIED_STB'].includes(posActivationStatus ?? '');
+};
+
+export const isPricingFormDisabled = (posActivationStatus: string | undefined | null) => {
+  return ['ACTIVATED', 'REJECTED'].includes(posActivationStatus ?? '');
 };

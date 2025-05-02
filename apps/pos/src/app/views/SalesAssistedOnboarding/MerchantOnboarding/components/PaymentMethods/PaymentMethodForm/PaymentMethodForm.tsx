@@ -206,7 +206,12 @@ const PaymentMethodFormComponent: React.FC<PaymentMethodFormProps> = ({
                 autoDismiss: true,
               })
             }
-            isDisabled={isFormDisabled || isMDREditEnabled || isVASEditEnabled}
+            isDisabled={
+              isFormDisabled ||
+              isMDREditEnabled ||
+              isVASEditEnabled ||
+              form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].isDisabled
+            }
             value={form[PaymentMethodsFieldKeyNames.CUSTOM_RATES_DOCUMENTS_FIELD].value}
           />
         </Box>

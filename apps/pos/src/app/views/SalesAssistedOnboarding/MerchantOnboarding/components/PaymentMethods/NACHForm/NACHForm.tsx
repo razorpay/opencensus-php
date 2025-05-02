@@ -10,7 +10,7 @@ import {
 } from '@razorpay/blade/components';
 import SalesFileUpload from 'apps/pos/src/app/components/SalesFileUpload';
 import { handleNachFormViewAnalytics } from 'apps/pos/src/app/utils/paymentsAndServices';
-
+import { ModularOnboardingField } from 'apps/pos/src/app/types/modular';
 export enum NachFormKeyNames {
   NACH_FORM_DOCUMENT_FIELD = 'nach_form_document_field',
   NACH_FORM_COMMENTS_FIELD = 'nach_form_comments_field',
@@ -25,6 +25,7 @@ export type NachFormObject = {
 export interface NachFormProps {
   nachForm: NachFormObject;
   onNachTextAreaChange: () => void;
+  nachFields: ModularOnboardingField[];
   onNachFileUploadChange: () => void;
   onNachSubmitClick: () => void;
   onNachSkipClick: () => void;
@@ -40,6 +41,7 @@ const NACHForm: React.FC<NachFormProps> = ({
   onNachSkipClick,
   isFormDisabled,
   isModularLoading,
+  nachFields,
 }) => {
   const { id } = useParams();
   const toast = useToast();
@@ -51,7 +53,10 @@ const NACHForm: React.FC<NachFormProps> = ({
   }, []);
 
   if (isModularLoading) return null;
-
+  const nachFormDisabled =
+    isFormDisabled ||
+    nachFields.find((field) => field.name === NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD)
+      ?.isDisabled;
   return (
     <Box padding="spacing.5">
       <Heading marginBottom="spacing.5" size="large">
@@ -75,7 +80,7 @@ const NACHForm: React.FC<NachFormProps> = ({
             autoDismiss: true,
           })
         }
-        isDisabled={isFormDisabled}
+        isDisabled={nachFormDisabled}
         value={nachForm[NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD]}
       />
       <Box>
@@ -83,7 +88,7 @@ const NACHForm: React.FC<NachFormProps> = ({
           Additional Sales Comment
         </Heading>
         <TextArea
-          isDisabled={isFormDisabled}
+          isDisabled={nachFormDisabled}
           onChange={onNachTextAreaChange}
           placeholder="Add comments here for sales team"
           label=""
@@ -118,7 +123,7 @@ const NACHForm: React.FC<NachFormProps> = ({
           variant="primary"
           isFullWidth
           isDisabled={
-            isFormDisabled ||
+            nachFormDisabled ||
             !(
               !(
                 nachForm[NachFormKeyNames.NACH_FORM_COMMENTS_FIELD]?.trim().length < 4 &&

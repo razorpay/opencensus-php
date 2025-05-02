@@ -18,12 +18,16 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await expect(page).toHaveTitle(/Razorpay Dashboard/);
     await waitForSalesAssistedScreenToLoad({ page });
     await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
-    await page.getByRole('heading', { name: 'Merchant Details' })
+    await page.getByRole('heading', { name: 'Merchant Details' });
 
     const merchants = salesOnboardedMerchantsMock.merchants;
-    merchants.forEach(async (merchant) => {
-      await expect(page.getByText(merchant.merchantId)).toBeVisible();
-    });
+    // Wait for all merchant ID checks to complete before proceeding
+    await Promise.all(
+      merchants.map(async (merchant) => {
+        await expect(page.getByText(merchant.merchantId)).toBeVisible();
+      }),
+    );
+
     const detailsLink = page.getByTestId('OsZjP3fjbIskDI');
     await detailsLink.click();
     await expect(page.getByText('Adding a New Merchant')).toBeVisible();
@@ -35,7 +39,7 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
 
     //MERCHANT KYC STEP
     const merchantKycStepCard = page.getByTestId('onboarding-step-card-2.merchantkyc');
-    await expect(merchantKycStepCard).toContainText('KYC Qualified');
+    await expect(merchantKycStepCard).toContainText('Activated');
   });
 
   test('should render activation filter chips', async ({ page, worker }) => {
@@ -88,9 +92,9 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await waitForSalesAssistedScreenToLoad({ page });
     await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
     await page.waitForSelector('text=Merchant Details');
-    const startDateInput = await page.getByRole('combobox', { name: /Start Date/i })
+    const startDateInput = await page.getByRole('combobox', { name: /Start Date/i });
     expect(startDateInput).toBeVisible();
-    const endDateInput = await page.getByRole('combobox', { name: /End Date/i })
+    const endDateInput = await page.getByRole('combobox', { name: /End Date/i });
     expect(endDateInput).toBeVisible();
     await startDateInput.click();
     const sevenDaysPresetChip = await page.getByText('Past 7 days');
@@ -106,9 +110,9 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await waitForSalesAssistedScreenToLoad({ page });
     await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
     await page.waitForSelector('text=Merchant Details');
-    const startDateInput = await page.getByRole('combobox', { name: /Start Date/i })
+    const startDateInput = await page.getByRole('combobox', { name: /Start Date/i });
     expect(startDateInput).toBeVisible();
-    const endDateInput = await page.getByRole('combobox', { name: /End Date/i })
+    const endDateInput = await page.getByRole('combobox', { name: /End Date/i });
     expect(endDateInput).toBeVisible();
     await startDateInput.click();
     const sevenDaysPresetChip = await page.getByText('Past 7 days');
@@ -128,7 +132,7 @@ test.describe.parallel('POS Sales Dashboard @flow=pos-sales-assisted @project=pa
     await expect(page).toHaveTitle(/Razorpay Dashboard/);
     await waitForSalesAssistedScreenToLoad({ page });
     await expect(page.getByText('POS Sales Dashboard')).toBeVisible();
-    await page.getByRole('heading', { name: 'Merchant Details' })
+    await page.getByRole('heading', { name: 'Merchant Details' });
     await expect(page.getByText("No data availableWe couldn't")).toBeVisible();
   });
 

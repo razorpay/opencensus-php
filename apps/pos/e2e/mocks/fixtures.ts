@@ -254,7 +254,7 @@ export const MerchantByIdMock = {
   createdAt: '2024-09-03T05:17:16.000Z',
   id: 'OsZiezQv15o1KL',
   activation: {
-    posActivationStatus: 'KYC_QUALIFIED_STB',
+    posActivationStatus: 'ACTIVATED',
     posActivationFlow: 'WHITELIST',
     status: null,
     isFormSubmitted: true,

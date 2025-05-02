@@ -217,7 +217,6 @@ test.describe
       'input[type="file"]',
       path.resolve(__dirname, '../files/test-document.png'),
     );
-    await page.pause();
     await expect(page.getByText('Some error occurred while uploading file!')).toBeVisible();
     const submitCTA = await page.getByLabel('send-link-btn');
     await expect(submitCTA).toContainText('Submit Merchant Details');
