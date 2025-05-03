@@ -8641,30 +8641,29 @@ class Processor
             $discountedAmountFromOE = $this->offer->calculateDiscountedAmountFromCalculatedBenefits(
                 $orderAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
 
-            $discountedAmountFromAPI = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
-
             if ($oeBenefitsExpEnabled) {
                 $payment->setAmount($discountedAmountFromOE);
 
             } else {
+                $discountedAmountFromAPI = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
                 $payment->setAmount($discountedAmountFromAPI);
-            }
 
-            if ($discountedAmountFromOE !== $discountedAmountFromAPI) {
+                if ($discountedAmountFromOE !== $discountedAmountFromAPI) {
 
-                $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
-                                    [
-                                        'offer_type' => $this->offer->getOfferType(),
-                                        'emi_subvention' => $this->offer->getEmiSubvention(),
-                                        'route' => app('api.route')->getCurrentRouteName(),
-                                    ]);
+                    $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
+                        [
+                            'offer_type' => $this->offer->getOfferType(),
+                            'emi_subvention' => $this->offer->getEmiSubvention(),
+                            'route' => app('api.route')->getCurrentRouteName(),
+                        ]);
 
-                $this->trace->info(
-                    TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
-                    [
-                        'API_DISCOUNT' => $discountedAmountFromAPI,
-                        'OFFERS_DISCOUNT' => $discountedAmountFromOE,
-                    ]);
+                    $this->trace->info(
+                        TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
+                        [
+                            'API_DISCOUNT' => $discountedAmountFromAPI,
+                            'OFFERS_DISCOUNT' => $discountedAmountFromOE,
+                        ]);
+                }
             }
 
             $input['order_amount'] = $orderAmount;
