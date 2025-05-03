@@ -137,6 +137,12 @@ final class Metric
     // Get Payout By Id
     const GET_PAYOUT_BY_ID_FLOW = 'payout_by_id_flow';
 
+    // Payouts Service Dual Write Legacy Flow Metric
+    const PAYOUTS_SERVICE_DUAL_WRITE_LEGACY_FLOW = 'payouts_service_dual_write_legacy_flow';
+
+    // Payouts Service Dual Write New Flow Metric
+    const PAYOUTS_SERVICE_DUAL_WRITE_NEW_FLOW = 'payouts_service_dual_write_new_flow';
+
     // Dimension constants
     const SOURCE         = 'source';
     const BATCH          = 'batch';

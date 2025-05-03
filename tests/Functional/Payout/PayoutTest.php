@@ -3680,6 +3680,86 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(EsSync::class, 1);
     }
 
+    public function testDualWriteForPayoutServicePayoutUnsettingNewColumnInPayoutsDetails()
+    {
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+        ];
+
+        $payoutDetailsData = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001,
+            'beneficiary_bank_code'     => 'SBIN'
+        ];
+
+        $payoutDetailsDataComparison = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001,
+        ];
+
+        \DB::connection('test')->table('ps_payout_details')->insert($payoutDetailsData);
+
+        Queue::fake(EsSync::class);
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $this->getDbLastEntity('payouts_details', 'live');
+
+
+        $payoutDetailsDataComparison[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG] = true;
+        unset($payoutDetailsDataComparison[PayoutsDetails\Entity::ID]);
+
+        $payoutDetailsDataComparison[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsDataComparison[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $payoutDetailsArray = $payoutDetails->toArray();
+
+        $this->assertArrayNotHasKey('beneficiary_bank_code', $payoutDetailsArray);
+
+        $payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $this->assertArraySubset($payoutDetailsDataComparison, $payoutDetailsArray);
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals('dual_write', $payoutMetadata->meta_name);
+        $this->assertGreaterThanOrEqual($timestamp, $data->timestamp);
+
+        $timestamp = $data->timestamp;
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals($timestamp, $data->timestamp);
+
+        Queue::assertPushed(EsSync::class, 1);
+    }
     public function testDualWriteForPayoutServicePayoutWithApiIdempotencyKeyNotPresent()
     {
         $payoutData = [
