@@ -132,7 +132,7 @@ class Core extends Base\Core
         return $deviceDetail;
     }
 
-    public function createDeviceDetailForNonPgosMerchants(string $merchantId)
+    public function createDeviceDetailForNonPgosMerchants(string $merchantId,$input)
     {
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
 
@@ -158,6 +158,7 @@ class Core extends Base\Core
                 $input = [
                     Entity::MERCHANT_ID => $merchantId,
                     Entity::USER_ID => $userId,
+                    Entity::SIGNUP_CAMPAIGN => $input[Entity::SIGNUP_CAMPAIGN] ?? "",
                 ];
 
                 try
