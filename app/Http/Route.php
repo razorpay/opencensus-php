@@ -5969,6 +5969,8 @@ class Route
         'bas_banking_accounts_notifications',
         'banking_account_service_cron_routes',
         'merchant_update_fraud_type',
+        'merchant_tags_bulk',
+        'save_payment_fraud',
         'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
         'tax_payments_internal_icici_action',
@@ -17981,6 +17983,8 @@ class Route
 
         'merchants-risk' => [
             'merchant_update_fraud_type',
+            'merchant_tags_bulk',
+            'save_payment_fraud',
         ],
 
         'auth_service' => [
