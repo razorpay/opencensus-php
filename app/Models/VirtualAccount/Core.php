@@ -692,10 +692,9 @@ class Core extends Base\Core
 
     public function close(Entity $virtualAccount)
     {
-        if( ($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true))
+        if( ($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true) and
+            ($virtualAccount->isBalanceTypeBanking() === true))
         {
-            $virtualAccount->getValidator()->validateOfBankingBalance();
-
             // TODO: Remove this check when RBL VA close API is live from bank end
             $this->verifyMerchantDoesNotBelongToRblCollectx();
 

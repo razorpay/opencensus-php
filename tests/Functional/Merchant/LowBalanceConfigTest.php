@@ -923,6 +923,84 @@ class LowBalanceConfigTest extends TestCase
         $this->assertEquals(0, $lowBalanceConfig1['autoload_amount']);
     }
 
+    public function testLowBalanceConfigsAlertsForDirectAccountPrioritisingGatewayBalanceForAxis()
+    {
+        Mail::fake();
+
+        $this->setLimitViaRedisKeyForFetchingConfigs(2);
+
+        $this->setLimitViaRedisKeyForFetchingConfigs(2);
+
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
+            'contact_name'                  => 'Test Account',
+            'contact_email'                 => 'test@razorpay.com',
+            'contact_mobile'                => '9876543210',
+            'business_name'                 => 'PB_Test',
+            'business_registered_address'   => 'Flat no 12, opp Adugodi Police Station',
+        ]);
+
+        // direct account 1 with statement fetch more updated
+        $this->fixtures->on('live')->create('balance', [
+            'id'             => 'xbalance000003',
+            'account_number' => '2224440041626908',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'merchant_id'    => '10000000000000',
+            'channel'        => 'axis',
+            'balance'        => 16000,
+            'updated_at'     => 1592556993
+        ]);
+
+        $this->fixtures->on('live')->create('banking_account_statement_details', [
+            'id'                      => 'xbasd000000003',
+            'account_number'          => '2224440041626908',
+            'status'                  => 'active',
+            'merchant_id'             => '10000000000000',
+            'balance_id'              => 'xbalance000003',
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'channel'                 => 'axis',
+        ]);
+
+        $lowBalanceConfig1 = $this->fixtures->on('live')->create('low_balance_config', [
+            'id'                  => 'F4QO8iZ9Valbb2',
+            'balance_id'          => 'xbalance000003',
+            'threshold_amount'    => '2501',
+            'notification_emails' => 'rtz@razorpay.com,xyz@razorpay.com',
+            'notify_after'        => '21600', // 6 hrs
+            'status'              => 'enabled',
+            'created_at'          => 1592556993
+        ]);
+
+        $observedResponse = $this->processLowBalanceAlertsForMerchants();
+
+        Mail::assertQueued(LowBalanceAlert::class, 1);
+
+        $lowBalanceConfig1 = $this->getDbEntityById('low_balance_config', $lowBalanceConfig1->getId(), 'live');
+
+        $expectedResponse =
+            [
+                'batch_0' => [
+                    $lowBalanceConfig1->getId()
+                ]
+            ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+
+        // email wasn't sent for lowBalanceConfig1
+        $this->assertNotEquals(0, $lowBalanceConfig1->getNotifyAt());
+
+        // Asserting that no adjustments were created in this flow since all low balance configs
+        // created were of type notification
+        $this->assertNull($this->getDbLastEntity('adjustment', 'live'));
+
+        // Asserting that the type of the low balance config created was of type `notification`
+        // and that the default autoload_amount is set to `0`
+        $this->assertEquals(Entity::NOTIFICATION, $lowBalanceConfig1['type']);
+        $this->assertEquals(0, $lowBalanceConfig1['autoload_amount']);
+    }
+
     // firstly cron is run and email is sent for 3 configs with balance lower than threshold.
     // in the subsequent cron run , email should not be sent if time is within notify_after hrs.
     public function testLowBalanceConfigsAlertsInNextRunOfCron()

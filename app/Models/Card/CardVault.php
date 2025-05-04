@@ -502,7 +502,7 @@ class CardVault extends Base\Core
     }
 
 
-    public function createTokenizedCard($tokenInput, $merchant, $iinInfo)
+    public function createTokenizedCard($tokenInput, $merchant, $iinInfo, $isTokenContinuityFlow = false)
     {
         $input['card']     = $tokenInput['card'];
         $input['iin']      = $iinInfo;
@@ -528,6 +528,22 @@ class CardVault extends Base\Core
 
         if (empty($cardInput['customer_id']) === false) {
             $input['customer_id'] = $tokenInput['customer_id'];
+        }
+
+        if($isTokenContinuityFlow === true)
+        {
+            $input['provider']  = $tokenInput['provider'];
+            $input['additional_detail'] = [
+                "terminal_id" => $tokenInput['additional_detail']['terminal_id'] ?? "",
+                "provider_reference_id1" => $tokenInput['additional_detail']['provider_reference_id1'] ?? "",
+                "provider_reference_id2" => $tokenInput['additional_detail']['provider_reference_id2'] ?? "",
+                "par" => $tokenInput['card']['par'] ?? "",
+                "token_expiry_month" => $tokenInput['card']['token_expiry_month'] ?? "",
+                "token_expiry_year" => isset($tokenInput['card']['token_expiry_year'])
+                    ? substr($tokenInput['card']['token_expiry_year'], -2) : "",
+                "status" => "active",
+                "type" => "network"
+            ];
         }
 
         return $this->app['card.cardVault']->createTokenizedCard($input);

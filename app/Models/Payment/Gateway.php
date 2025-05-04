@@ -61,6 +61,7 @@ class Gateway
     const AXIS                   = 'axis';
     const IDFC                   = 'idfc';
     const YESBANK                = 'yesbank';
+    const JKBANK                 = 'jkbank';
 
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
@@ -129,6 +130,7 @@ class Gateway
     const UPI_SBI                = 'upi_sbi';
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_JKBANK             = 'upi_jkbank';
     const UPI_HULK               = 'upi_hulk';
     const UPI_RBL                = 'upi_rbl';
     const UPI_AXISOLIVE          = 'upi_axisolive';
@@ -449,6 +451,7 @@ class Gateway
         self::PAYTM                 => self::PAYTM,
         self::UPI_AXIS              => self::AXIS,
         self::UPI_ICICI             => self::ICICI,
+        self::UPI_JKBANK            => self::JKBANK,
         self::UPI_MINDGATE          => self::HDFC,
         self::WALLET_PAYPAL         => self::WALLET_PAYPAL,
         self::WORLDLINE             => [
@@ -4004,6 +4007,7 @@ class Gateway
         Gateway::PAYU,
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
+        Gateway::UPI_YESBANK,
     ];
 
     public static $cardMandateGateways = [
@@ -4022,6 +4026,7 @@ class Gateway
         Gateway::UPI_AXIS,
         Gateway::UPI_RZPAPB,
         Gateway::BILLDESK_OPTIMIZER,
+        Gateway::UPI_YESBANK,
     ];
 
     public static $recurringCardNetworks = [
@@ -4753,6 +4758,9 @@ class Gateway
     public static $s2sMandateCallbackGateways = [
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
+        Gateway::UPI_RZPAPB,
+        Gateway::UPI_YESBANK,
+        Gateway::UPI_AXIS,
     ];
 
     /**
@@ -5041,6 +5049,7 @@ class Gateway
         IFSC::BARB,
         IFSC::FDRL,
         IFSC::IDFB,
+        IFSC::AUBL
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -5061,6 +5070,7 @@ class Gateway
         IFSC::IDFB,
         IFSC::FDRL,
         IFSC::IDFB,
+        IFSC::AUBL,
     ];
 
     public static $emiBanksUsingCardAndEmiTerminals = [
@@ -6495,6 +6505,7 @@ class Gateway
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,
+                self::WALLET_PHONEPE,
                 self::WALLET_BAJAJ,
                 self::WALLET_PAYZAPP,
                 self::WALLET_PAYPAL,

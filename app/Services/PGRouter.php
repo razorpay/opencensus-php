@@ -179,7 +179,7 @@ class PGRouter
 
         $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
 
-        if ($this->mode == Mode::TEST && (app()->isEnvironmentProduction() === true)) {
+         if ($this->mode == Mode::TEST){
             $this->config = $app['config']->get('applications.pg_router_test');
         } else {
             $this->config = $app['config']->get('applications.pg_router');
@@ -533,6 +533,12 @@ class PGRouter
                         (new Payment\Entity)->modifyInput($input);
 
                         $paymentEntity = (new Payment\Entity)->forceFill($input);
+
+                        if ((isset($payment['data']['upi']) === true) and
+                                (isset($payment['data']['upi']['flow']) === true))
+                        {
+                            $paymentEntity->setAttribute(Payment\Entity::FLOW, $payment['data']['upi']['flow']);
+                        }
                     }
 
                     if (($card !== null) and ($withCard === true))
@@ -678,6 +684,12 @@ class PGRouter
                 (new Payment\Entity)->modifyInput($input);
 
                 $payment = (new Payment\Entity)->forceFill($input);
+
+                if ((isset($response['body']['data']['upi']) === true) and
+                    (isset($response['body']['data']['upi']['flow']) === true))
+                {
+                    $payment->setAttribute(Payment\Entity::FLOW, $response['body']['data']['upi']['flow']);
+                }
             }
 
             if ($card !== null)

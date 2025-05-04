@@ -24,6 +24,8 @@ class Service extends Base\Service
 
         $workflowAction = $this->repo->workflow_action->findOrFailPublic($actionId);
 
+        $this->app['config']['workflow_guard.current_workflow_id'] = $workflowAction->getWorkflowId();
+
         $permissionName = $workflowAction->permission->getName();
 
         if (($permissionName === Constants::EDIT_ACTIVATE_MERCHANT) and (isset($input[Constants::APPROVED_WITH_FEEDBACK]) === true) and ($input[Constants::APPROVED_WITH_FEEDBACK] == 1))

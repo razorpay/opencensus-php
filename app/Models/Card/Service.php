@@ -131,7 +131,6 @@ class Service extends Base\Service
 
         $card->setGlobalFingerPrint($fingerprint);
 
-        (new Card\Core())->saveParValue($card, null);
 
         $this->repo->saveOrFail($card);
 

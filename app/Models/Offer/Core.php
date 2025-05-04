@@ -24,7 +24,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
 use RZP\Error\PublicErrorDescription;
-use Razorpay\Trace\Logger as Trace;
+use Monolog\Logger;
 use RZP\Error\Error;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
@@ -1237,7 +1237,44 @@ class Core extends Base\Core
 
         return $fetchExperimentEnabled;
     }
+     //Offer Benefits can be used to modify final amount
+    public function shouldUseBenefitsFromOffersEngine($merchantId): bool
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return false;
+        }
 
+        if ($merchantId === "") {
+            return false;
+        }
+
+        try {
+
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get(Constants::OFFERS_ENGINE_BENEFITS_DECOMP_EXP),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            return ($variant === 'variant_on');
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+        }
+        return false;
+    }
     public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool
     {
         if (app()->runningUnitTests() === true)
@@ -1329,6 +1366,10 @@ class Core extends Base\Core
         $exception = null;
 
         $success = 0;
+        if($input[Entity::TYPE] == Entity::CLUBBED)
+        {
+            $input[Entity::TYPE] = Entity::INSTANT;
+        }
 
         // both no cost and low cost requests are empty
         if (empty($input[Entity::EMI_DURATIONS]) === true && empty($input[Entity::LOW_COST_EMI]) === true)
@@ -1449,8 +1490,8 @@ class Core extends Base\Core
         return $providerReferenceId;
     }
 
-    public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine,
-                                           Payment\Entity $payment, Order\Entity $order, Entity $offer, bool $isDummyPayment)
+    public function validateOnOffersEngine(bool $shouldValidateOnOffersEngine, Payment\Entity $payment,
+                                           Order\Entity $order, Entity $offer, bool $isDummyPayment, $input = [])
     {
         if ($shouldValidateOnOffersEngine === false)
         {
@@ -1464,7 +1505,9 @@ class Core extends Base\Core
         // perform checks if we can call offers engine
         if ($payment->isMethodCardOrEmi() === true)
         {
-            $iin = $this->fetchCardIIN($payment);
+
+            $iin = $this->fetchIinForPayment($payment, $input , $isDummyPayment);
+
 
             if ($isDummyPayment === true)
             {
@@ -1538,5 +1581,129 @@ class Core extends Base\Core
                 'OE_RESPONSE' => $oeResp
             ]);
         }
+    }
+
+    public function fetchAndValidateOfferForOrderOnOffersEngine(Order\Entity $order, Merchant\Entity $merchant, String $offerId)
+    {
+        $offer = new Entity();
+        try
+        {
+            $oeResp = $this->offersEngine->validateOfferForOrder(
+                $merchant->getId(),
+                $order,
+                $offerId);
+
+            $offer->setAttribute(Entity::ID, Entity::verifyIdAndStripSign($oeResp['offer_id']));
+
+            $isOfferValidAtOE = isset($oeResp) === true && isset($oeResp['calculated_benefits']) === true;
+
+            if ($isOfferValidAtOE === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                    null);
+            }
+
+            return [
+                Constants::VALIDATE_OFFER_RESPONSE => $oeResp,
+                Constants::VALIDATE_OFFER_CALLED => true,
+                Constants::OFFER => $offer  // Dummy entity only containing offer_id
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            // do nothing
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                [
+                    'offer_id' => $offerId,
+                    'order_id' => $order->getPublicId(),
+                ]);
+        }
+    }
+
+    public function extractCardIinForSavedCard($payment)
+    {
+
+        // search for card data if already saved card
+        $token        = $payment->getGlobalOrLocalTokenEntity();
+        $networkCard = $token->card;
+
+        if ((empty($networkCard) === false) and
+            ($networkCard->isNetworkTokenisedCard() === true))
+        {
+            $iin = Card\IIN\IIN::getTransactingIinforRange($networkCard->getTokenIin()) ?? substr($networkCard->getTokenIin(), 0, 6);
+        }
+        else
+        {
+            $iin = $networkCard->getIin();
+        }
+
+        return $iin;
+    }
+
+    public function fetchIinForPayment($payment, $input, $isDummyPayment)
+    {
+        $iin = $this->fetchCardIIN($payment);
+
+        if ($isDummyPayment === true)
+        {
+            return $iin;
+        }
+
+        try
+        {
+            $shouldFetchIinFromBinService = $this->shouldRouteToOffersEngineForCreation(
+                $payment->getMerchantId(), Constants::OE_FETCH_IIN_FROM_BIN);
+
+            if ($shouldFetchIinFromBinService === true)
+            {
+                if (empty($input['token']) === false)
+                {
+                    $iin = $this->extractCardIinForSavedCard($payment);
+
+                    $this->trace->info(TraceCode::OE_IIN_FETCHED_FROM_BIN_SERVICE_SAVED_CARD, [
+                        'iin' => $iin,
+                    ]);
+                }
+                else if (empty($input['card']['number']) === false)
+                {
+
+                    $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
+
+                    $trimmed_number = str_replace('-', '', $trimmed_number);
+
+                    if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true)
+                    {
+                        $iin_token = substr($trimmed_number, 0, 9);
+
+                        $iin = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? substr($iin_token,0,6);
+
+                        $iin = substr($trimmed_number, 0, 9);
+
+                        $this->trace->info(TraceCode::SENDING_IIN_TO_OE_THIRD_PARTY_TOKENIZATION, [
+                            'iin' => $iin,
+                        ]);
+                    }
+                    else
+                    {
+                        $iin = substr($trimmed_number, 0, 9);
+
+                        $this->trace->info(TraceCode::SENDING_IIN_TO_OE_AS_CARD_NUMBER, [
+                            'iin' => $iin,
+                        ]);
+                    }
+
+                }
+
+                return $iin;
+            }
+        }
+        catch (throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::OE_BIN_SERVICE_IIN_FETCH_FAILED, [
+                'iin' => $iin
+            ]);
+        }
+
+        return $iin;
     }
 }

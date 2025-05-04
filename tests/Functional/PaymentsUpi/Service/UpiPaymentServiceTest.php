@@ -69,6 +69,12 @@ class UpiPaymentServiceTest extends TestCase
         {
             return $this->getRazoxVariant($feature, 'api_upi_airtel_v1', 'upips');
         });
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = "upi_airtel";
     }
 
     public function mockDcsService($retValue = null)
@@ -870,7 +876,22 @@ class UpiPaymentServiceTest extends TestCase
     public function testValidateVpaProxySuccessForNonNumericVpa()
     {
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
-        $this->setMockRazorxTreatment(['validate_vpa_rearch_ups' => 'on']);
+
+        $splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $splitzMock);
+
+        $splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturnUsing(function ($input) {
+                return [
+                    "response" => [
+                        "variant" => [
+                            "name" => "enable",
+                        ],
+                    ],
+                ];
+            });
 
         $input = [
             'vpa' => 'razorpay@rzp',

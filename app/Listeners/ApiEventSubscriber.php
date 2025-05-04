@@ -506,44 +506,12 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            $properties = [
-                'id'            => $payment->getMerchantId(),
-                'experiment_id' => $this->app['config']->get('app.subscriptions_intl_auto_payments_handler_exp'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $payment->getMerchantId(),
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $varName = $response['response']['variant']['name'] ?? '';
-
-            if ($varName === 'variant_on')
+            if (($payment->hasSubscription() === true) and
+                ($payment->isApiBasedEmandateAsyncPayment() === false))
             {
-                $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
-                $country = $merchant->getCountry();
-                $isInternationalRecurringAuto = ((($payment->isInternational() === true) or ($country == 'MY'))
-                    and ($payment->isRecurringTypeAuto() === true));
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-                if (($payment->hasSubscription() === true) and
-                    ($payment->isApiBasedEmandateAsyncPayment() === false) and
-                    (($isInternationalRecurringAuto === false) or ($payment->getOffer() !== null)))
-                {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-                }
-            }
-            else
-            {
-                if (($payment->hasSubscription() === true) and
-                    ($payment->isApiBasedEmandateAsyncPayment() === false))
-                {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-                }
+                $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
             }
         }
         catch (\Throwable $ex)
@@ -848,7 +816,7 @@ class ApiEventSubscriber extends Base\Core
             return true;
         }
 
-        if ($productType === ProductType::PAYMENT_PAGE) {
+        if (PaymentLink\Entity::IsNCADecompProduct($productType)) {
             return $this->shouldSendPPCallbackToNoCodeAppsService($payment->getMerchantId());
         }
 
@@ -1293,6 +1261,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onTokenCancellationInitiated($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onSettlementProcessed($settlement)
     {
         $payload = $this->getSettlementPayload($settlement);
@@ -1451,7 +1426,33 @@ class ApiEventSubscriber extends Base\Core
     {
         if ($payout->isOfMerchantTransaction() === true)
         {
-            (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+            try
+            {
+                $txn = $payout->transaction;
+                if ((empty($txn) === true) and $payout->isBalanceAccountTypeShared())
+                {
+                    $txn = (new Transaction\Ledger\Core())->findByIdFromLedger($payout->getTransactionId(), $payout->getMerchantId());
+                }
+                if (empty($txn) === false)
+                {
+                    (new Transaction\Notifier($txn, $this->event))->notify();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::PAYOUT_TRANSACTION_NOTIFY_TRANSACTION_NOT_FOUND, [
+                        'payout_id' => $payout->getId(),
+                        'payout_event' => 'processed',
+                    ]);
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TRANSACTION_NOTIFY_FAILURE, [
+                    'payout_id' => $payout->getId(),
+                    'error_message' => $e->getMessage(),
+                    'event' => 'processed'
+                ]);
+            }
         }
 
         $payload = $this->getPayoutPayload($payout);
@@ -1493,11 +1494,37 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPayoutReversed(Payout\Entity $payout)
     {
-         if (($payout->isOfMerchantTransaction() === true) and
+        if (($payout->isOfMerchantTransaction() === true) and
              ($payout->isBalanceAccountTypeDirect() === false))
-         {
-             (new Transaction\Notifier($payout->transaction, $this->event))->notify();
-         }
+        {
+            try
+            {
+                $txn = $payout->transaction;
+                if(empty($txn) === true)
+                {
+                    $txn = (new Transaction\Ledger\Core())->findByIdFromLedger($payout->getTransactionId(), $payout->getMerchantId());
+                }
+                if(empty($txn) === false)
+                {
+                    (new Transaction\Notifier($txn, $this->event))->notify();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::PAYOUT_TRANSACTION_NOTIFY_TRANSACTION_NOT_FOUND, [
+                        'payout_id' => $payout->getId(),
+                        'payout_event' => 'reversed',
+                    ]);
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TRANSACTION_NOTIFY_FAILURE, [
+                    'payout_id' => $payout->getId(),
+                    'error_message' => $e->getMessage(),
+                    'event' => 'reversed'
+                ]);
+            }
+        }
 
         $payload = $this->getPayoutPayload($payout);
         $this->dispatchEventToStork($payload);
@@ -2444,7 +2471,7 @@ class ApiEventSubscriber extends Base\Core
         return $merchant;
     }
 
-    protected function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
+    public function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
     {
         $payload = $payment->toArrayAdmin();
 
@@ -2473,12 +2500,16 @@ class ApiEventSubscriber extends Base\Core
             $card = $payment->card;
             $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
 
-            $payload['card'] = [
+            $cardDetails = $card->toArrayPublic();
+
+            $cardFormatted = [
                 'number'  => '**** **** **** ' . $card->getLast4(),
                 'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
                 'network' => $card->getNetworkCode(),
                 'color'   => $card->getNetworkColorCode()
             ];
+
+            $payload['card'] = array_merge($cardDetails, $cardFormatted);
         }
 
         if ($payment->hasInvoice() === true)

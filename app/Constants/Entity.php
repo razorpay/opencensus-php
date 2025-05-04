@@ -24,6 +24,7 @@ class Entity
     const P2P                        = 'p2p';
     const VPA                        = 'vpa';
     const LINKED_NUMBER              = 'linked_number';
+    const MOBILE                     = 'mobile';
     const MPAN                       = 'mpan';
     const CARD                       = 'card';
     const PLAN                       = 'plan';
@@ -1693,6 +1694,8 @@ class Entity
         self::TOKEN      => 'tokens',
         self::TRANSFER   => 'route',
         self::PAYMENT_METHOD_TRANSFER   => 'route',
+        self::TRANSFER_PAYMENT => 'route',
+        self::CARD_MANDATE => 'card.payments',
     ];
 
     protected static $externalRepoConfigKey = [
@@ -1704,6 +1707,7 @@ class Entity
         self::TOKEN    => Models\Admin\ConfigKey::TOKENS_SERVICE_ENABLED,
         self::TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
         self::PAYMENT_METHOD_TRANSFER => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
+        self::TRANSFER_PAYMENT => Models\Admin\ConfigKey::ROUTE_SERVICE_ENABLED,
     ];
 
     public static $archivalFallbackConfigKey = [

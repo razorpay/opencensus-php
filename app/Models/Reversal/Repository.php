@@ -283,7 +283,7 @@ class Repository extends Base\Repository
         $payoutsFailedAtColumn      = $this->repo->payout->dbColumn(PayoutEntity::FAILED_AT);
 
         return $this->newQuery()
-                    ->select($reversalsIdColumn, $payoutsFeesColumn)
+                    ->select($reversalsIdColumn, $payoutsFeesColumn, $reversalsEntityIdColumn)
                     ->join($payoutsTable, $reversalsEntityIdColumn, '=', $payoutsIdColumn)
                     ->merchantID($merchantId)
                     ->where($entityTypeColumn, Type::PAYOUT)

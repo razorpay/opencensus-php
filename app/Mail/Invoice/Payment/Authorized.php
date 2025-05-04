@@ -6,6 +6,7 @@ use RZP\Mail\Payment\Base;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Invoice\Type;
+use RZP\Trace\TraceCode;
 
 /**
  * We are extending Mail\Payment\Base class here instead of Invoice|base
@@ -41,7 +42,7 @@ class Authorized extends Base
 
         $amount = $this->data['payment']['amount'];
 
-        $subject = "Payment of Rs. {$amount} is successful (via Razorpay)";
+        $subject = "Payment of {$amount} is successful (via Razorpay)";
 
         $this->subject($subject);
 
@@ -87,6 +88,56 @@ class Authorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $app = \App::getFacadeRoot();
+
+        $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
+
+        $traceData = [
+            'merchant_id' => $this->data['merchant']['id'],
+            'view' => $this->view,
+            'data' => $this->data,
+            'isStorkEmailVIAEnabled' => $isStorkEmailVIAEnabled
+        ];
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_PAYMENT_AUTHORIZED , $traceData);
+
+        return $isStorkEmailVIAEnabled;
+    }
+
+    protected function getParamsForStork(): array
+    {
+        return [
+            'template_name' => $this->view,
+            'template_namespace' => 'payments_payment_links',
+            'org_id' => $this->data['org']['id'],
+            'params' => $this->data
+        ];
+    }
+
+    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
+        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_PAYMENT_AUTHORIZED;
+
+        $experimentId = 'app.send_payment_link_emails_via_stork_payment_authorized';
+
+        try {
+            $app = \App::getFacadeRoot();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
+            ];
+            $response = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+
+        } catch (\Exception $e) {
+            $app['trace']->traceException($e, null, $traceCode);
+        }
         return false;
     }
 }

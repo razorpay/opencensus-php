@@ -9,7 +9,16 @@ use Illuminate\Http\UploadedFile;
 
 class UpiJuspayPaymentServiceTest extends UpiPaymentServiceTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
 
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_juspay';
+    }
     public function testPaymentJuspayReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

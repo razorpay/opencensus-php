@@ -211,7 +211,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|string|max:200|utf8',
         Entity::CONTACT_MOBILE        => 'sometimes|nullable|max:15|contact_syntax',
-//        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
+        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::SETTINGS              => 'nullable|associative_array',
         Entity::METADATA              => 'sometimes|array',
     ];
@@ -267,6 +267,7 @@ class Validator extends Base\Validator
         Entity::APP               => 'sometimes|string',
         MDEntity::REFERRAL_CODE   => 'filled|string',
         Entity::DEFAULT_MERCHANT_ID => 'sometimes|alpha_num|size:14',
+        'merchant_invitation'       => 'sometimes|string',
     ];
 
     protected static $loginMobileRules = [
@@ -368,7 +369,7 @@ class Validator extends Base\Validator
     protected static $preSignupRules = [
         Entity::NAME                  => 'sometimes|alpha_space|max:200|utf8',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15|contact_syntax',
-//        Entity::EMAIL                 => 'sometimes|email'
+        Entity::EMAIL                 => 'sometimes|email'
     ];
 
     protected static $teamManagementRules = [
@@ -380,6 +381,14 @@ class Validator extends Base\Validator
     protected static $addSalesUserToMerchantRules = [
         Entity::EMAIL       => 'required|email',
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+    ];
+
+    protected static $getOnboardingServiceRules = [
+        Entity::MERCHANT_ID                     => 'required|alpha_num|size:14',
+        Entity::USER_ID                         => 'required|alpha_num|size:14',
+        Merchant\Entity::COUNTRY_CODE           => 'required|string|max:2|in:IN,MY,SG',
+        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => 'sometimes|string',
+        DeviceDetail\Constants::WORKFLOW_TYPE   => 'sometimes|string',
     ];
 
     protected static $createMerchantRules = self::CREATE_MERCHANT_RULES;
@@ -617,6 +626,14 @@ class Validator extends Base\Validator
         'user_ids.*' => 'required|alpha_num|size:14',
         'user_emails' => 'sometimes|array|max:20',
         'user_emails.*' => 'required|email',
+        'user_contacts' => 'sometimes|array|max:20',
+        'user_contacts.*' => 'required|contact_syntax',
+    ];
+
+    protected static $getUsersMerchantsRules = [
+        'product'                    => 'sometimes|in:primary,banking,billing',
+        'intent'                     => 'sometimes|in:auth',
+        'default_merchant_id'        => 'sometimes',
     ];
 
     protected static $teamManagementValidators = [

@@ -310,10 +310,26 @@ class Service extends Base\Service
                 'input'       => $input,
             ]
         );
+        $merchantId = $this->merchant->getId();
 
-        $transfer =  $this->repo
-                           ->transfer
-                           ->findByPublicIdAndMerchant($id, $this->merchant);
+        $isExpEnabled = $this->isPatchTransferExpEnabled($merchantId, $input);
+        
+        $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($isExpEnabled && $transfer->isExternal())
+        {
+            // make request to micro service
+            $resp = App::getFacadeRoot()['route']->patchTransfer($id,$input);
+
+            $this->trace->info(
+                TraceCode::PATCH_TRANSFER_VIA_ROUTE_SERVICE,
+                [
+                    'input'      => $input,
+                    'response'   => $resp,
+                ]
+            );
+            return $resp;
+        }
 
         $transfer = $this->core->edit($transfer, $input);
 
@@ -682,7 +698,7 @@ class Service extends Base\Service
 
         $startTime = microtime();
 
-        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($keyMerchantIds, $limit, $olderThanMinutes);
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -837,11 +853,9 @@ class Service extends Base\Service
 
         $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
 
-        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
-
         $startTime = microtime();
 
-        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $keyMerchantIds, $limit, $olderThanMinutes);
+        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -2686,6 +2700,7 @@ class Service extends Base\Service
 
         $priority = $input['priority'] ?? 'P0';   // P0/P1
 
+        $slackChannel = $input['slack_channel'] ?? 'payments-route-alerts';
         $alertData = [];
 
         $orderTransfersCount = 0;
@@ -2731,7 +2746,7 @@ class Service extends Base\Service
 
             $alertData['severity'] = $priority === 'P0' ? 'critical' : 'warning';
 
-            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority);
+            $this->pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority, $slackChannel);
         }
 
         $this->trace->info(
@@ -2761,9 +2776,9 @@ class Service extends Base\Service
         return [$order_transfers_count, $payment_transfers_count];
     }
 
-    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority)
+    protected function pushPendingTransfersAlert($alertData, $startOffsetMins, $endOffsetMins, $priority, $slackChannel)
     {
-        $channel = $this->app->config->get('slack.channels.payments-route-alerts');
+        $channel = $this->app->config->get('slack.channels.' . $slackChannel);
 
         $headline = sprintf(
             '<!subteam^S01JSULB27N> %s Alert: Pending transfers since %s minutes in last %s minutes',
@@ -2791,6 +2806,41 @@ class Service extends Base\Service
         RuntimeManager::setMaxExecTime(600);
     }
 
+    public function isPatchTransferExpEnabled(string $merchantId, array $transferInput): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => Base\UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.patch_transfer_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::PATCH_TRANSFER_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.patch_transfer_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
     public function isDirectTransferRearchExpEnabled(string $merchantId, array $transferInput): bool
     {
         if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
@@ -3007,4 +3057,44 @@ class Service extends Base\Service
 
         return $isCustomerWalletTransfer || $isPartnershipTransfer;
     }
+
+    public function isAmountTransferredRearchExpEnabled(string $paymentId, string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.amount_transferred_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::AMOUNT_TRANSFERRED_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.amount_transferred_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
 }

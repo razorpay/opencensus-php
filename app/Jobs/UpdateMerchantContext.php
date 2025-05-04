@@ -155,6 +155,17 @@ class UpdateMerchantContext extends Job
 
             $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetail);
 
+            $detailService = new Merchant\Detail\Service();
+            $splitzResult = $detailService->isAMPDeprecationExperimentEnabled($merchant->getId());
+
+            if ($splitzResult == "enable" && $newActivationStatus === Status::ACTIVATED_MCC_PENDING && (new Merchant\Core)->isRegularMerchant($merchant) === true)
+            {
+                $newActivationStatus = Status::ACTIVATED;
+
+                $service = new Merchant\Service();
+                $service->transitionToNextBDDVerificationStatus($merchant->getId(), DetailConstant::PENDING, $merchant);
+            }
+
             // Experiment For Automation Activation For Website Merchant
 
             $splitzResult = $this->isAutomationActivationExperimentEnabled($merchant);

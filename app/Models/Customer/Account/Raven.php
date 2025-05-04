@@ -233,11 +233,17 @@ class Raven extends Base\Core
             CASE 'save_card_v9':
                 return 'sms.checkout.save_card_otp_v9';
 
-            case 'instant_emi_login':
+            CASE 'instant_emi_login':
                 return 'sms.capital_bnpl.instant_emi_login';
             
-            case 'sso_login':
+            CASE 'sso_login':
                 return 'sms.magic_checkout.sso_login';
+
+            CASE 'club_checkout_login':
+                return 'sms.razorpay_club.club_checkout_login_otp';
+
+            CASE 'mweb_club_checkout_login':
+                return 'sms.razorpay_club.mweb_club_checkout_login_otp';
 
             default:
                 return 'sms.otp';
@@ -278,6 +284,8 @@ class Raven extends Base\Core
             'save_card_v9',
             'instant_emi_login',
             'sso_login',
+            'club_checkout_login',
+            'mweb_club_checkout_login',
         ]);
     }
 }

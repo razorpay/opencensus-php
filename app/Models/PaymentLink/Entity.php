@@ -400,6 +400,18 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_PAGE_ITEMS,
     ];
 
+    public static function IsNCADecompProduct($productType): bool {
+        return in_array(
+            $productType,
+            [
+                Order\ProductType::PAYMENT_PAGE,
+                Order\ProductType::PAYMENT_HANDLE,
+                Order\ProductType::PAYMENT_BUTTON
+            ],
+            true
+        );
+    }
+
     /**
      * @param string $id
      *

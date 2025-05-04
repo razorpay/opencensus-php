@@ -25,6 +25,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Key;
 use RZP\Models\Pricing;
+use RZP\Models\Partner\KycAccessState;
 
 
 class EventServiceProvider extends ServiceProvider
@@ -196,6 +197,12 @@ class EventServiceProvider extends ServiceProvider
         Pricing\EventDeleted::class => [
             Listeners\PricingEventListener::class . '@onDeleted',
         ],
+        KycAccessState\EventSaved::class => [
+            Listeners\KycAccessStateListener::class . '@onSaved',  
+        ],
+        KycAccessState\EventDeleted::class => [
+            Listeners\KycAccessStateListener::class . '@onDeleted',
+        ],  
     ];
 
     public function boot()

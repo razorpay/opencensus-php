@@ -1260,6 +1260,45 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountWithActivationDetailWithSalesTeamAsMMHunting()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $merchantId = $bankingAccount->merchant->getId();
+
+        $this->createMerchantDetail([
+                'merchant_id' => $merchantId,
+                'business_name' => 'CA Business']
+        );
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        $this->assertEquals('mm_hunting', $activationDetailEntity['sales_team']);
+
+        Mail::assertQueued(XProActivation::class);
+
+        return $bankingAccount;
+    }
+
     public function testCreateBankingAccountWithActivationDetailWithBusinessTypeAsOnePersonCompanies()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();

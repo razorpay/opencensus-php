@@ -12,11 +12,14 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\PaymentsUpiRecurringTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
+
 class UpiRecurringPaymentCreateTest extends TestCase
 {
     use PaymentTrait;
     use InteractsWithSession;
     use PaymentsUpiRecurringTrait;
+
+
 
     protected function setUp(): void
     {
@@ -213,14 +216,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $request['content']['description'] = 'success_recurring_collect';
 
@@ -267,15 +263,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -338,15 +326,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $request['content']['description'] = 'success_recurring_collect';
 
@@ -399,15 +379,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $request['content']['description'] = 'success_recurring_collect';
 
@@ -459,15 +431,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $request['content']['description'] = 'success_recurring_collect';
 
@@ -588,15 +552,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
         $this->terminalId = $terminal->getId();
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $this->createDbUpiMandate(['frequency' => 'as_presented']);
 
@@ -631,15 +587,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $this->createDbUpiMandate();
 
@@ -724,15 +672,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === "allow_optimizer_upi_recurring")
-            {
-                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
-            }
-
-            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
-        });
+        $this->mockSplitzTreatmentForAutopayOptimizerUpi('variant_on','control','enabled');
 
         $this->createDbUpiMandate();
 

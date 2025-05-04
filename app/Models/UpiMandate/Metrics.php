@@ -25,9 +25,10 @@ class Metrics
     const UPI_AUTOPAY_MANDATE_EXPIRED   = 'upi_autopay_mandate_expired';
 
     //Token Metrics
-    const UPI_AUTOPAY_TOKEN_INITIATED = 'upi_autopay_token_initiated';
-    const UPI_AUTOPAY_TOKEN_CONFIRMED = 'upi_autopay_token_confirmed';
-    const UPI_AUTOPAY_TOKEN_CANCELLED = 'upi_autopay_token_cancelled';
+    const UPI_AUTOPAY_TOKEN_INITIATED              = 'upi_autopay_token_initiated';
+    const UPI_AUTOPAY_TOKEN_CONFIRMED              = 'upi_autopay_token_confirmed';
+    const UPI_AUTOPAY_TOKEN_CANCELLED              = 'upi_autopay_token_cancelled';
+    const UPI_AUTOPAY_TOKEN_CANCELLATION_INITIATED = 'upi_autopay_token_cancellation_initiated';
 
     //Reminder Metrics
     const UPI_AUTOPAY_REMINDER_REQUEST_PDN    = 'upi_autopay_reminder_request_pdn';

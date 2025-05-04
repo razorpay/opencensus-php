@@ -133,7 +133,7 @@ class CommissionTdsSettlement extends Job
 
                 $afterId = $transactions->last()->getId();
 
-                CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds());
+                CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds(), $this->fromTimestamp);
 
                 $batchCount++;
             }

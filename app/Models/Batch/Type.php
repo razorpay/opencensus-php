@@ -46,6 +46,9 @@ class Type
 
     const LINKED_ACCOUNT_CREATE     = 'linked_account_create';
 
+    const LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE     = 'linked_account_create_with_account_code';
+
+
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT      = 'virtual_bank_account';
 
@@ -119,6 +122,8 @@ class Type
     const TERMINAL_CREATION         = 'terminal_creation';
 
     const DEVICE_TERMINAL_MAPPING    = 'device_terminal_mapping';
+    const QR_DEVICE_MAPPING         = 'qr_device_mapping';
+    const QR_DEVICE_UNMAPPING       = 'qr_device_unmapping';
 
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
@@ -210,6 +215,8 @@ class Type
     const ECOLLECT_AXIS_BANKING = 'ecollect_axis_banking';
 
     const ECOLLECT_YESBANK      = 'ecollect_yesbank';
+
+    const ECOLLECT_IDFC         = 'ecollect_idfc';
 
     const REPORT                = 'report';
 
@@ -326,6 +333,12 @@ class Type
     const UPDATE_ODS_MERCHANT_LIMITS = 'update_ods_merchant_limits';
 
 
+    const MANDATE_CONTINUITY = 'mandate_continuity';
+
+    const TOKEN_CONTINUITY = 'token_continuity';
+
+    const CUSTOMER_MIGRATION = 'customer_migration';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -375,6 +388,7 @@ class Type
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
@@ -423,6 +437,11 @@ class Type
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
+        self::QR_DEVICE_MAPPING,
+        self::QR_DEVICE_UNMAPPING,
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     /**
@@ -618,6 +637,7 @@ class Type
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::REPORT,
         self::ADMIN_BATCH,
         self::RECONCILIATION,
@@ -638,6 +658,7 @@ class Type
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
+        self::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
@@ -668,7 +689,12 @@ class Type
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
         self::UPDATE_GIFT_CARDS_EXPIRY,
-        self::STORE_ORG_DEFINED_MERCHANT_FIELDS
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::ECOLLECT_IDFC,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     /**
@@ -710,6 +736,7 @@ class Type
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
+        self::ECOLLECT_IDFC,
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
@@ -738,6 +765,7 @@ class Type
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
         self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
+        self::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
         self::UPI_ONBOARDED_TERMINAL_EDIT,
@@ -783,6 +811,12 @@ class Type
         self::OTC_PAYMENT_CREDIT,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::UPDATE_ODS_MERCHANT_LIMITS,
+        self::ECOLLECT_IDFC,
+        self::QR_DEVICE_MAPPING,
+        self::QR_DEVICE_UNMAPPING,
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -837,6 +871,7 @@ class Type
         self::ECOLLECT_AXIS                      => Name::ECOLLECT_AXIS_BATCH_UPLOAD,
         self::ECOLLECT_AXIS_BANKING              => Name::ECOLLECT_AXIS_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,
+        self::ECOLLECT_IDFC                      => Name::ECOLLECT_IDFC_BATCH_UPLOAD,
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
         self::BANK_TRANSFER                      => Name::BANK_TRANSFER_INSERT,
@@ -892,6 +927,11 @@ class Type
         self::OTC_PAYMENT_CREDIT                      => Name::ADMIN_BATCH_CREATE,
         self::UPDATE_ODS_MERCHANT_LIMITS              => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2   => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::QR_DEVICE_MAPPING                       => Name::ADMIN_BATCH_CREATE,
+        self::QR_DEVICE_UNMAPPING                     => Name::ADMIN_BATCH_CREATE,
+        self::MANDATE_CONTINUITY                      => Name::ADMIN_BATCH_CREATE,
+        self::TOKEN_CONTINUITY                        => Name::ADMIN_BATCH_CREATE,
+        self::CUSTOMER_MIGRATION                      => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

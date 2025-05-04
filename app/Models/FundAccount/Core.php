@@ -166,7 +166,7 @@ class Core extends Base\Core
             $this->modifyRequestForBackwardCompatibility($input);
         }
 
-        if ($input[Entity::ACCOUNT_TYPE] === Entity::LINKED_NUMBER) {
+        if ($input[Entity::ACCOUNT_TYPE] === Entity::MOBILE) {
             $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input);
         }
 
@@ -1767,27 +1767,29 @@ class Core extends Base\Core
      */
     private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input): void
     {
-        $linkedNumber = isset($input[Entity::ACCOUNT_TYPE], $input[Entity::LINKED_NUMBER][Entity::NUMBER])
-            ? $input[Entity::LINKED_NUMBER][Entity::NUMBER]
-            : '';
-        $accountHolderName = isset($input[Entity::ACCOUNT_TYPE], $input[Entity::LINKED_NUMBER][Entity::ACCOUNT_HOLDER_NAME])
-            ? $input[Entity::LINKED_NUMBER][Entity::ACCOUNT_HOLDER_NAME]
-            : '';
+        $mobileNumber = $input[Entity::MOBILE][Entity::NUMBER] ?? '';
+        $accountHolderName = $input[Entity::MOBILE][Entity::ACCOUNT_HOLDER_NAME] ?? '';
 
-        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($linkedNumber, $accountHolderName);
+        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName);
 
-        $input[Entity::LINKED_NUMBER] = $linkedNumber;
-        $input[Entity::CUSTOMER_NAME] = $mappedVpa[Entity::CUSTOMER_NAME];
+        $input = array_merge($input, [
+            Entity::LINKED_NUMBER => $mobileNumber,
+            Entity::CUSTOMER_NAME => $mappedVpa[Entity::CUSTOMER_NAME] ?? '',
+            Entity::ACCOUNT_TYPE  => Entity::VPA,
+            Entity::VPA           => [
+                Vpa\Entity::ADDRESS => $mappedVpa[Entity::VPA] ?? '',
+            ],
+        ]);
 
-        $input[Entity::ACCOUNT_TYPE] = Entity::VPA;
-        $input[Entity::VPA] = [
-            Vpa\Entity::ADDRESS => $mappedVpa[Entity::VPA]
-        ];
+        unset($input[Entity::MOBILE]);
 
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_INPUT_FOR_LINKED_NUMBER,
+        $this->trace->info(
+            TraceCode::FUND_ACCOUNT_CREATE_INPUT_FOR_LINKED_NUMBER,
             [
-                Entity::LINKED_NUMBER => $linkedNumber,
-                'input'            => $input
-            ]);
+                Entity::MOBILE => $mobileNumber,
+                'input'        => $input,
+            ]
+        );
     }
+
 }

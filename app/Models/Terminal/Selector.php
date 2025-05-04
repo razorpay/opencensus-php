@@ -1026,16 +1026,8 @@ class Selector extends Base\Core
             ($payment[Entity::BANK] === IFSC::HDFC) and
             ($card[Card\Entity::TYPE] === Card\Type::DEBIT))
         {
-            $variantFlag = $this->app->razorx->getTreatment($paymentId, "ROUTER_HDFC_DEBIT_EMI",  $this->mode);
 
-            if ($variantFlag === 'on_hdfc_debit_emi')
-            {
                 return true;
-            }
-            else
-            {
-                return false;
-            }
         }
 
         // if its a BVT and its an app payment the call should go through router

@@ -27,6 +27,8 @@ use RZP\Mail\Base\Constants as BaseConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Core as MerchantCore;
+
 
 class GifuFile extends Base\BaseGifuFile
 {
@@ -151,15 +153,21 @@ class GifuFile extends Base\BaseGifuFile
 
         $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
 
-        $experimentResult = $this->app->razorx->getTreatment($orgId, Merchant\RazorxTreatment::GIFU_CUSTOM,$this->mode);
+        $requestData = '{"org_id":"' . $orgId . '"}';
 
-         $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT, [
+        $properties = [
+            'id'            => $orgId,
+            'experiment_id' => $this->app['config']->get('app.gifu_custom_experiment'),
+            'request_data'  => json_encode(['org_id' => $orgId, 'mode' => $this->mode]),
+        ];
+
+        $isGifuCustomEnabled =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+         $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_RESULT, [
              'org_id'    => $orgId,
-             'experiment_result' => $experimentResult,
+             'experiment_result' => $isGifuCustomEnabled,
              'mode'       => $this->mode,
          ]);
-
-        $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
 
         $dataPayments = [];
 

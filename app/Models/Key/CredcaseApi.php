@@ -45,6 +45,7 @@ class CredcaseApi
     private $readKeySplitzExperiment;
     private $adminReadKeySplitzExperiment;
     private $findKeySplitzExperiment;
+    private $findKeyV2SplitzExperiment;
 
     public function __construct($app)
     {
@@ -57,6 +58,7 @@ class CredcaseApi
         $this->readKeySplitzExperiment = $config['read_key_splitz'];
         $this->adminReadKeySplitzExperiment = $config['admin_read_key_splitz'];
         $this->findKeySplitzExperiment = $config['find_key_splitz'];
+        $this->findKeyV2SplitzExperiment = $config['find_key_splitz_v2'];
         // Set default headers twirp context.
         $auth          = 'Basic ' . base64_encode($config['user'] . ':' . $config['password']);
         $headers       = ['Authorization' => $auth, 'X-Request-ID' => Request::getTaskId()];
@@ -94,7 +96,7 @@ class CredcaseApi
         }
     }
 
-    public function findById($keyId, $expired = false, $includeSecret = false): ?\Rzp\Credcase\Apikey\V1\ApiKeyResponse
+    public function findById($keyId, $expired = false, $includeSecret = true): ?\Rzp\Credcase\Apikey\V1\ApiKeyResponse
     {
         $apiKeyGetRequest = new ApiKeyGetRequest();
         $apiKeyGetRequest->setId($keyId);
@@ -236,6 +238,7 @@ class CredcaseApi
             "read" => $this->readKeySplitzExperiment,
             "admin_read" => $this->adminReadKeySplitzExperiment,
             "find_read" => $this->findKeySplitzExperiment,
+            "find_read_v2" => $this->findKeyV2SplitzExperiment,
             default => "",
         };
     }

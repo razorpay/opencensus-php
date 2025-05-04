@@ -501,6 +501,9 @@ class Core extends Base\Core
                 $payload['created_at'] = $txn->getCreatedAt();
             }
 
+            // Adding created_at in payload for balance separation in capital-es
+            $payload['txn_created_at'] = $txn->getCreatedAt();
+
             try
             {
                 $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);
@@ -817,8 +820,6 @@ class Core extends Base\Core
                 $metaSource = $txnSource;
         }
 
-        $sourceSettledRemovalExpEnabled = $this->isSourceSettledRemovalExperimentEnabled($txn->getMerchantId());
-
         $meta = [
             'source_type'       => $metaSource->getEntity(),
             'source_id'         => $metaSource->getId(),
@@ -1109,16 +1110,5 @@ class Core extends Base\Core
         }
 
         return ['success' => false];
-    }
-
-    private function isSourceSettledRemovalExperimentEnabled($merchantId)
-    {
-        $variant = App::getFacadeRoot()->razorx->getTreatment(
-            $merchantId,
-            self::SOURCE_SETTLED_REMOVAL_EXP,
-            $this->mode
-        );
-
-        return $variant === 'on';
     }
 }

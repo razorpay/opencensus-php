@@ -188,7 +188,6 @@ class IblBankTransferTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['Bene_acc_no'] = $this->getIblVaBankAccount();
-        var_dump($testData['request']['content']['Data']);
 
         $this->gateway = 'bt_ibl';
         $this->setMockGatewayTrue();
@@ -254,6 +253,7 @@ class IblBankTransferTest extends TestCase
         $this->assertEquals( 'XYZ',$response['Identifier']);
     }
 
+
     protected function getIblVaBankAccount()
     {
         $terminalAttributes = [
@@ -279,6 +279,61 @@ class IblBankTransferTest extends TestCase
         $bankAccount = $this->createVirtualAccount();
 
         return $bankAccount['account_number'];
+    }
+
+    public function testBankTransferIblDuplicateValidation()
+    {
+        $testData = $this->testData['testBankTransferIbl'];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getIblVaBankAccount();
+
+        $this->gateway = 'bt_ibl';
+        $this->setMockGatewayTrue();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], 'ABC124');
+        $this->assertEquals(200, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('bt_ibl', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals('910910910910910', $payerBankAccount['account_number']);
+
+        $testData['request']['content']['Txn_amnt'] = 10099;
+        $request = [
+            'url' => '/ecollect/validate/ibl/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('002', $response['Err_cd']);
+        $this->assertEquals('BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK', $response['message']);
+        $this->assertEquals( 'XYZ',$response['Identifier']);
+    }
+
+    public function testBankTransferIblMerchantNotFound()
+    {
+        $testData = $this->testData['testBankTransferIblMerchantNotFound'];
+        $testData['request']['content']['Bene_acc_no'] = '000000123456'; // Invalid Z+5 code
+
+        $this->gateway = 'bt_ibl';
+        $this->setMockGatewayTrue();
+        $this->ba->directAuth();
+        $response = $this->startTest($testData);
+
+        $this->assertEquals('F', $response['Stts_flg']);
+        $this->assertEquals('007', $response['Err_cd']);
+        $this->assertEquals('BAD_REQUEST_MERCHANT_NOT_FOUND', $response['message']);
     }
 
 }

@@ -118,6 +118,10 @@ class Entity extends Base\PublicEntity
 
     const DEDUCTION_SOURCE_ID_LENGTH   = 14;
 
+    const DISPUTE_OUTCOME_REASON_ID = 'dispute_outcome_reason_id';
+
+    const DEBIT_FEE_ADJUSTMENT_ID = 'debit_fee_adjustment_id';
+    const CREDIT_FEE_ADJUSTMENT_ID = 'credit_fee_adjustment_id';
 
     //Lifecycle related constants
     const ADMIN_ID      = 'admin_id';
@@ -169,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::DEDUCTION_SOURCE_ID,
         self::DEDUCTION_SOURCE_TYPE,
         self::DEDUCTION_REVERSAL_AT,
+        self::DISPUTE_OUTCOME_REASON_ID,
     ];
 
     protected $visible = [
@@ -231,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::REASON,
         self::INTERNATIONAL,
+        self::DISPUTE_OUTCOME_REASON_ID,
     ];
 
     protected $expanded = [
@@ -389,7 +395,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
     }
 
-    public function toDualWriteArray() : array
+    public function toDualWriteArray($feeNegativeAdjustmentId = '', $feePositiveAdjustmentId = '') : array
     {
         $array = $this->toArray();
 
@@ -397,6 +403,13 @@ class Entity extends Base\PublicEntity
         unset($array[self::EVIDENCE]);
         unset($array[self::REASON_DESCRIPTION]);
         unset($array[self::REASON_CODE]);
+
+        if ($feeNegativeAdjustmentId !== '') {
+            $array = array_merge($array, [self::DEBIT_FEE_ADJUSTMENT_ID => $feeNegativeAdjustmentId]);
+        }
+        if ($feePositiveAdjustmentId !== '') {
+            $array = array_merge($array, [self::CREDIT_FEE_ADJUSTMENT_ID => $feePositiveAdjustmentId]);
+        }
 
         if (is_null($this->getRecoveryStatus()) === false)
         {
@@ -783,6 +796,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEDUCTION_SOURCE_TYPE);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function isChildDispute(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
@@ -1054,5 +1072,10 @@ class Entity extends Base\PublicEntity
         $entry[self::CHANGE][self::LIFECYCLE_OLD] = array_filter($entry[self::CHANGE][self::LIFECYCLE_OLD], $filter, ARRAY_FILTER_USE_BOTH);
 
         return $entry;
+    }
+
+    public function getDisputeOutcomeReasonId()
+    {
+        return $this->getAttribute(self::DISPUTE_OUTCOME_REASON_ID);
     }
 }

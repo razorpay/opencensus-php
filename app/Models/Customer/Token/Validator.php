@@ -21,6 +21,15 @@ class Validator extends Base\Validator
 {
     const CREATE_DIRECT                                 = 'create_direct';
     const CREATE_NETWORK_TOKEN                          = 'create_network_token';
+    const CREATE_NETWORK_TOKEN_CONTINUITY               = 'create_network_token_continuity';
+    const CREATE_NETWORK_TOKEN_CONTINUITY_CARD          = 'create_network_token_continuity_card';
+
+    const CREATE_RECURRING_TOKEN_CONTINUITY_OPTIMIZER_MANDATE = 'create_recurring_token_continuity_optimizer_mandate';
+
+    const CREATE_OPTIMIZER_TOKEN_CREATE_FIELDS = 'create_optimizer_token_create_fields';
+
+    const CREATE_OPTIMIZER_RECURRING_TOKEN_NOTES = 'create_optimizer_recurring_token_notes';
+    const CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL = 'create_network_token_continuity_additional_detail';
     const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
     const CREATE_NETWORK_TOKEN_AMEX                    = 'create_network_token_amex';
     const CREATE_NETWORK_CARD                           = 'create_network_card';
@@ -107,7 +116,7 @@ class Validator extends Base\Validator
         Entity::AADHAAR_VID         => 'sometimes|nullable|string|size:16',
         Entity::START_TIME          => 'sometimes_if:method,upi,nach,emandate',
         Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount,fixed_amount',
-        Entity::FREQUENCY           => 'required_if:auth_type,migrated|required_if:recurring,1|string|in:adhoc,daily,weekly,monthly,quarterly,yearly,as_presented',
+        Entity::FREQUENCY           => 'required_if:auth_type,migrated|required_if:recurring,1|string|in:adhoc,daily,weekly,monthly,quarterly,yearly,as_presented,one_time,fortnightly,bimonthly,half_yearly',
         Entity::STATUS              => 'sometimes|nullable',
         Entity::NOTES               => 'sometimes|notes'
     ];
@@ -133,6 +142,59 @@ class Validator extends Base\Validator
         Entity::NOTES                => 'sometimes|notes',
         'via_push_provisioning'      => 'sometimes|boolean'
     ];
+
+    protected static $createNetworkTokenContinuityRules = [
+        Entity::MERCHANT_ID          => 'required',
+        Entity::CARD                 => 'required|array',
+        Entity::CUSTOMER_ID          => 'required|public_id',
+        'provider'                   => 'required|in:juspay',
+        'additional_detail'          => 'required|array',
+    ];
+
+    protected static $createNetworkTokenContinuityCardRules = [
+        'name'         => 'sometimes',
+        'number'       => 'required',
+        'expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'expiry_year'  => 'required|numeric|digits_between:2,4',
+        'token_iin' => 'required',
+        'iin' => 'required',
+        'par' => 'required',
+        'vault' => 'required',
+        'token_expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'token_expiry_year'  => 'required|numeric|digits_between:2,4',
+    ];
+
+    protected static $createNetworkTokenContinuityAdditionalDetailRules = [
+        'terminal_id'       => 'required',
+        'provider_reference_id1'       => 'required',
+        'provider_reference_id2'       => 'required',
+    ];
+
+    protected static $createRecurringTokenContinuityOptimizerMandateRules = [
+        'terminal_id'       => 'required',
+        'mandate_id'       => 'required',
+        'customer_id'       => 'required',
+        'optimizer_mandate_continuity'       => 'sometimes|boolean',
+        'fields'       => 'required',
+    ];
+
+    protected static $createOptimizerTokenCreateFieldsRules = [
+        'notes'       => 'required',
+        'recurring'       => 'required',
+        'terminal_id'       => 'required',
+        'max_amount'       => 'required',
+        'recurring_status'       => 'required',
+        'frequency'       => 'required',
+        'method'       => 'required',
+        'expire_at'       => 'required',
+        'status'       => 'required',
+    ];
+
+    protected static $createOptimizerRecurringTokenNotesRules = [
+        'mandate_id'       => 'required',
+        'source'       => 'required',
+    ];
+
 
     protected static $createNetworkTokenRupayRules = [
         Entity::CARD                 => 'required|array',

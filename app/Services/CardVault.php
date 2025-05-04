@@ -247,21 +247,7 @@ class CardVault
             $vaultTempSaveNamespace = $input['bu_namespace'];
         }
 
-        /** Razorx experiment to save the cards data temporarily in vault db
-         * for a  period of 5 days
-         * @var  $tempSaveVariant
-         */
-
-        $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE . "_" .$vaultTempSaveNamespace;
-        $tempSaveVariant = $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
-
-        $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
-            'vault_temp_save_namespace' => $vaultTempSaveNamespace,
-            'temp_save_variant'  => $tempSaveVariant,
-            '$razorx_feature'  => $razorxFeature,
-        ]);
-
-        if ((strtolower($tempSaveVariant) === 'on'))
+        if ($vaultTempSaveNamespace == "cards" || $vaultTempSaveNamespace == "razorpayx_non_saved_cards")
         {
             $payload += [
                 self::TEMP_SAVE => true,

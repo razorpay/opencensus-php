@@ -2155,6 +2155,17 @@ class BankTransferRxTest extends TestCase
         $this->assertEquals($btrCount, 0);
     }
 
+    public function testEcollectIdfcBatchCreate()
+    {
+        $data = $this->testData['ecollectIdfcBatchData'];
+
+        $this->createCsvFile($data, 'filename', null, 'files/filestore');
+
+        $this->ba->h2hAuth();
+
+        $this->startTest();
+    }
+
     public function testPendingBankTransfer()
     {
         $this->testBankTransferProcessWithIncorrectPayeeAccountLength();

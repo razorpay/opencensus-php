@@ -241,12 +241,6 @@ class Core extends Base\Core
             (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
         }
 
-        if (( ($feature->getName() === Feature::ES_ON_DEMAND) || ($feature->getName() === Feature::ONDEMAND_LINKED))
-            && ($feature->getEntityType() === Constants::MERCHANT))
-        {
-            (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountCreateJob($feature->getEntityId());
-        }
-
         Tracer::inspan(['name' => HyperTrace::SKIP_SUBM_ONBOARDING_COMMUNICATION], function () use ($feature, $entityId) {
 
             if (($feature->getName() === Feature::SKIP_SUBM_ONBOARDING_COMM) && ($feature->getEntityType() === Constants::MERCHANT)

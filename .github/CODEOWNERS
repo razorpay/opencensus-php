@@ -62,8 +62,8 @@ app/Models/Merchant/AccessMap/MigrateSource.php               @razorpay/spine-ed
 app/Models/OAuthApplication/                                  @razorpay/spine-edge
 app/Models/OAuthToken/                                        @razorpay/spine-edge
 app/Models/FeeRecovery/                                       @razorpay/Payouts-core
-app/Models/BankingAccount/                                    @razorpay/x-acquisition-be
-app/Models/BankingAccountService/                             @razorpay/x-acquisition-be
+app/Models/BankingAccount/                                    @razorpay/ob-infra-backend-pr-reviewers @razorpay/Payouts-core
+app/Models/BankingAccountService/                             @razorpay/ob-infra-backend-pr-reviewers
 #
 # Services
 #
@@ -73,8 +73,8 @@ app/Services/AuthService.php                           @razorpay/spine-edge
 app/Services/CheckoutService.php                       @razorpay/checkout-backend-leads
 app/Services/Mock/CheckoutService.php                  @razorpay/checkout-backend-leads
 app/Services/Edge/                                     @razorpay/spine-edge
-app/Services/BankingAccountService.php                 @razorpay/x-acquisition-be
-app/Services/Mock/BankingAccountService.php            @razorpay/x-acquisition-be
+app/Services/BankingAccountService.php                 @razorpay/ob-infra-backend-pr-reviewers
+app/Services/Mock/BankingAccountService.php            @razorpay/ob-infra-backend-pr-reviewers
 #
 # Gateways
 #
@@ -88,21 +88,21 @@ app/Gateway/Upi                                        @razorpay/techupicore
 # Unit Tests
 #
 tests/Unit/Edge/                                       @razorpay/spine-edge
-tests/Unit/Models/BankingAccount/                      @razorpay/x-acquisition-be
-tests/Unit/Services/BankingAccountServiceTest.php      @razorpay/x-acquisition-be
+tests/Unit/Models/BankingAccount/                      @razorpay/ob-infra-backend-pr-reviewers
+tests/Unit/Services/BankingAccountServiceTest.php      @razorpay/ob-infra-backend-pr-reviewers
 #
 # Functional Tests
 #
 
-tests/Functional/QrCode/                               @razorpay/qr-code-devs
-tests/Functional/Transfer/                             @razorpay/enterprise-apps
-tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
-tests/Functional/Key/                                  @razorpay/spine-edge
-tests/Functional/Edge/                                 @razorpay/spine-edge
-tests/Functional/FeeRecovery/                          @razorpay/Payouts-core
-tests/Functional/BankingAccount/                       @razorpay/x-acquisition-be
-tests/Functional/BankingAccountService/                @razorpay/x-acquisition-be
-tests/Functional/Merchant/MerchantBankingInvoiceTest.php   @razorpay/x-acquisition-be
+tests/Functional/QrCode/                                   @razorpay/qr-code-devs
+tests/Functional/Transfer/                                 @razorpay/enterprise-apps
+tests/Functional/BankingAccountStatement/                  @razorpay/Payouts-core
+tests/Functional/Key/                                      @razorpay/spine-edge
+tests/Functional/Edge/                                     @razorpay/spine-edge
+tests/Functional/FeeRecovery/                              @razorpay/Payouts-core
+tests/Functional/BankingAccount/                           @razorpay/ob-infra-backend-pr-reviewers
+tests/Functional/BankingAccountService/                    @razorpay/ob-infra-backend-pr-reviewers
+tests/Functional/Merchant/MerchantBankingInvoiceTest.php   @razorpay/Payouts-core
 
 #
 # Jobs
@@ -116,13 +116,13 @@ app/Jobs/BulkMigrateResellerToAggregatorJob.php        @razorpay/spine-edge
 app/Jobs/TriggerAcsFullSync.php                        @razorpay/spine-edge @razorpay/identity-core
 app/Jobs/TriggerAcsSync.php                            @razorpay/spine-edge @razorpay/identity-core
 app/Jobs/FeeRecovery.php                               @razorpay/Payouts-core
-app/Jobs/BankingAccount/                               @razorpay/x-acquisition-be
+app/Jobs/BankingAccount/                               @razorpay/ob-infra-backend-pr-reviewers
 #
 # Mails
 #
 
 app/Mail/OAuth/                                       @razorpay/spine-edge
-app/Mail/BankingAccount/                              @razorpay/x-acquisition-be
+app/Mail/BankingAccount/                              @razorpay/ob-infra-backend-pr-reviewers
 
 .github/actions/                                       @razorpay/ZeroTouchWarriors
 devspace.yaml                                          @razorpay/devstack-devs
@@ -329,8 +329,8 @@ app/Jobs/ProductConfig                                     @razorpay/partnership
 # X Acquisition BE
 #
 app/Http/Controllers/FeeRecoveryController.php             @razorpay/Payouts-core
-resources/views/emails/banking_account/                    @razorpay/x-acquisition-be
-resources/views/merchant/invoice/invoice.blade.php         @razorpay/x-acquisition-be
+resources/views/emails/banking_account/                    @razorpay/ob-infra-backend-pr-reviewers
+resources/views/merchant/invoice/invoice.blade.php         @razorpay/Payouts-core
 
 #
 # Cross Border
@@ -361,3 +361,14 @@ app/Models/Merchant/Detail/Validator.php                 @razorpay/pg-onboarding
 app/Models/Merchant/Detail/NeedsClarification            @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/DeDupe                        @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/Transformers                  @razorpay/pg-onboarding-service
+
+
+#
+# Payments Core
+# Mandating payment core's review as we have moved toArrayPublic() logic of payment to pg-router.
+#
+app/Models/Payment/Entity.php                                @razorpay/techpaymentscore
+
+
+app/Models/Merchant/Methods/                             @razorpay/TechOnlinePaymentsOnboarding
+

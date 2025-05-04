@@ -25,6 +25,11 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_icici';
 
         $this->testData['testRefundUpiEntity'] = [
@@ -1497,17 +1502,24 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertEquals(4, $payment->getCpsRoute());
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === 'skip_upi_icici_callback_for_bt')
-            {
-                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'on');
-            }
-            else
-            {
-                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
-            }
-        });
+        $splitzMock = \Mockery::mock(\RZP\Services\SplitzService::class, [$this->app])->makePartial();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->with([
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => env('SKIP_UPI_ICICI_CALLBACK_BT'),
+                'request_data'  => json_encode(['merchant_id' => $payment->getMerchantId()]),
+            ])
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' =>  'enable',
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('splitzService', $splitzMock);
 
         $payment = $this->getDbLastPayment()->toArray();
 
@@ -1638,17 +1650,24 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertEquals(4, $payment->getCpsRoute());
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            if ($feature === 'skip_upi_icici_callback_for_bt')
-            {
-                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'on');
-            }
-            else
-            {
-                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
-            }
-        });
+        $splitzMock = \Mockery::mock(\RZP\Services\SplitzService::class, [$this->app])->makePartial();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->with([
+                'id'            => $payment->getMerchantId(),
+                'experiment_id' => env('SKIP_UPI_ICICI_CALLBACK_BT'),
+                'request_data'  => json_encode(['merchant_id' => $payment->getMerchantId()]),
+            ])
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' =>  'enable',
+                    ]
+                ]
+            ]);
+
+        $this->app->instance('splitzService', $splitzMock);
 
         $payment = $this->getDbLastPayment()->toArray();
 

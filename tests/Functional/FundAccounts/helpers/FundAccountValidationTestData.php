@@ -132,6 +132,85 @@ return [
         ],
     ],
 
+    'testFavValidationUsingRblValidateApi' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'vpa',
+                    'active'       => true,
+                    'details'      => [
+                        'address' => "withname@razorpay"
+                    ],
+                ],
+                'amount'       => null,
+                'currency'     => null,
+                'status'       => 'created',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testCompositeFavValidationUsingRblValidateApi' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::SOURCE_ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'vpa',
+                    FundAccount::VPA => [
+                        'address' => 'withname@razorpay'
+                    ]
+                ],
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'=> 'fund_account.validation',
+                'status'=> 'created',
+                'validation_results'=> [
+                    'account_status'=> null,
+                    'registered_name'=> null,
+                    'details'=> null,
+                    'name_match_score'=> null
+                ],
+                'status_details'=> [
+                    'description'=> 'validation request is created',
+                    'source'=> 'internal',
+                    'reason'=> 'validation_request_created'
+                ],
+                'notes'=> [],
+                'fund_account'=> [
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'vpa',
+                    'vpa'=> [
+                        'address' => 'withname@razorpay'
+                    ],
+                    'active'=> true
+                ]
+            ],
+        ],
+    ],
+
     'testPennilessVpaValidationSuccess' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
@@ -2060,6 +2139,119 @@ return [
             ]
         ],
     ],
+
+    'testGetCompositeFavByIdInAPI_withRegisteredNameAsNull' => [
+        'request' => [
+            'url' => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'fund_account.validation',
+                'fund_account' => [
+                    'entity' => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'SBIN0010411',
+                        'bank_name' => 'State Bank of India',
+                        'name' => 'Rohit Keshwani',
+                        'notes' => [],
+                        'account_number' => '123456789'
+                    ],
+                    'batch_id' => null,
+                    'active' => true,
+                    'contact' => [
+                        'entity' => 'contact',
+                        'name' => 'customer',
+                        'contact' => null,
+                        'email' => null,
+                        'type' => null,
+                        'reference_id' => null,
+                        'batch_id' => null,
+                        'active' => true,
+                        'notes' => [],
+                    ]
+                ],
+                'status' => 'completed',
+                'notes' => [],
+                'validation_results' => [
+                    'account_status' => 'active',
+                    'registered_name' => null,
+                    'name_match_score' => null,
+                    'details' => 'The beneficiary account is valid'
+                ],
+                'status_details' => [
+                    'description' => 'validation request is completed',
+                    'source' => 'beneficiary_bank',
+                    'reason' => 'validation_completed'
+                ]
+            ]
+        ],
+    ],
+
+
+    'testGetFavCreatedUsingRblValidateApi' => [
+        'request' => [
+            'url' => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'vpa',
+                    'active'       => true,
+                    'details'      => [
+                        'address' => "withname@razorpay"
+                    ],
+                ],
+                'status' => 'completed',
+                'notes' => [],
+                'results'      => [
+                    'account_status'  => 'active',
+                    'registered_name' => 'Test User',
+                    'ifsc'            => 'HDFC0000705'
+                ]
+            ]
+        ],
+    ],
+
+    'testGetCompositeFavCreatedUsingRblValidateApi' => [
+        'request' => [
+            'url' => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => ['entity'=> 'fund_account.validation',
+                'status'=> 'completed',
+                'validation_results'=> [
+                    'account_status'=> 'active',
+                    'registered_name'=> 'Test User',
+                    'details'=> 'The beneficiary account is valid',
+                    'name_match_score'=> null,
+                    'bank_name' => 'HDFC Bank',
+                    'ifsc'=> 'HDFC0000705',
+                ],
+                'status_details'=> [
+                    'description'=> 'validation request is completed',
+                    'source'=> 'beneficiary_bank',
+                    'reason'=> 'validation_completed'
+                ],
+                'notes'=> [],
+                'fund_account'=> [
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'vpa',
+                    'vpa'=> [
+                        'address' => 'withname@razorpay'
+                    ],
+                    'active'=> true
+                ]
+            ]
+        ],
+    ],
+
 
     'testGetFavByIdFromMicroservice' => [
         'request'  => [

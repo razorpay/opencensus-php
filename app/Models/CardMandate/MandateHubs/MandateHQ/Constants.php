@@ -101,6 +101,8 @@ class Constants
     const FREQUENCY_AS_PRESENTED     = 'as_presented';
     const MAX_AMOUNT_DEFAULT         = 1500000;
 
+    const MAX_AMOUNT_FOR_SPECIAL_MCC = 10000000;
+
     const RECURRING_DEBIT_TYPE_INITIAL    = 'initial';
     const RECURRING_DEBIT_TYPE_SUBSEQUENT = 'subsequent';
 

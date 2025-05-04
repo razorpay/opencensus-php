@@ -16,6 +16,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Pricing\ChargeCollections\CCRouter;
@@ -64,6 +65,11 @@ class Fee extends Base\Core
     const ALLOWED_ENTITIES_FOR_CUSTOM_PRICING = [
         EntityConstants::PAYMENT,
         EntityConstants::TRANSFER
+    ];
+
+    const OAUTH_CUSTOM_PRICING_FEATURE_BY_ENTITY = [
+        EntityConstants::PAYMENT => 'pp_oauth_pricing_payment', 
+        EntityConstants::TRANSFER => 'pp_oauth_pricing_transfer', 
     ];
 
     public function __construct()
@@ -618,49 +624,74 @@ class Fee extends Base\Core
 
     protected function getCustomPricingPlanForOauth(PublicEntity $entity)
     {
-        try
-        {
+        try {
             $entityOriginCore = new EntityOrigin\Core();
 
             $entityOrigin = $entity->entityOrigin;
 
-            if (empty($entityOrigin) === true)
-            {
+            if (empty($entityOrigin) === true) {
                 $entityOrigin = $entityOriginCore->fetchEntityOrigin($entity);
             }
             if (empty($entityOrigin) === true) {
                 return null;
             }
 
-            $origin     =(new OAuthApp\Repository)->find($entityOrigin->getOriginId());
+            $origin     = (new OAuthApp\Repository)->find($entityOrigin->getOriginId());
             $originType = optional($origin)->getEntityName();
 
-            if (empty($origin) === true || ($originType !== EntityOrigin\Constants::APPLICATION))
-            {
+            if (empty($origin) === true || ($originType !== EntityOrigin\Constants::APPLICATION)) {
                 return null;
             }
 
-            $properties = [
-                'id'            => $origin->getId(),
-                'experiment_id' => app('config')->get('app.platform_partner_oauth_custom_pricing_plan')
+            $isDcsFeatureEnabled = false;
+            $dcsFeatureToCheck = self::OAUTH_CUSTOM_PRICING_FEATURE_BY_ENTITY[$entity->getEntityName()] ?? '';
+
+            $dimensions = [
+                'type' => $entity->getEntityName(),
             ];
 
-            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentVariableEnabled($properties, $entity->getEntityName());
+            $extraLogs = [
+                'originId' => $origin->getId(),
+                'dcsFeatureToCheck' => $dcsFeatureToCheck,
+            ];
 
-            if ($isExpEnabled)
-            {
+            if (!empty($dcsFeatureToCheck) and !empty($origin->getId())) {
+                $dcsStartTimeMs = round(microtime(true) * 1000);
+                $isDcsFeatureEnabled = (new PartnerService())->isFeatureEnabledForOAuthApp($dcsFeatureToCheck, $origin->getId());
+                $dcsEndTimeMs = round(microtime(true) * 1000);
+                $dcsTimeTaken = $dcsEndTimeMs - $dcsStartTimeMs;
+
+                $extraLogs['dcsTimeTaken'] = $dcsTimeTaken;
+                $dimensions['isDcsFeatureEnabled'] = $isDcsFeatureEnabled;
+
+                $this->trace->info(TraceCode::OAUTH_TRANSACTION_CUSTOM_PRICING_CHECK_FROM_DCS, [
+                    'extraLogs' => $extraLogs,
+                    'metrics' => $dimensions,
+                ]);
+            }
+
+            if ($isDcsFeatureEnabled) {
                 $application = (new ApplicationRepo())->fetchMerchantApplicationByAppIdAndType($origin->getId(), ApplicationEntity::OAUTH);
+                $dimensions['oauthAppPresent'] = !empty($application);
 
-                if (empty($application) === false)
-                {
+                if (empty($application) === false) {
                     $partnerConfig = (new PartnerCore())->fetch($origin, $entity->merchant);
+                    $dimensions['partnerConfigPresent'] = !empty($partnerConfig);
 
+                    $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH_METRICS, $dimensions);
+                    $this->trace->info(TraceCode::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH, [
+                        'extraLogs' => $extraLogs,
+                        'metrics' => $dimensions,
+                    ]);
                     return optional($partnerConfig)->getDefaultPlanId();
                 }
             }
-        }
-        catch (\Throwable $e)
-        {
+            $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH_METRICS, $dimensions);
+            $this->trace->info(TraceCode::OAUTH_TRANSACTION_CUSTOM_PRICING_FETCH, [
+                'extraLogs' => $extraLogs,
+                'metrics' => $dimensions,
+            ]);
+        } catch (\Throwable $e) {
             $this->trace->count(PartnerMetric::OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_FAILED);
             $this->trace->critical(
                 TraceCode::OAUTH_TRANSACTION_DEFAULT_PRICING_FETCH_EXCEPTION,
@@ -668,7 +699,8 @@ class Fee extends Base\Core
                     'id'      => $entity->getId(),
                     'type'    => $entity->getEntityName(),
                     'message'    => $e->getMessage(),
-                ]);
+                ]
+            );
         }
 
         return null;

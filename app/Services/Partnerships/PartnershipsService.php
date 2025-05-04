@@ -94,6 +94,10 @@ class PartnershipsService extends Base\Service
 
     const DELETE_MERCHANT_ACCESS_MAP = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
 
+    const CREATE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Create';
+    const UPDATE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Upsert';
+    const DELETE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Delete';
+
     CONST GET_MERCHANT_ACCESS_MAP_LIST   = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/List';
 
     const GET_REFERRAL_LINK_WITH_KYC_ACCESS = '/twirp/rzp.commissions.settings.v1.SettingsAPI/FindOrCreate';
@@ -365,6 +369,16 @@ class PartnershipsService extends Base\Service
     public function deleteMerchantAccessMap($parameters)
     {
         return $this->sendRequestWithRetry($parameters, self::DELETE_MERCHANT_ACCESS_MAP, Requests::POST, Mode::LIVE);
+    }
+
+    public function upsertPartnerKycAccessState($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_PARTNER_KYC_ACCESS_STATE, Requests::POST, Mode::LIVE);
+    }
+
+    public function deletePartnerKycAccessState($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::DELETE_PARTNER_KYC_ACCESS_STATE, Requests::POST, Mode::LIVE);
     }
 
     public function getReferralLinkWithKycAccessConsent($parameters)

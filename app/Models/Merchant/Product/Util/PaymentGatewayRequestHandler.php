@@ -177,6 +177,10 @@ class PaymentGatewayRequestHandler
         {
             $request[Detail\Entity::BANK_ACCOUNT_NAME] = $input[Constants::BENEFICIARY_NAME];
         }
+        if (isset($input[Constants::BANK_BRANCH_CODE]) === true)
+        {
+            $request[Detail\Entity::BANK_BRANCH_CODE] = $input[Constants::BANK_BRANCH_CODE];
+        }
 
         return $request;
     }

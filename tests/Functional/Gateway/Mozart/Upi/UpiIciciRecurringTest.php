@@ -32,6 +32,7 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         $this->payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $this->setMockGatewayTrue();
+        $this->mockSplitzTreatmentForAutopayRearch('variant_off');
     }
 
     public function testEncryptedRecurringCallback(){

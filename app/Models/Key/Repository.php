@@ -7,17 +7,18 @@ use Exception;
 use RZP\Constants\Mode;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Models\Merchant\Acs\Traits\AsvCacheKeys;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
-use function PHPUnit\Framework\isEmpty;
+use Cache;
 
 class Repository extends Base\Repository
 {
 
     use CacheQueries;
+
 
     protected $entity = 'key';
 
@@ -29,41 +30,54 @@ class Repository extends Base\Repository
     {
         $cacheTtl = $this->getCacheTtl();
 
+        $app = App::getFacadeRoot();
         $prefix = Pricing\Repository::getQueryCachePrefixForDistributingLoad();
+        $mode = $app['rzp.mode'] ?? null;
 
+        $store =  ($mode === Mode::TEST) ? 'query_cache_test' : 'query_cache_live';
+        $tag = $prefix . '_' . $this->entity . '_' . $id;
+        $routeName = $this->app['request.ctx']->getRoute();
+        $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($id, $mode, $routeName, 'findKey' , "find_read");
         $query = (empty($connectionType) === true) ?
             $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
-
         $apiKey = $query
-                    ->remember($cacheTtl)
-                    ->cacheTags($prefix . '_' . $this->entity . '_' . $id)
-                    ->find($id, $columns);
-        return $this->findV2($id, $apiKey, 'find', true);
+            ->remember($cacheTtl)
+            ->cacheTags($prefix . '_' . $this->entity . '_' . $id)
+            ->find($id, $columns);
+        if(!$enabled) {
+            return $apiKey;
+        } else {
+            $keyArray = Cache::store($store)
+                ->tags($tag)
+                ->remember(
+                    $this->getCacheKey($id, $columns, $connectionType),
+                    $cacheTtl,
+                    function () use ($id, $apiKey, $routeName, $tag) {
+                        $this->trace->count(Metric::KEY_API_DB_RETRIEVAL_COUNT, ['function' => 'find']);
+                        $key = $this->findV2($id, $apiKey, $routeName, $tag);
+                        return $this->buildArrayAttributeMapFromKey($key);
+                    }
+                );
+            $hydratedItems = \RZP\Models\Key\Entity::hydrate($keyArray->all());
+            return $hydratedItems->first();
+        }
+
     }
 
-    public function findV2($id, $apiKey, $functionName, $includeExpired){
+    public function findV2($id, $apiKey, $routeName, $tag){
+        $mode = $this->app['request.ctx']->getMode();
         try {
-            $mode = $this->app['rzp.mode'];
-            $routeName = $this->app['request.ctx']->getRoute();
-            $authenticateUsingPassport = false;
-            if ($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport) {
-                $authenticateUsingPassport = true;
-            }
-            $this->trace->count(Metric::CREDCASE_FIND_KEY_READ_ROUTE_COUNT, [
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED, [['id' => $id], ['tag' => $tag]]);
+            $credcaseKey = $this->app[Constants::CREDCASE_API]->findById($id, true, true);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiKey);
+        } catch (Exception $e) {
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['id' => $id], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
                     'route_name' => $routeName,
                     'mode' => $mode,
-                    'function' => $functionName,
-                    'passport' => $authenticateUsingPassport
+                    'function' => 'findKey',
                 ]
             );
-//            if(!$authenticateUsingPassport) {
-//                return $apiKey;
-//            }
-//            $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($id, $mode, $routeName, $functionName, "find_read");
-//            $credcaseKey = $this->app[Constants::CREDCASE_API]->findById($id, $includeExpired);
-//            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiKey);
-            return $apiKey;
-        } catch (Exception) {
             return $apiKey;
         }
     }
@@ -227,10 +241,37 @@ class Repository extends Base\Repository
         }
     }
 
-    public function findNotExpired($keyId)
+    public function findNotExpired($keyId, $includeApiResponse = false)
     {
         $apiKey = $this->newQuery()->notExpired()->find($keyId);
-        return $this->findV2($keyId, $apiKey, 'findNotExpired', false);
+        if($includeApiResponse) {
+            return $apiKey;
+        }
+        return $this->findNotExpiredV2($keyId, $apiKey, false);
+    }
+
+    public function findNotExpiredV2($id, $apiKey, $includeExpired){
+        $routeName = $this->app['request.ctx']->getRoute();
+        try {
+            $mode = $this->app['rzp.mode'];
+            $enabled = $this->app[Constants::CREDCASE_API]->getKeysDualwriteVariant($id, $mode, $routeName, 'findNotExpired', "find_read_v2");
+            $this->logKeysRepoCall($mode, $routeName, 'findNotExpired', $enabled);
+            if(!$enabled) {
+                return $apiKey;
+            }
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_INITIATED);
+            $credcaseKey = $this->app[Constants::CREDCASE_API]->findById($id, $includeExpired, true);
+            return $this->app[Constants::CREDCASE_SERVICE]->fetchKey($routeName, $credcaseKey, $apiKey);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [['keyId' => $id], ["exception" => $e]]);
+            $this->trace->count(Metric::KEY_API_DB_RESPONSE_COUNT, [
+                    'route_name' => $routeName,
+                    'mode' => $mode,
+                    'function' => 'findNotExpired',
+                ]
+            );
+            return $apiKey;
+        }
     }
 
     public function findByMerchantIdAndKeyId($merchantId, $keyId)
@@ -305,5 +346,23 @@ class Repository extends Base\Repository
         } catch (\Exception $e) {
             $this->trace->error(TraceCode::API_KEY_TRACE_ERROR, ['exception' => $e, 'route' => $routeName, 'function' => $functionName, 'mode' => $mode]);
         }
+    }
+
+    private function buildArrayAttributeMapFromKey(?Entity $key): \Illuminate\Support\Collection
+    {
+        if(empty($key)){
+            return collect([]);
+        }
+        $keyMap = $key->attributesToArray();
+        $keyMap[Entity::SECRET] = $key->getSecret();
+        return collect([$keyMap]);
+    }
+
+    public function getCacheKey($id, $columns, string $connectionType = null)
+    {
+        $tag              = 'credcase:{' . strtolower($this->entity) . '_' . $id . '}';
+        $columnsString    = md5(serialize($columns));
+        $connectionSuffix = $connectionType ? ':' . $connectionType : '';
+        return "tag:{$tag}:{$columnsString}{$connectionSuffix}:key";
     }
 }

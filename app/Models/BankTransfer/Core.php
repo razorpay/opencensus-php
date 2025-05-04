@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
+use RZP\Models\BankTransfer\Metric as BankTransferMetrics;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Order;
@@ -1069,6 +1070,13 @@ class Core extends Base\Core
                 $error = $e->getError();
                 $errMsg = $e->getMessage() ?? '';
                 $errCode = $error->getInternalErrorCode() ?? '';
+
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                    'flow'        => TraceCode::SAVE_SENDER_ADDRESS_FAILED,
+                    'err_msg'     => $errMsg,
+                    'err_code'    => $errCode,
+                ]);
+
                 $this->trace->error(
                     TraceCode::SAVE_SENDER_ADDRESS_FAILED,
                     [
@@ -1092,6 +1100,12 @@ class Core extends Base\Core
             $error = $e->getError();
             $errMsg = $e->getMessage() ?? '';
             $errCode = $error->getInternalErrorCode() ?? '';
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                'flow'        => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                'err_msg'     => $errMsg,
+                'err_code'    => $errCode,
+            ]);
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null,
             [
@@ -1344,6 +1358,12 @@ class Core extends Base\Core
             }
             else
             {
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                    [
+                        'flow'       => TraceCode::B2B_PAYMENT_CAPTURE_FAILURE
+                    ]
+                ]);
+
                 $this->trace->info(TraceCode::B2B_PAYMENT_CAPTURE_FAILURE,[
                     'payment_id' => $payment->getId(),
                     'reason'     => 'Payment Not Authorized yet',

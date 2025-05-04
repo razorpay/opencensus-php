@@ -1342,4 +1342,49 @@ return [
             ]
         ]
     ],
+
+    'testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/dual_write',
+            'content' => [
+                'entity_type' => 'accounts_bas',
+                'input'       => [
+                    'id'                        => "xba00000000007",
+                    'last_statement_attempt_at' => 1000000000,
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
+    'testDualWriteForAccountStatementServiceUpdateStatementLastFetchedDataValidationError' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/dual_write',
+            'content' => [
+                'entity_type' => 'accounts_bas',
+                'input'       => [
+                    'id' => "xba00000000007",
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The input.last statement attempt at field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Rzp\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

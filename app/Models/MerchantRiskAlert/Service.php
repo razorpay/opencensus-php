@@ -499,11 +499,28 @@ class Service extends Base\Service
             {
                 $mailSubject = $subject;
                 $mailBody = $viewTemplate;
+                $customFields  = [
+                    'cf_ticket_queue' => 'Merchant',
+                    'cf_category'     => 'Risk Report_Merchant',
+                    'cf_subcategory'  => $fdSubcategory,
+                    'cf_product'      => 'Payment Gateway',
+                    'cf_new_category'               =>  Constants::FD_CF_NEW_CATEGORY,
+                    'cf_new_sub_category'           =>  ($requestParams['subCategory'] ?? 'Fraud alerts'),
+                    'cf_risk_woc_category'          =>  Constants::FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION,
+                    'cf_new_requester_category'     =>  Constants::FD_NEW_RISK_CATEGORY,
+                    "cf_new_requester_sub_category" =>  Constants::FD_NEW_RISK_SUB_CATEGORY,
+                ];
             }
             else
             {
                 $mailSubject = (new TemplateEngine)->render($subject, $data);
                 $mailBody = View::make($viewTemplate, $data)->render();
+                $customFields  = [
+                    'cf_ticket_queue' => 'Merchant',
+                    'cf_category'     => 'Risk Report_Merchant',
+                    'cf_subcategory'  => $fdSubcategory,
+                    'cf_product'      => 'Payment Gateway',
+                ];
             }
 
             $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
@@ -524,12 +541,7 @@ class Service extends Base\Service
                     'tags'            => $fdTags,
                     'group_id'        => (int) $groupId,
                     'email_config_id' => (int) $emailConfigId,
-                    'custom_fields'  => [
-                        'cf_ticket_queue' => 'Merchant',
-                        'cf_category'     => 'Risk Report_Merchant',
-                        'cf_subcategory'  => $fdSubcategory,
-                        'cf_product'      => 'Payment Gateway',
-                    ],
+                    'custom_fields'  => $customFields
                 ];
 
                 if (empty($ccEmails) === false)

@@ -133,6 +133,7 @@ final class Constants
 
 
     const MERCHANT_ID                             = 'merchant_id';
+    const ACTOR_DETAILS                           = 'actor_details';
     const SUBMERCHANT_ID                          = 'submerchant_id';
     const PARTNER_ID                              = 'partner_id';
     const MARK_AS_PARTNER_IN_PROGRESS             = 'mark_as_partner_in_progress';
@@ -1100,9 +1101,17 @@ Razorpay';
         ],
     ];
 
-    const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
-    const FD_SUB_CATEGORY_DISABLE_LIVE       = 'Disable live';
-    const FD_SUB_CATEGORY_SUSPEND            = 'Suspended Merchants';
+    const FD_SUB_CATEGORY_FUNDS_ON_HOLD             =   'Funds on hold';
+    const FD_SUB_CATEGORY_DISABLE_LIVE              =   'Disable live';
+    const FD_SUB_CATEGORY_SUSPEND                   =   'Suspended Merchants';
+    const FD_RISK_WOC_CATEGORY_FOH                  =   'MRFOH -> Funds on hold';
+    const FD_RISK_WOC_CATEGORY_DISABLED             =   'MRFOH -> Disabled';
+    const FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION   =   'MRFOH -> Need clarification';
+    const FD_RISK_WOC_CATEGORY_SUSPEND              =   'MRFOH -> Suspended';
+    const FD_NEW_RISK_CATEGORY                      =   'Razorpay';
+    const FD_NEW_RISK_SUB_CATEGORY                  =   'Risk Action';
+    const FD_CF_PRODUCT                             =   'Payment Gateway';
+    const FD_CF_NEW_CATEGORY                        =   'Risk Report_Merchant';
 
 
     const FD_SUB_CATEGORY = [
@@ -1110,6 +1119,14 @@ Razorpay';
         Action::LIVE_DISABLE                    => self::FD_SUB_CATEGORY_DISABLE_LIVE,
         Action::SUSPEND                         => self::FD_SUB_CATEGORY_SUSPEND,
     ];
+
+    const FD_RISK_WOC_CATEGORY = [
+        Action::HOLD_FUNDS                      => self::FD_RISK_WOC_CATEGORY_FOH,
+        Action::LIVE_DISABLE                    => self::FD_RISK_WOC_CATEGORY_DISABLED,
+        Action::SUSPEND                         => self::FD_RISK_WOC_CATEGORY_SUSPEND,
+        Action::NEED_CLARIFICATION              => self::FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION,
+    ];
+
 
     const LINKED_ACCOUNT_PENNY_TESTING = 'linked_account_penny_testing';
 

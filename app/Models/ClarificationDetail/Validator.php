@@ -4,12 +4,14 @@ namespace RZP\Models\ClarificationDetail;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\ClarificationDetail\Core as ClarificationDetailsCore;
 use RZP\Trace\TraceCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Models\Merchant\Core;
 
 class Validator extends Base\Validator
 {
@@ -56,16 +58,67 @@ class Validator extends Base\Validator
 
     public function validateClarificationExists($merchantId)
     {
-        if ((new Service())->isEligibleForRevampNC($merchantId) === true)
-        {
-            $result =
-                (new Repository)->getByMerchantIdAndStatus($merchantId, Constants::NEEDS_CLARIFICATION)
-                                ->toArray();
+        $splitzProperties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->getConfig()->get('app.clarification_table_read_migration'),
+        ];
 
-            if (empty($result) === true)
-            {
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable($splitzProperties, 'enable');
+
+        $this->getTrace()->info(TraceCode::SPLITZ_RES_FOR_CLARIFICATION_DETAILS_READ_MIGRATION, [
+            'experiment_enabled' => $isExperimentEnabled
+        ]);
+
+        if ($isExperimentEnabled === true) {
+
+            $ncRevampResponse = (new Service)->getMerchantNcRevampEligibility($merchantId);
+
+            $this->getTrace()->info(TraceCode::GET_NC_REVAMP_RESPONSE, [
+                'ncRevampResponse' => $ncRevampResponse
+            ]);
+
+            if ($ncRevampResponse['nc_revamp_enabled']){
+
+                $clarificationDetails = (new Service)->getClarificationDetail($merchantId);
+
+                $this->getTrace()->info(TraceCode::GET_CLARIFICATION_DETAILS_RESPONSE, [
+                    'clarificationDetails' => $clarificationDetails
+                ]);
+
+                if (isset($clarificationDetails['clarification_details'])) {
+
+                    foreach ($clarificationDetails['clarification_details'] as $key => $details) {
+
+                        if(isset($details['comments'])) {
+
+                            foreach ($details['comments'] as $comment) {
+
+                                if ($comment['status'] === Constants::NEEDS_CLARIFICATION) {
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 throw new BadRequestValidationFailureException(
                     PublicErrorDescription::INVALID_STATUS_CHANGE_NC);
+            }
+
+        } else {
+
+            if ((new Service())->isEligibleForRevampNC($merchantId) === true) {
+
+                $result =
+                    (new Repository)->getByMerchantIdAndStatus($merchantId, Constants::NEEDS_CLARIFICATION)
+                        ->toArray();
+
+                if (empty($result) === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        PublicErrorDescription::INVALID_STATUS_CHANGE_NC);
+                }
+
             }
         }
     }

@@ -566,6 +566,29 @@ return [
         ],
     ],
 
+    'testRegisterForSignUpFlowInXViaUSL' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'abc@rzp.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'product'               => 'banking_onboarding'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://accounts.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@rzp.com',
+            ],
+        ],
+    ],
+
     'testRegisterWithOauthPayload'  => [
         'request'  => [
             'url'     => '/users/register',
@@ -685,6 +708,282 @@ return [
         ],
     ],
 
+    'testCreateMerchantWithWorkflowCreate' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+                'product' => 'pos_onboarding'
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithEmptyMerchantID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The merchant id field is required.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "merchant_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithEmptyUserID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mXM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The user id field is required.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "user_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithEmptyCountryCode' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mXM',
+                'user_id' => 'Prcm3AR7aQ9mXM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The country code field is required.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "country_code",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithInvalidMerchantID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mX',
+                'user_id' => 'Prcm3AR7aQ9mXM',
+                'country_code' => 'IN',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The merchant id must be 14 characters.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "merchant_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithInvalidUserID' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mXo',
+                'user_id' => 'Prcm3AR7aQ9mX',
+                'country_code' => 'IN',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The user id must be 14 characters.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "user_id",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithInvalidCountryCode' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'merchant_id' => 'Prcm3AR7aQ9mX0',
+                'user_id' => 'Prcm3AR7aQ9mXM',
+                'country_code' => 'UK',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code"        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => "The selected country code is invalid.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "country_code",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithOAuthAPIMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'easy_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'api',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithOAuthPGOSMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'pgos',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithNonOAuthAPIMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'phantom_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'api',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetUserOnboardingServiceFailWithNonOAuthPGOSMerchants' => [
+        'request' => [
+            'url'    => '/users/onboarding/service',
+            'method' => 'GET',
+            'content'   => [
+                'country_code' => 'IN',
+                'signup_campaign' => 'assisted_onboarding',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'service' => 'pgos',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateMerchantWithoutWorkflowCreate' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+                'product' => 'pos_onboarding',
+                'skip_workflow_create' => true
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
     'testCreateUserInternal' => [
         'request' => [
             'url'       => '/users/internal',
@@ -715,7 +1014,7 @@ return [
                 "error" => [
                     "code"=> "BAD_REQUEST_ERROR",
                     "description" => "The user id field is required.",
-                    "source" => "business",
+                    "source" => "internal",
                     "step" => "payment_initiation",
                     "reason" => "input_validation_failed",
                     "metadata" => [],
@@ -744,7 +1043,7 @@ return [
                 "error" => [
                     "code"=> "BAD_REQUEST_ERROR",
                     "description" => "The org id field is required.",
-                    "source" => "business",
+                    "source" => "internal",
                     "step" => "payment_initiation",
                     "reason" => "input_validation_failed",
                     "metadata" => [],
@@ -4102,6 +4401,135 @@ return [
             'content' => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testSkipLogin2faNotSetupWithCustomInviteMerchantFlow' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'contact_mobile' => '9949939921',
+            ]
+        ]
+    ],
+
+    'testLogin2faRequiredWithCustomInviteMerchantFlowIncorrectInviteToken' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faRequiredWithCustomInviteMerchantFlowEmptyToken' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faRequiredWithCustomInviteMerchantFlowNoToken' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testLogin2faRequiredSetupWithCustomInviteMerchantFlowNoPermission' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'X-Org-Id' => '100000yessbank'
+            ],
+            'headers'    => [
+                'X-Org-Id'          => 'org_100000yessbank',
+                'X-Org-Hostname'    => 'yesbank.in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
                     'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
                 ],
             ],
@@ -8235,7 +8663,7 @@ return [
         ],
     ],
 
-    'testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testMerchantGetTagsRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/merchants/10000000000000/tags',
             'method'  => 'GET',
@@ -8251,7 +8679,7 @@ return [
         ]
     ],
 
-    'testCurrencyFetchAllProxyRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testCurrencyFetchAllProxyRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/currency/all/proxy',
             'method'  => 'GET',
@@ -8267,7 +8695,7 @@ return [
         ]
     ],
 
-    'testMerchantPartnerConfigsFetchProxyRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testMerchantPartnerConfigsFetchProxyRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/merchants/me/partner/configs',
             'method'  => 'GET',
@@ -8283,7 +8711,7 @@ return [
         ]
     ],
 
-    'testSettlementHolidaysRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testSettlementHolidaysRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/settlement/holidays',
             'method'  => 'GET',
@@ -8299,7 +8727,7 @@ return [
         ]
     ],
 
-    'testSettlementAmountRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testSettlementAmountRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/settlements/amount',
             'method'  => 'GET',
@@ -8315,7 +8743,7 @@ return [
         ]
     ],
 
-    'testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled' => [
+    'testUserFetchPurposeCodeRouteViaBankingProduct' => [
         'request' => [
             'url'     => '/users/purpose/code',
             'method'  => 'GET',
@@ -8722,6 +9150,22 @@ return [
         ],
     ],
 
+    'testFetchMultipleUsersByContact' => [
+        'request' => [
+            'url'       => '/users_internal',
+            'method'    => 'POST',
+            'content'   => [
+                'user_contacts' => [
+                    '10000000000',
+                    '10000000001',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'   => []
+        ],
+    ],
+
     'testResellerPartnerMerchantRegister' => [
         'request' => [
             'url'     => '/register/merchant/otp/verify',
@@ -8962,5 +9406,24 @@ return [
             'content'   =>  [
             ],
         ],
-    ]
+    ],
+    'testVerifyEmailWithCallForRazorpaySalesUser' => [
+    'request'  => [
+        'url'     => '/users/verify_email',
+        'method'  => 'POST',
+        'content' => [
+            'otp'            => '0007',
+            'token'          => 'BUIj3m2Nx2VvVj',
+            'email'          => 'abc@rzp.com',
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'user' => [
+                'id'        => '10000000000004',
+                'email'     => 'udittest@rzp.com'
+            ]
+        ],
+    ],
+]
 ];

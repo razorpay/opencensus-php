@@ -47,8 +47,6 @@ class LinkedAccount extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->merchantCore->blockLinkedAccountCreationIfApplicable($this->merchant);
-
         $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use (& $entry)
         {
             return $this->createOrUpdateAccountForEntry($entry);
@@ -86,7 +84,7 @@ class LinkedAccount extends Base
             // Building input for bank core's method
             $buildInput = $this->bankAccountCore
                                ->buildBankAccountArrayFromMerchantDetail(
-                                    $account->merchantDetail,
+                                    $account,
                                     true);
             $overriddenInput = Helper::getBankAccountInput($entry);
             $input = array_merge($buildInput, $overriddenInput);

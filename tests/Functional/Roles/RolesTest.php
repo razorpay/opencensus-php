@@ -806,7 +806,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -903,7 +903,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -958,7 +958,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -1064,7 +1064,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -1154,7 +1154,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -1682,6 +1682,15 @@ class RolesTest extends TestCase
         ], $res->toArray());
     }
 
+    public function testGetRoleUsingExperiment_Authz_Read_RoleDoesNotBelongToCAC()
+    {
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $res = (new RolesService())->getRoleUsingExperiment('sellerapp');
+
+        $this->assertEquals(null, $res);
+    }
+
     public function testGetRoleNameUsingExperiment()
     {
         // 1. create dependencies
@@ -1828,6 +1837,15 @@ class RolesTest extends TestCase
         $this->assertEquals(['authz_role_name_1'], $res);
     }
 
+    public function testGetAuthzRolesUsingExperiment_Authz_Read_RoleDoesNotBelongToCAC()
+    {
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $res = (new RolesService())->getAuthzRolesUsingExperiment('sellerapp');
+
+        $this->assertEquals([], $res);
+    }
+
     public function testAdminAPIGetRole_RoleNotFound()
     {
         $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
@@ -1903,7 +1921,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -1951,6 +1969,226 @@ class RolesTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchRoleByIdRoleFinanceL1CACMigration()
+    {
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/role_finance_l1';
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        // mock is required to pass the basic auth check
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Owner', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertTrue($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole1',
+                'name'          => 'Owner',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => self::DEFAULT_MERCHANT_ID,
+                'created_by'    => 'MerchantUser01',
+                'children'      => null,
+                'description'   => 'Perform all tasks',
+            ]));
+
+        $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+            ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
+            {
+                $this->assertEquals('Finance L1', $roleId);
+                $this->assertEquals('razorpayx', $orgId);
+                $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                $this->assertFalse($expandChildren);
+
+                return true;
+            })
+            ->once()
+            ->andReturn(new AuthzAdminModel\V1Role([
+                'id'            => '100standardRole9',
+                'name'          => 'Finance L1',
+                'org_id'        => 'razorpayx',
+                'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                'owner_type'    => 'merchant',
+                'owner_id'      => Entity::ORG_ID_FOR_ROLES,
+                'created_by'    => '10000000system',
+                'children'      => null,
+                'description'   => 'this is a standard role',
+            ]));
+
+        $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+        $this->startTest();
+    }
+
+    public function testAdminAPIGetRoleForStandardRoles()
+    {
+        $this->ba->proxyAuth();
+
+        $roles = [
+            'role_owner' => [
+                'id' => 'owner',
+                'name' => 'Owner',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_vendor' => [
+                'id' => 'vendor',
+                'name' => 'Vendor',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance_l2' => [
+                'id' => 'finance_l2',
+                'name' => 'Finance L2',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_view_only' => [
+                'id' => 'view_only',
+                'name' => 'View Only',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_operations' => [
+                'id' => 'operations',
+                'name' => 'Operations',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance_l3' => [
+                'id' => 'finance_l3',
+                'name' => 'Finance L3',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_admin' => [
+                'id' => 'admin',
+                'name' => 'Admin',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_chartered_accountant' => [
+                'id' => 'chartered_accountant',
+                'name' => 'Chartered Accountant',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance_l1' => [
+                'id' => 'finance_l1',
+                'name' => 'Finance L1',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_finance' => [
+                'id' => 'finance',
+                'name' => 'Finance',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_petty_cash_employee' => [
+                'id' => 'petty_cash_employee',
+                'name' => 'Petty Cash Employee',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+            'role_banking_readonly' => [
+                'id' => 'banking_readonly',
+                'name' => 'Owner - Read Only',
+                'description' => 'this is a standard role',
+                'type' => 'standard',
+                'merchant_id' => '100000razorpay',
+                'created_by' => '10000000system',
+                'child_ids' => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            ],
+        ];
+
+        $this->mockCACMigrationExperiment('active', self::DEFAULT_MERCHANT_ID);
+
+        $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
+
+        foreach ($roles as $roleKey => $expectedResponse) {
+            $authzAdminClientMock->shouldReceive('adminAPIGetRole')
+                ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren) use ($expectedResponse) {
+                    $this->assertEquals($expectedResponse['name'], $roleId);
+                    $this->assertEquals('razorpayx', $orgId);
+                    $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
+                    $this->assertFalse($expandChildren);
+
+                    return true;
+                })
+                ->once()
+                ->andReturn(new AuthzAdminModel\V1Role([
+                    'id'            => '100standardRole1',
+                    'name'          => $expectedResponse['name'],
+                    'org_id'        => 'razorpayx',
+                    'type'          => AuthzAdminModel\V1RolePolicyType::STANDARD,
+                    'owner_type'    => 'merchant',
+                    'owner_id'      => Entity::ORG_ID_FOR_ROLES,
+                    'created_by'    => '10000000system',
+                    'child_ids'     => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                    'children'      => null,
+                    'description'   => 'this is a standard role',
+                ]));
+
+            $this->app->instance('authzXPlatformAdmin', $authzAdminClientMock);
+
+            $response = (new \RZP\Models\AuthzAdmin\Service())->adminAPIGetRole($expectedResponse['id'], self::DEFAULT_MERCHANT_ID, false);
+
+            $this->assertEquals($expectedResponse, $response);
+        }
+    }
+
+    public function testAdminAPIGetRoleSellerApp()
+    {
+        $res = (new \RZP\Models\AuthzAdmin\Service())->adminAPIGetRole('sellerapp', self::DEFAULT_X_MERCHANT_ID, false);
+
+        $this->assertEquals([], $res);
+    }
+
     public function testFetchSelfRoleCACMigration()
     {
         $this->ba->proxyAuth();
@@ -1962,7 +2200,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertTrue($expandChildren);
@@ -1985,7 +2223,7 @@ class RolesTest extends TestCase
         $authzAdminClientMock->shouldReceive('adminAPIGetRole')
             ->withArgs(function($roleId, $orgId, $ownerId, $expandChildren)
             {
-                $this->assertEquals('owner', $roleId);
+                $this->assertEquals('Owner', $roleId);
                 $this->assertEquals('razorpayx', $orgId);
                 $this->assertEquals(self::DEFAULT_MERCHANT_ID, $ownerId);
                 $this->assertFalse($expandChildren);

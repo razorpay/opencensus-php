@@ -18,6 +18,10 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
     }
     /**
      * Test Successful Collect Payment Creation
@@ -101,11 +105,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     {
         $this->testCollectPaymentCreateSuccess('payment_failed');
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
         $this->mockServerContentFunction(
             function (&$error)
             {
@@ -162,11 +161,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     {
         $this->testCollectPaymentCreateSuccess($description);
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
         $payment = $this->getDbLastpayment();
 
         $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
@@ -197,7 +191,7 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     }
 
     /**
-     * Test Successful Collect Payment with pre-process through UPS
+     * Test Successful Collect Payment with pre-process through API
      *
      * @return void
      */
@@ -604,11 +598,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->fixtures->merchant->activate();
 
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
-
         $content = $this->mockServer('upi_airtel')->getUnexpectedAsyncCallbackContentForAirtel();
 
         $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
@@ -651,11 +640,6 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
         $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
 
         $this->fixtures->merchant->activate();
-
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
-        });
 
         $content = $this->mockServer('upi_airtel')->getUnexpectedAsyncCallbackContentForAirtel(false);
 

@@ -277,12 +277,6 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             }
         }
 
-        if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_RECURRING_CYBERSOURCE, $this->app['rzp.mode']) === 'on') and
-            (empty($authenticationData[Constants::CAVV_ALGORITHM])))
-        {
-            $authenticationData[Constants::CAVV_ALGORITHM] = "4";
-        }
-
         $inputResponse = [
             Constants::PAYMENT              => $payment->toArray(),
             Constants::GATEWAY              => MandateHubs::BILLDESK_SIHUB,

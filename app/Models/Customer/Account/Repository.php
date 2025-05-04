@@ -11,7 +11,6 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\SalesforceConverge\Error;
 use RZP\Trace\TraceCode;
 use Rzp\Wda_php\WDAQueryBuilder;
 
@@ -42,7 +41,7 @@ class Repository extends Base\Repository
         $this->logMethodCall(__FUNCTION__, ['merchant_id' => $merchantId, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
-            $response = (new \RZP\Services\CMS\Service($this->app))->listCustomers(
+            $response = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchantId,
                     'count' => $params['count'],
@@ -543,6 +542,9 @@ class Repository extends Base\Repository
     // behaviour: does not throw exception, either the entity or null
     public function findById($id, $columns = ['*'])
     {
+        if (is_null($id))
+            return null;
+
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
         $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
@@ -575,7 +577,7 @@ class Repository extends Base\Repository
 
         if ($shouldReadViaCMS)
         {
-            $customers = (new \RZP\Services\CMS\Service($this->app))->listCustomers(
+            $customers = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchant->getId(),
                     'contact' => $contact,
@@ -611,7 +613,7 @@ class Repository extends Base\Repository
 
         if ($shouldReadViaCMS)
         {
-            $customers = (new \RZP\Services\CMS\Service($this->app))->listCustomers(
+            $customers = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchantId,
                     'contact' => $contact,
@@ -656,7 +658,7 @@ class Repository extends Base\Repository
 
         if ($shouldReadViaCMS)
         {
-            $customers = (new \RZP\Services\CMS\Service($this->app))->listCustomers(
+            $customers = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchant->getId(),
                     'contact' => $contact,
@@ -731,7 +733,7 @@ class Repository extends Base\Repository
     {
         try
         {
-            $responseData = (new \RZP\Services\CMS\Service($this->app))->getCustomerByReferenceId($id);
+            $responseData = $this->app['cms']->getCustomerById($id);
         }
         catch (\Exception)
         {

@@ -43,6 +43,7 @@ class Entity extends QrCode\Entity
     const ORDER_ID                     = 'order_id';
 
     const SHARED_ID = 'FallbackQrCode';
+    const STORE_ID = 'store_id';
 
     protected $fillable = [
         self::PROVIDER,
@@ -65,6 +66,7 @@ class Entity extends QrCode\Entity
         self::TAX_INVOICE,
         self::REQUEST_SOURCE,
         self::DEVICE_ID,
+        self::STORE_ID,
     ];
 
     protected $visible = [
@@ -89,6 +91,7 @@ class Entity extends QrCode\Entity
         self::CLOSE_REASON,
         self::TAX_INVOICE,
         self::DEVICE_ID,
+        self::STORE_ID,
         self::MERCHANT_ID,
     ];
 
@@ -147,6 +150,7 @@ class Entity extends QrCode\Entity
         self::TAX_INVOICE              => [],
         self::REQUEST_SOURCE           => null,
         self::DEVICE_ID                => null,
+        self::STORE_ID                => null,
     ];
 
     protected static $generators = [
@@ -160,7 +164,6 @@ class Entity extends QrCode\Entity
     protected static $modifiers = [
         self::QR_STRING,
     ];
-
     protected function modifyQrString(& $input)
     {
         // Should respect the merchant payback field if sent from the create request
@@ -219,6 +222,11 @@ class Entity extends QrCode\Entity
     public function updateDeviceId($deviceId)
     {
         $this->setAttribute(self::DEVICE_ID, $deviceId);
+    }
+
+    public function setStoreId(string $storeId)
+    {
+        $this->setAttribute(self::STORE_ID, $storeId);
     }
 
     public function setRequestSource(string $requestSource)
@@ -348,6 +356,11 @@ class Entity extends QrCode\Entity
     public function getDeviceId()
     {
         return $this->getAttribute(self::DEVICE_ID);
+    }
+
+    public function getStoreId()
+    {
+        return $this->getAttribute(self::STORE_ID);
     }
 
     public function getUsageType()

@@ -85,7 +85,7 @@ class Mode extends Core
             Type::WALLET_ACCOUNT => [
                 self::AMAZONPAY,
             ],
-            Type::LINKED_NUMBER => [
+            Type::MOBILE => [
               self::UPI
             ],
         ],

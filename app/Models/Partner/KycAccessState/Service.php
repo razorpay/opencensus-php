@@ -4,11 +4,15 @@ namespace RZP\Models\Partner\KycAccessState;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Services\Partnerships;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
+    use Partnerships\PartnershipServiceTrait;
+
     protected $core;
 
     public function __construct()
@@ -20,7 +24,17 @@ class Service extends Base\Service
 
     public function createRequestForSubMerchantKyc($input)
     {
+        // Inject partner id from auth 
         $partner = $this->fetchPartner();
+        $prtsInput = array_merge($input, [
+            'partner_id' => $partner->getId()
+        ]);
+        $prtsResult = $this->proxyToPartnershipServiceForPKYC($prtsInput, $partner->getId());
+
+        if (empty($prtsResult['response']) === false) {
+            return $prtsResult['response'];
+        }
+
 
         (new Entity)->getValidator()->validateInput('create', $input);
 
@@ -60,6 +74,19 @@ class Service extends Base\Service
         (new Validator)->validateMerchantReferredByPartner($partnerId, $this->merchant->getId());
 
         return $this->core->getKycAccessStatus($partnerId, $this->merchant->getId());
+    }
+
+    public function upsertFromPRTS(array $input): array
+    {
+        (new Validator())->validateInput('upsert_from_prts', $input);
+
+        $this->trace->info(
+            TraceCode::PRTS_KYC_ACCESS_STATE_UPSERT_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        return $this->core()->upsertFromPRTS($input);
     }
 
     protected function fetchPartnerFromReferralCode(string $referralCode)

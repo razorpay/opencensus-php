@@ -14,6 +14,7 @@ class Constants
     const NOTIFICATIONS   = 'notifications';
     const SETTLEMENTS     = 'settlements';
     const BANK_DETAILS    = 'bank_details';
+    const BANK_BRANCH_IFSC = 'bank_branch_ifsc';
     const FLASH_CHECKOUT  = 'flash_checkout';
     const FEATURES        = 'features';
     const REFUND          = 'refund';
@@ -47,6 +48,7 @@ class Constants
     const IFSC_CODE        = 'ifsc_code';
     const ACCOUNT_NUMBER   = 'account_number';
     const BENEFICIARY_NAME = 'beneficiary_name';
+    const BANK_BRANCH_CODE = 'bank_branch_code';
 
     //payment capture input constants
     const MODE                    = 'mode';

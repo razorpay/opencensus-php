@@ -2415,6 +2415,51 @@ return [
             ],
         ],
     ],
+    'testAddPricingPlanRuleForOfferPrefundingFee' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'offer_prefunding_fee',
+                'payment_method'      => null,
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 100000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'   => 'TestPlan1',
+                'product'     => 'primary',
+                'feature'     => 'offer_prefunding_fee',
+                'fixed_rate'  => 100000
+            ],
+        ],
+    ],
+    'testAddPricingPlanRuleForOfferPrefundingFeeWithMethod' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'offer_prefunding_fee',
+                'payment_method'      => 'emi',
+               'payment_method_type' => null,
+               'payment_network'     => null,
+               'payment_issuer'      => null,
+                'fixed_rate'          => 100000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'TestPlan1',
+                'product'      => 'primary',
+                'payment_method'      => 'emi',
+                'feature'      => 'offer_prefunding_fee',
+                'fixed_rate'   => 100000
+            ],
+        ],
+    ],
     'testAddPricingRuleForWidgetMaxFixedRate' => [
         'request' => [
             'content' => [
@@ -4011,7 +4056,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'International pricing rule is only allowed for card method',
+                    'description' => 'International pricing rule is only allowed for card, wallet and payLater method',
                 ],
             ],
             'status_code' => 400,
@@ -5834,6 +5879,107 @@ return [
                     ]
                 ],
             ],
+        ],
+    ],
+    'testAddPricingPlanWalletInternationalRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'  => 'wallet',
+                'payment_network' => 'alipay',
+                'percent_rate'    => 2000,
+                'international'   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'wallet',
+                'payment_method_type' => null,
+                'payment_network'     => 'alipay',
+                'payment_issuer'      => null,
+                'percent_rate'        => 2000,
+                'international'       => true,
+            ],
+        ],
+    ],
+    'testAddPricingPlanPaylaterInternationalRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'  => 'paylater',
+                'payment_issuer' =>  'klarna',
+                'percent_rate'    => 2000,
+                'international'   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'paylater',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => 'klarna',
+                'percent_rate'        => 2000,
+                'international'       => true,
+            ],
+        ],
+    ],
+    'testAddPricingPlanRuleForOfferPrefundingFeeMaxFixedRate' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'offer_prefunding_fee',
+                'payment_method'      => null,
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 3000000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fixed rate may not be greater than 2500000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddDuplicatePricingPlanRulesForOfferPrefundingFee' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'offer_prefunding_fee',
+                'payment_method'      => 'emi',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'fixed_rate'          => 2000000
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The new rule matches with an active existing rule',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
 ];

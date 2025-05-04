@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Exception\LogicException;
+use RZP\Exception\RuntimeException;
 use RZP\Http\Route;
 
 use RZP\Models\Vpa;
@@ -74,6 +75,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\PayoutsDetails as PayoutDetails;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
+use RZP\Http\Controllers\BankTransferController;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
@@ -559,17 +561,17 @@ class Service extends Base\Service
 
         (new Validator)->validateAndUpdateCardMode($input);
 
-        $isLinkedNumberPayout = $this->isLinkedNumberPayout($input);
-        $linkedNumber = null;
+        $isMobileNumberPayout = $this->isMobileNumberPayout($input);
+        $mobileNumber = null;
 
-        if ($isLinkedNumberPayout) {
+        if ($isMobileNumberPayout) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT);
 
-            $linkedNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER][FundAccount\Entity::NUMBER] ?? null;
+            $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
 
             $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO,
                 [
-                    FundAccount\Entity::LINKED_NUMBER => $linkedNumber,
+                    FundAccount\Entity::LINKED_NUMBER => $mobileNumber,
                 ]);
 
             $properties = [
@@ -581,10 +583,10 @@ class Service extends Base\Service
 
             if (!$isPayoutsToPhoneNumberEnabled) {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_LINKED_NUMBER_PAYOUT_NOT_ALLOWED,
+                    ErrorCode::BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED,
                     null);
             }
-            (new Validator)->validateLinkedNumber($input);
+            (new Validator)->validateMobileNumberPayout($input);
         }
 
         $isCompositePayout = false;
@@ -736,8 +738,9 @@ class Service extends Base\Service
             $payoutArray = $payout->toArrayPublic();
         }
 
-        if ($isLinkedNumberPayout) {
-            $this->sanitizeResponseForLinkedNumberPayout($payoutArray, $linkedNumber);
+        if ($isMobileNumberPayout) {
+            $fundAccount = $payout->fundAccount;
+            $this->sanitizeResponseForMobileNumberPayout($payoutArray, $fundAccount);
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT);
         }
 
@@ -1848,14 +1851,18 @@ class Service extends Base\Service
             return false;
         }
 
-        $undoPayoutExperimentVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
-            Constants\Mode::LIVE);
+        //only active for test mode
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
+            'request_data'  => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
         $isUndoPayoutPreferenceEnabled = $this->fetchUserPreferenceForUndoPayouts();
 
-        return ((strtolower($undoPayoutExperimentVariant) === 'on') && ($isUndoPayoutPreferenceEnabled));
+        return ((($this->mode === Constants\Mode::TEST) && ($isExperimentEnabled === true)) && ($isUndoPayoutPreferenceEnabled));
     }
 
     private function fetchUserPreferenceForUndoPayouts() {
@@ -1951,35 +1958,16 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
-        $payout = null;
-
-        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true)
-        {
-            try
-            {
-                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
-            }
-
-            catch (\Exception $e)
-            {
-                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID)
-                {
-                    throw $e;
-                }
-            }
+        $merchantId = $this->merchant->getId();
+        $requestPayload = [
+            'id' => $merchantId,
+            'experiment_name' => RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_ID,
+            'request_data'  => json_encode(['id' =>  $merchantId])
+        ];
+        if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE)){
+            return $this->getPayoutDetailsWithDBFirst($id, $input);
         }
-
-        if (empty($payout) === true)
-        {
-            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
-
-            //tracking slack app related events
-            $this->trackPayoutsFetchEvent($input, $payout);
-
-            return $payout->toArrayPublic();
-        }
-
-        return $payout;
+        return $this->getPayoutDetailWithPSFirst($id, $input);
     }
 
     public function fetchSourceEventInfo(string $id): array
@@ -6869,23 +6857,19 @@ class Service extends Base\Service
                     break;
 
                 case 'approve_workflow_payouts':
-
                     $payoutIds = $bulk_input['payout_ids'];
-
-                    $processFunction(function($payoutIds) {
-                        $this->approveRejectWorkflowPayouts($payoutIds, 'approve');
+                    $queueIfBalanceLow = $bulk_input['queue_if_low_balance'] ?? true;
+                    $processFunction(function($payoutId) use ($queueIfBalanceLow)  {
+                        $this->approveRejectWorkflowPayouts($payoutId,'approve',$queueIfBalanceLow);
                     }, $payoutIds);
-
                     break;
 
                 case 'reject_workflow_payouts':
-
                     $payoutIds = $bulk_input['payout_ids'];
-
-                    $processFunction(function($payoutIds) {
-                        $this->approveRejectWorkflowPayouts($payoutIds,'reject');
-                    },$payoutIds);
-
+                    $queueIfBalanceLow = $bulk_input['queue_if_low_balance'] ?? true;
+                    $processFunction(function($payoutId) use ($queueIfBalanceLow) {
+                        $this->approveRejectWorkflowPayouts($payoutId,'reject',$queueIfBalanceLow);
+                    }, $payoutIds);
                     break;
 
                 case 'process_bank_transfer':
@@ -6917,6 +6901,15 @@ class Service extends Base\Service
                         if($res)
                             array_push($successResponse, $res);
                     }, $bulk_input);
+                    break;
+
+                case 'manual_smart_collect_entity_creation':
+                    $processFunction(function($input) use (&$successResponse) {
+                       $res = (new BankTransferController())->manualProcessBankTransferRequest($input);
+                       if($res)
+                           array_push($successResponse, $res);
+                    },$bulk_input);
+
                     break;
 
                 default:
@@ -6961,66 +6954,68 @@ class Service extends Base\Service
         }
     }
 
-    public function approveRejectWorkflowPayouts($payoutIds, $action)
+    public function approveRejectWorkflowPayouts($payoutId, $action, $queueIfBalanceLow=true)
     {
-        foreach ($payoutIds as $payoutId) {
+        if (!str_starts_with($payoutId, 'pout_')) {
+            $payoutId = 'pout_' . $payoutId;
+        }
 
-            $attributes = [];
+        $attributes = [];
+        if ($queueIfBalanceLow) {
 
-            $payoutDetails = $this->repo->payouts_details->find($payoutId);
+            $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
+        }
 
-            $queueIfBalanceLow = $payoutDetails->getQueueIfLowBalanceFlag();
+        if ($action === 'approve') {
+            $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
 
-            if (!empty($queueIfBalanceLow)) {
+        } elseif ($action === 'reject') {
+            $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
 
-                $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
-            }
-
-            if ($action === 'approve') {
-
-                $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
-
-            } elseif ($action === 'reject') {
-
-                $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
-
-            } else {
-
-                $this->trace->warning(
-                    TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
-                    [
-                        'payout_id' => $payoutId,
-                        'action' => $action,
-                        'message' => 'Invalid action provided'
-                    ]
-                );
-
-                return;
-            }
-
-            $this->trace->info(
-                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+        } else {
+            $this->trace->warning(
+                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
                 [
-                    'payoutId' => $payoutId,
-                    'action' => $action
+                    'payout_id' => $payoutId,
+                    'action' => $action,
+                    'message' => 'Invalid action provided'
                 ]
             );
 
+            return;
         }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+            [
+                'payoutId' => $payoutId,
+                'action' => $action
+            ]
+        );
     }
 
-    private function isLinkedNumberPayout(array $input): bool {
-        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::LINKED_NUMBER;
+    private function isMobileNumberPayout(array $input): bool {
+        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
     }
 
-    private function sanitizeResponseForLinkedNumberPayout(array &$payoutArray, string $linkedNumber)
+    private function sanitizeResponseForMobileNumberPayout(array &$payoutArray, FundAccount\Entity $fundAccount): void
     {
-        $payoutArray[Entity::FUND_ACCOUNT][Entity::ACCOUNT_TYPE] = FundAccount\Entity::LINKED_NUMBER;
-        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER] = [
-            FundAccount\Entity::NUMBER => $linkedNumber
+        $payoutArray[Entity::FUND_ACCOUNT][Entity::ACCOUNT_TYPE] = FundAccount\Entity::MOBILE;
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE] = [
+            FundAccount\Entity::NUMBER => $fundAccount->getLinkedNumber(),
+            FundAccount\Entity::ACCOUNT_HOLDER_NAME => $fundAccount->getCustomerName(),
         ];
-        unset($payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA]);
+
+        // Ensure existing VPA keys are not removed, only nullify ADDRESS and USERNAME
+        $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] = array_merge(
+            $payoutArray[Entity::FUND_ACCOUNT][FundAccount\Entity::VPA] ?? [],
+            [
+                Vpa\Entity::ADDRESS => null,
+                Vpa\Entity::USERNAME => null,
+            ]
+        );
     }
+
 
     public function payoutsDualWriteFailureProcessingCron($input)
     {
@@ -7051,5 +7046,119 @@ class Service extends Base\Service
         return [
             'success' => true,
         ];
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     * @throws Throwable
+     */
+    public function getPayoutDetailsWithDBFirst(string $id, array $input): array
+    {
+        $exceptionFromAPIDB = null;
+        try {
+            $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                Constants\Metric::LABEL_MESSAGE => "API_DB"
+            ]);
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
+
+            if (!empty($payout)) {
+                $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Fetched Payout from API DB",
+                    'id' => $id,
+                    'payout' => $payout->toArrayPublic()
+                ]);
+                return $payout->toArrayPublic();
+            }
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::FETCH_PAYOUT_BY_ID, [
+                'message' => "Exception Fetch Payout from API DB",
+                'id' => $id,
+                'payout' => $payout,
+                'exception' => $e
+            ]);
+            $exceptionFromAPIDB = $e;
+        }
+
+        $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+            Constants\Metric::LABEL_MESSAGE => "API_DB_FAIL"
+        ]);
+
+        //Check And Fetch from Payout Service
+        if ($this->isLiveTraffic()) {
+            try {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+                $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Fetch Payout from PS",
+                    'id' => $id,
+                    'payout' => $payout
+                ]);
+                $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                    Constants\Metric::LABEL_MESSAGE => "PS_CALL_SUCCESS"
+                ]);
+                return $payout;
+            } catch (\Throwable $e){
+                $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+                    Constants\Metric::LABEL_MESSAGE => "PS_CALL_FAILURE",
+                    Constants\Metric::LABEL_ERROR_CODE => $e->getCode()
+                ]);
+                $this->trace->error(TraceCode::FETCH_PAYOUT_BY_ID, [
+                    'message' => "Exception Fetch Payout from Payout Service",
+                    'id' => $id,
+                    'payout' => $payout,
+                    'exception' => $e
+                ]);
+                throw $e;
+            }
+        }
+        $this->trace->count(Payout\Metric::GET_PAYOUT_BY_ID_FLOW, [
+            Constants\Metric::LABEL_MESSAGE => "PS_CALL_DISABLED"
+        ]);
+        throw $exceptionFromAPIDB ?? new RuntimeException("The id provided does not exist.", [
+            "id" => $id
+        ]);
+    }
+
+    /**
+     * @param array $input
+     * @param string $id
+     * @return array|null
+     * @throws \Exception
+     */
+    public function getPayoutDetailWithPSFirst(string $id, array $input): ?array
+    {
+        $payout = null;
+
+        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true) {
+            try {
+                $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+            } catch (\Exception $e) {
+                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID) {
+                    throw $e;
+                }
+            }
+        }
+
+        if (empty($payout) === true) {
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+            //tracking slack app related events
+            $this->trackPayoutsFetchEvent($input, $payout);
+
+            return $payout->toArrayPublic();
+        }
+
+        return $payout;
+    }
+
+    /**
+     * @return true if mode is LIVE
+     */
+    protected function isLiveTraffic(): bool
+    {
+        return $this->mode == Constants\Mode::LIVE;
     }
 }

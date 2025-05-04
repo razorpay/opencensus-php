@@ -2315,6 +2315,13 @@ class Core extends Base\Core
             $blacklistedMerchantIds = $input[Constants::BLACKLISTED_MERCHANT_IDS];
         }
 
+        $balanceFetchMerchantBlacklist = (new AdminService)->getConfigKey(['key' => ConfigKey::BALANCE_FETCH_MERCHANTS_BLACKLIST]);
+
+        if (empty($balanceFetchMerchantBlacklist[$channel]) === false)
+        {
+            $blacklistedMerchantIds = array_merge($blacklistedMerchantIds, $balanceFetchMerchantBlacklist[$channel]);
+        }
+
         $isPriorityBalanceUpdate = false;
 
         if (isset($input[Constants::IS_PRIORITY_BALANCE_UPDATE]) === true)

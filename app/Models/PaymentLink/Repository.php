@@ -99,4 +99,10 @@ class Repository extends Base\Repository
 
         return $entity;
     }
+
+    public function deletePaymentLinkById(string $paymentLinkId): void {
+        $this->newQuery()
+            ->where(Entity::ID, $paymentLinkId)
+            ->forceDelete();
+    }
 }

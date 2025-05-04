@@ -249,19 +249,29 @@ class FundAccountPayout extends Base
 
         $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            constant(RazorxTreatment::class . '::' . $razorxFeature),
-            $this->mode,
-            Payout\Entity::RAZORX_RETRY_COUNT
-        );
+        $experiment =  constant(RazorxTreatment::class . '::' . $razorxFeature);
 
-        if (strtolower($variant) === 'control')
-        {
+        $requestPayload = [
+            'merchant_id' => $merchant->getId(),
+            'experiment_name' => $experiment,
+            'request_data'  => json_encode(['id' => $merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === true) {
+
+            if ($mode === FundTransferMode::NEFT || $mode === FundTransferMode::IMPS) {
+                return Channel::ICICI;
+            } else if ($mode === FundTransferMode::RTGS || $mode === FundTransferMode::IFT) {
+                return Channel::CITI;
+            } else if ($mode === FundTransferMode::DUITNOW) {
+                return Channel::OCBC;
+            }
+        }
+        else{
             return Channel::YESBANK;
         }
-
-        return constant(Channel::class . '::' . strtoupper($variant));
     }
 
     protected function validateModeChannelAndDestinationType(Payout\Entity $payout)

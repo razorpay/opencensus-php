@@ -170,6 +170,8 @@ class ConfigKey
 
     const RBL_CA_BALANCE_UPDATE_LIMITS = self::PREFIX . 'rbl_ca_balance_update_limits';
 
+    const BALANCE_FETCH_MERCHANTS_BLACKLIST = self::PREFIX . 'balance_fetch_merchants_blacklist';
+
     const ICICI_CA_BALANCE_UPDATE_LIMITS = self::PREFIX . 'icici_ca_balance_update_limits';
 
     const RBL_CA_PRIORITY_BALANCE_UPDATE_LIST = self::PREFIX . 'rbl_ca_priority_balance_update_list';
@@ -197,6 +199,10 @@ class ConfigKey
     const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
 
     const COLLECTX_SERIES_PREFIX = self::PREFIX . 'collectx_series_prefix';
+
+    const RBL_VPA_VALIDATE_API_SESSION_TOKEN      = self::PREFIX . 'rbl_vpa_validate_api_session_token';
+
+    const RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN = self::PREFIX . 'rbl_vpa_validate_api_gateway_auth_token';
 
     const PAYER_ACCOUNT_NUMBER_INVALID_REGEXES  = self::PREFIX . 'payer_account_number_invalid_regexes';
 

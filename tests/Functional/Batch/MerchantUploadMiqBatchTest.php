@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use DB;
 use Config;
 use RZP\Constants\Mode;
 use RZP\Models\Batch\Header;
@@ -30,6 +31,21 @@ class MerchantUploadMiqBatchTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+    }
+
+    private function mockSplitzExperimentUploadMiq($variant = 'false')
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variant,
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
     }
 
     public function testValidateFileEntryMerchantUploadMIQSuccess()
@@ -136,6 +152,8 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
+
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $response = $this->startTest();
@@ -170,6 +188,8 @@ class MerchantUploadMiqBatchTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $this->mockSplitzExperimentUploadMiq();
+
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['response']['content'] =
             [
@@ -199,6 +219,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = '';
 
@@ -223,6 +244,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_NB_FEE_BEARER] = 'Customer';
 
@@ -245,6 +267,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_NB_FEE_TYPE] = 'NA';
 
@@ -270,12 +293,166 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $response = $this->startTest();
 
         $this->assertEquals('success', $response[Header::STATUS]);
     }
+
+    public function testCreateMerchantSuccessMultiAccountAlreadyExistingUser()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod2969@razorpay.com',
+            'contact_mobile' => '9565656576'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+    }
+
+    public function testCreateMerchantSuccessMultiAccountNewUser()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithEmail()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod2969@razorpay.com',
+            'contact_mobile' => '9565656222'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('Email ID already associated with another mobile number', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithMobile()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod22323@razorpay.com',
+            'contact_mobile' => '9565656575'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656575';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('Mobile number already associated with another email ID', $response[Header::ERROR_DESCRIPTION]);
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return [
@@ -547,6 +724,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'U67190TN2014PTC096979';
 
@@ -585,6 +763,7 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'llp';
@@ -611,6 +790,7 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
@@ -684,6 +864,7 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
@@ -738,6 +919,7 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
 
+        $this->mockSplitzExperimentUploadMiq();
         $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
 
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_WEBSITE] = 'https://amazon.com';
@@ -983,6 +1165,8 @@ class MerchantUploadMiqBatchTest extends TestCase
         ]);
 
         $this->fixtures->org->addFeatures([Feature::VAS_KYC_RBI],'100000razorpay');
+
+        $this->mockSplitzExperimentUploadMiq();
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
 

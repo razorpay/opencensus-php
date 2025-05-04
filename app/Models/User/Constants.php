@@ -96,6 +96,8 @@ class Constants
     const OAUTH_ACCOUNTS_OAUTH_CLIENT_ID            = 'oauth.accounts_oauth_client_id';
     const BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT = 'bulk_payout_approve_to_bulk_approve_payout';
 
+    const DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED = 'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED';
+
     // payout links constants
     const CONTACT                   = 'contact';
     const ACCOUNT_NUMBER            = 'account_number';

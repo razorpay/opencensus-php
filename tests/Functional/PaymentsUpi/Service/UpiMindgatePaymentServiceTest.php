@@ -25,6 +25,10 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         parent::setUp();
 
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = 'upi_mindgate';
     }
 

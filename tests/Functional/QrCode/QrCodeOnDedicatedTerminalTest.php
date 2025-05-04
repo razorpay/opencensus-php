@@ -2315,15 +2315,36 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT], 'LiveAccountMer');
         $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
         $this->assertEquals(false, $isQRCodeFeatureEnabled);
+
+        // 1. failure scenario
         $payload = [
             "merchant_id" => "LiveAccountMer",
             "pos_activation_status" => "kyc_qualified"
         ];
 
         (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
-
         $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
         $this->assertEquals(false, $isQRCodeFeatureEnabled);
+
+        // 2. success scenario
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "kyc_qualified_stb"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
+
+        // 3. success scenario
+        $payload = [
+            "merchant_id" => "LiveAccountMer",
+            "pos_activation_status" => "activated"
+        ];
+
+        (new NonVirtualAccountQrCode\Service)->addPosQrCodeFeaturesOnPosActivation($payload);
+        $isQRCodeFeatureEnabled = $this->fixtures->on('live')->merchant->isFeatureEnabled([Feature\Constants::QR_CODES,Feature\Constants::QR_IMAGE_CONTENT],'LiveAccountMer');
+        $this->assertEquals(true, $isQRCodeFeatureEnabled);
     }
 
     public function testInvalidLengthMultipleQrCodeClose()
@@ -2714,6 +2735,35 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($order['status'],'paid');
     }
 
+    public function testCallFetchQrCodeWithId()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $order = $this->createOrderForQrCode(
+            ['amount' => 4000],
+            'live',
+            'LiveAccountMer');
+
+        $this->createQrCode(['usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000,
+            'order_id' => $order['id'],
+            'request_source' => 'ezetap',
+        ],
+            'live',
+            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getDbLastEntity('qr_code', 'live');
+
+        $qrCode = $this->makeRequestAndGetContent([
+            'method' => 'GET',
+            'url' => '/v1/payments/qr_codes/qr_'. $qrCodeEntity['id']
+        ]);
+
+        $this->assertEquals('qr_'.$qrCodeEntity['id'], $qrCode['id']);
+    }
+
     public function testDelayedCallbackOnSingleUseQrCodeWithOrderIdForPosQr()
     {
         $this->fixtures->merchant->addFeatures(['omni_enabled']);
@@ -2764,5 +2814,57 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $order->reload();
         $this->assertEquals($order['status'],'attempted');
+    }
+
+    public function testBatchServiceMapDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount =0 ;
+        $eventList =[] ;
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount,$eventList);
+
+
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ],'live','LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code','live');
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'randomDeviceId',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        $this->assertEquals(true,$response['success']);
+        $this->assertEquals('qr_'.$qrCode['id'],$response['id']);
+        $this->assertEquals('randomDeviceId',$response['device_id']);
+
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'randomDeviceId',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => true,
+                    'unmap_from_qr' => true
+                ],
+            ]
+        ]);
+
+        $qrCode->reload();
+
+        $this->assertEquals(true,$response['success']);
+        $this->assertEquals($qrCode['id'],$response['id']);
+        $this->assertNull($qrCode->getDeviceId());
+
     }
 }

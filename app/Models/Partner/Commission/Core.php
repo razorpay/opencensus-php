@@ -943,4 +943,97 @@ class Core extends Base\Core
             return '';
         }
     }
+
+    public function clearUnsettledTxn(array $input)
+    {
+        try 
+        {
+            $partnerId = $input['partner_id'];
+            $fromTimestamp = $input['from_timestamp'];
+            $toTimestamp = $input['to_timestamp'];
+            $limit = $input['limit'] ?? null;
+            $offset = $input['offset'] ?? null;
+            $txnIds = $input['txn_ids'] ?? null;
+            $totalTxnIdCount = 0;
+
+            if ($txnIds === null) {
+                $batchCount = 1;
+                while (true) {
+                    $result = $this->repo->transaction->fetchOnHoldCommissionTransactions(
+                        $partnerId,
+                        $fromTimestamp,
+                        $toTimestamp,
+                        $limit,
+                        $offset,
+                    );
+                    if (empty($result)) {
+                        break;
+                    }
+                    $txnIds = $result['transaction_ids'];
+                    $offset = $result['offset'];
+                    $batchCount++;
+                    $totalTxnIdCount += count($txnIds);
+                    if (count($txnIds) === 0) {
+                        break;
+                    }
+
+                    try {
+                        $this->trace->info(
+                            TraceCode::COMMISSION_TRANSACTION_RELEASE_SUCCESS,
+                            [
+                                'attempting_release' => [
+                                    'transaction_ids' => $txnIds,
+                                    'batch_count' => $batchCount,
+                                    'partner_id' => $partnerId,
+                                    'count' => count($txnIds)
+                                ]
+                            ]
+                        );
+
+                        $response = $this->app['settlements_api']->transactionRelease($txnIds);
+                        $this->trace->info(
+                            TraceCode::COMMISSION_TRANSACTION_RELEASE_SUCCESS,
+                            [
+                                'release_result' => [
+                                    'response' => $response,
+                                    'transaction_ids' => $txnIds,
+                                    'count' => count($txnIds),
+                                    'batch_count' => $batchCount,
+                                    'partner_id' => $partnerId
+                                ]
+                            ]
+                        );
+                    } catch (\Throwable $e) {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::COMMISSION_TRANSACTION_RELEASE_FAILED,
+                            [
+                                'failed_attempt' => [
+                                    'transaction_ids' => $txnIds,
+                                    'count' => count($txnIds),
+                                    'batch_count' => $batchCount,
+                                    'partner_id' => $partnerId,
+                                    'error' => $e->getMessage()
+                                ]
+                            ]
+                        );
+                    }
+                }
+            }
+
+            return [
+                'success' => true,
+                'total_txn_id_count' => $totalTxnIdCount,
+            ];
+        } 
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
 }

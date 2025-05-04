@@ -81,9 +81,8 @@ class BankingSettlementTest extends TestCase
 
         $poolAcc = random_alphanum_string(14);
 
-        $this->mockRazorxTreatment();
-
         $this->mockAllSplitzTreatment();
+        $this->mockAllSplitzResponseDisable();
 
         $channel = Channel::AXIS;
 

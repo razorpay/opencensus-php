@@ -10,6 +10,8 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Modules\Acs\Wrapper\Constant;
+use RZP\Models\Customer\Token\Constants as TokenCons;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use function PHPUnit\Framework\isEmpty;
@@ -61,6 +63,9 @@ class Core extends Base\Core
 
                     $this->trackLateAuthConfigEvent(EventCode::PAYMENT_CONFIG_CREATION_INITIATED, $input);
 
+                    if(isset($input['config']) === true){
+                        $input[Constant::CONFIG][TokenCons::MERCHANT] = $merchant;
+                    }
                 }
 
                 $config->build($input);

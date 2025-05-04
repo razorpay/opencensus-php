@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'filled|array',
         Entity::PROCESSING_TIME     => 'filled|integer',
-        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
+        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted,clubbed',
         Entity::CHECKOUT_DISPLAY    => 'filled|boolean',
         Entity::STARTS_AT           => 'filled|epoch',
         Entity::ENDS_AT             => 'required|epoch',
@@ -66,6 +66,7 @@ class Validator extends Base\Validator
         Entity::LOW_COST_EMI        => 'sometimes|array',
         Entity::UPI                 => 'sometimes|array',
         Entity::INSTRUMENTS         => 'sometimes|array',
+        Entity::RULES               => 'sometimes|array',
     ];
 
     protected static $adminFetchMultipleRules = [
@@ -115,9 +116,10 @@ class Validator extends Base\Validator
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
-        Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
+        Entity::TYPE                => 'required|in:instant,deferred,already_discounted,clubbed',
         Entity::PERCENT_RATE        => 'sometimes|filled|integer|min:1|max:10000',
         Entity::LOW_COST_EMI        => 'sometimes|array',
+        Entity::RULES              => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -169,7 +171,7 @@ class Validator extends Base\Validator
         'card.number'                   => 'sometimes|min:6',
         'card.token'                    => 'sometimes',
         'offers'                        => 'required|array',
-        'order_id'                      => 'required|string',
+        'order_id'                      => 'sometimes|string',
     ];
 
     protected static $fetchOfferCreateInfoRules = [
@@ -642,13 +644,13 @@ class Validator extends Base\Validator
 
         $invalidIin = array_first($iins, function ($iin)
         {
-            return strlen($iin) != 6;
+            return strlen($iin) < 6 or strlen($iin) > 9;
         });
 
         if (empty($invalidIin) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid IIN : All IINs should have exactly 6 digits');
+                'Invalid IIN : All IINs should have 6-9 digits');
         }
     }
 

@@ -71,6 +71,16 @@ class Entity extends Base\Entity
     const OLD                       = 'old';
     const NEW                       = 'new';
     const WORKFLOW_OBSERVER_DATA    = 'workflow_observer_data';
+    const SERVICE = 'service';
+
+    const RETRY = 'retry';
+    const BULK_SIZE = 'bulk_size';
+
+    const OPERATION_TYPE = 'operation_type';
+    const ENTITY_REFRESH_ROUTE = 'entity_refresh_route';
+    const PRIMARY_KEY_COLUMN = 'primary_key_column';
+
+    const TARGET = 'target';
 
     protected $entity   = 'action';
 
@@ -94,6 +104,8 @@ class Entity extends Base\Entity
         self::PERMISSION,
         self::AUTH_DETAILS,
         self::WORKFLOW_OBSERVER_DATA,
+        self::TARGET,
+        self::OPERATION_TYPE,
     ];
 
     protected $visible = [
@@ -117,6 +129,8 @@ class Entity extends Base\Entity
         self::PERMISSION,
         self::AUTH_DETAILS,
         self::WORKFLOW_OBSERVER_DATA,
+        self::TARGET,
+        self::OPERATION_TYPE,
     ];
 
     protected $public = [
@@ -140,6 +154,8 @@ class Entity extends Base\Entity
         self::PERMISSION,
         self::AUTH_DETAILS,
         self::WORKFLOW_OBSERVER_DATA,
+        self::TARGET,
+        self::OPERATION_TYPE,
     ];
 
     protected $casts = [

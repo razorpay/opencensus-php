@@ -154,7 +154,17 @@ return [
         'mock'               => env('EZETAP_WEBHOOK_MOCK', false),
         'url'                => env('EZETAP_WEBHOOK_URL'),
         'device_webhook_url' => env('EZETAP_DEVICE_WEBHOOK_URL'),
-        'secret'        => env('EZETAP_WEBHOOK_SECRET'),
+        'secret'             => env('EZETAP_WEBHOOK_SECRET'),
+    ],
+
+    'ezetap-request' => [
+        'update_org_code_url_mock'      => env('EZETAP_WEBHOOK_MOCK', false),
+        'update_org_code_url'           => env('EZETAP_UPDATE_ORGCODE_URL'),
+        'update_org_code_url_secret'    => env('EZETAP_WEBHOOK_SECRET'),
+
+        'remove_org_code_url_mock'      => env('EZETAP_WEBHOOK_MOCK', false),
+        'remove_org_code_url'           => env('EZETAP_REMOVE_ORGCODE_URL'),
+        'remove_org_code_url_secret'    => env('EZETAP_WEBHOOK_SECRET'),
     ],
 
     'raven' => [
@@ -572,6 +582,8 @@ return [
     'ezetap-api' => [
         'key'       => 'ezetap-api',
         'secret'    =>  env('EZETAP_API_SECRET'),
+        'url' =>  env('EZETAP_API_URL'),
+        'mock'      => env('EZETAP_DEVICE_SERVICE_MOCK', false),
     ],
     'pcp_service' => [
         'secret'    =>  env('PCP_SERVICE_SECRET'),
@@ -701,6 +713,7 @@ return [
             ],
         ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
+        'migrationDefaultCountryCodes' => env('SETTLEMENTS_MIGRATION_DEFAULT_COUNTRY_CODES', 'IN,MY'),
     ],
 
     'einvoice' => [
@@ -1598,6 +1611,7 @@ return [
         'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),
         'username'  => env('UPI_PAYMENT_SERVICE_KEY'),
         'password'  => env('UPI_PAYMENT_SERVICE_SECRET'),
+        'secret'    => env('UPI_PAYMENT_SERVICE_SECRET'),
         'enabled'   => env('UPI_PAYMENT_SERVICE_ENABLED', false),
         'url'       => [
             'live' => env('UPI_PAYMENT_SERVICE_LIVE_URL'),
@@ -1858,6 +1872,12 @@ return [
         "splitz_enable_exclusion_flow" => env('ASV_SPLITZ_ENABLE_EXCLUSION_FLOW', ''),
         'splitz_handle_open_transaction' => env('ASV_SPLITZ_HANDLE_OPEN_TRANSACTION', ''),
         'splitz_fallback_to_asv_db' => env('ASV_SPLITZ_FALLBACK_TO_ASV_DB', ''),
+    ],
+
+    //Store Service Integration
+    'store_service' => [
+        'url' =>  env('STORE_SERVICE_HOST'),
+        "mock" => env('STORE_SERVICE_MOCK', false)
     ],
 
     'recon'         => [
@@ -2122,6 +2142,7 @@ return [
             'live'  => env('CHARGE_COLLECTIONS_LIVE_URL'),
         ],
         'request_timeout' => env('CHARGE_COLLECTIONS_REQUEST_TIMEOUT', 0.1),
+        'pricing_reads_timeout' => env('CHARGE_COLLECTIONS_PRICING_READS_TIMEOUT', 1),
     ],
 
     'razorassist' => [
@@ -2173,4 +2194,18 @@ return [
         'test_username' => env('CMS_TEST_USERNAME'),
         'test_password' => env('CMS_TEST_PASSWORD'),
     ],
+
+    'payments_bank_transfer_service' => [
+        'mock'      => env('PAYMENTS_BANK_TRANSFER_SERVICE_MOCK', false),
+        'username'  => env('PAYMENTS_BANK_TRANSFER_SERVICE_USERNAME', 'payments_bank_transfer_user'),
+        'secret'    => env('PAYMENTS_BANK_TRANSFER_SERVICE_SECRET','RANDOM_BTS_SECRET'),
+        'url'       => [
+            'live' => env('PAYMENTS_BANK_TRANSFER_SERVICE_LIVE_URL'),
+            'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
+        ],
+    ],
+    
+    'identity_provider' => [
+        'secret' => env('APP_IDP_SECRET'),
+    ]
 ];

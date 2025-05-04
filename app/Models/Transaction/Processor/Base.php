@@ -1003,20 +1003,7 @@ abstract class Base extends BaseCore
 
         $refundCreditsThreshold = $this->merchantBalance->merchant->getRefundCreditsThreshold();
 
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app->razorx->getTreatment(
-            $merchantId, RazorxTreatment::REFUND_CREDITS_WITH_LOCK, $mode);
-
-        $this->trace->info(
-            TraceCode::SCROOGE_FETCH_REFUND_CREDITS_WITH_LOCK,
-            [
-                'result' => $result,
-                'mode' => $mode,
-                'merchant_id' => $merchantId,
-            ]);
-
-        if(strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON) {
+        if($this->isRefundCreditsWithLockEnabled($merchantId)) {
 
             $refundCredits = $this->getMerchantCreditsOfType(Credits\Type::REFUND);
         }
@@ -1098,6 +1085,37 @@ abstract class Base extends BaseCore
         {
             $this->sendRefundCreditAlertIfNeeded(
                 $amount, $refundCredits, $refundCreditsThreshold, $this->merchantBalance->merchant);
+        }
+    }
+
+    public function isRefundCreditsWithLockEnabled(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_credits_with_lock_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SCROOGE_FETCH_REFUND_CREDITS_WITH_LOCK, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.refund_credits_with_lock_exp_id') ?? null
+            ]);
+
+            return false;
         }
     }
 

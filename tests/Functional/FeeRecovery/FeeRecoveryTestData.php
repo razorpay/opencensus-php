@@ -598,4 +598,44 @@ return [
         ],
     ],
 
+    'testCreateFeeRecoveryPayoutExcludingRecoveredPayout' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 590,
+                'currency'        => 'INR',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'rzp_fees',
+                'status'          => 'processing',
+                'mode'            => 'IFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCreateFeeRecoveryPayoutExcludingRecoveredPayouts_WithMissingFeeRecoveryEntries' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING,
+        ],
+    ],
+
 ];

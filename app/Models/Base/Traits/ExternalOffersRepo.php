@@ -433,6 +433,7 @@ trait ExternalOffersRepo
 
     private function fetchAdminExternalEntityById($id, $input = [])
     {
+
         $class = Entity::getExternalRepoSingleton($this->entity);
 
         try

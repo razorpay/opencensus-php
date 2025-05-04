@@ -33,10 +33,14 @@ class Core extends Base\Core
             $isCardNetworkRequest = true;
             $fraudRowResult[Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION] = Constants::SOURCE_BANK;
         }
-        else
+        else if(in_array($fraudEntity->getReportedBy(), Constants::CYBERCELL_SOURCES, true) === true)
         {
             $isCardNetworkRequest = false;
             $fraudRowResult[Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION] = Constants::SOURCE_CYBERCELL;
+        }
+        else {
+            $isCardNetworkRequest = false;
+            $fraudRowResult[Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION] = Constants::SOURCE_ISSUER;
         }
 
         (new BulkNotification\Freshdesk(new BulkNotification\Entity(), null))->notifySingle([$fraudRowResult], $payment->getMerchantId(), $isCardNetworkRequest);

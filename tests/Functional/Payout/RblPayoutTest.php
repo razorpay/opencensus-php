@@ -1349,6 +1349,52 @@ class RblPayoutTest extends TestCase
         Queue::assertNotPushed(RblBankingAccountGatewayBalanceUpdate::class);
     }
 
+    public function testBalanceFetch_WithRedisBlacklistedMIDs()
+    {
+        Queue::fake();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::GATEWAY_BALANCE_FETCH_V2=> 'enable']);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details',
+            ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(),
+            [Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now()->subMinute()->getTimestamp()]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BALANCE_FETCH_MERCHANTS_BLACKLIST => [
+            'rbl' => [
+            '10000000000000',
+            '10000000000001',
+            '10000000000002'
+            ]
+        ]]);
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance'
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        // since we have blacklisted the MIds, no merchant should be selected for balance fetch
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+
+        Queue::assertNotPushed(RblBankingAccountGatewayBalanceUpdate::class);
+    }
+
     protected function getMozartServiceSuccessResponse(int $amount = 1)
     {
         $response = [

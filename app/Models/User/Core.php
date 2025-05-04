@@ -3,10 +3,12 @@
 namespace RZP\Models\User;
 
 use DB;
+use Illuminate\Support\Collection;
 use Mail;
 use Hash;
 use Cache;
 use Config;
+use Request;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Services\Dcs\Features\Type;
@@ -82,6 +84,7 @@ use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Constants\Metric as ConstantMetric;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 class Core extends Base\Core
 {
@@ -670,7 +673,19 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
-        $ownerId = "1000000000";
+        $headers = Request::header();
+
+        $ownerId = '1000000000';
+
+        if(isset($headers[RequestHeader::X_AB_USER_ID][0]) === true)
+        {
+            $splitResponse = $this->getSplitzResponse($headers[RequestHeader::X_AB_USER_ID][0], 'ab_user_id_experiment');
+
+            if($splitResponse === 'enable')
+            {
+                $ownerId = $this->getStorkPayloadOwnerId($headers[RequestHeader::X_AB_USER_ID][0]);
+            }
+        }
 
         $payload = [
             'ownerId'               => $ownerId,
@@ -1513,7 +1528,17 @@ class Core extends Base\Core
 
         $this->applyReferralIfApplicable($input, $user);
 
-        $this->checkSecondFactorAuthAndSendOtp($user);
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === true)
+        {
+            $orgId = Org\Entity::RAZORPAY_ORG_ID;
+        }
+
+        if ($this->shouldSkip2faForCustomMerchantInviteFlow($input, $orgId) === false)
+        {
+            $this->checkSecondFactorAuthAndSendOtp($user);
+        }
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
@@ -1525,13 +1550,6 @@ class Core extends Base\Core
                 Constants::MEDIUM => Constants::EMAIL,
             ]
         );
-
-        $orgId = $this->app['basicauth']->getOrgId();
-
-        if(empty($orgId) === true)
-        {
-            $orgId = Org\Entity::RAZORPAY_ORG_ID;
-        }
 
         if($orgId === Org\Entity::BAJAJ_ORG_SIGNED_ID)
         {
@@ -1550,6 +1568,57 @@ class Core extends Base\Core
         }
 
         return $this->get($user, true, $input);
+    }
+
+
+    public function shouldSkip2faForCustomMerchantInviteFlow ($input, $orgId) : bool
+    {
+        $skip = false;
+
+        try
+        {
+            if (isset($input['merchant_invitation']) === true)
+            {
+
+                $token = $input['merchant_invitation'];
+
+                // verify if invitation is valid
+                $invitation = $this->repo->admin_lead->findByToken($token);
+
+                if (empty($invitation) === true)
+                {
+                    return false;
+                }
+
+                $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+                $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                if ($permissionEnabled === true)
+                {
+                    $skip = true;
+                }
+
+            }
+        }
+        catch (\Throwable $ex ){
+
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_SKIPPED,
+                [
+                    'org_id' => $orgId
+                ]);
+
+
+            return false;
+        }
+
+        $this->trace->info(TraceCode::USER_LOGIN_2FA_SKIPPED,
+            [
+                'org_id' => $orgId,
+                'skip'   => $skip
+            ]);
+
+        return $skip;
     }
 
     /**
@@ -1696,6 +1765,15 @@ class Core extends Base\Core
         return $otp + array_only($payload, 'context') + compact('token');
     }
 
+    public function getStorkPayloadOwnerId($inputString): string
+    {
+        $inputString = str_replace('-', '', $inputString);
+
+        $encodedString = UniqueIdEntity::base62Manual(UniqueIdEntity::hexToDecimal($inputString));
+
+        return substr($encodedString, 0, 14);
+    }
+
     public function getStorkLoginSignupPayload(array $input, array $otp, Entity $user = null)
     {
         $receiver = $input[Entity::CONTACT_MOBILE];
@@ -1704,11 +1782,25 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
-        $ownerId = "1000000000";
+        $headers = Request::header();
+
+        $ownerId = '1000000000';
 
         if (is_null($user) === false)
         {
             $ownerId =$user->getId();
+        }
+        else
+        {
+            if(isset($headers[RequestHeader::X_AB_USER_ID][0]) === true)
+            {
+                $splitResponse = $this->getSplitzResponse($headers[RequestHeader::X_AB_USER_ID][0], 'ab_user_id_experiment');
+
+                if($splitResponse === 'enable')
+                {
+                    $ownerId = $this->getStorkPayloadOwnerId($headers[RequestHeader::X_AB_USER_ID][0]);
+                }
+            }
         }
 
         $payload = [
@@ -4158,6 +4250,62 @@ class Core extends Base\Core
     }
 
     /**
+     * @param $userMerchants array - type of data returned from getUnifiedMerchants
+     * @prams $product string      - primary, banking
+     *
+     * below logic of selecting merchant to login for a given product sits in dashboard BE as of now.
+     * https://github.com/razorpay/dashboard/blob/67d589a9aac3f5b2332e68b18e80af3ec7732fda/app/User/Helper.php#L64
+     * Unifying it here so it will be directly moved to user service. And we have only one place which determines.
+     * with which merchant user should login with.
+     *
+     * if no product is passed, it will return the merchants with owner role for any products.
+     * if $product is passes it will return the merchants with any role for the given product.
+     *
+    */
+    public function selectMerchantsToLogin(array $userMerchants, string $product): array
+    {
+
+        //if product is passed, it will only try to select a merchant for the given product.
+        $restricted = empty($product) === false;
+
+        //if product is not passed, select default as primary.
+        $product    = empty($product) === true ? Product::PRIMARY : $product;
+
+        // which fileds of merchant entity to check for matching role
+        // if product is primary, check 'role' field else check 'banking_role' field
+        $productRole = $product === Product::PRIMARY ? Entity::ROLE : Entity::BANKING_ROLE;
+        $switchProductRole = $productRole === Entity::ROLE ? Entity::BANKING_ROLE : Entity::ROLE;
+
+        $userMerchants=collect($userMerchants);
+
+        // Select owner if it exists on given product
+        $merchants = $userMerchants->filter(function ($item) use ($productRole)
+        {
+            return $item[$productRole]  === Role::OWNER;
+        });
+
+        // we do not want to by default switch to another product unless specifically asked.
+        if (!$restricted && count($merchants->all()) == 0){
+            // If owner doesn't existing on product, check switch product, if it exists we'll allow switch-product
+                $merchants = $userMerchants->filter(function ($item) use ($switchProductRole)
+                {
+                    return $item[$switchProductRole] === Role::OWNER;
+                });
+        }
+
+        // If owner doesn't exist, check if user is associated to any merchant on given product
+        if (count($merchants->all()) == 0)
+        {
+            $merchants = $userMerchants->filter(function ($item) use ($productRole)
+            {
+                return !empty($item[$productRole]);
+            });
+        }
+
+        return array_values($merchants->all());
+    }
+
+    /**
      * Serializes user along with all the merchant it has access to, it's
      * settings etcetera. Primarily consumed by internal dashboard application.
      *
@@ -5280,6 +5428,27 @@ class Core extends Base\Core
                 'variables'
             );
 
+            $userRole = $this->app['basicauth']->getUserRole();
+
+            // Update email in merchant & merchant_detail if user is POS sales agent in the assisted onboarding flow or
+            // if user is in easy onboarding flow
+            if (($userRole ===  User\Role::RAZORPAY_SALES && $signupCampaign === DDConstants::ASSISTED_ONBOARDING) ||
+                $signupCampaign ==  DDConstants::EASY_ONBOARDING)
+            {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input)
+                {
+                    $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchant);
+                });
+
+                $merchantDetails = $this->merchant->merchantDetail;
+
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input)
+                {
+                    $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+                    $this->repo->saveOrFail($merchantDetails);
+                });
+            }
 
             if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
             {

@@ -2254,10 +2254,12 @@ class PaymentCreateController extends Controller
     protected function returnMerchantFullRedirectView($data)
     {
         $merchant = $this->app['basicauth']->getMerchant();
-        if ($merchant->isFeatureEnabled(Feature::AUTH_SPLIT) !== true)
-        {
-            $this->pushForBarricade($data);
-        }
+//       Removing this as we are not using barricade anymore
+//      if ($merchant->isFeatureEnabled(Feature::AUTH_SPLIT) !== true)
+//         {
+//
+//              $this->pushForBarricade($data);
+//         }
 
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
         {
@@ -2612,32 +2614,7 @@ class PaymentCreateController extends Controller
 
     protected function isNpciFeedbackPopupAllowed()
     {
-        try
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $variantFlag = $this->app['razorx']->getTreatment($merchant->getId(),
-                RazorxTreatment::ALLOW_NPCI_FEEDBACK_POPUP,
-                $this->app['rzp.mode']);
-
-            $this->trace->info(
-                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_SUCCESS,
-                [
-                    'variant' => $variantFlag
-                ]);
-
-            return $variantFlag;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->info(
-                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_FAILURE,
-                [
-                    'error' => $e,
-                ]);
-
-            return 'control';
-        }
+        return 'control';
     }
 
     /**

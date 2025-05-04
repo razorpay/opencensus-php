@@ -147,4 +147,9 @@ class Repository extends Base\Repository
 
         return $workflows;
     }
+
+    public function getEntityName(): string
+    {
+        return $this->entity;
+    }
 }

@@ -5448,6 +5448,13 @@ class VirtualAccountTest extends TestCase
               ->withAnyArgs()
               ->andReturn($store);
 
+        \Cache::shouldReceive('remember')
+            ->withAnyArgs()
+            ->andReturnUsing(function ($key, $ttl, $callback) {
+                return $callback();
+            });
+
+
         $response = $this->createVirtualAccount();
 
         $expectedResponse = $this->testData[__FUNCTION__];
@@ -5730,6 +5737,8 @@ class VirtualAccountTest extends TestCase
         ];
 
         $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
 
         $response = $this->makeRequestAndGetContent($request);
 

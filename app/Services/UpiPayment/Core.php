@@ -2,6 +2,7 @@
 
 namespace RZP\Services\UpiPayment;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -9,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Store\Entity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Service;
 
 class Core extends Service
 {
@@ -88,6 +90,21 @@ class Core extends Service
 
         if ($response['success'] === true)
         {
+            // Set refund at for api unexpected payments when source is art
+            // as the ART unexpected payment processing happens on UPS
+            if ($input['source'] === 'art' and $response['count'] === 1)
+            {
+                $entity = $response['entities'][0];
+
+                $paymentEntity = $this->app['repo']->payment->findOrFail($entity['payment_id']);
+
+                if (empty($paymentEntity->getRefundAt()) === true)
+                {
+                    $paymentEntity->setRefundAt(Carbon::now()->getTimestamp());
+
+                    $this->app['repo']->payment->saveOrFail($paymentEntity);
+                }
+            }
             return [
                 Constants::DATA => [
                     Constants::TYPE     => Constants::API_UNEXPECTED,
@@ -119,7 +136,7 @@ class Core extends Service
         try
         {
             // This checks if merchant_reference can be used for fetching unexpected payments
-            if (($this->shouldUseMerchantReferenceForUnexpectedPayment($gateway) === true) and
+            if (((new Service)->shouldUseMerchantReferenceForUnexpectedPayment($gateway) === true) and
                 (empty($merchant_reference) === false))
             {
                 $upiEntity = $this->app['repo']->upi->fetchAllByMerchantReferenceAndNpciReferenceIdAndGateway($merchant_reference, $npciReferenceId, $gateway);
@@ -156,32 +173,5 @@ class Core extends Service
         return [
             "success"   => false,
         ];
-    }
-
-    /**
-     * Checks if gateway is enabled for using merchant reference
-     * for identifying unexpected payments
-     * @param string $gateway
-     * @return bool
-     */
-    private function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
-    {
-        $variant = $this->app->razorx->getTreatment($gateway,
-        Merchant\RazorxTreatment::USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT, Mode::LIVE);
-
-        $this->trace->info(
-            TraceCode::UPI_UNEXPECTED_PAYMENT_IDENTIFIER_RAZORX_VARIANT,
-            [
-                'gateway'           => $gateway,
-                'variant'           => $variant
-            ]
-        );
-
-        if (strtolower($variant) === 'on')
-        {
-            return true;
-        }
-
-        return false;
     }
 }

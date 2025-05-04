@@ -4398,8 +4398,7 @@ class Core extends Base\Core
 
         foreach ($bankingAccountDetails as $bankingAccountDetail)
         {
-            if ((boolval($blacklistStatementFetch) === true) and
-                ($this->checkIfBlackListedMerchant($bankingAccountDetail->merchant->getId()) === true))
+            if ((boolval($blacklistStatementFetch) === true))
             {
                 continue;
             }
@@ -4692,22 +4691,6 @@ class Core extends Base\Core
         }
 
         return [$expectedAttempts, $allowedToFetch];
-    }
-
-    public function checkIfBlackListedMerchant($merchantId)
-    {
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::DISABLE_STATEMENT_FETCH,
-            $this->mode
-        );
-
-        if ($variant === 'on')
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function automateAccountStatementsReconByChannel(string $channel, array $input)

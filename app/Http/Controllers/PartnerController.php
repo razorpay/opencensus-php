@@ -227,4 +227,13 @@ class PartnerController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processReferralCode()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processReferralCode($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Error\Error;
 use RZP\Models\Batch\Entity as BatchEntity;
 use RZP\Models\Batch\Metric as BatchMetric;
 use RZP\Models\Batch\Type as BatchType;
@@ -45,6 +46,15 @@ class Core extends Base\Core
 {
     const TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY = 'subr_charge_token_batch_row_';
 
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+
+    }
     public function create(array $input, Merchant\Entity $merchant, Customer\Entity $customer): Entity
     {
         $this->trace->info(
@@ -71,13 +81,24 @@ class Core extends Base\Core
         if (($subscriptionRegistration->getMethod() === Payment\Method::CARD) or
             ($subscriptionRegistration->getMethod() === null))
         {
-            $variant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
-                $this->mode
-            );
 
-            if ($variant === 'on')
+            $properties = [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.card_mandate_enable_multiple_frequencies'),
+                'request_data' => json_encode([
+                    'mid' => $this->merchant->getId()
+                ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'response' => $response,
+            ]);
+
+            if ($variant === 'enable')
             {
                 $validator->validateFrequencyAndMaxAmountCardRecurring($input);
                 $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
@@ -260,13 +281,9 @@ class Core extends Base\Core
         $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
         $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? null;
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT,
-            $this->mode
-        );
+        $variant = $this->evaluateSplitzExperimentForUpiAuthLinkFrequencyAsPresentedDefault($this->merchant->getId());
 
-        if ($variant === 'on')
+        if ($variant === true)
         {
             $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::AS_PRESENTED;
         }
@@ -275,6 +292,12 @@ class Core extends Base\Core
         // re arrange the input
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY]  = $frequency;
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] = $maxAmount;
+
+        $defaultExpiry = Carbon::now()->addYear(10)->getTimestamp();
+        if($input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] === UpiMandate\Frequency::ONETIME)
+        {
+            $defaultExpiry = Carbon::now()->addDays(60)->getTimestamp();
+        }
 
         $orderPayLoad =
             [
@@ -291,7 +314,7 @@ class Core extends Base\Core
                         UpiMandate\Entity::START_TIME      => Carbon::now()->addDay(1)->getTimestamp(),
                         UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at'])
                                                                 ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at']
-                                                                : Carbon::now()->addYear(10)->getTimestamp(),
+                                                                : $defaultExpiry,
                     ]
             ];
 
@@ -330,6 +353,49 @@ class Core extends Base\Core
         $order = $orderService->createOrder($orderPayLoad);
 
         return $order;
+    }
+
+    /**
+     * Evaluates the Splitz experiment for creating upi recurring auth link
+     * via batch upload pick up as presented frequency by default.
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    protected function evaluateSplitzExperimentForUpiAuthLinkFrequencyAsPresentedDefault($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_auth_link_frequency_as_presented_default'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT
+            );
+        }
+
+        return false;
     }
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
@@ -736,107 +802,143 @@ class Core extends Base\Core
             return $idemPotentResponse;
         }
 
-        if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
-        {
-            $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant){
-                return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
-                    $this->mode);
+        try {
+            $lockedAcquired = $this->mutex->acquire($idemPotentKey,300);
+            $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_IDEMPOTENT_LOCK_ACQUIRED, [
+                'locked_acquired'  => $lockedAcquired,
+            ]);
+
+            if ($lockedAcquired === false) {
+                throw new LogicException("Duplicate request", "BAD_REQUEST_BATCH_REQUEST_ALREADY_IN_PROGRESS");
+            }
+
+            if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true) {
+                $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
+                    return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
+                        $this->mode);
+                });
+            }
+
+            if (empty($token) === true) {
+                $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN], function () use ($id, $merchant) {
+                    return $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+                });
+            }
+
+            $customer = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_CUSTOMER], function () use ($token) {
+                return $token->customer;
             });
-        }
 
-        if (empty($token) === true)
-        {
-            $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN], function () use ($id, $merchant){
-                return $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+            $orderCurrency = 'INR';
+
+            if (isset($input[Order\Entity::CURRENCY]) === true) {
+                $orderCurrency = $input[Order\Entity::CURRENCY];
+            }
+
+            $receipt = isset($input[Order\Entity::RECEIPT]) ? $input[Order\Entity::RECEIPT] : "";
+
+            $description = isset($input[Payment\Entity::DESCRIPTION]) ? $input[Payment\Entity::DESCRIPTION] : "";
+
+            $orderInput = [
+                Order\Entity::AMOUNT => $input[Order\Entity::AMOUNT],
+                Order\Entity::CURRENCY => $orderCurrency,
+                Order\Entity::RECEIPT => $receipt,
+                Order\Entity::PAYMENT_CAPTURE => true,
+                Order\Entity::NOTES => $input[Order\Entity::NOTES] ?? [],
+                Order\Entity::PRODUCTS => $input[Order\Entity::PRODUCTS] ?? [],
+            ];
+
+            if (($this->merchant->isTPVRequired() === true) and
+                ($token->isUpiRecurringToken() === true)) {
+                $orderInput[Order\Entity::BANK_ACCOUNT] = [Order\Entity::ACCOUNT_NUMBER => $token->getAccountNumber() ?? null,
+                    BankAccount\Entity::NAME => '',
+                    BankAccount\Entity::IFSC => $token->getIfsc() ?? null];
+                $orderInput[Order\Entity::METHOD] = Payment\Method::UPI;
+            }
+
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE,
+                [
+                    'token_id' => $id,
+                    'merchant_id' => $merchant->getPublicId(),
+                    'orderInput' => $orderInput,
+                ]
+            );
+
+            $orderCore = new Order\Core();
+            $order = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput, $merchant) {
+                return $orderCore->create($orderInput, $merchant);
             });
+
+            if (empty($idemPotentKey) === false) {
+                // Multiplying by 60, since set accepts ttl in secs
+                $this->app['cache']->set($cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY . $idemPotentKey, $order->getId(), 600 * 60);
+            }
+
+            $paymentInput = [
+                Payment\Entity::TOKEN => $token->getPublicId(),
+                Payment\Entity::AMOUNT => $input[Order\Entity::AMOUNT],
+                Payment\Entity::CURRENCY => $orderCurrency,
+                Payment\Entity::DESCRIPTION => $description,
+                Payment\Entity::EMAIL => $customer->getEmail(),
+                Payment\Entity::CONTACT => $customer->getContact(),
+                Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
+                Payment\Entity::ORDER_ID => $order->getPublicId(),
+                Payment\Entity::RECURRING => '1',
+                Payment\Entity::NOTES => $input[Payment\Entity::NOTES] ?? []
+            ];
+
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN,
+                [
+                    'token_id' => $id,
+                    'merchant_id' => $merchant->getPublicId(),
+                    'paymentInput' => $paymentInput,
+                ]
+            );
+
+            $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+            $paymentData = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT], function () use ($paymentProcessor, $paymentInput) {
+                return $paymentProcessor->process($paymentInput);
+            });
+
+            if (empty($batchId) === false) {
+                $payment = $paymentProcessor->getPayment();
+                $payment->setBatchId($batchId);
+                $this->repo->save($payment);
+            }
+
         }
+        catch (LogicException $ex) {
+            $this->trace->info(
+                TraceCode:: BATCH_DUPLICATE_PAYMENT_IDEMPOTENCY_LOCK_NOT_ACQUIRED,
+                [
+                    'token_id' => $id,
+                    'input'    => $input,
+                    'batch_id' => $batchId,
+                    'idempotent_key' => $idemPotentKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $ex->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $ex->getCode(),
+                    ],
+                ]);
 
-        $customer = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_CUSTOMER], function () use ($token){
-            return $token->customer;
-        });
+            return [
+                'error' =>[
+                    Error::DESCRIPTION       => $ex->getMessage(),
+                    Error::PUBLIC_ERROR_CODE => $ex->getCode(),
+                ]
+            ];
 
-        $orderCurrency = 'INR';
-
-        if (isset($input[Order\Entity::CURRENCY]) === true)
-        {
-            $orderCurrency = $input[Order\Entity::CURRENCY];
         }
-
-        $receipt = isset($input[Order\Entity::RECEIPT]) ? $input[Order\Entity::RECEIPT] : "";
-
-        $description = isset($input[Payment\Entity::DESCRIPTION]) ? $input[Payment\Entity::DESCRIPTION] : "";
-
-        $orderInput = [
-            Order\Entity::AMOUNT          => $input[Order\Entity::AMOUNT],
-            Order\Entity::CURRENCY        => $orderCurrency,
-            Order\Entity::RECEIPT         => $receipt,
-            Order\Entity::PAYMENT_CAPTURE => true,
-            Order\Entity::NOTES           => $input[Order\Entity::NOTES] ?? [],
-            Order\Entity::PRODUCTS        => $input[Order\Entity::PRODUCTS] ?? [],
-        ];
-
-        if(($this->merchant->isTPVRequired() === true) and
-           ($token->isUpiRecurringToken() === true))
-        {
-            $orderInput[Order\Entity::BANK_ACCOUNT] = [Order\Entity::ACCOUNT_NUMBER => $token->getAccountNumber() ?? null,
-                                                       BankAccount\Entity::NAME     => '',
-                                                       BankAccount\Entity::IFSC     => $token->getIfsc() ?? null];
-            $orderInput[Order\Entity::METHOD]       = Payment\Method::UPI;
+        catch (\Exception $e){
+            throw $e;
         }
-
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE,
-            [
-                'token_id'     => $id,
-                'merchant_id'  => $merchant->getPublicId(),
-                'orderInput'   => $orderInput,
-            ]
-        );
-
-        $orderCore = new Order\Core();
-        $order = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput, $merchant){
-            return $orderCore->create($orderInput, $merchant);
-        });
-
-        if (empty($idemPotentKey) === false)
-        {
-            // Multiplying by 60, since set accepts ttl in secs
-            $this->app['cache']->set($cacheKey = self::TOKEN_CHARGE_IDEMPOTENCY_CACHE_KEY.$idemPotentKey, $order->getId(), 600 * 60);
-        }
-
-        $paymentInput = [
-            Payment\Entity::TOKEN       => $token->getPublicId(),
-            Payment\Entity::AMOUNT      => $input[Order\Entity::AMOUNT],
-            Payment\Entity::CURRENCY    => $orderCurrency,
-            Payment\Entity::DESCRIPTION => $description,
-            Payment\Entity::EMAIL       => $customer->getEmail(),
-            Payment\Entity::CONTACT     => $customer->getContact(),
-            Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
-            Payment\Entity::ORDER_ID    => $order->getPublicId(),
-            Payment\Entity::RECURRING   => '1',
-            Payment\Entity::NOTES       => $input[Payment\Entity::NOTES] ?? []
-        ];
-
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN,
-            [
-                'token_id'     => $id,
-                'merchant_id'  => $merchant->getPublicId(),
-                'paymentInput' => $paymentInput,
-            ]
-        );
-
-        $paymentProcessor = new Payment\Processor\Processor($merchant);
-
-        $paymentData = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT], function () use ($paymentProcessor, $paymentInput){
-            return $paymentProcessor->process($paymentInput);
-        });
-
-        if(empty($batchId) === false)
-        {
-            $payment = $paymentProcessor->getPayment();
-            $payment->setBatchId($batchId);
-            $this->repo->save($payment);
+        finally {
+            if ($lockedAcquired) {
+                $this->mutex->release($idemPotentKey);
+            }
         }
 
         return $paymentData;
@@ -1198,7 +1300,7 @@ class Core extends Base\Core
         }
 
         $products = [];
-        
+
         if (!empty($previousOrder->products))
         {
             foreach ($previousOrder->products as $product)

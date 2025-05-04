@@ -6,6 +6,7 @@ use App;
 use Request;
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Mode;
 use RZP\Gateway\Paysecure\Constants;
 use RZP\Http\RequestHeader;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
@@ -232,9 +233,31 @@ class CardPaymentService
         return $responses;
     }
 
+    public function handleMandateHQCallback(array $input)
+    {
+        $request = [
+            'url'     => $this->config['url'][Mode::LIVE] . 'mandate_hq/callback',
+            'method'  => 'POST',
+            'content' => $input,
+            'headers' => [
+                'task_id'       => $this->app['request']->getTaskId(),
+                'request_id'    => $this->app['request']->getId(),
+            ],
+        ];
+
+        $this->trace->info(TraceCode::CARD_RECURRING_REARCH_CALLBACK, [
+            'url' => $request['url'],
+            'input' => $input
+        ]);
+
+        $response = $this->sendRawRequest($request);
+
+        return $this->jsonToArray($response->body);
+    }
+
     protected function getBaseUrl(): string
     {
-        $mode = $this->app['rzp.mode'];
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $url = $this->config['url'][$mode];
         return $url;

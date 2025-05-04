@@ -8,8 +8,11 @@ use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 
 class Service extends Base\Service
@@ -24,7 +27,11 @@ class Service extends Base\Service
 
         $merchantType = $this->getMerchantType($input);
 
-        $this->validateInvitation($orgId, $input);
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        if ((new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::CUSTOM_INVITE_MERCHANT_FLOW) !== true) {
+            $this->validateInvitation($orgId, $input);
+        }
 
         (new Validator)->validateOrgSpecificInput(
             'sendInvitation', $input, $orgId, $entity);
@@ -122,7 +129,70 @@ class Service extends Base\Service
     {
         $invitations = $this->repo->admin_lead->fetchByOrgId($orgId);
 
+        if ($this->customInvitationFlowEnabled($orgId) === true)
+        {
+            return $this->getCustomInvitations($invitations, $orgId);
+        }
+
+
         return $invitations->toArrayPublic();
+    }
+
+    protected function customInvitationFlowEnabled($orgId)
+    {
+
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        return $permissionEnabled === true;
+    }
+
+    protected function getCustomInvitations($invitations, $orgId)
+    {
+
+        if (empty($invitations) === true)
+        {
+            return [];
+        }
+
+        $org = $this->repo->org->find($orgId);
+
+        if (empty($org) === true)
+        {
+            return $invitations->toArrayPublic();
+        }
+
+        $host_name = $org->getPrimaryHostName();
+
+        $userEmails = $invitations->pluck('email')->toArray();
+        $users = $this->repo->user->getMultipleUsersByEmails($userEmails);
+
+        $usersMap = [];
+        foreach ($users as $user)
+        {
+            $usersMap[$user['email']] = $user;
+        }
+
+        $result = $invitations->toArray();
+
+        foreach ($result as $key => $invitation)
+        {
+
+            // check if host name is present
+            if (empty($host_name) === false && empty($invitation['token']) === false) {
+                $result[$key]['form_data']['invite_url'] = 'https://' . $host_name .'/#/access/signup?merchant_invitation=' . $invitation['token'];
+            }
+
+            $email = $invitation['email'] ?? "";
+
+            $user = $usersMap[$email];
+            if (empty($user) === false && empty($user['contact_mobile']) === false) {
+                $result[$key]['form_data']['contact_mobile'] = $user['contact_mobile'];
+            }
+        }
+
+        return $result;
     }
 
     public function verify(string $token)

@@ -15,6 +15,8 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use \RZP\Models\Feature;
+use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 
 trait Verify
 {
@@ -619,6 +621,17 @@ trait Verify
         {
             $this->updateErrorInPaymentFromGatewayIfApplicable($payment, $gatewayData);
 
+            if ($verifyStatus === VerifyStatus::SUCCESS and $payment->isCorporateMakerCheckerNetbanking() === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_VERIFY_CORPORATE_NETBANKING,
+                    [
+                        'payment'             => $payment->getId(),
+                        'merchant_id'         => $payment->getMerchantId(),
+                    ]);
+                    
+                $this->setRefundAtForCorporateNetbanking($payment);
+            }
             $this->repo->saveOrFail($payment);
         }
     }
@@ -646,6 +659,45 @@ trait Verify
         $errorDescription = $error['description'];
 
         $payment->setError($errorCode, $errorDescription, $internalErrorCode);
+    }
+
+    private function setRefundAtForCorporateNetbanking(Payment\Entity $payment)
+    {
+        if($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTO_REFUNDS) === false and 
+            $payment->merchant->isFeatureEnabled(Feature\Constants::NETBANKING_CORPORATE_DELAY_REFUND) === true )
+        {
+            //This block is only executed only in this 2 conditions met
+            //                  1. If the transaction is a NETBANKING_CORPORATE Maker-Checker flow transaction = true
+            //                  2. If the merchant has enabled the feature 'nb_corporate_delay_refund'
+            //
+            // The feature is only enable for the banks have corporate maker checker flow.
+            // Else it shouldn't be applicable.
+            
+            // $autoRefundDelay is in minutes
+
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_CORPORATE_NETBANKING_AUTO_REFUND,
+                [
+                    'payment'             => $payment->getId(),
+                    'merchant_id'         => $payment->getMerchantId(),
+                    'auto_refund_delay'   => $this->getNetBankingAutoRefundDelay($payment->getMerchantId()),
+                ]);
+                
+            $createdAt = $payment->getCreatedAt();
+            
+            $autoRefundDelay = $this->getNetBankingAutoRefundDelay($payment->getMerchantId());
+            
+            if ($autoRefundDelay !== -1)
+            {
+                $merchantAutoRefundTime = $createdAt + $autoRefundDelay * 60;
+            }
+            else
+            {
+                $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE;
+            }
+            
+            $payment->setRefundAt($merchantAutoRefundTime);
+        }
     }
 
     /**

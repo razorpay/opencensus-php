@@ -769,6 +769,13 @@ class Entity extends Base\PublicEntity
              ->save();
     }
 
+    public function updateLastFetchedAtTo(int $lastFetchedAt)
+    {
+        $this->getSettingsAccessor()
+             ->upsert(self::LAST_FETCHED_AT, $lastFetchedAt)
+             ->save();
+    }
+
     protected function getLastFetchedAt()
     {
         return $this->getSettingsAccessor()

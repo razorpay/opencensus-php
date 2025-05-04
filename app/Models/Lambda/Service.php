@@ -532,7 +532,7 @@ class Service extends Base\Service
                 'input'   => $input
             ]);
 
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('2048M');
         RuntimeManager::setTimeLimit(3000);
         RuntimeManager::setMaxExecTime(6000);
 

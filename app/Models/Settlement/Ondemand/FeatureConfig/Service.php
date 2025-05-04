@@ -16,6 +16,7 @@ use RZP\Mail\Merchant\PartialES;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Models\Settlement\Ondemand\FeatureConfig\Constants as SettlementConstants;
 
 class Service extends Base\Service
 {
@@ -246,11 +247,49 @@ class Service extends Base\Service
 
                 $merchantAccountBalance = $reverseShadowCapital->getMerchantAccountBalance($ledgerService, $this->merchant->getMerchantId());
 
-                $balance =  $merchantAccountBalance[Constants::MERCHANT_BALANCE];
+                $ledgerBalance =  $merchantAccountBalance[Constants::MERCHANT_BALANCE];
 
-                $amountLimitPerSettlement = ceil(($balance * $featureConfig->getPercentageOfBalanceLimit())/100);
+                if ($this->checkBalanceSeparationExperiment($this->merchant->getMerchantId()) === true)
+                {
+                    $capitalBalanceResponse = $this->app['capital_early_settlements']->getMerchantBalanceByType(SettlementConstants::ONLINE_DOMESTIC, $this->merchant->getId());
+
+                    if($capitalBalanceResponse !== null && $capitalBalanceResponse['items'] > 0) {
+                        $capitalBalanceResponse = $capitalBalanceResponse['items'][0];
+                        $capitalBalance = $capitalBalanceResponse[SettlementConstants::DERIVED_BALANCE];
+                    } else {
+                        return [0, 0];
+                    }
+
+                    $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_BALANCES_FROM_SOURCES, [
+                        'merchant_id'       => $this->merchant->getId(),
+                        'ledger_balance'    => $ledgerBalance,
+                        'capital_response'  => $capitalBalanceResponse,
+                    ]);
+
+                    if (!isset($capitalBalanceResponse[SettlementConstants::DERIVED_BALANCE]))
+                    {
+                        $amountLimitPerSettlement = ceil(($ledgerBalance * $featureConfig->getPercentageOfBalanceLimit())/100);
+                    }
+                    else if ($capitalBalanceResponse[SettlementConstants::ON_HOLD] === true)
+                    {
+                        $this->trace->warning(TraceCode::SETTLEMENT_ONDEMAND_BALANCE_ON_HOLD, [
+                            'merchant_id' => $this->merchant->getId(),
+                        ]);
+
+                        $amountLimitPerSettlement = 0;
+                    }
+                    else
+                    {
+                        $amountLimitPerSettlement = $capitalBalance;
+                    }
+                }
+                else
+                {
+                    $amountLimitPerSettlement = ceil(($ledgerBalance * $featureConfig->getPercentageOfBalanceLimit())/100);
+                }
             }
-            else {
+            else
+            {
                 $amountLimitPerSettlement = ceil(($this->merchant->primaryBalance->getBalance() * $featureConfig->getPercentageOfBalanceLimit())/100);
             }
         }
@@ -343,5 +382,49 @@ class Service extends Base\Service
                 'merchant_id' => $merchant->getId(),
                 'full_access' => $fullAccess
             ]);
+    }
+
+    private function checkBalanceSeparationExperiment($merchantId)
+    {
+        $experimentEnabled = false;
+
+        try {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.is_balance_separation_experiment_id'),
+                'request_data'  => json_encode([
+                    'mid' => $merchantId
+                ])
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $experimentEnabled = ($variant === SettlementConstants::ACTIVE);
+
+            $this->trace->info(TraceCode::CAPITAL_IS_BALANCE_SEPARATION_EXPERIMENT_STATUS, [
+                'merchant_id'       => $merchantId,
+                'experiment_status' => $experimentEnabled
+            ]);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->info(TraceCode::CAPITAL_IS_BALANCE_SEPARATION_EXPERIMENT_FAILED, [
+                'merchant_id'   => $merchantId,
+                'error'         => $e->getMessage(),
+            ]);
+
+            if ($this->app->runningUnitTests())
+            {
+                // to avoid failure in tests where splitz is not mocked properly
+                return false;
+            }
+
+            throw $e;
+        }
+
+
+        return $experimentEnabled;
     }
 }

@@ -1361,39 +1361,7 @@ class Service extends Base\Service
             return $this->app['scrooge']->refundsFetchMultiple($input);
         }
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        // shadow mode experiment
-        $variant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
-            $this->mode
-        );
-
-        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return $this->fetchMultipleShadowMode($input);
-        }
-
-        // We are masking status for merchants
-        if ((($this->app['basicauth']->isProxyAuth() === true) or
-             ($this->app['basicauth']->isPrivateAuth() === true)) and
-            (isset($input[Entity::STATUS]) === true))
-        {
-            $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
-
-            unset($input[Entity::STATUS]);
-        }
-
-        $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
-
-        $refundsArray = $refunds->toArrayPublic();
-
-        // Showing public_status for all dashboard merchants
-        if ($this->app['basicauth']->isProxyAuth() === true)
-        {
-            $this->addPublicStatus($refundsArray, $input);
-        }
-
-        return $refundsArray;
+        return $this->fetchMultipleShadowMode($input);
     }
 
     public function fetchMultipleShadowMode($input)
@@ -1415,18 +1383,6 @@ class Service extends Base\Service
                 'route_name'    => $this->app['api.route']->getCurrentRouteName(),
                 'extra_trace'   => $this->app['basicauth']->getAuthType(),
             ]);
-        }
-
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-        // shadow mode experiment
-        $variant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE_NOTES,
-            $this->mode
-        );
-
-        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return $scroogeRefundsArray;
         }
 
         try

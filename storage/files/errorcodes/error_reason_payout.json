@@ -715,14 +715,14 @@
   },
 
   "BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA": {
-    "description": "Account holder name does not match the customer name associated with the mapped VPA.",
-    "source": null,
-    "reason": "input_validation_failed"
+    "description": "Account holder name not matching with bank provided name",
+    "source": "customer",
+    "reason": "name_matching_validation_failure"
   },
 
-  "BAD_REQUEST_VPA_NOT_FOUND": {
-    "description": "VPA Not Found for the UPI Number.",
-    "source": null,
-    "reason": "input_validation_failed"
+  "BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND": {
+    "description": "No linked account details found",
+    "source": "customer",
+    "reason": "no_linked_account_found"
   }
 }

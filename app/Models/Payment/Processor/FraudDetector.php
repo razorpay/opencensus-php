@@ -258,7 +258,7 @@ trait FraudDetector
             }
         }
 
-        return $this->app->razorx->getTreatment($merchant->getId(), self::SECURE_3D_INTERNATIONAL, $this->mode);
+        return 'control'; // razorx experiment disabled
     }
 
     protected function getErrorCodeFromTriggeredRules(array $triggeredRules) : string

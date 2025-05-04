@@ -92,7 +92,7 @@ class Role
         self::CHECKER_L3,
         self::MAKER_ADMIN,
         self::MAKER,
-
+        self::RAZORPAY_SALES
     ];
 
     const WRITER_ROLES = [

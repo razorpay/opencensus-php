@@ -21,6 +21,7 @@ class RouteTeamMap
     // cmma : sop and disputes team
     const TEAM_CMMA                    = 'cmma';
     const TEAM_OMNI_ACQUISITION         = 'omni_acquisition';
+    const TEAM_PAYMENTS_BANK_TRANSFER            = 'payments-bank-transfer';
     const TEAM_PLATFORM_EDGE                     = 'platform_edge';
 
     /**

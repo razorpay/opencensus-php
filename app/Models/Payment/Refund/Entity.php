@@ -6,6 +6,7 @@ use App;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Constants\Environment;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
@@ -1678,12 +1679,8 @@ class Entity extends Base\PublicEntity
         $app = \App::getFacadeRoot();
         try
         {
-            $experimentVariable = UniqueIdEntity::generateUniqueId();
-            $variantFlag = $app['razorx']->getTreatment($experimentVariable,
-                RazorxTreatment::STOP_REFUNDS_DUAL_WRITE,
-                $app['rzp.mode']);
-
-            if ($variantFlag === 'on')
+            $env = $this->app->environment();
+            if ($env === Environment::PRODUCTION)
             {
                 return (new Repository)->findOrFail($this->{$this->primaryKey});
             }

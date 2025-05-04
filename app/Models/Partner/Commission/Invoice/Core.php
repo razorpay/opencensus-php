@@ -1911,22 +1911,20 @@ class Core extends Base\Core
                 {
                     $this->trace->info(TraceCode::COMMISSION_TRANSACTION_FETCH_START, ['batch_count' => $batchCount]);
 
-                    // fetch txns in batches and process
-                    $transactions = $this->repo->transaction->fetchUnsettledCommissionTransactions(
-                        $partner,
+                    $comm_transactions = $this->repo->commission->getTransactionIDFromCommissions(
+                        $partnerId,
                         $fromTimestamp,
                         $endTimestamp,
                         self::COMMISSIONS_TRANSACTION_FETCH_LIMIT,
-                        $afterId);
-
-                    if ($transactions->isEmpty() === true)
-                    {
+                        $afterId
+                    );
+                    $transactions = $comm_transactions['transaction_ids'];
+                    if (empty($transactions)) {
                         break;
                     }
+                    $afterId = $comm_transactions['after_id'];
 
-                    $afterId = $transactions->last()->getId();
-
-                    CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds());
+                    CommissionOnHoldClear::dispatch($this->mode, $transactions, $fromTimestamp);
 
                     $batchCount++;
                 }

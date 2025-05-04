@@ -27,7 +27,7 @@ class Core extends Base\Core
 
     const ACCOUNT_TYPE = 'bank_account';
 
-    public function addOndemandFundAccountForMerchant($merchantId)
+    public function addOndemandFundAccountForMerchant($merchantId, $bankAccount = null)
     {
         $this->trace->info(TraceCode::CREATE_SETTLEMENT_ONDEMAND_FUND_ACCOUNT, [
             'merchant_id'   => $merchantId,
@@ -79,7 +79,7 @@ class Core extends Base\Core
             });
         }
 
-        $data = $this->getBankAccountDetails($merchantId);
+        $data = $this->getBankAccountDetails($merchantId, $bankAccount);
 
         $fundAccountId = $razorpayXClientService->createFundAccount($fundAccount[OndemandFundAccount\Entity::CONTACT_ID], $data)['id'];
 
@@ -100,9 +100,14 @@ class Core extends Base\Core
         });
     }
 
-    public function getBankAccountDetails($merchantId)
+    public function getBankAccountDetails($merchantId, $bankAccount = null)
     {
-        $accountDetails = (new Merchant\Service)->getBankAccount($merchantId);
+        if (empty($bankAccount) === true) {
+            $accountDetails = (new Merchant\Service)->getBankAccount($merchantId);
+        }
+        else {
+            $accountDetails = $bankAccount->toArray();
+        }
 
         $beneficiaryName = trim(str_limit(preg_replace('/[^a-zA-Z0-9 ]+/',
                                                   '',
@@ -165,7 +170,6 @@ class Core extends Base\Core
             $fundAccount = $this->getFundAccountByMerchantId($merchantId);
             if ($fundAccount !== null && $this->isFundAccountMigrated('dual_write') === true) {
                 // The action here will be dual_write because this method will only be called in the dual write flow
-                // The API called will be createFundAccount because this API enables us to invalidate the existing fund account id
                 $this->app['capital_early_settlements']->invalidateAndCreateFundAccount($merchantId, true);
             }
         });

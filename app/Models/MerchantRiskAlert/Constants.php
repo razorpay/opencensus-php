@@ -240,5 +240,13 @@ Razorpay';
 
     const TEAM_NAME_ERROR_MESSAGE                      = "Team name not correct.";
 
+    const FD_NEW_RISK_SUB_CATEGORY                  =   'Risk Action';
+    const FD_CF_PRODUCT                             =   'Payment Gateway';
+    const FD_CF_NEW_CATEGORY                        =   'Risk Report_Merchant';
+
+    const FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION   =   'MRFOH -> Need clarification';
+
+    const FD_NEW_RISK_CATEGORY                      =   'Razorpay';
+
 }
 

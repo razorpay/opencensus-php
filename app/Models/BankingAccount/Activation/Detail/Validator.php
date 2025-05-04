@@ -89,6 +89,12 @@ class Validator extends Base\Validator
     const PG_DIRECT_SALES = 'pg_direct_sales';
     const SELF_SERVE = 'self_serve';
     const NIT_PARTNERSHIPS = 'nit_partnerships';
+    const NIT_HUNTING = 'nit_hunting';
+    const NIT_CSM = 'nit_csm';
+    const MM_HUNTING = 'mm_hunting';
+    const MM_CSM = 'mm_csm';
+    const SME_UNMANAGED = 'sme_unmanaged';
+    const X_OTHERS = 'others';
 
     const SALES_POC_ID = 'sales_poc_id';
 
@@ -403,6 +409,12 @@ class Validator extends Base\Validator
         self::PG_DIRECT_SALES,
         self::SELF_SERVE,
         self::NIT_PARTNERSHIPS,
+        self::NIT_HUNTING,
+        self::NIT_CSM,
+        self::MM_HUNTING,
+        self::MM_CSM,
+        self::SME_UNMANAGED,
+        self::X_OTHERS,
     ];
 
     protected static $requiredActivationDetailsKeysFreshDesk = [

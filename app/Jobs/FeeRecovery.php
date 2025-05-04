@@ -5,13 +5,16 @@ namespace RZP\Jobs;
 use App;
 use Carbon\Carbon;
 
+use RZP\Constants\Metric;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
 use RZP\Models\FeeRecovery\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Schedule\Task\Entity as TaskEntity;
 use RZP\Models\FeeRecovery\Core as FeeRecoveryCore;
+use RZP\Models\FeeRecovery\Metric as FeeRecoveryMetrics;
 
 class FeeRecovery extends Job
 {
@@ -19,8 +22,8 @@ class FeeRecovery extends Job
 
     const DELAY = 300;
 
-    // Overriding timeout with 300 for the time being, since we don't know how much time the process will take.
-    public $timeout = 600;
+    // Overriding timeout with 900 for the time being, since we don't know how much time the process will take.
+    public $timeout = 900;
 
     protected $trace;
 
@@ -49,6 +52,11 @@ class FeeRecovery extends Job
      */
     private $task;
 
+    private $WHITELISTED_ERROR_CODES_FOR_DATA_CORRECTION = [
+        ErrorCode::BAD_REQUEST_FEE_RECOVERY_ALREADY_INITIATED,
+        ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING
+    ];
+
     public function __construct(string $mode,
                                 string $feeRecoveryPayoutId = null,
                                 string $balanceId = null,
@@ -71,6 +79,7 @@ class FeeRecovery extends Job
 
     public function handle()
     {
+        $startTime = microtime(true);
         parent::handle();
 
         if ($this->feeRecoveryPayoutId !== null)
@@ -82,6 +91,14 @@ class FeeRecovery extends Job
             $this->feeRecoveryHandle();
         }
 
+        $endTime = microtime(true);
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_JOB_TIME_TAKEN,
+            [
+                'balance_id' => $this->balanceId,
+                'time_taken' => $endTime - $startTime,
+            ]
+        );
     }
 
     protected function feeRecoveryHandle()
@@ -98,6 +115,7 @@ class FeeRecovery extends Job
 
         try
         {
+            $this->trace->count(FeeRecoveryMetrics::FEE_RECOVERY_CRON_JOB, [FeeRecoveryMetrics::STATUS => FeeRecoveryMetrics::INITIATED]);
 
             $feeRecoveryCore = new FeeRecoveryCore();
 
@@ -111,14 +129,44 @@ class FeeRecovery extends Job
                 ]
             );
 
-            $feeRecoveryCore->updateNextRunAndLastRunForFeeRecoveryTasks($this->task);
+            $feeRecoveryCore->updateNextRunAndLastRunForFeeRecoveryTasks($this->task, $data);
 
             $this->repoManager->saveOrFail($this->task);
+
+            $this->trace->count(FeeRecoveryMetrics::FEE_RECOVERY_CRON_JOB, [FeeRecoveryMetrics::STATUS => FeeRecoveryMetrics::SUCCESS]);
 
             $this->delete();
         }
         catch (\Throwable $ex)
         {
+            $this->trace->count(FeeRecoveryMetrics::FEE_RECOVERY_CRON_JOB, [
+                FeeRecoveryMetrics::STATUS => FeeRecoveryMetrics::FAILURE,
+                FeeRecoveryMetrics::CODE => $ex->getCode()
+            ]);
+
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
+                    $data);
+                $this->delete();
+                return;
+            }
+
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_ENTITY_MISSING) {
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
+                    $data);
+
+                FeeRecoveryDataCorrection::dispatch($this->mode, $this->balanceId, $this->startTimeStamp, $this->endTimeStamp);
+                $this->delete();
+                return;
+            }
+
             if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->delete();
@@ -128,10 +176,19 @@ class FeeRecovery extends Job
                     Trace::ERROR,
                     TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
                     $data);
+                if(in_array($ex->getCode(), $this->WHITELISTED_ERROR_CODES_FOR_DATA_CORRECTION)) {
+                    $this->trace->info(TraceCode::PUSHED_TO_FEE_RECOVERY_DATA_CORRECTION, $data);
+                    FeeRecoveryDataCorrection::dispatch($this->mode, $this->balanceId, $this->startTimeStamp, $this->endTimeStamp);
+                }
             }
             else
             {
                 if ($ex->getCode() === ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_INSUFFICIENT)
+                {
+                    $feeRecoveryCore->updateNextRunAtForNegativeFees($this->task, $this->balanceId);
+                }
+
+                if ($ex->getCode() === ErrorCode::BAD_REQUEST_VALIDATION_FAILURE and $ex->getMessage() === 'Minimum transaction amount should be 100 paise')
                 {
                     $feeRecoveryCore->updateNextRunAtForNegativeFees($this->task, $this->balanceId);
                 }

@@ -57,7 +57,6 @@ class UpiInitialRecurringTestCase extends TestCase
 
         $this->gateway = 'upi_mozart';
 
-        $this->setMockGatewayTrue();
     }
 
     public function testRecurringMandateCreate($encrypted=false, $tpv=false, $bankAccount=[])
@@ -922,11 +921,42 @@ class UpiInitialRecurringTestCase extends TestCase
     {
         $this->testRecurringMandateCreate();
 
+        $this->fixtures->merchant->addFeatures(['cancel_token_v1']);
+
         $mandate = $this->getDbLastEntity('upi_mandate');
 
         $token = $this->getDbLastEntity('token');
 
         $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::REVOKED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CANCELLED, $token['recurring_status']);
+    }
+
+    public function testRevokeMandateNewFlow()
+    {
+        $this->testRecurringMandateCreate();
+
+        $mandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->revokeUpiRecurringMandate($token->getPublicId());
+
+        $mandate->reload();
+
+        $this->assertEquals(Status::CONFIRMED, $mandate['status']);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals(Token\RecurringStatus::CANCELLATION_INITIATED, $token['recurring_status']);
+
+        $this->mandateRevokeCallback($mandate);
 
         $mandate->reload();
 

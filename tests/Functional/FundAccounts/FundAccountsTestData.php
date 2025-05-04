@@ -1079,7 +1079,7 @@ return [
                     'name' => 'shk',
                     'number' => '4111111111111111',
                     'expiry_month' => 4,
-                    'expiry_year' => 2025
+                    'expiry_year' => 2029
                 ]
             ],
             'url'     => '/fund_accounts',
@@ -1106,7 +1106,7 @@ return [
                     'name' => 'shk',
                     'number' => '6521591827203121',
                     'expiry_month' => 4,
-                    'expiry_year' => 2025
+                    'expiry_year' => 2029
                 ]
             ],
             'url'     => '/fund_accounts',
@@ -1133,7 +1133,7 @@ return [
                     'name' => 'shk',
                     'number' => '4111111111111111',
                     'expiry_month' => 4,
-                    'expiry_year' => 2025
+                    'expiry_year' => 2029
                 ]
             ],
             'url'     => '/fund_accounts',
@@ -1160,7 +1160,7 @@ return [
                     'name' => 'shk',
                     'number' => '4111111111111111',
                     'expiry_month' => 4,
-                    'expiry_year' => 2025
+                    'expiry_year' => 2029
                 ]
             ],
             'url'     => '/fund_accounts',
@@ -1201,7 +1201,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only one of card, vpa, bank_account, linked_number or wallet can be present'
+                    'description' => 'Only one of card, vpa, bank_account, mobile or wallet can be present'
                 ],
             ],
             'status_code' => 400,
@@ -2949,7 +2949,7 @@ return [
                     'name' => 'Mr. asd fg',
                     'number' => '4111111111111111',
                     'expiry_month' => 4,
-                    'expiry_year' => 2025
+                    'expiry_year' => 2029
                 ]
             ],
             'url'     => '/fund_accounts',

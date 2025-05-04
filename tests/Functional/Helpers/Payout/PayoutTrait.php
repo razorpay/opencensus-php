@@ -840,20 +840,7 @@ trait PayoutTrait
 
     public function createSkipWorkflowForPayoutFeature()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
-                {
-                    return 'yesbank';
-                }
-                return 'on';
-            });
-
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable'],'enable');
         //
         // Here workflows are enabled for create payouts,
         // However user wants to disable the workflow for API request

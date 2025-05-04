@@ -1664,6 +1664,7 @@ class Service extends Base\Service
             'access_address_v9',
             'save_address_v9',
             'save_card_v9',
+            'mweb_club_checkout_login',
         ];
 
         return in_array($otpReason, $validReasons, true);

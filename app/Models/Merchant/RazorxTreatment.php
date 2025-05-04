@@ -339,9 +339,6 @@ final class RazorxTreatment
 
     const PAYOUT_SERVICE_TXN_RECON = 'payout_service_txn_recon';
 
-    // for creating upi recurring auth link via batch upload pick up as presented frequency by default
-    const UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT = 'upi_auth_link_frequency_as_presented_default';
-
     const BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS = 'banking_account_statement_temp_records';
 
     const BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP = 'banking_account_statement_fetch_dedup';
@@ -567,9 +564,6 @@ final class RazorxTreatment
 
     const SEND_CHARGE_COLLECTION_EVENT_RX = 'send_charge_collection_event_rx';
 
-    // Experiment to pass unused rejected tokens along with regular tokens in fetchTokens api call
-    const PASS_REJECTED_UNUSED_TOKENS = 'pass_rejected_unused_tokens';
-
     // razorx treatment for fetch from scrooge service
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW = 'entity_relational_load_from_scrooge_non_shadow';
@@ -624,9 +618,6 @@ final class RazorxTreatment
     // Experiment to accept new axis UMRN in mandate migration
     const ACCEPT_NEW_AXIS_UMRN_MANDATE_MIGRATION = 'accept_new_axis_umrn_mandate_migration';
 
-    // Experiment to toggle unhappy flow handling for tokenisation failure in recurring
-    const RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING = 'recurring_tokenisation_unhappy_flow_handling';
-
     // Experiment to toggle tokenisation for recurring tokens
     const RECURRING_TOKENISATION = 'recurring_tokenisation';
 
@@ -638,15 +629,6 @@ final class RazorxTreatment
 
     // Experiment to control recurring auto payment process through actual card number/tokenised card number for tokenised cards
     const RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD = 'recurring_subsequent_through_tokenised_card';
-
-    /** Experiment to enable recurring transaction for Rupay Cards Merchant Level Control*/
-    const RECURRING_THROUGH_RUPAY_CARD_MID = 'recurring_through_rupay_card_mid';
-
-    /** Experiment to enable recurring transaction for Rupay Cards IIN Level Control*/
-    const RECURRING_THROUGH_RUPAY_CARD_IIN = 'recurring_through_rupay_card_iin';
-
-    /** Experiment to enable PDN decoupling for card recurring*/
-    const CARD_RECURRING_ENABLE_PDN_DECOUPLING = 'card_recurring_enable_pdn_decoupling';
 
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
@@ -753,8 +735,6 @@ final class RazorxTreatment
     //Experiment to disable card flow for sihub post tokenization deadline
     const SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION = 'sihub_disable_card_flow_post_tokenization';
 
-    const TRIGGER_NEW_ONBOARDING_ESCALATION_FLOW = 'trigger_new_onboarding_escalation_flow';
-
     //Experiment used to control whether routes specified in $bankingDisabledRoutes should block banking requests or not
     const BLOCK_BANKING_REQUESTS = 'block_banking_requests';
 
@@ -830,9 +810,6 @@ final class RazorxTreatment
 
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_VA_PAYMENT_REFUND_DELAY = 'unexpected_va_payment_refund_delay';
-
-    //Experiment to stop dual writes of refunds in API
-    const STOP_REFUNDS_DUAL_WRITE = 'stop_refunds_dual_write';
 
     const REFUND_READS_FOR_RECON_FROM_SCROOGE = 'refund_reads_for_recon_from_scrooge';
 
@@ -966,9 +943,6 @@ final class RazorxTreatment
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
     const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
 
-    // Experiment to support multiple frequencies for card recurring payment CAW
-    const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
-
     /**
      * Razorx flag to use merchant_refernce as an identifier to fetch unexpected payments
      */
@@ -1000,15 +974,6 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
-    /*
-     * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
-     */
-    const NON_TWO_DECIMAL_CURRENCY_VALIDATION   = 'non_two_decimal_currency_validation';
-
-    /*
-     * Razorx flag to send dcc indicator value to gateway
-     */
-    const SEND_DCC_INDICATOR                    = 'send_dcc_indicator';
 
     const QR_CODE_BLOCK_PAYMENT = 'qr_code_block_payment';
 
@@ -1017,8 +982,6 @@ final class RazorxTreatment
     public const ALLOW_BIN_SERVICE_TOKEN_DUAL_WRITE = 'allow_bin_service_token_dual_write';
 
     public const ALLOW_BIN_SERVICE_SHADOW_READS = 'allow_bin_service_shadow_reads';
-
-    public const BIN_SERVICE_IIN_FETCH_PRIMARY = 'bin_service_iin_fetch_primary';
 
     const REFUND_FIND_MANY_RELATIONS = 'refund_find_many_relations';
 
@@ -1030,7 +993,6 @@ final class RazorxTreatment
 
     const TERMINALS_TIDB_QUERIES_MIGRATION = 'terminals_tidb_queries_migration';
 
-    const ZERO_EXPONENT_CURRENCY_SUPPORT = 'zero_exponent_currency_support';
 
     // Razorx for checkout 2.0
     const HDFC_CHECKOUT_2 = 'hdfc_checkout_2';
@@ -1092,6 +1054,7 @@ final class RazorxTreatment
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
+    const PS_API_MERCHANT_MIGRATION_ON_ID = 'ps_api_merchant_migration_on_id';
 
     const Allowed_alt_id_experiments = [
         "non_rearch_alt__RUPAY_isg_kotak",
@@ -1126,5 +1089,8 @@ final class RazorxTreatment
         "non_rearch_recurring_alt_id_VISA_hitachi_ratn",
         "non_rearch_recurring_alt_id_MC_hitachi_ratn",
         "non_rearch_recurring_alt_id_RUPAY_paysecure_ratn",
+        "non_rearch_recurring_alt_id_VISA_fulcrum_ratn",
+        "non_rearch_recurring_alt_id_MC_fulcrum_ratn",
+        "non_rearch_alt__DICL_hdfc_hdfc"
     ];
 }

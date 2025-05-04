@@ -204,7 +204,13 @@ class SavedCardTokenisationJob extends Job
 
 
 
-            if ($this->asyncTokenisationJobId === "paymentmigrate" || $this->asyncTokenisationJobId === 'pushtokenmigrate') {
+            if ($this->asyncTokenisationJobId === "paymentmigrate"
+                ||  $this->asyncTokenisationJobId === 'pushtokenmigrate'
+                ||  $this->asyncTokenisationJobId ==='hdfcPushProvIssuerTokenMigrate'
+                ||  $this->asyncTokenisationJobId ==='hdfcPushProvNetworkTokenMigrate'
+                ||  $this->asyncTokenisationJobId === "visa_vcpp_token_provision"
+            ) {
+
                 try {
                     $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
                 } catch(Throwable $e) {
@@ -362,14 +368,7 @@ class SavedCardTokenisationJob extends Job
     {
         $hub = $token->cardMandate->getMandateHub();
 
-        $app = App::getFacadeRoot();
-
-        $blockReportingToHubAfterAsyncRecurringTokenisationExperiment = $app['razorx']->getTreatment(
-            strtolower($hub),
-            RazorxTreatment::BLOCK_HUB_REPORT_AFTER_ASYNC_RECURRING_TOKENISATION,
-            $this->mode);
-
-        if((strtolower($blockReportingToHubAfterAsyncRecurringTokenisationExperiment) === 'on'))
+        if(strtolower($hub) === 'billdesk_sihub')
         {
             $this->trace->info(TraceCode::SKIPPED_REPORTING_TO_MANDATEHUB_AFTER_RECURRING_TOKENISATION, [
                 'tokenId'       => $this->tokenId ?? '',

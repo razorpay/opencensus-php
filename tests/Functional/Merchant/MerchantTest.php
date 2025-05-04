@@ -104,6 +104,7 @@ use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
@@ -152,6 +153,7 @@ class MerchantTest extends TestCase
     use WorkflowTrait;
     use TestsWebhookEvents;
     use EventsTrait;
+    use MocksSplitz;
     use TestsBusinessBanking;
     use CustomBrandingTrait;
     use MocksRedisTrait;
@@ -20214,7 +20216,7 @@ The same has been enabled for the account.
 
     public function testCreateIpConfigWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable']);
 
         $user = $this->getDbLastEntity('user');
 

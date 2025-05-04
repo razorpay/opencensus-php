@@ -24447,6 +24447,38 @@ return [
         ]
     ],
 
+    'testDualWriteForPayoutServicePayoutWithNewColumnAdditioninPayoutDetails' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111111',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
+    'testDualWriteForPayoutServicePayoutUnsettingNewColumnInPayoutsDetails' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111111',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
     'testPayoutUpdatePostBasRecon' => [
         'request' => [
             'method' => 'POST',
@@ -26002,6 +26034,22 @@ return [
             ]
         ]
     ],
+    'testRedisSetBalanceBlacklist' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'config:balance_fetch_merchants_blacklist',
+                    'value' => [
+                        'rbl' => ['test1', 'test2']
+                    ]
+                ]]
+            ]
+        ]
+    ],
     'testRedisSetValidationsKeyFail' => [
         'request' => [
             'method' => 'POST',
@@ -26216,9 +26264,9 @@ return [
                 'narration'       => 'Batman',
                 'mode'            => 'UPI',
                 'fund_account' => [
-                    'account_type' => 'linked_number',
-                    'linked_number' => [
-                        'number'  => '123456789',
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
                         'account_holder_name' => 'Shashi Kumar'
                     ],
                     'contact'     => [
@@ -26243,9 +26291,15 @@ return [
                         'contact' => '1234567890'
                     ],
                     "entity"       => "fund_account",
-                    'account_type' => 'linked_number',
-                    'linked_number' => [
-                        'number'  => '123456789',
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
+                        'account_holder_name' => 'Shashi Kumar'
+                    ],
+                    'vpa' => [
+                        "username" => null,
+                        "handle"   => "okaxis",
+                        "address"  => null,
                     ],
                 ],
                 "amount"         => 2000000,
@@ -26275,9 +26329,9 @@ return [
                 'narration'       => 'Batman',
                 'mode'            => 'UPI',
                 'fund_account' => [
-                    'account_type' => 'linked_number',
-                    'linked_number' => [
-                        'number'  => '123456789',
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
                         'account_holder_name' => 'Shashi Kumar'
                     ],
                     'contact'     => [
@@ -26294,15 +26348,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => null,
-                    'description' => 'VPA Not Found for the UPI Number',
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No linked account details found',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VPA_NOT_FOUND,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
     'testCreatePayoutWithLinkedNumberForNameMismatch' => [
@@ -26317,9 +26371,9 @@ return [
                 'narration'       => 'Batman',
                 'mode'            => 'UPI',
                 'fund_account' => [
-                    'account_type' => 'linked_number',
-                    'linked_number' => [
-                        'number'  => '123456789',
+                    'account_type' => 'mobile',
+                    'mobile' => [
+                        'number'  => '1234567890',
                         'account_holder_name' => 'Nawed Diwan'
                     ],
                     'contact'     => [
@@ -26336,18 +26390,43 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => null,
-                    'description' => 'Account holder name does not match the customer name associated with the mapped VPA.',
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account holder name not matching with bank provided name',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_NAME_MISMATCH_WITH_MAPPED_VPA,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
-
+    'testGetPayoutForAPIDBFirstFlow' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+    'testGetPayoutForAPIDBFirstFlowOnLiveMode' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
     'testCreateSharedPayoutInLedgerShadowModeWithInsufficientBalanceRetry' => [
         'request'  => [
             'method'  => 'POST',

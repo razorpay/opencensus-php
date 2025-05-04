@@ -11,7 +11,7 @@ class Type
     const BANK_ACCOUNT      = Entity::BANK_ACCOUNT;
     const CARD              = Entity::CARD;
     const WALLET_ACCOUNT    = Entity::WALLET_ACCOUNT;
-    const LINKED_NUMBER     = Entity::LINKED_NUMBER;
+    const MOBILE            = Entity::MOBILE;
 
     // Public facing account type for wallet_accounts
     const WALLET         = Entity::WALLET;

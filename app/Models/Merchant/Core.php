@@ -5730,7 +5730,7 @@ class Core extends Base\Core
     {
         // if merchant is not referred by partner, return false
         $mapping = (new AccessMap\Repository)->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $partner->getId());
-        if (empty($mapping) === true || in_array($partner->getPartnerType(),[Constants::RESELLER, Constants::PURE_PLATFORM]) == false )
+        if (empty($mapping) || $partner->getPartnerType() == Constants::FULLY_MANAGED )
         {
             return false;
         }
@@ -8468,6 +8468,10 @@ class Core extends Base\Core
         {
             $this->validateCode($input[Entity::CODE], $parentMerchant, $isLinkedAccount);
         }
+
+        if (isset($input[Entity::ACCOUNT_CODE]) === true) {
+            $this->validateCode($input[Entity::ACCOUNT_CODE], $parentMerchant, $isLinkedAccount);
+        }
     }
 
     protected function validateCode(string $code, Entity $parentMerchant, bool $isLinkedAccount)
@@ -9371,7 +9375,7 @@ class Core extends Base\Core
 
         $bankAccountCore = new BankAccount\Core();
 
-        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount->merchantDetail, true);
+        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount, true);
 
         $data = array_merge($data, $input);
 
@@ -9560,23 +9564,7 @@ class Core extends Base\Core
         {
             return false;
         }
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        $properties = [
-            'id'            => $merchantDetails->getMerchantId(),
-            'experiment_id' => $this->app['config']->get('app.enable_pos_for_api_submerchants'),
-        ];
-
-        $isExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'enable');
-
-        if ($isExperimentEnabled) {
-            if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED && $merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID)
-            {
-                return true;
-            }
-        }
-
+        
         if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
         {
             return false;
@@ -11769,7 +11757,6 @@ class Core extends Base\Core
             $resource,
             function () use ($input, $merchant) {
                 return $this->repo->transaction(function () use ($input, $merchant) {
-                    (new Merchant\Validator())->validateIfAmountForFundWithdrawalIsValid($input['amount'], $input, $merchant);
 
                     $input['amount'] = -1 * abs($input['amount']);
                     (new Adjustment\Core)->createAdjustment($input, $merchant);

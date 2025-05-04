@@ -206,16 +206,10 @@ class EnachNpciNetbanking extends Base
 
             $fileStoreIds = [];
 
-            $variant = $this->app['razorx']->getTreatment(
-                UniqueIdEntity::generateUniqueId(), self::YES_NACH_EARLY_SHARING,
-                $this->app['basicauth']->getMode()
-            );
-
             foreach ($allFilesData as $key => $fileData)
             {
                 // get serial no if key present for current date
-                if($variant === 'on' and
-                    $this->gatewayFile->getTarget() === Constants::ENACH_NPCI_NETBANKING)
+                if($this->gatewayFile->getTarget() === Constants::ENACH_NPCI_NETBANKING)
                 {
                     $cacheKey = $this->getCacheKeyForFileIndex($key);
 

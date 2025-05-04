@@ -33,6 +33,7 @@ class UserRolesScope
     {
         $this->routeUserRoleMap = [
             'register_merchant_sales'                              => [Role::PARTNER_AGENT],
+            'partner_referral'                                     => [Role::OWNER],
             'register_merchant_verify_otp'                         => [Role::PARTNER_AGENT],
             'add_sales_user_mapping'                               => [Role::POS_SALES_ADMIN],
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT, Role::ADMIN_READONLY,Role::RAZORPAY_SALES],
@@ -385,6 +386,7 @@ class UserRolesScope
 
             'payment_page_update'                      => array_merge(Role::WRITER_ROLES, [Role::PARTNER]),
             'payment_page_notify'                      => Role::WRITER_ROLES,
+            'payment_page_notify_nca'                  => Role::WRITER_ROLES,
             'payment_page_deactivate'                  => array_merge(Role::WRITER_ROLES, [Role::PARTNER]),
             'payment_page_activate'                    => array_merge(Role::WRITER_ROLES, [Role::PARTNER]),
             'payment_page_slug_exists'                 => Role::WRITER_ROLES,
@@ -514,7 +516,7 @@ class UserRolesScope
             'merchant_activation_business_categories_v2'    => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_gst_details'               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES, Role::ADMIN_READONLY],
             'merchant_activation_save'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT,Role::RAZORPAY_SALES],
-            'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::RAZORPAY_SALES],
             'merchant_coupons_apply'                        => [Role::OWNER, Role::ADMIN],
             'merchant_checkout_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::ADMIN_READONLY],
             'merchant_checkout_details_save'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],

@@ -17,6 +17,10 @@ class PayLater
     const HDFC         = 'hdfc';
     const KKBK         = 'kkbk';
 
+    // PPRO APM paylater
+    const KLARNA    = 'klarna';
+    const ZIP       = 'zip';
+
     /** @var int[] The minimum order/transaction amount in paisa for each paylater provider. */
     public const MIN_AMOUNTS = [
         self::GETSIMPL     => 100,    // Rs. 1
@@ -37,6 +41,8 @@ class PayLater
         self::KKBK,
         self::AMAZONPAY,
         self::RZPXPOSTPAID,
+        self::ZIP,
+        self::KLARNA,
     ];
 
     public static $fullName = [
@@ -47,6 +53,8 @@ class PayLater
         self::LAZYPAY      => 'lazypay',
         self::AMAZONPAY    => 'amazonpay',
         self::RZPXPOSTPAID => 'rzpx_postpaid',
+        self::ZIP          => 'zip',
+        self::KLARNA       => 'klarna'
     ];
 
     public static $fullNameForSupportedBanks = [

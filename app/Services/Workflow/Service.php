@@ -79,6 +79,22 @@ class Service
      */
     protected $ba;
 
+    protected $route;
+
+    /**
+     * @var $target
+     * This variable would store the target service details for the workflow. These details will be consumed to invoke the target service
+     * post workflow approval.
+     * It has the following keys: service, retry, bulk_size, entity_refresh_route, primary_key_column
+     */
+    protected $target = [];
+
+    /**
+     * @var $operationType
+     * This variable would store the operation type for the workflow. It can be either 'SINGLE' or 'BULK'.
+     */
+    protected $operationType;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -125,6 +141,35 @@ class Service
         $this->routeName = $routeName;
 
         return $this;
+    }
+
+    public function setTargetDetails(array $targetDetails)
+    {
+        $target = [];
+        $target[Differ\Entity::ROUTE]                 = $targetDetails[Differ\Entity::ROUTE] ?? '';
+        $target[Differ\Entity::RETRY]                 = $targetDetails[Differ\Entity::RETRY] ?? 3;
+        $target[Differ\Entity::BULK_SIZE]             = $targetDetails[Differ\Entity::BULK_SIZE] ?? 1;
+        $target[Differ\Entity::ENTITY_REFRESH_ROUTE]  = $targetDetails[Differ\Entity::ENTITY_REFRESH_ROUTE];
+        $target[Differ\Entity::PRIMARY_KEY_COLUMN]    = $targetDetails[Differ\Entity::PRIMARY_KEY_COLUMN];
+        $target[Differ\Entity::SERVICE]               = $targetDetails[Differ\Entity::SERVICE];
+        $this->target = $target;
+        return $this;
+    }
+    public function getTargetDetails()
+    {
+        return $this->target;
+    }
+
+    public function setOperationType(string $operationType = Action\OperationType::SINGLE)
+    {
+        $this->operationType = $operationType;
+
+        return $this;
+    }
+
+    public function getOperationType(): string
+    {
+        return $this->operationType ?? Action\OperationType::SINGLE;
     }
 
     public function getController()
@@ -232,7 +277,7 @@ class Service
 
         // If any actions are in open/approved (not executed) state
         // on the main $entity then prevent new workflows from being created.
-        if (empty($entityId) === false && $skipPreviousActionCheck === false)
+        if (empty($entityId) === false && $skipPreviousActionCheck === false && $this->getOperationType() === 'SINGLE')
         {
             (new Action\Validator)->validateLiveActionsOnEntity(
                 $entityId,
@@ -294,21 +339,37 @@ class Service
             Differ\Entity::URL                      => $this->getUri() ?? $request->getUri(),
             Differ\Entity::ROUTE_PARAMS             => $routeParams,
             Differ\Entity::METHOD                   => $this->getMethod(),
-            Differ\Entity::PAYLOAD                  => $input,
             Differ\Entity::STATE                    => State\Name::OPEN,
             Differ\Entity::CONTROLLER               => $controller,
             Differ\Entity::ROUTE                    => $routeName,
             Differ\Entity::PERMISSION               => $permission,
             Differ\Entity::WORKFLOW_OBSERVER_DATA   => $input[Differ\Entity::WORKFLOW_OBSERVER_DATA] ?? [],
+            Differ\Entity::OPERATION_TYPE           => $this->getOperationType(),
+            Differ\Entity::TARGET                   => $this->getTargetDetails() ?? '',
         ];
 
         $diff = $this->getDiff();
 
-        // we will consider empty array as valid diff for now
         if ((is_array($diff) === true) or (empty($diff) === false))
         {
             $differEntity[Differ\Entity::DIFF] = $diff;
         }
+        if($this->getOperationType() == Action\OperationType::SINGLE)
+        {
+            $differEntity[Differ\Entity::PAYLOAD] = $input;
+        }
+        else
+        {
+            if ($this->isAssociativeArray($input))
+            {
+                $differEntity[Differ\Entity::PAYLOAD] = [$input];
+            }
+            else
+            {
+                $differEntity[Differ\Entity::PAYLOAD] = $input;
+            }
+        }
+
 
         // Auth Details
         $authDetails = [];
@@ -563,9 +624,32 @@ class Service
             }
         }
 
-        // Calculate diff
-        $diff = $differCore->createDiff(
-            $originalDataArray, $dirtyDataArray);
+        if($this->getOperationType() == Action\OperationType::BULK)
+        {
+            $diffs = [];
+            if ($this->isAssociativeArray($originalDataArray))
+            {
+                $diffArr = $differCore->createDiff($originalDataArray, $dirtyDataArray);
+                $diffs['old'][$originalDataArray['id']] = $diffArr['old'];
+                $diffs['new'][$originalDataArray['id']] = $diffArr['new'];
+            }
+            else
+            {
+                for ($i= 0 ; $i < count($originalDataArray); $i++)
+                {
+                    $diffArr = $differCore->createDiff($originalDataArray[$i], $dirtyDataArray[$i]);
+                    $diffs['old'][$originalDataArray[$i]['id']] = $diffArr['old'];
+                    $diffs['new'][$originalDataArray[$i]['id']] = $diffArr['new'];
+                }
+            }
+            $diff = $diffs;
+        }
+        else
+        {
+            // Calculate diff
+            $diff = $differCore->createDiff(
+                $originalDataArray, $dirtyDataArray);
+        }
 
         // Logic to calculate diff for nested relations
         $mainEntity = $this->getEntity();
@@ -765,5 +849,10 @@ class Service
         {
             $this->setRouteParams($this->router->current()->parameters());
         }
+    }
+
+    protected function isAssociativeArray($array) {
+        if (!is_array($array)) return false;
+        return array_keys($array) !== range(0, count($array) - 1);
     }
 }

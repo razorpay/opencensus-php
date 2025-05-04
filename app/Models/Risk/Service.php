@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Store;
 
 class Service extends Base\Service
 {
@@ -110,6 +111,9 @@ class Service extends Base\Service
 
             case Payment\Entity::getSign():
                 return (new Payment\Core)->getGrievanceEntityDetails($id);
+
+            case Store\Entity::getNCASign():
+                return (new Store\Core)->getGrievanceEntityDetails($id);
 
             default:
                 throw new Exception\BadRequestValidationFailureException(

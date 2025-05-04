@@ -85,11 +85,7 @@ class Core extends Base\Core
      */
     public function createTxnAndDispatchToSettlementFromJournalForReserveBalance($journal, $merchant, $adjustment): void
     {
-        $reserveBalanceWithdrawalTransaction = $this->transformJournalResponseToTransactionEntityForReserveBalance($journal, $merchant, $adjustment);
-
-        //Changing Debit to Credit Transaction (In order to process Settlement, we need a credit txn)
-        $reserveBalanceWithdrawalTransaction->setCredit($reserveBalanceWithdrawalTransaction->getDebit());
-        $reserveBalanceWithdrawalTransaction->setDebit(0);
+        $reserveBalanceWithdrawalTransaction = $this->transformJournalResponseToTransactionEntityForAdjustment($journal);
 
         $bucketCore = new Bucket\Core;
 
@@ -98,21 +94,5 @@ class Core extends Base\Core
         $preFundWithdrawBalance->setType(Balance\Type::PREFUND_WITHDRAWAL);
 
         $bucketCore->publishForSettlement($reserveBalanceWithdrawalTransaction, $preFundWithdrawBalance);
-    }
-
-    public function transformJournalResponseToTransactionEntityForReserveBalance($journalResponse, $merchant, $adjustment): TransactionEntity
-    {
-        [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($journalResponse, "merchant_reserve_balance", "pre_fund_withdrawal_control" );
-
-        //Creating Transaction from Debit Journal (In order to reduce the reserve balance)
-        $debitTxn = (new Transaction\Core)->createFromAdjustment($adjustment, $debitJournalId);
-
-        $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
-
-        $debitTxn->setSettledAt($settledAt);
-
-        $this->repo->transaction->saveOrFail($debitTxn);
-
-        return $debitTxn;
     }
 }

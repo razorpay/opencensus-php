@@ -55,7 +55,9 @@ class PaymentController extends Controller
         {
             $this->trace->info(TraceCode::PAYMENT_SEGMENT_EVENT_PUSH_FAILED, []);
         }
-        $this->pushForBarricade($payment, $id);
+
+        //Removing this as we are not using barricade anymore
+       // $this->pushForBarricade($payment, $id);
 
         return ApiResponse::json($payment);
     }
@@ -89,24 +91,6 @@ class PaymentController extends Controller
     public function getPaymentForSubscription($paymentId, $subscriptionId)
     {
         $payment = $this->service()->fetchForSubscription($paymentId, $subscriptionId);
-
-        return ApiResponse::json($payment);
-    }
-
-
-    public function getPaymentwithSubscription($subscriptionId)
-    {
-        $payment = $this->service()->fetchpaymentwithSubscription($subscriptionId);
-
-        return ApiResponse::json($payment);
-    }
-
-    /*
-     * Temporary code
-     */
-    public function getPaymentwithSubscriptionEmailAndContactNotNull($subscriptionId)
-    {
-        $payment = $this->service()->fetchpaymentwithSubscriptionEmailAndContactNotNull($subscriptionId);
 
         return ApiResponse::json($payment);
     }
@@ -367,7 +351,8 @@ class PaymentController extends Controller
     {
         $data = $this->service()->fetchStatus($id);
 
-        $this->pushForBarricade($data, $id);
+    //   Removing this as we are not using barricade anymore
+    //   $this->pushForBarricade($data, $id);
 
         return ApiResponse::json($data);
     }

@@ -1163,6 +1163,28 @@ return [
         ],
     ],
 
+    'testSmartRoutingRules_FetchRulesForMerchant_MerchantBlockedOnLiteAccountForPayout' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_rules_admin',
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'IMPS' => [
+                    'RBL',
+                    'ICICI',
+                ],
+                'NEFT' => [
+                    'ICICI',
+                    'RBL',
+                ]
+            ],
+        ],
+    ],
+
     'testSmartRoutingRules_FetchRulesForMerchant_FTSNoRulesFoundForMerchant' => [
         'request'  => [
             'method'  => 'GET',

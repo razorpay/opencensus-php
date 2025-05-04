@@ -434,6 +434,8 @@ class Core extends Base\Core
 
         $to = Carbon::now()->getTimestamp();
 
+        $flowType = Constants::PAYMENTS_ESCALATION;
+
         /*
          * Update last Cron time instantly, since processing of cron may take another 5-10 mins
          * and during that time another payments can happen
@@ -453,13 +455,19 @@ class Core extends Base\Core
         ];
 
         // fetch all merchants count merchants that have transacted since last time cron ran
-        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
 
         if (empty($queryResponse) === true)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                'type'   => 'mtu_coupon_apply',
+                'type'   => Constants::MTU_COUPON_APPLY,
                 'reason' => 'no merchants found',
+                'step'   => 'transacted_merchants_count'
+            ]);
+
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                'type'   => Constants::MTU_COUPON_APPLY,
+                'reason' => Constants::NO_MERCHANTS_FOUND,
                 'step'   => 'transacted_merchants_count'
             ]);
 
@@ -468,7 +476,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
             'merchants_count' => count($queryResponse),
-            'type'            => 'mtu_coupon_apply',
+            'type'            => Constants::MTU_COUPON_APPLY,
             'step'            => 'transacted_merchants_count'
         ]);
 
@@ -485,14 +493,20 @@ class Core extends Base\Core
         ];
 
         // fetch all merchants who've have done the transaction since last time cron ran
-        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
 
         if (empty($queryResponse) === true)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                'type'   => 'mtu_coupon_apply',
+                'type'   => Constants::MTU_COUPON_APPLY,
                 'reason' => 'no merchants found',
-                'step'   => 'transacted_merchants'
+                'step'   => Constants::TRANSACTED_MERCHANTS
+            ]);
+
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                'type'   => Constants::MTU_COUPON_APPLY,
+                'reason' => Constants::NO_MERCHANTS_FOUND,
+                'step'   => Constants::TRANSACTED_MERCHANTS
             ]);
 
             return;
@@ -500,8 +514,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
             'merchants_count' => count($queryResponse),
-            'type'            => 'mtu_coupon_apply',
-            'step'            => 'transacted_merchants'
+            'type'            => Constants::MTU_COUPON_APPLY,
+            'step'            => Constants::TRANSACTED_MERCHANTS
         ]);
 
         $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
@@ -511,7 +525,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
-            'type'            => 'mtu_coupon_apply',
+            'type'            => Constants::MTU_COUPON_APPLY,
             'step'            => 'm2m merchants',
             'merchants_count' => count($m2mMerchants),
         ]);
@@ -533,13 +547,19 @@ class Core extends Base\Core
             ];
 
             // fetch all merchants first transaction timestamp
-            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
 
             if (empty($queryResponse) === true)
             {
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                    'type'   => 'mtu_coupon_apply',
+                    'type'   => Constants::MTU_COUPON_APPLY,
                     'reason' => 'no merchants found',
+                    'step'   => 'first_transaction_timestamp'
+                ]);
+
+                $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                    'type'   => Constants::MTU_COUPON_APPLY,
+                    'reason' => Constants::NO_MERCHANTS_FOUND,
                     'step'   => 'first_transaction_timestamp'
                 ]);
 
@@ -548,7 +568,7 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
                 'merchants_count' => count($queryResponse),
-                'type'            => 'mtu_coupon_apply',
+                'type'            => Constants::MTU_COUPON_APPLY,
                 'step'            => 'first_transaction_timestamp'
             ]);
 
@@ -570,6 +590,10 @@ class Core extends Base\Core
                     $this->trace->error(TraceCode::MTU_COUPON_APPLY_FAILURE, [
                         'merchant_id' => $merchantId,
                         'exception'   => $e->getMessage()
+                    ]);
+
+                    $this->trace->count(Metric::MTU_COUPON_APPLY_FAILURE_COUNT, [
+                        'type'            => Constants::MTU_COUPON_APPLY,
                     ]);
                 }
             }
@@ -624,16 +648,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::MTU_COUPON_CODE);
-
-        if ($isMtuCouponExperimentEnabled === false)
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     /**
@@ -643,161 +658,157 @@ class Core extends Base\Core
      */
     public function triggerPaymentEscalations($timeBound = false)
     {
-        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::TRIGGER_NEW_ONBOARDING_ESCALATION_FLOW,
-            Mode::LIVE);
-
-        $triggerNewOnboardingEscalationFlow = ( $experimentResult === 'on' ) ? true : false;
-
-        if($triggerNewOnboardingEscalationFlow === true)
+        if ($timeBound === true)
         {
-            try
-            {
-                [$merchantIdList, $merchantsGMVList] = $this->filterMerchantsWithGmvUsingEscalationType(Constants::PAYMENTS_ESCALATION, $timeBound);
+            $lastCronTime = $this->getLastCronTime() - 300;
+            $flowType = Constants::PAYMENTS_ESCALATION;
 
-                if($merchantIdList === null)
-                {
-                    return;
-                }
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex, Logger::ERROR, TraceCode::NEW_ESCALATION_FLOW_FAILURE);
-
-                $triggerNewOnboardingEscalationFlow = false;
-            }
-        }
-
-        //Todo: Need to remove below 'if' body once the filterMerchantsWithGmvUsingEscalationType function works satisfactorily
-        if($triggerNewOnboardingEscalationFlow === false)
-        {
-            if ($timeBound === true)
-            {
-                $lastCronTime = $this->getLastCronTime() - 300;
-
-                $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
-                    'last_cron_time' => $lastCronTime,
-                    'type'           => 'payments_escalation',
-                ]);
-                $this->updateLastCronTime(Constants::ESCALATION_CACHE_KEY);
-
-                $currentCronTime = $this->getLastCronTime();
-
-                // we have to first get count as pinot has limitation that limit has to be passed in the get query
-                $query = "select count(distinct merchant_id) as transacted_merchants_count from {{table}} where created_at between %s and %s";
-
-                $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
-
-                $content = [
-                    'query'   => $query,
-                    'table'   => 'payments',
-                    'backend' => 'startree',
-                ];
-
-                // fetch all merchants count who've atleast breached lowest payments threshold
-                $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
-
-                if (empty($queryResponse) === true)
-                {
-                    $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                        'type'            => 'payments_escalation_timebound',
-                        'reason'          => 'no merchants found',
-                        'step'            => 'transacted_merchants_count',
-                    ]);
-
-                    return;
-                }
-
-                $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                    'query_response_count' => count($queryResponse),
-                    'type'            => 'payments_escalation_timebound',
-                    'step'            => 'transacted_merchants_count',
-                ]);
-
-                $resultCount = $queryResponse[0]["transacted_merchants_count"];
-
-                $query = "select distinct merchant_id from {{table}} where created_at between %s and %s limit %s";
-
-                $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
-
-                $content = [
-                    'query'   => $query,
-                    'table'   => 'payments',
-                    'backend' => 'startree',
-                ];
-
-                // fetch all merchants who've atleast breached lowest payments threshold
-                $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
-
-                if (empty($queryResponse) === true)
-                {
-                    $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                        'type'            => 'payments_escalation_timebound',
-                        'reason'          => 'no merchants found',
-                        'step'            => 'transacted_merchants',
-                    ]);
-
-                    return;
-                }
-
-                $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                    'query_response_count' => count($queryResponse),
-                    'type'            => 'payments_escalation_timebound',
-                    'step'            => 'transacted_merchants',
-                ]);
-
-                $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
-
-                $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
-                    $merchantIdList, DetailStatus::MERCHANT_OPEN_STATUSES);
-
-            }
-            else
-            {
-                // fetch all the merchants who are not in end states
-                $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
-                    DetailStatus::MERCHANT_OPEN_STATUSES);
-            }
-
-            if (empty($merchantIdList) === true)
-            {
-                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                    'type'            => 'payments_escalation',
-                    'reason'          => 'no merchants found',
-                    'step'            => 'open_merchants'
-                ]);
-
-                return;
-            }
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                'merchants_count' => count($merchantIdList),
-                'type'            => 'payments_escalation',
-                'step'            => 'open_merchants'
+            $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
+                'last_cron_time' => $lastCronTime,
+                'type'           => 'payments_escalation',
             ]);
+            $this->updateLastCronTime(Constants::ESCALATION_CACHE_KEY);
 
-            $queryResponse = $this->fetchQueryResponseForMerchantsGMVList($merchantIdList);
+            $currentCronTime = $this->getLastCronTime();
+
+            // we have to first get count as pinot has limitation that limit has to be passed in the get query
+            $query = "select count(distinct merchant_id) as transacted_merchants_count from {{table}} where created_at between %s and %s";
+
+            $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
+
+            $content = [
+                'query'   => $query,
+                'table'   => 'payments',
+                'backend' => 'startree',
+            ];
+
+            // fetch all merchants count who've atleast breached lowest payments threshold
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
 
             if (empty($queryResponse) === true)
             {
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                    'type'   => 'payments_escalation',
-                    'reason' => 'no merchants found',
-                    'step'   => 'transacted_merchants'
+                    'type'            => Constants::PAYMENTS_ESCALATION_TIMEBOUND,
+                    'reason'          => 'no merchants found',
+                    'step'            => 'transacted_merchants_count',
+                ]);
+
+                $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                    'type'            => Constants::PAYMENTS_ESCALATION_TIMEBOUND,
+                    'reason'          => Constants::NO_MERCHANTS_FOUND,
+                    'step'            => 'transacted_merchants_count',
                 ]);
 
                 return;
             }
 
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                'merchants_count' => count($queryResponse),
-                'type'            => 'payments_escalation',
-                'step'            => 'transacted_merchants'
+                'query_response_count' => count($queryResponse),
+                'type'            => Constants::PAYMENTS_ESCALATION_TIMEBOUND,
+                'step'            => 'transacted_merchants_count',
+            ]);
+
+            $resultCount = $queryResponse[0]["transacted_merchants_count"];
+
+            $query = "select distinct merchant_id from {{table}} where created_at between %s and %s limit %s";
+
+            $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
+
+            $content = [
+                'query'   => $query,
+                'table'   => 'payments',
+                'backend' => 'startree',
+            ];
+
+            // fetch all merchants who've atleast breached lowest payments threshold
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
+
+            if (empty($queryResponse) === true)
+            {
+                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                    'type'            => Constants::PAYMENTS_ESCALATION_TIMEBOUND,
+                    'reason'          => 'no merchants found',
+                    'step'            => Constants::TRANSACTED_MERCHANTS,
+                ]);
+
+                $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                    'type'            => Constants::PAYMENTS_ESCALATION_TIMEBOUND,
+                    'reason'          => Constants::NO_MERCHANTS_FOUND,
+                    'step'            => Constants::TRANSACTED_MERCHANTS,
+                ]);
+
+                return;
+            }
+
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+                'query_response_count' => count($queryResponse),
+                'type'            => Constants::PAYMENTS_ESCALATION_TIMEBOUND,
+                'step'            => Constants::TRANSACTED_MERCHANTS,
             ]);
 
             $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
 
-            $merchantsGMVList = array_column($queryResponse, "amount", Entity::MERCHANT_ID);
+            $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
+                $merchantIdList, DetailStatus::MERCHANT_OPEN_STATUSES);
+
         }
+        else
+        {
+            // fetch all the merchants who are not in end states
+            $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
+                DetailStatus::MERCHANT_OPEN_STATUSES);
+        }
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'type'            => Constants::PAYMENTS_ESCALATION,
+                'reason'          => 'no merchants found',
+                'step'            => 'open_merchants'
+            ]);
+
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                'type'            => Constants::PAYMENTS_ESCALATION,
+                'reason'          => Constants::NO_MERCHANTS_FOUND,
+                'step'            => 'open_merchants',
+            ]);
+
+            return;
+        }
+        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => Constants::PAYMENTS_ESCALATION,
+            'step'            => 'open_merchants'
+        ]);
+
+        $queryResponse = $this->fetchQueryResponseForMerchantsGMVList($merchantIdList);
+
+        if (empty($queryResponse) === true)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'type'   => Constants::PAYMENTS_ESCALATION,
+                'reason' => 'no merchants found',
+                'step'   => Constants::TRANSACTED_MERCHANTS
+            ]);
+
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                'type'   => Constants::PAYMENTS_ESCALATION,
+                'reason' => Constants::NO_MERCHANTS_FOUND,
+                'step'   => Constants::TRANSACTED_MERCHANTS
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+            'merchants_count' => count($queryResponse),
+            'type'            => Constants::PAYMENTS_ESCALATION,
+            'step'            => Constants::TRANSACTED_MERCHANTS
+        ]);
+
+        $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
+
+        $merchantsGMVList = array_column($queryResponse, "amount", Entity::MERCHANT_ID);
 
         // these banking org merchants need custom escalation matrix so can't escalate for them in this flow
         // another cron handlePaymentEscalationsForBankingOrg is handling escalation for these merchants
@@ -837,6 +848,10 @@ class Core extends Base\Core
                     'type'        => Constants::PAYMENTS_ESCALATION,
                     'exception'   => $e->getMessage()
                 ]);
+
+                $this->trace->count(Metric::ESCALATION_ATTEMPT_FAIL_COUNT, [
+                    'type'        => Constants::PAYMENTS_ESCALATION,
+                ]);
             }
         }
 
@@ -844,6 +859,10 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
                 'skippedMerchants' => $skippedMerchants,
+                'type'             => Constants::PAYMENTS_ESCALATION,
+            ]);
+
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
                 'type'             => Constants::PAYMENTS_ESCALATION,
             ]);
         }
@@ -866,6 +885,8 @@ class Core extends Base\Core
             $lastCronTime = $this->getLastCronTime(Constants::escalationsParamsMap[$escalationType][Constants::KEY])
                 - Constants::escalationsParamsMap[$escalationType][Constants::INTERVAL];
 
+            $flowType = Constants::PAYMENTS_ESCALATION;
+
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
                 'last_cron_time' => $lastCronTime,
                 'type'           => $escalationType,
@@ -887,13 +908,19 @@ class Core extends Base\Core
             ];
 
             // fetch all merchants count who've atleast breached lowest payments threshold
-            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
 
             if (empty($queryResponse) === true)
             {
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
                     'type'            => $escalationType . '_timebound',
                     'reason'          => 'no merchants found',
+                    'step'            => 'transacted_merchants_count'
+                ]);
+
+                $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                    'type'            => $escalationType . '_timebound',
+                    'reason'          => Constants::NO_MERCHANTS_FOUND,
                     'step'            => 'transacted_merchants_count'
                 ]);
 
@@ -919,14 +946,20 @@ class Core extends Base\Core
             ];
 
             // fetch all merchants who've atleast breached lowest payments threshold
-            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType);
 
             if (empty($queryResponse) === true)
             {
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
                     'type'            => $escalationType . '_timebound',
                     'reason'          => 'no merchants found',
-                    'step'            => 'transacted_merchants'
+                    'step'            => Constants::TRANSACTED_MERCHANTS
+                ]);
+
+                $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                    'type'            => $escalationType . '_timebound',
+                    'reason'          => Constants::NO_MERCHANTS_FOUND,
+                    'step'            => Constants::TRANSACTED_MERCHANTS
                 ]);
 
                 return [null, null];
@@ -935,7 +968,7 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
                 'query_response_count' => count($queryResponse),
                 'type'            => $escalationType . '_timebound',
-                'step'            => 'transacted_merchants'
+                'step'            => Constants::TRANSACTED_MERCHANTS
             ]);
 
             $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
@@ -959,6 +992,12 @@ class Core extends Base\Core
                 'step'            => 'open_merchants'
             ]);
 
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_SKIP_COUNT, [
+                'type'            => $escalationType,
+                'reason'          => Constants::NO_MERCHANTS_FOUND,
+                'step'            => 'open_merchants'
+            ]);
+
             return [null, null];
         }
 
@@ -975,7 +1014,7 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
                 'type'   => $escalationType,
                 'reason' => 'no merchants found',
-                'step'   => 'transacted_merchants'
+                'step'   => Constants::TRANSACTED_MERCHANTS
             ]);
 
             return [null, null];
@@ -984,7 +1023,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
             'merchants_count' => count($queryResponse),
             'type'            => $escalationType,
-            'step'            => 'transacted_merchants'
+            'step'            => Constants::TRANSACTED_MERCHANTS
         ]);
 
         $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
@@ -1056,6 +1095,8 @@ class Core extends Base\Core
                   having amount > %s
                   limit %s";
 
+        $flowType = Constants::PAYMENTS_ESCALATION;
+
         $merchantIds = "'" . implode("','", $merchantIdList) . "'";
 
         $threshold = Constants::LOWEST_PAYMENTS_THRESHOLD;
@@ -1070,7 +1111,7 @@ class Core extends Base\Core
             'backend' => 'startree',
         ];
 
-        $queryResponse = $this->app['eventManager']->getDataFromPinot($content) ?? [];
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType) ?? [];
 
         $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
             'type'                          => 'payments_escalation',
@@ -1092,6 +1133,8 @@ class Core extends Base\Core
     private function fetchHybridQueryResponseForMerchantsGMVListFromPinotAndDataLake($merchantIdList)
     {
         date_default_timezone_set('Asia/Kolkata');
+
+        $flowType = Constants::PAYMENTS_ESCALATION;
 
         $retentionPeriod = strtotime('-' . Constants::RETENTION_PERIOD . ' days', strtotime('midnight'));
 
@@ -1118,7 +1161,7 @@ class Core extends Base\Core
             'backend' => 'startree',
         ];
 
-        $pinotQueryResponse = $this->app['eventManager']->getDataFromPinot($content) ?? [];
+        $pinotQueryResponse = $this->app['eventManager']->getDataFromPinot($content, flowType: $flowType) ?? [];
 
         $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
             'type'                          => 'payments_escalation',
@@ -1652,8 +1695,12 @@ class Core extends Base\Core
         {
             $this->trace->error(TraceCode::INSTANT_ACTIVATION_V2_APIS_ESCALATION_FAILURE, [
                 'merchant_id' => $merchantId,
-                'type'        => 'instant_activation_v2_api_webhook_alert',
+                'type'        => Constants::INSTANT_ACTIVATION_V2_API_WEBHOOK_ALERT,
                 'exception'   => $e->getMessage()
+            ]);
+
+            $this->trace->count(Metric::ESCALATION_ATTEMPT_FAIL_COUNT, [
+                'type'        => Constants::INSTANT_ACTIVATION_V2_API_WEBHOOK_ALERT,
             ]);
         }
     }

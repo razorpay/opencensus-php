@@ -22,6 +22,7 @@ use RZP\Models\Card\Network;
 use RZP\Constants\Entity as E;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Emi\PaylaterProvider;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use RZP\Models\Payment\Processor\Wallet;
@@ -1626,6 +1627,27 @@ class MethodsTest extends TestCase
         $this->assertTrue($merchantMethods->isInAppCreditCardEnabled());
     }
 
+    public function testEnableInAppAutopay()
+    {
+        $this->testInAppUPI();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'in_app_autopay' => 1,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isInAppAutopayEnabled());
+    }
 
     public function testEnableInAppCreditLine()
     {
@@ -1653,11 +1675,14 @@ class MethodsTest extends TestCase
     {
         $this->testEnableInAppCreditCard();
 
+        $this->testEnableInAppAutopay();
+
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
             'convertContentToString' => false,
             'content' => [
+                'in_app_autopay' => 0,
                 'in_app_credit_card' => 0,
                 'in_app' => 0
             ],
@@ -1671,6 +1696,7 @@ class MethodsTest extends TestCase
 
         $this->assertFalse($merchantMethods->isInAppEnabled());
         $this->assertFalse($merchantMethods->isInAppCreditCardEnabled());
+        $this->assertFalse($merchantMethods->isInAppAutopayEnabled());
     }
 
     public function testEnableTrustlyForMerchant()
@@ -2246,6 +2272,235 @@ class MethodsTest extends TestCase
         $this->assertTrue($merchantMethods->isCcOnUpiEnabled());
         $this->assertTrue($merchantMethods->isWalletOnUpiEnabled());
         $this->assertTrue($merchantMethods->isCreditlineOnUpiEnabled());
+    }
+
+    public function testEnableAlipay()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isAlipayEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'alipay' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::ALIPAY]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::ALIPAY]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::ALIPAY]);
+    }
+
+    public function testEnableGopay()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isGopayEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'gopay' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::GOPAY]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::GOPAY]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::GOPAY]);
+    }
+
+    public function testEnableOvo()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isOvoEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'ovo' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::OVO]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::OVO]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::OVO]);
+    }
+
+    public function testEnableDoku()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isDokuEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'doku' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::DOKU]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::DOKU]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::DOKU]);
+    }
+
+    public function testEnableLinkaja()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isLinkajaEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'linkaja' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::LINKAJA]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::LINKAJA]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::LINKAJA]);
+    }
+
+    public function testEnablePPROPaylaterProvider()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'paylater' => '1'
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'paylater_providers' => [
+                    'getsimpl' => "0",
+                    'lazypay' => "1",
+                    'icic' => "1",
+                    'hdfc'  => "0",
+                    'amazonpay' => 0,
+                    'klarna' => "1",
+                    'zip'   => "1"
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertEquals([
+            'getsimpl' => 0,
+            'lazypay' => 1,
+            'icic' => 1,
+            'hdfc'  => 0,
+            'amazonpay' => 0,
+            'rzpx_postpaid' => 0,
+            'zip' => 1,
+            'klarna' => 1,
+        ], array_slice($merchantMethods->getPaylaterProviders(), 0, 8));
     }
 
 }

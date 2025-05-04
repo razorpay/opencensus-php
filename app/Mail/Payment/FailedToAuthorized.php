@@ -4,6 +4,8 @@ namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\EmailHelper;
+use RZP\Trace\TraceCode;
 
 class FailedToAuthorized extends Base
 {
@@ -70,6 +72,17 @@ class FailedToAuthorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $data = $this->data;
+
+        $traceData = [
+            'merchant_id' => $data['merchant']['id'],
+            'view' => $this->view,
+            'data' => $data
+        ];
+
+        $app = \App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_FAILED_TO_AUTHORIZED , $traceData);
         return true;
     }
 
@@ -162,5 +175,4 @@ class FailedToAuthorized extends Base
 
         return $storkParams;
     }
-
 }

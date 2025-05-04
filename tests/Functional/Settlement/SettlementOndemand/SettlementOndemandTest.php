@@ -9,6 +9,7 @@ use Config;
 use Mockery;
 use DateTime;
 use Carbon\Carbon;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandFundAccount;
 use RZP\Models\Settlement\OndemandFundAccount\Core;
 use RZP\Models\Settlement\OndemandFundAccount\Service;
 use RZP\Services\Mock;
@@ -1626,47 +1627,67 @@ class SettlementOndemandTest extends TestCase
 
     }
 
-    public function testFundAccountCreationOnEsOndemandAssigning()
-    {
-        $this->ba->adminAuth(MODE::TEST);
-
-        $this->startTest();
-
-        $fundAccount = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, true);
-
-        $this->assertArraySelectiveEquals([
-            //                'id'                => 'sodfa_F03SCl1YK4UC6B',
-                        'merchant_id'      => '10000000000000',
-                        'contact_id'       => 'cont_EuNd0bPmYkIOfL',
-                        'fund_account_id'  => 'fa_EuNd48DKKaIlcV',
-            //                'created_at'        => 1591602865
-                    ], $fundAccount);
-    }
-
     public function testFundAccountUpdationOnBankAccountEdit()
     {
         $this->ba->adminAuth(MODE::TEST);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
 
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
+        $this->app->instance('razorpayXClient', $payoutsMock);
+        $payoutsMock->allows('createFundAccount')
+            ->andReturns(['id'=>'fundacc_1234567890']);
+
+        $splitzResp = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        ["key" => "dual_write", "value" => "off"],
+                        ["key" => "read", "value"=>"off"]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
         $bankAccountId = $this->bankAccount->getId();
 
-        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $bankAccountId,]);
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $bankAccountId]);
 
         $this->startTest();
 
-        $fundAccount = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, true);
+        $fundAccountTestMode = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, true, Mode::TEST);
+        $fundAccountLiveMode = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, true, Mode::LIVE);
 
-        $this->assertNotEmpty($fundAccount['fund_account_id']);
-        $this->assertNotEmpty($fundAccount['contact_id']);
+        $this->assertNotEmpty($fundAccountTestMode['fund_account_id']);
+        $this->assertNotEmpty($fundAccountTestMode['contact_id']);
+
+        $this->assertNotEmpty($fundAccountLiveMode['fund_account_id']);
+        $this->assertNotEmpty($fundAccountLiveMode['contact_id']);
 
         $this->assertArraySelectiveEquals([
-            //                'id'                => 'sodfa_F03SCl1YK4UC6B',
                         'merchant_id'      => '10000000000000',
-                        // 'contact_id'       => 'cont_EwjVv4aprYdlR5',
-                        // 'fund_account_id'  => 'fa_EuNd48DKKaIlcV',
-            //                'created_at'        => 1591602865
-                    ], $fundAccount);
+                         'contact_id'       => 'cont_EwjVv4aprYdlR5',
+                         'fund_account_id'  => 'fundacc_1234567890',
+                    ], $fundAccountTestMode);
+
+        $this->assertArraySelectiveEquals([
+                        'merchant_id'      => '10000000000000',
+                         'contact_id'       => 'cont_EwjVv4aprYdlR5',
+                         'fund_account_id'  => 'fundacc_1234567890',
+                    ], $fundAccountLiveMode);
     }
 
     public function testOndemandFeatureWithoutRequiredPermission()
@@ -4859,14 +4880,14 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                    => '10000000000000',
             'user_id'                        => null,
             'amount'                         => 1000000,
-            'total_amount_settled'           => 0,
+            'total_amount_settled'           => 1000000,
             'total_fees'                     => 0,
             'total_tax'                      => 0,
             'total_amount_reversed'          => 0,
-            'total_amount_pending'           => 1000000,
+            'total_amount_pending'           => 0,
             'max_balance'                    => false,
             'currency'                       => 'INR',
-            'status'                         => 'initiated',
+            'status'                         => 'processed',
             'transaction_type'               => 'transaction',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
@@ -5006,14 +5027,14 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                    => '10000000000000',
             'user_id'                        => null,
             'amount'                         => 1000000,
-            'total_amount_settled'           => 0,
+            'total_amount_settled'           => 1000000,
             'total_fees'                     => 0,
             'total_tax'                      => 0,
             'total_amount_reversed'          => 0,
-            'total_amount_pending'           => 1000000,
+            'total_amount_pending'           => 0,
             'max_balance'                    => false,
             'currency'                       => 'INR',
-            'status'                         => 'initiated',
+            'status'                         => 'processed',
             'transaction_type'               => 'transaction',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
@@ -5843,6 +5864,288 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
+    public function verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch($capitalResponse = null, $dataToReplace = null, $ledgerMockTimes = 2, $experimentValue = 'active', $mockBalanceFetch = true)
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 100,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 750000,
+            'pricing_percent'             => 50,
+            'es_pricing_percent'          => 25,
+        ]);
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+        Carbon::setTestNow($bankingHour);
+
+        $mockLedger = Mockery::mock(Ledger::class)->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->expects('fetchAccountsByEntitiesAndMerchantID')
+                   ->times($ledgerMockTimes)
+                   ->andReturns([
+                                   "body" => [
+                                       "accounts"  => [
+                                           [
+                                               "id"                => "sampleAccountID",
+                                               "name"              => "test name",
+                                               "status"            => "ACTIVATED",
+                                               "balance"           => "10000.000000",
+                                               "min_balance"       => "0.000000",
+                                               "merchant_id"       => "sampleMerchant",
+                                               "created_at"        => "1634027277",
+                                               "updated_at"        => "1634027277",
+                                               "entities"          => [
+                                                   "account_type"      => ["payable"],
+                                                   "fund_account_type" => ["merchant_balance"]
+                                               ]
+                                           ]
+                                       ]
+                                   ]
+                               ]
+                   );
+
+        $this->mockGetFeatureConfigCallFromCapitalEs(false, $mockBalanceFetch, $capitalResponse);
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->withArgs(function ($request)
+            {
+                $this->assertEquals([
+                    'id'            => '10000000000000',
+                    'experiment_id' => env('IS_BALANCE_SEPARATION_EXPERIMENT_ID'),
+                    'request_data'  => json_encode([
+                        'mid'   => '10000000000000'
+                    ])
+                ],$request);
+
+                return true;
+            })
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' => $experimentValue,
+                    ]
+                ]
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOndemandInternalPgLedgerReverseShadow'];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceExists_NoError()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance exists, upto entire capital balance can be settled.
+         * Here we are trying to settle 10000, and 10000 can be settled.
+         */
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [
+                'items' => [
+                    [
+                        'derived_balance' => 10000,
+                    ]
+                ]
+            ],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 10000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 10000,
+                        'fees'                  => 236,
+                        'tax'                   => 36,
+                        'amount_pending'        => 9764,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ]);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceExists_Error()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance exists, upto entire capital balance can be settled.
+         * Here we are trying to settle 20000, and 10000 can be settled.
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [
+                'items' => [
+                    [
+                        'derived_balance' => 10000,
+                    ]
+                ]
+            ],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 20000,
+                    ]
+                ]
+            ], 1);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceOnHold()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance is on hold, no settlement can be done. Here, the capital balance is on hold
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [
+                'items' => [
+                    [
+                        'derived_balance' => 20000,
+                        'on_hold' => true
+                    ]
+                ]
+            ],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 1000,
+                    ]
+                ]
+            ], 1);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceNotFound_NoError()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance does not exist, settlement can be done upto the Ledger Balance. Here,
+         * the ledger balance is 10000, and we are trying to settle 1000.
+         */
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 1000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 1000,
+                        'fees'                  => 24,
+                        'tax'                   => 4,
+                        'amount_pending'        => 976,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ],
+            2, 'inactive', false
+        );
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceNotFound_Error()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance does not exist, settlement can be done upto the Ledger Balance. Here,
+         * the ledger balance is 10000, and we are trying to settle 20000.
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 20000,
+                    ]
+                ]
+            ], 1);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_BalanceSeparationExperimentDisabled_NoError()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance separation experiment is disabled, settlement can be done upto Ledger Balance.
+         * Here we are trying to settle 10000, and 10000 can be settled.
+         */
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 10000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 10000,
+                        'fees'                  => 236,
+                        'tax'                   => 36,
+                        'amount_pending'        => 9764,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ], 2, 'inactive', false);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_BalanceSeparationExperimentDisabled_Error()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance separation experiment is disabled, settlement can be done upto Ledger Balance.
+         * Here we are trying to settle 20000, and 10000 can be settled.
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 20000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 10000,
+                        'fees'                  => 236,
+                        'tax'                   => 36,
+                        'amount_pending'        => 9764,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ], 1, 'inactive', false);
+    }
+
     public function testOndemandFeesPgLedgerReverseShadow()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
@@ -6178,7 +6481,100 @@ class SettlementOndemandTest extends TestCase
         $this->assertNull($fundAccount->fund_account_id);
     }
 
-    private function mockGetFeatureConfigCallFromCapitalEs($enabled = true)
+    public function testMakePayoutRequest()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $odsPayout = $this->getDbLastEntity('settlement.ondemand_payout', Mode::LIVE);
+
+        $this->fixtures->create('settlement.ondemand_fund_account',
+            ['contact_id' => 'cont_1234567890', 'merchant_id'=>$this->merchantDetail['merchant_id'], 'fund_account_id'  => null]);
+
+        $splitzResp = [
+            "response" => ["variant" => ["variables" => [["key" => "read", "value" => "off"], ["key" => "dual_write", "value" => "off"], ["key"=>"write", "value"=>"off"]]]]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
+        $this->app->instance('razorpayXClient', $payoutsMock);
+
+        $payoutsMock->allows('createContact')
+            ->andReturns(['id'=>'cont_1234567890']);
+
+        $payoutsMock->allows('createFundAccount')
+            ->andReturns(['id'=>'fundacc_1234567890']);
+
+        $payoutsMock->allows('makePayoutRequest')
+            ->andReturns(['id'=>'pout_1234567890']);
+
+        [,$payoutId,] = (new OndemandPayout\Core)->makePayoutRequest($odsPayout->getId(), "INR");
+
+        $this->assertEquals('pout_1234567890', $payoutId);
+
+        $fundAccount = $this->getDbLastEntity('settlement.ondemand_fund_account', Mode::LIVE);
+        $this->assertEquals('fundacc_1234567890', $fundAccount->fund_account_id);
+        $this->assertEquals('cont_1234567890', $fundAccount->contact_id);
+    }
+
+    public function testMakePayoutRequest_FundAccountExists()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $odsPayout = $this->getDbLastEntity('settlement.ondemand_payout', Mode::LIVE);
+
+        $this->fixtures->create('settlement.ondemand_fund_account', [
+            'merchant_id'=> $this->merchantDetail['merchant_id'],
+        ]);
+
+        $splitzResp = [
+            "response" => ["variant" => ["variables" => [["key" => "read", "value" => "off"], ["key" => "dual_write", "value" => "off"], ["key"=>"write", "value"=>"off"]]]]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fund_account_from_capital_es_experiment_id');
+        $splitzMock->allows('evaluateRequest')
+            ->zeroOrMoreTimes()
+            ->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))
+            ->andReturns($splitzResp);
+
+        $payoutsMock = Mockery::mock(\RZP\Services\RazorpayXClient::class, [$this->app])->makePartial();
+        $this->app->instance('razorpayXClient', $payoutsMock);
+
+        $payoutsMock->allows('makePayoutRequest')
+            ->andReturns(['id'=>'pout_1234567890']);
+
+        [,$payoutId,] = (new OndemandPayout\Core)->makePayoutRequest($odsPayout->getId(), "INR");
+
+        $this->assertEquals('pout_1234567890', $payoutId);
+    }
+
+    private function mockGetFeatureConfigCallFromCapitalEs($enabled = true, $mockBalanceFetch = false, $balanceFetchResponse = null)
     {
         $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
         $this->app->instance('capital_early_settlements', $capitalEsMock);
@@ -6203,6 +6599,12 @@ class SettlementOndemandTest extends TestCase
                     ]
                 ]
             );
+
+        if ($mockBalanceFetch)
+        {
+            $capitalEsMock->allows('getMerchantBalanceByType')
+                ->andReturns($balanceFetchResponse);
+        }
     }
 
     private function createOndemandSettlement(bool $mockWebhhok)

@@ -57,6 +57,8 @@ class RecoveryMethod
         Gateway::UPI_JUSPAY,
         Gateway::UPI_RZPAPB,
         Gateway::UPI_MINDEED,
+        Gateway::UPI_RZPAXIS,
+        Gateway::OPTIMIZER_RAZORPAY
     ];
 
     const WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [

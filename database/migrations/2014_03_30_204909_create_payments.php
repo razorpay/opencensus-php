@@ -304,6 +304,8 @@ class CreatePayments extends Migration
 
             $table->string(Payment::DeviceId)
                 ->nullable();
+            $table->string(Payment::STORE_ID)
+                ->nullable();
 
             $table->index(Payment::STATUS);
             $table->index(Payment::WALLET);

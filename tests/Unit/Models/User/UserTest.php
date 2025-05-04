@@ -4,6 +4,8 @@ namespace Tests\Unit\Models\User;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Services\RazorXClient;
 use Tests\Unit\TestCase;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Core;
@@ -24,6 +26,9 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use Illuminate\Support\Facades\Request;
+use RZP\Models\User\Product;
+use RZP\Models\User\Role;
 
 class UserTest extends TestCase
 {
@@ -213,13 +218,44 @@ class UserTest extends TestCase
 
         $mailMock->shouldReceive('queue')->withAnyArgs()->andReturn([]);
 
+        $this->mockSplitzForUslCreateUserAndMerchantDetails();
+
+        $this->mockSalesforceRequestForUslCreateUserAndMerchantDetails();
+
         $response = $this->userService->register($content['userData']);
 
         $this->assertEquals($content['userData']['name'], $response['name']);
 
         $this->assertEquals($content['userData']['email'], $response['email']);
     }
-    
+
+    protected function mockSalesforceRequestForUslCreateUserAndMerchantDetails(): void
+    {
+        $this->salesforceMock = \Mockery::mock('RZP\Services\SalesForceClient', $this->app)->makePartial();
+
+        $this->salesforceMock->shouldReceive('sendUslCreateUserAndMerchantDetails')->withAnyArgs();
+
+        $this->app['salesforce'] = $this->salesforceMock;
+    }
+
+    protected function mockSplitzForUslCreateUserAndMerchantDetails(): void
+    {
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->splitzMock = \Mockery::mock('RZP\Services\SplitzService', $this->app)->makePartial();
+
+        $this->splitzMock->shouldReceive('evaluateRequest')->andReturn($output);
+
+        $this->app['splitzService'] = $this->splitzMock;
+    }
+
     public function testCreate()
     {
         $content = [
@@ -773,6 +809,10 @@ class UserTest extends TestCase
         $this->m2mReferralServiceMock->shouldReceive('extractFriendBuyParams')->andReturn([]);
 
         $this->m2mReferralServiceMock->shouldReceive('sendSignUpEventIfApplicable')->andReturn(true);
+
+        $this->mockSplitzForUslCreateUserAndMerchantDetails();
+
+        $this->mockSalesforceRequestForUslCreateUserAndMerchantDetails();
 
         $response = $this->userService->register($content['userData']);
 
@@ -3194,6 +3234,123 @@ class UserTest extends TestCase
         $this->assertEquals($response[0]['banking_role'], 'owner');
     }
 
+    public function testSelectMerchantsToLogin()
+    {
+        $core = new Core();
+
+        // Test data: array of merchants with different roles for different products
+        $userMerchants = [
+            [
+                'id' => '100001Razorpay',
+                'role' => 'owner',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100002Razorpay',
+                'role' => 'owner',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ],
+            [
+                'id' => '100004Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'support',
+                'product' => 'banking'
+            ],
+            [
+                'id' => '100005Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'support',
+                'product' => 'primary'
+            ]
+        ];
+
+        // Test case 1: Select merchants for primary product
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, 'primary');
+
+        // Should select the merchant where user has owner role for primary product
+        $this->assertCount(2, $selectedMerchants);
+        $this->assertEquals('100001Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('owner', $selectedMerchants[0]['role']);
+
+        // Test case 2: Select merchants for banking product
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, 'banking');
+
+        // Should select the merchant where user has owner role for banking product
+        $this->assertCount(1, $selectedMerchants);
+        $this->assertEquals('100003Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('owner', $selectedMerchants[0]['banking_role']);
+
+        // Test data: array of merchants with different roles for different products
+        $userMerchants = [
+            [
+                'id' => '100001Razorpay',
+                'role' => 'support',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100002Razorpay',
+                'role' => 'operation',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ]
+        ];
+        // Test case 3: Select merchants when product is not provided
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, '');
+        $this->assertCount(1, $selectedMerchants);
+        $this->assertEquals('100003Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('owner', $selectedMerchants[0]['banking_role']);
+
+
+        // Test data: array of merchants with different roles for different products
+        $userMerchants = [
+            [
+                'id' => '100001Razorpay',
+                'role' => 'support',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100002Razorpay',
+                'role' => 'operation',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => null,
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => '',
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ]
+        ];
+
+        // Test case 4: Select merchants when product is provided no owner
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, 'primary');
+        $this->assertCount(2, $selectedMerchants);
+        $this->assertEquals('100001Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('support', $selectedMerchants[0]['role']);
+    }
+
     public function testSendOtpViaSmsAndEmail()
     {
         $this->coreMock->shouldReceive('generateOtpFromRaven')->andReturn(['token' => '25521']);
@@ -3608,6 +3765,113 @@ class UserTest extends TestCase
 
         $this->assertEquals($response, false);
     }
+
+    public function testGetStorkPayloadOwnerId()
+    {
+        $inputString = '8ed38ecc-0a13-4a0e-a8e5-1856cc4dc26f';
+
+        $inputString = str_replace('-', '', $inputString);
+
+        $expectedResponse = '4LVak1IsoBlLJf';
+
+        $response = $this->coreMock->getStorkPayloadOwnerId($inputString);
+
+        $this->assertEquals($response, $expectedResponse);
+
+    }
+
+    public function testGetStorkLoginSignupPayloadAbUserIdExperimentDisable()
+    {
+        $input = [
+            'contact_mobile' => '9999999999',
+            'action' => 'signup_otp_v2'
+        ];
+
+        $otp = [
+            'otp' => '000007',
+            'expires_at' => Carbon::now()->addMinutes(30)->getTimestamp()
+        ];
+
+        $headers = [
+            'x-ab-user-id' => [
+                '8ed38ecc-0a13-4a0e-a8e5-1856cc4dc26f'
+            ]
+        ];
+
+        $experimentName = 'ab_user_id_experiment';
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('off');
+
+        $this->basicAuthMock->shouldReceive('getOrgId')->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        Request::shouldReceive('header')
+            ->andReturn($headers);
+
+        $this->coreMock->shouldReceive('getSplitzResponse')
+            ->with($headers['x-ab-user-id'][0], $experimentName)
+            ->andReturn('');
+
+        $payload = $this->coreMock->getStorkLoginSignupPayload($input, $otp);
+
+        $this->assertEquals($payload['ownerId'], '1000000000');
+
+    }
+
+    public function testGetStorkLoginSignupPayloadAbUserIdExperimentEnable()
+    {
+        $input = [
+            'contact_mobile' => '9999999999',
+            'action' => 'signup_otp_v2'
+        ];
+
+        $otp = [
+            'otp' => '000007',
+            'expires_at' => Carbon::now()->addMinutes(30)->getTimestamp()
+        ];
+
+        $headers = [
+            'x-ab-user-id' => [
+                '8ed38ecc-0a13-4a0e-a8e5-1856cc4dc26f'
+            ]
+        ];
+
+        $experimentName = 'ab_user_id_experiment';
+
+        $this->basicAuthMock->shouldReceive('getOrgId')->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('off');
+
+        Request::shouldReceive('header')
+            ->andReturn($headers);
+
+        $this->coreMock->shouldReceive('getSplitzResponse')
+            ->with($headers['x-ab-user-id'][0], $experimentName)
+            ->andReturn('enable');
+
+        $this->coreMock->shouldReceive('getStorkPayloadOwnerId')
+            ->with($headers['x-ab-user-id'][0])
+            ->andReturn('4LVak1IsoBlLJf');
+
+        $payload = $this->coreMock->getStorkLoginSignupPayload($input, $otp);
+
+        $this->assertEquals($payload['ownerId'], '4LVak1IsoBlLJf');
+
+    }
+
 }
-
-

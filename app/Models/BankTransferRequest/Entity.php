@@ -310,6 +310,7 @@ class Entity extends Base\PublicEntity
             case 'bank_transfer_process_axis_internal':
             case 'bank_transfer_process_icici_internal':
             case 'bank_transfer_process_yesbank_internal':
+            case 'bank_transfer_process_idfc_internal':
                 $requestSource = [
                     'source'        => 'file',
                     'request_from'  => 'bank',

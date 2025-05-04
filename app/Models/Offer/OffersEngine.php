@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Order\OrderMeta\CartInfo\Fields as CartInfoFields;
 
 class OffersEngine extends Base\Core
 {
@@ -283,10 +284,16 @@ class OffersEngine extends Base\Core
                 Constants::SPEC     => $this->getOffersEngineSpec($offer, $subscriptionInput, $tenureDiscountMap, $input),
             ];
 
-        return [
+        $request = [
             Constants::OFFER => $offersEngineRequest,
             Constants::PUBLISH => $this->getOfferChannelProperties($offer),
         ];
+        if (isset($input[Entity::RULES]) && !empty($input[Entity::RULES]))
+        {
+            $request[Constants::RULES] = $input[Entity::RULES];
+        }
+
+        return $request;
     }
 
     private function getOffersEngineMetadata(Entity $offer): array
@@ -361,15 +368,18 @@ class OffersEngine extends Base\Core
             ],
         ];
 
-        $spec[Constants::BENEFITS_TYPES] = [$this->getOfferSpecBenefitType($offer)];
 
         $spec[Constants::USAGE_LIMITS] = $this->getUsageLimits($offer);
 
-        $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer,
-            $tenureDiscountMap,
-            $subscriptionInput,
-            $spec[Constants::BENEFITS_TYPES][0],
-            $input);
+        if (!isset($input[Constants::RULES]))
+        {
+            $spec[Constants::BENEFITS_TYPES] = [$this->getOfferSpecBenefitType($offer)];
+            $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer,
+                                                             $tenureDiscountMap,
+                                                             $subscriptionInput,
+                                                             $spec[Constants::BENEFITS_TYPES][0],
+                                                             $input);
+        }
 
         return $spec;
     }
@@ -1387,13 +1397,24 @@ class OffersEngine extends Base\Core
         try
         {
             $fact = $this->buildValidateFact(!empty($offer->getMaxPaymentCount()), $cardIin, $intentToSaveCard);
-
-            // adding skip_whitelisting attribute to bypass the whiteisting for dummy details
-            $response = $this->app['offers_engine']->validateOffer($merchantId, [
+            $request = [
                 'offer_id' => $offer->getPublicId(),
                 'fact' => $fact,
                 'skip_whitelisting'=> $isDummyPayment,
-            ]);
+            ];
+            if ($payment->isEmi() && $payment->emiPlan != null) {
+                $request['emi_plan'] = [
+                    'issuer' => $payment->emiPlan->getBank(),
+                    'network' => $payment->emiPlan->getNetwork(),
+                    'rate'=> $payment->emiPlan->getRate(),
+                    'duration' => $payment->emiPlan->getDuration(),
+                    'min_amount' => $payment->emiPlan->getMinAmount(),
+                    'merchant_payback' => $payment->emiPlan->getMerchantPayback(),
+                    'type' => $payment->emiPlan->getType(),
+                ];
+            }
+            // adding skip_whitelisting attribute to bypass the whiteisting for dummy details
+            $response = $this->app['offers_engine']->validateOffer($merchantId, $request);
             return $response;
         }
         catch (\Exception $exception)
@@ -1426,8 +1447,15 @@ class OffersEngine extends Base\Core
         // ORDER
         $fact[Constants::ORDER_FACT] = [
             Constants::ORDER_TOTAL_AMOUNT => $this->order->getAmount(),
-            Constants::ORDER_CURRENCY  => 'INR', // setting default INR as API offers does not have currency
+            Constants::ORDER_CURRENCY     => 'INR', // setting default INR as API offers does not have currency
+            Constants::ORDER_CREATED_AT   => $this->order->getCreatedAt(),
         ];
+
+        $skuData = $this->getSKUDataFromOrder();
+        if (!empty($skuData))
+        {
+            $fact[Constants::PRODUCT] = $skuData;
+        }
 
         $method = $this->payment->getMethod();
 
@@ -1504,6 +1532,14 @@ class OffersEngine extends Base\Core
             ];
         }
 
+        if (($this->isDummyPayment === true) and
+            (isset($fact[Constants::SUBSCRIPTION_FACT]) === false))
+        {
+            $fact[Constants::SUBSCRIPTION_FACT] = [
+                SubscriptionOfferEntity::NO_OF_CYCLES => 1,
+            ];
+        }
+
         return $fact;
     }
 
@@ -1537,5 +1573,86 @@ class OffersEngine extends Base\Core
         $core = new Core();
 
         return $core->getParValue($this->payment, $this->isDummyPayment);
+    }
+
+    public function validateOfferForOrder(string $merchantId, Order\Entity $order, String $offerId)
+    {
+        $this->order = $order;
+
+        try
+        {
+            $fact = $this->buildValidateFactForOrder();
+
+            $response = $this->app['offers_engine']->validateOffer($merchantId, [
+                'offer_id' => $offerId,
+                'fact' => $fact,
+                'stage' => Constants::STAGE_DISCOVER,
+            ]);
+            return $response;
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::OFFERS_ENGINE_VALIDATE_OFFER_FAIL,
+                [
+                    'offer_id' => $offerId,
+                    'order_id' => $order->getId(),
+                    'route' => app('api.route')->getCurrentRouteName(),
+                ]);
+
+            $this->trace->traceException(
+                $exception,
+                Logger::ERROR,
+                TraceCode::OFFERS_ENGINE_VALIDATE_OFFER_FAIL, [
+                'exception' => $exception->getMessage(),
+            ]);
+
+            throw new Exception\ServerErrorException(
+                'Unable to process this request.', ErrorCode::SERVER_ERROR);
+        }
+    }
+
+    private function buildValidateFactForOrder(): array
+    {
+        $fact = array();
+
+        // ORDER
+        $fact[Constants::ORDER_FACT] = [
+            Constants::ORDER_TOTAL_AMOUNT => $this->order->getAmount(),
+            Constants::ORDER_CURRENCY     => 'INR', // setting default INR as API offers does not have currency
+            Constants::ORDER_CREATED_AT   => $this->order->getCreatedAt(),
+        ];
+
+        $fact[Constants::CUSTOMER_FACT] = [
+            Constants::CARD_NUMBER => Constants::DUMMY_PAYMENT_CARD_NUMBER
+        ];
+
+        $skuData = $this->getSKUDataFromOrder();
+        if (!empty($skuData))
+        {
+            $fact[Constants::PRODUCT] = $skuData;
+        }
+
+        return $fact;
+    }
+
+    private function getSKUDataFromOrder(): array
+    {
+        $skuData = [];
+        if ($this->order != null)
+        {
+            foreach ($this->order[CartInfoFields::ORDER_METAS] as $orderMeta)
+            {
+                if ($orderMeta[CartInfoFields::TYPE] !== CartInfoFields::CART_INFO)
+                {
+                    continue;
+                }
+                $skuData = [
+                    CartInfoFields::SKU_ID => $orderMeta[CartInfoFields::VALUE][CartInfoFields::LINE_ITEMS][0][CartInfoFields::LINE_ITEM_SKU] ?? null,
+                    CartInfoFields::SKU_PRICE => $orderMeta[CartInfoFields::VALUE][CartInfoFields::LINE_ITEMS][0][CartInfoFields::LINE_ITEM_PRICE] ?? null,
+                ];
+                break;
+            }
+        }
+        return $skuData;
     }
 }

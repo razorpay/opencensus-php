@@ -15,6 +15,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Jobs\ProcessCollectxTransfer;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
@@ -245,19 +246,7 @@ class Service extends Base\Service
         // Indusind Will handle Refund themselves
         if ($provider === Provider::INDUSIND)
         {
-            $valid  = $this->checkIfVirtualAccountIsPresent($input);
-
-            $this->trace->error(TraceCode::VIRTUAL_ACCOUNT_UNAVAILABLE, [
-                'input' => $input
-            ]);
-
-            if ($valid === false) {
-                throw new Exception\BadRequestValidationFailureException(
-                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE,
-                    $input
-                );
-            }
-
+            $this->processIblValidationRequest($input);
         }
 
 
@@ -382,6 +371,51 @@ class Service extends Base\Service
 
         return true;
     }
+
+    protected function processIblValidationRequest(array $input): void
+    {
+        $accountNumber = $input["payee_account"];
+        $ifsc = $input["payee_ifsc"];
+
+        $z5Code = substr($accountNumber, 0, 6); // Extract Z+5 code
+
+        // Validate if the merchant exists in Terminal entity using Z+5 code
+        $merchant = $this->repo->terminal->findMerchantIdByGatewayMerchantID($z5Code);
+
+        if ($merchant === null) {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND,
+                $input
+            );
+        }
+
+        if (!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true) {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+        }
+
+        (new Validator)->validateInput('validateDuplicateReq', array(Entity::AMOUNT => $input[Entity::AMOUNT],
+            Entity::REQ_UTR => $input[Entity::REQ_UTR],
+            Entity::PAYEE_ACCOUNT => $input[Entity::PAYEE_ACCOUNT]));
+
+
+        $duplicateBankTransfer = $this->repo->bank_transfer->findByUtrAndPayeeAccountAndAmount($input[Entity::REQ_UTR],
+            $input[Entity::PAYEE_ACCOUNT],
+            $input[Entity::AMOUNT] * 100);
+
+
+        if ($duplicateBankTransfer !== null) {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_DUPLICATE_BANK_TRANSFER_CALLBACK, $input);
+
+            }
+
+        $duplicateUtr = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR], true);
+
+        if ($duplicateUtr !== null) {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_DUPLICATE_UTR, $input);
+        }
+
+    }
+
 
     protected function checkForCollectXValidateRequestForUPI(array $input): bool
     {
@@ -1325,9 +1359,6 @@ class Service extends Base\Service
             ($routeName === 'bank_transfer_process_axis') or
             ($routeName === 'bank_transfer_process_axis_test') or
             ($routeName === 'bank_transfer_process_axis_internal') or
-            ($routeName === 'bank_transfer_process_ibl') or
-            ($routeName === 'bank_transfer_process_ibl_test') or
-            ($routeName === 'bank_transfer_process_ibl_internal') or
             ($routeName === 'bank_transfer_validate_idfc') or
             ($routeName === 'bank_transfer_process_idfc') or
             ($routeName === 'bank_transfer_validate_idfc_test') or
@@ -1359,9 +1390,6 @@ class Service extends Base\Service
                 if (($routeName === 'bank_transfer_process_axis') or
                     ($routeName === 'bank_transfer_process_axis_test') or
                     ($routeName === 'bank_transfer_process_axis_internal') or
-                    ($routeName === 'bank_transfer_process_ibl') or
-                    ($routeName === 'bank_transfer_process_ibl_test') or
-                    ($routeName === 'bank_transfer_process_ibl_internal') or
                     ($routeName === 'bank_transfer_validate_idfc') or
                     ($routeName === 'bank_transfer_process_idfc') or
                     ($routeName === 'bank_transfer_validate_idfc_test') or
@@ -1712,7 +1740,7 @@ class Service extends Base\Service
 
                     $mii = $this->updateBankAccountDetailsByVACurrency($merchantId, $mii, $va_currency, $enableAllCurrencies);
 
-                    $this->setMerchantProductInternationalPACB();
+                    $this->setMerchantProductInternationalPACB($merchantId);
 
                 }, 600,
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
@@ -1816,7 +1844,7 @@ class Service extends Base\Service
             try {
                 $bankAccount = $this->getFundingAccountDetailsByCurrency($request, $currency);
             } catch (\Exception $ex) {
-               // log the error, metric and continue
+                // log the error, metric and continue
                 $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
                     'merchant_id' => $merchantId,
                     'currency' => $currency,
@@ -1864,18 +1892,50 @@ class Service extends Base\Service
         return (new InternationalIntegration\Core)->editMerchantInternationalIntegrations($mii);
     }
 
+    /**
+     * @throws GatewayErrorException
+     */
     protected function getFundingAccountDetailsByCurrency($request, $va_currency)
     {
-        try {
-            $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
-        } catch (\Exception $ex) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
+        $retryCountRemaining = 3;
+        $funding_accounts = null;
+
+        while ($retryCountRemaining > 0 && $funding_accounts == null) {
+            try {
+                $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
+                $isFundingDetailsEmpty = empty($response['data']) || empty($response['data']['funding_accounts']);
+                $isFundingAccountNumberEmpty = true;
+                if (!$isFundingDetailsEmpty && isset($response['data']['funding_accounts'][0]['account_number'])) {
+                    $isFundingAccountNumberEmpty = empty($response['data']['funding_accounts'][0]['account_number']);
+                }
+
+                if ($isFundingDetailsEmpty || $isFundingAccountNumberEmpty) {
+                    // Response is again empty, retry as per retryLimit
+                    $this->trace->info(TraceCode::B2B_BANK_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                        'currency' => $va_currency
+                    ]);
+                } else {
+                    // Response is non-empty, so we can continue with normal flow
+                    $funding_accounts = $response['data']['funding_accounts'];
+                }
+            } catch (\Exception $ex) {
+                $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
+                    'currency' => $va_currency
+                ]);
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                    'currency' => $va_currency
+                ]);
+            }
+            $retryCountRemaining--;
+        }
+
+        if ($funding_accounts == null) {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
                 [
                     'error_data' => $ex->getData() ?? [],
                 ]);
         }
 
-        $funding_accounts = $response['data']['funding_accounts'];
 
         $virtualAccountDetails = [
             'account_number' => $funding_accounts[0]['account_number'],
@@ -1909,7 +1969,7 @@ class Service extends Base\Service
             'street' => $merchantDetail->getBusinessRegisteredAddress(),
             'city' => $merchantDetail->getBusinessRegisteredCity(),
             'state' => $merchantDetail->getBusinessRegisteredState(),
-            'country' => $merchantDetail->getBusinessRegisteredCountry() ?? "IN",
+            'country' => "IN",
             'pin' => $merchantDetail->getBusinessRegisteredPin(),
         ];
 
@@ -2079,6 +2139,11 @@ class Service extends Base\Service
                 if ($payment->getReference16() != null or
                     !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
                     ($addresses->isEmpty() === true)) {
+
+                    $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                        'flow' => TraceCode::B2B_TRANSFER_COMPLETION_PENDING,
+                    ]);
+
                     $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETION_PENDING, [
                         'payment_id' => $payment->getId(),
                         'payment_transfer_id' => $payment->getReference16(),
@@ -2121,6 +2186,11 @@ class Service extends Base\Service
                     'currency' => $response['data']['currency'],
                 ]);
             } catch (\Exception $ex) {
+
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                    'flow' => TraceCode::B2B_SETTLEMENT_TO_RZP_PARENT_ACCOUNT_FAILED,
+                ]);
+
                 $this->trace->traceException(
                     $ex,
                     null,
@@ -2331,19 +2401,42 @@ class Service extends Base\Service
                         'term_agreement' => "true",
                     ];
 
-                    $createConversionResponse = $this->app->mozart->sendMozartRequest('payments', $gateway, 'create_conversion', $createConversionRequest);
+                    try {
+                        $createConversionResponse = $this->app->mozart->sendMozartRequest('payments', $gateway, 'create_conversion', $createConversionRequest);
 
-                    if (!isset($createConversionResponse['data']['client_buy_amount']) || $createConversionResponse['data']['client_buy_amount'] < 1) {
+                        if (!isset($createConversionResponse['data']['client_buy_amount']) || $createConversionResponse['data']['client_buy_amount'] < 1) {
+                            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE, null, [
+                                'gateway' => Payment\Gateway::CURRENCY_CLOUD,
+                                'data' => $createConversionResponse['data'],
+                                'action' => "create_conversion",
+                            ]);
+                        }
+
+                        $createPaymentRequest['conversion_id'] = $createConversionResponse['data']['id'];
+                        $createPaymentRequest['amount'] = $createConversionResponse['data']['client_buy_amount'];
+
+                    } catch (\Exception $ex) {
+                        $this->trace->traceException(
+                            $ex,
+                            null,
+                            TraceCode::B2B_PAYMENTS_SETTLED_WITH_BANKING_PARTNER_FAILED,
+                            [
+                                'currency' => $currency,
+                                'settlement_currency' => $settlementCurrency,
+                                'error' => $ex->getMessage(),
+                            ]
+                        );
+
+                        $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_SETTLEMENT_CONVERT_CURRENCY_FAILED, [
+                            'sell_currency' => $currency,
+                            'action' => 'create_conversion',
+                        ]);
+
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE, null, [
                             'gateway' => Payment\Gateway::CURRENCY_CLOUD,
-                            'data' => $createConversionResponse['data'],
-                            'action' => "create_conversion",
+                            'action' => 'create_conversion',
                         ]);
                     }
-
-                    $createPaymentRequest['conversion_id'] = $createConversionResponse['data']['id'];
-                    $createPaymentRequest['amount'] = $createConversionResponse['data']['client_buy_amount'];
-
                 }
 
                 $this->app->mozart->sendMozartRequest('payments', $gateway, 'payment_create', $createPaymentRequest, 'v2');
@@ -2380,12 +2473,45 @@ class Service extends Base\Service
 
         $merchantId = $mii->getMerchantId();
 
+        $from =  Carbon::now('Asia/Kolkata')->subDays(30)->getTimestamp();
+        $to =  Carbon::now('Asia/Kolkata')->getTimestamp();
+
+        $paymentsWithSameRef = $this->repo->payment->getPaymentsDuplicateReferenceId(Constants\Entity::CURRENCY_CLOUD,
+            $merchantId, $input['related_entity_short_reference'], [Payment\Status::FAILED], $from, $to);
+
+        // if payment already exist , raise an alert and return don't create payment
+        if ($paymentsWithSameRef > 0) {
+            $this->trace->info(TraceCode::B2B_PAYMENT_ALREADY_EXISTS, [
+                'payment_request' => $input,
+                'merchant_id' => $merchantId,
+            ]);
+
+            // add an alert
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_DUPLICATE_PAYMENT, [
+                'reference_id' => $input['related_entity_short_reference'],
+            ]);
+
+            return [];
+        }
+
         $request = [
             'txn_id' => $input['related_entity_id'],
             'contact_id' => $mii->getReferenceId(),
         ];
 
         $response = $this->app->mozart->sendMozartRequest('payments', Constants\Entity::CURRENCY_CLOUD, 'get_sender_detail', $request);
+
+        if (!isset($response)) {
+            $this->trace->info(TraceCode::B2B_FUNDS_ARRIVED_NOTIFICATION_PROCESSING_FAILURE, [
+                'txn_id'     => $input['related_entity_id'],
+                'contact_id' => $mii->getReferenceId(),
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                'flow'        => TraceCode::B2B_FUNDS_ARRIVED_NOTIFICATION_PROCESSING_FAILURE,
+                'err_msg'     => "Gateway response is empty",
+            ]);
+        }
 
         $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
 
@@ -2400,6 +2526,18 @@ class Service extends Base\Service
         $reason = $input['reason'];
 
         if (isset($reason) === false || empty($reason) === true) {
+
+            $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
+                'reason' => $reason,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                [
+                    'flow' => TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE,
+                    'error_desc' => 'reason field is not present',
+                ]
+            ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED, null, [
                 'reason' => $input['reason'],
             ]);
@@ -2419,6 +2557,19 @@ class Service extends Base\Service
             ['type' => Address\Type::BILLING_ADDRESS]);
 
         if ($addresses->isEmpty() === true) {
+
+            $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
+                'payment_id' => $payment_id,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                [
+                    'flow' => TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE,
+                    'error_desc' => 'Address not present',
+                    'error_code' => 'BAD_REQUEST_ERROR',
+                ]
+            ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                 [
                     'error_desc' => 'Address not present',
@@ -2861,6 +3012,11 @@ class Service extends Base\Service
                     CrossBorderCommonUseCases::sendSlackNotification(
                         $paymentId, $merchantId, $priority, "", WorkflowBuilder\Constants::REJECTED);
                 } catch (\Throwable $e) {
+
+                    $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                        'flow'        => TraceCode::B2B_WORKFLOW_CREATION_REQUEST_FAILED,
+                    ]);
+
                     $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED,
                         [
                             'payload' => $this->payload,
@@ -3017,25 +3173,31 @@ class Service extends Base\Service
 
     /**
      * @throws LogicException
+     * @throws \Throwable
      */
-    private function setMerchantProductInternationalPACB(): void
+    private function setMerchantProductInternationalPACB($merchantID): void
     {
-        $enabledStatus = '1';
-
-        $productInternational = $this->merchant->getProductInternational();
-
-        $productPacbPosition = ProductInternationalMapper::PRODUCT_POSITION['products_pa_cb'];
-
-        $currentStatus = $productInternational[$productPacbPosition];
-
-        if ($currentStatus !== $enabledStatus)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantID)
         {
-            $productInternational[$productPacbPosition] = $enabledStatus;
+            $merchant = $this->repo->merchant->findByPublicId($merchantID);
 
-            $this->merchant->setProductInternational((string) $productInternational);
-        }
+            $enabledStatus = '1';
 
-        $this->repo->merchant->saveOrFail($this->merchant);
+            $productInternational = $this->merchant->getProductInternational();
+
+            $productPacbPosition = ProductInternationalMapper::PRODUCT_POSITION['products_pa_cb'];
+
+            $currentStatus = $productInternational[$productPacbPosition];
+
+            if ($currentStatus !== $enabledStatus)
+            {
+                $productInternational[$productPacbPosition] = $enabledStatus;
+
+                $merchant->setProductInternational((string) $productInternational);
+
+                $this->repo->merchant->saveOrFail($merchant);
+            }
+        });
     }
 
     public function isAsyncInternationalVirtualAccountActivationEnabled(string $merchantId): bool
@@ -3521,7 +3683,7 @@ class Service extends Base\Service
 
         $provider  = Provider::IDFC;
 
-        $payerAccount = $input['remitterAc'];
+        $payerAccount = $this->sanitizePayerAccountNumber($input['remitterAc']);
 
         $payeeIfsc = Provider::IDFC_COMMON_IFSC;  // Payee IFSC code is hardcoded at our end
 
@@ -3592,7 +3754,8 @@ class Service extends Base\Service
 
         $provider  = Provider::IDFC;
 
-        $payerAccount = $input['remitterAccountNumber'];
+        $payerAccount = $this->sanitizePayerAccountNumber($input['remitterAccountNumber']);
+
         $payeeAccount = $input['vaNumber'];
         $payeeIfsc = Provider::IDFC_COMMON_IFSC;  // Payee IFSC code is hardcoded at our end
 
@@ -3667,6 +3830,40 @@ class Service extends Base\Service
             'gateway_provider' => [
                 'provider'       => $provider,
             ]);
+    }
+
+    protected function sanitizePayerAccountNumber($payerAccount) {
+        // correction of HSBC account number
+        // original account number = "IN HSBC 054-123456-001"
+        // correct account number = "054123456001"
+        $hsbc_acc_no_pattern = '/IN\s+HSBC\s+(\d{3}-\d{6}-\d{3})/';
+        if (preg_match($hsbc_acc_no_pattern, $payerAccount, $matches))
+        {
+            $payerAccount = preg_replace('/IN\s+HSBC\s+|-/', '', $payerAccount);
+        }
+
+        return preg_replace('/[^a-zA-Z0-9]+/', '', $payerAccount);
+    }
+
+    public function fetchMerchantIntegrationByParams($input)
+    {
+        // paramKey value can only be one of these values integration_entity,integration_key,reference_id
+        try {
+            (new Validator)->validateInput('fetch_merchant_integration_by_params', $input);
+            return (new InternationalIntegration\Core)->getByParamKey($input["paramKey"],$input["paramValue"]);
+        }
+        catch (\Exception $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::MII_FETCH_FAILED,
+                [
+                    'message' => 'MII Entry not found based on provided param condition',
+                    'input params'  => $input
+                ]
+            );
+            throw $ex;
+        }
     }
 
 

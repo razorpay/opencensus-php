@@ -1366,6 +1366,7 @@ class Terminal extends Base
                 Type::NON_RECURRING     => '1',
                 Type::COLLECT           => '1',
                 Type::OFFLINE            => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
             ],
         ];
 

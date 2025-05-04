@@ -392,7 +392,7 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
-    public function updateNotificationFromCallbackResponse(CardMandate\MandateHubs\Notification $notification): Entity
+    public function updateNotificationFromCallbackResponse(CardMandate\MandateHubs\Notification $notification, $input = [])
     {
         $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_PROCESS_CALL_BACK, [
             'notification_id' => $notification->getId(),
@@ -415,7 +415,12 @@ class Core extends Base\Core
 
         if ($cardMandateNotification === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            $this->trace->info(TraceCode::CARD_RECURRING_REARCH_NOTIFICATION_CALLBACK, [
+                'notification_id' => $notification->getId(),
+            ]);
+
+            $this->app['card.payments']->handleMandateHQCallback($input);
+            return [];
         }
 
         $this->app['basicauth']->setMerchant($cardMandateNotification->merchant);

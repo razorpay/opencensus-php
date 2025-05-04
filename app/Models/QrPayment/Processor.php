@@ -277,32 +277,18 @@ class Processor extends Base\Core
 
         if ($entity->isExpected() === true)
         {
-            if ((! $this->qrCode->isCheckoutQrCode()) && (!$this->qrCode->isPaymentLinksQrCode()))
-            {
-                    $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
-
-                            $mutex = App::getFacadeRoot()['api.mutex'];
-
-                            $mutex->acquireAndRelease($orderMutex,
-                                function() use ($paymentProcessor, $payment)
-                                {
-                        $paymentProcessor->autoCapturePayment($payment);
-                    });
-            }
-
-            else if ($entity->payment->hasBeenCaptured() === false)
+            if ((! $this->qrCode->isCheckoutQrCode()) && (!$this->qrCode->isPaymentLinksQrCode()) &&
+                ($entity->payment->hasBeenCaptured() === false))
             {
 
                 // Adding the order id mutex for solving multiple captured payment on same order
                 // If payment has order id then resource will contain order id else payment id
                 $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
-
                 $mutex = App::getFacadeRoot()['api.mutex'];
-
                 $mutex->acquireAndRelease($orderMutex,
                     function() use ($paymentProcessor, $payment)
                     {
-                        $paymentProcessor->autoCapturePaymentUsingOrderIfApplicable($payment);
+                        $paymentProcessor->autoCapturePayment($payment);
                     });
             }
         }
@@ -412,6 +398,13 @@ class Processor extends Base\Core
         if($this->qrCode->getDeviceId() !== null and $qrPayment->isExpected() === true)
         {
             $paymentArray[Payment\Entity::DeviceId] = $this->qrCode->getDeviceId();
+        }
+
+        if (($paymentArray[Payment\Entity::SOURCE_CHANNEL] == QrConstants::PAYMENT_TYPE_IN_PERSON) and
+            (empty($this->qrCode->getStoreId()) === false) and
+            ($qrPayment->isExpected() === true))
+        {
+            $paymentArray[Payment\Entity::STORE_ID] = $this->qrCode->getStoreId();
         }
 
         // TODO: find a better method to do this. This is done in order to bypass validation

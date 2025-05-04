@@ -67,12 +67,14 @@ class Constants
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
+    const ALLOW_EXTENDED_EXPIRY           = 'allow_extended_expiry';
     const DISABLE_FREE_CREDIT_REG         = 'disable_free_credit_reg';
     const DISABLE_FREE_CREDIT_UNREG       = 'disable_free_credit_unreg';
     const EXPOSE_EXTRA_ATTRIBUTES         = 'expose_extra_attributes';
     const SHOW_LATE_AUTH_ATTRIBUTES       = 'show_late_auth_attributes';
     const SHOW_REFND_LATEAUTH_PARAM       = 'show_refnd_lateauth_param';
     const CHARGE_AT_WILL                  = 'charge_at_will';
+    const CANCEL_TOKEN_V1                 = 'cancel_token_v1';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
@@ -1479,6 +1481,8 @@ class Constants
      */
     const NETWORK_TOKENIZATION_LIVE = 'network_tokenization_live';
 
+    const TOKEN_CONTINUITY = 'token_continuity';
+
     /**
      * Feature flag for custom checkout merchants to enable network tokenization in live mode
      * Saved card feature for custom checkout merchants will not work without this feature flag
@@ -2309,6 +2313,11 @@ class Constants
      */
     const COLLECTX_ENABLED = 'collectx_enabled';
 
+    /**
+     * feature flag is used to validate vpa using rbl api which return ifsc_code in response
+     */
+    const VPA_BANK_INFO_ENABLED = 'vpa_bank_info_enabled';
+
     const BANK_ADMIN_ADFS_LOGIN = 'bank_admin_adfs_login';
 
     const MESSAGE_BANNER_ENABLED = 'message_banner_enabled';
@@ -2427,6 +2436,11 @@ class Constants
      * This feature allows merchant to capture payment partially.
      */
     const ALLOW_PARTIAL_CAPTURE = 'allow_partial_capture';
+
+    /**
+     * This Feature flag allows to enable auto closure chargeback T+5 for BSE merchants
+     */
+    const AUTO_CLOSURE_CBK_MF_MX = 'auto_closure_cbk_mf_mx';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -3328,6 +3342,7 @@ class Constants
         self::VENDOR_ONBOARDING_ENABLED              => true,
         self::BUYER_PROTECT_SIGNED_UP                => true,
         self::COLLECTX_ENABLED                       => true,
+        self::VPA_BANK_INFO_ENABLED                  => true,
 
         self::ONE_CC_EMAIL_CUSTOMER_CONSENT          => true,
         self::ONE_CC_WHATSAPP_CUSTOMER_CONSENT       => true,
@@ -3367,8 +3382,9 @@ class Constants
         self::PAYOUTS_BLOCKED_ON_LITE      => true,
         self::ALLOW_PARTIAL_CAPTURE => true,
         self::ENABLE_IMPORT_FLOW           => true,
+        self::AUTO_CLOSURE_CBK_MF_MX       => true,
         self::HIDE_RX_PAYROLL_PAYOUTS   => true,
-        
+
     ];
 
     // Entity type constants
@@ -4762,6 +4778,11 @@ class Constants
             'display_name'  => 'CollectX Enabled',
             'documentation' => 'Enable merchant on CollectX and create VAs with balance type banking',
         ],
+        self::VPA_BANK_INFO_ENABLED => [
+            'feature'         => self::VPA_BANK_INFO_ENABLED,
+            'display_name'    => 'VPA Bank Info Enabled',
+            'documentation'   => 'If enabled, validate vpa using rbl api which return ifsc_code in response',
+        ],
         self::HIDE_INVOICE_REPORT => [
             'feature'       => self::HIDE_INVOICE_REPORT,
             'display_name'  => 'org level Feature to hide monthly invoice report',
@@ -4919,6 +4940,11 @@ class Constants
             'feature' => self::ENABLE_IMPORT_FLOW,
             'display_name' => 'Feature flag to enable import flow on merchants',
             'documentation' => 'this feature flag will be enabled for merchants outside of india'
+        ],
+        self::AUTO_CLOSURE_CBK_MF_MX => [
+            'feature'       => self::AUTO_CLOSURE_CBK_MF_MX,
+            'display_name'  => 'Auto closure chargeback is raised before T+5',
+            'documentation' => 'this feature flag will be enabled for BSE merchants',
         ],
         self::HIDE_RX_PAYROLL_PAYOUTS => [
             'feature' => self::HIDE_RX_PAYROLL_PAYOUTS,

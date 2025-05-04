@@ -2,8 +2,10 @@
 
 namespace RZP\Mail\Invoice;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\Stork;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
@@ -159,6 +161,43 @@ class Issued extends Base
 
         $data = $this->data;
 
+        if(($this->view == "emails.invoice.customer.notification" || $this->view == "emails.mjml.customer.payment_page.payment")
+            && $data['invoice']['type'] !== 'link' )
+        {
+            $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
+
+            if($this->view == "emails.invoice.customer.notification")
+            {
+                return $isStorkEmailVIAEnabled;
+            }
+            else if($this->view == "emails.mjml.customer.payment_page.payment" && $this->fileData !== null && $this->fileData['path'] !== null)
+            {
+                try
+                {
+                    $params = $this->getParamsForFile();
+                    $path = $this->fileData['path'];
+                    $file_id = (new Stork($this->mode, $this->originProduct))->getFileId($params,$path);
+
+                    if (!empty($file_id))
+                    {
+                        $this->fileData['file_id'] = $file_id;
+
+                        return $isStorkEmailVIAEnabled;
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    $app['trace']->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::GET_FILE_ID_EXCEPTION,
+                        ['file_data' => $this->fileData]
+                    );
+                    return false;
+                }
+            }
+        }
+
         if ($data['invoice']['type'] === 'link')
         {
             return parent::shouldSendEmailViaStork();
@@ -169,6 +208,36 @@ class Issued extends Base
 
     protected function getParamsForStork(): array
     {
+        if(($this->view == "emails.invoice.customer.notification" || $this->view == "emails.mjml.customer.payment_page.payment")
+            && $this->data['invoice']['type'] !== 'link' )
+        {
+            if($this->view == "emails.mjml.customer.payment_page.payment")
+            {
+                return [
+                    'template_name' => $this->view,
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $this->data['org']['id'],
+                    'params' => $this->data,
+                    'attachments' => [
+                        [
+                            "file_id" => $this->fileData['file_id'],
+                            "display_name" => $this->fileData['name'],
+                            "extension" => "pdf"
+                        ]
+                    ]
+                ];
+            }
+            else
+            {
+                return [
+                    'template_name' => $this->view,
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $this->data['org']['id'],
+                    'params' => $this->data
+                ];
+            }
+        }
+
         $data = $this->data;
 
         $invoiceData = $data['invoice'];
@@ -244,5 +313,42 @@ class Issued extends Base
         }
 
         return $storkParams;
+    }
+
+    protected function getParamsForFile(): array
+    {
+        return [
+            'channel'            => 'email',
+            'owner_id'           => $this->mid,
+            'owner_type'         => 'merchant',
+            'url_count'          => '1'
+        ];
+    }
+
+    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
+        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_ISSUED;
+
+        $experimentId = 'app.send_payment_link_emails_via_stork_issued';
+
+        try {
+            $app = \App::getFacadeRoot();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get($experimentId),
+                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
+            ];
+            $response = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $app['trace']->info($traceCode, [
+                'splitzUserResult' => $response,
+            ]);
+
+            return  $variant == "enable";
+
+        } catch (\Exception $e) {
+            $app['trace']->traceException($e, null, $traceCode);
+        }
+        return false;
     }
 }

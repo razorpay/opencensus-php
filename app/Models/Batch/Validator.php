@@ -556,6 +556,26 @@ class Validator extends Base\Validator
         Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file',
     ];
+
+
+    protected static $mandateContinuityCreateRules = [
+        Entity::TYPE                    => 'required|in:mandate_continuity',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
+
+    protected static $tokenContinuityCreateRules = [
+        Entity::TYPE                    => 'required|in:token_continuity',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
+
+
+    protected static $customerMigrationCreateRules = [
+        Entity::TYPE                    => 'required|in:customer_migration',
+        Entity::FILE                    => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file',
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -902,6 +922,52 @@ class Validator extends Base\Validator
         Header::BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE       => 'sometimes|nullable|string',
     ];
 
+    protected static $mandateContinuityTypeRowRules = [
+        Header::MANDATE_CONTINUITY_JUSPAY_MANDATE_ID            => 'required|string',
+        Header::MANDATE_CONTINUITY_EPG_TXN_ID                   => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_DATE_CREATED_UTC             => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_RZP_MERCHANT_ID              => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_PG_MANDATE_ID                => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_GATEWAY                      => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_RZP_TERMINAL_ID              => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_MAX_AMOUNT                   => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_START_DATE                   => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_EXPIRY_DATE                  => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_METHOD                       => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_CUSTOMER_NAME                => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_CUSTOMER_EMAIL               => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_CUSTOMER_CONTACT             => 'sometimes|nullable',
+    ];
+
+    protected static $tokenContinuityTypeRowRules = [
+        Header::TOKEN_CONTINUITY_JUSPAY_CUSTOMER_ID              => 'required|string',
+        Header::TOKEN_CONTINUITY_JUSPAY_MERCHANT_ID              => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MERCHANT_REFERENCE_ID           => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_EMAIL_ADDRESS                   => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_FIRST_NAME                      => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_LAST_NAME                       => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MOBILE_COUNTRY_CODE             => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MOBILE_NUMBER                   => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_MERCHANT_ID                     => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_RAZORPAY_CUSTOMER_ID            => 'required|string',
+        Header::TOKEN_CONTINUITY_ERROR_MESSAGE                   => 'sometimes|nullable|string',
+        Header::TOKEN_CONTINUITY_JUSPAY_MERCHANT_REFERENCE_ID    => 'required|string',
+        Header::TOKEN_CONTINUITY_TERMINAL_ID                     => 'required|string',
+    ];
+
+    protected static $customerMigrationTypeRowRules = [
+        Header::CUSTOMER_MIGRATION_JUSPAY_CUSTOMER_ID       => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_JUSPAY_MERCHANT_ID       => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MERCHANT_REFERENCE_ID    => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_EMAIL_ADDRESS           => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_FIRST_NAME                => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_LAST_NAME                 => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MOBILE_COUNTRY_CODE      => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MOBILE_NUMBER            => 'sometimes|nullable|string',
+        Header::CUSTOMER_MIGRATION_MERCHANT_ID             => 'sometimes|nullable|string',
+    ];
+
+
     protected static $sendMailRules = [
         Entity::BATCH            => 'required|array|custom',
         Entity::BUCKET_TYPE      => 'required|string',
@@ -996,6 +1062,14 @@ class Validator extends Base\Validator
 
     protected static $ecollectAxisCreateRules = [
         Entity::TYPE                 => 'required|in:ecollect_axis',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
+    protected static $ecollectIdfcCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_idfc',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
@@ -1139,6 +1213,14 @@ class Validator extends Base\Validator
 
     protected static $linkedAccountCreateCreateRules = [
         Entity::TYPE                 => 'required|in:linked_account_create',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
+    protected static $linkedAccountCreateWithAccountCodeCreateRules = [
+        Entity::TYPE                 => 'required|in:linked_account_create_with_account_code',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
@@ -2086,12 +2168,15 @@ class Validator extends Base\Validator
 
         $app = App::getFacadeRoot();
 
-        $variant  = $app['razorx']->getTreatment($merchant->getId(),
-                                                 Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
-                                                 Mode::LIVE,
-                                                 3);
+        $requestPayload = [
+            "id" => $merchant->getId(),
+            "experiment_name" =>  Merchant\RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
+            'request_data'  => json_encode(['id' =>$merchant->getId()])
+        ];
 
-        if (strtolower($variant) === 'control')
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isExperimentEnabled === false)
         {
             $expectedAmountType = BatchHelper::PAISE;
         }
@@ -3104,7 +3189,7 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountBatchActionAllowed(& $input, Merchant\Entity $merchant, bool $validateOtp = false)
     {
-        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
+        if((($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) || ($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE)) and
             (in_array($merchant->getCategory(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY]) === true) and
             (in_array($merchant->getCategory2(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Merchant\Entity::CATEGORY2]) === true) and
             (app('basicauth')->isAdminAuth() === false))
@@ -3114,9 +3199,9 @@ class Validator extends Base\Validator
             );
         }
 
-        if(($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) and
-           (app('basicauth')->isProxyAuth() === true) and
-           ($validateOtp === true))
+        if((($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE) || ($input[Entity::TYPE] === Type::LINKED_ACCOUNT_CREATE_WITH_ACCOUNT_CODE)) and
+            (app('basicauth')->isProxyAuth() === true) and
+            ($validateOtp === true))
         {
             $properties = [
                 'id'                   => $merchant->getId(),
@@ -3274,6 +3359,27 @@ class Validator extends Base\Validator
             }
 
             $existingKeys[] = $key;
+        }
+    }
+
+    public function validateMandateContinuityEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry) {
+            $this->validateInput('mandateContinuityTypeRow', $entry);;
+        }
+    }
+
+    public function validateTokenContinuityEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry) {
+            $this->validateInput('tokenContinuityTypeRow', $entry);;
+        }
+    }
+
+    public function validateCustomerMigrationEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry) {
+            $this->validateInput('customerMigrationTypeRow', $entry);;
         }
     }
 }

@@ -14,7 +14,6 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\UpiNumber;
 use RZP\Constants\Country;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
@@ -177,7 +176,8 @@ class Validator extends Base\Validator
         'process_bank_transfer',
         'redis_get',
         'redis_set',
-        'generate_merchant_invoice'
+        'generate_merchant_invoice',
+        'manual_smart_collect_entity_creation'
     ];
 
     const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
@@ -193,6 +193,8 @@ class Validator extends Base\Validator
     const REDIS_SET = 'redis_set';
 
     const GENERATE_MERCHANT_INVOICE = 'generate_merchant_invoice';
+
+    const MANUAL_SMART_COLLECT_ENTITY_CREATION = 'manual_smart_collect_entity_creation';
 
     const MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION = 50;
 
@@ -731,6 +733,7 @@ class Validator extends Base\Validator
     protected static $payoutsManualActionDefaultInputRules = [
         Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION,
         Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $processedToProcessingPayoutActionRules = [
@@ -754,6 +757,12 @@ class Validator extends Base\Validator
         'month' => 'required|integer',
         'year' => 'required|integer',
         'merchant_ids' => 'required|array',
+    ];
+
+    protected static $manualSmartCollectEntityCreationRules = [
+        'gateway' => 'required|string',
+        'bank_transfer_request_id' => 'sometimes|string',
+        'request_payload' => 'sometimes|array'
     ];
 
     protected function validateSourceAndDestination($input)
@@ -1790,19 +1799,19 @@ class Validator extends Base\Validator
 
     }
 
-    public function validateLinkedNumber(array &$input)
+    public function validateMobileNumberPayout(array &$input)
     {
         $allowedModes = [Entity::UPI];
 
         $mode = strtolower($input[Entity::MODE] ?? '');
 
-        $linkedNumberData = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::LINKED_NUMBER] ?? [];
-        $linkedNumber = $linkedNumberData[FundAccount\Entity::NUMBER] ?? null;
-        $accountHolderName = $linkedNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
+        $mobileNumberData = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE] ?? [];
+        $mobileNumber = $mobileNumberData[FundAccount\Entity::NUMBER] ?? null;
+        $accountHolderName = $mobileNumberData[FundAccount\Entity::ACCOUNT_HOLDER_NAME] ?? null;
 
-        $this->validateRequiredField($linkedNumber, ErrorCode::BAD_REQUEST_LINKED_NUMBER_NOT_PRESENT);
+        $this->validateRequiredField($mobileNumber, ErrorCode::BAD_REQUEST_MOBILE_NUMBER_NOT_PRESENT);
         $this->validateRequiredField($accountHolderName, ErrorCode::BAD_REQUEST_ACCOUNT_HOLDER_NAME_NOT_PRESENT);
-        $this->validateLinkedNumberFormat($linkedNumber);
+        $this->validateMobileNumberFormat($mobileNumber);
         $this->validateAllowedMode($mode, $allowedModes);
     }
 
@@ -1813,17 +1822,17 @@ class Validator extends Base\Validator
         }
     }
 
-    private function validateLinkedNumberFormat(string $linkedNumber): void
+    private function validateMobileNumberFormat(string $mobileNumber): void
     {
-        if (!preg_match('/^\d{8,10}$/', $linkedNumber)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LINKED_NUMBER_INVALID, null);
+        if (!preg_match('/^\d{10}$/', $mobileNumber)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_NUMBER_INVALID, FundAccount\Entity::NUMBER);
         }
     }
 
     private function validateAllowedMode(string $mode, array $allowedModes): void
     {
         if (!in_array($mode, $allowedModes, true)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MODE_NOT_ALLOWED_FOR_LINKED_NUMBER, null);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MODE_NOT_ALLOWED_FOR_MOBILE_NUMBER, null);
         }
     }
 
@@ -2410,6 +2419,12 @@ class Validator extends Base\Validator
                 }
                 break;
 
+            case 'manual_smart_collect_entity_creation':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::MANUAL_SMART_COLLECT_ENTITY_CREATION,$input);
+                }
+                break;
             default:
                 $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT,$bulkInput);
         }

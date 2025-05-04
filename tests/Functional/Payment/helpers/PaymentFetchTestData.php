@@ -1117,6 +1117,73 @@ return [
         ],
     ],
 
+    'testProxyAuthFetchPaymentOnStoreId' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'store_ids' => ['TestStore1','TestStore2',],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+            ],
+        ],
+    ],
+
+    'testProxyAuthFetchPaymentOnWithoutStoreId' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 3,
+            ],
+        ],
+    ],
+
+    'testProxyAuthFetchPaymentOnWithoutStoreId_2' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 3,
+            ],
+        ],
+    ],
+
+    'testProxyAuthFetchPaymentOnWithConflictingStoreId' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'store_ids' => ['TestStore4',],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The store ids must have at least 1 items.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testProxyAuthFetchPaymentByIdForOptimiser' => [
         'request' => [
             'url'     => '/payments/',

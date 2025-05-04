@@ -4,6 +4,8 @@
 namespace RZP\Models\Payment\Config;
 
 use RZP\Models\Base;
+use RZP\Modules\Acs\Wrapper\Constant;
+use RZP\Models\Customer\Token\Constants as TokenCons;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
@@ -93,6 +95,8 @@ class Entity extends Base\PublicEntity
     public function build(array $input = [], string $operation = 'create')
     {
         $this->getValidator()->validateInput($operation, $input);
+
+        unset($input[Constant::CONFIG][TokenCons::MERCHANT]);
 
         //Validating and save convenience fee config if applicable
         if((isset($input['type']) === true) and ($input['type'] === TYPE::CONVENIENCE_FEE))

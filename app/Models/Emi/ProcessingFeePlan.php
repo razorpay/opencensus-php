@@ -77,6 +77,14 @@ class ProcessingFeePlan
                 ]
             ]
         ],
+        CreditEmiProvider::AUBL => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 19900
+                ]
+            ]
+        ],
         CreditEmiProvider::KKBK => [
             Type::CREDIT => [
                 self:: DEFAULT => [
@@ -210,9 +218,8 @@ class ProcessingFeePlan
         CreditEmiProvider::IDFB.'v2' => [
             Type::CREDIT => [
                 self:: DEFAULT => [
-                    self::TYPE => self::COMBINATION,
-                    self::PERCENTAGE => 1,
-                    self::AMOUNT => 9900
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 24900
                 ]
             ]
         ],

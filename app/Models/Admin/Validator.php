@@ -159,6 +159,8 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS                   => 'filled|boolean',
         ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX                => 'filled|array',
         ConfigKey::COLLECTX_SERIES_PREFIX                         => 'filled|array',
+        ConfigKey::RBL_VPA_VALIDATE_API_SESSION_TOKEN             => 'filled|string',
+        ConfigKey::RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN        => 'filled|string',
         ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS             => 'filled|array',
         ConfigKey::ENABLE_NB_KOTAK_ENCRYPTED_FLOW                 => 'filled|boolean', // Not used currently
         ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT                 => 'filled|integer',
@@ -308,7 +310,8 @@ class Validator extends Base\Validator
         ConfigKey::ODS_CAPPING_CHECK_REQUIRED                                          => 'filled|boolean',
         ConfigKey::ODS_GLOBAL_LIMIT                                                    => 'filled|integer',
         ConfigKey::ODS_CAPPING_SCALE_FACTOR                                            => 'filled|integer',
-        ConfigKey::ODS_CAPPED_MID_LIST                                                 => 'filled|array'
+        ConfigKey::ODS_CAPPED_MID_LIST                                                 => 'filled|array',
+        ConfigKey::BALANCE_FETCH_MERCHANTS_BLACKLIST                                   => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

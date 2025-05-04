@@ -106,7 +106,7 @@ class Generator extends Base\Core
         switch ($provider)
         {
             case Type::BHARAT_QR :
-                return $this->getBharatQrCode($qrCode);
+                return $this->getBharatQrCode($qrCode, $terminal);
 
             case Type::UPI_QR:
                 return $this->getUpiQrCode($qrCode, $terminal);
@@ -215,7 +215,7 @@ class Generator extends Base\Core
         return $qrString;
     }
 
-    protected function getBharatQrCode($qrCode)
+    protected function getBharatQrCode($qrCode, $terminal = null)
     {
         $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
 

@@ -6868,6 +6868,37 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testUpdateFieldsForApiSubMerchantsPostActivation' => [
+        'request'  => [
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'lending',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'lending',
+            ],
+        ],
+    ],
+    'testL3SubmissionForApiSubMerchantsPostActivation' => [
+        'request'  => [
+            'content' => [
+                'is_pos_details_submitted' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'is_pos_details_submitted' => '1',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
 ];
 

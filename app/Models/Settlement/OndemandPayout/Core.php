@@ -433,7 +433,7 @@ class Core extends Base\Core
 
         $payoutAmount = $settlementOndemandPayout->getPayoutAmount();
 
-        $fundAccount = (new OndemandFundAccount\Core)->getFundAccountByMerchantId($settlementOndemandPayout->getMerchantId());
+        $fundAccount = (new OndemandFundAccount\Service)->getOrCreateFundAccountForMerchant($settlementOndemandPayout->getMerchantId());
 
         $fundAccountId = $fundAccount[OndemandFundAccount\Entity::FUND_ACCOUNT_ID];
 

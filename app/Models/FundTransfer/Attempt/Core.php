@@ -570,6 +570,26 @@ class Core extends Base\Core
 
     public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)
     {
+        $merchantId = $source->merchant->getId();
+        $requestPayload = [
+            'id' => $merchantId,
+            'experiment_name' => 'ledger_disable_transaction_dual_write',
+            'request_data'  => json_encode(['id' => $merchantId])
+        ];
+        $expResult = $this->isSplitzExperimentEnable($requestPayload, 'enable');
+
+        if($expResult === true)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::UPDATE_TRANSACTION_ENTITY,
+            [
+                'source_id' => $source->getId(),
+                'merchant_id' => $merchantId,
+            ]
+        );
         // Source entity might update the transaction but because we would have already fetched
         // the transaction from source earlier. Then if we try to access $this->source->transaction now,
         // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
@@ -1098,5 +1118,29 @@ class Core extends Base\Core
     public function getAttemptsFromIds(array $ftaIds)
     {
         return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
+    }
+    public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
     }
 }

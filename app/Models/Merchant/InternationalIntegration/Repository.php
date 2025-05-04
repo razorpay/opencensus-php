@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\InternationalIntegration;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -44,6 +45,15 @@ class Repository extends Base\Repository
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::INTEGRATION_KEY, $integrationKey)
+            ->where(Entity::DELETED_AT, null)
+            ->get();
+    }
+
+    public function getByParamKey($paramKey, $paramValue)
+    {
+        // validation on paramKey and paramValue is added on service level
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereIn($paramKey, $paramValue)
             ->where(Entity::DELETED_AT, null)
             ->get();
     }

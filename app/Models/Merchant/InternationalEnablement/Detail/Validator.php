@@ -48,7 +48,7 @@ class Validator extends Base\Validator
     ];
 
     public static $createForSubmitRules = [
-        Entity::GOODS_TYPE                          => 'required|string|in:' . Constants::GOODS_TYPE_VALIDATOR_CSV,
+        Entity::GOODS_TYPE                          => 'nullable|string|in:' . Constants::GOODS_TYPE_VALIDATOR_CSV,
         Entity::BUSINESS_USE_CASE                   => 'required|string|min:4|max:1000',
         Entity::ALLOWED_CURRENCIES                  => 'nullable|sometimes|array|between:1,100|custom',
         Entity::ALLOWED_CURRENCIES . '.*'           => 'nullable|string|size:3',

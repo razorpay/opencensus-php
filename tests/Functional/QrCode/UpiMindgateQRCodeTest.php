@@ -850,4 +850,54 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $this->assertTrue($response['success']);
     }
+
+    public function testCreateBqrCodeForSingleStackMerchant()
+    {
+        $this->setMockSplitzTreatment();
+
+        $this->ba->appAuth();
+
+        $qrCode = $this->createQrForSingleStack([
+            'content' => [
+                'usage' => 'multiple_use',
+                'type'  => 'bharat_qr',
+                'vpa'   => 'razorpay@hdfcbank',
+                'request_source' => 'ezetap'
+            ],
+            'url'     => '/payments/singlestack/qr_codes',
+        ]);
+
+        $this->assertEquals('LiveAccountMer', $qrCode['merchant_id']);
+
+        $qrCodeEntity = $this->getDbEntityById('qr_code', $qrCode['id'], 'live');
+
+        $this->assertEquals('multiple_use', $qrCodeEntity->getUsageType());
+        $this->assertNotNull($qrCodeEntity->getQrString());
+        $this->assertEquals('LiveAccountMer', $qrCodeEntity->getMerchantId());
+        $this->assertStringContainsString('razorpay@hdfcbank', $qrCodeEntity->getQrString());
+        $this->assertStringContainsString($qrCodeEntity->getId(), 'STQ'.$qrCodeEntity->getQrString().'qrv2');
+        $this->assertEquals(false, $qrCodeEntity->hasFixedAmount());
+        $this->assertEquals('bharat_qr', $qrCodeEntity->getProvider());
+        $this->assertBqrString($qrCodeEntity, $qrCodeEntity->getQrString(),true);
+    }
+
+    public function testFetchAcquirerFailedAndSuccessScenario()
+    {
+        $this->ba->appAuth();
+        $content = $this->makeRequestAndGetContent([
+            'method' => 'get',
+            'url' => '/acquirer/fetch/LiveAccountMer'
+        ]);
+
+        $this->assertEquals(true,$content['success']);
+
+        // Invalid Merhcant ID
+        $content = $this->makeRequestAndGetContent([
+            'method' => 'get',
+            'url' => '/acquirer/fetch/InvalidMerchantId'
+        ]);
+
+        $this->assertEquals(false,$content['success']);
+        $this->assertNull($content['acquirer']);
+    }
 }

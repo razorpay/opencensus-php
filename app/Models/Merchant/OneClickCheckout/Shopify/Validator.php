@@ -49,7 +49,6 @@ class Validator extends Base\Validator
 
 
     protected static $updateShopifyMetaFieldsRules = [
-        'namespace'  => 'required|string|in:magic_checkout|max:150',
         'metafields' => 'required|array',
     ];
 

@@ -134,6 +134,9 @@ class BuyPricing
     const LIQUILOANS            = 'liquiloans';
     const INSTANT_EMI           = 'instant_emi';
 
+    const KLARNA                = 'klarna';
+    const ZIP                   = 'zip';
+
     const NETBANKING_CORPORATION        = 'netbanking_corporation';
     const ENACH_NPCI_NETBANKING         = 'enach_npci_netbanking';
     const ENACH_RBL                     = 'enach_rbl';
@@ -142,6 +145,8 @@ class BuyPricing
 
     const TRUSTLY                       = 'trustly';
     const POLI                          = 'poli';
+
+    const PPRO                          = 'ppro';
 
     const WALLET_RAZORPAYWALLET                      = 'wallet_razorpaywallet';
 
@@ -267,6 +272,8 @@ class BuyPricing
     public static $paylaterNetworksNames = [
         'Epaylater'  => self::EPAYLATER,
         'GetSimpl'   => self::GETSIMPL,
+        'Klarna'     => self::KLARNA,
+        'Zip'        => self::ZIP,
     ];
 
     protected static $walletGateways = [
@@ -291,6 +298,7 @@ class BuyPricing
         self::WALLET_PAYUMONEY,
         self::WALLET_PAYZAPP,
         self::MOBIKWIK,
+        self::PPRO
     ];
 
     protected static $upiGateways = [

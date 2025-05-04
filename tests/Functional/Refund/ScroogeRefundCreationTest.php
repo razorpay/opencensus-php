@@ -2,22 +2,53 @@
 
 namespace RZP\Tests\Functional\Refund;
 
+use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Traits\MocksSplitz;
+
 
 // Tests all the helpers on API for refund creation to happen directly on scrooge. Refund entity will not be created on API
 class ScroogeRefundCreationTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ScroogeRefundCreationTestData.php';
 
         parent::setUp();
+    }
+
+    //Dynamic function to enable mocks used in scrooge payment update flow
+    protected function enableSplitzExperiment( $id, $experimentId , $outPutVariantName , $variables , $requestData = null): void
+    {
+        $input = [
+            "id" => $id,
+            "experiment_id" => $experimentId
+        ];
+
+        if ($requestData != null) {
+            $input['request_data'] = json_encode($requestData);
+        }
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $outPutVariantName ,
+                    "variables" => $variables
+                ]
+            ]
+        ];
+
+
+        $this->mockSplitzTreatment($input, $output);
     }
 
     public function testRefundsPaymentUpdate()
@@ -317,6 +348,7 @@ class ScroogeRefundCreationTest extends TestCase
         $this->assertEquals(144, $feesBreakup[1]['amount']);
     }
 
+
     public function testScroogePartialInstantRefundOnRefundCreditsTransactionCreate()
     {
         $payment = $this->defaultAuthPayment();
@@ -324,7 +356,6 @@ class ScroogeRefundCreationTest extends TestCase
 
         $dummyRefundId = 'dummyRefundId0';
         $internalPaymentId = substr($payment['id'], 4);
-
         $payment = $this->getDbLastEntity('payment');
 
         $this->fixtures->create('credits',
@@ -578,8 +609,8 @@ class ScroogeRefundCreationTest extends TestCase
         $payment = $this->defaultAuthPayment();
 
         $this->capturePayment($payment['id'], $payment['amount']);
-
         $payment = $this->getLastEntity('payment', true);
+
 
         $paymentId = substr($payment['id'], 4);
 
@@ -641,4 +672,139 @@ class ScroogeRefundCreationTest extends TestCase
         $this->assertEquals($refundId, $response['id']);
         $this->assertEquals($paymentId, $response['payment_id']);
     }
+
+    //Test the revert of payment status from refunded to captured , when payment status was refunded from captured
+    public function testRefundsPaymentUpdateForRevertOfCapturedPayment()
+    {
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $merchantId = '10000000000000';
+
+        $this->enableSplitzExperiment($merchantId,$this->app['config']->get('app.payment_update_for_refunds_exp_id'),'enabled', [
+            "key" => "result",
+            "value" => "on"
+        ]);
+
+        $this->enableSplitzExperiment($merchantId,$this->app['config']->get('app.payment_status_revert_api_via_scrooge_experiment'),'variant_on',  [],
+            [
+                'merchant_id' => $merchantId
+        ]);
+
+
+
+        $dummyRefundId = 'dummyRefundId0';
+        $internalPaymentId = substr($payment['id'], 4);
+
+        $this->ba->scroogeAuth();
+
+        $this->testData['callRefundsPaymentUpdate']['request']['content'] = [
+            'refunds' => [
+                [
+                    'id' => $dummyRefundId,
+                    'payment_id' => $internalPaymentId,
+                    'amount' => '50000',
+                    'base_amount' => '50000',
+                ]
+            ]
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callRefundsPaymentUpdate']);
+
+        $this->assertNull($response[$dummyRefundId]['error']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(50000, $payment['amount_refunded']);
+        $this->assertEquals(50000, $payment['base_amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $this->testData['callRefundsPaymentUpdate']['request']['content'] = [
+            'refunds' => [
+                [
+                    'id' => $dummyRefundId,
+                    'payment_id' => $internalPaymentId,
+                    'amount' => '-50000',
+                    'base_amount' => '-50000',
+                ]
+            ]
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callRefundsPaymentUpdate']);
+
+        $this->assertNull($response[$dummyRefundId]['error']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment['status']);
+
+
+    }
+
+    //Test the revert of payment status from refunded to authorized , when payment status was refunded from authorized
+    public function testRefundsPaymentUpdateForRevertOfAuthorizedPayment()
+    {
+
+        $payment = $this->defaultAuthPayment();
+
+        $merchantId = '10000000000000';
+       
+        $this->enableSplitzExperiment($merchantId,$this->app['config']->get('app.payment_update_for_refunds_exp_id'),'enabled', [
+            "key" => "result",
+            "value" => "on"
+        ]);
+
+        $this->enableSplitzExperiment($merchantId,$this->app['config']->get('app.payment_status_revert_api_via_scrooge_experiment'),'variant_on',  [],
+            [
+                'merchant_id' => $merchantId
+        ]);
+
+
+        $dummyRefundId = 'dummyRefundId0';
+        $internalPaymentId = substr($payment['id'], 4);
+
+        $this->ba->scroogeAuth();
+
+        $this->testData['callRefundsPaymentUpdate']['request']['content'] = [
+            'refunds' => [
+                [
+                    'id' => $dummyRefundId,
+                    'payment_id' => $internalPaymentId,
+                    'amount' => '50000',
+                    'base_amount' => '50000',
+                ]
+            ]
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callRefundsPaymentUpdate']);
+
+        $this->assertNull($response[$dummyRefundId]['error']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(50000, $payment['amount_refunded']);
+        $this->assertEquals(50000, $payment['base_amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $this->testData['callRefundsPaymentUpdate']['request']['content'] = [
+            'refunds' => [
+                [
+                    'id' => $dummyRefundId,
+                    'payment_id' => $internalPaymentId,
+                    'amount' => '-50000',
+                    'base_amount' => '-50000',
+                ]
+            ]
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callRefundsPaymentUpdate']);
+
+        $this->assertNull($response[$dummyRefundId]['error']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('authorized', $payment['status']);
+
+    }
 }
+
+

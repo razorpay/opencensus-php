@@ -6,9 +6,12 @@ use App;
 use Request;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant;
+use RZP\Base\Transformer;
 use RZP\Constants\Country;
+use RZP\Models\Merchant\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
@@ -23,6 +26,10 @@ use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
 use RZP\Models\User\Service as UserService;
+use RZP\Models\Merchant\Detail\Core as MerchantDetail;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailConstants;
+
+
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -142,6 +149,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const INITIATE_POS_ONBOARDING                = 'initiate_pos_onboarding';
 
     const GET_VCIP_LINK                          = 'get_vcip_link';
+    const BDD_VERIFICATION_STATUS_UPDATE         = 'bdd_verification_status_update';
 
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
@@ -322,6 +330,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::UPDATE_BRAND_DEALER_DETAILS                   => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateBrandDealerDetails',
         self::INITIATE_POS_ONBOARDING                       => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/InitiatePosOnboarding',
         self::GET_VCIP_LINK                                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetVcipLink',
+        self::BDD_VERIFICATION_STATUS_UPDATE                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UpdateBddVerificationStatus',
     ];
 
     // timeout in seconds
@@ -354,6 +363,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_POLICY_VERIFY            => 40,
         self::L2_SUBMIT_SHADOW                          => 1,
         self::GET_APPLICABLE_ACTIVATION_STATUS          => 3,
+        self::BDD_VERIFICATION_STATUS_UPDATE            => 3,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -394,6 +404,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
         self::MERCHANT_DOCUMENT_UPLOAD,
         self::MERCHANT_CONSENTS_SAVE,
+        self::BDD_VERIFICATION_STATUS_UPDATE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
@@ -409,11 +420,34 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SALES_ASSISTED_MERCHANT_SIGN_UP
     ];
 
+    // ROUTES_ENABLED_FOR_POS_FLOW contains the list of routes for which the PGOS call should be enabled.
+    const ROUTES_ENABLED_FOR_POS_FLOW = [
+        self::POST_MERCHANT_CONFIG,
+        self::MERCHANT_POS_STATE_LOGS,
+        self::FETCH_ACTION_STATE_COUNT,
+        self::UPDATE_ACTION_STATE,
+        self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS,
+        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS,
+        self::MERCHANT_FETCH_POS_ACTIVATION_FLOW,
+        self::MERCHANT_ACTIVATION_SAVE,
+        self::PGOS_FETCH_DEVICE_CONFIG,
+        self::PGOS_CREATE_DEVICE_ORDER,
+        self::PGOS_UPDATE_DEVICE_ORDER,
+        self::PGOS_FETCH_DEVICE_ORDER,
+        self::PGOS_FETCH_ALL_DEVICE_ORDER,
+        self::MERCHANT_POS_PAYMENT_CALLBACK,
+        self::MERCHANT_POS_FETCH_LATEST_ORDER,
+    ];
+
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct("pgos");
 
         $this->trace = $this->app['trace'];
+
+        $this->mutex = $this->app['api.mutex'];
 
         $this->registerRoutesMap(self::ROUTES_URL_MAP);
 
@@ -512,6 +546,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return true;
         }
 
+        if ($this->isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
+        {
+            return true;
+        }
+
         $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
 
         return (empty($workflowType) === false && $workflowType === DeviceDetailConstants::MODULAR_ONBOARDING);
@@ -570,6 +609,16 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::CROSS_BORDER_ONBOARDING)
             === DeviceDetailConstants::MODULAR_ONBOARDING;
     }
+    protected function isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
+    {
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::SUBMERCHANT_ONBOARDING)
+            === DeviceDetailConstants::MODULAR_ONBOARDING;
+    }
 
     public function isCrossBorderIndiaModularMerchant($merchant): bool
     {
@@ -588,23 +637,55 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return $this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
     }
 
-
     // Adding a common check , as for cross border all the checks are similar to pgIndia Modular Merchant
-    public function isIndiaPgOrCrossBorderIndiaModularMerchant($merchant): bool
+    public function getIndiaModularMerchantResult($merchant): array
     {
         if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
         {
-            return false;
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => false,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA => '',
+            ];
         }
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchant->getId());
-
         if (empty($userDeviceDetail) === true)
         {
-            return false;
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => false,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA => '',
+            ];
         }
 
-        return $this->isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) || $this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        $indiaPgResult = $this->isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        if (!empty($indiaPgResult)) {
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'pg_onboarding',
+            ];
+        }
+
+        $cbResult = $this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        if (!empty($cbResult)) {
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'cross_border_onboarding',
+            ];
+        }
+
+        $subMOnboardingResult = $this->isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        if (!empty($subMOnboardingResult)) {
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'submerchant_onboarding',
+            ];
+        }
+
+        return [
+            MerchantDetailConstants::IS_MODULAR_INDIA => false,
+            MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => ''
+        ];
+
     }
 
     public function getProductSpecificWorkflowType($userDeviceDetail, $product)
@@ -670,7 +751,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $ignoreRoutingConditions = true;
         }
 
-        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()))
+        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()) or $this->isMerchantEnabledForPos($merchantId,$routeKey))
         {
             if ($mock === true)
             {
@@ -811,9 +892,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             if ($validationResponse['validated'] === true)
             {
                 $this->routeSpecificPreProcessor($routeKey, $body, $id);
-
-                $response = $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
-
+                $response = $this->sendRequestAndParseResponseWithMutexIfApplicable($headers, $body, $twirpPath, $routeKey);
                 $this->routeSpecificPostProcessor($routeKey, $body);
 
                 return $response;
@@ -957,6 +1036,36 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return false;
         }
     }
+    public function isMerchantEnabledForPos($merchantId,string $routeKey): bool
+    {
+
+        try {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $merchantDetails = $merchant->merchantDetail;
+
+            $properties = [
+                'id' => $merchantDetails->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.enable_pos_for_api_submerchants'),
+            ];
+
+            if ($merchantDetails->getActivationStatus() === DetailStatus::ACTIVATED && $merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID && in_array($routeKey, self::ROUTES_ENABLED_FOR_POS_FLOW)) {
+                $isExperimentEnabled = (new Core())->isSplitzExperimentEnable($properties, 'enable');
+                if ($isExperimentEnabled) {
+                    return true;
+                }
+            }
+        }
+        catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'pgos_proxy_request'     => true,
+                'error_function'         => 'isMerchantEnabledForPos',
+                'error_message'          => $e->getMessage()
+            ]);
+        }
+        return false;
+    }
 
     public function isFieldsOwnedByPGOS($inputFields): bool
     {
@@ -1060,7 +1169,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     {
         $merchant = $this->app['basicauth']->getMerchant();
 
-        if ($this->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant) === false)
+        if (($this->getIndiaModularMerchantResult($merchant)[MerchantDetailConstants::IS_MODULAR_INDIA] ?? false) === false)
         {
             return;
         }
@@ -1241,6 +1350,39 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 );
                 return;
         }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws BadRequestException
+     * @throws \Exception
+     */
+    private function sendRequestAndParseResponseWithMutexIfApplicable($headers, $body, $twirpPath, $routeKey)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $merchantId = $merchant->getId();
+        $core = new MerchantDetail();
+
+        if (
+            $routeKey === self::ONBOARDING_SAVE &&
+            !empty($merchantId) &&
+            $core->shouldApplyMutexOnOnboardingSave($merchantId)
+        ) {
+
+            return $this->mutex->acquireAndRelease(
+                $merchantId,
+
+                function () use ($headers, $body, $twirpPath, $routeKey) {
+                    return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
+                },
+
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT
+            );
+        }
+
+        return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
     }
 
 }

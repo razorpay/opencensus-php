@@ -44,4 +44,7 @@ RUN --mount=type=secret,id=git_token,required=true set -eux && \
 RUN apk add font-noto font-noto-thai font-noto-tibetan font-ipa font-sony-misc font-jis-misc && \
     fc-cache -f
 
+# Add TIFF Support for ImageMagick
+RUN apk add --no-cache imagemagick imagemagick-dev tiff tiff-dev libjpeg-turbo-dev
+
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.worker.sh"]

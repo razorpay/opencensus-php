@@ -384,8 +384,13 @@ class Core extends Base\Core
         return $errorDetails;
     }
 
-    public function getNameScoreForValidation(string $name1, string $name2)
+    public function getNameScoreForValidation($name1, $name2)
     {
+        if (empty($name1) === true or empty($name2) === true)
+        {
+            return null;
+        }
+
         $first = strtolower(preg_replace('/\s+/', ' ', $name1));
 
         $second = strtolower(preg_replace('/\s+/', ' ', $name2));

@@ -7,8 +7,12 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use Monolog\Logger;
 use RZP\Constants\Metric as Metrics;
+use RZP\Jobs\PaymentFetchByIdParity;
+use RZP\Http\RequestHeader;
 use RZP\Jobs\OrderPaymentsParity;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Admin;
 use RZP\Models\BharatQr;
 use RZP\Models\Emi\ProcessingFeePlan;
@@ -335,6 +339,8 @@ class Service extends Base\Service
                 'input'      => $input
             ]);
 
+        $this->blockIfCollectxPayment($id);
+
         // commented for now, will be enabled during further ramp-up
         // $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -431,6 +437,26 @@ class Service extends Base\Service
         );
 
         return $data;
+    }
+
+    /**
+     * @throws BadRequestException|Throwable
+     */
+    public function blockIfCollectxPayment($paymentId): void
+    {
+        $payment = $this->repo->payment->findByPublicId($paymentId);
+
+        if ($payment[Entity::REFERENCE14] === Constant::COLLECTX)
+        {
+            $this->trace->info(
+                TraceCode::COLLECTX_PAYMENT_REFUND_CURRENTLY_BLOCKED, [
+                    'payment_id' => $paymentId
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS,
+                data: ['payment_id' => $paymentId]);
+        }
     }
 
     public function verify($id, $isBarricade = false)
@@ -1590,6 +1616,12 @@ class Service extends Base\Service
                         $payment->setAmountCaptured($paymentMap['amount_captured']);
                     }
 
+                    if ((isset($paymentMap['flow']) === true) and
+                        ($paymentMap['method'] === Payment\Method::UPI))
+                    {
+                        $payment->setAttribute(Entity::FLOW, $paymentMap['flow']);
+                    }
+
                     return $payment;
                 },
                 20,
@@ -1778,7 +1810,9 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
-        if ($this->auth->isAppAuth() && $this->auth->isRouteApp())
+        $isRouteAppAuth = $this->auth->isAppAuth() && $this->auth->isRouteApp();
+
+        if ($isRouteAppAuth)
         {
             $payment = $this->repo->payment->findByPublicId($id);
 
@@ -1787,7 +1821,96 @@ class Service extends Base\Service
             $this->auth->setMerchant($this->merchant);
         }
 
-        if ((new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input))
+        $shouldProcessViaApi = false;
+        $shouldProcessViaRoute = false;
+
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        // exp check
+        $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled($id, $this->merchant->getId());
+        if ($isAmountTransferredExpEnabled === true)
+        {
+            // fetch transfer payment from api
+            $transferPayments = $this->repo->transfer_payment->getTransferPaymentIncludingExternal($payment->getId());
+
+            // transfer payment logic
+            if ($transferPayments->count() > 0)
+            {
+                if ($transferPayments[0]->isExternal() === true)
+                {
+                    $shouldProcessViaRoute = true;
+                }
+                else
+                {
+                    $shouldProcessViaApi = true;
+                }
+            }
+            else if ($payment->isTransferredInOldFlow() === true)
+            {
+                $shouldProcessViaApi = true;
+            }
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_ROUTING_RESULT,
+                [
+                    'transferPaymentCount'         => $transferPayments->count(),
+                    'transferPaymentIsExternal'    => $transferPayments[0]?->isExternal(),
+                    'paymentTransferredInOldFlow'  => $payment->isTransferredInOldFlow(),
+                    'shouldProcessViaRoute'        => $shouldProcessViaRoute,
+                    'shouldProcessViaApi'          => $shouldProcessViaApi,
+                ]
+            );
+
+            // if both are false check for order transfers
+            if ($shouldProcessViaRoute === false && $shouldProcessViaApi === false && $payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                // fetch transfers by order_id from api
+                $apiTransfers = $this->repo->transfer
+                    ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $order->getId(), $this->merchant);
+
+                // Should process via api if any order transfer is present on api
+                if ((empty($apiTransfers) === false) && (count($apiTransfers) > 0))
+                {
+                    $shouldProcessViaApi = true;
+                }
+                else
+                {
+                    // fetch transfers by order_id from route
+                    $resp = $this->app['route']->fetchTransfersBySourceId($payment->getMerchantId(), $order->getId());
+
+                    // Should process via Route if any order transfer is present on Route
+                    if ((empty($resp) === false) && $resp["count"] > 0)
+                    {
+                        $shouldProcessViaRoute = true;
+                    }
+                }
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_ROUTING_RESULT,
+                    [
+                        'apiOrderTransfersCount'       => count($apiTransfers) ?? 0,
+                        'routeOrderTransfersCount'     => $resp["count"] ?? 0,
+                        'shouldProcessViaRoute'        => $shouldProcessViaRoute,
+                        'shouldProcessViaApi'          => $shouldProcessViaApi,
+                    ]
+                );
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_ROUTING_RESULT,
+            [
+                'shouldProcessViaRoute'      => $shouldProcessViaRoute,
+                'shouldProcessViaApi'        => $shouldProcessViaApi,
+            ]
+        );
+
+        // exp check
+        $isExpEnabled = (new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input);
+
+        if (!$isRouteAppAuth && !$shouldProcessViaApi && ($shouldProcessViaRoute || $isExpEnabled))
         {
             $resp = $this->app['route']->createPaymentTransfer($id, $input);
 
@@ -2263,7 +2386,7 @@ class Service extends Base\Service
         {
 
             $properties = [
-                'id'            => $merchantId,
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get($experimentName),
                 'request_data'  => json_encode(['mids' => $merchantId]),
             ];
@@ -2281,6 +2404,36 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
                 'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
+    public function getSplitzExperimentResponseForBankingMotoRearch(string $orgId, string $experimentName)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get($experimentName),
+                'request_data'  => json_encode(['org_id' => $orgId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'org_id'            => $orgId,
+                'experimentName'    => $experimentName,
+                'request'           => $properties,
+                'result'            => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'org_id'   => $orgId,
                 'experiment_id' => $this->app['config']->get($experimentName) ?? null
             ]);
         }
@@ -2347,6 +2500,13 @@ class Service extends Base\Service
 
         $customTxnEnabled = $this->fetchCustomTxnEnabledAndSubmerchants();
 
+        //Add storeIds for filtering (proxy auth only)
+        if ($this->app['basicauth']->isProxyAuth()===true)
+        {
+            $this->modifyInputForUserStores($input);
+        }
+
+
         if($customTxnEnabled['custom_txn_enabled'] === true)
         {
             $payments = $this->repo
@@ -2383,6 +2543,16 @@ class Service extends Base\Service
         {
             $input["ip"]       = $this->app['request']->ip();
 
+            $input["merchant_id"] = $merchantId;
+
+            //Extracting Passport Details
+            $config  = $this->app['config']->get('applications.route');
+
+            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
+            $input["passport"] = $passport;
+
+
             $this->pushFetchMultipleDataForParity($response, $input);
         }
 
@@ -2404,7 +2574,7 @@ class Service extends Base\Service
         }
         catch (\Throwable $ex)
         {
-            $this->trace->error(TraceCode::ORDER_PAYMENTS_PARITY_SPLITZ_FAILURE, [
+            $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_PARITY_SPLITZ_FAILURE, [
                 "error" => $ex->getMessage(),
             ]);
 
@@ -2653,6 +2823,7 @@ class Service extends Base\Service
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
+        $hasCallbackCall = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2729,6 +2900,7 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
+
         if (isset($entity['card']) and
            ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
         )
@@ -2762,6 +2934,7 @@ class Service extends Base\Service
         {
             if($this->app['basicauth']->isPrivateAuth())
             {
+                $hasCallbackCall = true;
                 $secret = $this->app->config->get('app.key');
                 $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
                 if(isset($payment['cps_route']) && $payment['cps_route'] === 5)
@@ -2797,7 +2970,69 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        if ($this->checkSplitzForPaymentFetchByIdParity() === true)
+        {
+            $config  = $this->app['config']->get('applications.route');
+            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
+            $input["payment_id"] = $id;
+            $input["ip"] = $this->app['request']->getClientIp();
+            $input["passport"] = $passport;
+            $input["hasCallbackCall"] = $hasCallbackCall;
+            $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
+            $input["internalApp"] = $this->app['basicauth']->getInternalApp();
+            $input["isProxyAuth"] = $this->app['basicauth']->$this->isProxyAuth();
+
+            $this->pushPaymentFetchByIdForParity($payment, $input);
+        }
+
         return $entity;
+    }
+
+    public function checkSplitzForPaymentFetchByIdParity(): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.payment_fetch_by_id_parity_producer'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::PAYMENT_FETCH_BY_ID_PARITY_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function pushPaymentFetchByIdForParity($payments, $input)
+    {
+        try
+        {
+            $microtime = microtime(true);
+
+            // Convert seconds to milliseconds
+            $milliseconds = round($microtime * 1000);
+
+            PaymentFetchByIdParity::dispatchNow($this->mode, $input, $payments, $milliseconds);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::PAYMENT_FETCH_BY_ID_PARITY_EXCEPTION,
+                [
+                    "message" => $ex->getMessage()
+                ]);
+        }
     }
 
     public function getPaymentTimeline(string $id, array $input = []): array
@@ -3526,16 +3761,15 @@ class Service extends Base\Service
     {
         $dccInfo = [];
 
-        $isZeroExponentCurrencySupported = $this->isZeroExponentCurrencySupported($merchantID);
         if($this->canFetchRatesThroughRearch() === true)
         {
-            (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $isZeroExponentCurrencySupported, $dccInfo);
+            (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID, $baseCurrency, $baseAmount, $markupPercent, $method, $dccInfo);
         }
         else {
             try {
                 $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-                $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method, $isZeroExponentCurrencySupported);
+                $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method);
 
                 $dccInfo['currency_request_id'] = $currencyRequestId;
                 $this->trace->count(Metric::GET_DCC_INFO_COUNT, [
@@ -3551,27 +3785,6 @@ class Service extends Base\Service
         }
 
         return $dccInfo;
-    }
-
-    protected function isZeroExponentCurrencySupported($merchantID)
-    {
-        $mode = $this->mode ?? Mode::LIVE;
-        try {
-            // check the experiment
-            $variant = $this->app['razorx']->getTreatment($merchantID,
-                RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $mode);
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-        } catch (\Exception $e) {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::ZERO_EXPONENT_CURRENCY_SUPPORT_RAZORX_ERROR
-            );
-        }
-        return false;
     }
 
     public function getPaymentFlowsPrivate(array $input)
@@ -4894,13 +5107,37 @@ class Service extends Base\Service
      */
     protected function shouldRouteValidateVpaRequestToUps($merchant): bool
     {
-        $mode = $this->mode ?? Mode::LIVE;
-
         $merchantId = optional($merchant)->getId() ?? 'default';
 
-        $variant = $this->app->razorx->getTreatment($merchantId, RazorxTreatment::VALIDATE_VPA_REARCH_UPS, $mode);
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_validate_vpa_on_ups_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
 
-        return str_starts_with(strtolower($variant), 'on') === true;
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     public function mandateUpdate($id, $token, $input)
@@ -5272,109 +5509,6 @@ class Service extends Base\Service
         $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction, $asyncTxnEnabled);
     }
 
-
-    public function fetchpaymentwithSubscription(string $subscriptionId): array
-    {
-        $payment = $this->repo->payment->fetchBySubscriptionId($subscriptionId);
-
-        $payload = [];
-
-        if($payment != null) {
-
-
-            $payload = $payment->toArrayAdmin();
-
-            $payload['merchant'] = [
-                Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
-                Merchant\Entity::WEBSITE => $payment->merchant->getWebsite(),
-                Merchant\Entity::EMAIL => $payment->merchant->getTransactionReportEmail(),
-            ];
-
-            $payload['customer'] = [
-                'email' => $payment->customer->getEmail(),
-                'phone' => $payment->customer->getContact(),
-            ];
-
-            if ($payment->hasCard() === true) {
-                $card = $payment->card;
-                $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
-
-                $cardDetails = $card->toArrayPublic();
-
-                $cardFormatted = [
-                    'number' => '**** **** **** ' . $card->getLast4(),
-                    'expiry' => $expiryMonth . '/' . $card->getExpiryYear(),
-                    'network' => $card->getNetworkCode(),
-                    'color' => $card->getNetworkColorCode()
-                ];
-
-                $payload['card'] = array_merge($cardDetails, $cardFormatted);
-            }
-
-            $this->addInvoiceOfferDetailsForSubscription($payment, $payload);
-        }
-
-        return $payload;
-    }
-
-    public function fetchpaymentwithSubscriptionEmailAndContactNotNull(string $subscriptionId): array
-    {
-        $payment = $this->repo->payment->fetchBySubscriptionIdEmailAndContactNotNull($subscriptionId);
-
-        $payload = [];
-
-        if($payment != null) {
-
-
-            $payload = $payment->toArrayAdmin();
-
-            $payload['customer'] = [
-                'email' => $payment->email,
-                'phone' => $payment->contact,
-            ];
-        }
-
-        return $payload;
-    }
-
-    private function addInvoiceOfferDetailsForSubscription(Payment\Entity $payment, &$payload)
-    {
-        if ($payment->hasInvoice() === true)
-        {
-            $payload['invoice'] = [
-                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
-                Invoice\Entity::BILLING_END => $payment->invoice->getBillingEnd()
-            ];
-        }
-
-        // offer payload
-        $paidOffer = $payment->getOffer();
-
-        if($paidOffer !== null)
-        {
-            $discountAmount = $paidOffer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
-
-            $paidOfferSubscription = $this->repo->offer->fetchSubscriptionOfferById($paidOffer->getId(), $payment->getMerchantId());
-
-            // TODO Change to gettter after offer team approval
-            $paidOfferSubscriptionDetails = [
-                'id'              => $paidOffer->getId(),
-                'name'            => $paidOfferSubscription->getName(),
-                'payment_method'  => $paidOfferSubscription->getPaymentMethod(),
-                'applicable_on'   => $paidOfferSubscription['applicable_on'],
-                'redemption_type' => $paidOfferSubscription['redemption_type'],
-                'no_of_cycles'    => $paidOfferSubscription['no_of_cycles'],
-            ];
-
-            $payload['offer'] = [
-                'order_amount'      => $payment->order->getAmount(),
-                'discounted_amount' => $discountAmount,
-                'offer_details'     => $paidOfferSubscriptionDetails,
-            ];
-        }
-    }
-
-
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array
     {
         $payment = null;
@@ -5395,46 +5529,7 @@ class Service extends Base\Service
                 Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
         }
 
-        $payload = $payment->toArrayAdmin();
-
-        $payload['merchant'] = [
-            Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
-            Merchant\Entity::WEBSITE       => $payment->merchant->getWebsite(),
-            Merchant\Entity::EMAIL         => $payment->merchant->getTransactionReportEmail(),
-        ];
-
-        $customerEmail = null;
-        $customerContact = null;
-
-        if ($payment->customer !== null)
-        {
-            $customerEmail = $payment->customer->getEmail();
-            $customerContact = $payment->customer->getContact();
-        }
-
-        $payload['customer'] = [
-            'email' => $customerEmail,
-            'phone' => $customerContact,
-        ];
-
-        if ($payment->hasCard() === true)
-        {
-            $card = $payment->card;
-            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
-
-            $cardDetails = $card->toArrayPublic();
-
-            $cardFormatted = [
-                'number'  => '**** **** **** ' . $card->getLast4(),
-                'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
-                'network' => $card->getNetworkCode(),
-                'color'   => $card->getNetworkColorCode()
-            ];
-
-            $payload['card'] = array_merge($cardDetails, $cardFormatted);
-        }
-
-        $this->addInvoiceOfferDetailsForSubscription($payment, $payload);
+        $payload = (new ApiEventSubscriber)->constructPaymentPayloadForSubscriptionNotification($payment);
 
         return $payload;
     }
@@ -7514,8 +7609,6 @@ class Service extends Base\Service
             'amount'                => $payment->getAmount(),
             'status'                => $payment->getStatus(),
             'rrn'                   => $payment->getReference16(),
-            'gateway_fee'           => $paymentRecon->getPaymentTransaction() ? $paymentRecon->getPaymentTransaction()->getGatewayFee() : null,
-            'gateway_service_tax'   => $paymentRecon->getPaymentTransaction() ? $paymentRecon->getPaymentTransaction()->getGatewayServiceTax() : null,
             'art_request_id'        => $input['meta']['art_request_id'],
            ];
         }
@@ -7610,6 +7703,8 @@ class Service extends Base\Service
             // to send force_authorize call to cps
             if ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
             {
+                //adding this only for force_authorise_card route
+                $payment["original_cps_route"] = Payment\Entity::REARCH_CARD_PAYMENT_SERVICE;
                 $payment->enableCardPaymentService();
             }
 
@@ -9157,21 +9252,33 @@ class Service extends Base\Service
      * @param string $gateway
      * @return bool
      */
-    private function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
+    public function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
     {
-        $variant = $this->app->razorx->getTreatment($gateway, Merchant\RazorxTreatment::USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT, Mode::LIVE);
+        try{
+            $properties = [
+                'id'            => $gateway,
+                'experiment_id' => $this->app->config->get('app.use_merchant_reference_for_unexpected_payment'),
+                'request_data'  => json_encode(['gateway' => $gateway]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-        $this->trace->info(
-            TraceCode::UPI_UNEXPECTED_PAYMENT_IDENTIFIER_RAZORX_VARIANT,
-            [
-                'gateway'           => $gateway,
-                'variant'           => $variant
-            ]
-        );
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'gateway'       => $gateway,
+                'response'     => $response
+            ]);
 
-        if (strtolower($variant) === 'on')
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
         {
-            return true;
+            $this->app['trace']->traceException(
+            $e,
+            null,
+            TraceCode::UPI_UNEXPECTED_PAYMENT_IDENTIFIER_SPLITZ_FAILED
+            );
         }
 
         return false;
@@ -9596,5 +9703,22 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    private function modifyInputForUserStores(&$input): void
+    {
+
+        $storeIds = $input['store_ids'] ?? [];
+
+        $userStores = $this->app['store_service']->fetchStores();
+
+        if (empty($userStores)){
+            unset($input['store_ids']);
+            return;
+        }
+
+        $filteredStores = array_intersect($userStores, $storeIds);
+
+        $input['store_ids'] = $filteredStores;
     }
 }

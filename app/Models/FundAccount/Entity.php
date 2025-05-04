@@ -67,6 +67,7 @@ class Entity extends Base\PublicEntity
     // UPI_NUMBER is basically publicly exposed underlying account
     // when account type is upi_number
     const LINKED_NUMBER       = 'linked_number';
+    const MOBILE              = 'mobile';
 
     const NAME          = 'name';
     // Payouts to Phone Number attributes
@@ -147,6 +148,7 @@ class Entity extends Base\PublicEntity
     protected $ignoredRelations = [
         // Required as customer entity will be created via CMS and may not be present in API DB
         ConstantsEntity::CUSTOMER,
+        'source'
     ];
 
     protected $fillable = [
@@ -306,7 +308,6 @@ class Entity extends Base\PublicEntity
                 return 'VPA';
 
             // Generic format for all other types, but be explicit.
-            case Type::LINKED_NUMBER:
             case Type::BANK_ACCOUNT:
             case Type::WALLET_ACCOUNT:
             case Type::CARD:
@@ -324,6 +325,11 @@ class Entity extends Base\PublicEntity
     public function getLinkedNumber()
     {
         return $this->getAttribute(self::LINKED_NUMBER);
+    }
+
+    public function getCustomerName()
+    {
+        return $this->getAttribute(self::CUSTOMER_NAME);
     }
 
     // ------------- End Getters -------------

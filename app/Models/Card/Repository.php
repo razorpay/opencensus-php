@@ -67,6 +67,16 @@ class Repository extends Base\Repository
         return $query;
     }
 
+    public function retrieveApiIinEntityDetails($iin)
+    {
+        if (strlen($iin) > 6)
+        {
+            $iin = intval(substr($iin, 0, 6));
+        }
+
+        return Card\IIN\Entity::find($iin);
+    }
+
     public function retrieveIinDetails($iin)
     {
         if (strlen($iin) > 6)
@@ -77,7 +87,7 @@ class Repository extends Base\Repository
         //
         // retrieve iin details
         //
-        return Card\IIN\Entity::find($iin);
+        return (new IIN\Repository)->find($iin);
     }
 
     public function getByParams($params, $relations = [], $limit = 1)

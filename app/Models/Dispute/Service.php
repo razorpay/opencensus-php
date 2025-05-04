@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Exception;
+use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger;
@@ -18,12 +19,16 @@ use RZP\Mail\Base\Constants;
 use RZP\Models\Dispute\File;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Dispute\Reason;
-use RZP\Models\{Base, Payment};
+use RZP\Models\{Base, GenericDocument\Service as GenericDocumentService, Payment, FileStore\Storage\AwsS3\Handler};
 use RZP\Error\PublicErrorDescription;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\Constants as DisputeConstants;
 use RZP\Services\Segment\Constants as SegmentConstants;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\File as UfhFile;
+use RZP\Constants\Environment;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -166,6 +171,12 @@ class Service extends Base\Service
     ];
 
     const BACKFILL_COMMENT = "Note: This dispute is created by backfilling.";
+
+    const CHARGEBACK_DISPUTE_STAGE_BUCKET_NAME = 'rzp-1018-nonprod-ufh-disputes';
+    const CHARGEBACK_DISPUTE_PROD_BUCKET_NAME = 'rzp-prod-ufh-disputes';
+    const AUTO_CLOSURE_CHARGEBACK_FILES = [
+        'ICCL_Circular.pdf','AMFI_Circular.pdf'
+    ];
 
     public function create(array $input, string $paymentId, Payment\Entity $payment = null): array
     {
@@ -386,6 +397,10 @@ class Service extends Base\Service
 
         (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
 
+        $balance = (new Merchant\Service)->getPrimaryBalance();
+
+        $isBalanceSufficient = $this->isMerchantBalanceSufficient($dispute, $balance);
+
         if ($this->app['basicauth']->isExpress() === true)
         {
             $res = $dispute->toArrayAdmin();
@@ -394,13 +409,17 @@ class Service extends Base\Service
                 TraceCode::DISPUTE_FETCH_REQUEST_EXPRESS,
                 [
                     'response'  => $res,
-                ],
+                ]
             );
 
             return $res;
         }
 
-        return $dispute->toArrayPublicWithExpand();
+        $res = $dispute->toArrayPublicWithExpand();
+
+        $res['isBalanceSufficient'] = $isBalanceSufficient;
+
+        return $res;
     }
 
     public function deleteFile(string $id, string $fileId)
@@ -1163,4 +1182,154 @@ class Service extends Base\Service
 
         return true;
     }
+
+    private function isMerchantBalanceSufficient($dispute, $balance)
+    {
+        if ($dispute->getDeductAtOnset() === true)
+        {
+            return true;
+        }
+        $merchantBalance = $balance[Merchant\Balance\Entity::BALANCE];
+
+        $disputeBaseAmount = $dispute->getBaseAmount();
+
+        $disputePhase = $dispute->getPhase();
+
+        $fee = 0;
+
+        $currency = DisputeConstants::CURRENCY_INR;
+
+        if ($disputePhase === Phase::ARBITRATION || $disputePhase === Phase::PRE_ARBITRATION)
+        {
+            $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+            $network = $this->core()->getNetwork($payment);
+
+            $feeResult = $this->core()->getFeeDetails($disputePhase, $network);
+
+            $fee = $feeResult[DisputeConstants::FEE_AMOUNT];
+
+            $currency = $feeResult[DisputeConstants::CURRENCY];
+        }
+
+        if ($fee !== 0 and $currency != DisputeConstants::CURRENCY_INR)
+        {
+            $rates = (new Currency\Core)->getRates($currency);
+            $fee = $rates[$currency] * $fee;
+        }
+
+        return $merchantBalance >= $disputeBaseAmount + $fee;
+    }
+
+    public function getChargebackDisputeDocIds(Payment\Entity $payment)
+    {
+        $files  = $this->getBSECircularsFromS3();
+
+         return $this->uploadBSECircularsToUFH($payment,$files);
+
+    }
+
+    public function getBSECircularsFromS3()
+    {
+        $fileName = self::AUTO_CLOSURE_CHARGEBACK_FILES;
+
+        array_map(fn($file) => $this->downloadFileFromAws($file), $fileName);
+
+        return array_map(fn($file) => new UploadedFile(storage_path("files/filestore/{$file}"),"{$file}",null, null, true), $fileName);
+    }
+
+    public function downloadFileFromAws(string $fileKey): UfhFile
+    {
+        $filePath = storage_path('files/filestore') . '/' . $fileKey;
+
+        if(!file_exists($filePath)) {
+            $directory = dirname($filePath);
+
+            if (!file_exists($directory)) {
+                mkdir($directory, 0777, true);
+            }
+
+            $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_FILE_DOWNLOAD_REQUEST, ['file'=> $fileKey]);
+
+            return new UfhFile($this->retrieveFileFromAws($fileKey, $filePath));
+        }
+
+        return new UfhFile($filePath);
+    }
+
+    protected function retrieveFileFromAws(string $fileKey, string $filePath, string $region = 'ap-south-1', ): string
+    {
+
+        if($this->app['env'] === Environment::PRODUCTION) {
+            $bucket = self::CHARGEBACK_DISPUTE_PROD_BUCKET_NAME;
+        } else {
+            $bucket = self::CHARGEBACK_DISPUTE_STAGE_BUCKET_NAME;
+        }
+        $request = [
+            'Bucket' => $bucket,
+            'Key' => $fileKey,
+            'SaveAs' => $filePath
+        ];
+
+        try {
+            $s3Client = Handler::getClient($region);
+            $s3Client->getObject($request);
+            $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_FILE_DOWNLOAD_RESPONSE, $request);
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, null, TraceCode::AWS_FILE_DOWNLOAD_ERROR, $request);
+        }
+        return $filePath;
+    }
+    public function uploadBSECircularsToUFH(Payment\Entity $payment,array $files)
+    {
+        $docIds = [];
+        foreach ($files as $file) {
+            try {
+                $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_FILE_UPLOAD_REQUEST, ['file'=>$file]);
+                $res = $this->uploadFileToUFH($payment, $file);
+                $docIds[] = !isset($res['id']) ? null : $res['id'];
+                $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_FILE_UPLOAD_RESPONSE, $res);
+            } catch (\Throwable $e) {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_FILE_DOWNLOAD_ERROR);
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_UPLOAD_FAILURE
+                );
+            }
+        }
+        return $docIds;
+    }
+
+    public function uploadFileToUFH(Payment\Entity $payment, UploadedFile $file)
+    {
+        $file = ['file'=>$file,'purpose'=>'dispute_evidence'];
+        return (new GenericDocumentService)->uploadChargebackDisputeDocuments($payment->merchant,$file);
+    }
+
+    public function getContestDisputePayload(Payment\Entity $payment, array $documentIds): array
+    {
+        return [
+            'amount' => $payment->getAmount(),
+            'action' => 'submit',
+            'summary' => 'CBK raised before T+5',
+            'others' => [
+                [
+                    'type' => 'BSE Circulars',
+                    'document_ids' => $documentIds,
+                ]
+            ]
+        ];
+    }
+
+    public function getDisputeId(Entity $dispute): string
+    {
+        return sprintf("disp_%s", $dispute->getId());
+    }
+    public function mockContestChargebackDispute(Entity $dispute)
+    {
+        $dispute[Entity::DISPUTE_OUTCOME_REASON_ID] = 1;
+        $dispute[Entity::STATUS] = 'under_review';
+        $dispute[Entity::INTERNAL_STATUS] = 'contested';
+        return $dispute;
+    }
+
 }

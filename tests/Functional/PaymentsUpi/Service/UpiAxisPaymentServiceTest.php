@@ -18,8 +18,6 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
     {
         parent::setUp();
 
-        $this->gateway = 'upi_axis';
-
         $this->testData['upiAxis'] = [
             'RRN'                  => '822012050352',
             'TXNID'                => 'AXIS00090439839',
@@ -61,6 +59,12 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             'MERCHANT_ID'          => 'AIRTELPROD0010999999',
             'UNQ_CUST_ID'          => '',
         ];
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_axis';
     }
 
     public function testPaymentSuccess()

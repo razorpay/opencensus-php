@@ -211,7 +211,7 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
-        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true)
+        if( $this->pgosProxyController->isCurlecModularMerchant($merchant) === true || $this->shouldRouteToDocumentUploadV2($merchant))
         {
             $input['merchant_id'] = $merchant->getId();
             $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_DOCUMENT_UPLOAD_V2, $this->pgosProxyController->getPayloadForFileUpload($input), $merchant);
@@ -223,8 +223,11 @@ class Core extends Base\Core
         $service = new Merchant\Service();
         $isRekycMerchant = $service->isRekycMerchant($merchant->getMerchantId(), $merchantDetails->getActivationStatus());
 
+        $details = $service->getAdditionalDetailsFromASV($merchant->getMerchantId());
+        $latestBddVerificationStatus = $service->getLatestBddVerificationStatus($details);
+
         // unlock the form for the rekyc case
-        if($isRekycMerchant) {
+        if($isRekycMerchant || $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION) {
             $merchantDetails->setLocked(false);
         }
 
@@ -286,7 +289,7 @@ class Core extends Base\Core
                 ]);
 
                 // lock again for the rekyc case
-                if ($isRekycMerchant){
+                if ($isRekycMerchant || $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION){
                     $merchantDetails->setLocked(true);
                 }
 
@@ -822,8 +825,12 @@ class Core extends Base\Core
         $activationStatus = $merchant->merchantDetail->getActivationStatus();
         $isRekycMerchant = $service->isRekycMerchant($data[Entity::MERCHANT_ID],$activationStatus);
 
+        $details = $service->getAdditionalDetailsFromASV($merchant->getMerchantId());
+        $latestBddVerificationStatus = $service->getLatestBddVerificationStatus($details);
+
+
         if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
-            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant)
+            (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant or $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
@@ -873,5 +880,20 @@ class Core extends Base\Core
         }
 
         return $validateLock;
+    }
+    
+    public function shouldRouteToDocumentUploadV2(Merchant\Entity $merchant) : bool {
+        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.migrate_mkyc_to_document_upload_v2')
+            ],
+            DetailConstants::ENABLE
+        );
+        $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
+        
+        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
+        
+        return ($isExperimentEnabled and $isMkycMerchant);
     }
 }

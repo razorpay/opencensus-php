@@ -15,6 +15,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Services\Device as PosDevice;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -415,6 +416,34 @@ class UpiAirtelQRCodeTest extends TestCase
             ]);
         $this->runQrCodeEntityAssertions();
     }
+    public function testCreateQrCodeForStoreId(): void
+    {
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+
+        //If close_by is passed in request, QR should be created via APB terminal
+        $this->fixtures->create('terminal:dedicated_upi_airtel_offline_terminal');
+        $days = 3;
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+                'device_id'      => '1234567890',
+                'close_by'       => Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60),
+            ],
+            'live',
+            'LiveAccountMer',
+            headers:[
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]);
+        $this->runQrCodeEntityAssertions();
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals('1234567890', $qrCodeEntity['device_id']);
+        $this->assertEquals('store_123', $qrCodeEntity['store_id']);
+    }
+
 
     public function testCreateAPBQrWithCloseQrOnDemandFlagEnabledAndOfflineTerminal(): void
     {

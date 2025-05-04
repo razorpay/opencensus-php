@@ -2289,4 +2289,99 @@ class AccountV2Test extends TestCase
         ]);
         $response->assertNoContent(202);
     }
+
+    public function testSuccessfulAccountCreationMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidStateMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidEmailMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testDuplicateEmailMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $this->fixtures->merchant->create([
+            'email' => 'existing@example.com'
+        ]);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidBusinessTypeMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidPincodeMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+    public function testSuccessfulStakeholderCreationMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidStateInStakeholderMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidEmailInStakeholderMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testInvalidBICMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testEmptyIFSCFallbackMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testLongAccountNumberMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
+    public function testHappyFlowProductMalaysia()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest($testData);
+    }
+
 }
+

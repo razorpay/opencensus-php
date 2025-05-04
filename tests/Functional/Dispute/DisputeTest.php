@@ -6427,6 +6427,87 @@ class DisputeTest extends TestCase
         return $response;
     }
 
+
+    public function testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMail()
+    {
+
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->mockChargebackTplus5FilesRequest(true, $merchantId);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $this->mockChargebackTplus5FilesRequest(false, $merchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+    }
+
+    public function testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailFraudFailure()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->mockChargebackTplus5FilesRequest(true, $merchantId);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $this->mockChargebackTplus5FilesRequest(false, $merchantId);
+    }
+
+    public function testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailRetrievalFailure()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->mockChargebackTplus5FilesRequest(true, $merchantId);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $this->mockChargebackTplus5FilesRequest(false, $merchantId);
+    }
+
+    public function testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailArbitrationFailure()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->mockChargebackTplus5FilesRequest(true, $merchantId);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $this->mockChargebackTplus5FilesRequest(false, $merchantId);
+    }
+
+    public function testChargebackTPlus5DisputeCreateWithOutDeductAtOnsetSkipMerchantMailPreArbitrationFailure()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->mockChargebackTplus5FilesRequest(true, $merchantId);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $this->mockChargebackTplus5FilesRequest(false, $merchantId);
+    }
+
     protected function mockSalesforceRequest($expectedMerchantIds, $expectedResponse): void
     {
         $this->salesforceMock->shouldReceive('getSalesForceTeamNameForMerchantID')
@@ -6524,5 +6605,22 @@ class DisputeTest extends TestCase
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+    }
+    
+    protected function mockChargebackTplus5FilesRequest($input,$merchantId)
+    {
+        $docs = [
+            'ICCL_Circular.pdf','AMFI_Circular.pdf'
+        ];
+
+        if($input) {
+            array_map(fn($file) => file_put_contents(storage_path("files/filestore/{$file}"), 'dummy content'), $docs);
+            array_map(fn($file) => new \Symfony\Component\HttpFoundation\File\UploadedFile(storage_path("files/filestore/{$file}"),"{$file}",null, null, true), $docs);
+            $this->setUpFixtures(['merchant_id' => $merchantId]);
+            $this->fixtures->merchant->addFeatures(['auto_closure_cbk_mf_mx']);
+        } else {
+            array_map(fn($file) => unlink(storage_path("files/filestore/{$file}")), $docs);
+            $this->fixtures->merchant->removeFeatures(['auto_closure_cbk_mf_mx']);
+        }
     }
 }

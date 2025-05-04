@@ -29,6 +29,9 @@ class Constants
     const TURBO_PAYEE_PAYMENT_CREATED_AT_RANGE          = 2;
     const TURBO_PAYMENT_LOOK_UP_BACK_SECONDS            = 20;
 
+    // Autopay constants
+    const AUTOPAY_ENABLED = 'autopay_enabled';
+
     // Prefetch Constants
     const PREFETCH           = 'prefetch';
     const CONSENT_MESSAGE    = 'consent_message';
@@ -272,6 +275,11 @@ class Constants
     public static function getSupportedPayerAccountTypes(): array
     {
         return self::$supportedPayerAccountTypes;
+    }
+
+    public static function getDefaultAutopayEnabledFeatureFlag(): bool
+    {
+        return false;
     }
 
     public static function getPayerAccountTypeMappings($gateway)

@@ -6,9 +6,11 @@ use DB;
 use Mail;
 use Queue;
 use Mockery;
+use Lib\CRC16;
 use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Models\QrCode\Type;
+use RZP\Models\BharatQr\Tags;
 use RZP\Services\RazorXClient;
 use RZP\Services\SplitzService;
 use RZP\Models\Payment\Gateway;
@@ -61,13 +63,17 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    public function createQrForSingleStack(array $input = [], array $headers = [])
+    public function createQrForSingleStack(array $params)
     {
+        $input = $params['content'] ?? [];
+        $headers = $params['headers'] ?? [];
+        $url = $params['url'];
+
         $this->ba->appAuth();
 
         $request = [
             'method'  => 'POST',
-            'url'     => '/payments/terminal/qr_codes/device/create',
+            'url'     => $url,
             'content' => $input,
             'headers' => $headers,
         ];
@@ -1410,6 +1416,10 @@ trait NonVirtualAccountQrCodeTrait
         {
             $ezetapNotificationMock->shouldReceive('sendEzetapRequest')
                                    ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+
+            $ezetapNotificationMock->shouldReceive('sendEzetapRawRequest')
+                ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+
         }
         else
         {
@@ -1420,6 +1430,12 @@ trait NonVirtualAccountQrCodeTrait
                                        array_push($eventList,$event->event);
                                        return null;
                                    });
+
+            $ezetapNotificationMock->shouldReceive('sendEzetapRawRequest')
+                ->andReturnUsing(function($event) use (&$actualCallCount, &$eventList) {
+                    $actualCallCount++;
+                    return json_encode(["success" => true]);
+                });
 
         }
     }
@@ -1527,4 +1543,48 @@ trait NonVirtualAccountQrCodeTrait
             ],
         ];
     }
+
+    public function assertBqrString($qrCode, $response, $isMultipleUse = false)
+    {
+        $qrString = $this->buildBqrString($qrCode, $isMultipleUse);
+
+        // Append CRC Checksum
+        $qrString .= Tags::CRC . '04';
+        $crc = (new CRC16)->calculateCrc($qrString);
+        $qrString .= $crc;
+
+        $this->assertEquals($qrString, $response);
+    }
+
+    private function buildBqrString($qrCode, $isMultipleUse)
+    {
+        $qrString = "0002010102";
+
+        // Amount check
+        $qrString .= empty($qrCode->getAmount()) ? '11' : '12';
+
+        $qrString .= "0827ABCD0000000000000000000000026350010A0000005240117razorpay@hdfcbank";
+
+        // Multiple vs Single Use
+        $qrId = $qrCode->getId();
+        $qrString .= $isMultipleUse ? "27390010A0000005240121STQ{$qrId}qrv2" : "27360010A0000005240118{$qrId}qrv2";
+
+        $qrString .= "520453995303356";
+
+        // Amount inclusion
+        $qrString .= empty($qrCode->getAmount()) ? "5802IN59" : "54041.005802IN59";
+
+        // Merchant Name
+        $qrString .= $this->formatMerchantName($qrCode->merchant->name);
+
+        // Final QR Data
+        return $qrString . "6009BANGALORE610656003062220518{$qrId}qrv2";
+    }
+
+    private function formatMerchantName($merchantName)
+    {
+        $length = strlen($merchantName);
+        return ($length < 10 ? "0{$length}" : $length) . $merchantName;
+    }
+
 }

@@ -3,10 +3,13 @@
 namespace RZP\Models\Admin\AdminsMeta;
 
 use Carbon\Carbon;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use Illuminate\Support\Facades\DB;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -71,6 +74,26 @@ class Repository extends Base\Repository
         ->where('id', $adminId)
         ->update(array('expired_at' => $expireAt));
     }
+
+    public function getAdminDisabledUpdateByAdminID(string $adminId, bool $status):int
+    {
+        return DB::table(Table::ADMIN)
+            ->where(AdminEntity::ID, $adminId)
+            ->update(array(
+                AdminEntity::DISABLED => $status
+            ));
+    }
+
+    public function getMetadataUpdateByAdminID(string $adminId, string $disabledReason, int $currentTimestamp):int
+    {
+        return $this->newQuery()
+            ->where(Entity::ADMIN_ID, $adminId)
+            ->update(array(
+                Entity::USER_DISABLED_AT    => $currentTimestamp,
+                Entity::DISABLED_REASON     => $disabledReason // Update reason
+            ));
+    }
+
     public function adminsUpdateByAdminID(string $adminId, array $dataArr):int
     {
         return DB::table('admins')->where('id', $adminId)->update($dataArr);
@@ -111,4 +134,125 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchAxisAdminMetaData($admin)
+    {
+        $adminsMetaAdminId = $this->dbColumn(Entity::ADMIN_ID);
+        $adminsMetaAuthMode = $this->dbColumn(Entity::AUTH_MODE);
+        $disabledReason = $this->dbColumn(Entity::DISABLED_REASON);
+
+        return $this->newQuery()
+            ->where($adminsMetaAdminId, '=', $admin[Entity::ID])
+            ->get([$adminsMetaAuthMode, $disabledReason])
+            ->first();
+    }
+
+    public function disableDormantAdminsAndUpdateMeta($dormancyPeriod): array
+    {
+        $adminsUpdated = [];
+
+        $adminsNotUpdated = [];
+
+        $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
+
+        // Fetch admin ids eligible for disabling based on dormancy period
+        $adminIds = $this->fetchDormantAdmins($dormancyPeriod);
+
+        $this->trace->info(TraceCode::ORG_ADMIN_UPDATE_REQUEST,
+            [
+                'admins_ids'               => $adminIds,
+                'dormancy_period'          => $dormancyPeriod,
+                'deactivation_reason'      => Constant::IDAM_DORMANCY,
+                'deactivation_time'        => $currentTimestamp,
+                'account_status_disabled'  => true,
+            ]
+        );
+
+        foreach ($adminIds as $adminId)
+        {
+            $affectedRow = null;
+
+            try
+            {
+                // Execute updates inside a database transaction to ensure atomicity
+                $affectedRow = DB::transaction(function () use ($adminId, $currentTimestamp)
+                {
+                    // Add expiry reason to identify users deactivated based on dormancy
+                    $disabledReason = Constant::IDAM_DORMANCY;
+
+                    return $this->getMetadataUpdateByAdminID($adminId, $disabledReason, $currentTimestamp) and
+                        $this->getAdminDisabledUpdateByAdminID($adminId, true);
+                });
+
+                if(isset($affectedRow) === true)
+                {
+                    $adminsUpdated[] = $adminId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(TraceCode::ORG_ADMIN_UPDATE_FAILURE,
+                    [
+                        'admin_id'          => $adminId,
+                        'exception'         => $ex->getMessage(),
+                    ]
+                );
+
+                $adminsNotUpdated[] = $adminId;
+            }
+
+        }
+
+        $this->trace->info(TraceCode::ORG_ADMIN_UPDATE_RESPONSE,
+            [
+                'success'          => $adminsUpdated,
+                'failure'          => $adminsNotUpdated,
+            ]
+        );
+
+        // return the count of updated or non-updated admins
+        return [count($adminsUpdated), count($adminsNotUpdated)];
+    }
+
+    public function fetchDormantAdmins(int $dormancyPeriod): array
+    {
+        // Define the necessary table and column names
+
+        $admin = $this->repo->admin;
+
+        $timestamp = Carbon::now()->subDays($dormancyPeriod)->timestamp;
+
+        $adminTable = $admin->getTableName();
+
+        $adminId = $admin->dbColumn(AdminEntity::ID);
+
+        $adminLastLoginAt = $admin->dbColumn(AdminEntity::LAST_LOGIN_AT);
+
+        $adminCreatedAt = $admin->dbColumn(AdminEntity::CREATED_AT);
+
+        $adminDeletedAt = $admin->dbColumn(AdminEntity::DELETED_AT);
+
+        $adminDisabled = $admin->dbColumn(AdminEntity::DISABLED);
+
+        $orgId = $admin->dbColumn(Entity::ORG_ID);
+
+        $adminsMetaAdminId = $this->dbColumn(Entity::ADMIN_ID);
+
+        $authMode = $this->dbColumn(Entity::AUTH_MODE);
+
+        // Create the query to join tables and get records
+        return $this->newQuery()
+            ->join($adminTable, $adminId, '=', $adminsMetaAdminId)
+            ->where($orgId, '=', Org\Entity::AXIS_ORG_ID)
+            ->where($authMode, '=', Org\AuthType::ADFS)
+            ->where($adminDisabled, '=', false)
+            ->whereNull($adminDeletedAt)
+            ->where(function ($query) use ($adminLastLoginAt, $adminCreatedAt, $timestamp)
+            {
+                $query->whereRaw("($adminLastLoginAt IS NOT NULL AND $adminLastLoginAt <= ?)
+                                    OR ($adminLastLoginAt IS NULL AND $adminCreatedAt <= ?)",
+                                    [$timestamp, $timestamp]);
+            })
+            ->pluck(Entity::ADMIN_ID)
+            ->toArray();
+    }
 }

@@ -2,6 +2,9 @@
 
 namespace RZP\Models\EMandate;
 
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Processor\Netbanking;
+
 class Constants
 {
     const EMANDATE_MERCHANT_CONFIGURATIONS = "emandate_merchant_configurations";
@@ -361,4 +364,10 @@ class Constants
         "Sandeep Kumar",
         "Mahendra Singh"
     ];
+
+    const EMANDATE_GATEWAY_ACCEPTED_BANK_CODE_MAPPINGS = [
+        Netbanking::BARB_R => IFSC::BARB,
+        Netbanking::PUNB_R => IFSC::PUNB
+    ];
+
 }

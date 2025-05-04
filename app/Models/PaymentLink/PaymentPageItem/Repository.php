@@ -59,6 +59,26 @@ class Repository extends Base\Repository
             ->findOrFailPublic($id);
     }
 
+    public function deletePaymentPageItemsByPaymentLinkId(string $paymentLinkId)
+    {
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_LINK_ID, $paymentLinkId)
+            ->delete();
+    }
+
+    public function deletePaymentPageItemsByIds(array $ppiIds)
+    {
+        return $this->newQuery()
+            ->whereIn('id', $ppiIds)
+            ->forceDelete();
+    }
+
+    public function bulkInsert(array $paymentPageItems)
+    {
+        return $this->newQuery()->insert($paymentPageItems);
+    }
+
+
     protected function serializeForIndexing(PublicEntity $entity): array
     {
         $serialized = parent::serializeForIndexing($entity);

@@ -52,7 +52,6 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
     const BAJAJ_FINSERV_REST_API =  'bajaj_finserv_rest_api';
-    const UPI_SBI_V3_MIGRATION = 'upi_sbi_v3_migration';
 
     protected $map = [
         'data'      => Entity::RAW,
@@ -2138,14 +2137,7 @@ class Gateway extends Base\Gateway
                 return $baseUrl . $prefix . '/' . $gateway . '/v1/' . $this->action;
             }
 
-            $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
-
-            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), self::UPI_SBI_V3_MIGRATION, $mode);
-
-            if (strtolower($variant) === 'v3')
-            {
-                $url = $baseUrl . $prefix . '/' . $gateway . '/v3/' . $this->action;
-            }
+            $url = $baseUrl . $prefix . '/' . $gateway . '/v3/' . $this->action;
 
             return $url;
         }
@@ -4019,9 +4011,9 @@ class Gateway extends Base\Gateway
 
         parent::action($input, Action::PRE_PROCESS);
 
-        $url = $this->getUrlForMozartRequest($input, 'payments');
+        $url = $this->getUrlForMozartRequest($input, 'payments', $this->app['rzp.mode']);
 
-        $request = $this->getAuthenticatedMozartRequestArray($url, $input);
+        $request = $this->getAuthenticatedMozartRequestArray($url, $input, $this->app['rzp.mode']);
 
         $this->trace->info(
             TraceCode::MOZART_SERVICE_REQUEST_BT_IBL,

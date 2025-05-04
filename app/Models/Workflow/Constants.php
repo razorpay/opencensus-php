@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Constants\Entity as EntityConstants;
+
 class Constants
 {
     const CHECKER_ACTIONS   = 'checker_actions';
@@ -27,6 +29,36 @@ class Constants
     const WORKFLOW_ID = 'workflow_id';
 
     const ON = 'on';
+
+    const ENTITY_ID = 'entity_id';
+    const ENTITY_TYPE = 'entity_type';
+    const PERMISSION_NAME = 'permission_name';
+    const ORIGINAL_DATA = 'original_data';
+    const DIRTY_DATA = 'dirty_data';
+    const MAKER_ID = 'maker_id';
+    const MAKER_TYPE = 'maker_type';
+    const NEXT_WORKFLOW_PRESENT = 'next_workflow_present';
+    const WORKFLOW_CREATION_DURING_APPROVAL = 'allow_workflow_creation_during_approval';
+    const TARGET = 'target';
+    const SERVICE = 'service';
+    const ROUTE = 'route';
+    const METHOD = 'method';
+    const BULK_SIZE = 'bulk_size';
+    const RETRY = 'retry';
+    const OPERATION_TYPE = 'operation_type';
+    const PAYLOAD          = 'payload';
+    const CANARY_ENABLED = 'canary_enabled';
+    const CANARY_PERCENTAGE = 'canary_percentage';
+
+    const ENTITY_REFRESH_ROUTE = 'entity_refresh_route';
+    const PRIMARY_KEY_COLUMN = 'primary_key_column';
+
+    const WORKFLOW_GUARD_SERVICE_COLUMNS = [
+        EntityConstants::WORKFLOW => [ self::CANARY_ENABLED, self::CANARY_PERCENTAGE],
+        EntityConstants::WORKFLOW_ACTION => [self::OPERATION_TYPE, self::CANARY_PERCENTAGE, self::CANARY_ENABLED],
+    ];
+
+    const WORKFLOW_WFG_PROXYING_EXPERIMENT_ID = 'app.workflow_wfg_proxying_experiment_id';
 
     const WORKFLOW_TOGGLE_ACTIVATE_MERCHANT                   = 'WORKFLOW_TOGGLE_ACTIVATE_MERCHANT';
     const WORKFLOW_TOGGLE_FUNDS                               = 'WORKFLOW_TOGGLE_FUNDS';

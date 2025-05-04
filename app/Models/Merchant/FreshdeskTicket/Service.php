@@ -2710,7 +2710,11 @@ class Service extends Base\Service
     {
         $filteredAgents = [];
 
-        if (empty($response) === false)
+        $this->trace->info(TraceCode::REWRITE_AGENTS_RESPONSE_FUNC_RESP, [
+            'response_error' => $response['errors'] ?? null,
+        ]);
+
+        if (empty($response) === false && isset($response['errors']) !== true)
         {
             foreach ($response as $agent)
             {

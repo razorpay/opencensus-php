@@ -1388,16 +1388,18 @@ class Generator extends QrCode\Generator
         // QrCode/Generator/getTransactionReferenceTlv()
         $qrRefId = $this->getRefIdForQrCode($qrCode);
 
-        $upiString = $rupayRidTlv . $qrRefId;
+        $qrRefTlv = Tags::UPI_VPA_REFERENCE_TR . strlen($qrRefId) . $qrRefId;
+
+        $upiString = $rupayRidTlv . $qrRefTlv;
 
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrCode($qrCode)
+    protected function getBharatQrCode($qrCode, $terminal = null)
     {
         $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
 
-        $terminals = $this->getDedicatedTerminalForQrCreate($qrCode);
+        $terminals = $terminal === null ? $this->getDedicatedTerminalForQrCreate($qrCode) :  [0 => $terminal];
         $errorMessage = '';
         $errorCode    = '';
 

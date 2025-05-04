@@ -2298,6 +2298,44 @@ return [
         ]
     ],
 
+    'testEcollectIdfcBatchCreate' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/file/idfc',
+            'method'  => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key'    => 'idfc/filename.csv',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type' => 'ecollect_idfc',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'ecollectIdfcBatchData' => [
+        [
+            'bankCode'              => '751',
+            'VAN'                   => '3141412932249569',
+            'product Code'           => 'IIMPS',
+            'instrumentType'        => 'IMPS',
+            'remitterAccountNumber' => '923020021413403',
+            'remitterIfscCode'      => null,
+            'remitterName'          => 'TUNECLINICALAESTHE',
+            'Contact No'            => null,
+            'Email'                 => null,
+            'status'                => 'Success',
+            'txnAmount'             => '1001',
+            'txnDate'               => '05-FEB-2025',
+            'txnRefNumber'          => '503618787655',
+            'Trn TimeStamp'         => '05-FEB-2025 18:21:01',
+            'CLIENT_CODE'           => 'RZPX'
+        ]
+    ],
+
     'testProcessBankTransferInvalidPayerIfsc' => [
         'url'     => '/ecollect/validate/test',
         'method'  => 'post',
@@ -3277,6 +3315,29 @@ return [
                 'Identifier' => 'XYZ',
             ],
             'status_code'  =>  200,
+        ]
+    ],
+
+    'testBankTransferIblMerchantNotFound' => [
+        'request' => [
+            'url'     => '/ecollect/validate/ibl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_IBL_SECRET',
+            ],
+            'content' => [
+                "data" => 'eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2R0NNIn0.V-rTAvkRDJhEjxQrA6Vhmja9OZsX8Vus8mQGMuZmm4IAYe-o8JH7fg.STmRcdmJj0YJL7CL.p86dZA0FWWpc02COwbZtTtmDm3LhgMH9xfzHkFACSCjQ35yh_uT6REAPl_rZJZ1e0B-i3O-kLPNuurhhryo_pseByMe_A5VheZLr_lnbxW3fXQDfulNxw-6ihUEDcafQExGh58hd4xAlxfraCc2614vuru27SuWk4y8r9eGeS3MdvdF3Wv-QKDKzX8nvAa34ov3ZM52gbhaFQpFOsFpmpS_cdfuTYe-nFEgxg7DkaKkDjGRIjZEoMcqnm6QK81TmwnX5kP0hc1ZAR6FXycA7bYCN9_hPAWMfROvcwkB6rJsYbobJbHzbNoSQLDzjMNZbKsE2BfOqwaiD5OuEK9t6qKQim8cRa0ZgVLMVa2quCNNU9Jl8QjBGIIBuB4UWCEvtV7EoMexFB95RuK7MzO7ctB2_fPQ.ddN_xTiBYtEUU-8BEhRs7g'
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'Stts_flg'   => 'F',
+                'Err_cd'     => '007',
+                'message'    => 'BAD_REQUEST_MERCHANT_NOT_FOUND',
+                'Identifier' => 'XYZ',
+            ],
+            'status_code'  =>  400,
         ]
     ],
 

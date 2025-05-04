@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\NachBatchProcess;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\NachBatchProcessWithAsyncBalance;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -198,13 +199,7 @@ class Service extends Base\Service
 
     private static function isAsyncNachProcessingEnabled(string $key, $mode): bool
     {
-        $app = App::getFacadeRoot();
-
-        $mode = $mode ?? Mode::LIVE;
-
-        $status = $app['razorx']->getTreatment($key, RazorxTreatment::EMANDATE_ASYNC_PAYMENT_PROCESSING_ENABLED, $mode);
-
-        return (strtolower($status) === 'on');
+        return true;
     }
 
     public function checkEmandateDuplicatePayment(array $input): bool
@@ -312,12 +307,27 @@ class Service extends Base\Service
     {
         $app = App::getFacadeRoot();
 
-        $mode = $mode ?? Mode::LIVE;
+        $experimentId = $app['config']->get('app.emandate_async_payment_with_async_balance');
 
-        $status = $app['razorx']->getTreatment($payment->getMerchantId(),
-            RazorxTreatment::EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BAL_ENABLED, $mode);
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $experimentId,
+            'request_data'  => json_encode(
+                [
+                    'merchant_id' => $payment->getMerchantId(),
+                ]),
+        ];
 
-        return (strtolower($status) === 'on');
+        $response = $app['splitzService']->evaluateRequest($properties);
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return (strtolower($variant) === 'enable');
     }
 
     private function setResponseFields(array & $input)

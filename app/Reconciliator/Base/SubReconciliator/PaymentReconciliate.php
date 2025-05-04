@@ -2493,11 +2493,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             }
             else
             {
-                (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true and $this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) {
+                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                }
 
                 $discount = $paymentProcessor->getDiscountIfApplicableForLedger($this->payment);
 
-                [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($this->payment, $discount);
+                if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true and $this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                {
+                    [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($this->payment, $discount);
+                }
 
                 $this->payment->setFee($fee+$tax);
                 $this->payment->setTax($tax);
@@ -2515,7 +2520,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
 
                 (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
-
             }
             else if ($this->payment->getCpsRoute() != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
                 {

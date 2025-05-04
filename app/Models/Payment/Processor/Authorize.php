@@ -1686,6 +1686,11 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
+    public function processCapture(Payment\Entity $payment, array $data = []): array
+    {
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
     protected function processNachPaymentCreated(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
@@ -2340,20 +2345,7 @@ trait Authorize
                 $payment->merchant->isRazorpayOrgId() === true and
                 $payment->card->getNetwork() === Network::getFullName(Network::MC)))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, $this->mode);
-
-            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
-                'payment_id'     => $payment->getId(),
-                'merchant_id'    => $payment->getMerchantId(),
-                'razorx_variant' => $variant,
-            ]);
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         if(($payment->isGatewayCaptured() === false) and
@@ -2436,58 +2428,6 @@ trait Authorize
             // If payment_capture was sent as true in order,
             // then we capture it in this step only.
             $this->autoCapturePayment($payment);
-        }
-        elseif ($response['should_auto_capture'] === false)
-        {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_NOT_TRIGGERED_REASON,
-                [
-                    'reason'    => $response['reason'],
-                ]);
-
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NOT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
-
-            if ($this->shouldGatewayCapturePayment($payment) === true and
-                $payment->hasSubscription() === false)
-            {
-                $this->gatewayCapturePaymentViaQueue($payment);
-            }
-        }
-    }
-
-    public function autoCapturePaymentUsingOrderIfApplicable(Payment\Entity $payment)
-    {
-
-        $response = $this->shouldAutoCaptureOrder($payment);
-
-        // For Optimizer payments, additional check
-        // Ref : https://docs.google.com/document/d/1FQEGHojgb74pyBtS0r7t_qWg05XsZ_636UyYYkUNKdE/edit#
-        if($payment->isOptimizerCaptureSettingsEnabled() === true)
-        {
-            $response = $this->shouldAutoCaptureOptimizerExternalPgPayment($payment, $response);
-        }
-
-        if (isset($response) === false)
-        {
-            return;
-        }
-
-        $properties = $response ?? [];
-
-        if ($response['should_auto_capture'] === true)
-        {
-            $this->trace->info(
-                TraceCode::AUTO_CAPTURE_TRIGGERED_REASON,
-                [
-                    'reason'    => $response['reason'],
-                ]);
-
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
-
-            // If payment_capture was sent as true in order,
-            // then we capture it in this step only.
-            $this->autoCapturePayment($payment);
-//            return true;
         }
         elseif ($response['should_auto_capture'] === false)
         {
@@ -2675,7 +2615,7 @@ trait Authorize
 
             $this->validatePaCBDataIfApplicable($payment);
 
-            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->validateCitiLrsImportFlowDataInCrossBorderImportService($payment);
 
             $this->validateImportFlowDataIfApplicable($payment);
 
@@ -5043,6 +4983,7 @@ trait Authorize
         }
     }
 
+
     protected function traceMismatchInResult($apiResult, $crossBorderImportServiceResult)
     {
         if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
@@ -5148,6 +5089,7 @@ trait Authorize
         }
 
         // validate if lrs travel citi supported payment libraries
+
         $library = (new Payment\Service)->getLibraryFromPayment($payment);
         if(in_array($library, Analytics\Metadata::LRS_TRAVEL_CITI_SUPPORTED_LIBRARIES) === false)
         {
@@ -5386,6 +5328,72 @@ trait Authorize
         }
     }
 
+    protected function validateCitiLrsImportFlowDataInCrossBorderImportService(Payment\Entity $payment){
+        if ($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
+        {
+            return;
+        }
+        $apiLrsTravelCitiValidationResult = null;
+        $shadowExperimentResultCrossBorderImportService = null;
+        $shadowExperimentResult = $this->evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($payment->merchant->getId());
+
+        if($shadowExperimentResult){
+            try {
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                        'payment_id'  => $payment['id'],
+                        'merchant_id' => $payment['merchant_id'],
+                    ]
+                );
+                //call to import service
+                $response = $this->app['cross_border_import_service']->validateImportPayment($payment,'lrs_travel_citi_flow');
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                        'response' => $response,
+                    ]
+                );
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+                );
+                $shadowExperimentResultCrossBorderImportService = $e->getMessage();
+            }
+        }
+        try
+        {
+            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::API_CITI_LRS_VALIDATION_ERROR,[
+                    'lrs_travel_citi_validation_response' => $e->getMessage()
+                ]
+            );
+            $apiLrsTravelCitiValidationResult = $e->getMessage();
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+            throw $e;
+        }
+    }
+
+    protected function traceMismatchInResultForLrsCiti($apiResult, $crossBorderImportServiceResult)
+    {
+        if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
+            return;
+        }
+        $this->trace->error(
+            TraceCode::CROSS_BORDER_IMPORT_API_CITI_LRS_VALIDATIONS_MISMATCH, [
+                'api_result' => $apiResult ?? 'success',
+                'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
+            ]
+        );
+    }
 
     private function evaluateSplitzExperimentforCrossBorderImportRearch($merchantId)
     {
@@ -5456,6 +5464,42 @@ trait Authorize
             );
         }
 
+        return false;
+    }
+
+    private function evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_payment_shadow_citi_lrs'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_PAYMENT_CITI_SHADOW_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
         return false;
     }
 
@@ -8636,6 +8680,7 @@ trait Authorize
                 $saveMethodInput[Token\Entity::MAX_AMOUNT] = $this->upiMandate->getMaxAmount() ?? null;
                 $saveMethodInput[Token\Entity::EXPIRED_AT] = $this->upiMandate->getEndTime() ?? null;
                 $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
+                $saveMethodInput[Token\Entity::FREQUENCY] = $this->upiMandate->getFrequency() ?? null;
             }
 
             if ($payment->isUpiRecurring() and
@@ -9650,8 +9695,8 @@ trait Authorize
         (new Payment\Metric)->pushAuthMetrics($this->payment);
 
         $this->eventPaymentAuthorized();
-
-        $this->publishMessageToSqsBarricade($this->payment);
+         //         Removing this as we are not using barricade anymore
+       // $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyIfCardSaved();
 
@@ -9804,29 +9849,6 @@ trait Authorize
                 $core->updateTokenStatus($token->getId(), Token\Constants::FAILED, $errorCode);
 
                 return;
-            }
-
-            if (($payment->isRecurring() === true) and
-                ($token->getMethod() === Method::CARD) and
-                ($token->card->isRzpSavedCard() === true))
-            {
-                $variant = $this->app->razorx->getTreatment($token->merchant->getId(),
-                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                    $this->mode);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    return;
-                }
-
-                $variant = $this->app->razorx->getTreatment($token->card->getIin(),
-                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                    $this->mode);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    return;
-                }
             }
 
             if ($core->checkIfTokenisationApplicable($token) === false)
@@ -10068,7 +10090,19 @@ trait Authorize
 
         $order = $payment->order;
 
-        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+        $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId());
+
+        if ($oeBenefitsExpEnabled)
+        {
+            $discountAmount = $this->app["offers_engine"]->getTotalDiscountApplied(
+                $payment->getOffer()->getPublicId(), $payment->getPublicId(),$order->getPublicId());
+        }
+        else
+        {
+            $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
+        }
+
 
         $discountInput = [
             Discount\Entity::AMOUNT => $discountAmount,
@@ -10633,8 +10667,7 @@ trait Authorize
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
             else if (($payment->hasOrder() === true) &&
-                     ($payment->isUpiTransfer() === false) &&
-                     ($payment->isQrV2UpiPayment() === false)
+                     ($payment->isUpiTransfer() === false)
             ) {
                 // adding isUpiTransfer check because icici upi transfer callback happens in direct auth
                 // this is a hack. other upi va callbacks might not need this check
@@ -12649,7 +12682,10 @@ trait Authorize
                             ]);
                     }
 
-                    $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+                    if (($payment->isCard() === false) || !(isset($payment["original_cps_route"]) === true) || $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                    {
+                       $reverseShadowCore->createLedgerEntryForGatewayCaptureReverseShadow($this->payment, $apiTxnId);
+                    }
 
                 } else {
 
@@ -14791,15 +14827,6 @@ trait Authorize
                 in_array($input['dcc_currency'], Currency\Currency::ZERO_DECIMAL_CURRENCIES, true) === false))
         {
             return;
-        }
-
-        // check the experiment
-        $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-            RazorxTreatment::ZERO_EXPONENT_CURRENCY_SUPPORT, $this->mode);
-        if (strtolower($variant) !== 'on')
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, 'currency');
         }
     }
 

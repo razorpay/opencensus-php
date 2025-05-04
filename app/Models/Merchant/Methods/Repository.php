@@ -47,6 +47,14 @@ class Repository extends Base\Repository
         Entity::AMEXEASYCLICK          => 'sometimes|in:0,1',
         Entity::PAYCASH                => 'sometimes|in:0,1',
         Entity::CITIBANKREWARDS        => 'sometimes|in:0,1',
+        Entity::GRABPAY                => 'sometimes|in:0,1',
+        Entity::ALIPAY                 => 'sometimes|in:0,1',
+        Entity::GOPAY                  => 'sometimes|in:0,1',
+        Entity::DOKU                   => 'sometimes|in:0,1',
+        Entity::LINKAJA                => 'sometimes|in:0,1',
+        Entity::OVO                    => 'sometimes|in:0,1',
+        Entity::KLARNA                 => 'sometimes|in:0,1',
+        Entity::ZIP                    => 'sometimes|in:0,1',
     );
 
     public function fetchRouteName()
@@ -300,6 +308,76 @@ class Repository extends Base\Repository
             $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
             $query->where($additional_wallets,'not like','%'.$wallet.'%');
         }
+    }
+
+    protected function addQueryParamAlipay($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAdditionalWallets($query,Entity::ALIPAY,$params[Entity::ALIPAY]);
+    }
+
+    protected function addQueryParamGopay($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAdditionalWallets($query,Entity::GOPAY,$params[Entity::GOPAY]);
+    }
+
+    protected function addQueryParamDoku($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAdditionalWallets($query,Entity::DOKU,$params[Entity::DOKU]);
+    }
+
+    protected function addQueryParamOvo($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAdditionalWallets($query,Entity::OVO,$params[Entity::OVO]);
+    }
+
+    protected function addQueryParamLinkaja($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAdditionalWallets($query,Entity::LINKAJA,$params[Entity::LINKAJA]);
+    }
+
+    protected function addQueryParamKlarna($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAddonMethods($query,Entity::KLARNA,$params[Entity::KLARNA]);
+    }
+
+    protected function addQueryParamZip($query,$params)
+    {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            'function' => __FUNCTION__
+        ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+        $this->queryParamForAddonMethods($query,Entity::ZIP,$params[Entity::LINKAJA]);
     }
 
     protected function addQueryParamInApp($query, $params)

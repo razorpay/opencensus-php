@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Services\WorkflowGuard;
 use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
@@ -64,6 +65,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Services\UpiPayment;
+use RZP\Services\Device;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
@@ -523,6 +525,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new MerchantOnboardingProxyController();
         });
 
+        $this->app->singleton('WorkflowGuardService', function ($app)
+        {
+            return new WorkflowGuard\Service();
+        });
+
         $this->app->singleton('NeedsClarificationProxyController', function ($app)
         {
             return new NeedsClarificationProxyController();
@@ -941,6 +948,34 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerCredcase();
 
         $this->registerCredcaseService();
+
+        $this->registerCMSService();
+
+        $this->app->singleton('pos.deviceservice', function($app)
+        {
+
+            $ezetapDeviceMock = $app['config']->get('applications.ezetap-api.mock');
+
+            if ($ezetapDeviceMock === true)
+            {
+                return new Device\Mock\ApiMock($app);
+            }
+
+            return new Device\Api($app);
+        });
+
+        $this->app->singleton('store_service', function($app)
+        {
+
+            $storeServiceMock = $app['config']->get('applications.store_service.mock');
+
+            if ($storeServiceMock === true)
+            {
+                return new RZP\Models\Payment\Store\Mock\ApiMock($app);
+            }
+
+            return new RZP\Models\Payment\Store\Api($app);
+        });
     }
 
     protected function registerCacheManager()
@@ -2973,6 +3008,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                 return new Mock\Route($app);
             }
             return new Route\Api($app);
+        });
+    }
+
+    protected function registerCMSService()
+    {
+        $this->app->singleton('cms', function($app)
+        {
+            return new CMS\Service($app);
         });
     }
 }

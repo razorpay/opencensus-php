@@ -255,6 +255,11 @@ class PaymentPageProcessor extends Job
         if (empty($paymentLink) === true) {
             $this->delete();
 
+            $this->trace->info(TraceCode::NCA_DECOMP_NO_PL_ENTITY, [
+                'productId'   => $payment->order->getProductId(),
+                'step'        => 'handlePaymentCaptureEvent',
+            ]);
+
             $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_FAILED, $this->context + [
                     'payment_id'    => $payment->getId(),
                 ]);

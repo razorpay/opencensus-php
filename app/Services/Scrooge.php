@@ -88,7 +88,8 @@ class Scrooge
         'refund_internal_fetch'                => 'internal/fetch',
         // Currently only table `gateway_keys` is supported for bulk entities
         'bulk_gateway_keys'                    => 'entities/gateway_keys',
-        'verify_refunds'                       => 'bulk_verify'
+        'verify_refunds'                       => 'bulk_verify',
+        'bulk_omni_refund_create'              => 'bulk-omni-refund-create'
     ];
 
     // Headers
@@ -233,6 +234,15 @@ class Scrooge
         $this->enablePassport();
 
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    public function bulkOmniRefundCreate(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_omni_refund_create'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
@@ -1104,21 +1114,9 @@ class Scrooge
      */
     protected function generateRequest(string $endpoint, string $method, array $data): array
     {
-        $app = App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-            "scrooge_edge_migration",
-            $app['rzp.mode'] ?? 'live');
-
         $url = $this->baseUrl . $endpoint;
 
-        if ($this->baseUrl == "https://scrooge.razorpay.com/v1/" && $variant==='on')
-        {
-            $url = "https://scrooge-temp.razorpay.com/v1/" . $endpoint;
-        }
-
         $this->trace->info(TraceCode::SCROOGE_EDGE_MIGRATION, [
-            'variant'    => $variant,
             'url'        => $url,
         ]);
 

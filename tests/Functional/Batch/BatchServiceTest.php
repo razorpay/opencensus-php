@@ -168,6 +168,17 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkedAccountWithAccountCodeCreateBatch()
+    {
+        $entries = $this->getFileEntriesForLinkedAccountWithAccountCodeCreateBatch();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateLinkedAccountCreateBatchWithMissingOtpAnd2faEnabled()
     {
         $splitzOutput = [
@@ -399,6 +410,36 @@ class BatchServiceTest extends TestCase
                 Header::IFSC_CODE           => 'CNRB0000002',
                 Header::ACCOUNT_NUMBER      => '9876543210',
                 Header::BENEFICIARY_NAME    => 'Another beneficiary',
+            ],
+        ];
+    }
+
+    protected function getFileEntriesForLinkedAccountWithAccountCodeCreateBatch()
+    {
+        return [
+            [
+                Header::ACCOUNT_NAME        => 'LA_1',
+                Header::ACCOUNT_EMAIL       => 'la.1@rzp.com',
+                Header::DASHBOARD_ACCESS    => 0,
+                Header::CUSTOMER_REFUNDS    => 0,
+                Header::BUSINESS_NAME       => 'Business',
+                Header::BUSINESS_TYPE       => 'ngo',
+                Header::IFSC_CODE           => 'SBIN0000002',
+                Header::ACCOUNT_NUMBER      => '999888777666',
+                Header::BENEFICIARY_NAME    => 'Beneficiary',
+                Header::ACCOUNT_CODE        => 'AccountCode123'
+            ],
+            [
+                Header::ACCOUNT_NAME        => 'LA_2',
+                Header::ACCOUNT_EMAIL       => 'la.2@rzp.com',
+                Header::DASHBOARD_ACCESS    => 1,
+                Header::CUSTOMER_REFUNDS    => 1,
+                Header::BUSINESS_NAME       => 'Another business',
+                Header::BUSINESS_TYPE       => 'individual',
+                Header::IFSC_CODE           => 'CNRB0000002',
+                Header::ACCOUNT_NUMBER      => '9876543210',
+                Header::BENEFICIARY_NAME    => 'Another beneficiary',
+                Header::ACCOUNT_CODE        => 'AccountCode456'
             ],
         ];
     }

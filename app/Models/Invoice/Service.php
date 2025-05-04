@@ -181,9 +181,16 @@ class Service extends Base\Service
     {
         if (in_array('payments', $expands) === true)
         {
-            $payments = $this->repo->payment->getPaymentsForInvoice(Entity::stripDefaultSign($invoiceArray[Entity::ORDER_ID]));
+            $orderId = Entity::stripDefaultSign($invoiceArray[Entity::ORDER_ID] ?? '');
 
-            $invoiceArray['payments'] = $payments->toArrayPublic();
+            if (!empty($orderId)) {
+                $payments = $this->repo->payment->getPaymentsForInvoice($orderId);
+                $invoiceArray['payments'] = $payments->toArrayPublic();
+            }
+            else
+            {
+                $invoiceArray['payments'] = [];
+            }
         }
 
         return $invoiceArray;
@@ -770,6 +777,11 @@ class Service extends Base\Service
 
         $input[E::MERCHANT] = $this->serializeMerchantForHostedForPaymentLinkService($this->merchant);
 
+        if (isset($input["invoice"]["options"]["checkout"]["name"])
+            and empty($input["invoice"]["options"]["checkout"]["name"]) === false) {
+            $input[E::MERCHANT][Merchant\Entity::NAME] = $input["invoice"]["options"]["checkout"]["name"];
+        }
+
         $input[E::ORG] = $this->serializeOrgPropertiesForHostedForPaymentLinkService();
 
         $input['view_preferences'] = $this->getViewPreferencesForPaymentLinkService($this->merchant);
@@ -1019,7 +1031,8 @@ class Service extends Base\Service
 
         return [
             'branding'  => $branding,
-            'custom_code'=> $org->getCustomCode()
+            'custom_code'=> $org->getCustomCode(),
+            'id' => $this->merchant->getOrgId()
         ];
     }
 

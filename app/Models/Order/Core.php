@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -32,6 +33,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\OrderOutbox\Constants as OrderOutboxConstants;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\EMandate\Constants as EmandateConstants;
 
 class Core extends Base\Core
 {
@@ -221,6 +223,8 @@ class Core extends Base\Core
             $config['name'] = $order->getAttribute(Entity::MERCHANT_ID).'_late_auth';
 
             $config['is_default'] = false;
+
+            $config['mutex_order_id'] = $order->getAttribute(Entity::ID);
 
             $configCore = new Config\Core();
 
@@ -522,6 +526,11 @@ class Core extends Base\Core
 
                 if(empty($data[Entity::BANK]) === false)
                 {
+                    if(isset(EmandateConstants::EMANDATE_GATEWAY_ACCEPTED_BANK_CODE_MAPPINGS[$data[Entity::BANK]]))
+                    {
+                        $data[Entity::BANK] = EmandateConstants::EMANDATE_GATEWAY_ACCEPTED_BANK_CODE_MAPPINGS[$data[Entity::BANK]];
+                    }
+
                     $mappedBank = Payment\Gateway::ENACH_NPCI_BANKS_WITH_DIFFERENT_IFSC_CODE_MAPPING[$data[Entity::BANK]] ?? null;
 
                     if ($mappedBank !== null)
@@ -962,8 +971,7 @@ class Core extends Base\Core
             $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $merchant);
 
             if (($token !== null) and
-                ($token->getMethod() === 'card') and
-                (strtolower($this->app->razorx->getTreatment($merchant->getMerchantId(), RazorxTreatment::CARD_RECURRING_ENABLE_PDN_DECOUPLING, $this->mode ?? 'live')) === 'on'))
+                ($token->getMethod() === 'card'))
             {
                 $cardMandateNotificationCore = (new CardMandate\CardMandateNotification\Core);
                 $cardMandateNotificationCore->validateCardMandateNotificationData($input, $merchant, $token);
@@ -1223,13 +1231,68 @@ class Core extends Base\Core
 
         if (isset($input[Entity::OFFERS]) === true)
         {
-            foreach (array_unique($input[Entity::OFFERS]) as $offerId)
-            {
-                $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+            $this->trace->info(TraceCode::OFFER_VALIDATION_LOGGER, [
+                'offers_to_validate' => count(array_unique($input[Entity::OFFERS]))
+            ]);
 
-                if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+            $orderFailureResult = null;
+
+            $isValidationViaOEEnabled = $this->shouldValidateOfferForOrderViaOE($merchant);
+
+            if (($isValidationViaOEEnabled === true) and
+                (count(array_unique($input[Entity::OFFERS])) === 1))
+            {
+                $resp = $offerCore->fetchAndValidateOfferForOrderOnOffersEngine(
+                    $order, $merchant, array_unique($input[Entity::OFFERS])[0]);
+
+                $offer = $resp[Offer\Constants::OFFER];
+
+                if ($order->isOfferForced() === true)
                 {
                     array_push($offers, $offer);
+                }
+            }
+            else
+            {
+                foreach (array_unique($input[Entity::OFFERS]) as $offerId)
+                {
+                    $offer = null;
+                    try
+                    {
+                        $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+                    }
+                    catch (\Exception $e)
+                    {
+                        if ($orderFailureResult === null)
+                        {
+                            $orderFailureResult = $this->skipOrderOfferFailure($merchant);
+
+                            $this->trace->info(
+                                TraceCode::ORDER_OFFER_FAILURE_SKIP,
+                                [
+                                    'order_id'                        => $order->getId(),
+                                    'offer_id'                        => $offerId,
+                                    'order_failure_experiment_result' => $orderFailureResult,
+                                ]
+                            );
+                        }
+
+                        if (!$orderFailureResult)
+                        {
+                            throw $e;
+                        }
+                    }
+
+                    // no need to fail the order in case offer is not valid for order
+                    if ($offer === null)
+                    {
+                        continue;
+                    }
+
+                    if (($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+                    {
+                        array_push($offers, $offer);
+                    }
                 }
             }
         }
@@ -1242,6 +1305,28 @@ class Core extends Base\Core
         return $offers;
     }
 
+    public function skipOrderOfferFailure(Merchant\Entity $merchant): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchant->getId(),
+                "experiment_id" => $this->app['config']->get('app.order_offer_failure_exp_id'),
+                "request_data" => json_encode(['merchant_id' => $merchant->getId()])
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'variant_on');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::ORDER_OFFER_FAILURE_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+        }
+        return false;
+    }
     private function saveEntityOffer($order, $offers)
     {
         $data = array();
@@ -1340,4 +1425,40 @@ class Core extends Base\Core
             $this->repo->saveOrFail($order);
         }
     }
+
+    public function shouldValidateOfferForOrderViaOE(Merchant\Entity $merchant): bool
+    {
+        $mode = 'enable';
+        $merchantID = $merchant->getId();
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.validate_offer_via_offer_engine_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::VALIDATE_OFFER_VIA_OFFER_ENGINE_SPLITZ_EXPERIMENT, [
+                'splitz_output' => $variant,
+                'response' => $response,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::VALIDATE_OFFER_VIA_OFFER_ENGINE_SPLITZ_ERROR, [
+                'merchant_id'   => $merchantID,
+                'experiment_id' => $this->app['config']->get('app.validate_offer_via_offer_engine_exp_id_') ?? null,
+            ]);
+        }
+
+        return false;
+    }
+
 }

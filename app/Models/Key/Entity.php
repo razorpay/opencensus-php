@@ -5,6 +5,7 @@ namespace RZP\Models\Key;
 use App;
 use Crypt;
 
+use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Models\Base;
@@ -319,6 +320,11 @@ class Entity extends Base\PublicEntity
 
     public function getDecryptedSecret()
     {
+        $app = App::getFacadeRoot();
+        $app['trace']->count(Metric::PASSPORT_PRESENT_AND_SECRETS_FETCH_COUNT, [
+            "passport_present" => $app['request.ctx.v2']->shouldAuthenticateUsingPassport,
+            "route" => $app['request.ctx']->getRoute(),
+        ]);
         return Crypt::decrypt($this->getSecret(), true, $this);
     }
 

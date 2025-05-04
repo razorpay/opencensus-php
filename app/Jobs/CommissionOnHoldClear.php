@@ -4,10 +4,13 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger as Trace;
 
+use Carbon\Carbon;
 use RZP\Services\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Bucket;
 
 class CommissionOnHoldClear extends Job
 {
@@ -26,11 +29,14 @@ class CommissionOnHoldClear extends Job
 
     protected $transactions;
 
-    public function __construct(string $mode, array $transactions)
+    protected $startTimestamp;
+
+    public function __construct(string $mode, array $transactions, int $startTimestamp)
     {
         parent::__construct($mode);
 
         $this->transactions = $transactions;
+        $this->startTimestamp = $startTimestamp;
     }
 
     public function handle()
@@ -51,6 +57,21 @@ class CommissionOnHoldClear extends Job
                 'failed_count'  => 0,
                 'success_count' => 0,
             ];
+
+            // NOTE:
+            // subtracting 1 month here because
+            // in current month we generate previous month's invoice and
+            // the $startTimestamp would be previous month's start timestamp
+            // hence, for old invoices we want to check if the startTimestamp
+            // is older than previous month's startTimestamp
+            $currentMonth = Carbon::now()->subMonth()->month;
+            $currentYear = Carbon::now()->year;
+            $currentTimestamp = Carbon::createFromDate($currentYear, $currentMonth, 1, Timezone::IST)->startOfMonth()->getTimestamp();
+
+            if ($this->startTimestamp < $currentTimestamp) {
+                $this->handleOldInvoice($this->transactions, $timeStarted);
+                return;
+            }
 
             $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_REQUEST, ['transactions' => $this->transactions]);
 
@@ -130,5 +151,33 @@ class CommissionOnHoldClear extends Job
         {
             $this->release(self::RETRY_INTERVAL);
         }
+    }
+
+    protected function handleOldInvoice(array $transactions, int $timeStarted): void
+    {
+        $summary = [
+            'success_count' => 0,
+            'success_ids' => [],
+        ];
+        $bucketCore = new Bucket\Core;
+        $res = $bucketCore->settlementServiceToggleTransactionHold($transactions, null);
+        $timeTakenMilliSeconds = (int) (microtime(true) - $timeStarted) * 1000;
+        if ($res['success'] === true) {
+            $summary['success_count'] = count($transactions);
+            $summary['success_ids'] = $transactions;
+            $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_SUMMARY, $summary);
+            
+            // Track successful clearances
+            $this->trace->histogram(PartnerMetric::COMMISSION_ON_HOLD_CLEAR_OLD_INVOICE_PROCESS_TIME_MS, $timeTakenMilliSeconds);
+            return;
+        }
+
+        $this->trace->error(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED, $res);
+        
+        // Track failed clearances
+        $this->trace->count(PartnerMetric::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_OLD_INVOICE_FAILED_TOTAL);
+        
+        // Track process time for failures too
+        $this->trace->histogram(PartnerMetric::COMMISSION_ON_HOLD_CLEAR_OLD_INVOICE_PROCESS_TIME_MS, $timeTakenMilliSeconds);
     }
 }

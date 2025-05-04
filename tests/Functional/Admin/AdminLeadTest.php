@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use DB;
 use Mail;
 
 use RZP\Models\User\Entity;
@@ -179,6 +180,65 @@ class AdminLeadTest extends TestCase
         return $adminLead;
     }
 
+    public function testAdminLeadWithCustomInvitePermission()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::YES_ORG_ID);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $this->org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(MerchantInvitationMail::class);
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
+
+    public function testAdminLeadWithoutCustomInvitePermission()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::YES_ORG_ID);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $this->org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        $this->startTest();
+
+        Mail::assertQueued(MerchantInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
 
     public function testCreatePartnerAdminLead()
     {

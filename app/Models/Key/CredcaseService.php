@@ -152,7 +152,10 @@ class CredcaseService
     private function buildKeyFromCredcaseResponse(ApiKeyResponse $credcaseKeyResponse) {
         $key = new Entity;
         $id = $credcaseKeyResponse->getId();
-        Entity::stripSign($id);
+        $strip = Entity::stripSign($id);
+        if(!$strip) {
+            $id = substr($id, -14);
+        }
         $key->setId($id);
         $key->setMerchantId($credcaseKeyResponse->getOwnerId());
         $key->setCreatedAt(empty($credcaseKeyResponse->getCreatedAt()) ? null : $credcaseKeyResponse->getCreatedAt());
