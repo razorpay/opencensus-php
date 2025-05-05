@@ -20,7 +20,9 @@ class Entity extends Base\PublicEntity
 
     const APPROVE_TOKEN = 'approve_token';
 
-    const REJECT_TOKEN  = 'reject_token';
+    const REJECT_TOKEN = 'reject_token';
+
+    const CREATE_CONSENT = 'create_consent';
 
     const TOKEN_EXPIRY = 'token_expiry';
 
@@ -46,14 +48,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ENTITY_TYPE     => 'merchant',
-        self::STATE           => State::PENDING_APPROVAL,
+        self::ENTITY_TYPE => 'merchant',
+        self::STATE => State::PENDING_APPROVAL,
         self::REJECTION_COUNT => 0,
     ];
 
     protected $dispatchesEvents = [
         // Event 'saved' fires on insert and update both.
-        'saved'   => EventSaved::class,
+        'saved' => EventSaved::class,
         'deleted' => EventDeleted::class,
     ];
 
