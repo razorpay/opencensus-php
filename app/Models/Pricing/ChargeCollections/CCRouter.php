@@ -407,57 +407,76 @@ class CCRouter
 
     private function checkSplitzExperiment(string $id, string $experimentId): array
     {
-        $startTimeMs = round(microtime(true) * 1000);
-        try {
-            $request = ['id' => $id, 'experiment_id' => $experimentId];
+        $maxRetries = 3; // Number of retries
+        $retryDelayMs = 100; // Delay between retries in milliseconds
 
-            $response = $this->app['splitzService']->evaluateRequest($request);
+        for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
+            $startTimeMs = round(microtime(true) * 1000);
 
-            if ($response['status_code'] !== 200) {
-                $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, ['response' => $response, 'mode' => $this->mode]);
-                return [
-                    self::VALID => false,
-                    self::VARIANT => '',
-                ];
-            }
+            try {
+                $request = ['id' => $id, 'experiment_id' => $experimentId];
 
-            $variant = $response['response']['variant'] ?? [];
-            $variantName = $variant['name'] ?? '';
-            $endTimeMs = round(microtime(true) * 1000);
-            $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs- $startTimeMs);
+                $response = $this->app['splitzService']->evaluateRequest($request);
+                $endTimeMs = round(microtime(true) * 1000);
+                $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs - $startTimeMs);
 
-            if (in_array($variantName, self::VALID_CC_EXPERIMENT_VARIANTS)) {
-                return [
-                    self::VALID => true,
-                    self::VARIANT => $variantName,
-                ];
-            }else{
+                if ($response['status_code'] !== 200) {
+                    $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, ['response' => $response, 'mode' => $this->mode]);
+                    return [
+                        self::VALID => false,
+                        self::VARIANT => '',
+                    ];
+                }
+
+                $variant = $response['response']['variant'] ?? [];
+                $variantName = $variant['name'] ?? '';
+
+                if (in_array($variantName, self::VALID_CC_EXPERIMENT_VARIANTS)) {
+                    return [
+                        self::VALID => true,
+                        self::VARIANT => $variantName,
+                    ];
+                } else {
+                    $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
+                        'invalid_variant_response' => $response,
+                        'variant' => $variantName,
+                        'mode' => $this->mode,
+                    ]);
+                    return [
+                        self::VALID => false,
+                        self::VARIANT => '',
+                    ];
+                }
+            } catch (\Throwable $e) {
+                $endTimeMs = round(microtime(true) * 1000);
+                $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs - $startTimeMs);
+
                 $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
-                    'invalid_variant_response' => $response,
-                    'variant' => $variantName,
+                    'splitz_exception' => $e,
+                    "splitz_call_response" => $response ?? null,
+                    "experiment_id" => $experimentId,
+                    "identifier" => $id,
+                    'attempt' => $attempt + 1,
                     'mode' => $this->mode,
                 ]);
+
+                // Retry only for timeout errors
+                if (str_contains($e->getMessage(), "cURL error 28") && $attempt < $maxRetries - 1) {
+                    usleep($retryDelayMs * 1000);
+                    continue;
+                }
+
                 return [
                     self::VALID => false,
                     self::VARIANT => '',
                 ];
             }
-        } catch (\Throwable $e) {
-            $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
-                'splitz_exception' => $e,
-                "splitz_call_response" => $response,
-                "experiment_id" => $experimentId,
-                "identifier" => $id,
-                'mode' => $this->mode,
-            ]);
-            $endTimeMs = round(microtime(true) * 1000);
-            $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs- $startTimeMs);
-
-            return [
-                self::VALID => false,
-                self::VARIANT => '',
-            ];
         }
+
+        return [
+            self::VALID => false,
+            self::VARIANT => '',
+        ];
     }
 
     private function isRouteApplicableForDecomp($routeName)

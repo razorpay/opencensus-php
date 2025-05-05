@@ -30,6 +30,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Services\ChargeCollections;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Http\RequestHeader;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Pricing\Constants as PricingConstants;
@@ -55,6 +56,11 @@ class Service extends Base\Service
 
     public function createPlan($input, $type = null, $orgID = '', $internalCall = false)
     {
+        $reconJobSync =$this->app['request']->headers->get(RequestHeader::RECON_JOB_SYNC);
+        if ($reconJobSync === "true") {
+            return $this->createPlanLegacy($input, $type, [], $orgID, $internalCall);
+        }
+
         $sourceInput = $input;
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $ruleCount = $this->getInputRuleCount($input);
@@ -79,16 +85,20 @@ class Service extends Base\Service
         }
 
         foreach ($input['rules'] as &$item) {
-            // Convert 'amount_range_active' to boolean if it exists and is not already a boolean
-            if (isset($item['amount_range_active']) && !is_bool($item['amount_range_active'])) {
-                $item['amount_range_active'] = (bool) $item['amount_range_active'];
-            }
-            if (isset($item['fixed_rate']) && !is_int($item['fixed_rate'])) {
-                $item['fixed_rate'] = (int) $item['fixed_rate'];
-            }
-            if (isset($item['percent_rate']) && !is_int($item['percent_rate'])) {
-                $item['percent_rate'] = (int) $item['percent_rate'];
-            }
+           foreach ([
+                    'amount_range_active' => 'bool',
+                    'fixed_rate' => 'int',
+                    'percent_rate' => 'int',
+                    'min_fee' => 'int',
+                    'max_fee' => 'int',
+                    'amount_range_min' => 'int',
+                    'amount_range_max' => 'int',
+                    'percent_rate_scale_factor' => 'int'
+                ] as $key => $type) {
+                    if (isset($item[$key])) {
+                        settype($item[$key], $type);
+                    }
+                }
         }
 
         $input[Entity::ORG_ID] = $this->getRuleOrgId();
