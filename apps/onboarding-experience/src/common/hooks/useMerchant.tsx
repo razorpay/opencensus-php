@@ -9,8 +9,8 @@ const useMerchant = (): UseQueryResult<MerchantResponseType> => {
 
   return useQuery<MerchantResponseType>({
     refetchOnWindowFocus: false,
-    queryKey: ['merchant_activation_data'],
-    retry: false,
+    queryKey: ['merchant_activation_data', activeUser.merchant?.id],
+    retry: 3,
     queryFn: () =>
       graphqlRequest({
         document: MERCHANT_DETAILS_QUERY,

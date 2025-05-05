@@ -30,8 +30,8 @@ const useMerchantOnboardingData = ({
 }: merchantOnboardingDataPropsType): UseQueryResult<MerchantOnboardingDataResponseType> => {
   return useQuery<MerchantOnboardingDataResponseType>({
     refetchOnWindowFocus: false,
-    queryKey: ['merchant_onboarding_data'],
-    retry: false,
+    queryKey: ['merchant_onboarding_data', defaultWorkflow, defaultFeatureFlags, requestedData],
+    retry: 3,
     // nosemgrep : ssc-adb055b9-fed0-4d70-a57d-eb9825b09449
     queryFn: () =>
       graphqlRequest({

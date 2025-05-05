@@ -1,19 +1,22 @@
 import { renderHook } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import useAccordionSectionData from '../useAccordionSectionData';
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
 import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 jest.mock('apps/onboarding-experience/src/common/hooks/useMerchant');
 jest.mock('@federated/apps/shell/commonStore');
 jest.mock('@FTUX/utils/homepage');
+jest.mock('@FTUX/context/MerchantContext');
 
 describe('useAccordionSectionData hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (useMerchant as jest.Mock).mockReturnValue({ data: null });
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: null,
+    });
     (useStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         session: {
@@ -30,10 +33,9 @@ describe('useAccordionSectionData hook', () => {
   });
 
   test('returns correct active step when no website, API keys, or transactions', () => {
-    console.log(useMerchant);
     // Mock merchant data with no website, API keys, or transactions
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [],
           activation: {
@@ -71,8 +73,8 @@ describe('useAccordionSectionData hook', () => {
     });
 
     // Mock merchant data with no API keys or transactions
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [],
           activation: {
@@ -109,8 +111,8 @@ describe('useAccordionSectionData hook', () => {
     });
 
     // Mock merchant data with API keys but no transactions
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [{ id: 'api-key-1', createdAt: '2023-01-01' }],
           activation: {
@@ -147,8 +149,8 @@ describe('useAccordionSectionData hook', () => {
     });
 
     // Mock merchant data with API keys and completed transactions
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [{ id: 'api-key-1', createdAt: '2023-01-01' }],
           activation: {
@@ -176,8 +178,8 @@ describe('useAccordionSectionData hook', () => {
     };
 
     // Mock merchant data with payment channels
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [],
           activation: {
@@ -264,8 +266,8 @@ describe('useAccordionSectionData hook', () => {
       return selector(state);
     });
 
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [],
           activation: {
@@ -305,8 +307,8 @@ describe('useAccordionSectionData hook', () => {
       return selector(state);
     });
 
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [],
           activation: {
@@ -333,8 +335,8 @@ describe('useAccordionSectionData hook', () => {
 
   test('handles pre-activation case - skips website section and shows only 2 accordion items', () => {
     // Mock non-activated merchant
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [],
           activation: {
@@ -366,8 +368,8 @@ describe('useAccordionSectionData hook', () => {
 
   test('handles pre-activation case with API keys - active step should be 1', () => {
     // Mock non-activated merchant with API keys
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [{ id: 'api-key-1', createdAt: '2023-01-01' }],
           activation: {
@@ -391,8 +393,8 @@ describe('useAccordionSectionData hook', () => {
 
   test('handles pre-activation case with API keys and transactions - active step should be 2', () => {
     // Mock non-activated merchant with API keys and transactions
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           apiKeys: [{ id: 'api-key-1', createdAt: '2023-01-01' }],
           activation: {

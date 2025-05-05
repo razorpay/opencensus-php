@@ -2,15 +2,10 @@ import React from 'react';
 import { screen } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import WelcomeHeader from '../WelcomeHeader';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
-// Mock the useMerchant hook
-jest.mock('apps/onboarding-experience/src/common/hooks/useMerchant', () => ({
-  __esModule: true,
-  default: jest.fn(),
-}));
-
-// Import the mocked hook
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
+// Mock dependencies
+jest.mock('@FTUX/context/MerchantContext');
 
 describe('WelcomeHeader Component', () => {
   beforeEach(() => {
@@ -19,8 +14,8 @@ describe('WelcomeHeader Component', () => {
 
   test('renders with merchant name when merchant data is available', () => {
     // Mock the hook to return merchant data
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           name: {
             registered: 'Test Merchant',
@@ -37,8 +32,8 @@ describe('WelcomeHeader Component', () => {
 
   test('renders without merchant name when merchant data is not available', () => {
     // Mock the hook to return undefined merchant data
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: null,
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: null,
     });
 
     renderWithWrappers(<WelcomeHeader />);
@@ -49,8 +44,8 @@ describe('WelcomeHeader Component', () => {
 
   test('renders without merchant name when merchant name is undefined', () => {
     // Mock the hook to return data but with undefined name
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           name: {
             registered: undefined,

@@ -7,24 +7,24 @@ import {
   hasAddedWebsite,
 } from 'apps/onboarding-experience/src/common/utils/merchant';
 import { getLayoutByMerchantType } from '@FTUX/utils/homepage';
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
-import useMerchantOnboardingData from 'apps/onboarding-experience/src/common/hooks/useMerchantOnboardingData';
 import { useStore } from '@federated/apps/shell/commonStore';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 // Mock dependencies
 jest.mock('apps/onboarding-experience/src/common/utils/merchant');
 jest.mock('@FTUX/utils/homepage');
-jest.mock('apps/onboarding-experience/src/common/hooks/useMerchant');
-jest.mock('apps/onboarding-experience/src/common/hooks/useMerchantOnboardingData');
 jest.mock('@federated/apps/shell/commonStore');
+jest.mock('@FTUX/context/MerchantContext');
 
 describe('useHomepageState hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Default mock return values
-    (useMerchant as jest.Mock).mockReturnValue({ data: null });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({ data: null });
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: null,
+      onboardingData: null,
+    });
     (areAnyOptionsAccepted as jest.Mock).mockReturnValue(false);
     (hasAddedWebsite as jest.Mock).mockReturnValue(false);
     (getLayoutByMerchantType as jest.Mock).mockReturnValue([]);
@@ -34,35 +34,35 @@ describe('useHomepageState hook', () => {
   });
 
   test('returns empty array when merchantData is not available', () => {
-    (useMerchant as jest.Mock).mockReturnValue({ data: null });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({
-      data: { merchantOnboardingData: {} },
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: null,
+      onboardingData: {
+        merchantOnboardingData: {},
+      },
     });
 
     const { result } = renderHook(() => useHomepageState());
     expect(result.current).toEqual([]);
   });
 
-  test('returns empty array when ftuxData is not available', () => {
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+  test('returns empty array when onboardingData is not available', () => {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: { business: { paymentAcceptanceChannels: [] } },
       },
+      onboardingData: null,
     });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({ data: null });
 
     const { result } = renderHook(() => useHomepageState());
     expect(result.current).toEqual([]);
   });
 
   test('returns empty array when paymentChannels is not available', () => {
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: { business: {} },
       },
-    });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({
-      data: {
+      onboardingData: {
         merchantOnboardingData: {},
       },
     });
@@ -73,8 +73,8 @@ describe('useHomepageState hook', () => {
 
   test('returns PG layout when isPgMerchant is true', () => {
     // Mock data for PG merchant
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           business: {
             paymentAcceptanceChannels: ['some_pg_channel'],
@@ -84,9 +84,7 @@ describe('useHomepageState hook', () => {
           },
         },
       },
-    });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({
-      data: {
+      onboardingData: {
         merchantOnboardingData: {},
       },
     });
@@ -121,8 +119,8 @@ describe('useHomepageState hook', () => {
 
   test('adds transaction banner when merchant has transacted', () => {
     // Mock data for PG merchant that has transacted
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           business: {
             paymentAcceptanceChannels: ['some_pg_channel'],
@@ -132,9 +130,7 @@ describe('useHomepageState hook', () => {
           },
         },
       },
-    });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({
-      data: {
+      onboardingData: {
         merchantOnboardingData: {},
       },
     });
@@ -158,8 +154,8 @@ describe('useHomepageState hook', () => {
 
   test('considers website verification status when determining layout', () => {
     // Mock data for merchant with website verification in progress
-    (useMerchant as jest.Mock).mockReturnValue({
-      data: {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
         merchantById: {
           business: {
             paymentAcceptanceChannels: ['some_channel'],
@@ -169,9 +165,7 @@ describe('useHomepageState hook', () => {
           },
         },
       },
-    });
-    (useMerchantOnboardingData as jest.Mock).mockReturnValue({
-      data: {
+      onboardingData: {
         merchantOnboardingData: {
           websiteVerificationUpdateStatus: {
             verificationStatus: {

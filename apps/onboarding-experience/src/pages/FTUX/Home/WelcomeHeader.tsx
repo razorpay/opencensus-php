@@ -1,12 +1,12 @@
 import React from 'react';
 import { Box, Divider, Heading, Text, ArrowRightIcon } from '@razorpay/blade/components';
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 /**
  * Displays a personalized welcome message to the merchant at the top of the FTUX homepage.
  */
 const WelcomeHeader = () => {
-  const { data: merchantData } = useMerchant();
+  const { merchantData } = useMerchantContext();
   const merchantName = merchantData?.merchantById?.name?.registered;
 
   return (

@@ -1,19 +1,12 @@
 import { useStore } from '@federated/apps/shell/commonStore';
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
 import { getLayoutByMerchantType } from '@FTUX/utils/homepage';
-import {
-  PG_CHANNEL_OPTIONS,
-  NO_CODE_CHANNEL_OPTIONS,
-  FTUX_FEATURE_FLAGS,
-  FTUX_REQUIRED_DATA_REQUEST,
-} from '@FTUX/constants/homepage';
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
-import useMerchantOnboardingData from 'apps/onboarding-experience/src/common/hooks/useMerchantOnboardingData';
-import { WORKFLOW_TYPES } from 'apps/onboarding-experience/src/common/types/merchant';
+import { PG_CHANNEL_OPTIONS, NO_CODE_CHANNEL_OPTIONS } from '@FTUX/constants/homepage';
 import {
   areAnyOptionsAccepted,
   hasAddedWebsite,
 } from 'apps/onboarding-experience/src/common/utils/merchant';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 /**
  * Hook that determines which UI elements to show on the FTUX homepage
@@ -27,12 +20,7 @@ import {
  */
 const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
   const activeUser = useStore((state) => state.session.user);
-  const { data: merchantData } = useMerchant();
-  const { data: onboardingData } = useMerchantOnboardingData({
-    defaultWorkflow: WORKFLOW_TYPES.BUSINESS_WEBSITE,
-    defaultFeatureFlags: FTUX_FEATURE_FLAGS,
-    requestedData: FTUX_REQUIRED_DATA_REQUEST,
-  });
+  const { merchantData, onboardingData } = useMerchantContext();
 
   // Return empty array if required data is not available yet
   if (!merchantData?.merchantById || !onboardingData?.merchantOnboardingData) {

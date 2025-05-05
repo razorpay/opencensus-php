@@ -6,11 +6,11 @@ import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
 import AddWebsite from '@FTUX/Home/AccordionSection/AddWebsite';
 import PaymentGateway from '@FTUX/Home/AccordionSection/PaymentGateway';
 import AcceptTransactions from '@FTUX/Home/AccordionSection/AcceptTransactions';
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 const useAccordionSectionData = (): { activeStep: number; accordionData: AccordionDataType[] } => {
   const { mode, user: activeUser } = useStore((state) => state.session);
-  const { data: merchantData } = useMerchant();
+  const { merchantData } = useMerchantContext();
   const merchant = merchantData?.merchantById;
 
   const isMerchantActivated = Boolean(merchant?.activation?.isActivated);
