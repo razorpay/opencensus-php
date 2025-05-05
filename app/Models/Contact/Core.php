@@ -139,7 +139,33 @@ class Core extends Base\Core
 
         $this->PushVendorEvent($contact, Contact\Constants::CONTACT_CREATED_MESSAGE);
 
+        // Capture source request ID for contact
+        $this->captureSourceRequestId($contact);
+
         return $contact;
+    }
+
+    /**
+     * Captures the source request ID (AWS trace ID) and associates it with the contact
+     * 
+     * @param Entity $contact The contact to associate with the source request ID
+     * @return void
+     */
+    protected function captureSourceRequestId(Entity $contact): void
+    {
+        try {
+            $sourceRequestIDMappingCore = new \RZP\Models\Payout\SourceRequestIDMapping\Core();
+            $sourceRequestIDMappingCore->createSourceRequestIdMapping($contact->getId(), Constants\Entity::CONTACT);
+        } catch (\Throwable $e) {
+            // Just log the error, don't fail the contact creation
+            $this->trace->error(
+                'contact.source_request_id.capture_error',
+                [
+                    'contact_id' => $contact->getId(),
+                    'error' => $e->getMessage()
+                ]
+            );
+        }
     }
 
     /**
@@ -225,6 +251,12 @@ class Core extends Base\Core
                                'save_or_fail_flag'       => $compositePayoutSaveOrFail
                            ]);
 
+        // Capture source request ID for composite requests that are saved
+        if ($compositePayoutSaveOrFail === true)
+        {
+            $this->captureSourceRequestId($contact);
+        }
+
         return $contact;
     }
 
@@ -293,6 +325,9 @@ class Core extends Base\Core
         $this->updateAppSpecificInformation($contact, $input);
 
         $this->PushVendorEvent($contact, Contact\Constants::CONTACT_UPDATED_MESSAGE);
+
+        // Capture source request ID for contact update
+        $this->captureSourceRequestId($contact);
 
         return $contact;
     }

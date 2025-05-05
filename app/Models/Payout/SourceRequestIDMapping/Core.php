@@ -21,7 +21,7 @@ class Core extends Base
 
     /**
      * Get payout information by request source ID
-     * 
+     *
      * @param string $requestId The request ID to lookup (e.g. AWS trace ID)
      * @return array|null The payout info or null if not found
      */
@@ -46,12 +46,13 @@ class Core extends Base
     }
 
     /**
-     * Creates a mapping between a source request ID and a payout ID
+     * Creates a mapping between a source request ID and an entity
      * 
-     * @param string $payoutId The payout ID to associate with the request ID
+     * @param string $sourceId The entity ID to associate with the request ID
+     * @param string $sourceType The entity type (e.g. 'payout', 'contact')
      * @return void
      */
-    public function createSourceRequestIdMapping(string $payoutId): void
+    public function createSourceRequestIdMapping(string $sourceId, string $sourceType): void
     {
         $requestId = "";
         
@@ -71,53 +72,17 @@ class Core extends Base
 
         $data = [
             Entity::ID          => PublicEntity::generateUniqueId(),
-            Entity::SOURCE_TYPE => 'aws_trace_id',
-            Entity::SOURCE_ID   => $requestId,
+            Entity::SOURCE_TYPE => $sourceType,
+            Entity::SOURCE_ID   => $sourceId,
             Entity::CREATED_AT  => Carbon::now(Timezone::IST)->getTimestamp(),
             Entity::UPDATED_AT  => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
         $this->trace->info(
-            'payout.source_request_id.mapping_create',
-            ['data' => $data, 'payout_id' => $payoutId]
+            'source_request_id.mapping_create',
+            ['data' => $data, 'source_id' => $sourceId, 'source_type' => $sourceType]
         );
 
         (new SourceRequestIDMappingRepository)->insertSourceRequestIdMapping($data);
     }
-
-    /**
-     * Gets the current source request ID (AWS trace ID)
-     * 
-     * @return string The request ID
-     */
-    public function getCurrentRequestId(): string
-    {
-        try {
-            return $this->awsTraceIdExtractor->getAwsTraceId();
-        } catch (\Exception $e) {
-            $this->trace->error(
-                'payout.source_request_id.get_current_error',
-                ['error' => $e->getMessage()]
-            );
-            return '';
-        }
-    }
-
-    /**
-     * Find a payout ID associated with a source request ID
-     * 
-     * @param string $requestId The request ID
-     * @return string|null The payout ID or null if not found
-     */
-    public function getPayoutIdFromSourceRequestId(string $requestId): ?string
-    {
-        $mapping = $this->getPayoutBySourceRequestId($requestId);
-        
-        if ($mapping === null)
-        {
-            return null;
-        }
-        
-        return $mapping['source_id'];
-    }
-} 
+}

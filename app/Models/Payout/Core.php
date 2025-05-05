@@ -125,6 +125,7 @@ use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Services\Mock\BankingAccountService as MockBankingAccountService;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 
 /**
@@ -501,14 +502,27 @@ class Core extends Base\Core
                 'amount_info' => $amountInfo
             ]);
 
+        try
+        {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($payout->getId(), Entity::PAYOUT);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+
         if ($payout->getIsPayoutService() === false)
         {
             $this->postCreationForPayouts($payout);
 
             $this->pushPayoutEventToBalanceService($payout);
-            
-            // Capture source request ID for the payout
-            \RZP\Models\Payout\Processor\PayoutPostCreateHook::captureAwsTraceId($payout);
         }
 
         return $payout;
