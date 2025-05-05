@@ -24,5 +24,6 @@ class Constant
     const START_DATE                    = 'start_date';
     const END_DATE                      = 'end_date';
     const IDAM_DORMANCY                 = 'idam_dormancy';
+    const AXIS_BANK_EMAIL_DOMAIN        = '@axisbank.com';
 
 }
