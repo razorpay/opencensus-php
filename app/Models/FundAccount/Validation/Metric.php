@@ -197,7 +197,7 @@ class Metric extends Base\Core
     {
         $metricDimensions = self::getMetricDimensions($fav);
 
-        $timeDuration     = $fav->getCreatedAt() - $fav->getUpdatedAt();
+        $timeDuration     =  $fav->getUpdatedAt() -  $fav->getCreatedAt();
 
         app('trace')->histogram(
             self::FUND_ACCOUNT_VALIDATION_CREATED_TO_COMPLETED_DURATION_SECONDS,
