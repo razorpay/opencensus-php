@@ -67,12 +67,14 @@ type WebsiteVerificationUpdateStatus = {
   };
 };
 
-type SupportedPlugin = {
+export type SupportedPlugin = {
   name: string;
   icon: string;
   integrationGuide: string;
   integrationUrl: string;
 };
+
+export type SelectedPlugin = { website: string; selectedPlugin: string | null };
 
 /**
  * Enum for possible merchant customer action states in workflows
@@ -100,10 +102,7 @@ export type MerchantOnboardingDataType = {
   featureFlags?: {
     [key in MERCHANT_FEATURE_FLAGS]: boolean;
   };
-  selectedPlugins?: {
-    website?: string;
-    selectedPlugin?: string;
-  }[];
+  selectedPlugins?: SelectedPlugin[];
   supportedPlugins?: SupportedPlugin[];
   selfServeWorkflowStatus?: SelfServeWorkflowStatus;
   websiteVerificationUpdateStatus?: WebsiteVerificationUpdateStatus;
@@ -111,4 +110,10 @@ export type MerchantOnboardingDataType = {
 
 export type MerchantOnboardingDataResponseType = {
   merchantOnboardingData?: MerchantOnboardingDataType;
+};
+
+export type AddMerchantSelectedPluginResponse = {
+  addMerchantSelectedPlugin: {
+    plugins: SelectedPlugin[];
+  };
 };

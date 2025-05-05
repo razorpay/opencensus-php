@@ -9,6 +9,8 @@ import {
   initialState,
   MerchantContextType,
 } from './MerchantContext';
+import useWebsitePlugin from 'apps/onboarding-experience/src/common/hooks/useWebsitePlugin';
+import { AddMerchantSelectedPluginResponse } from 'apps/onboarding-experience/src/common/types/onboarding';
 
 interface MerchantProviderProps {
   children: ReactNode;
@@ -39,6 +41,33 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children }) => {
     requestedData: FTUX_REQUIRED_DATA_REQUEST,
   });
 
+  // Add merchant plugin mutation
+  const { mutateAsync: addMerchantPluginMutation, isLoading: isAddingWebsitePlugin } =
+    useWebsitePlugin();
+
+  // Function to add merchant plugin
+  const addMerchantWebsitePlugin = ({
+    websiteUrl,
+    pluginName,
+  }: {
+    websiteUrl: string;
+    pluginName: string;
+  }) => {
+    return addMerchantPluginMutation(
+      { websiteUrl, pluginName },
+      {
+        onSuccess: (data) => {
+          console.log('data', data);
+          // Update the state with the new selected plugins
+          dispatch({
+            type: 'UPDATE_SELECTED_PLUGINS',
+            payload: (data as AddMerchantSelectedPluginResponse).addMerchantSelectedPlugin.plugins,
+          });
+        },
+      },
+    );
+  };
+
   // Update state when data changes
   useEffect(() => {
     if (merchantData) {
@@ -64,6 +93,8 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children }) => {
     refetchMerchantData,
     refetchOnboardingData,
     refetchAllData,
+    addMerchantWebsitePlugin,
+    isAddingWebsitePlugin,
   };
 
   return <MerchantContext.Provider value={contextValue}>{children}</MerchantContext.Provider>;

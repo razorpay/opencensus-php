@@ -22,3 +22,18 @@ export const hasAddedWebsite = (user: LADashboardUser | PaymentsDashboardUser): 
       !!user.additional_websites?.length,
   );
 };
+
+export const PLAY_STORE_APP_URL_PATTERN =
+  /^https:\/\/play\.google\.com\/store\/apps\/details\?id=.*/;
+
+export const APP_STORE_APP_URL_PATTERN = /^https:\/\/apps\.apple\.com\/.*/;
+
+export const getSpecificPlatformType = (url?: string): string => {
+  if (url && APP_STORE_APP_URL_PATTERN.test(url)) {
+    return 'ios';
+  } else if (url && PLAY_STORE_APP_URL_PATTERN.test(url)) {
+    return 'android';
+  } else {
+    return 'website';
+  }
+};

@@ -1,6 +1,10 @@
 import { createContext, useContext } from 'react';
+import { deepClone } from '@libs/shared-utils';
 import { MerchantResponseType } from 'apps/onboarding-experience/src/common/types/merchant';
-import { MerchantOnboardingDataResponseType } from 'apps/onboarding-experience/src/common/types/onboarding';
+import {
+  MerchantOnboardingDataResponseType,
+  SelectedPlugin,
+} from 'apps/onboarding-experience/src/common/types/onboarding';
 
 // State type definition
 export interface MerchantState {
@@ -15,7 +19,8 @@ export type MerchantAction =
   | { type: 'SET_MERCHANT_DATA'; payload: MerchantResponseType }
   | { type: 'SET_ONBOARDING_DATA'; payload: MerchantOnboardingDataResponseType }
   | { type: 'SET_LOADING_MERCHANT'; payload: boolean }
-  | { type: 'SET_LOADING_ONBOARDING_DATA'; payload: boolean };
+  | { type: 'SET_LOADING_ONBOARDING_DATA'; payload: boolean }
+  | { type: 'UPDATE_SELECTED_PLUGINS'; payload: SelectedPlugin[] };
 
 // Reducer function
 export const merchantReducer = (state: MerchantState, action: MerchantAction): MerchantState => {
@@ -28,6 +33,12 @@ export const merchantReducer = (state: MerchantState, action: MerchantAction): M
       return { ...state, isLoadingMerchant: action.payload };
     case 'SET_LOADING_ONBOARDING_DATA':
       return { ...state, isLoadingOnboardingData: action.payload };
+    case 'UPDATE_SELECTED_PLUGINS':
+      const updatedState = deepClone(state);
+      if (updatedState?.onboardingData?.merchantOnboardingData?.selectedPlugins) {
+        updatedState.onboardingData.merchantOnboardingData.selectedPlugins = action.payload;
+      }
+      return updatedState || initialState;
     default:
       return state;
   }
@@ -46,6 +57,8 @@ export interface MerchantContextType extends MerchantState {
   refetchMerchantData: () => Promise<any>;
   refetchOnboardingData: () => Promise<any>;
   refetchAllData: () => Promise<any>;
+  addMerchantWebsitePlugin: (data: { websiteUrl: string; pluginName: string }) => Promise<any>;
+  isAddingWebsitePlugin: boolean;
 }
 
 export const MerchantContext = createContext<MerchantContextType | undefined>(undefined);
