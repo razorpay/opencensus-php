@@ -381,6 +381,44 @@ return [
         ],
     ],
 
+    'testUserRegisterForNewUser'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'leademail@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'user_only'             => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                 => 'leademail@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testUserRegisterForExistingUser'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'leademail123@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'user_only'             => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                 => 'admin.lead@razorpay.com',
+            ],
+        ],
+    ],
+
     'testRegisterRegularTestPartner'  => [
         'request'  => [
             'url'     => '/users/register',
@@ -543,6 +581,82 @@ return [
         ],
     ],
 
+    'testRegisterMultiAccountForNewUserWithoutPermission' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'leademail@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'That email is already taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRegisterMultiAccountForExistingUserWithPermission' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'admin.lead@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'x_verify_email'        => 'true'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'admin.lead@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testRegisterMultiAccountForNewUserWithPermission' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'admin.lead@razorpay.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'x_verify_email'        => 'true'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'admin.lead@razorpay.com',
+            ],
+        ],
+    ],
+
     'testRegisterForSignUpFlowInX' => [
         'request'  => [
             'url'     => '/users/register',
@@ -662,6 +776,25 @@ return [
                 ],
                 'settings'                => [
                 ],
+            ],
+        ],
+    ],
+
+    'testGetMerchantsOfExistingUser' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'                  => "Ashok Kumar",
+                'email'                 => "banking-pod2131@razorpay.com",
+                'email_verified'        => true,
+                'contact_mobile'        => "+912233776658",
+                'confirmed'             => true,
             ],
         ],
     ],

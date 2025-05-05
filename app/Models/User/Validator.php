@@ -885,6 +885,19 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateMobileNumberUnique(array $input): void
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            // Generate all valid formats (e.g., with/without country code) for the input mobile number
+            $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+            foreach ($validMobileNumberFormats as $mobileNumber)
+            {
+                // Validate the uniqueness of each formatted mobile number
+                $this->validateInput('createMobileUnique', [Entity::CONTACT_MOBILE => $mobileNumber]);
+            }
+        }
+    }
     /**
      * @throws BadRequestException
      */

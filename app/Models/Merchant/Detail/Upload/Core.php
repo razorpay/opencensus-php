@@ -154,14 +154,18 @@ class Core extends Base\Core
 
                 $orgId = Org\Entity::silentlyStripSign($orgId);
 
-                $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+                $org = $this->repo->org->findOrFailPublic($orgId);
+
+                $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                $vasOrgFeatureEnabled = $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER);
 
                 $skipEmailUniquenessCheck = false;
 
                 // If permission is enabled, fetch an existing user or create a new one.
                 // This uses the provided email, merchant name, DS merchant flag, and contact number.
                 // The `skipEmailUniquenessCheck` is set to true to bypass email uniqueness validation for merchant.
-                if ($permissionEnabled === true) {
+                if (($permissionEnabled === true) and ($vasOrgFeatureEnabled === true)) {
                     // Fetch OR Create user
                     $user = $this->fetchOrCreateUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
                         $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);

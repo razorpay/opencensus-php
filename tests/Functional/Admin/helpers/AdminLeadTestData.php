@@ -102,6 +102,31 @@ return [
         ],
     ],
 
+    'testAdminLeadCreateWithoutCustomInvitePermission' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'abc@xyz.com',
+                'contact_name'  => 'Ashok Kumar'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'That email is already taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+        ],
+    ],
+
     'testAdminLeadWithCustomInvitePermission' => [
         'request' => [
             'url' => '/admin-lead',

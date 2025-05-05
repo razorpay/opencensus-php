@@ -1592,9 +1592,13 @@ class Core extends Base\Core
 
                 $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-                $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+                $org = $this->repo->org->findOrFailPublic($orgId);
 
-                if ($permissionEnabled === true)
+                $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+                $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
                 {
                     $skip = true;
                 }
@@ -4430,6 +4434,8 @@ class Core extends Base\Core
             $response[Entity::INVITATIONS] = $invitations;
             $response[Entity::SETTINGS]    = $settings;
         }
+
+        $this->getSortedMerchantsForCustomInvite($merchantsUnique, $orgId);
 
         $response[Entity::MERCHANTS]   = $merchantsUnique;
 
@@ -7482,5 +7488,21 @@ class Core extends Base\Core
     {
         // create merchant, merchant_user, merchant_attribute,
         $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
+    }
+
+    protected function getSortedMerchantsForCustomInvite(&$merchantsUnique, $orgId): void
+    {
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+        {
+            usort($merchantsUnique, function ($a, $b) {
+                return $b[Entity::CREATED_AT] <=> $a[Entity::CREATED_AT]; // Sorting merchant list to get newly created merchant first.
+            });
+        }
     }
 }

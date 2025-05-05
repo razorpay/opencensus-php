@@ -6,6 +6,7 @@ use App;
 use Config;
 use DateTime;
 use DOMDocument;
+use Lib\PhoneBook;
 use RZP\Http\RequestHeader;
 use RZP\Services\KafkaProducer;
 use RZP\lib\TemplateEngine;
@@ -2810,6 +2811,8 @@ class Service extends Base\Service
                 $this->applyReferralPartnerWithRetry($subMerchant, $referralInput);
 
             }
+
+            $this->verifyUserDetailsForCustomInviteFlow($merchant, $input);
 
             $this->saveMerchantDetailForPreSignUp($input);
 
@@ -6192,5 +6195,53 @@ class Service extends Base\Service
         }
 
         unset($input['type']);
+    }
+
+    protected function verifyUserDetailsForCustomInviteFlow($merchant, &$input): void
+    {
+        $orgId = $merchant->getOrgId();
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, PermissionName::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $this->merchant->org->isFeatureEnabled(FeatureConstants::VAS_ORG_IDENTIFIER);
+
+        $originProduct = $this->auth->getRequestOriginProduct();
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true) and (isset($input[Entity::CONTACT_MOBILE]) === true))
+        {
+            $user = $this->merchant->primaryOwner($originProduct);
+
+            $userContactMobile = $user->getContactMobile() ?? null;
+
+            if(isset($userContactMobile) === false)
+            {
+                (new User\Validator)->validateMobileNumberUnique($input);
+
+                $phoneNumber = new PhoneBook($input[Entity::CONTACT_MOBILE]);
+
+                $input[Entity::CONTACT_MOBILE] = $phoneNumber->format(PhoneBook::E164);
+            }
+            else
+            {
+                $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+
+                // Skip updating contact mobile in user if already present.
+                if(in_array($userContactMobile, $validMobileNumberFormats, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'New mobile no cannot be updated against existing user');
+                }
+
+                $input[Entity::CONTACT_MOBILE] = $userContactMobile;
+
+                $merchantContactMobile = $this->merchant->merchantDetail->getContactMobile();
+
+                // Skip contact mobile update in user and merchant details if already present.
+                if(isset($merchantContactMobile) === true)
+                {
+                    unset($input[Entity::CONTACT_MOBILE]);
+                }
+            }
+        }
     }
 }
