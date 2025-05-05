@@ -172,6 +172,7 @@ export { validateBeneficiaryName } from './validateBeneficiaryName';
 export { validateCIN } from './validateCIN';
 export { validateCompanyAB } from './validateCompanyAB';
 export { validateCompanyPAN } from './validateCompanyPAN';
+export { validateCompanyPanWithBusinessType } from './validateCompanyPanWithBusinessType';
 export { validateEmbeddedVideoUrl } from './validateEmbeddedVideoUrl';
 export { validateGSTIN } from './validateGSTIN';
 export { validateIFSC } from './validateIFSC';

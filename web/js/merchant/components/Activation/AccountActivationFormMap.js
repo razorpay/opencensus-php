@@ -1,6 +1,7 @@
 import Input from 'common/new-ui/Input';
 import { getDetailsForIFSC } from 'common/utils/rzp-utils';
 import { validatePANCard, validateIFSC } from 'common/utils/validators';
+import { BUSINESS_TYPE_MAP } from '@dashboards/payments/views/Account/constants';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
@@ -48,7 +49,14 @@ const businessFields = [
     placeholder: 'PAN Number',
     info: 'PAN details should belong to the business mentioned above',
     className: 'Input--capitalize',
-    validator: validatePANCard,
+    validator: function (value) {
+      const businessTypeValue =
+        (this.state && this.state.dirty && this.state.dirty.business_type) ||
+        this.props.data.business_type;
+      const businessType = BUSINESS_TYPE_MAP[businessTypeValue];
+
+      return validateCompanyPanWithBusinessType(value, businessType);
+    },
     _when: needsKYC,
   },
   {

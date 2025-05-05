@@ -67,11 +67,12 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   validatePersonalPAN,
   validateCompanyAB,
-  validateCompanyPAN,
+  validateCompanyPanWithBusinessType,
   validateCIN,
   isAppLinkValid,
   isValidWebsite,
 } from 'common/utils/validators';
+import { BUSINESS_TYPE_MAP } from '@dashboards/payments/views/Account/constants';
 
 import L1FormFieldNames from './L1FormFieldNames';
 import {
@@ -1275,7 +1276,10 @@ class ActivationWizard extends React.Component {
       : this.state.dirty.business_operation_state || this.props.data.business_operation_state;
 
     const isCompanyPANValid = displayCompanyPAN(this)
-      ? companyPAN && !validateCompanyPAN(companyPAN)
+      ? companyPAN &&
+        currentBusinessType &&
+        BUSINESS_TYPE_MAP.hasOwnProperty(currentBusinessType) &&
+        !validateCompanyPanWithBusinessType(companyPAN, BUSINESS_TYPE_MAP[currentBusinessType])
       : true;
     const isPromoterPANValid = promoterPan && !validatePersonalPAN(promoterPan);
     const isCompanyNameValid = this.isUnregBiz

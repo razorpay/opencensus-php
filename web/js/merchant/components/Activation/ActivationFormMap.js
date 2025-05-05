@@ -13,11 +13,11 @@ import {
   validateCIN,
   validateIFSC,
   validatePersonalPAN,
-  validateCompanyPAN,
   validateCompanyAB,
   isValidName,
   isAppLinkValid,
   isValidWebsite,
+  validateCompanyPanWithBusinessType,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -61,6 +61,7 @@ import {
   BUSINESS_PROOF_TYPE_DOCS,
   BUSINESS_PROOF_CERTIFICATE_TYPES,
 } from './Constants';
+import { BUSINESS_TYPE_MAP } from '@dashboards/payments/views/Account/constants';
 
 const PROPRIETORSHIP = 1;
 const PARTNERSHIP = 3;
@@ -538,9 +539,7 @@ const businessModel = [
         this.sendErrorMessageToSegment(e, error);
       },
       validator: (value) => {
-        if (
-          !isValidWebsite({ url: value, isRazorpayDomainAllowed: false })
-        ) {
+        if (!isValidWebsite({ url: value, isRazorpayDomainAllowed: false })) {
           return 'Invalid website URL';
         }
         return false;
@@ -691,7 +690,12 @@ const businessDetails = [
       _autoRenderImpure: true,
       className: 'Input--capitalize',
       info: 'Mandatory for Companies. PAN details should be of the mentioned business only.',
-      validator: validateCompanyPAN,
+      validator: function (value) {
+        const businessTypeValue = this.state.dirty.business_type || this.props.data.business_type;
+        const businessType = BUSINESS_TYPE_MAP[businessTypeValue];
+
+        return validateCompanyPanWithBusinessType(value, businessType);
+      },
       checkValidityFromAPI: (activation) => {
         if (
           activation.props.user.canSkipPoiValidation &&
@@ -725,7 +729,12 @@ const businessDetails = [
         if (!this.isOnKYCTab()) {
           const { user } = this.props;
           const { dirty } = this.state;
-          const isCompanyPANValid = !validateCompanyPAN(dirty?.company_pan);
+          const businessTypeValue = this.state.dirty.business_type || this.props.data.business_type;
+          const businessType = BUSINESS_TYPE_MAP[businessTypeValue];
+          const isCompanyPANValid = !validateCompanyPanWithBusinessType(
+            dirty?.company_pan,
+            businessType,
+          );
 
           if (
             !user.activation_form_milestone &&

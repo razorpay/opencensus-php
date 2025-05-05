@@ -21,6 +21,7 @@ export {
   validateCompanyAB,
   validatePersonalPAN,
   validateCompanyPAN,
+  validateCompanyPanWithBusinessType,
   isEmail,
   isUrlLenient,
   isAppLinkValid,
