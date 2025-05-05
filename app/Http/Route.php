@@ -19434,7 +19434,8 @@ class Route
         'payment_create_nach_register',
         'payment_create_aeps',
         'payment_create_openwallet',
-        'payment_create_razorpaywallet'
+        'payment_create_razorpaywallet',
+        'payment_create_upi'
     ];
 
     const SUBSCRIPTION_PROXY_ROUTES = [

@@ -1479,4 +1479,5 @@ return array(
 
     'banking_redirection_enabled' => env('BANKING_REDIRECTION_ENABLED'),
 
+    'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 );
