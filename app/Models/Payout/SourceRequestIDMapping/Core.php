@@ -60,7 +60,7 @@ class Core extends Base
             $requestId = $this->awsTraceIdExtractor->getAwsTraceId();
         } catch (\Exception $e) {
             $this->trace->error(
-                'payout.source_request_id.extraction_error',
+                'source_request_id.extraction_error',
                 ['error' => $e->getMessage()]
             );
             return;
