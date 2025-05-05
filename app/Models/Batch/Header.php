@@ -1089,6 +1089,7 @@ class Header
     const PRICING_RULE_PROCURER                  = 'procurer';
     const PRICING_RULE_UPDATE                   = 'update';
     const PRICING_RULE_FEE_BEARER               = 'fee_bearer';
+    const PRICING_RULE_CHANNEL                = 'channel';
 
     // Loc withdrawals
 
@@ -7981,6 +7982,10 @@ class Header
             if (in_array(self::PRICING_RULE_FEE_BEARER, $actualHeaders, true) === true)
             {
                 $expectedHeaders[] = self::PRICING_RULE_FEE_BEARER;
+            }
+            if(in_array(self::PRICING_RULE_CHANNEL, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::PRICING_RULE_CHANNEL;
             }
         }
 
