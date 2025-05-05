@@ -9,7 +9,7 @@ import {
 } from '@razorpay/blade/components';
 
 import { User } from 'common/typings';
-import { autoPrefixUrls, isDuplicateWebsite } from 'common/utils/rzp-utils';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
 import SuggestionsBox from './SuggestionsBox';
 import useModalComponents from '../hooks/useModalComponents';
 import {
@@ -33,6 +33,7 @@ import {
   getWebsiteCount,
   getSuggestionStep,
 } from '../utils';
+import { isDuplicateWebsite, isPopularWebsite } from '@libs/shared-utils';
 
 interface WebsiteInputModalProps {
   isMobile: boolean;
@@ -108,9 +109,14 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
             ? 'Please ensure your website is HTTPS compliant (https://)'
             : 'Enter a valid website link',
         );
-      } else if (isDuplicateWebsite(alreadyAddedWebsites, autoPrefixUrls(value, true))) {
+      } else if (isDuplicateWebsite(alreadyAddedWebsites, autoPrefixUrls(value || '', true))) {
         validationState = ValidationState.ERROR;
         setUrlError(`This ${formState.platform.value ?? 'website'} is already added`);
+      } else if (isPopularWebsite(autoPrefixUrls(value || '', true))) {
+        validationState = ValidationState.ERROR;
+        setUrlError(
+          'Please enter a valid business website that you own or manage where you plan to accept payments.',
+        );
       } else {
         validationState = ValidationState.NONE;
         setUrlError('');

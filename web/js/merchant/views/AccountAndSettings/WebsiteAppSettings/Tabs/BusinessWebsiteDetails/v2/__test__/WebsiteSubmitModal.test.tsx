@@ -197,6 +197,31 @@ describe('WebsiteSubmitModal', () => {
     });
   });
 
+  it('should show error notification when new website is a restricted popular website', async () => {
+    mockCurrentStep = WebsiteSubmitModalSteps.ADD_MAIN_PAGE;
+    mockMainPageSubmitPayload = getMockSubmitPayload({
+      isApp: false,
+      url: 'google.com',
+    });
+    renderApp({
+      user: {
+        business_website: mockMainPageUrl,
+      },
+    });
+    await waitFor(() => {
+      expect(screen.getByText('WebsiteInputModal')).toBeInTheDocument();
+    });
+    const submitButton = screen.getByText('Submit');
+    await userEvent.click(submitButton);
+    await waitFor(() => {
+      expect(showNotificationSpy).toHaveBeenCalledWith({
+        type: 'error',
+        message:
+          'Please enter a valid business website that you own or manage where you plan to accept payments.',
+      });
+    });
+  });
+
   describe('main page submit', () => {
     it('should submit and show success modal when API Response is success', async () => {
       server.use(mockMainPageSubmitSuccess());

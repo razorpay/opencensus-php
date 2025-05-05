@@ -1,4 +1,4 @@
-import { getCanonicalUrl, isDuplicateWebsite } from 'common/utils/rzp-utils';
+import { getCanonicalUrl, isDuplicateWebsite } from '@libs/shared-utils';
 
 describe('getCanonicalUrl', () => {
   it('should normalize URL by removing protocol', () => {
@@ -6,7 +6,7 @@ describe('getCanonicalUrl', () => {
     expect(getCanonicalUrl('https://example.com')).toBe('example.com');
   });
 
-  it('should add https protocol if not provided', () => {
+  it('should normalize already normalized url', () => {
     expect(getCanonicalUrl('example.com')).toBe('example.com');
   });
 

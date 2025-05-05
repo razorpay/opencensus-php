@@ -355,6 +355,4 @@ export {
   shortenTextBasedOnDashboardAcronyms as shortenText,
   acronymsForShorteningText as acronyms,
   isElementXPercentInViewport,
-  isDuplicateWebsite,
-  getCanonicalUrl,
 } from '@libs/shared-utils';

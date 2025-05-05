@@ -1,11 +1,11 @@
 import { WebsiteUpdateAutomationStatus, WebsiteVerificationStatus } from '../../types';
 
-export const mockMainPageUrl = 'https://www.example.com';
-export const mockTermsPageUrl = 'https://www.example.com/terms';
-export const mockPrivacyPageUrl = 'https://www.example.com/privacy';
-export const mockRefundPageUrl = 'https://www.example.com/refund';
-export const mockShippingPageUrl = 'https://www.example.com/shipping';
-export const mockContactPageUrl = 'https://www.example.com/contact';
+export const mockMainPageUrl = 'https://www.victor.com';
+export const mockTermsPageUrl = 'https://www.victor.com/terms';
+export const mockPrivacyPageUrl = 'https://www.victor.com/privacy';
+export const mockRefundPageUrl = 'https://www.victor.com/refund';
+export const mockShippingPageUrl = 'https://www.victor.com/shipping';
+export const mockContactPageUrl = 'https://www.victor.com/contact';
 
 export const mockAppstoreUrl = 'https://apps.apple.com/us/app/test-app-uts/id1274679179';
 export const mockPlaystoreUrl = 'https://play.google.com/store/apps/details?id=test.app.uts';
@@ -52,13 +52,13 @@ export const mockBusinessWebsiteWorkflow = {
   ocr_automated_check_enable: false,
 };
 
-export const getMockSubmitPayload = ({ isApp = false } = {}) => {
+export const getMockSubmitPayload = ({ isApp = false, url = '' } = {}) => {
   return {
     platform: {
       value: isApp ? 'app' : 'website',
     },
     url: {
-      value: isApp ? mockPlaystoreUrl : mockMainPageUrl,
+      value: url || (isApp ? mockPlaystoreUrl : mockMainPageUrl),
     },
     requireCreds: {
       value: 'no',

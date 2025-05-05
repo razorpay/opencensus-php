@@ -196,5 +196,7 @@ export { ClientError, type ResponseWithErrors, type ErrorType } from './ClientEr
 export { getPhpBaseUrlForClient } from './getPhpBaseUrlForClient';
 export { isPaymentsPath } from './isPaymentPath';
 export { isPhoneNumberIndia } from './isPhoneNumberIndia';
+export { isDuplicateWebsite } from './isDuplicateWebsite';
+export { isPopularWebsite } from './isPopularWebsite';
+export { getCanonicalUrl } from './getCanonicalUrl';
 export { initRazorAnalytics } from './initRazorAnalytics';
-export { isDuplicateWebsite, getCanonicalUrl } from './isDuplicateWebsite';

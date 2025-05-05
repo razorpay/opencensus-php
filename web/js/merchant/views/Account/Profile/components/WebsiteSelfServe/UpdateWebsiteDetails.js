@@ -20,11 +20,7 @@ import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
-import {
-  getCommonAnalyticsProperties,
-  autoPrefixUrls,
-  isDuplicateWebsite,
-} from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import FileUpload from 'merchant/components/File/Upload';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
@@ -40,6 +36,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { FLOWS, FORM_FIELDS } from './Constants';
 import { isValidWebsite } from 'common/utils/validators';
+import { isDuplicateWebsite, isPopularWebsite } from '@libs/shared-utils';
 
 const WebsiteInputField = ({ name, validator, errorMessage, setErrorMessages, ...rest }) => (
   <Box display="flex" flexDirection="column" gap="spacing.2">
@@ -574,6 +571,15 @@ function UpdateWebsiteDetails(props) {
       setErrorMessages((prev) => ({ ...prev, url: errorMessage }));
       return errorMessage;
     }
+
+    if (isPopularWebsite(autoPrefixUrls(input, true))) {
+      const errorMessage =
+        'Please enter a valid business website that you own or manage where you plan to accept payments.';
+      setisLinkValid(false);
+      setErrorMessages((prev) => ({ ...prev, url: errorMessage }));
+      return errorMessage;
+    }
+
     setisLinkValid(true);
     setErrorMessages((prev) => ({ ...prev, url: '' }));
     return '';

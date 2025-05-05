@@ -1,5 +1,5 @@
 import { User } from 'common/typings';
-import { autoPrefixUrls, isDuplicateWebsite } from 'common/utils/rzp-utils';
+import { autoPrefixUrls } from 'common/utils/rzp-utils';
 import { isEmail, isPhoneNumberIndia, isValidWebsite } from 'common/utils/validators';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
@@ -30,6 +30,7 @@ import {
   SuggestionSteps,
   MainPageFormData,
 } from './types';
+import { isDuplicateWebsite, isPopularWebsite } from '@libs/shared-utils';
 
 export const WEBSITE_UPDATE_API_BASE_URL =
   'care_service/merchant/twirp/rzp.care.dashboard.accountAndSetting.v1.AccountAndSettingService';
@@ -255,12 +256,18 @@ export const isMainPageSubmitPayloadValid = ({
     return [false, 'Please enter valid inputs.'];
   }
 
-  if (isKLAMerchant) {
-    return [true, ''];
+  if (
+    !isKLAMerchant &&
+    isDuplicateWebsite(userWebsites, autoPrefixUrls(formState.url.value, true))
+  ) {
+    return [false, `This ${formState.platform.value ?? 'website'} is already added`];
   }
 
-  if (isDuplicateWebsite(userWebsites, autoPrefixUrls(formState.url.value, true))) {
-    return [false, `This ${formState.platform.value ?? 'website'} is already added`];
+  if (isPopularWebsite(autoPrefixUrls(formState.url.value, true))) {
+    return [
+      false,
+      'Please enter a valid business website that you own or manage where you plan to accept payments.',
+    ];
   }
 
   return [true, ''];
@@ -765,7 +772,7 @@ export const genericBackendErrorMessage =
   'Something went wrong on our end. Please try again shortly or reach out to support if the issue continues.';
 
 const policyCreationFailedSuggestToCreateViaRzpErrorMessage =
-  'We couldn’t locate the policy pages you shared. Please update the links or create them using Razorpay (recommended).';
+  "We couldn't locate the policy pages you shared. Please update the links or create them using Razorpay (recommended). It's free.";
 
 const errorMapping = {
   'validation_failure: invalid_additional_data_contact_number_detail':
