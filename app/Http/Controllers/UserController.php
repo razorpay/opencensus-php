@@ -1392,6 +1392,11 @@ class UserController extends Controller
                     'captcha_disable'   => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
                 ];
 
+                if(isset($input["merchant_invitation"]) === true)
+                {
+                    $credentials['merchant_invitation'] = $input['merchant_invitation'];
+                }
+
                 $loginResult = Auth::attempt($credentials, false, true);
 
                 app('trace')->info(TraceCode::USER_REGISTER_LOGIN_ATTEMPT, ["email" => $input['email'], "login_result" => $loginResult]);

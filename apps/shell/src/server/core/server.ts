@@ -13,6 +13,7 @@ export const mainServer = (app: Application) => {
       key: fs.readFileSync(path.resolve(process.cwd(), 'certs/key.pem')),
       cert: fs.readFileSync(path.resolve(process.cwd(), 'certs/cert.pem')),
     };
+
     return createHttpsServer(sslOptions, app);
   } else {
     return createHttpServer(app);
