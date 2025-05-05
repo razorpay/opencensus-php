@@ -845,6 +845,7 @@ class Route
         'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                   'QrCodeController@setDeviceIdForQr'                              ],
         'qr_code_device_id_unmap'                  => ['put',      'payments/qr_codes/device/unmap',                 'QrCodeController@unMapDeviceIdForQr'                               ],
         'qr_code_device_update'                    => ['post',     'payments/single_stack/device/update',            'QrCodeController@UpdateSingleStackDevice'                               ],
+        'internal_qr_code_device_update'           => ['post',     'internal/payments/single_stack/device/update',   'QrCodeController@UpdateSingleStackDevice'                               ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -7025,6 +7026,7 @@ class Route
         'org_admin_disable_cron',
         'fetch_onboarding_service',
         'user_fetch_merchants',
+        'internal_qr_code_device_update'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -18533,6 +18535,7 @@ class Route
             'internal_qr_code_merchant_create',
             'merchant_international_enablement_draft_internal',
             'fetch_onboarding_service',
+            'internal_qr_code_device_update',
         ],
 
         'disputes' => [
