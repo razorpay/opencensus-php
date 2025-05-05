@@ -526,6 +526,8 @@ return array(
 
     'under_review_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
 
+    'kyc_qualified_communications_from_api_exp_id' => env('SEND_KYC_QUALIFIED_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
     'rejected_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
 
     'needs_clarification_communications_from_api_exp_id' => env('SEND_NC_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
