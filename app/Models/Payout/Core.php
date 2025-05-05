@@ -506,6 +506,9 @@ class Core extends Base\Core
             $this->postCreationForPayouts($payout);
 
             $this->pushPayoutEventToBalanceService($payout);
+            
+            // Capture source request ID for the payout
+            \RZP\Models\Payout\Processor\PayoutPostCreateHook::captureAwsTraceId($payout);
         }
 
         return $payout;
@@ -10243,10 +10246,10 @@ class Core extends Base\Core
                         'merchant_id'                                   => $merchantId,
                         'channel'                                       => $channel,
                         'destination'                                   => $destinationDetails->getEntityName(),
-                        'destination_id'                                => $destinationDetails->getId(),
-                        'destination_type'                              => $destinationDetails->getAccountType(),
-                        'destination_balance'                           => $destinationBalance,
-                        'destination_balance_threshold'                 => $destinationBalanceThreshold,
+                        'destination_id'                               => $destinationDetails->getId(),
+                        'destination_type'                             => $destinationDetails->getAccountType(),
+                        'destination_balance'                          => $destinationBalance,
+                        'destination_balance_threshold'                => $destinationBalanceThreshold,
                         'destination_threshold_fifty_percent_allowance' => $destinationBalanceThresholdWithFiftyPercentAllowance,
                     ]);
 
