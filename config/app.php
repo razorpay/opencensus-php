@@ -1283,6 +1283,8 @@ return array(
 
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
 
+    'enable_rearch_card_recurring_flow_route' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_ROUTE'),
+
     'recurring_through_rupay_card_iin' => env('RECURRING_THROUGH_RUPAY_CARD_IIN_EXP_ID'),
 
     'emandate_async_payment_with_async_balance' => env('EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BALANCE_EXP_ID'),

@@ -696,10 +696,13 @@ class Processor
 
     protected static $cardRecurringInitialRoutes = [
         'payment_create_ajax',
+        'payment_create_checkout',
+        'payment_create_private_json'
     ];
 
     protected static $cardRecurringAutoRoutes = [
         'payment_create_recurring',
+        'subscription_registration_charge_token',
     ];
 
     protected static $emandateGatewayMapping = [
@@ -1758,7 +1761,7 @@ class Processor
                 'properties' => $properties,
                 'response' => $response,
             ]);
-            return $response['response']['variant']['name'] ?? '';
+            return $response['response']['variant']['name'] ?? "1733920200";
         }
         catch (\Exception $e)
         {
@@ -1768,7 +1771,44 @@ class Processor
                 TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
             );
         }
-        return "0";
+        return "1733920200";
+    }
+
+    private function evaluateSplitzExperimentForCardRecurringRearchRoute($merchant, $routeName)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_route');
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'route_name' => $routeName,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     private function isOpgspImportMerchant(): bool
@@ -2285,7 +2325,7 @@ class Processor
             }
 
             if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD and (empty($input[Payment\Entity::RECURRING]) === false)) {
-                if (!self::isCardRecurringAutoRearchRoute($currentRouteName) && !self::isCardRecurringInitialRearchRoute($currentRouteName)) {
+                if ($this->evaluateSplitzExperimentForCardRecurringRearchRoute($merchant, $currentRouteName) === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "route_not_ramped",
                         'route_name' => $currentRouteName,
