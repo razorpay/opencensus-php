@@ -20,6 +20,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 
 /**
  * Class Core
@@ -154,8 +155,7 @@ class Core extends Base\Core
     protected function captureSourceRequestId(Entity $contact): void
     {
         try {
-            $sourceRequestIDMappingCore = new \RZP\Models\Payout\SourceRequestIDMapping\Core();
-            $sourceRequestIDMappingCore->createSourceRequestIdMapping($contact->getId(), Constants\Entity::CONTACT);
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($contact->getId(), Constants\Entity::CONTACT);
         } catch (\Throwable $e) {
             // Just log the error, don't fail the contact creation
             $this->trace->error(
@@ -251,12 +251,9 @@ class Core extends Base\Core
                                'save_or_fail_flag'       => $compositePayoutSaveOrFail
                            ]);
 
-        // Capture source request ID for composite requests that are saved
-        if ($compositePayoutSaveOrFail === true)
-        {
-            $this->captureSourceRequestId($contact);
-        }
 
+        $this->captureSourceRequestId($contact);
+        
         return $contact;
     }
 
