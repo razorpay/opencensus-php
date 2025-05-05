@@ -3,22 +3,30 @@ import errorService from '@razorpay/universe-cli/errorService';
 import { DASHBOARD_PRIORITY_RANKS, DASHBOARD_TEAMS, RazorpayUser } from '@libs/shared-types';
 import { getCommonAnalyticsProperties, isProductionEnv } from '@libs/shared-utils';
 
-export const initRazorAnalytics = ({ product, user }: {
+export const initRazorAnalytics = ({
+  product,
+  user,
+}: {
   product: DASHBOARD_TEAMS;
   user: RazorpayUser;
 }) => {
   if (Boolean(window?.razorAnalytics)) {
     try {
-      const { lumberjack } = window?.razorAnalyticsPlugins;
-      const userIdentity = getCommonAnalyticsProperties(user, { addUserProperties: true }) as { userId: string } & Record<string, any>;
+      const { lumberjack, segment } = window?.razorAnalyticsPlugins;
+      const userIdentity = getCommonAnalyticsProperties(user, { addUserProperties: true }) as {
+        userId: string;
+      } & Record<string, any>;
       const isProd = isProductionEnv();
 
       // Initialize RazorAnalytics will happen once as it is guarded in SDK
       window.razorAnalytics?.init?.({
-        plugins: [lumberjack?.({
-          // since type of 'APP_ENV' is string, we are using ternary check instead of assigning 'APP_ENV' value directly to 'environment' to avoid TS error
-          environment: isProd ? 'production' : 'staging',
-        })],
+        plugins: [
+          segment?.(),
+          lumberjack?.({
+            // since type of 'APP_ENV' is string, we are using ternary check instead of assigning 'APP_ENV' value directly to 'environment' to avoid TS error
+            environment: isProd ? 'production' : 'staging',
+          }),
+        ],
         mode: isProd ? 'live' : 'debug',
         identity: userIdentity,
         eventProperties: {
