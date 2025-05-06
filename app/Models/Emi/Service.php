@@ -811,4 +811,16 @@ class Service extends Base\Service
 
         return $merchantEmiPlans->merge($sharedEmiPlans);
     }
+
+    function fetchByMid($mid)
+    {
+        $sharedPlans = $this->repo->emi_plan->fetchEmiPlanByMerchantId(Account::SHARED_ACCOUNT);
+
+        $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlanByMerchantId($mid);
+
+        return [
+            'sharedPlans' => $sharedPlans,
+            'merchantEmiPlans' => $merchantEmiPlans
+        ];
+    }
 }

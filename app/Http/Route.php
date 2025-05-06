@@ -1383,6 +1383,7 @@ class Route
         'emi_plans_fetch_multiple'                 => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
         'emi_plans_migrate'                        => ['get',      'emi/migration',                                  'EmiController@migrateToCardPS'                                     ],
         'emi_plan_fetch_by_id'                     => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
+        'emi_plan_fetch_by_mid_internal'           => ['get',      'internal/emi/{id}',                              'EmiController@fetchEmiPlanByMid'                                   ],
         'emi_plan_delete'                          => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                       => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
         'card_settlement_generate_file'            => ['post',     'card/settlements/file',                          'GatewayFileController@generateCardSettlementFileForBank'           ],
@@ -6911,6 +6912,8 @@ class Route
         'merchant_fetch_methods_internal',
 
         'merchant_fetch_all_methods_internal',
+
+        'emi_plan_fetch_by_mid_internal',
 
         'merchant_edit_all_methods_internal',
 
@@ -18232,6 +18235,7 @@ class Route
             'merchant_edit_all_methods_internal',
             'internal_merchant_fetch',
             'merchant_methods_offers_checkout_internal',
+            'emi_plan_fetch_by_mid_internal'
         ],
 
         'pos_app' => [
