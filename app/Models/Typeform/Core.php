@@ -208,12 +208,27 @@ class Core extends Base\Core
             }
             else
             {
-                $this->app['workflow']
-                ->setEntityAndId($merchant->getEntity(), $merchant->getId())
-                ->setPermission(Name::TOGGLE_INTERNATIONAL_REVAMPED)
-                ->setInput($input)
-                ->setTags($workflowRequestTags)
-                ->handle(null, $typeformWorkflowData, true);
+                if ($input['async_cross_border_workflow_create']) {
+                    unset($input['async_cross_border_workflow_create']);
+                    $this->app['workflow']
+                        ->setEntityAndId($merchant->getEntity(), $merchant->getId())
+                        ->setRouteName(Constants::INTERNATIONAL_ENABLEMENT_SUBMIT_ROUTE_NAME)
+                        ->setRouteParams([])
+                        ->setInput($input)
+                        ->setController(Constants::INTERNATIONAL_ENABLEMENT_SUBMIT_CONTROLLER)
+                        ->setMethod('POST')
+                        ->setPermission(Name::TOGGLE_INTERNATIONAL_REVAMPED)
+                        ->setTags($workflowRequestTags)
+                        ->handle(null, $typeformWorkflowData, true);
+                }
+                else {
+                    $this->app['workflow']
+                        ->setEntityAndId($merchant->getEntity(), $merchant->getId())
+                        ->setPermission(Name::TOGGLE_INTERNATIONAL_REVAMPED)
+                        ->setInput($input)
+                        ->setTags($workflowRequestTags)
+                        ->handle(null, $typeformWorkflowData, true);
+                }
                 // added true in handle to continue the flow.
 
                 $this->trace->info(TraceCode::TOGGLE_INTERNATIONAL_REVAMPED_WORKFLOW_TRIGGERED, []);

@@ -546,7 +546,7 @@ class Activate extends Base\Core
             'merchant_id' => $merchant->getId(),
             'mode' =>  Mode::LIVE,
         ];
-        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(5, 10));
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 300));
     }
 
     public function updateLedger(Entity $merchant)

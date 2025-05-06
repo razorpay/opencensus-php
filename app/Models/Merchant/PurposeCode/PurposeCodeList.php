@@ -1283,7 +1283,6 @@ class PurposeCodeList
         self::P1020,
         self::P1021,
         self::P1022,
-        self::P1099,
     ];
 
     const OTHER_CODES = [
@@ -1435,6 +1434,9 @@ class PurposeCodeList
     const IEC_REQUIRED = [
         self::P0103,
         self::P0807,
+        self::P0102,
+        self::P0109,
+        self::P1505,
     ];
 
     // List of codes valid for JPMC import flow
