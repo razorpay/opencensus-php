@@ -3696,6 +3696,65 @@ class Entity extends Base\PublicEntity
             ]);
     }
 
+    public function setPayoutStatusAsPerMerchantWebhookSubscriptionForPayoutShieldBlockRule(string $errorCode, string $errorReason = null)
+    {
+        $app = App::getFacadeRoot();
+
+        $accountType = $this->balance->getAccountType();
+
+        // Check if merchant is subscribed to failed webhook
+        $isFailedWebhookEnabled = (new Core())->checkIfPayoutFailedWebhookIsSubscribed($this->getMerchantId());
+
+        $app['trace']->info(
+            TraceCode::PAYOUT_FAILED_WEBHOOK_SUBSCRIPTION_STATUS,
+            [
+                'merchant_id'         => $this->getMerchantId(),
+                'subscription_status' => $isFailedWebhookEnabled,
+                'payout_id'           => $this->getId(),
+            ]
+        );
+
+        // If subscribed to failed webhook or account type is DIRECT, set as FAILED
+        if ($isFailedWebhookEnabled === true || $accountType === Balance\AccountType::DIRECT)
+        {
+            $this->setStatus(Status::FAILED);
+        }
+        // Otherwise, set as REVERSED and create reversal
+        else
+        {
+            $this->setStatus(Status::REVERSED);
+            $reversal = (new Reversal\Core())->createReversalWithoutTransactionForLedgerServiceHandling($this);
+        }
+
+        if (empty($errorReason) === true)
+        {
+            $errorReason = 'Payout failed. Contact support for help.';
+        }
+
+        if (empty($errorCode) === true)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR;
+        }
+
+        $this->setFailureReason($errorReason);
+        $this->setStatusCode($errorCode);
+        (new PayoutsStatusDetails\Core())->create($this);
+
+        // Send failed webhook if subscribed to failed webhook or account type is DIRECT
+        $event = ($isFailedWebhookEnabled === true || $accountType === Balance\AccountType::DIRECT) ?
+            'api.payout.failed' : 'api.payout.reversed';
+        $app->events->dispatch($event, [$this]);
+
+        $app['trace']->info(
+            TraceCode::PAYOUT_FAILED_IN_SHIELD_EVALUATE,
+            [
+                'payout_id'      => $this->getId(),
+                'transaction_id' => $this->getTransactionId(),
+                'payout_status'  => $this->getStatus(),
+                'failure_reason' => $this->getFailureReason(),
+            ]);
+    }
+
     public function pushChargeCollectionEvent(Entity $payout, string $currentStatus = null, string $status = null)
     {
         $app = App::getFacadeRoot();
