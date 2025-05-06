@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use App;
+use RZP\Http\RequestHeader;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use \WpOrg\Requests\Session as Requests_Session;
 
@@ -430,6 +431,7 @@ class GovernorService
         }
 
         $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
+        $headers[RequestHeader::DEV_SERVE_USER]  = $this->app['request']->header(RequestHeader::DEV_SERVE_USER);
 
         $request = [
             'url'     => $url,
