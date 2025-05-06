@@ -97,7 +97,7 @@ const SingleInviteTab = ({
   // Tracking arg
   const inviteFlow = INVITE_TAB_TYPES.SINGLE_INVITE;
   // FTUX logic
-  const hasSelectedKycAccess = getHasSelectedKycAccess(productType);
+  const hasSelectedKycAccess = getHasSelectedKycAccess(productType, user);
 
   // Steps logic
   const [currentStep, setCurrentStep] = useState(SINGLE_INVITE_FORM);

@@ -9,8 +9,13 @@ import { ShowNotificationType, User } from 'common/typings';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { POSAcceptedInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
+import { sendKYCRequest } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-import { PRODUCT_ROUTE_PATH_PREFIX, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import {
+  PARTNER_TYPE,
+  PRODUCT_ROUTE_PATH_PREFIX,
+  PRODUCT_TYPE,
+} from 'merchant/views/PartnerDashboard/constants';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -35,7 +40,11 @@ const ActionButtonKYC = ({
   const { isInviteFlowEnabled } = getIsInviteFlowEnabled(productType, experiments);
   const { details: { activation_status } = {}, kyc_access } = submerchant;
   const isSubMerchantKYCAccess = user?.isFeatureEnabled('partner_sub_kyc_access');
+
+  const isAggregator = user?.isPartner(PARTNER_TYPE.AGGREGATOR);
+
   const submerchantId = submerchant?.id;
+  const MAX_REJECTION_COUNT = isAggregator ? 10 : 3;
 
   let state = kyc_access?.state;
   const token_expiry = moment.unix(kyc_access?.token_expiry as number);
@@ -43,8 +52,8 @@ const ActionButtonKYC = ({
 
   let isDisabled = false;
   let isFullRejected = false;
-  let btnText = 'Request for KYC';
-  const openSidePannel = () => {
+  let btnText = isAggregator ? 'Request for account access' : 'Request for KYC';
+  const openSidePanel = () => {
     if (isInviteFlowEnabled) {
       trackAccountLevelAcceptedInvitesCta(submerchant, { productType, action: btnText });
     }
@@ -63,20 +72,44 @@ const ActionButtonKYC = ({
     }
   };
 
-  let action = openSidePannel;
+  const handleKYCRequest = () => {
+    sendKYCRequest(submerchantId.replace('acc_', ''))
+      .then(() => {
+        showNotification({
+          type: 'success',
+          message:
+            'We have sent a mail to the merchant to approve your request. You will receive an email once the request has been approved',
+        });
+      })
+      .catch((err: { errors: Array<string> }) => {
+        showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  let action = handleKYCRequest;
 
   const currentTime = moment();
   const isApprovalRequestExpired = currentTime.isAfter(token_expiry);
+
+  /**
+   * The following conditions update the KYC button configuration based on the current state and related conditions.
+   *
+   * adjustments for button text, action, disabled state, and rejection flag depending on
+   * the state of the KYC request (e.g., pending approval, expired, approved, or rejected). It also
+   * handles special cases for sub-merchant KYC access and activation statuses.
+   */
   if (state === 'pending_approval' && isApprovalRequestExpired) {
     state = 'expired';
   }
-
   if (state === 'pending_approval') {
     isDisabled = true;
     btnText = 'Perform KYC';
   }
   if (state === 'expired') {
-    action = openSidePannel;
+    action = openSidePanel;
     btnText = 'Resend KYC request';
   }
   if (state === 'approved') {
@@ -85,10 +118,10 @@ const ActionButtonKYC = ({
   }
   if (state === 'rejected') {
     btnText = 'Resend KYC request';
-    action = openSidePannel;
-    if (rejectionCount >= 3) {
+    action = openSidePanel;
+    if (rejectionCount >= MAX_REJECTION_COUNT) {
       isFullRejected = true;
-      btnText = 'Rejected Multiple times';
+      isDisabled = true;
     }
   }
   if (isSubMerchantKYCAccess) {

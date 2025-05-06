@@ -101,6 +101,8 @@ type submitBankStatementResponse = CommonApiResponse<{
   status: string;
 }>;
 
+type sendKYCRequestResponse = CommonApiResponse<{ status: string }>;
+
 export const fetchBureauLink = (
   partnerId: string,
   merchantId: string,
@@ -170,5 +172,13 @@ export const submitBankStatements = (data: {
     headers: {
       'Content-Type': 'application/json',
     },
+  });
+};
+
+export const sendKYCRequest = (submerchantId: string): Promise<sendKYCRequestResponse> => {
+  return merchantFetch({
+    url: 'partner/kyc_access_request',
+    method: 'post',
+    data: { entity_id: submerchantId },
   });
 };

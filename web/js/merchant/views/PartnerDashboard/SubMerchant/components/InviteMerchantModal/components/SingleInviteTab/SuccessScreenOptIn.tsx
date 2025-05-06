@@ -1,8 +1,12 @@
 import React from 'react';
 import { Box, Button, Heading, Link, Text } from '@razorpay/blade/components';
 
+import { ShowWhen } from 'merchant_common/components/RouteGuard';
+import {
+  PARTNER_TYPE,
+  PARTNERSHIPS_WEBSITE_LINKS,
+} from 'merchant/views/PartnerDashboard/constants';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
-import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 import Ellipse from './icons/ellipse.svg';
 import SuccessIcon from './icons/success-tick-rounded-green.svg';
@@ -50,30 +54,32 @@ const SuccessScreenOptIn = ({ onDismiss }: SuccessScreenOptInProps): JSX.Element
               Find the client in Affiliate Accounts
             </Text>
             <Text size="small">
-              Once the client signs up, you can view the referred clients under Affiliate Accounts
-              on your left navigation
+              Once the client signs up, you can view the referred clients under{' '}
+              <Text weight="semibold">Affiliate Accounts</Text> on your left navigation
             </Text>
           </Box>
         </Box>
-        <Box display="flex" gap="spacing.3" flex="1" alignItems="start">
-          <img src={Ellipse} alt="ellipse" />
-          <Box display="flex" flexDirection="column" gap="spacing.2">
-            <Text color="surface.text.gray.subtle" weight="semibold">
-              Perform KYC for your client
-            </Text>
-            <Text size="small">
-              You can perform KYC for your clients with the necessary details.{' '}
-              <Link
-                size="small"
-                target="_blank"
-                rel="noreferrer noopener"
-                href={PARTNERSHIPS_WEBSITE_LINKS.PERFORM_KYC_DOCS_LINK}
-              >
-                Know more
-              </Link>
-            </Text>
+        <ShowWhen additionalCondition={(user) => !user.isPartner(PARTNER_TYPE.AGGREGATOR)}>
+          <Box display="flex" gap="spacing.3" flex="1" alignItems="start">
+            <img src={Ellipse} alt="ellipse" />
+            <Box display="flex" flexDirection="column" gap="spacing.2">
+              <Text color="surface.text.gray.subtle" weight="semibold">
+                Perform KYC for your client
+              </Text>
+              <Text size="small">
+                You can perform KYC for your clients with the necessary details.{' '}
+                <Link
+                  size="small"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  href={PARTNERSHIPS_WEBSITE_LINKS.PERFORM_KYC_DOCS_LINK}
+                >
+                  Know more
+                </Link>
+              </Text>
+            </Box>
           </Box>
-        </Box>
+        </ShowWhen>
       </Box>
       <ModalFooter>
         <Button onClick={onDismiss}>Got it</Button>

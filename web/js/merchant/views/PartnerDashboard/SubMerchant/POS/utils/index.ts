@@ -79,12 +79,12 @@ export const parseKycHistoryData = (
 // ActionKycButton Logic
 export const getKycActionButtonState = ({
   submerchant,
-  sendKYCRequest,
+  handleKYCRequest,
   openKYCForm,
   isSubmerchantKYCAccess,
 }: {
   submerchant: PosSubmerchantDetailsResponseDataType;
-  sendKYCRequest: () => void;
+  handleKYCRequest: () => void;
   openKYCForm: () => void;
   isSubmerchantKYCAccess: boolean;
 }): {
@@ -102,7 +102,7 @@ export const getKycActionButtonState = ({
   let buttonText = 'Request for KYC';
   let isKycRejected = false;
 
-  let onClickAction = sendKYCRequest;
+  let onClickAction = handleKYCRequest;
   const currentTime = moment();
   const isApprovalRequestExpired = currentTime.isAfter(token_expiry);
   if (kycAccessState === 'pending_approval' && isApprovalRequestExpired) {

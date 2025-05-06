@@ -1,8 +1,9 @@
 import React from 'react';
+import { Tooltip, Box } from '@razorpay/blade/components';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { DataTableColumn, DataTableColumns, User } from 'common/typings';
-import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { SubmerchantSettlementLabel } from 'merchant/components/StatusLabel';
 import { handleClientAccountSelected } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/PaymentsClients/AcceptedInvites/analytics';
 import { GetColumnsType } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/DataTableWrapper';
@@ -17,7 +18,7 @@ import {
 import { PGAcceptedInviteItem } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/api';
 import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import SubMerchantKycStatusLabel from 'merchant/views/PartnerDashboard/SubMerchant/components/SubMerchantKycStatusLabel';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PARTNER_TYPE, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import ActionButtonKYC from './ActionButtonKYC';
 import SwitchMerchant from './SwitchMerchant';
@@ -44,16 +45,13 @@ const idColumnWithoutLink = {
 const settlementStatus = {
   title: (
     <>
-      Settlement Status&nbsp;
-      <span>
+      Settlement Status
+      <Tooltip
+        content="Current status of whether the merchant can receive the settlement"
+        placement="top"
+      >
         <i className="i i-info-circle" />
-        &nbsp;
-        <PopoverComponent align="top" theme="dark">
-          <PopoverBody>
-            Current status of whether the merchant can receive the settlement
-          </PopoverBody>
-        </PopoverComponent>
-      </span>
+      </Tooltip>
     </>
   ),
   value: (submerchant) => (
@@ -96,16 +94,12 @@ const switchAccountLabel = (user: User, itemDetails: PGAcceptedInviteItem): bool
 
 const activationStatusColumn = {
   title: (
-    <>
-      Activation Status&nbsp;
-      <span>
+    <Box display="flex" flexDirection="row" gap="spacing.3" alignItems="center">
+      Activation Status
+      <Tooltip content="Current status of merchant's activation request" placement="top">
         <i className="i i-info-circle" />
-        &nbsp;
-        <PopoverComponent align="top" theme="dark">
-          <PopoverBody>Current status of merchant&apos;s activation request</PopoverBody>
-        </PopoverComponent>
-      </span>
-    </>
+      </Tooltip>
+    </Box>
   ),
   value: (submerchant) => (
     <SubMerchantKycStatusLabel
@@ -116,43 +110,67 @@ const activationStatusColumn = {
   ),
 };
 
+const actionsColumn: DataTableColumn = {
+  title: (
+    <Box display="flex" flexDirection="row" gap="spacing.3" alignItems="center">
+      Actions
+      <ShowWhen
+        additionalCondition={(user) =>
+          user.isPartner(PARTNER_TYPE.AGGREGATOR, PARTNER_TYPE.RESELLER)
+        }
+      >
+        <Tooltip
+          content="Send request to gain access to perform your referred merchant's KYC"
+          placement="top"
+        >
+          <i className="i i-info-circle" />
+        </Tooltip>
+      </ShowWhen>
+    </Box>
+  ),
+
+  value: (submerchant: PGAcceptedInviteItem) => (
+    <>
+      <ShowWhen additionalCondition={(user) => switchAccountLabel(user, submerchant)}>
+        <SwitchMerchant submerchant={submerchant} />
+      </ShowWhen>
+      <ShowWhen additionalCondition={(user) => !switchAccountLabel(user, submerchant)}>
+        <ActionButtonKYC submerchant={submerchant} productType={PRODUCT_TYPE.PG} />
+      </ShowWhen>
+    </>
+  ),
+};
+
 export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
   const { isInviteFlowEnabled } = getIsInviteFlowEnabled(PRODUCT_TYPE.PG, experiments);
   const isSubMerchantKYCAccess = user.isFeatureEnabled('partner_sub_kyc_access');
-  const conditionalNameColumn = user.isPartner('pure_platform')
+  const conditionalNameColumn = user.isPartner(PARTNER_TYPE.PURE_PLATFORM)
     ? purePlatformNameColumn
     : nameColumn;
 
-  const conditionalIdColumn = user.isPartner('pure_platform') ? idColumnWithoutLink : idColumn;
-  const actionsColumn: DataTableColumn = {
-    title: 'Actions',
-    value: (submerchant: PGAcceptedInviteItem) => (
-      <ActionButtonKYC submerchant={submerchant} productType={PRODUCT_TYPE.PG} />
-    ),
-  };
+  const conditionalIdColumn = user.isPartner(PARTNER_TYPE.PURE_PLATFORM)
+    ? idColumnWithoutLink
+    : idColumn;
 
   const switchMerchantColumn = {
     title: 'Switch Account',
-    value: (item) => {
-      if (switchAccountLabel(user, item)) {
-        return <SwitchMerchant submerchant={item} />;
-      }
-      return 'No Access';
-    },
+    value: (item) => (
+      <SwitchMerchant submerchant={item} isDisabled={!switchAccountLabel(user, item)} />
+    ),
   };
 
   let conditionalAppIdColumn = [] as DataTableColumns;
   let conditionalSwitchMerchantColumn = [] as DataTableColumns;
-  if (user.isPartner('pure_platform')) {
+  if (user.isPartner(PARTNER_TYPE.PURE_PLATFORM)) {
     conditionalAppIdColumn = [appIdColumn];
     conditionalSwitchMerchantColumn = [switchMerchantColumn];
-  } else if (user.isPartner('aggregator') || user.isPartner('fully_managed')) {
+  } else if (user.isPartner('fully_managed')) {
     conditionalSwitchMerchantColumn = [switchMerchantColumn];
   }
 
   if (isInviteFlowEnabled) {
     const conditionalActionsColumn =
-      user.isPartner('pure_platform') && !isSubMerchantKYCAccess ? [] : [actionsColumn];
+      user.isPartner(PARTNER_TYPE.PURE_PLATFORM) && !isSubMerchantKYCAccess ? [] : [actionsColumn];
 
     return [
       conditionalIdColumn,
@@ -182,7 +200,7 @@ export const getColumns: GetColumnsType = ({ user, org, experiments }) => {
     addedOnColumn,
   ];
 
-  if (user.isSubMerchantKycEnabled && user.isPartner('reseller')) {
+  if (user.isSubMerchantKycEnabled && user.isPartner(PARTNER_TYPE.RESELLER)) {
     const orgCode = org?.custom_code || 'rzp';
     const ORG_COLUMNS = {
       rzp: [

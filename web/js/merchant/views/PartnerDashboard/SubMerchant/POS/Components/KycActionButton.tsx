@@ -8,9 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { ShowNotificationType, User } from 'common/typings';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import ConditionalTooltip from 'merchant/containers/ConditionalTooltip';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { PosSubmerchantDetailsResponseDataType } from 'merchant/views/PartnerDashboard/SubMerchant/POS/TypeDeclares';
 import { getKycActionButtonState } from 'merchant/views/PartnerDashboard/SubMerchant/POS/utils';
+import { sendKYCRequest } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { checkIsEasyEnabledForSubmerchant } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -54,12 +54,8 @@ const KycActionButton = ({
       });
     }
   };
-  const sendKYCRequest = () => {
-    merchantFetch({
-      url: 'partner/kyc_access_request',
-      method: 'post',
-      data: { entity_id: submerchantId },
-    })
+  const handleKYCRequest = () => {
+    sendKYCRequest(submerchantId)
       .then(() => {
         showNotification({
           type: 'success',
@@ -77,7 +73,7 @@ const KycActionButton = ({
 
   const { buttonText, onClickAction, isHidden, isKycRejected } = getKycActionButtonState({
     submerchant,
-    sendKYCRequest,
+    handleKYCRequest,
     openKYCForm,
     isSubmerchantKYCAccess,
   });

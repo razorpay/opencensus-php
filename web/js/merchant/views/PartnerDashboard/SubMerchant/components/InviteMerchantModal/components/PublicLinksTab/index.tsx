@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Badge, Box, Divider, Text, Spinner, Alert } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 
 import { ShowNotificationType } from 'common/typings';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
@@ -10,14 +10,19 @@ import useReferralLinks from 'merchant/views/PartnerDashboard/SubMerchant/compon
 import { getHasSelectedKycAccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/kycAccessFtux';
 import ClientAssistOptions from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink/ClientAssistOptions';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink/SocialShareGroup';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PARTNER_TYPE, PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
+import { User } from 'common/typings';
 interface PublicLinksTabProps {
   productType: string;
   showNotification: ShowNotificationType;
+  user: User;
 }
-const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps): JSX.Element => {
+const PublicLinksTab = ({
+  productType,
+  showNotification,
+  user,
+}: PublicLinksTabProps): JSX.Element => {
   const inviteFlow = INVITE_TAB_TYPES.PUBLIC_LINK;
   const [shouldShowAlert, setShouldShowAlert] = useState(false);
 
@@ -33,7 +38,9 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
   const shouldShowFtuxContent =
     hasSelectedKycAccess === null &&
     easyAccessUrl &&
-    (productType === PRODUCT_TYPE.PG || productType === PRODUCT_TYPE.POS);
+    (productType === PRODUCT_TYPE.PG || productType === PRODUCT_TYPE.POS) &&
+    !user?.isPartner(PARTNER_TYPE.AGGREGATOR);
+
   if (isLoading)
     return (
       <Box display="flex" alignItems="center" justifyContent="center" marginTop="spacing.5">
@@ -113,7 +120,9 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
   );
 };
 
-export default connect(
-  () => ({}),
-  (dispatch) => bindActionCreators({ showNotification }, dispatch),
+export default compose(
+  connect(
+    (state) => ({ user: state.session.user }),
+    (dispatch) => bindActionCreators({ showNotification }, dispatch),
+  ),
 )(PublicLinksTab);

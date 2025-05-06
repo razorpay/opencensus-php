@@ -390,6 +390,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'partnerships_mkyc_aggregator',
+        experimentId: {
+          beta: 'Q6EkE2tdX0ncu9',
+          production: 'Q6EZOxr0PfGoJ5',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'firs_request',
         experimentId: {
           beta: 'MkokP4l9jGy625',

@@ -8,12 +8,27 @@ import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { filterBy, is2FaExperimentEnabled } from 'common/utils/rzp-utils';
 import { getUser } from 'merchant/store';
 
+import { PARTNER_TYPE } from '../constants';
+
 /**
  * Accepts `user` to access any getters such as partner_type, isOrgRzp, older experiments, etc.
  */
-const isPartnershipsInviteFlowEnabled = ({ user }) => {
+
+const isPartnerInviteFlowEnabledForUser = ({ abExperiments, user }) => {
+  if (user.isPartner(PARTNER_TYPE.RESELLER, PARTNER_TYPE.PURE_PLATFORM)) return true;
+
+  /*
+    Enable invite flow if it is present in the experiment variable for aggregator,
+    TODO: Remove this explicit check once API changes are completed for aggregator
+  */
+  return user.isPartner(PARTNER_TYPE.AGGREGATOR)
+    ? isExperimentEnabled(abExperiments?.partnerships_mkyc_aggregator)
+    : false;
+};
+
+const isPartnershipsInviteFlowEnabled = ({ abExperiments, user }) => {
   // Note: this experiment is ramped 100% but the user checks are still needed.
-  return user.isPartner('reseller') && user.isOrgRZP;
+  return user.isOrgRZP && isPartnerInviteFlowEnabledForUser({ abExperiments, user });
 };
 
 const isPlatformPartnerInviteFlowEnabled = ({ abExperiments, user }) => {
@@ -41,8 +56,8 @@ export const isPartnershipsForPosEnabled = ({
   user,
 }: isPartnershipsForPosEnabledArgs): boolean => {
   return (
-    user.isPartner('reseller') &&
     user.isOrgRZP &&
+    user.isPartner(PARTNER_TYPE.RESELLER) &&
     isExperimentEnabled(abExperiments?.partnerships_accounts_list_revamp) &&
     (user.isPartnerAgentRole || isExperimentEnabled(abExperiments?.partnerships_for_pos))
   );
@@ -52,10 +67,10 @@ const isAccountsListRevampEnabled = ({ abExperiments, user }) => {
   const { partnerships_accounts_list_revamp } = abExperiments;
   return (
     // TODO v2: test for curlec and remove the user.isOrgRZP check
+
     user.isOrgRZP &&
     isExperimentEnabled(partnerships_accounts_list_revamp) &&
-    (partnerships_accounts_list_revamp.variables?.skip_pos_check === 'on' ||
-      isPartnershipsForPosEnabled({ abExperiments, user }))
+    isPartnerInviteFlowEnabledForUser({ abExperiments, user })
   );
 };
 const isPartnershipCapitalBureauLinkEnabled = ({ abExperiments }) => {
@@ -91,6 +106,7 @@ const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
   return useMemo(
     () => ({
       isPartnershipsInviteFlowEnabled: isPartnershipsInviteFlowEnabled({
+        abExperiments,
         user,
       }),
       isPlatformPartnerInviteFlowEnabled: isPlatformPartnerInviteFlowEnabled({

@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import * as Yup from 'yup';
 
-import { FormikHandleChange, ShowNotificationType } from 'common/typings';
+import { FormikHandleChange, ShowNotificationType, User } from 'common/typings';
 import { createPartnerSubmerchantReferralInvitesBatch } from 'merchant/reducers/batches';
 import { CreateReferralInvitesBatchType } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
@@ -45,6 +45,7 @@ const validationSchema = Yup.object().shape({
 });
 
 type BulkInviteTabProps = {
+  user: User;
   productType: string;
   setShowHeaderAndTabs: (args: boolean) => void;
   onDismiss: () => void;
@@ -53,6 +54,7 @@ type BulkInviteTabProps = {
   createPartnerSubmerchantReferralInvitesBatch: CreateReferralInvitesBatchType;
 };
 const BulkInviteTab = ({
+  user,
   productType,
   setShowHeaderAndTabs,
   onDismiss,
@@ -62,7 +64,7 @@ const BulkInviteTab = ({
 }: BulkInviteTabProps): JSX.Element => {
   const inviteFlow = INVITE_TAB_TYPES.BULK_UPLOAD;
   // FTUX logic
-  const hasSelectedKycAccess = getHasSelectedKycAccess(productType);
+  const hasSelectedKycAccess = getHasSelectedKycAccess(productType, user);
 
   // Steps logic
   const [currentStep, setCurrentStep] = useState(BULK_INVITE_FORM);
@@ -89,7 +91,6 @@ const BulkInviteTab = ({
       file_id,
       config: {
         product: productType,
-        request_kyc_access,
       },
     })
       .then(() => {

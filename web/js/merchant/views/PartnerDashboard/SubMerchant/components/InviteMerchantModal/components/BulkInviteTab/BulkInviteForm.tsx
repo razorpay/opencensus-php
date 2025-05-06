@@ -14,10 +14,12 @@ import {
   trackInviteFlowValidationError,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
+import { ShowWhen } from 'merchant_common/components/RouteGuard';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BatchValidate from './BulkAddMerchant/common/BatchValidateTyped';
 import { StyledBulkAddForm } from './BulkAddMerchant/common/styled';
+import { PARTNER_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 type BulkInviteFormProps = {
   formik: UseFormikReturnType;
@@ -91,7 +93,7 @@ const BulkInviteForm = ({
               batchClass="batch-upload-modal"
               nullStatusNotification={
                 <Text size="small" color="feedback.text.negative.intense">
-                  {formik.errors.file_id}
+                  {formik.errors['file_id']}
                 </Text>
               }
             />
@@ -111,17 +113,22 @@ const BulkInviteForm = ({
                   </div>
                 </div>
                 {/* FTUX checkbox */}
-                {hasSelectedKycAccess !== null ? (
+
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    !user.isPartner(PARTNER_TYPE.AGGREGATOR) && hasSelectedKycAccess !== null
+                  }
+                >
                   <Box marginTop="spacing.9" marginBottom="spacing.11">
                     <Divider />
                     <KYCAccessCheckbox
                       inviteFlow={inviteFlow}
                       productType={productType}
-                      isChecked={formik.values.request_kyc_access}
+                      isChecked={formik.values['request_kyc_access']}
                       onChange={handleKycAccessChange}
                     />
                   </Box>
-                ) : null}
+                </ShowWhen>
               </Box>
             ) : null}
           </div>
