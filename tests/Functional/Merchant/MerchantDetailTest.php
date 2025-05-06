@@ -75,6 +75,7 @@ use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteUpdate;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\DeviceDetail\Core as DDCore;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -14649,6 +14650,104 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenMerchantIdIsEmpty(): void
+    {
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS('');
+        $this->assertNull($result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenPGOSResponseIsEmpty(): void
+    {
+        $merchantId = '12345678900';
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andReturn(null);
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenExceptionIsThrownWithDbError(): void
+    {
+        $merchantId = '12345678900';
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andThrow(new \Exception(json_encode([
+                    'code' => 'internal',
+                    'msg' => 'db_error: record_not_found'
+                ])));
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsWorkflowData_WhenPGOSResponseIsValid(): void
+    {
+        $merchantId = '12345678900';
+        $expectedResponse = [
+            'service' => DDConstants::SERVICE_PGOS,
+            'workflow_type' => DDConstants::MODULAR_ONBOARDING,
+            'workflow_details' => [
+                ['workflow_type' => DDConstants::MODULAR_ONBOARDING, 'id' => 'ABCDEFGHI']
+            ]
+        ];
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andReturn([
+                    'merchant_id' => '12345678900',
+                    'workflow_details' => [
+                        'online' => [
+                            'workflow_type' => 'MODULAR_ONBOARDING',
+                            'id' => 'ABCDEFGHI',
+                        ]
+                    ]
+                ]);
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenExceptionIsThrown(): void
+    {
+        $merchantId = '12345678900';
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andThrow(new \Exception(json_encode([
+                    'code' => 'bad_request',
+                    'msg' => 'invalid_inputs'
+                ])));
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage(json_encode([
+            'code' => 'bad_request',
+            'msg' => 'invalid_inputs'
+        ]));
+    }
+  
     public function testUpdateFieldsForApiSubMerchantsPostActivation()
     {
         $attributes = [

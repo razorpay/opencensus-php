@@ -25,6 +25,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
 use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\Core as MerchantDetail;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailConstants;
@@ -151,6 +152,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_VCIP_LINK                          = 'get_vcip_link';
     const BDD_VERIFICATION_STATUS_UPDATE         = 'bdd_verification_status_update';
 
+    const GET_MERCHANT_ONBOARDING_DETAILS        = 'get_merchant_onboarding_details';
+
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
     const PGOS_OWNED_FIELDS = [
@@ -223,6 +226,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_GET,
         self::ONBOARDING_SAVE,
         self::ONBOARDING_CREATE_OR_FETCH,
+        self::GET_MERCHANT_ONBOARDING_DETAILS,
     ];
 
     const ADMIN_ROUTES = [
@@ -331,6 +335,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::INITIATE_POS_ONBOARDING                       => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/InitiatePosOnboarding',
         self::GET_VCIP_LINK                                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetVcipLink',
         self::BDD_VERIFICATION_STATUS_UPDATE                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UpdateBddVerificationStatus',
+        self::GET_MERCHANT_ONBOARDING_DETAILS               => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDetails',
     ];
 
     // timeout in seconds
@@ -404,7 +409,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
         self::MERCHANT_DOCUMENT_UPLOAD,
         self::MERCHANT_CONSENTS_SAVE,
-        self::BDD_VERIFICATION_STATUS_UPDATE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
@@ -417,7 +421,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_UPDATE,
         self::ACTIVATION_DOCUMENT_TYPES,
         self::MERCHANT_SIGN_UP,
-        self::SALES_ASSISTED_MERCHANT_SIGN_UP
+        self::SALES_ASSISTED_MERCHANT_SIGN_UP,
+        self::BDD_VERIFICATION_STATUS_UPDATE,
+        self::GET_MERCHANT_ONBOARDING_DETAILS,
     ];
 
     // ROUTES_ENABLED_FOR_POS_FLOW contains the list of routes for which the PGOS call should be enabled.

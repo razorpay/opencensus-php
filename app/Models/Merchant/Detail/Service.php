@@ -8,6 +8,7 @@ use DateTime;
 use DOMDocument;
 use Lib\PhoneBook;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Services\KafkaProducer;
 use RZP\lib\TemplateEngine;
 use Illuminate\Support\Str;
@@ -15,6 +16,7 @@ use RZP\Constants\Environment;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -235,15 +237,38 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function fetchMerchantDetailsWithFilterQueryParam(string $filter, $merchantId): array
     {
         // more cases for query param filter can occur in future
         switch($filter) {
             case DetailConstants::ONBOARDING_META:
                 $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
+
+                $workflowDetails = $workflowDetailsV2 = $workflowType = $source = null;
+
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
-                $workflowType = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE) : null;
-                $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS) : null;
+
+                if (empty($userDeviceDetail) === false) {
+
+                    $fetchedFromOnboardingDetails = false;
+
+                    $workflowDetailsResponse = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS, $fetchedFromOnboardingDetails, false);
+
+                    $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+                    if ($fetchedFromOnboardingDetails) {
+
+                        $workflowDetailsV2 = $workflowDetailsResponse;
+
+                    } else {
+
+                        $workflowDetails = $workflowDetailsResponse;
+                    }
+                }
+
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
                 $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($this->merchant);
                 $dedupe = [
@@ -254,15 +279,22 @@ class Service extends Base\Service
                 $activationFormMilestone = $this->merchant->merchantDetail->getActivationFormMilestone();
                 $isFormSubmitted = $this->merchant->merchantDetail->isSubmitted();
 
-                return [
+                $response = [
                     MerchantDetailEntity::ACTIVATION_STATUS => $activationStatus,
                     DeviceDetailConstants::WORKFLOW_TYPE    => $workflowType,
-                    DeviceDetailConstants::WORKFLOW_DETAILS => $workflowDetails,
                     DetailConstants::DEDUPE                 => $dedupe,
                     DetailConstants::IS_FORM_LOCKED         => $isFormLocked,
                     Constants::MILESTONE                    => $activationFormMilestone,
                     DetailConstants::IS_FORM_SUBMITTED      => $isFormSubmitted
                 ];
+
+                if ($workflowDetailsV2 != null) {
+                    $response[DeviceDetailConstants::WORKFLOW_DETAILS_V2] = $workflowDetailsV2;
+                } else {
+                    $response[DeviceDetailConstants::WORKFLOW_DETAILS] = $workflowDetails ?? null;
+                }
+
+                return $response;
         }
 
         return [];

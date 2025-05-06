@@ -1304,7 +1304,7 @@ return array(
     'enabled_rearch_optimizer_recurring_flow' => env('ENABLED_REARCH_OPTIMIZER_RECURRING_FLOW'),
 
     'card_mandate_enable_multiple_frequencies' => env('CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES'),
-    
+
     'validate_offer_via_offer_engine_exp_id' => env('VALIDATE_OFFER_VIA_OFFER_ENGINE_EXP_ID'),
 
     'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),
@@ -1478,6 +1478,8 @@ return array(
     'upi_auth_link_frequency_as_presented_default' => env('UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT'),
 
     'banking_redirection_enabled' => env('BANKING_REDIRECTION_ENABLED'),
+
+    'pgos_read_for_metadata_enabled' => env('PGOS_READ_FOR_METADATA_ENABLED'),
 
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 );

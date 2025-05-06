@@ -10177,7 +10177,7 @@ class Core extends Base\Core
             $validation->setArtefactType($artefactDetails[Constant::ARTEFACT_TYPE]);
 
             $statusUpdateFactory = new DocumentStatusUpdater\Factory();
-            
+
             $statusUpdater = $statusUpdateFactory->getInstance($merchant, $merchantDetail, $validation);
 
             $statusUpdater->updateStatusToPending();
