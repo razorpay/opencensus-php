@@ -22,10 +22,16 @@ export const isRTUXHomepageEnabled = ({ user, abExperiments }: RTUXHomepageEnabl
 
   if (user.isPartner()) return isExperimentEnabled(abExperiments.rtux_homepage_partner);
 
+  if (isExperimentEnabled(abExperiments.enable_rtux_blacklisted_segment)) return true;
+
   return (
     !checkIfPosSalesAgent({ user, abExperiments })?.isPosSalesAgent &&
     isExperimentEnabled(abExperiments.rtux_homepage)
   );
+};
+
+export const isRTUXLeftoutSegmentEnabled = ({ splitz }: RTUXHomepageEnabled): boolean => {
+  return isExperimentEnabled(splitz?.abExperiments?.enable_rtux_blacklisted_segment);
 };
 
 export const useIsRTUXHomepageEnabled = (): boolean => {

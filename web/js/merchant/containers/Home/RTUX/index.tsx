@@ -18,6 +18,10 @@ import { ResponsiveWrapper } from './styles';
 import DiwaliReportBanner from '../DiwaliReportBanner';
 import FestivalThemeBanner from '../FestivalThemeBanner';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
+import FeedbackForm from './FeedbackForm';
+import { isRTUXLeftoutSegmentEnabled } from './utils';
+import { rtuxFeedbackFormKeys } from './FeedbackForm/utils';
+import { getItemFromLocalStorage, setItemInLocalStorage } from '@libs/shared-utils';
 
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
@@ -48,6 +52,8 @@ const RTUXHomepage = (): JSX.Element => {
   const widgetId = `merchantDashboard.${screen}`;
   const shouldShowReKycBanner = isEligibleForReKyc(splitz, user);
   const shouldShowRazorpayRewind = isEligibleForRazorpayRewind(splitz, user);
+  const isRTUXLeftoutSegment = isRTUXLeftoutSegmentEnabled({ splitz });
+  const isMobile = isMobileDevice();
 
   const retryHandler = () => {
     if (isError) refetch();
@@ -63,6 +69,24 @@ const RTUXHomepage = (): JSX.Element => {
         flow: 'new',
       },
     });
+
+    if (!isMobile && isRTUXLeftoutSegment) {
+      const hasUpdatedLocalStorageInThisSession = sessionStorage.getItem(
+        rtuxFeedbackFormKeys.localStorageUpdated,
+      );
+      const seenCount = getItemFromLocalStorage(rtuxFeedbackFormKeys.seenCount);
+      const count = seenCount ? parseInt(seenCount) : 0;
+      if (count < 3 && !hasUpdatedLocalStorageInThisSession) {
+        // Increment view count
+        setItemInLocalStorage(rtuxFeedbackFormKeys.seenCount, (count + 1).toString());
+
+        // Show feedback form on exactly the 3rd view
+        if (count + 1 === 3) {
+          setItemInLocalStorage(rtuxFeedbackFormKeys.showWidget, 'true');
+        }
+        sessionStorage.setItem(rtuxFeedbackFormKeys.localStorageUpdated, 'true');
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -82,7 +106,7 @@ const RTUXHomepage = (): JSX.Element => {
 
   // if layout errors out, fallback to default loader
   if (isFetchingLayout || (isErrorLayout && isFetching)) {
-    return isMobileDevice() ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />;
+    return isMobile ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />;
   }
   // only retry for data, layout error is handled by default loader
   if (isError)
@@ -130,6 +154,7 @@ const RTUXHomepage = (): JSX.Element => {
           </Fragment>
         ))}
       </Box>
+      {isRTUXLeftoutSegment && !isMobile ? <FeedbackForm /> : null}
     </ResponsiveWrapper>
   );
 };

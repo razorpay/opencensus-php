@@ -486,6 +486,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'enable_rtux_blacklisted_segment',
+        experimentId: {
+          beta: 'QRFLWefKJWJxdu',
+          production: 'QRBv1zMgqMYEtI',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'rtux_homepage_partner',
         experimentId: {
           beta: 'Q39j4rOAw0rZmQ',
