@@ -4,6 +4,8 @@ import {
   DETAILS_TYPE,
   WEBSITE_LINKS_MAPPING,
 } from 'merchant/views/Settings/PaymentMethods/constants';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 export const getInstrumentTat = (props) => {
   const { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = props;
@@ -150,4 +152,17 @@ export const getAllFields = (data) => {
     }
     return result;
   }, {});
+};
+
+export const trackScraperModal = (objectName, action, props = {}, extra = {}) => {
+  analyticsTrack({
+    objectName,
+    actionName: action,
+    screen: window.location.pathname,
+    properties: {
+      instrument_name: props?.instrument?.path,
+      ...extra,
+      ...getCommonAnalyticsProperties(window.rzp_user),
+    },
+  });
 };
