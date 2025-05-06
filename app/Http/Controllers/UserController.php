@@ -2339,7 +2339,8 @@ class UserController extends Controller
             $workflowDetails = array_get($details, 'workflow_details');
 
             if ((isset($workflowType) === true and $workflowType === MerchantConstants::MODULAR_ONBOARDING) or (is_array($workflowDetails) and ((isset($workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::PG_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING) or
-                (isset($workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING))))
+                (isset($workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::CROSS_BORDER_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING) or
+                (isset($workflowDetails[MerchantConstants::SUB_MERCHANT_ONBOARDING_WORKFLOW_TYPE]) === true and $workflowDetails[MerchantConstants::SUB_MERCHANT_ONBOARDING_WORKFLOW_TYPE] === MerchantConstants::MODULAR_ONBOARDING))))
             {
                 return false;
             }

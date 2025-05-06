@@ -111,6 +111,7 @@ function WebsiteAppDetails({
     if (
       !user.isMkycMerchant &&
       !user.isCbMkycMerchant &&
+      !user.isMkycSubMerchant &&
       isExpEnabled &&
       !policyWizardV2Data.isDataLoaded &&
       !policyWizardV2Data.error

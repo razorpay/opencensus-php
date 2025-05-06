@@ -115,7 +115,8 @@ export class ShellRedirectionService {
     const isOrgRZP = orgCode === AppConstants.ORG_RZP;
     const isRZPOrgID = orgID === AppConstants.ORG_RZP_ID;
     const isFTUXApplicableForIndia = isRZPOrgID && countryCode === AppConstants.INDIA_COUNTRY_CODE;
-    const isApplicableForFtuxRedirection = this.isRedirectionApplicableForFtux(this.data?.user || {}) && isOrgRZP;
+    const isApplicableForFtuxRedirection =
+      this.isRedirectionApplicableForFtux(this.data?.user || {}) && isOrgRZP;
 
     if (isApplicableForFtuxRedirection && isFTUXApplicableForIndia) {
       return process.env[AppConstants.EASY_DASHBOARD_URL] + '/onboarding/overview';
@@ -246,16 +247,18 @@ export class ShellRedirectionService {
     const originHost = this.getRequestOriginHost();
     const requestHost = this.getRequestHost();
 
-      if (shouldUseBankingOriginRequestV2) {
-          const bankingUrls = (process.env[AppConstants.BANKING_SERVICE_URL_V2_KEY] || '').split(',');
-          if (bankingUrls.some(
-              (url) =>
-                  this.getHostFromUrl(url.trim()) === originHost ||
-                  this.getHostFromUrl(url.trim()) === requestHost,
-          )) {
-              return true;
-          }
+    if (shouldUseBankingOriginRequestV2) {
+      const bankingUrls = (process.env[AppConstants.BANKING_SERVICE_URL_V2_KEY] || '').split(',');
+      if (
+        bankingUrls.some(
+          (url) =>
+            this.getHostFromUrl(url.trim()) === originHost ||
+            this.getHostFromUrl(url.trim()) === requestHost,
+        )
+      ) {
+        return true;
       }
+    }
 
     const bankingHost = this.getHostFromUrl(
       process.env[AppConstants.BANKING_SERVICE_URL_KEY] || '',
@@ -374,7 +377,8 @@ export class ShellRedirectionService {
       (signupCampaign === AppConstants.I18N_MY_SIGNUP ||
         signupCampaign === AppConstants.EASY_ONBOARDING ||
         signupCampaign === AppConstants.SG_SIGNUP) &&
-      !this.data?.user?.activation_form_milestone && submitted === 0
+      !this.data?.user?.activation_form_milestone &&
+      submitted === 0
     );
   }
 
@@ -418,7 +422,8 @@ export class ShellRedirectionService {
       if (
         (workflowType && workflowType === AppConstants.MODULAR_ONBOARDING) ||
         workflowDetails.pg_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING ||
-        workflowDetails.cross_border_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING
+        workflowDetails.cross_border_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING ||
+        workflowDetails.sub_merchant_onboarding_workflow_type === AppConstants.MODULAR_ONBOARDING
       ) {
         return false;
       }
@@ -448,7 +453,6 @@ export class ShellRedirectionService {
       if (typeof this.request.cookies[AppConstants.FTUX_SESSION] !== 'undefined') {
         return false;
       }
-
 
       if (
         details?.activation_status !== AppConstants.ACTIVATION_STATUS_ACTIVATED &&

@@ -816,8 +816,7 @@ const isEligibleForFtuxV1 = ({ user = {}, abExperiments = {}, isAdmin = false } 
 
   const isMasterKyc = user?.workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
 
-  if (isMasterKyc || user?.isCbMkycMerchant || isFtuxV2Enabled) {
-
+  if (isMasterKyc || user?.isCbMkycMerchant || user?.isMkycSubMerchant || isFtuxV2Enabled) {
     return false;
   }
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
@@ -831,7 +830,6 @@ const isEligibleForFtuxV1 = ({ user = {}, abExperiments = {}, isAdmin = false } 
     !user.isSubMerchant &&
     !user.isPartner() &&
     !isPOSMerchant;
-
 
   return isFtuxEnabled;
 };

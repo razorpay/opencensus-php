@@ -724,7 +724,8 @@ class Content extends Component {
         isValidMerchant &&
         isExperimentEnabled(ray_onboarding_ai) &&
         !isMasterKyc &&
-        !user?.isCbMkycMerchant
+        !user?.isCbMkycMerchant &&
+        !user?.isMkycSubMerchant
       );
     }
 
@@ -898,13 +899,16 @@ class Content extends Component {
         BillMeSettings,
         StoreSettings,
         AccountAndSettingsHome,
-      };    
+      };
       const billMeRoutes = this.getRoutesByMerchantType('billme', BillMeComponents);
-      
+
       return (
         <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
           <Routes location={this.baseLocation}>
-          <Route path="*" element={<HandleIndex isConnectedNavigation={isConnectedNavigation} />} />
+            <Route
+              path="*"
+              element={<HandleIndex isConnectedNavigation={isConnectedNavigation} />}
+            />
             {/* Adding base billme route here as if not added, it goes to dashboard route */}
             <Route
               path="billme/*"
@@ -2337,7 +2341,8 @@ class Content extends Component {
                   }) &&
                   !isPosSalesAgent &&
                   !user.isMkycMerchant &&
-                  !user.isCbMasterKycMerchant
+                  !user.isCbMasterKycMerchant &&
+                  !user.isMkycSubMerchant
                 }
               >
                 <Pos />
@@ -2817,7 +2822,9 @@ class Content extends Component {
             ? ''
             : classList(
                 !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
-                !fullPageView && !isWebView && this.props.showNewHomePage ? 'main-content--rtux' : '',
+                !fullPageView && !isWebView && this.props.showNewHomePage
+                  ? 'main-content--rtux'
+                  : '',
                 !fullPageView && !isWebView && isConnectedNavigation
                   ? 'main-content--connected-navigation'
                   : '',
