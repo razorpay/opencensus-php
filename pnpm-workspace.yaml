@@ -18,3 +18,5 @@ packages:
   - apps/digital-bills
   - apps/pos
   - apps/onboarding-experience
+
+  - apps/one-home

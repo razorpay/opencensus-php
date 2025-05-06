@@ -11,4 +11,5 @@ export enum DASHBOARD_FEDERATED_MODULES {
   POS = 'pos',
   DIGITAL_BILLS = 'digital_bills',
   ONBOARDING_EXPERIENCE = 'onboarding_experience',
+  ONE_HOME = 'one_home',
 }

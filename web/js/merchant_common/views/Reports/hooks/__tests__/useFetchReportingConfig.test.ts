@@ -1,14 +1,15 @@
 import { renderHook, waitFor } from 'test-utils';
 
 import { SessionReducerState } from 'common/typings';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import { getConfigs } from 'merchant_common/views/Reports/api/overview';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
 
 import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs/refDashboard.config';
 import { useFetchReportingConfig } from 'merchant_common/views/Reports/hooks/useFetchReportingConfig';
 
-jest.mock('merchant/components/Sidebar/helpers', () => ({
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   isJKOfflineMerchant: jest.fn(),
 }));
 

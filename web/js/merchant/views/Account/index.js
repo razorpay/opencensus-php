@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { isTrustedBadgeAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';

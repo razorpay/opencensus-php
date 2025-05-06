@@ -14,7 +14,3 @@ export const getIsShowAffordabilityWidget = (currentUser = {}) => {
 
 export const getIsCheckoutPaymentMetricsEnabled = (currentUser = {}) =>
   currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP && currentUser.isCountryIndia;
-
-export const isJKOfflineMerchant = (org = {}, user = {}) => {
-  return org.isjkOrg && user.isFeatureEnabled('omni_enabled');
-};

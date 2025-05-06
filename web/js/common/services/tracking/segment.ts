@@ -7,7 +7,7 @@ import { getMode } from 'common/services/mode';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import getMobileDetect from 'common/utils/mobileDetect';
 import store from 'merchant/store';
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {

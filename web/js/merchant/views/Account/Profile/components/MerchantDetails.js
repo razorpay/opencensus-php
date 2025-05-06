@@ -31,7 +31,7 @@ import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/
 import ActivationDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails';
 import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
 import { useI18Service } from 'common/i18';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 const MerchantDetails = ({ user, openModal, closeModal, tracking, org }) => {
   const openNeedsClarificationModal = (data) => {

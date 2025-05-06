@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from 'test-utils';
 import { OverviewBanner } from 'merchant_common/views/Reports/features/Overview/components/OverviewBanner';
 import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 const push = jest.fn();
 
@@ -12,7 +12,8 @@ jest.mock('common/splitz', () => ({
   }),
 }));
 
-jest.mock('merchant/components/Sidebar/helpers', () => ({
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   isJKOfflineMerchant: jest.fn(),
 }));
 

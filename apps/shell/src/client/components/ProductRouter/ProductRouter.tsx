@@ -8,8 +8,8 @@ const HandleIndexAndPaymentsRoute = lazy(
   () => import('@apps/shell/src/client/components/ProductRouter/HandleIndexAndPaymentsRoute'),
 );
 
-const Home = () => <div>Home</div>;
-const XDashboard = () => <div>Banking</div>;
+const OneHome = React.lazy(() => import('@federated/apps/one-home/entry'));
+const XDashboard = () => <div>X Dashboard</div>;
 const WrappedXDashboard = withNavigationType(XDashboard);
 
 export const ProductRouter = (): JSX.Element => {
@@ -40,7 +40,7 @@ export const ProductRouter = (): JSX.Element => {
       }
     >
       <Routes>
-        {isOneHomeEnabled && <Route path="home" element={<Home />} />}
+        {isOneHomeEnabled && <Route path="home" element={<OneHome />} />}
         <Route path="banking/*" element={<WrappedXDashboard />} />
         <Route path="*" element={<HandleIndexAndPaymentsRoute />} />
       </Routes>

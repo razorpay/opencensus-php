@@ -3,7 +3,7 @@ import { Badge, ClockIcon } from '@razorpay/blade/components';
 import { getCurrencySymbol as i18nifyGetCurrencySymbol } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import Amount from 'common/ui/Amount';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';

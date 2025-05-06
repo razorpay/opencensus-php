@@ -19,7 +19,7 @@ import {
   CUSTOMERS_PRODUCTS_SECTION,
 } from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import useSideNavigation from './useSideNavigation';
-import { ANALYTICS_ONENAV } from '../constants';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 

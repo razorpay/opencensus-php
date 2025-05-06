@@ -4,9 +4,14 @@ import {
   getCurrencySymbol as i18nifyGetCurrencySymbol,
 } from '@razorpay/i18nify-js/currency';
 
-import { ANALYTICS } from '@libs/web-nexus/common/constant';
 import Popover, { PopoverBody } from '@libs/web-nexus/common/ui/Popover';
-import { analyticsTrack, classList, getFormattedAmountByParts, sanitizer } from '@libs/shared-utils';
+import {
+  analyticsTrack,
+  classList,
+  getFormattedAmountByParts,
+  sanitizer,
+  ANALYTICS,
+} from '@libs/shared-utils';
 import useViewport, { ViewportProvider } from '@dashboards/payments/hooks/useViewPort';
 const RTL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchInvitations as fetchAll } from 'merchant/reducers/collection';
 

@@ -1,4 +1,4 @@
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import MerchantNavLinks from 'merchant/components/Sidebar/MerchantNavLinks';
 import User from 'merchant/models/User';
 import store from 'merchant/store';
@@ -36,6 +36,10 @@ jest.mock('common/splitz', () => ({
 
 jest.mock('merchant/components/Sidebar/helpers', () => ({
   getIsBankingEnabled: jest.fn(),
+}));
+
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   isJKOfflineMerchant: jest.fn(),
 }));
 

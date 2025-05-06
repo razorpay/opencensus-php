@@ -37,10 +37,7 @@ import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import ProfileDropdown from 'merchant/components/HeaderNav/ProfileDropdown';
 import UniversalSearch from 'merchant/components/HeaderNav/UniversalSearch';
-import {
-  ANALYTICS_ONENAV,
-  ONE_NAV_MOBILE_PATH,
-} from 'merchant/components/NavigationLayout/constants';
+import { ONE_NAV_MOBILE_PATH } from 'merchant/components/NavigationLayout/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { useIsRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import lazyLoader from 'merchant/routes/LazyLoader';
@@ -62,6 +59,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
 import { useSplitzService } from 'common/splitz';
 import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 
 const WhatsNew = lazyLoader(
   () => import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),

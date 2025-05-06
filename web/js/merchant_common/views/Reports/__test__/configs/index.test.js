@@ -1,4 +1,4 @@
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import { reportConfigType } from 'merchant_common/views/Reports/configs/index';
 import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs/refDashboard.config';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
@@ -20,7 +20,8 @@ const CONFIG = [
   { path: 'reports.payment_pages', propName: 'Payment page' },
 ];
 
-jest.mock('merchant/components/Sidebar/helpers', () => ({
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
   isJKOfflineMerchant: jest.fn(),
 }));
 

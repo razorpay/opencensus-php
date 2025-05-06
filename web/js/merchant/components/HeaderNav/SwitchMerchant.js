@@ -13,7 +13,7 @@ import { useSplitzService, withSplitzService } from 'common/splitz';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { isExperimentActive } from 'common/utils/rzp-utils';
 
-import { createNewAccountTrack } from './track';
+import { createNewAccountTrack } from '@libs/shared-utils';
 
 const CREATE_MERCHANT_CTA_LABEL = 'Create a new account';
 const EXISTING_ACCOUNT_LABEL = 'Existing Account';

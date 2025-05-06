@@ -31,7 +31,7 @@ import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 
 import { isEligibleForReKyc } from '../ReKycStatusAlerts/utils';
-import { isJKOfflineMerchant } from '../Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import AppSwitcher from './AppSwitcher';
 import NavFragment from './NavFragment';
 import ProfileDropdown from './ProfileDropdown';
@@ -377,7 +377,10 @@ class HeaderNav extends Component {
           <React.Fragment>
             {isMobileSearch && (
               <div
-                className={classList('mobile-search-layout', showNewHomePage && 'homepage-rtux-navbar')}
+                className={classList(
+                  'mobile-search-layout',
+                  showNewHomePage && 'homepage-rtux-navbar',
+                )}
               >
                 <UniversalSearch showNewHomePage={showNewHomePage} />
               </div>

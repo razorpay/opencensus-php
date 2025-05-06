@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo } from 'react';
 import { Box, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
-import { ANALYTICS_ONENAV, ONE_NAV_MOBILE_PATH } from '../constants';
+import { ONE_NAV_MOBILE_PATH } from '../constants';
 import { useLocation } from 'react-router-dom';
 import TestModeHighlight from '../components/TestModeHighlight';
 import useConnectedProducts from '../hooks/useConnectedProducts';
 import useConnectedNavigationStore from '../navigationStore';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 
 const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
   const LayoutWrappedComponent: React.FC<{

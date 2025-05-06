@@ -1,3 +1,5 @@
+export const isOneHomeDevSetup = true;
+
 export const PRODUCT_ALIAS_MAP = {
   PAYMENTS: 'payments_top_navigation_item',
   BANKING: 'banking_top_navigation_item',

@@ -20,6 +20,7 @@
     { "path": "../../libs/shared-ui" },
     { "path": "../../libs/shared-types" },
     { "path": "../../libs/shared-qsuite" },
+    { "path": "../../apps/one-home" },
     { "path": "../../web/js/merchant" }
   ]
 }

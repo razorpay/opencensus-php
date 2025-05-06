@@ -27,8 +27,8 @@ import {
   getIsPayrollWidgetEnabled,
   getIsShowAffordabilityWidget,
   getIsCheckoutPaymentMetricsEnabled,
-  isJKOfflineMerchant,
 } from './helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 function MerchantNavLinks(props) {
   const { isConfigTagEnabled } = useI18Service();

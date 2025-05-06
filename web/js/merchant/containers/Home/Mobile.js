@@ -24,7 +24,7 @@ import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import EasterEgg from 'merchant/components/EasterEgg';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';

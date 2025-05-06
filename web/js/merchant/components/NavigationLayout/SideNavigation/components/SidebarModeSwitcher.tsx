@@ -5,7 +5,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import React, { useState } from 'react';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { useNavigationLayoutContext } from '../../context';
-import { ANALYTICS_ONENAV } from '../../constants';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 
 // 1. READ payment Mode
 // 2. Read partner Mode

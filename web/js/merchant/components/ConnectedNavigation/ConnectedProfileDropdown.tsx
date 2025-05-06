@@ -36,12 +36,13 @@ import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownS
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
 import { Mode } from './types';
-import { getCurrentMode, trackProfileDropdownClicks } from './utils';
+import { getCurrentMode } from './utils';
 import SwitchMerchantTypeaheadV2 from '../HeaderNav/SwitchMerchantTypeaheadV2';
 import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 
 import ShowWhen from '../ShowWhen';
-import { CopyWrapper } from '../CopyWrapper';
+import { CopyWrapper } from '@libs/shared-ui';
+import { trackProfileDropdownClicks } from '@libs/shared-utils';
 
 interface ConnectedProfileDropdownProps {
   user: any;

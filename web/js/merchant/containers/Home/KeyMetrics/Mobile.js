@@ -18,7 +18,7 @@ import {
   titleCase,
 } from 'common/utils/rzp-utils';
 import Tooltip from 'merchant/components/Home/Tooltip';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 import { TABS_FOR_JK_ORG, tabsMeta } from './data';
 import { trackGoToLinks } from './ga';

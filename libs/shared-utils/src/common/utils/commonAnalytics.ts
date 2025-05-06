@@ -8,7 +8,7 @@ import {
   getCookie,
 } from './';
 import { DASHBOARD_PRIORITY_RANKS, DASHBOARD_TEAMS } from '@libs/shared-types';
-import { DASHBOARD_ROUTES } from '../constants';
+import { DASHBOARD_ROUTES, ANALYTICS_ONENAV, ANALYTICS } from '../constants';
 
 type DASHBOARD_ROUTES_KEY_TYPE = keyof typeof DASHBOARD_ROUTES;
 
@@ -50,6 +50,13 @@ interface ExceptionEventProps {
   request: {
     url: string;
   };
+}
+
+interface TrackProfileClick {
+  objectName: 'Profile Options' | 'L0 Main Frame Icons';
+  optionName: string;
+  bu_title: string;
+  type: 'icon' | 'option'; // Assuming type can be 'icon' or other values
 }
 
 /**
@@ -533,6 +540,55 @@ export const trackShorterKYCEvents = ({
       partnerID: window.rzp_user?.merchant?.id,
       shorterPartnerKYC: true,
       ...properties,
+    },
+  });
+};
+
+/**
+ * Tracks user interactions with the profile dropdown menu.
+ *
+ * @param {string} objectName - The name of the object being tracked.
+ * @param {string} optionName - The name of the option user interacted.
+ * @param {object} bu_title - The selected product title.
+ * @param {object} type - Icon or option.
+ * @returns {void}
+ */
+export const trackProfileDropdownClicks = ({
+  objectName,
+  optionName,
+  bu_title,
+  type,
+}: TrackProfileClick): void => {
+  const analyticsInfo = {
+    objectName,
+    actionName: 'Clicked',
+    screen: ANALYTICS_ONENAV.SCREEN,
+    properties: {
+      ...getCommonAnalyticsProperties((window as any).rzp_user, { addUserProperties: true }),
+      version: 'v1',
+      option_name: optionName,
+      page: location.pathname?.replace('/app/', ''),
+      bu_title,
+      icon_name: type === 'icon' ? 'Profile' : null,
+      experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
+    },
+  };
+  analyticsTrack(analyticsInfo);
+};
+
+/**
+ * Tracks the "Create A New Account" button click event.
+ * @returns {void}
+ */
+export const createNewAccountTrack = () => {
+  analyticsTrack({
+    objectName: 'Create A New Account Button',
+    actionName: 'Clicked',
+    screen: ANALYTICS.SCREEN.DASHBOARD,
+    properties: {
+      version: 'v2',
+      session_id: (window as any).session_id,
+      ...getCommonAnalyticsProperties((window as any).rzp_user, { addUserProperties: true }),
     },
   });
 };

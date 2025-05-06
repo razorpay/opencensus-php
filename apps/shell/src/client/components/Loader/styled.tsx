@@ -14,12 +14,12 @@ const togglePath = keyframes`
 export const LogoSvg = styled('svg')(
   ({ theme }) => css`
     animation-duration: ${theme.motion.duration['2xgentle'] * 1.5}ms;
-    animation-timing-function: ${theme.motion.easing.entrance.attentive};
+    animation-timing-function: ${theme.motion.easing.overshoot};
     animation-iteration-count: infinite;
     animation-name: ${toggle};
     & path {
       animation-duration: ${theme.motion.duration['2xgentle'] * 1.5}ms;
-      animation-timing-function: ${theme.motion.easing.entrance.attentive};
+      animation-timing-function: ${theme.motion.easing.overshoot};
       animation-iteration-count: infinite;
       animation-name: ${togglePath};
     }

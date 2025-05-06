@@ -23,6 +23,7 @@ export const DASHBOARD_TEAMS = {
   RAY: 'Ray',
   RAZORPAY_WALLET: 'Razorpay Wallet',
   RAZORPAY_X: 'RazorpayX',
+  R1_CONNECTED_EXPERIENCE: 'R1 Connected Experience',
   RECON_SAAS: 'recon-saas',
   RISK: 'Risk',
   RIZE: 'Rize',

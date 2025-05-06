@@ -106,7 +106,7 @@ import {
   trackSettlementsClick,
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import SettleNow from 'merchant/views/Settlements/components/SettleNow';
 import { Box } from '@razorpay/blade/components';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';

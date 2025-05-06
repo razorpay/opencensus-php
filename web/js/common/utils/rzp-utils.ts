@@ -4,7 +4,7 @@ import { getDialCodeByCountryCode } from '@razorpay/i18nify-js/phoneNumber';
 import isEmpty from 'lodash/isEmpty';
 import { COUNTRY_CODES } from '@libs/web-nexus/common/components/CountryCodeInput/constant';
 import abExperimentsMap from '@dashboards/payments/utils/abExperimentsMap';
-import { ANALYTICS } from '@libs/web-nexus/common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { analyticsTrack } from './rzp-utils';
 import { getFormattedAmount } from './rzp-utils';
 

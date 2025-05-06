@@ -1,7 +1,7 @@
 import { convertToMajorUnit, formatNumber } from '@razorpay/i18nify-js/currency';
 import moment from 'moment';
 
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { analyticsTrackWithUserInfo, analyticsTrack } from 'common/utils/analytics';
 import { titleCase } from 'common/utils/rzp-utils';
 import { SETTLEMENT_INFO } from 'merchant/views/Settlements/v3/constants/info';

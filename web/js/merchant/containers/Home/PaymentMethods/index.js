@@ -16,7 +16,7 @@ import GenericPanel, {
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { trackGoToLinks, trackNoData, trackError } from 'merchant/containers/Home/ga';
 import D3ScriptLoaderHoc from 'merchant/hoc/D3ScriptLoaderHoc';

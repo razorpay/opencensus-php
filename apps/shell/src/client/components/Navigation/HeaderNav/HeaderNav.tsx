@@ -4,6 +4,7 @@ import { Box, UserIcon, BellIcon, TextInput, SearchIcon, Link } from '@razorpay/
 import { RazorpayLinesSvg } from './RazorpaySvgLines';
 import { BrandImage } from './styled';
 import { useStore } from '@federated/apps/shell/commonStore';
+import { NavLink } from 'react-router-dom';
 
 const HeaderNavigation = ({ brandImage = '' }) => {
   const mode = useStore((state) => state.session.mode);
@@ -39,7 +40,11 @@ const HeaderNavigation = ({ brandImage = '' }) => {
             placeholder="Search for products, settings & more"
           />
         </Box>
+
         <Box display="flex" alignItems="center" gap="spacing.3">
+          <NavLink to="/one-home">
+            <Link marginX="spacing.4">One Home</Link>
+          </NavLink>
           <Link onClick={handleModeChange} marginX="spacing.4">
             Switch Merchant ({mode})
           </Link>

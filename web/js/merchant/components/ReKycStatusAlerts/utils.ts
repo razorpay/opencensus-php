@@ -1,4 +1,4 @@
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { analyticsTrack } from 'common/utils/analytics';

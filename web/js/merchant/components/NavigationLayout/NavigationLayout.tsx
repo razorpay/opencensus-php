@@ -3,7 +3,7 @@ import { Box, Card, CardBody, useTheme, BladeProvider, Button } from '@razorpay/
 import { useBreakpoint } from '@razorpay/blade/utils';
 import styled from 'styled-components';
 import SideNavigation from 'merchant/components/NavigationLayout/SideNavigation/SideNavigation';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import BottomNavigation from './BottomNavigation/BottomNavigation';
 import NavigationContent from './NavigationContent/NavigationContent';
 import TopNavigation from './TopNavigation/TopNavigation';

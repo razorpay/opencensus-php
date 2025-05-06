@@ -34,7 +34,7 @@ import { withSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import ConnectedProfileDropdown from '../ConnectedNavigation/ConnectedProfileDropdown';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
-import { isJKOfflineMerchant } from '../Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import { compose } from 'redux';
 
 const trustedBadgeTooltipInfo =

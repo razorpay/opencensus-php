@@ -58,14 +58,20 @@ const PaymentsAndPartnersActions = React.lazy(
   () => import('@federated/dashboards/payments/connected-navigation/PaymentsTopNavActions'),
 );
 
+const HomeActions = React.lazy(
+  () => import('@federated/apps/one-home/TopNavActions/OneHomeTopNavActions'),
+);
+
 const BankingActions = () => null;
 
 const PaymentsTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
 const PartnersTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
 const BankingTopNavActions = withTopNavActions(BankingActions);
+const HomeTopNavActions = withTopNavActions(HomeActions);
 
 export const HeaderActionsLoader = (): JSX.Element | null => {
-  const { isPaymentsActive, isBankingActive, isPartnersActive } = useGetActiveProduct();
+  const { isPaymentsActive, isBankingActive, isPartnersActive, isHomeActive } =
+    useGetActiveProduct();
   const { products } = useConnectedNavigationStore();
 
   const actionType = products?.selectedProduct?.selectAction?.actionType;
@@ -83,6 +89,8 @@ export const HeaderActionsLoader = (): JSX.Element | null => {
       return <BankingTopNavActions />;
     case isPartnersActive:
       return <PartnersTopNavActions />;
+    case isHomeActive:
+      return <HomeTopNavActions />;
     default:
       return null;
   }

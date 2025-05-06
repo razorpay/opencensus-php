@@ -21,7 +21,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { tabs, tabsMeta } from './data';
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
 import { withI18Service } from 'common/i18';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;

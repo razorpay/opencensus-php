@@ -4,7 +4,7 @@ import { useStore } from '@federated/apps/shell/commonStore';
 import { withI18Service } from 'common/i18';
 import { withSplitzService } from 'common/splitz';
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
-import { isJKOfflineMerchant } from '@dashboards/payments/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import {
   dispatchWebViewEvent,
   logoutGoogleAccount,

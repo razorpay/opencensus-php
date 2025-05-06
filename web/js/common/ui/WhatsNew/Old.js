@@ -45,7 +45,7 @@ import { openSlider } from 'merchant_common/reducers/slider';
 import './Old.styl';
 
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
-import { ANALYTICS_ONENAV } from 'merchant/components/NavigationLayout/constants';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 import { compose } from 'redux';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {

@@ -5,7 +5,7 @@ import {
   getCurrencySymbol as i18nifyGetCurrencySymbol,
 } from '@razorpay/i18nify-js/currency';
 
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getFormattedAmountByParts } from 'common/utils/rzp-utils';
 import { AmountPropsInterface, AmountTypeInterface } from 'merchant/views/Settlements/v3/typings';

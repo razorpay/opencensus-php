@@ -4,3 +4,5 @@ export { DASHBOARD_ROUTES } from './DASHBOARD_ROUTES';
 export { DASHBOARD_ZINDEX_MAP } from './DASHBOARD_ZINDEX_MAP';
 export { ROUTE_REG } from './DASHBOARD_ROUTES';
 export { BASE_ROUTES } from './DASHBOARD_ROUTES';
+export { ANALYTICS, ANALYTICS_ONENAV } from './ANALYTICS';
+export { STATUS } from './BADGE_STATUS';

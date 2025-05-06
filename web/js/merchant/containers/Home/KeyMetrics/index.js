@@ -26,7 +26,7 @@ import {
   paymentMethodsOrder,
 } from 'merchant/components/Home/data';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import { fetch } from 'merchant/reducers/pokedex';
 import { showNotification } from 'merchant_common/reducers/notifications';

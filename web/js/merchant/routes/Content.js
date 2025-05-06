@@ -19,10 +19,8 @@ import {
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
-import {
-  getIsPayrollWidgetEnabled,
-  isJKOfflineMerchant,
-} from 'merchant/components/Sidebar/helpers';
+import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';

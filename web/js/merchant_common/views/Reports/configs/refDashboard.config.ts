@@ -29,7 +29,7 @@ import {
 import { parseConfigsViaCommonExceptions } from './downloadModal.config';
 
 import { reportConfigType, getCustomConfigs } from '.';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 /**
  * @param {DashboardType} dashboardType Dashboard type where the core report component will be used.

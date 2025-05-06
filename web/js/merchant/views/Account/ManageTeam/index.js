@@ -20,7 +20,7 @@ import { getCommonAnalyticsProperties, is2FaExperimentEnabled } from 'common/uti
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { sendInvitation } from 'merchant/reducers/invitation';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';

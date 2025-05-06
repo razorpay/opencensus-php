@@ -7,7 +7,7 @@ import { useSplitzService } from 'common/splitz';
 import { isExperimentActive } from 'common/utils/rzp-utils';
 import useModalComponents from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/hooks/useModalComponents';
 
-import { createNewAccountTrack } from './track';
+import { createNewAccountTrack } from '@libs/shared-utils';
 
 const EXISTING_ACCOUNT_LABEL = 'Existing Account';
 

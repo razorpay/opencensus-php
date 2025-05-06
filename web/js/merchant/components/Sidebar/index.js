@@ -30,7 +30,7 @@ import ActivationProgress from './ActivationProgress';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
-import { isJKOfflineMerchant } from './helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;

@@ -1,13 +1,3 @@
-export const ANALYTICS = {
-  SCREEN: { DASHBOARD: 'dashboard' },
-  OBJECT: { I18N: 'i18n' },
-  ACTION: {
-    PHONE_NUMBER: 'phone number',
-    CURRENCY: 'currency',
-    GEO: 'geo',
-  },
-};
-
 export const zIndicesMap = {
   bottomSheet: 100,
   modal: 1000,

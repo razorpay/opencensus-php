@@ -21,7 +21,7 @@ import {
 } from 'merchant/views/EcosystemDowntimes/styles';
 import { openSlider } from 'merchant_common/reducers/slider';
 import { analyticsTrack } from 'common/utils/analytics';
-import { ANALYTICS_ONENAV } from 'merchant/components/NavigationLayout/constants';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
 
 // eslint-disable-next-line prettier/prettier

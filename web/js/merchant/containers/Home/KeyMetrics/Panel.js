@@ -32,7 +32,7 @@ import GenericPanel, {
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import Legend from 'merchant/components/Home/Legend';
 import Tooltip from 'merchant/components/Home/Tooltip';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 

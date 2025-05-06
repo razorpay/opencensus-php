@@ -1,6 +1,6 @@
 import { useSplitzService } from 'common/splitz';
 import { User } from 'common/typings';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import { OrgData } from 'newAuth/signin/types';
 import { isBillMeOnlyMerchant } from 'merchant/utils/omniUtils';
 

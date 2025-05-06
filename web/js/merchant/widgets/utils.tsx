@@ -9,7 +9,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { QueryKey } from '@tanstack/react-query';
 import { ValueOf } from 'merchant/views/Affordability/AssistedFinancing/type';
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { durationOptionKeys } from './common/types';
 
 export const renderWidget = ({

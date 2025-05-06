@@ -16,7 +16,7 @@ import { IS_PRODUCTION } from '../env';
 
 declare global {
   interface Window {
-    __REACT_QUERY_STATE__: DehydratedState; // Adjust type as per your actual data structure
+    __REACT_QUERY_STATE__: DehydratedState; // Adjust type as per your actual data structure.
   }
 }
 

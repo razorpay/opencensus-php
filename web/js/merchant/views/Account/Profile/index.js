@@ -66,7 +66,7 @@ import {
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
 import { shouldShowFIRCSection } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { Modules } from 'common/constant/enums';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 
 const FIRCSection = lazy(() =>
   import(

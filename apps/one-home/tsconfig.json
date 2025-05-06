@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "typeRoots": ["node_modules/@types"],
+    "outDir": "./dist"
+  },
+  "include": ["*.json", "**/*.json", "src", "custom.d.ts"],
+  "exclude": ["node_modules", "**/*.stories.ts", "**/*.stories.tsx", "**/*.stories.jsx", "out"],
+  "types": ["resize-observer-browser", "jest", "jest-dom"],
+  "references": [
+    { "path": "../../apps/shell" },
+    { "path": "../../libs/shared-utils" },
+    { "path": "../../libs/shared-ui" },
+    { "path": "../../libs/shared-types" }
+  ]
+}

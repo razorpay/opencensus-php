@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { analyticsTrack } from 'common/utils/analytics';
 import { getMaskedContact } from 'merchant/components/Mask/utils/masking';
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 
 // Formats phone number based on user's locale. In case of error, logs the error and returns the original contact as fallback
 export function getI18FormattedPhoneNumber(contact) {

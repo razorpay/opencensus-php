@@ -1,5 +1,5 @@
 import React from 'react';
-import loadable, { LoadableComponent } from '@loadable/component';
+import { LoadableComponent } from '@loadable/component';
 
 type Route = {
   path: string;

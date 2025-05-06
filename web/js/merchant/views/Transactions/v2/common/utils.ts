@@ -8,7 +8,7 @@ import qs from 'query-string';
 import { Environments, User } from 'common/typings';
 
 import { Option } from 'common/components/Dropdown/types';
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';

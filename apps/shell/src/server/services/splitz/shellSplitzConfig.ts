@@ -91,4 +91,24 @@ export const shellSplitzConfig: VariantConfigArgs[] = [
     uniqueHashKey: 'connected_navigation',
     evaluater: (variables) => variables?.['result'] === 'on',
   },
+  {
+    defaultVariant: {
+      name: 'variables',
+      variables: [
+        {
+          key: 'result',
+          value: 'off',
+        },
+      ],
+    },
+    experimentId: {
+      stage: 'OoExDczJEroNZ0',
+      beta: 'OoExDczJEroNZ0',
+      devstack: 'OoExDczJEroNZ0',
+      production: 'OtOSbDPEDN8KFg',
+      canary: 'OtOSbDPEDN8KFg',
+    },
+    uniqueHashKey: 'create_merchant_cta',
+    evaluater: (variables) => variables?.['result'] === 'on',
+  },
 ];

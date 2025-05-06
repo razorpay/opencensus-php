@@ -320,4 +320,5 @@ export const BASE_ROUTES = {
   reconciliations: '/reconciliations/dashboard/processes',
   assisted_financing: '/assisted-financing',
   insight_x: '/insight-x',
+  trustedbadge: '/checkout-settings/trustedbadge',
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text, Button, Heading, ArrowUpRightIcon, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
-import { ANALYTICS_ONENAV } from '../constants';
+import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 import { analyticsTrack, getCommonAnalyticsProperties } from '@libs/shared-utils';
 import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 

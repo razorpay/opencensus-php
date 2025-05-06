@@ -9,7 +9,7 @@ import { role } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
-import { isJKOfflineMerchant } from 'merchant/components/Sidebar/helpers';
+import { isJKOfflineMerchant } from '@libs/shared-utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import {
   fetchTeam as fetchAll,

@@ -2,7 +2,7 @@ import { formatNumberByParts } from '@razorpay/i18nify-js/currency';
 
 import { getCurrencySymbol } from 'common/ui/Amount';
 import { getFormattedNumber } from 'common/utils/rzp-utils';
-import { ANALYTICS } from 'common/constant';
+import { ANALYTICS } from '@libs/shared-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 const suffixes = ['k', 'L', 'Cr'];
 

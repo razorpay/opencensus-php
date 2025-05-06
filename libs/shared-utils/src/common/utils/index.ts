@@ -200,3 +200,5 @@ export { isDuplicateWebsite } from './isDuplicateWebsite';
 export { isPopularWebsite } from './isPopularWebsite';
 export { getCanonicalUrl } from './getCanonicalUrl';
 export { initRazorAnalytics } from './initRazorAnalytics';
+export { isJKOfflineMerchant } from './isJKOfflineMerchant';
+export { ajax } from './ajax';
