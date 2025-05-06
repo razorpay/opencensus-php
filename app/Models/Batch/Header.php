@@ -1223,6 +1223,8 @@ class Header
     const  RBL_ECOLLECT_CORPORATE_CODE              = 'CORPORATE_CODE';
     const  RBL_ECOLLECT_SENDER_INFORMATION          = 'SENDER_INFORMATION';
 
+    const RBL_ECOLLECT_TRANSACTION_ID               = 'TRANS_ID';
+
     const  AXIS_ECOLLECT_MESSAGE_TYPE               = 'Message Type';
     const  AXIS_ECOLLECT_UTR_NUMBER                 = 'UTR Number';
     const  AXIS_ECOLLECT_SENDER_IFSC                = 'Sender IFSC';
@@ -5782,6 +5784,46 @@ class Header
                 self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
                 self::RBL_ECOLLECT_CORPORATE_CODE,
                 self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::STATUS,
+            ],
+        ],
+
+        Type::ECOLLECT_RBL_BANKING => [
+            self::INPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::RBL_ECOLLECT_TRANSACTION_ID,
+            ],
+            self::OUTPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::RBL_ECOLLECT_TRANSACTION_ID,
                 self::STATUS,
             ],
         ],

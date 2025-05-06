@@ -68,6 +68,7 @@ class Limit
         'nach_debit_nach_citi'                      => 350000,
         'nach_debit_nach_icici'                     => 100000,
         Type::ECOLLECT_RBL                          => 100000,
+        Type::ECOLLECT_RBL_BANKING                  => 100000,
         Type::ECOLLECT_YESBANK                      => 100000,
         Type::ECOLLECT_AXIS                         => 100000,
         Type::ECOLLECT_AXIS_BANKING                 => 100000,
