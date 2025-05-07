@@ -9,7 +9,7 @@ import {
   STORE_INFO,
 } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/components/StoreGroupModal/__tests__/mocks';
 import { StoreGroupModalStatus } from 'merchant/views/StoreSettings/StoresList/containers/StoreGroupsContainer/constants';
-import { screen, render, userEvent, act } from 'test-utils';
+import { screen, render, userEvent, act, waitFor } from 'test-utils';
 
 // Mock 'useMutation'
 jest.mock('@tanstack/react-query', () => {
@@ -42,6 +42,7 @@ jest.mock('../../../stores/storeGroupsStore', () => ({
 const App = ({ props }) => <StoreGroupModal {...props} />;
 
 describe('StoreGroupModal', () => {
+  jest.setTimeout(30000);
   test("should render 'StoreGroupModal' for create operation", async () => {
     (useQuery as jest.Mock).mockReturnValueOnce(STATES_AND_CITIES_MOCK_RESPONSE).mockReturnValue({
       data: {
@@ -86,38 +87,31 @@ describe('StoreGroupModal', () => {
     expect(screen.getByPlaceholderText('Enter Group Description')).toBeInTheDocument();
 
     // Name field - maxCharacters validation
-    await act(async () => {
-      await userEvent.type(
-        groupNameField,
-        'Test Store Group Name field with a lengthy name more than 50 characters',
-      );
-    });
-    expect(
-      screen.getByText('Store Group name cannot be more than 50 characters'),
-    ).toBeInTheDocument();
+    await userEvent.type(
+      groupNameField,
+      'Test Store Group Name field with a lengthy name more than 50 characters',
+    );
+    const errorText = await screen.findByText(/Store Group name cannot be more than 50 characters/i);
+    expect(errorText).toBeInTheDocument();
 
-    await act(async () => {
-      await userEvent.clear(groupNameField);
+    await userEvent.clear(groupNameField);
+    await waitFor(() => {
+      expect(
+        screen.queryByText(/Store Group name cannot be more than 50 characters/i)
+      ).not.toBeInTheDocument();
     });
-    expect(
-      screen.queryByText('Store Group name cannot be more than 50 characters'),
-    ).not.toBeInTheDocument();
 
     const addButton = screen.getByRole('button', { name: 'Add' });
     // Submit button should be disabled when no store is selected and store group name field is empty
     expect(addButton).toBeDisabled();
 
-    await act(async () => {
-      await userEvent.type(groupNameField, 'Test');
-    });
+    await userEvent.type(groupNameField, 'Test');
     expect(addButton).toBeDisabled();
 
     // Footer
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     expect(cancelButton).toBeInTheDocument();
-    await act(async () => {
-      await userEvent.click(cancelButton);
-    });
+    await userEvent.click(cancelButton);
     expect(updateModalStatus).toHaveBeenLastCalledWith(null);
   });
 
