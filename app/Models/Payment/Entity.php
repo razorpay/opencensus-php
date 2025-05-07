@@ -7311,6 +7311,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::GatewayTerminalId] = $this->getGatewayTerminalId();
             $data[self::GatewayMerchantId] = $this->getGatewayMerchantId();
             $data[self::DeviceId] = $this->getDeviceId();
+            $data[self::STORE_ID] = $this->getStoreId();
             $data[self::InternalStatus] = $this->getInternalStatus();
         }
     }

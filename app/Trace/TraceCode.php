@@ -13166,6 +13166,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Device Service
     const DEVICE_SERVICE_REQUEST                        = 'DEVICE_SERVICE_REQUEST';
     const DEVICE_SERVICE_ERROR                          = "DEVICE_SERVICE_ERROR";
+    const DEVICE_SERVICE_RESPONSE                          = "DEVICE_SERVICE_RESPONSE";
 
     const STORE_SERVICE_REQUEST                        = 'STORE_SERVICE_REQUEST';
     const STORE_SERVICE_ERROR                          = "STORE_SERVICE_ERROR";

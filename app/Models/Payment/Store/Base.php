@@ -29,6 +29,7 @@ class Base
 
     const TASK_ID = 'X-Task-Id';
     const PASSPORT_JWT = 'passport_jwt';
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
     const RESPONSE = 'response';
 
     public function __construct($app)
@@ -58,7 +59,7 @@ class Base
             'content' => $data,
             'headers' => [
                 self::TASK_ID => $this->app['request']->getTaskId(),
-                self::PASSPORT_JWT => $this->ba->getPassportJwt($baseurl),
+                self::X_PASSPORT_JWT_V1 => $this->ba->getPassportJwt($baseurl),
             ],
         ];
 
@@ -79,7 +80,9 @@ class Base
             return [];
         }
 
-        list($responseBody, $code) = $this->parseResponse($response);
+        $result = $this->parseResponse($response);
+        $responseBody = $result['body'];
+        $code = $result['code'];
 
         if ($code !== 200) {
             $this->trace->error(TraceCode::STORE_SERVICE_ERROR, [

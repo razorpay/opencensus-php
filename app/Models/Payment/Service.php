@@ -9734,6 +9734,12 @@ class Service extends Base\Service
             return;
         }
 
+        // If storeIds is empty, use all available userStores
+        if (empty($storeIds)) {
+            $input['store_ids'] = $userStores;
+            return;
+        }
+
         $filteredStores = array_intersect($userStores, $storeIds);
 
         $input['store_ids'] = $filteredStores;
