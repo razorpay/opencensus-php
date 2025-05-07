@@ -2823,7 +2823,7 @@ class Service extends Base\Service
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
-        $hasCallbackCall = false;
+        $callbackPresent = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2875,7 +2875,16 @@ class Service extends Base\Service
             }
         }
 
-        $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
+        $isApiPaymentFetchRequestFromPgRouter = $this->app['request']->headers->get(RequestHeader::X_PG_ROUTER_API_PAYMENT);
+
+        if ($isApiPaymentFetchRequestFromPgRouter === "true")
+        {
+            $payment = $this->repo->payment->findOrFailByPublicIdWithParamsForApiPaymentFetch($id, $input);
+        }
+        else
+        {
+            $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
+        }
 
         $paymentMerchantId = $payment->getMerchantId();
 
@@ -2934,7 +2943,7 @@ class Service extends Base\Service
         {
             if($this->app['basicauth']->isPrivateAuth())
             {
-                $hasCallbackCall = true;
+                $callbackPresent = true;
                 $secret = $this->app->config->get('app.key');
                 $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
                 if(isset($payment['cps_route']) && $payment['cps_route'] === 5)
@@ -2970,18 +2979,26 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        $this->trace->count(Metric::PAYMENT_FETCH_BY_ID_DISTRIBUTION, [
+            'private'          => $this->app['basicauth']->isPrivateAuth(),
+            'app'              => $this->app['basicauth']->getInternalApp(),
+            'proxy'            => $this->app['basicauth']->isProxyAuth(),
+            'callbackPresent'  => $callbackPresent,
+        ]);
+
         if ($this->checkSplitzForPaymentFetchByIdParity() === true)
         {
             $config  = $this->app['config']->get('applications.route');
             $passport = $this->app['basicauth']->getPassportJwt($config['url']);
 
             $input["payment_id"] = $id;
-            $input["ip"] = $this->app['request']->getClientIp();
             $input["passport"] = $passport;
-            $input["hasCallbackCall"] = $hasCallbackCall;
+            $input["cps_route"] = $payment['cps_route'];
+            $input["callbackPresent"] = $callbackPresent;
+            $input["ip"] = $this->app['request']->getClientIp();
             $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
+            $input["isProxyAuth"] = $this->app['basicauth']->isProxyAuth();
             $input["internalApp"] = $this->app['basicauth']->getInternalApp();
-            $input["isProxyAuth"] = $this->app['basicauth']->$this->isProxyAuth();
 
             $this->pushPaymentFetchByIdForParity($payment, $input);
         }

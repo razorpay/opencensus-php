@@ -1377,8 +1377,6 @@ return array(
 
     'payments_fetch_multiple_parity_producer' => env('PAYMENTS_FETCH_MULTIPLE_PARITY_PRODUCER'),
 
-    'internal_order_payments_experiment_id' => env('INTERNAL_ORDER_PAYMENTS_EXPERIMENT_ID'),
-
     'reserve_balance_read_experiment_id'    => env('RESERVE_BALANCE_READ_EXPERIMENT_ID'),
 
     'mandate_payouts_ikey_internal_experiment_id' => env('MANDATE_PAYOUTS_IKEY_INTERNAL_EXPERIMENT_ID'),
