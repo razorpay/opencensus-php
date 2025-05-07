@@ -1,6 +1,8 @@
 <?php
 namespace RZP\Tests\Unit\Models\QrCode;
 
+use Mockery;
+use RZP\Models\Customer\Entity;
 use RZP\Models\QrCode;
 use RZP\Tests\Functional\TestCase;
 
@@ -31,5 +33,29 @@ class EntityTest extends TestCase
 
         // tests that detokenizing a string which already have detokenized mpans should be same as original string
         $this->assertEquals($twiceDetokenizedString, $this->originalQrString);
+    }
+
+    public function testCustomerLazyRead()
+    {
+        $mockCustomerRepo = Mockery::mock('\RZP\Models\Customer\Repository', [$this->app]);
+        $mockCustomerEntity = new Entity();
+        $mockCustomerId = '100000customer';
+        $mockCustomerEntity->fill([
+            'id' => $mockCustomerId,
+            'name' => 'RzpCustomerName',
+            'email' => 'RzpCustomer@email.com',
+            'contact' => '9999999999',
+            'merchant_id' => '100000Razorpay'
+        ]);
+        $mockCustomerRepo->shouldReceive('find')->with($mockCustomerId)->andReturn($mockCustomerEntity);
+
+        $mockRepoManager = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+        $this->app->instance('repo', $mockRepoManager);
+        $mockRepoManager->shouldReceive('driver')->with('customer')->andReturn($mockCustomerRepo);
+
+
+        $qrCode = new QrCode\Entity();
+        $qrCode->setAttribute('customer_id', $mockCustomerId);
+        $this->assertEquals($mockCustomerEntity, $qrCode->customer);
     }
 }

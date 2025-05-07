@@ -16,12 +16,13 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, AsvGetAttribute;
+    use NotesTrait, AsvGetAttribute, CmsGetAttribute;
     use HasBalance;
     use LinkedAccountNotesTrait;
 

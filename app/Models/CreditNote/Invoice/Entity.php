@@ -5,6 +5,7 @@ namespace RZP\Models\CreditNote\Invoice;
 use App;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Base;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
@@ -12,7 +13,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, CmsGetAttribute;
 
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';

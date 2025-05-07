@@ -20,6 +20,7 @@ use RZP\Models\OfflinePayment;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
 
 /**
@@ -31,7 +32,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, AsvGetAttribute;
+    use SoftDeletes, AsvGetAttribute, CmsGetAttribute;
     use NotesTrait;
     use HasBalance;
 

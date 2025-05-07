@@ -25,6 +25,7 @@ use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -48,7 +49,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner;
+    use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner, CmsGetAttribute;
 
     use AsvLoad;
 

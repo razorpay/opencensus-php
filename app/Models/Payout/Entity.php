@@ -53,6 +53,7 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\Credits;
 use RZP\Models\SubVirtualAccount\Core as SubVaCore;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
@@ -74,7 +75,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use HasBalance, AsvGetAttribute, AsvLoad;
+    use HasBalance, AsvGetAttribute, AsvLoad, CmsGetAttribute;
     use NotesTrait;
 
     // This is used in the RZP\Models\Merchant\Acs\Traits\AsvLoad trait
