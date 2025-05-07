@@ -51,9 +51,24 @@ class RiskMobileSignupHelper
         );
     }
 
-    public function createFdTicket($merchant, $viewTemplate, $subject, $data, $requestParams, $mailBody = null)
+    public function createFdTicket($merchant, $viewTemplate, $subject, $data, $requestParams, $mailBody = null, $loggingTime = null)
     {
         try {
+            $this->trace->info(
+                TraceCode::MERCHANT_RISK_FD_TICKET_CREATE_REQUESTED,
+                [
+                    'merchant' => $merchant->toArrayPublic(),
+                    'merchant_details' => $merchant->merchantDetail->toArrayPublic(),
+                    'request_params' => $requestParams,
+                    'bulk mail data' => $data,
+                    'view_template' => $viewTemplate,
+                    'subject' => $subject,
+                    'mail_body' => $mailBody,
+                    'logging_time' => $loggingTime,
+
+
+                ]
+            );
             try
             {
                 $mailSubject = (new TemplateEngine)->render($subject, $data);
@@ -113,6 +128,19 @@ class RiskMobileSignupHelper
                 $postTicketRequest[FreshdeskTicket\Constants::CUSTOM_FIELDS][FreshdeskTicket\Constants::CF_NEW_REQUESTOR_CATEGORY] = $requestParams[FreshdeskTicket\Constants::CF_NEW_REQUESTOR_CATEGORY];
             }
 
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_RISK_FD_TICKET_CREATE_REQUESTED,
+                [
+                    'request_body'     => $postTicketRequest,
+                    'merchant_id'      => $merchant->getId(),
+                    'merchant_name'    => $merchant->getName(),
+                    'merchant_email'   => $merchant->getEmail(),
+                    'merchant_phone'   => $merchant->merchantDetail->getContactMobile(),
+                    'merchant_details' => $merchant->merchantDetail->toArrayPublic(),
+                    'logging_time' => $loggingTime,
+                ]
+                );
+
             $response = (new FreshdeskTicket\Service())->postTicketOnMerchantBehalf(
                 $postTicketRequest, $merchant->getId(), true);
 
@@ -121,19 +149,24 @@ class RiskMobileSignupHelper
                 [
                     'merchant_id'       => $merchant->getId(),
                     'fd_ticket_id'      => $response['id'],
-                ]);
+                    'fd_ticket_status'  => $response['status'],
+                    'request_params'   => $requestParams,
+                    'request_body'     => $postTicketRequest,
+                    'response'         => $response,
+                    'logging_time' => $loggingTime,
+                ]
+            );
 
             return $response;
-        }
-        catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::MERCHANT_RISK_FD_CREATE_TICKET_FAILED,
                 [
                     'merchant_id' => $merchant->getId(),
-                ]);
+                ]
+            );
         }
     }
 
