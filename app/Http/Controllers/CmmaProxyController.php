@@ -120,7 +120,7 @@ class CmmaProxyController extends BaseProxyController
 
     protected function getHeadersForAdminRequest($body)
     {
-        
+
         return [
             'X-Admin-id'            => optional($this->ba->getAdmin())->getPublicId() ?? '',
             'X-Admin-Name'          => optional($this->ba->getAdmin())->getName() ?? '',
@@ -147,7 +147,7 @@ class CmmaProxyController extends BaseProxyController
         ];
     }
 
-    protected function getHeadersForDashboardRequest(array $body = [], string $id = '')
+    protected function getHeadersForDashboardRequest(array $body = [], string $id = '', string $productType = '')
     {
         return [
             'x-merchant-id'         => optional($this->ba->getMerchant())->getId() ?? $id,

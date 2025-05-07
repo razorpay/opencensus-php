@@ -1366,6 +1366,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
     private function sendRequestAndParseResponseWithMutexIfApplicable($headers, $body, $twirpPath, $routeKey)
     {
         $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($merchant === null)
+        {
+            return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
+        }
+
         $merchantId = $merchant->getId();
         $core = new MerchantDetail();
 
