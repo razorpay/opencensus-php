@@ -102,6 +102,8 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
       ? ValidationState.NONE
       : ValidationState.ERROR;
 
+    const isNotKLAMerchant = Boolean(user.has_key_access);
+
     if (name === MainFormFields.URL) {
       if (validationState === ValidationState.ERROR) {
         setUrlError(
@@ -109,7 +111,10 @@ const WebsiteInputModal: React.FC<WebsiteInputModalProps> = ({
             ? 'Please ensure your website is HTTPS compliant (https://)'
             : 'Enter a valid website link',
         );
-      } else if (isDuplicateWebsite(alreadyAddedWebsites, autoPrefixUrls(value || '', true))) {
+      } else if (
+        isNotKLAMerchant &&
+        isDuplicateWebsite(alreadyAddedWebsites, autoPrefixUrls(value || '', true))
+      ) {
         validationState = ValidationState.ERROR;
         setUrlError(`This ${formState.platform.value ?? 'website'} is already added`);
       } else if (isPopularWebsite(autoPrefixUrls(value || '', true))) {
