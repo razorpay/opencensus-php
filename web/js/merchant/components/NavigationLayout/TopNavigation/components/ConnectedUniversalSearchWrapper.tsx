@@ -1,12 +1,19 @@
 import React, { Suspense, lazy } from 'react';
 import { useStore } from '@federated/apps/shell/commonStore';
-import { Skeleton, useTheme } from '@razorpay/blade/components';
+import { Box, Skeleton, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { matchPath, useLocation } from 'react-router-dom';
+import { shouldDisplaySearchBasedOnDeviceType } from '@libs/shared-utils';
 
 const UniversalSearch = lazy(() => import('merchant/components/HeaderNav/UniversalSearch'));
 
-const ConnectedUniversalSearchWrapper: React.FC = () => {
+type ConnectedUniversalSearchWrapperProps = {
+  showOnlyMobileSearch?: boolean;
+};
+
+const ConnectedUniversalSearchWrapper: React.FC<ConnectedUniversalSearchWrapperProps> = ({
+  showOnlyMobileSearch,
+}) => {
   const user = useStore((state) => state.session.user);
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
@@ -19,14 +26,31 @@ const ConnectedUniversalSearchWrapper: React.FC = () => {
 
   const isMobile = matchedDeviceType === 'mobile';
 
-  const shouldShowSearch = user?.isUniversalSearchEnabled && !isMobile && !isPartnersPathActive;
+  const shouldShowSearch =
+    user?.isUniversalSearchEnabled &&
+    !isPartnersPathActive &&
+    shouldDisplaySearchBasedOnDeviceType({
+      isMobile,
+      showOnlyMobileSearch,
+    });
 
   if (!shouldShowSearch) {
     return null;
   }
 
+  const getFallbackLoader = () => {
+    if (showOnlyMobileSearch) {
+      return (
+        <Box display="flex" alignItems="center" gap="spacing.5" height="40px">
+          <Skeleton width="100%" height="32px" borderRadius="medium" />
+        </Box>
+      );
+    }
+    return <Skeleton width="200px" height="32px" borderRadius="medium" />;
+  };
+
   return (
-    <Suspense fallback={<Skeleton width="200px" height="32px" borderRadius="medium" />}>
+    <Suspense fallback={getFallbackLoader()}>
       <UniversalSearch isConnectedNavigation={true} />
     </Suspense>
   );

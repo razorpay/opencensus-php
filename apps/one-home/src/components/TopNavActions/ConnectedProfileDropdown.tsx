@@ -29,7 +29,7 @@ import { CopyWrapper } from '@libs/shared-ui';
 import SwitchMerchantTypeahead from './SwitchMerchantTypeahead';
 import { trustedBadgeTooltipInfo } from './constants';
 
-function ConnectedProfileDropdown({ user, isRTBEnabled, onLogout }: any) {
+function ConnectedProfileDropdown({ user, isRTBEnabled, onLogout, switchMerchant }: any) {
   const { products } = useConnectedNavigationStore();
 
   const [shouldShowMobileBottomSheet, setShouldShowMobileBottomSheet] = useState(false);
@@ -81,7 +81,8 @@ function ConnectedProfileDropdown({ user, isRTBEnabled, onLogout }: any) {
     setShowSwitchMerchantModal(false);
   };
 
-  const onSwitchMerchant = () => {
+  const onSwitchMerchant = (merchant) => {
+    switchMerchant(merchant);
     setShowSwitchMerchantModal(false);
   };
 

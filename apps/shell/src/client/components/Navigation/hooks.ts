@@ -58,6 +58,15 @@ export const useGetActiveProduct = () => {
     currentPath,
   });
 
+  /**
+   * Check if company registration product is active
+   * @returns boolean indicating if company registration is active
+   */
+  const isCompanyRegistrationActive = checkProductPathActive({
+    productAlias: PRODUCT_ALIAS_MAP.COMPANY_REGISTRATION,
+    currentPath,
+  });
+
   const activeProductAlias = getActiveProductAlias(currentPath);
 
   return {
@@ -66,6 +75,7 @@ export const useGetActiveProduct = () => {
     isBankingActive,
     isPartnersActive,
     isHomeActive,
+    isCompanyRegistrationActive,
     activeProductAlias,
   };
 };

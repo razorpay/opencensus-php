@@ -1,4 +1,4 @@
-import React, { useRef, useState, Suspense } from 'react';
+import React, { useRef, useState, Suspense, useEffect } from 'react';
 import { ActivityIcon, Heading, Tooltip, Button, Spinner, Box } from '@razorpay/blade/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { connect } from 'react-redux';
@@ -22,7 +22,7 @@ import {
 import { openSlider } from 'merchant_common/reducers/slider';
 import { analyticsTrack } from 'common/utils/analytics';
 import { ANALYTICS_ONENAV } from '@libs/shared-utils';
-import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
+import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 
 // eslint-disable-next-line prettier/prettier
 const MethodsContainer = lazy(
@@ -31,11 +31,15 @@ const MethodsContainer = lazy(
 
 const EcosystemDowntimesContainer = (props): JSX.Element => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const { selectedProduct } = useConnectedNavigationStore();
+  const { products, setShowSearchOnMobile } = useConnectedNavigationStore();
   const { openSlider: sliderOpen, showNewHomePage, isConnectedNavigation } = props;
   const methodsContainerRef = useRef<HTMLDivElement | null>(null);
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
   const queryCache = useQueryClient();
+
+  useEffect(() => {
+    setShowSearchOnMobile(!isExpanded);
+  }, [isExpanded]);
 
   const handleToggleSlider = () => {
     sliderOpen();
@@ -50,7 +54,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
         option_name: 'View Ecosystem Health',
         icon_name: 'Ecosystem Health',
         page: location.pathname?.replace('/app/', ''),
-        bu_title: selectedProduct?.product?.title,
+        bu_title: products?.selectedProduct?.title,
         experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
       },
     });

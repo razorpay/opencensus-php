@@ -10,13 +10,14 @@ export const ThemeSwitcher: React.FC = () => {
   const { setColorScheme } = useTheme();
   const { isBankingActive } = useGetActiveProduct();
 
-  useEffect(() => {
-    if (isBankingActive) {
-      setColorScheme('dark');
-    } else {
-      setColorScheme('light');
-    }
-  }, [isBankingActive, setColorScheme]);
+  // TODO: Introduce this when launching X in connected dashboard
+  // useEffect(() => {
+  //   if (isBankingActive) {
+  //     setColorScheme('dark');
+  //   } else {
+  //     setColorScheme('light');
+  //   }
+  // }, [isBankingActive, setColorScheme]);
 
   return null;
 };

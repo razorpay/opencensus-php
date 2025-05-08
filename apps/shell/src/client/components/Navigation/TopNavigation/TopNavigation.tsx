@@ -86,9 +86,11 @@ function TopNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
-  const { products: productsFromStore, setIsSideNavOpenOnMobile } = useConnectedNavigationStore(
-    (state) => state,
-  );
+  const {
+    products: productsFromStore,
+    setIsSideNavOpenOnMobile,
+    showSearchOnMobile,
+  } = useConnectedNavigationStore((state) => state);
   const showNotification = useStore((state) => state.showNotification);
 
   const { setColorScheme, theme } = useTheme();
@@ -109,9 +111,10 @@ function TopNavigation() {
   const isOneHomeEnabled = Boolean(window?.IS_ONE_HOME_ENABLED);
 
   const setThemeBasedOnSelectedProduct = () => {
+    // TODO: Set color scheme to dark for banking once X is released in connected dashboard
     switch (activeProductAlias) {
       case PRODUCT_ALIAS_MAP.BANKING: {
-        setColorScheme('dark');
+        setColorScheme('light');
         break;
       }
 
@@ -305,7 +308,7 @@ function TopNavigation() {
   if (isMobile) {
     if (isHomeActive || currentPath.startsWith('/home')) {
       return (
-        <Box zIndex="101" flexShrink={0} height="56px">
+        <Box zIndex="101" flexShrink={0}>
           <Card elevation="lowRaised" padding="spacing.0" height="100%">
             <TopNav zIndex="101" backgroundColor="surface.background.gray.intense">
               <Box display="flex" alignItems="center" gap="spacing.3">
@@ -328,8 +331,8 @@ function TopNavigation() {
       );
     }
     return (
-      <Box zIndex="101" flexShrink={0} height="56px">
-        <Card elevation="lowRaised" padding="spacing.0" height="100%">
+      <Box zIndex="101" flexShrink={0}>
+        <Card elevation={isMobile ? 'none' : 'lowRaised'} padding="spacing.0" height="100%">
           <TopNav zIndex="101" backgroundColor="surface.background.gray.intense">
             <Box>
               {!shouldHideMobileMenu && (
@@ -357,6 +360,7 @@ function TopNavigation() {
             <Box></Box>
             <HeaderActionsLoader />
           </TopNav>
+          {showSearchOnMobile && <HeaderActionsLoader showOnlyMobileSearch={true} />}
         </Card>
       </Box>
     );

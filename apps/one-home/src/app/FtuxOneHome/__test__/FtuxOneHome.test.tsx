@@ -9,6 +9,14 @@ jest.mock('common/utils/localStorage', () => ({
   setItem: jest.fn(),
 }));
 
+jest.mock('@libs/shared-utils', () => {
+  const originalModule = jest.requireActual('@libs/shared-utils');
+  return {
+    ...originalModule,
+    analyticsTrack: jest.fn(),
+  };
+});
+
 describe('FtuxOneHome Component', () => {
   beforeEach(() => {
     jest.clearAllMocks(); // Reset mocks before each test

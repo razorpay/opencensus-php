@@ -22,8 +22,9 @@ export const BladeThemeProvider = ({ children }: { children: JSX.Element | JSX.E
   const { isBankingActive } = useGetActiveProduct();
 
   const getInitialColorScheme = () => {
+    // TODO: return 'dark' for banking when launching X in connected dashboard
     if (isBankingActive) {
-      return 'dark';
+      return 'light';
     } else {
       return 'light';
     }

@@ -3,6 +3,9 @@ import React from 'react';
 import { NoActionMessageProps } from './types';
 
 const NoActionMessage = ({ user }: NoActionMessageProps) => {
+  const { user: loggedInUser } = user;
+  const loggedInUserName = loggedInUser?.name;
+
   return (
     <Box
       padding="spacing.7"
@@ -20,7 +23,7 @@ const NoActionMessage = ({ user }: NoActionMessageProps) => {
         color="surface.text.gray.normal"
         weight="semibold"
         alignSelf="start"
-      >{`🎉 You're all caught up${user.name ? `, ${user.name}` : ''}.`}</Text>
+      >{`🎉 You're all caught up${loggedInUserName ? `, ${loggedInUserName}` : ''}.`}</Text>
 
       <Text
         marginLeft={{ base: 'spacing.6', l: 'spacing.0' }}

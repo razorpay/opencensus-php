@@ -202,3 +202,7 @@ export { getCanonicalUrl } from './getCanonicalUrl';
 export { initRazorAnalytics } from './initRazorAnalytics';
 export { isJKOfflineMerchant } from './isJKOfflineMerchant';
 export { ajax } from './ajax';
+export {
+  shouldDisplaySearchBasedOnDeviceType,
+  type SearchVisibilityProps,
+} from './searchVisibility';

@@ -25,6 +25,7 @@ import React, { Suspense, lazy } from 'react';
 import { usePaymentsTopNavLoading } from '../../hooks/usePaymentsTopNavLoading';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { matchPath, useLocation } from 'react-router-dom';
+import { shouldDisplaySearchBasedOnDeviceType } from '@libs/shared-utils';
 
 const ConnectedUniversalSearchWrapper = lazy(() => import('./ConnectedUniversalSearchWrapper'));
 const EcosystemDowntimes = lazy(() => import('@dashboards/payments/views/EcosystemDowntimes'));
@@ -34,7 +35,11 @@ const ConnectedPaymentsProfileDropdownWrapper = lazy(
 );
 const TopLevelModals = lazy(() => import('../TopLevelModals'));
 
-const SkeletonLoader = () => {
+type SkeletonLoaderProps = {
+  showOnlyMobileSearch?: boolean;
+};
+
+const SkeletonLoader = ({ showOnlyMobileSearch }: SkeletonLoaderProps) => {
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -46,7 +51,20 @@ const SkeletonLoader = () => {
 
   const isMobile = matchedDeviceType === 'mobile';
 
-  const shouldShowSearchSkeleton = !isMobile && !isPartnersPathActive;
+  const shouldShowSearchSkeleton =
+    !isPartnersPathActive &&
+    shouldDisplaySearchBasedOnDeviceType({
+      isMobile,
+      showOnlyMobileSearch,
+    });
+
+  if (showOnlyMobileSearch) {
+    return (
+      <Box display="flex" alignItems="center" gap="spacing.5" height="40px">
+        <Skeleton width="100%" height="32px" borderRadius="medium" />
+      </Box>
+    );
+  }
 
   return (
     <BladeProvider themeTokens={bladeTheme}>
@@ -62,7 +80,11 @@ const SkeletonLoader = () => {
   );
 };
 
-function TopNavActions() {
+type TopNavActionsProps = {
+  showOnlyMobileSearch?: boolean;
+};
+
+function TopNavActions({ showOnlyMobileSearch }: TopNavActionsProps) {
   const user = useStore((state) => state.session.user);
   const { isTopNavActionsLoading } = usePaymentsTopNavLoading();
   const location = useLocation();
@@ -77,7 +99,21 @@ function TopNavActions() {
 
   const getTopNavActionComponents = () => {
     if (isTopNavActionsLoading) {
-      return <SkeletonLoader />;
+      return <SkeletonLoader showOnlyMobileSearch={showOnlyMobileSearch} />;
+    }
+
+    if (showOnlyMobileSearch) {
+      return (
+        <Suspense
+          fallback={
+            <Box display="flex" alignItems="center" gap="spacing.5" height="40px">
+              <Skeleton width="100%" height="32px" borderRadius="medium" />
+            </Box>
+          }
+        >
+          <ConnectedUniversalSearchWrapper showOnlyMobileSearch={showOnlyMobileSearch} />
+        </Suspense>
+      );
     }
 
     return (
@@ -119,7 +155,7 @@ function TopNavActions() {
           <Provider store={store}>
             <ShellZustandToReduxSyncProvider store={store}>
               <SpiltzServiceProvider
-                customLoader={() => <SkeletonLoader />}
+                customLoader={() => <SkeletonLoader showOnlyMobileSearch={showOnlyMobileSearch} />}
                 dashboardType="merchant"
               >
                 <I18ServiceProvider>{getTopNavActionComponents()}</I18ServiceProvider>

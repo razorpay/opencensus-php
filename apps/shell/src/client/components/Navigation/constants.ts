@@ -7,11 +7,13 @@ export const PRODUCT_ALIAS_MAP = {
   RIZE: 'rize_top_navigation_item',
   PARTNERS: 'partners_top_navigation_item',
   HOME: 'home_top_navigation_item',
+  COMPANY_REGISTRATION: 'company_registration_top_navigation_item',
 } as const;
 
 export const PRODUCT_PATH_MAP = {
   [PRODUCT_ALIAS_MAP.BANKING]: '/banking/*',
   [PRODUCT_ALIAS_MAP.PARTNERS]: '/partners/*',
+  [PRODUCT_ALIAS_MAP.COMPANY_REGISTRATION]: '/company-registration/*',
   [PRODUCT_ALIAS_MAP.HOME]: '/home',
 };
 

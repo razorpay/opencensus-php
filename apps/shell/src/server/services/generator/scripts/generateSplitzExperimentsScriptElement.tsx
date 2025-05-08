@@ -1,7 +1,13 @@
 import React from 'react';
 
 export const generateSplitzExperimentsScriptElement = (appLocals: any): JSX.Element => {
-  const isOneHomeEnabled = Boolean(appLocals?.server_evaluated_experiments?.['one-home']);
+  const role = appLocals?.user?.role;
+  const bankingRole = appLocals?.user?.banking_role;
+  const isOneHomeEnabled =
+    Boolean(appLocals?.server_evaluated_experiments?.['one-home']) &&
+    Boolean(appLocals?.server_evaluated_experiments?.['one-dashboard']) &&
+    (role === 'admin' || role === 'owner' || bankingRole === 'admin' || bankingRole === 'owner');
+
   // Consumed by SwitchMerchantTypeahead.tsx to show/hide the create merchant CTA in one-home profile dropdown
   const isCreateMerchantCTAEnabled = Boolean(
     appLocals?.server_evaluated_experiments?.['create_merchant_cta'],

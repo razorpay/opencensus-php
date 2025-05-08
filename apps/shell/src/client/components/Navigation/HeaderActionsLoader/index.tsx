@@ -3,8 +3,13 @@ import { Button, Skeleton, TopNavActions, Box, useTheme } from '@razorpay/blade/
 import { useGetActiveProduct } from '../hooks';
 import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 import { useBreakpoint } from '@razorpay/blade/utils';
+import { shouldDisplaySearchBasedOnDeviceType } from '@libs/shared-utils';
 
-const NavActionsSkeletonLoader = () => {
+type NavActionsSkeletonLoaderProps = {
+  showOnlyMobileSearch?: boolean;
+};
+
+const NavActionsSkeletonLoader = ({ showOnlyMobileSearch }: NavActionsSkeletonLoaderProps) => {
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -12,7 +17,20 @@ const NavActionsSkeletonLoader = () => {
   const isMobile = matchedDeviceType === 'mobile';
   const { isPartnersActive } = useGetActiveProduct();
 
-  const shouldShowSearchSkeleton = !isMobile && !isPartnersActive;
+  const shouldShowSearchSkeleton =
+    !isPartnersActive &&
+    shouldDisplaySearchBasedOnDeviceType({
+      isMobile,
+      showOnlyMobileSearch,
+    });
+
+  if (showOnlyMobileSearch) {
+    return (
+      <Box display="flex" alignItems="center" gap="spacing.5" height="40px">
+        <Skeleton width="100%" height="32px" borderRadius="medium" />
+      </Box>
+    );
+  }
 
   return (
     <Box display="flex" alignItems="center" gap="spacing.5" height="40px">
@@ -33,6 +51,19 @@ export const withTopNavActions = (WrappedComponent: React.ComponentType<any>) =>
       breakpoints: theme.breakpoints,
     });
     const isMobile = matchedDeviceType === 'mobile';
+    const { showOnlyMobileSearch } = props;
+
+    if (showOnlyMobileSearch) {
+      return (
+        <Box width="100%" zIndex="100" paddingX="spacing.2" paddingTop="spacing.1">
+          <Suspense
+            fallback={<NavActionsSkeletonLoader showOnlyMobileSearch={showOnlyMobileSearch} />}
+          >
+            <WrappedComponent {...props} />
+          </Suspense>
+        </Box>
+      );
+    }
 
     if (isMobile) {
       return (
@@ -69,7 +100,11 @@ const PartnersTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
 const BankingTopNavActions = withTopNavActions(BankingActions);
 const HomeTopNavActions = withTopNavActions(HomeActions);
 
-export const HeaderActionsLoader = (): JSX.Element | null => {
+type HeaderActionsLoaderProps = {
+  showOnlyMobileSearch?: boolean;
+};
+
+export const HeaderActionsLoader = (props: HeaderActionsLoaderProps): JSX.Element | null => {
   const { isPaymentsActive, isBankingActive, isPartnersActive, isHomeActive } =
     useGetActiveProduct();
   const { products } = useConnectedNavigationStore();
@@ -84,13 +119,13 @@ export const HeaderActionsLoader = (): JSX.Element | null => {
 
   switch (true) {
     case isPaymentsActive:
-      return <PaymentsTopNavActions />;
+      return <PaymentsTopNavActions {...props} />;
     case isBankingActive:
-      return <BankingTopNavActions />;
+      return <BankingTopNavActions {...props} />;
     case isPartnersActive:
-      return <PartnersTopNavActions />;
+      return <PartnersTopNavActions {...props} />;
     case isHomeActive:
-      return <HomeTopNavActions />;
+      return <HomeTopNavActions {...props} />;
     default:
       return null;
   }

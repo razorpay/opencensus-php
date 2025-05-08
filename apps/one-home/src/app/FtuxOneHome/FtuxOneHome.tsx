@@ -13,6 +13,7 @@ import { getItem, setItem } from 'common/utils/localStorage';
 import { FtuxConsentBody, FtuxConsentFooter } from './components/FtuxConsent';
 import { FtuxConsentOptOutBody, FtuxConsentOptOutFooter } from './components/FtuxOptOutConsent';
 import { FtuxHandlers } from './types';
+import { analyticsTrack, getCommonAnalyticsProperties } from '@libs/shared-utils';
 
 // Configuration for different modal states
 const consentConfig = {
@@ -53,6 +54,15 @@ const FtuxOneHome = (): React.ReactElement | null => {
     setItem('hasUserInteractedWithHomeConsent', 'true');
   };
   const handleProceedClick = () => {
+    analyticsTrack({
+      objectName: 'one home consent proceed',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties((window as any).rzp_user),
+      },
+    });
+
     setItem('isOneHomeConsentAccepted', 'true');
     setItem('hasUserInteractedWithHomeConsent', 'true');
     setModalState(null);

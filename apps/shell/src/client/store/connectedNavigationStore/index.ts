@@ -16,6 +16,8 @@ type StoreState = {
   updateSelectedProduct: (payload: SelectedProduct) => void;
   isSideNavOpenOnMobile: boolean;
   setIsSideNavOpenOnMobile: (payload: boolean) => void;
+  showSearchOnMobile: boolean;
+  setShowSearchOnMobile: (payload: boolean) => void;
 };
 
 const initialState = {
@@ -23,6 +25,7 @@ const initialState = {
     selectedProduct: null as StoreState['products']['selectedProduct'],
   } as StoreState['products'],
   isSideNavOpenOnMobile: false,
+  showSearchOnMobile: true,
 };
 
 export const useConnectedNavigationStore = create<StoreState>(
@@ -51,6 +54,11 @@ export const useConnectedNavigationStore = create<StoreState>(
       setIsSideNavOpenOnMobile: (payload) => {
         set((state) => ({
           isSideNavOpenOnMobile: payload,
+        }));
+      },
+      setShowSearchOnMobile: (payload) => {
+        set((state) => ({
+          showSearchOnMobile: payload,
         }));
       },
     }),

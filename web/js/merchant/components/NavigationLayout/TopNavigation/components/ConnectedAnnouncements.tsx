@@ -17,7 +17,7 @@ const ConnectedAnnouncements = ({ i18 }) => {
   const user = useStore((state) => state.session.user);
   const { org } = useStore((state) => state.session);
   const { windowWidth } = useStore((state) => state.app);
-  const { products } = useConnectedNavigationStore();
+  const { products, setShowSearchOnMobile } = useConnectedNavigationStore();
 
   const selectedProductTitle = products.selectedProduct?.title;
 
@@ -51,6 +51,7 @@ const ConnectedAnnouncements = ({ i18 }) => {
               showMobileNav={showMobileNav}
               isConnectedNavigation={true}
               selectedProductTitle={selectedProductTitle}
+              setShowSearchOnMobile={setShowSearchOnMobile}
             />
           </SuspenseWithLoader>
         </ShowWhen>

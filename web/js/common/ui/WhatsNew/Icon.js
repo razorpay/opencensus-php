@@ -12,6 +12,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import { pushSlider as fnPushSlider } from 'merchant_common/reducers/multiSlider';
 
 import { getExperimentVersion, getNotificationsReadData } from './common';
+import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 import './Icon.styl';
 
 const WhatsNewLazyComponent = lazy(() =>
@@ -28,6 +29,11 @@ const WhatsNewIcon = ({
   isConnectedNavigation,
 }) => {
   const [isOpen, setOpen] = useState(false);
+  const { setShowSearchOnMobile } = useConnectedNavigationStore((state) => state);
+
+  useEffect(() => {
+    setShowSearchOnMobile(!isOpen);
+  }, [isOpen]);
 
   const setUnreadMsgs = () => {
     const { totalUnread, ID, readID, unreadID } = getNotificationsReadData(user.current);
@@ -60,7 +66,7 @@ const WhatsNewIcon = ({
   }, []);
 
   const handleSliderToggleClick = () => {
-    (showNewHomePage) &&
+    showNewHomePage &&
       analyticsTrack({
         screen: 'home page',
         objectName: 'Announcements Icon',
