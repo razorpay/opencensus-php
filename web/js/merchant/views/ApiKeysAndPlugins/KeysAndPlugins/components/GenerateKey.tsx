@@ -95,6 +95,8 @@ const GenerateKey = ({
   const navigate = useNavigate();
   const splitz = useSplitzService();
 
+  const isSkip2FAEnabled = isExperimentEnabled(splitz?.abExperiments?.skip_2fa_for_protected_flows);
+
   const isFtux1Point5Enabled =
     isExperimentEnabled(splitz?.abExperiments?.business_website_v2_automation) &&
     isExperimentEnabled(splitz?.abExperiments?.show_ftux_V_1Point5);
@@ -253,6 +255,9 @@ const GenerateKey = ({
         },
       });
     } else {
+      if (isSkip2FAEnabled) {
+        return showRollKeyModal({ id: latestKey?.id });
+      }
       return context.criticalFlow({
         modes: ['live'],
         onUserTwoFaVerified: () => {

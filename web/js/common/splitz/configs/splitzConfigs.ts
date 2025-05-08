@@ -1030,6 +1030,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'skip_2fa_for_protected_flows',
+        experimentId: {
+          beta: 'QSSP0sZdDLlBds',
+          production: 'QSSNWpICec3Kjf',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'bounce_memo_single_transaction',
         experimentId: {
           beta: 'PVTQ7xIFOcS6du',
