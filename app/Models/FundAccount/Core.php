@@ -265,6 +265,9 @@ class Core extends Base\Core
 
         Metric::pushCreateMetrics($fundAccount);
 
+        // Capture source request ID for fund account
+        $this->captureSourceRequestId($fundAccount);
+
         return $fundAccount;
     }
 
@@ -353,8 +356,11 @@ class Core extends Base\Core
         if ($compositePayoutSaveOrFail === true)
         {
             $this->repo->saveOrFailWithoutEsSync($fundAccount);
-
+            
             Metric::pushCreateMetrics($fundAccount);
+            
+            // Capture source request ID for fund account in composite payout flow
+            $this->captureSourceRequestId($fundAccount);
         }
         else
         {
@@ -779,6 +785,9 @@ class Core extends Base\Core
         {
             (new Contact\Core)->PushVendorEvent($source, self::FUND_ACCOUNT_UPDATED_MESSAGE, $fundAccount);
         }
+
+        // Capture source request ID for fund account update
+        $this->captureSourceRequestId($fundAccount);
 
         return $fundAccount;
     }
@@ -1790,6 +1799,29 @@ class Core extends Base\Core
                 'input'        => $input,
             ]
         );
+    }
+
+    /**
+     * Captures the source request ID (AWS trace ID) and associates it with the fund account
+     * 
+     * @param Entity $fundAccount The fund account to associate with the source request ID
+     * @return void
+     */
+    protected function captureSourceRequestId(Entity $fundAccount): void
+    {
+        try {
+            $sourceRequestIDMappingCore = new \RZP\Models\Payout\SourceRequestIDMapping\Core();
+            $sourceRequestIDMappingCore->createSourceRequestIdMapping($fundAccount->getId(), \RZP\Constants\Entity::FUND_ACCOUNT);
+        } catch (\Throwable $e) {
+            // Just log the error, don't fail the fund account creation
+            $this->trace->error(
+                'fund_account.source_request_id.capture_error',
+                [
+                    'fund_account_id' => $fundAccount->getId(),
+                    'error' => $e->getMessage()
+                ]
+            );
+        }
     }
 
 }
