@@ -1800,6 +1800,61 @@ class Core extends Base\Core
     }
 
     /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $fundAccount Fund account entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $fundAccount): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $fundAccount->merchant->getId(),
+                "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'splitz_output' => $response,
+            ]);
+
+            // Check for the variant name
+            $variant = $response['response']['variant']['name'] ?? null;
+            if ($variant === 'ENABLE')
+            {
+                return true;
+            }
+
+            // Also check variables if variant doesn't match
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable)
+            {
+                if ($variable['key'] === 'enabled' && $variable['value'] === 'true')
+                {
+                    return true;
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SOURCE_REQUEST_ID_MAPPING_SPLITZ_ERROR,
+                [
+                    'fund_account_id' => $fundAccount->getId(),
+                    'merchant_id' => $fundAccount->merchant->getId(),
+                ]
+            );
+        }
+
+        return false;
+    }
+
+    /**
      * Captures the source request ID (AWS trace ID) and associates it with the fund account
      *
      * @param Entity $fundAccount The fund account to associate with the source request ID
@@ -1807,16 +1862,23 @@ class Core extends Base\Core
      */
     protected function captureSourceRequestId(Entity $fundAccount): void
     {
+        // Check if source request ID mapping is enabled via Splitz
+        if ($this->isSourceRequestIdMappingEnabled($fundAccount) === false)
+        {
+            return;
+        }
+
         try {
             (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($fundAccount->getId(), E::FUND_ACCOUNT);
         }
         catch (\Throwable $e) {
-            // Just log the error, don't fail the fund account creation
-            $this->trace->error(
-                'fund_account.source_request_id.capture_error',
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SOURCE_REQUEST_ID_MAPPING_FAILED,
                 [
                     'fund_account_id' => $fundAccount->getId(),
-                    'error' => $e->getMessage()
+                    'merchant_id' => $fundAccount->merchant->getId(),
                 ]
             );
         }
