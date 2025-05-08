@@ -37,6 +37,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
 use RZP\Models\FundAccount\DetailsPropagator\Core as DetailsPropagator;
+use \RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 
 /**
  * Class Core
@@ -356,9 +357,9 @@ class Core extends Base\Core
         if ($compositePayoutSaveOrFail === true)
         {
             $this->repo->saveOrFailWithoutEsSync($fundAccount);
-            
+
             Metric::pushCreateMetrics($fundAccount);
-            
+
             // Capture source request ID for fund account in composite payout flow
             $this->captureSourceRequestId($fundAccount);
         }
@@ -1803,16 +1804,16 @@ class Core extends Base\Core
 
     /**
      * Captures the source request ID (AWS trace ID) and associates it with the fund account
-     * 
+     *
      * @param Entity $fundAccount The fund account to associate with the source request ID
      * @return void
      */
     protected function captureSourceRequestId(Entity $fundAccount): void
     {
         try {
-            $sourceRequestIDMappingCore = new \RZP\Models\Payout\SourceRequestIDMapping\Core();
-            $sourceRequestIDMappingCore->createSourceRequestIdMapping($fundAccount->getId(), \RZP\Constants\Entity::FUND_ACCOUNT);
-        } catch (\Throwable $e) {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($fundAccount->getId(), E::FUND_ACCOUNT);
+        }
+        catch (\Throwable $e) {
             // Just log the error, don't fail the fund account creation
             $this->trace->error(
                 'fund_account.source_request_id.capture_error',

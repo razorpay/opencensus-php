@@ -148,7 +148,7 @@ class Core extends Base\Core
 
     /**
      * Captures the source request ID (AWS trace ID) and associates it with the contact
-     * 
+     *
      * @param Entity $contact The contact to associate with the source request ID
      * @return void
      */
@@ -253,7 +253,7 @@ class Core extends Base\Core
 
 
         $this->captureSourceRequestId($contact);
-        
+
         return $contact;
     }
 
@@ -322,9 +322,6 @@ class Core extends Base\Core
         $this->updateAppSpecificInformation($contact, $input);
 
         $this->PushVendorEvent($contact, Contact\Constants::CONTACT_UPDATED_MESSAGE);
-
-        // Capture source request ID for contact update
-        $this->captureSourceRequestId($contact);
 
         return $contact;
     }
