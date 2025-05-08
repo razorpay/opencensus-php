@@ -220,6 +220,18 @@ class Core extends Base\Core
                         ->setPermission(Name::TOGGLE_INTERNATIONAL_REVAMPED)
                         ->setTags($workflowRequestTags)
                         ->handle(null, $typeformWorkflowData, true);
+
+
+                    // for sanity :- resets the workflow in worker pod
+                    $this->app['workflow']
+                        ->setInput(null)
+                        ->setPermission(null)
+                        ->setRouteName(null)
+                        ->setRouteParams(null)
+                        ->setController(null)
+                        ->setWorkflowMaker(null)
+                        ->setWorkflowMakerType(null)
+                        ->setMakerFromAuth(true);
                 }
                 else {
                     $this->app['workflow']
@@ -424,7 +436,7 @@ class Core extends Base\Core
 
         $actionPermission = $action->permission->getName();
 
-        if ($actionPermission === Name::TOGGLE_INTERNATIONAL_REVAMPED || 
+        if ($actionPermission === Name::TOGGLE_INTERNATIONAL_REVAMPED ||
             $actionPermission === Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT)
         {
             $version = 'v2';
@@ -508,7 +520,7 @@ class Core extends Base\Core
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $productInternational = $merchant->getProductInternational();
-        
+
         $event = DashboardEvents::IE_SUCCESSFUL;
 
         // Override PA-CB Enablement Successful Event
@@ -519,16 +531,16 @@ class Core extends Base\Core
             $vkycStatus = $latestVCIPEntity['status'] ?? '';
 
             switch($vkycStatus) {
-                case MerchantDetailsConstants::APPROVED: 
+                case MerchantDetailsConstants::APPROVED:
                     $event = DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL;
                     break;
-                case MerchantDetailsConstants::UNDER_REVIEW: 
+                case MerchantDetailsConstants::UNDER_REVIEW:
                     $event = DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING;
                     break;
                 default: // For rest of the cases, where KYC is Either Initiated / Rejected
                     $event = DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED;
                     break;
-            }  
+            }
         }
 
         $args = [
