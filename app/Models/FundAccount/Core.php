@@ -787,9 +787,6 @@ class Core extends Base\Core
             (new Contact\Core)->PushVendorEvent($source, self::FUND_ACCOUNT_UPDATED_MESSAGE, $fundAccount);
         }
 
-        // Capture source request ID for fund account update
-        $this->captureSourceRequestId($fundAccount);
-
         return $fundAccount;
     }
 
