@@ -3710,6 +3710,13 @@ class Processor
                return false;
             }
             //Ramp the traffic on rearch
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_GTG_REARCH,
+                [
+                    'merchant_id'       => $merchant->getId(),
+                    'experiment'        => $featureFlag,
+                    'bank'              => $input[Payment\Entity::BANK],
+                    'route'             => $currentRouteName,
+                ]);
             return true;
 
         }
@@ -15640,7 +15647,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
     {
         // Get the bank code from the input
 
-        if ($input !== null && str_ends_with($input, '_c')) {
+        if ($input !== null && str_ends_with($input, '_C')) {
             // for corporate banks
             $corporateFeatureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_corporate_banks';
             $properties = [
@@ -15660,7 +15667,27 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 'feature'     => $corporateFeatureFlag,
             ]);
 
-            return $variant === 'variant_on';
+
+            // add merchant in this experiment to enable corporate merchant traffic on rearch
+            $featureFlagCorpMx = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_corp_enable_merchants';
+            $corpMxProp = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $featureFlagCorpMx,
+                'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
+            ];
+            $corpMxResponse = $this->app['splitzService']->evaluateRequest($corpMxProp);
+            $corpMxVariant = $corpMxResponse['response']['variant']['name'] ?? 'control';
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_CORP_MERCHANT_ON_REARCH,
+                [
+                    'merchant_id'       => $this->merchant->getMerchantId(),
+                    'experiment'        => $featureFlagCorpMx,
+                    'bank'              => $input,
+                    'variant'           => $corpMxVariant,
+                    'response'          => $corpMxResponse,
+                ]
+            );
+
+            return ($variant === 'variant_on' && $corpMxVariant === 'corp_enabled');
 
         } else {
             // for retail banks
