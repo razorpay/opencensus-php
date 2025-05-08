@@ -37,10 +37,6 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
   const queryCache = useQueryClient();
 
-  useEffect(() => {
-    setShowSearchOnMobile(!isExpanded);
-  }, [isExpanded]);
-
   const handleToggleSlider = () => {
     sliderOpen();
     setIsExpanded(!isExpanded);

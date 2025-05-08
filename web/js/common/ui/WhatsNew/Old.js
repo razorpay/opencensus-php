@@ -101,10 +101,6 @@ class WhatsNewOld extends Component {
 
       if (this.state.isOpenSlider1) this.onShow();
     }
-
-    if (prevState.isOpenSlider1 !== this.state.isOpenSlider1) {
-      this.props?.setShowSearchOnMobile(!this.state.isOpenSlider1);
-    }
   };
 
   setUnreadMsgs() {

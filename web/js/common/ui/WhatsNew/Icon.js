@@ -31,10 +31,6 @@ const WhatsNewIcon = ({
   const [isOpen, setOpen] = useState(false);
   const { setShowSearchOnMobile } = useConnectedNavigationStore((state) => state);
 
-  useEffect(() => {
-    setShowSearchOnMobile(!isOpen);
-  }, [isOpen]);
-
   const setUnreadMsgs = () => {
     const { totalUnread, ID, readID, unreadID } = getNotificationsReadData(user.current);
 

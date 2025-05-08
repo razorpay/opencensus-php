@@ -51,7 +51,6 @@ const ConnectedAnnouncements = ({ i18 }) => {
               showMobileNav={showMobileNav}
               isConnectedNavigation={true}
               selectedProductTitle={selectedProductTitle}
-              setShowSearchOnMobile={setShowSearchOnMobile}
             />
           </SuspenseWithLoader>
         </ShowWhen>
