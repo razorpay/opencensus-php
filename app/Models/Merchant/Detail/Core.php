@@ -419,9 +419,6 @@ class Core extends Base\Core
 
                 $this->triggerSyncValidationRequests($merchant, $merchantDetails);
             }
-            else{
-                $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
-            }
 
             $this->trace->info(TraceCode::MERCHANT_KYC_VERIFICATION_LATENCY, [
                 'merchant_id' => $merchant->getId(),

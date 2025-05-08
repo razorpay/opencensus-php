@@ -159,7 +159,7 @@ class PaymentsGeneralConfig extends Base\Service
 
         $response[Util\Constants::BENEFICIARY_NAME] = $merchantDetails[Merchant\Detail\Entity::BANK_ACCOUNT_NAME];
 
-        if ($merchant->getCountry() != Country::IN)
+        if (strtolower($merchant->getCountry()) != Country::IN)
         {
             $response[Util\Constants::BANK_BRANCH_CODE] = $merchantDetails[Merchant\Detail\Entity::BANK_BRANCH_CODE];
         }
