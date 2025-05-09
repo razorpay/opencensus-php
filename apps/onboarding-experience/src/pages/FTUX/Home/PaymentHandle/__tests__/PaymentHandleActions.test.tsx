@@ -1,5 +1,10 @@
 import React from 'react';
-import { fireEvent, screen, act } from 'apps/onboarding-experience/src/services/test/jest-utils';
+import {
+  fireEvent,
+  screen,
+  act,
+  within,
+} from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import PaymentHandleActions from '../PaymentHandleActions';
 import { isMobileDevice } from '@libs/shared-utils';
@@ -8,11 +13,16 @@ import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hook
 // Mock dependencies
 jest.mock('@libs/shared-utils', () => ({
   isMobileDevice: jest.fn(),
+  copyToClipboard: jest.fn().mockImplementation(() => {}),
 }));
 
 jest.mock('apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle', () => ({
   __esModule: true,
   default: jest.fn(),
+}));
+
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  useStore: jest.fn().mockImplementation((fn) => fn({ showNotification: jest.fn() })),
 }));
 
 // Mock clipboard API
@@ -49,15 +59,35 @@ describe('PaymentHandleActions Component', () => {
 
   test('renders payment handle slug', () => {
     renderWithWrappers(<PaymentHandleActions />);
-    expect(screen.getByText('test-payment-handle')).toBeInTheDocument();
+    expect(screen.getByText('rzp.io/i/test-payment-handle')).toBeInTheDocument();
   });
 
   test('renders copy, edit and share buttons', () => {
-    renderWithWrappers(<PaymentHandleActions />);
+    const { container } = renderWithWrappers(<PaymentHandleActions />);
 
-    // Check for the total number of links instead of specific roles
-    const linkElements = screen.getAllByRole('link');
-    expect(linkElements.length).toBe(3); // Total 3 links - copy, edit, share
+    // Find the parent container for payment handle
+    const handleContainer = screen
+      .getByText('rzp.io/i/test-payment-handle')
+      .closest('[data-blade-component="box"]');
+    expect(handleContainer).not.toBeNull();
+
+    // Find the copy button within this container
+    const copyButton = within(handleContainer as HTMLElement).getByRole('link');
+    expect(copyButton).toBeInTheDocument();
+
+    // Find the buttons container
+    const buttonsContainer = container.querySelector(
+      '[data-blade-component="box"][class*="cVIyYz"]',
+    );
+    expect(buttonsContainer).not.toBeNull();
+
+    // Find edit button
+    const editButton = within(buttonsContainer as HTMLElement).getByRole('button');
+    expect(editButton).toBeInTheDocument();
+
+    // Find share button
+    const shareButton = within(buttonsContainer as HTMLElement).getByRole('link');
+    expect(shareButton).toBeInTheDocument();
   });
 
   test('shows loading spinner when data is loading', () => {

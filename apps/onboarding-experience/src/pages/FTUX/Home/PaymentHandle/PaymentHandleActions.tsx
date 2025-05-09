@@ -12,6 +12,9 @@ import {
 } from '@razorpay/blade/components';
 import { copyToClipboard, isMobileDevice } from '@libs/shared-utils';
 import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle';
+import EditPaymentHandleModal from 'apps/onboarding-experience/src/common/components/EditPaymentHandleModal';
+import { removePaymentHandleSlugPrefix } from 'apps/onboarding-experience/src/common/utils/paymentHandle';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 /**
  * PaymentHandleActions component displays the merchant's payment handle with copy, edit, and share actions
@@ -20,9 +23,17 @@ import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hook
 function PaymentHandleActions() {
   const isMobile = isMobileDevice();
   // Custom hook to fetch merchant payment handle data
-  const { paymentHandleData, isPaymentHandleLoading, fetchPaymentHandle } =
-    useMerchantPaymentHandle();
+  const {
+    paymentHandleData,
+    isPaymentHandleLoading,
+    fetchPaymentHandle,
+    updatePaymentHandle,
+    fetchHandleSuggestions,
+    fetchHandleAvailability,
+  } = useMerchantPaymentHandle();
+  const showNotification = useStore((state) => state.showNotification);
   const [isCopied, setIsCopied] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Extract active payment handle and URL from the response data
   const activeHandle = paymentHandleData?.merchantPaymentHandle?.paymentHandle?.paymentHandleSlug;
@@ -36,8 +47,41 @@ function PaymentHandleActions() {
       copyToClipboard(activeHandleUrl || '');
       setIsCopied(true);
     } catch (error: unknown) {
-      // Handle the error if the copy fails
-      console.error('Failed to copy text:', error);
+      showNotification({
+        color: 'negative',
+        message: 'Unable to copy the payment handle!',
+      });
+    }
+  };
+
+  const getHandleSuggestions = async () => {
+    try {
+      const resp = await fetchHandleSuggestions();
+      return resp?.merchantPaymentHandleSuggestions?.suggestions || [];
+    } catch (_) {
+      return [];
+    }
+  };
+
+  const getPaymentHandleAvailability = async (handle: string) => {
+    if (handle === removePaymentHandleSlugPrefix(activeHandle || '')) return null;
+    try {
+      const resp = await fetchHandleAvailability(handle);
+      const isAvailable = resp?.merchantPaymentHandleAvailability?.isPaymentHandleAvailable;
+      return typeof isAvailable === 'boolean' ? isAvailable : null;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const handleUpdatePaymentHandle = async (handle: string) => {
+    try {
+      const resp = await updatePaymentHandle({ handle });
+      if (!resp?.merchantPaymentHandleUpdate?.success) {
+        throw new Error('Unexpected error while updating payment handle!');
+      }
+    } catch (err) {
+      throw new Error('Unable to update payment handle!');
     }
   };
 
@@ -65,11 +109,11 @@ function PaymentHandleActions() {
         borderRadius="medium"
         backgroundColor="surface.background.gray.subtle"
         alignSelf="stretch"
-        width={{ base: '100%', m: '350px' }}
+        width="350px"
       >
         {isPaymentHandleLoading ? (
           <Spinner accessibilityLabel="payment-url" color="primary" />
-        ) : !activeHandle ? (
+        ) : !activeHandleUrl ? (
           <Text weight="semibold" color="surface.text.primary.normal">
             No payment handle found
           </Text>
@@ -80,7 +124,7 @@ function PaymentHandleActions() {
             weight="semibold"
             color="surface.text.primary.normal"
           >
-            {activeHandle}
+            {activeHandleUrl?.split('https://')?.[1]}
           </Text>
         )}
         <Tooltip content={isCopied ? 'Copied!' : 'Click to copy'}>
@@ -101,6 +145,8 @@ function PaymentHandleActions() {
           children={isMobile ? 'Edit' : ''}
           icon={EditIcon}
           color="neutral"
+          variant="button"
+          onClick={() => setIsEditModalOpen(true)}
         />
         <Link
           isDisabled={!activeHandle || isPaymentHandleLoading}
@@ -110,6 +156,15 @@ function PaymentHandleActions() {
           color="neutral"
         />
       </Box>
+      {isEditModalOpen && (
+        <EditPaymentHandleModal
+          onDismiss={() => setIsEditModalOpen(false)}
+          getHandleSuggestions={getHandleSuggestions}
+          getPaymentHandleAvailability={getPaymentHandleAvailability}
+          handleUpdatePaymentHandle={handleUpdatePaymentHandle}
+          currentPaymentHandle={activeHandle}
+        />
+      )}
     </Box>
   );
 }

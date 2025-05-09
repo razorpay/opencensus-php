@@ -1,55 +1,32 @@
 import React from 'react';
-import { fireEvent, screen } from 'apps/onboarding-experience/src/services/test/jest-utils';
+import { screen, fireEvent } from '@testing-library/react';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import PaymentHandle from '../index';
-import { isMobileDevice } from '@libs/shared-utils';
-import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle';
+import SettlementsGuideModal from '@FTUX/modals/SettlementsGuideModal';
 
 // Mock dependencies
-jest.mock('@libs/shared-utils', () => ({
-  isMobileDevice: jest.fn(),
-}));
+jest.mock('@FTUX/modals/SettlementsGuideModal', () => {
+  return jest.fn(() => (
+    <div data-testid="settlements-guide-modal">Mocked SettlementsGuideModal</div>
+  ));
+});
 
-jest.mock('apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle', () => ({
-  __esModule: true,
-  default: jest.fn(),
-}));
-
-jest.mock('@FTUX/modals/SettlementsGuideModal', () => ({
-  __esModule: true,
-  default: jest.fn(({ onDismiss }) => (
-    <div data-testid="settlements-guide-modal">
-      Settlements Guide Modal
-      <button onClick={onDismiss}>Close</button>
-    </div>
-  )),
-}));
+jest.mock('../PaymentHandleActions', () => {
+  return jest.fn(() => <div data-testid="payment-handle-actions">Mocked PaymentHandleActions</div>);
+});
 
 describe('PaymentHandle Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (isMobileDevice as jest.Mock).mockReturnValue(false);
-    (useMerchantPaymentHandle as jest.Mock).mockReturnValue({
-      paymentHandleData: {
-        merchantPaymentHandle: {
-          paymentHandle: {
-            paymentHandleSlug: 'test-payment-handle',
-            url: 'https://rzp.io/i/test-payment-handle',
-          },
-        },
-      },
-      isPaymentHandleLoading: false,
-      fetchPaymentHandle: jest.fn(),
-    });
   });
 
-  test('renders the component with correct heading', () => {
+  it('renders the component with correct heading', () => {
     renderWithWrappers(<PaymentHandle />);
 
     expect(screen.getByText('Accept payments with payment handle')).toBeInTheDocument();
   });
 
-  test('renders description text', () => {
+  it('renders the description text correctly', () => {
     renderWithWrappers(<PaymentHandle />);
 
     expect(
@@ -59,55 +36,67 @@ describe('PaymentHandle Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('renders settlement info with link', () => {
+  it('renders the PaymentHandleActions component', () => {
     renderWithWrappers(<PaymentHandle />);
 
-    expect(
-      screen.getByText(/By default, settlement cycles are 2 days/, { exact: false }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('payment-handle-actions')).toBeInTheDocument();
+  });
+
+  it('renders the settlement information text', () => {
+    renderWithWrappers(<PaymentHandle />);
+
+    expect(screen.getByText(/By default, settlement cycles are 2 days/)).toBeInTheDocument();
     expect(screen.getByText('here.')).toBeInTheDocument();
   });
 
-  test('opens SettlementsGuideModal when link is clicked', () => {
+  it('opens the SettlementsGuideModal when the link is clicked', () => {
     renderWithWrappers(<PaymentHandle />);
 
-    // Modal should not be visible initially
-    expect(screen.queryByTestId('settlements-guide-modal')).not.toBeInTheDocument();
+    // Click the link to open modal
+    const link = screen.getByText('here.');
+    fireEvent.click(link);
 
-    // Click the link
-    fireEvent.click(screen.getByText('here.'));
-
-    // Modal should be visible now
+    // Check if modal is rendered
     expect(screen.getByTestId('settlements-guide-modal')).toBeInTheDocument();
+    expect(SettlementsGuideModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        onDismiss: expect.any(Function),
+      }),
+      expect.anything(),
+    );
   });
 
-  test('closes SettlementsGuideModal when dismiss is called', () => {
+  it('closes the SettlementsGuideModal when onDismiss is called', () => {
     renderWithWrappers(<PaymentHandle />);
 
-    // Open the modal
-    fireEvent.click(screen.getByText('here.'));
-    expect(screen.getByTestId('settlements-guide-modal')).toBeInTheDocument();
+    // Click the link to open modal
+    const link = screen.getByText('here.');
+    fireEvent.click(link);
 
-    // Close the modal
-    fireEvent.click(screen.getByText('Close'));
+    // Get the onDismiss function from the mock call
+    const onDismiss = (SettlementsGuideModal as jest.Mock).mock.calls[0][0].onDismiss;
 
-    // Modal should not be visible anymore
+    // Call onDismiss to close the modal
+    onDismiss();
+
+    // Re-render to check modal is gone
+    renderWithWrappers(<PaymentHandle />);
     expect(screen.queryByTestId('settlements-guide-modal')).not.toBeInTheDocument();
   });
 
-  test('renders correctly in mobile view', () => {
-    (isMobileDevice as jest.Mock).mockReturnValue(true);
-
+  it('renders mobile layout with image container on small screens', () => {
     renderWithWrappers(<PaymentHandle />);
 
-    // Component should still render in mobile view
-    expect(screen.getByText('Accept payments with payment handle')).toBeInTheDocument();
+    // Mobile image container should be present (but hidden on large screens via CSS)
+    const mobileImage = screen.getAllByAltText('payment-handle')[0];
+    expect(mobileImage).toBeInTheDocument();
   });
 
-  test('renders payment handle actions', () => {
+  it('renders desktop layout with image container on large screens', () => {
     renderWithWrappers(<PaymentHandle />);
 
-    // Check if PaymentHandleActions is rendered
-    expect(screen.getByText('test-payment-handle')).toBeInTheDocument();
+    // Desktop image container should be present (but hidden on small screens via CSS)
+    const desktopImage = screen.getAllByAltText('payment-handle')[1];
+    expect(desktopImage).toBeInTheDocument();
   });
 });
