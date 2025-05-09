@@ -1809,9 +1809,13 @@ class Core extends Base\Core
     {
         try
         {
+            $eventExperimentName = 'payouts_source_request_id_mapping';
+            $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
             $properties = [
                 "id" => $fundAccount->merchant->getId(),
-                "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
+                "experiment_id" => $this->app['config']->get($eventExperimentIdConfigKey),
+                'request_data' => json_encode(['merchant_id' => $fundAccount->merchant->getId()])
             ];
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -1823,7 +1827,7 @@ class Core extends Base\Core
 
             // Check for the variant name
             $variant = $response['response']['variant']['name'] ?? null;
-            if ($variant === 'ENABLE')
+            if ($variant === 'enable')
             {
                 return true;
             }

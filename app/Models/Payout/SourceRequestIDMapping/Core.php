@@ -47,15 +47,14 @@ class Core extends Base
 
     /**
      * Creates a mapping between a source request ID and an entity
-     * 
+     *
      * @param string $sourceId The entity ID to associate with the request ID
      * @param string $sourceType The entity type (e.g. 'payout', 'contact')
      * @return void
      */
     public function createSourceRequestIdMapping(string $sourceId, string $sourceType): void
     {
-        $requestId = "";
-        
+
         try {
             $requestId = $this->awsTraceIdExtractor->getAwsTraceId();
         } catch (\Exception $e) {
@@ -65,7 +64,7 @@ class Core extends Base
             );
             return;
         }
-        
+
         if (empty($requestId)) {
             return;
         }

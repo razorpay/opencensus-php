@@ -154,34 +154,17 @@ class Core extends Base\Core
      */
     protected function isSourceRequestIdMappingEnabled(Entity $contact): bool
     {
-        try
-        {
-            $properties = [
-                "id" => $contact->merchant->getId(),
-                "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
-            ];
+        $properties = [
+            "id" => $contact->merchant->getId(),
+            "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
+        ];
 
-            return $this->isSplitzExperimentEnabled($properties, 'ENABLE', 'SOURCE_REQUEST_ID_MAPPING_SPLITZ_ERROR');
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                'SOURCE_REQUEST_ID_MAPPING_SPLITZ_ERROR',
-                [
-                    'contact_id' => $contact->getId(),
-                    'merchant_id' => $contact->merchant->getId(),
-                ]
-            );
-        }
-
-        return false;
+        return $this->isSplitzExperimentEnabled($properties, 'variables', TraceCode::SOURCE_REQUEST_ID_MAPPING_SPLITZ_ERROR);
     }
 
     /**
      * Captures the source request ID (AWS trace ID) and associates it with the contact
-     * 
+     *
      * @param Entity $contact The contact to associate with the source request ID
      * @return void
      */
@@ -292,7 +275,7 @@ class Core extends Base\Core
 
 
         $this->captureSourceRequestId($contact);
-        
+
         return $contact;
     }
 

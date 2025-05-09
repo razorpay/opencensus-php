@@ -7809,6 +7809,8 @@ class Core extends Base\Core
             }
         }
 
+        // Capture source request ID mapping for payouts
+        $this->captureSourceRequestId($payout);
     }
 
     public function handlePayoutReversedForPayoutService(Entity $payout,
@@ -11679,7 +11681,9 @@ class Core extends Base\Core
 
         } catch (\Throwable $ex) {
             $this->trace->traceException(
-                $ex, Logger::ERROR, TraceCode::SMART_ROUTING_SUMMARY_FTS_FAILED,
+                $ex,
+                Logger::ERROR,
+                TraceCode::SMART_ROUTING_SUMMARY_FTS_FAILED,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                     Entity::MODE => $mode,
@@ -12748,6 +12752,61 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
                 'error'     => $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $payout Payout entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $payout): bool
+    {
+
+        $eventExperimentName = 'payouts_source_request_id_mapping';
+        $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
+        $properties = [
+            'id'            => $payout->merchant->getId(),
+            'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['merchant_id' => $payout->merchant->getId()])
+        ];
+
+        if ($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Captures the source request ID and associates it with the payout entity
+     *
+     * @param Entity $payout Payout entity to associate with the source request ID
+     */
+    protected function captureSourceRequestId(Entity $payout): void
+    {
+        if (!$this->isSourceRequestIdMappingEnabled($payout))
+        {
+            return;
+        }
+        try
+        {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($payout->getId(), Entity::PAYOUT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id' => $payout->getId(),
+                    'merchant_id' => $payout->merchant->getId(),
+                ]
+            );
         }
     }
 }
