@@ -28,6 +28,7 @@ class CreateSourceRequestIdMapping extends Migration
             $table->integer('updated_at');
 
             $table->index(['source_type', 'source_id']);
+            $table->index(['source_type', 'request_id']);
         });
     }
 
