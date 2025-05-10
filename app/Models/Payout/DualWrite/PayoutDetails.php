@@ -8,7 +8,8 @@ use RZP\Models\PayoutsDetails\Entity;
 class PayoutDetails extends Base
 {
     protected $columnsToUnset = [
-        Entity::ID
+        Entity::ID,
+        'beneficiary_bank_code',
     ];
 
     public function dualWritePSPayoutDetails(string $id)

@@ -419,9 +419,6 @@ class Core extends Base\Core
 
                 $this->triggerSyncValidationRequests($merchant, $merchantDetails);
             }
-            else{
-                $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
-            }
 
             $this->trace->info(TraceCode::MERCHANT_KYC_VERIFICATION_LATENCY, [
                 'merchant_id' => $merchant->getId(),
@@ -10177,7 +10174,7 @@ class Core extends Base\Core
             $validation->setArtefactType($artefactDetails[Constant::ARTEFACT_TYPE]);
 
             $statusUpdateFactory = new DocumentStatusUpdater\Factory();
-            
+
             $statusUpdater = $statusUpdateFactory->getInstance($merchant, $merchantDetail, $validation);
 
             $statusUpdater->updateStatusToPending();

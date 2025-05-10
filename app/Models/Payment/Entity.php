@@ -20,6 +20,8 @@ use RZP\Models\BankAccount\Generator;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
+use RZP\Models\Customer\ImplicitJoinHelper;
 use RZP\Models\Discount;
 use RZP\Models\Notification;
 use RZP\Models\Order\ProductType;
@@ -81,6 +83,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Constants\Entity as ConstantsEntity;
 /**
@@ -107,7 +110,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
-    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite, AsvGetAttribute;
+    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite, AsvGetAttribute, CmsGetAttribute;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
@@ -5376,6 +5379,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setSettledBy(null);
     }
 
+    public function getGlobalCustomerAttribute()
+    {
+        if ((new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
+        {
+            return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'globalCustomer', 'getGlobalCustomerId');
+        }
+
+        return parent::getRelationValue('globalCustomer');
+    }
+
 // ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()
@@ -7311,6 +7324,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::GatewayTerminalId] = $this->getGatewayTerminalId();
             $data[self::GatewayMerchantId] = $this->getGatewayMerchantId();
             $data[self::DeviceId] = $this->getDeviceId();
+            $data[self::STORE_ID] = $this->getStoreId();
             $data[self::InternalStatus] = $this->getInternalStatus();
         }
     }

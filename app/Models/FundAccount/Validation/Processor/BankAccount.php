@@ -410,6 +410,15 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaProcessed(array $input)
     {
+        $beneficiaryName = $input['beneficiary_name'] ?? '';
+
+        if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
+        {
+            $this->validation->setRegisteredName($beneficiaryName);
+
+            $this->repo->saveOrFail($this->validation);
+        }
+
         $this->markValidationAsCompleted(AccountStatus::ACTIVE, $input[Validation::UTR]);
 
         if ($this->validation->getRegisteredName() === null)

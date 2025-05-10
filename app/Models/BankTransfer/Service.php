@@ -226,8 +226,8 @@ class Service extends Base\Service
         {
             $this->trace->error(
                 TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR, [
-                    'Request' => $input
-                ]);
+                'Request' => $input
+            ]);
 
             throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);
         }

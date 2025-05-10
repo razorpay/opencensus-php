@@ -21,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
 
 /**
@@ -34,7 +35,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, ExternalOwner, AsvGetAttribute;
+    use NotesTrait, ExternalOwner, AsvGetAttribute, CmsGetAttribute;
 
     const SOURCE                 = 'source';
     const PLAN_ID                = 'plan_id';

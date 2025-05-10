@@ -47,6 +47,7 @@ use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
 use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -204,7 +205,7 @@ class Service extends Base\Service
 
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
-        $heimdallTokenData = $this->handleHeimdallInvitation($input);
+        $heimdallTokenData = $this->handleHeimdallInvitation($input, $user);
 
         $countryCode = $input['country_code'] ?? 'IN';
 
@@ -552,7 +553,7 @@ class Service extends Base\Service
         return ['user' => $user, 'invitation' => $invitation, 'invitationToken' => $invitationToken];
     }
 
-    protected function handleHeimdallInvitation(array &$input)
+    protected function handleHeimdallInvitation(array &$input, &$user = null)
     {
         $heimdallInvitationToken = $input['merchant_invitation'] ?? null;
 
@@ -571,6 +572,8 @@ class Service extends Base\Service
 
                 (new AdminLead\Service)->editInvitation(
                     $heimdallTokenData[AdminLead\Entity::ORG_ID], $heimdallTokenData[AdminLead\Entity::ID], $tokenSignUpInput);
+
+                $this->isUserExistsForCustomInvite($heimdallTokenData, $user);
             }
 
             unset($input['merchant_invitation']);
@@ -776,6 +779,8 @@ class Service extends Base\Service
         $isRequestFromXVerifyEmail = $this->isRequestFromXVerifyEmail($input);
 
         $inputData = ["isRequestFromXVerifyEmail" => $isRequestFromXVerifyEmail];
+
+        $this->skipEmailUniquenessCheckForCustomInvite($user ,$merchantInputData, $inputData);
 
         return $this->createMerchantFromUser(
             $merchantInputData,
@@ -4834,4 +4839,49 @@ class Service extends Base\Service
 
             return $userMerchants;
     }
+
+    public function isUserExistsForCustomInvite($heimdallTokenData, &$user): void
+    {
+        $orgID = $heimdallTokenData[AdminLead\Entity::ORG_ID];
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgID);
+
+        $org = $this->repo->org->findOrFailPublic($orgID);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgID, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true) and (empty($user) === true))
+        {
+            $user = optional($this->repo->user->getUserFromEmail(strtolower($heimdallTokenData[AdminLead\Entity::EMAIL])))->toArray();
+        }
+    }
+
+   public function skipEmailUniquenessCheckForCustomInvite($user, $merchantInputData, &$inputData): void
+   {
+       $merchantOrgId = $merchantInputData[Merchant\Entity::ORG_ID];
+
+       Org\Entity::verifyIdAndSilentlyStripSign($merchantOrgId);
+
+       $org = $this->repo->org->findOrFailPublic($merchantOrgId);
+
+       $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($merchantOrgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+       $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+       if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+       {
+           $this->user = $this->repo->user->find($user[Entity::ID]);
+
+           // Set the user verified to skip email verification for customized invite flow.
+           if($this->user->getConfirmedAttribute() === false)
+           {
+               $this->confirm($this->user->id);
+           }
+
+           // Skip the uniqueness check for merchant email
+           $inputData [Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK ] = true;
+       }
+   }
 }

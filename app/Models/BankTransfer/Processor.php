@@ -423,10 +423,12 @@ class Processor extends VirtualAccount\Processor
         if ($bankTransfer->isBalanceTypeBanking() === true) {
             $transactionCore = new Transaction\Core;
 
-            if ($this->isLiveMode() === true) {
-                $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
-            } else {
-                $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
+            if($this->isLedgerReverseShadowBtAsyncWebhookExperimentEnabled($merchantId) === true) {
+                if ($this->isLiveMode() === true) {
+                    $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
+                } else {
+                    $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
+                }
             }
         }
     }
@@ -1337,6 +1339,18 @@ class Processor extends VirtualAccount\Processor
 
         return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
+    }
+
+    protected function isLedgerReverseShadowBtAsyncWebhookExperimentEnabled($merchantId): bool
+    {
+        $mode = $this->isLiveMode() ? 'live' : 'test';
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_TRANSACTION_ASYNC_WEBHOOK_BT,
+            'request_data'  => json_encode(['id' => $merchantId, 'mode' => $mode])
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
     }
 
     public function isWebhookSyncFiringEnabled($merchantId,$experimentName,string $checkVariant)

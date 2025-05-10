@@ -95,6 +95,8 @@ class Service
 
     const METADATA = 'metadata';
 
+    const CUSTOMER_NAME = 'customer_name';
+
     const TPV = 'tpv';
 
     const PRE_PROCESS = 'pre_process';
@@ -580,6 +582,20 @@ class Service
     }
 
     /**
+     * Creates a mozart gateway instance,
+     * with the mode set from gateway.
+     * @return \RZP\Gateway\Mozart\Gateway
+     */
+    protected function getMozartGatewayWithModeSet()
+    {
+        $gateway = $this->app['gateway']->gateway('mozart');
+
+        $gateway->setMode($this->mode);
+
+        return $gateway;
+    }
+
+    /**
      * returns the Request Body for Authenticate action
      *
      * @param  string $action
@@ -597,13 +613,15 @@ class Service
 
         // check vpa in vpas table of upi, if not present then fetch it from gateway
         if ($input['payment']['gateway'] === Payment\Gateway::UPI_MINDGATE ||
-            $input['payment']['gateway'] === Payment\Gateway::UPI_AXIS)
+            $input['payment']['gateway'] === Payment\Gateway::UPI_AXIS || $input['payment']['gateway'] === Payment\Gateway::UPI_YESBANK)
         {
             if ($input['metadata']['flow'] === Constants::COLLECT)
             {
                 $vpa = $this->getVpaDetails($input);
 
                 $input['vpa'] = $vpa;
+
+                $input[self::METADATA][self::CUSTOMER_NAME] = $vpa['name'];
             }
         }
 

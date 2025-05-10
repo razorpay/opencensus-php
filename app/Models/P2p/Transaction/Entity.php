@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Transaction;
 use Carbon\Carbon;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\Customer;
 use RZP\Models\P2p\Base;
@@ -29,6 +30,7 @@ class Entity extends Base\Entity
     use Base\Traits\HasHandle;
     use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
+    use CmsGetAttribute;
 
     const MERCHANT_ID                   = 'merchant_id';
     const CUSTOMER_ID                   = 'customer_id';

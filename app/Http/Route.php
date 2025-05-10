@@ -845,6 +845,7 @@ class Route
         'set_qr_code_device'                       => ['put',      'payments/qr_codes/device/map',                   'QrCodeController@setDeviceIdForQr'                              ],
         'qr_code_device_id_unmap'                  => ['put',      'payments/qr_codes/device/unmap',                 'QrCodeController@unMapDeviceIdForQr'                               ],
         'qr_code_device_update'                    => ['post',     'payments/single_stack/device/update',            'QrCodeController@UpdateSingleStackDevice'                               ],
+        'internal_qr_code_device_update'           => ['post',     'internal/payments/single_stack/device/update',   'QrCodeController@UpdateSingleStackDevice'                               ],
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
@@ -1382,6 +1383,7 @@ class Route
         'emi_plans_fetch_multiple'                 => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
         'emi_plans_migrate'                        => ['get',      'emi/migration',                                  'EmiController@migrateToCardPS'                                     ],
         'emi_plan_fetch_by_id'                     => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
+        'emi_plan_fetch_by_mid_internal'           => ['get',      'internal/emi/{id}',                              'EmiController@fetchEmiPlanByMid'                                   ],
         'emi_plan_delete'                          => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                       => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
         'card_settlement_generate_file'            => ['post',     'card/settlements/file',                          'GatewayFileController@generateCardSettlementFileForBank'           ],
@@ -5969,6 +5971,8 @@ class Route
         'bas_banking_accounts_notifications',
         'banking_account_service_cron_routes',
         'merchant_update_fraud_type',
+        'merchant_tags_bulk',
+        'save_payment_fraud',
         'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
         'tax_payments_internal_icici_action',
@@ -6909,6 +6913,8 @@ class Route
 
         'merchant_fetch_all_methods_internal',
 
+        'emi_plan_fetch_by_mid_internal',
+
         'merchant_edit_all_methods_internal',
 
         'terminal_sync_internal',
@@ -7023,6 +7029,7 @@ class Route
         'org_admin_disable_cron',
         'fetch_onboarding_service',
         'user_fetch_merchants',
+        'internal_qr_code_device_update'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -17981,6 +17988,8 @@ class Route
 
         'merchants-risk' => [
             'merchant_update_fraud_type',
+            'merchant_tags_bulk',
+            'save_payment_fraud',
         ],
 
         'auth_service' => [
@@ -18226,6 +18235,7 @@ class Route
             'merchant_edit_all_methods_internal',
             'internal_merchant_fetch',
             'merchant_methods_offers_checkout_internal',
+            'emi_plan_fetch_by_mid_internal'
         ],
 
         'pos_app' => [
@@ -18341,6 +18351,7 @@ class Route
         ],
 
         'pg_router' => [
+            'payment_fetch_by_id',
             'internal_order_payments',
             'internal_merchant_fetch',
             'internal_currency_rates_update',
@@ -18529,6 +18540,7 @@ class Route
             'internal_qr_code_merchant_create',
             'merchant_international_enablement_draft_internal',
             'fetch_onboarding_service',
+            'internal_qr_code_device_update',
         ],
 
         'disputes' => [
@@ -19427,7 +19439,8 @@ class Route
         'payment_create_nach_register',
         'payment_create_aeps',
         'payment_create_openwallet',
-        'payment_create_razorpaywallet'
+        'payment_create_razorpaywallet',
+        'payment_create_upi'
     ];
 
     const SUBSCRIPTION_PROXY_ROUTES = [
@@ -21602,6 +21615,7 @@ class Route
         'order_fetch_by_id',
         'order_payments',
         'internal_order_payments',
+        'payment_fetch_by_id',
         'payment_otp_submit_private',
         'payment_otp_resend_private'
     ];

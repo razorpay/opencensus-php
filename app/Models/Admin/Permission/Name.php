@@ -1069,6 +1069,7 @@ class Name
 
     const ECOLLECT_ICICI_BATCH_UPLOAD                = 'ecollect_icici_batch_upload';
     const ECOLLECT_RBL_BATCH_UPLOAD                  = 'ecollect_rbl_batch_upload';
+    const ECOLLECT_RBL_BANKING_BATCH_UPLOAD          = 'ecollect_rbl_banking_batch_upload';
     const ECOLLECT_AXIS_BATCH_UPLOAD                 = 'ecollect_axis_batch_upload';
     const ECOLLECT_AXIS_BANKING_BATCH_UPLOAD         = 'ecollect_axis_banking_batch_upload';
     const ECOLLECT_YESBANK_BATCH_UPLOAD              = 'ecollect_yesbank_batch_upload';

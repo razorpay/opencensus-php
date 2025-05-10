@@ -128,6 +128,7 @@ final class Constants
 
     const RULE_GROUPS = 'rule_groups';
     const RULES = 'rules';
+    const FILTERS = 'filters';
     const INCLUDES = 'includes';
 
     const STAGE_DISCOVER = 'STAGE_DISCOVER';

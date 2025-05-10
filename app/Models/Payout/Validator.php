@@ -2022,7 +2022,7 @@ class Validator extends Base\Validator
         {
             $maxPayoutAmountLimit = Entity::MAX_PAYOUT_LIMIT;
 
-            if ((new Service)->isSettlementsApp() === true)
+            if ((new Service)->isSettlementsApp() === true || (new Service)->isCrossBorderImportApp() === true)
             {
                 $maxPayoutAmountLimit = Entity::MAX_SETTLEMENT_PAYOUT_LIMIT;
             }

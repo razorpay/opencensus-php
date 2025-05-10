@@ -942,18 +942,23 @@ class OffersEngine extends Base\Core
         {
             foreach ($publicOffer[Constants::RULES] as $rule)
             {
-                if (isset($rule[Constants::INCLUDES]) === true)
+                if (isset($rule[Constants::FILTERS]) === true)
                 {
-                    if (isset($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) === true)
+                    $filters = $rule[Constants::FILTERS];
+                    if (isset($filters[Constants::INCLUDES]) === true)
                     {
-                        if (count($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) > 1)
+                        if (isset($filters[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) === true)
                         {
-                            $offer->setAttribute(Entity::PAYMENT_METHOD, Entity::MULTIPLE);
+                            if (count($filters[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) > 1)
+                            {
+                                $offer->setAttribute(Entity::PAYMENT_METHOD, Entity::MULTIPLE);
 
-                            $offer->setInstruments($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]);
+                                $offer->setInstruments($filters[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]);
+                            }
                         }
                     }
                 }
+
             }
         }
     }

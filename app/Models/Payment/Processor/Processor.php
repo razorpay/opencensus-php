@@ -696,10 +696,13 @@ class Processor
 
     protected static $cardRecurringInitialRoutes = [
         'payment_create_ajax',
+        'payment_create_checkout',
+        'payment_create_private_json'
     ];
 
     protected static $cardRecurringAutoRoutes = [
         'payment_create_recurring',
+        'subscription_registration_charge_token',
     ];
 
     protected static $emandateGatewayMapping = [
@@ -1758,7 +1761,7 @@ class Processor
                 'properties' => $properties,
                 'response' => $response,
             ]);
-            return $response['response']['variant']['name'] ?? '';
+            return $response['response']['variant']['name'] ?? "1733920200";
         }
         catch (\Exception $e)
         {
@@ -1768,7 +1771,44 @@ class Processor
                 TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
             );
         }
-        return "0";
+        return "1733920200";
+    }
+
+    private function evaluateSplitzExperimentForCardRecurringRearchRoute($merchant, $routeName)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_route');
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'route_name' => $routeName,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     private function isOpgspImportMerchant(): bool
@@ -2285,7 +2325,7 @@ class Processor
             }
 
             if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD and (empty($input[Payment\Entity::RECURRING]) === false)) {
-                if (!self::isCardRecurringAutoRearchRoute($currentRouteName) && !self::isCardRecurringInitialRearchRoute($currentRouteName)) {
+                if ($this->evaluateSplitzExperimentForCardRecurringRearchRoute($merchant, $currentRouteName) === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "route_not_ramped",
                         'route_name' => $currentRouteName,
@@ -3670,6 +3710,13 @@ class Processor
                return false;
             }
             //Ramp the traffic on rearch
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_GTG_REARCH,
+                [
+                    'merchant_id'       => $merchant->getId(),
+                    'experiment'        => $featureFlag,
+                    'bank'              => $input[Payment\Entity::BANK],
+                    'route'             => $currentRouteName,
+                ]);
             return true;
 
         }
@@ -8641,30 +8688,29 @@ class Processor
             $discountedAmountFromOE = $this->offer->calculateDiscountedAmountFromCalculatedBenefits(
                 $orderAmount, $payment->getAttribute(Payment\Entity::OFFER_BENEFITS));
 
-            $discountedAmountFromAPI = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
-
             if ($oeBenefitsExpEnabled) {
                 $payment->setAmount($discountedAmountFromOE);
 
             } else {
+                $discountedAmountFromAPI = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
                 $payment->setAmount($discountedAmountFromAPI);
-            }
 
-            if ($discountedAmountFromOE !== $discountedAmountFromAPI) {
+                if ($discountedAmountFromOE !== $discountedAmountFromAPI) {
 
-                $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
-                                    [
-                                        'offer_type' => $this->offer->getOfferType(),
-                                        'emi_subvention' => $this->offer->getEmiSubvention(),
-                                        'route' => app('api.route')->getCurrentRouteName(),
-                                    ]);
+                    $this->trace->count(Offer\Metric::OFFERS_ENGINE_DISCOUNT_MISMATCH,
+                        [
+                            'offer_type' => $this->offer->getOfferType(),
+                            'emi_subvention' => $this->offer->getEmiSubvention(),
+                            'route' => app('api.route')->getCurrentRouteName(),
+                        ]);
 
-                $this->trace->info(
-                    TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
-                    [
-                        'API_DISCOUNT' => $discountedAmountFromAPI,
-                        'OFFERS_DISCOUNT' => $discountedAmountFromOE,
-                    ]);
+                    $this->trace->info(
+                        TraceCode::VALIDATE_OFFER_RESPONSE_MISMATCH,
+                        [
+                            'API_DISCOUNT' => $discountedAmountFromAPI,
+                            'OFFERS_DISCOUNT' => $discountedAmountFromOE,
+                        ]);
+                }
             }
 
             $input['order_amount'] = $orderAmount;
@@ -15601,7 +15647,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
     {
         // Get the bank code from the input
 
-        if ($input !== null && str_ends_with($input, '_c')) {
+        if ($input !== null && str_ends_with($input, '_C')) {
             // for corporate banks
             $corporateFeatureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_corporate_banks';
             $properties = [
@@ -15621,7 +15667,27 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 'feature'     => $corporateFeatureFlag,
             ]);
 
-            return $variant === 'variant_on';
+
+            // add merchant in this experiment to enable corporate merchant traffic on rearch
+            $featureFlagCorpMx = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_corp_enable_merchants';
+            $corpMxProp = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $featureFlagCorpMx,
+                'request_data'  => json_encode(['merchant_id' => $this->merchant->getMerchantId(), 'mode' => $this->mode]),
+            ];
+            $corpMxResponse = $this->app['splitzService']->evaluateRequest($corpMxProp);
+            $corpMxVariant = $corpMxResponse['response']['variant']['name'] ?? 'control';
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_CORP_MERCHANT_ON_REARCH,
+                [
+                    'merchant_id'       => $this->merchant->getMerchantId(),
+                    'experiment'        => $featureFlagCorpMx,
+                    'bank'              => $input,
+                    'variant'           => $corpMxVariant,
+                    'response'          => $corpMxResponse,
+                ]
+            );
+
+            return ($variant === 'variant_on' && $corpMxVariant === 'corp_enabled');
 
         } else {
             // for retail banks

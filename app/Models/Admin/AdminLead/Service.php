@@ -27,11 +27,7 @@ class Service extends Base\Service
 
         $merchantType = $this->getMerchantType($input);
 
-        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        if ((new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::CUSTOM_INVITE_MERCHANT_FLOW) !== true) {
-            $this->validateInvitation($orgId, $input);
-        }
+        $this->validateInvitation($orgId, $input);
 
         (new Validator)->validateOrgSpecificInput(
             'sendInvitation', $input, $orgId, $entity);
@@ -75,9 +71,19 @@ class Service extends Base\Service
 
     public function validateInvitation($orgId, &$input)
     {
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $isCustomInviteOnVas = (($permissionEnabled === true) and ($vasOrgFeatureEnabled === true));
+
         $user = $this->repo->user->getUserFromEmail(strtolower($input['contact_email']));
 
-        if (empty($user) === false)
+        if((empty($user) === false) and ($isCustomInviteOnVas === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
@@ -143,9 +149,13 @@ class Service extends Base\Service
 
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
         $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission\Name::CUSTOM_INVITE_MERCHANT_FLOW);
 
-        return $permissionEnabled === true;
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER);
+
+        return (($permissionEnabled === true) and ($vasOrgFeatureEnabled === true));
     }
 
     protected function getCustomInvitations($invitations, $orgId)

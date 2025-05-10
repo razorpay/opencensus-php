@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\AdminLead;
 use Mail;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -42,9 +43,11 @@ class Core extends Base\Core
 
         $orgId = Org\Entity::silentlyStripSign($orgId);
 
-        $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+        $vasOrgFeatureEnabled = $admin->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER);
 
-        if ($permissionEnabled === true)
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
         {
             return;
         }

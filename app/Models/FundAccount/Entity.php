@@ -3,6 +3,9 @@
 namespace RZP\Models\FundAccount;
 
 use RZP\Constants;
+use RZP\Constants\Entity as E;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
+use RZP\Models\Customer\ImplicitJoinHelper;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -22,6 +25,7 @@ use RZP\Constants\Entity as ConstantsEntity;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 
 /**
  * @property Card\Entity|BankAccount\Entity|Vpa\Entity|WalletAccount\Entity account
@@ -30,7 +34,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 class Entity extends Base\PublicEntity
 {
 
-    use SoftDeletes, AsvGetAttribute;
+    use SoftDeletes, AsvGetAttribute, CmsGetAttribute;
 
     // Attributes
     const ACCOUNT_TYPE  = 'account_type';
@@ -330,6 +334,16 @@ class Entity extends Base\PublicEntity
     public function getCustomerName()
     {
         return $this->getAttribute(self::CUSTOMER_NAME);
+    }
+
+    public function getSourceAttribute()
+    {
+        if ($this->getSourceType() == self::CUSTOMER && (new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
+        {
+            return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'source', 'getSourceId');
+        }
+
+        return parent::getRelationValue('source');
     }
 
     // ------------- End Getters -------------

@@ -954,7 +954,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('pos.deviceservice', function($app)
         {
 
-            $ezetapDeviceMock = $app['config']->get('applications.ezetap-api.mock');
+            $ezetapDeviceMock = $app['config']->get('applications.ezetap_device_gatway.mock');
 
             if ($ezetapDeviceMock === true)
             {

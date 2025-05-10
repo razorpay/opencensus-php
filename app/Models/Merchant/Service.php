@@ -7905,6 +7905,19 @@ class Service extends Base\Service
         return ['variant' => $variant];
     }
 
+    public function shouldOnboardLinkedAccountViaPGOS($merchant, $isLinkedAccount)
+    {
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get(MerchantOnboardingProxyController::LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID),
+        ];
+        $linkedAccountModularOnboardingEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+        if (!(new MerchantDetailCore())->isSubmittedViaProductConfigApi() and $isLinkedAccount === true and ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) and $linkedAccountModularOnboardingEnabled) {
+            return true;
+        }
+        return false;
+    }
+
     protected function createSubMerchantAndSetRelationsInternal($input,
                                                                 $merchant,
                                                                 $ownerId,
@@ -8029,43 +8042,18 @@ class Service extends Base\Service
                 throw $ex;
             }
         }
-        $properties = [
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get(MerchantOnboardingProxyController::LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID),
-        ];
-        $linkedAccountModularOnboardingEnabled =  $this->core()->isSplitzExperimentEnable($properties, 'enable');
-        if(!(new MerchantDetailCore())->isSubmittedViaProductConfigApi() and $isLinkedAccount === true and ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) and $linkedAccountModularOnboardingEnabled){
+
+        if($this->shouldOnboardLinkedAccountViaPGOS($merchant , $isLinkedAccount)){
 
             $this->trace->info(
                 TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
                 [
                     'input'     => $input,
+                    'linked_mo_user_creation' => true
                 ]);
-
-            $newUserModularOnboardigUser = $newUser;
             if (!$enableDashboardAccess){
-                $newUserModularOnboardigUser = $this->createUser($subMerchant, $subMerchant->getEmail(), $product);
+                $this->createUser($subMerchant, $subMerchant->getEmail(), $product);
             }
-
-            $signupCampaign = DeviceDetailConstants::COUNTRY_SIGNUP_CAMPAIGN_MAPPING[$subMerchant->getCountry()] ?? DeviceDetailConstants::I18N_MY_LINKED_ACCOUNT_SIGNUP;
-            $deviceDetailInput = [
-                DeviceDetailEntity::MERCHANT_ID => $subMerchant->getId(),
-                DeviceDetailEntity::USER_ID => $newUserModularOnboardigUser->getId(),
-                DeviceDetailEntity::SIGNUP_CAMPAIGN => $signupCampaign,
-            ];
-
-            (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
-
-            $input['product'] =  DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? DeviceDetailConstants::CURLEC_LINKED_ACCOUNT_ONBOARDING;
-            $input['workflow_type'] = DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? DeviceDetailConstants::MODULAR_ONBOARDING;
-            (new User\Service())->handlePGOSOnboarding($subMerchant, $signupCampaign, $subMerchant->getCountry(), $input, $newUserModularOnboardigUser);
-            $this->trace->info(
-                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
-                [
-                    'input'     => $input,
-                    'done'      => true
-                ]);
-
         }
         if ($product === Product::BANKING)
         {
@@ -8166,6 +8154,34 @@ class Service extends Base\Service
             }
             return [$subMerchant, $newUser, $createdNew, $response];
         });
+
+        if($this->shouldOnboardLinkedAccountViaPGOS($merchant , $isLinkedAccount)){
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
+                [
+                    'input'     => $input,
+                    'started'      => true
+                ]);
+            $pgosUser = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+            $signupCampaign = DeviceDetailConstants::COUNTRY_SIGNUP_CAMPAIGN_MAPPING[$subMerchant->getCountry()] ?? DeviceDetailConstants::I18N_MY_LINKED_ACCOUNT_SIGNUP;
+            $deviceDetailInput = [
+                DeviceDetailEntity::MERCHANT_ID => $subMerchant->getId(),
+                DeviceDetailEntity::USER_ID => $pgosUser->getId(),
+                DeviceDetailEntity::SIGNUP_CAMPAIGN => $signupCampaign,
+            ];
+
+            (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
+
+            $input['product'] =  DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? DeviceDetailConstants::CURLEC_LINKED_ACCOUNT_ONBOARDING;
+            $input['workflow_type'] = DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? DeviceDetailConstants::MODULAR_ONBOARDING;
+            (new User\Service())->handlePGOSOnboarding($subMerchant, $signupCampaign, $subMerchant->getCountry(), $input, $pgosUser);
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_MODULAR_ONBOARDING,
+                [
+                    'input'     => $input,
+                    'done'      => true
+                ]);
+        }
 
         if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
         {

@@ -66,4 +66,6 @@ final class Metric
     const FETCH_CONSENT_SUCCESS                  = 'bvs_fetch_consent_success';
     const MANUAL_ACTIVATION_STATUS_CHANGE_METRIC = 'manual_activation_status_change_metric';
     const ACTIVATION_FORM_SUBMIT_EVENT_FOR_CMMA_CASE_CREATION = 'activation_form_submit_event_for_cmma_case_creation';
+
+    const FETCH_WORKFLOW_DETAILS_SUCCESS = 'fetch_workflow_details_success';
 }

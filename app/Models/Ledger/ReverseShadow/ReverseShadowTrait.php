@@ -571,6 +571,7 @@ trait ReverseShadowTrait
         $headers = [
             LedgerService::LEDGER_TENANT_HEADER         => Constants::TENANT_PG,
             LedgerService::IDEMPOTENCY_KEY_HEADER       => $idempotencyKey,
+            LedgerService::LEDGER_COUNTRY_HEADER        => $this->merchant->getCountry(),
         ];
 
         if($isAdjustmentLedgerEntryOnly === false)

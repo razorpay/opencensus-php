@@ -493,7 +493,6 @@ class Service extends Base\Service
     public function fetch($id)
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
-
         return $customer->toArrayPublic();
     }
 

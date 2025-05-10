@@ -74,7 +74,8 @@ trait FundAccountValidationTrait
     protected function triggerFlowToUpdateFavWithNewState(string $favId,
                                                           $status = 'FAILED',
                                                           $attributes = [],
-                                                          $mode = 'test')
+                                                          $mode = 'test',
+                                                          $beneName = '')
     {
         // Remove sign from the entity ID
         if (strpos($favId, 'fav_') !== false)
@@ -95,7 +96,7 @@ trait FundAccountValidationTrait
             'bank_status_code'    => ($status === 'COMPLETED') ? 'SUCCESS' : 'FAILED',
             'channel'             => 'ICICI',
             'extra_info'          => [
-                'beneficiary_name' => ($status === 'COMPLETED') ? 'Razorpay Test' : '',
+                'beneficiary_name' => ($status === 'COMPLETED') ? 'Razorpay Test' : $beneName,
                 'cms_ref_no'       => '',
                 'ponum'            => '',
                 'internal_error'   => false,

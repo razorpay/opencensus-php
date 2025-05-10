@@ -18,6 +18,7 @@ trait PartnershipServiceTrait
         'commissions_get_multiple'            => PartnershipsService::LIST_COMMISSION_URL,
         'commissions_get'                     => PartnershipsService::GET_COMMISSION_URL,
         'partner_kyc_access_request'          => PartnershipsService::CREATE_PARTNER_KYC_ACCESS_STATE,
+        'partner_kyc_approve_reject'          => PartnershipsService::APPROVE_REJECT,  
     );
 
     static array $RouteExcludedKeyMap = [

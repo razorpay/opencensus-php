@@ -558,7 +558,7 @@ trait ExternalTokensRepo
         }
     }
 
-    public function getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas)
+    public function getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas, $skipUsedAt=false)
     {
         $this->entityName = $this->entity;
 
@@ -597,7 +597,7 @@ trait ExternalTokensRepo
 
                 $class = Entity::getExternalRepoSingleton($this->entity);
 
-                $externalTokens = $class->fetchCustomerTokens($params);
+                $externalTokens = $class->fetchCustomerTokens($params, $skipUsedAt);
 
                 if(sizeof($externalTokens) > 0)
                 {

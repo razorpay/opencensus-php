@@ -18,6 +18,7 @@ use RZP\Diag\EventCode;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
@@ -54,6 +55,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -73,6 +75,7 @@ use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteUpdate;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\DeviceDetail\Core as DDCore;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -4791,6 +4794,149 @@ We look forward to transacting with you!
         $this->assertEquals($expectedTerms, $termsDetails->getURL());
 
         $this->assertEquals(\RZP\Models\Merchant\Consent\Constants::INITIATED, $merchantConsents->getStatus());
+    }
+
+    public function testUpdateMerchantDetailsForNewUser()
+    {
+        $pricingPlanId = $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant',[
+            Merchant\Entity::NAME               => null,
+            Merchant\Entity::ORG_ID             => '100000razorpay',
+            Merchant\Entity::PRICING_PLAN_ID    => $pricingPlanId['id'],
+            Merchant\Entity::EMAIL              => "banking-pod2969@razorpay.com",
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::MERCHANT_ID        => $merchant->getId(),
+            MerchantDetails::CONTACT_NAME       => null,
+            MerchantDetails::CONTACT_MOBILE     => null,
+            MerchantDetails::CONTACT_EMAIL      => "banking-pod2969@razorpay.com",
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::CUSTOM_INVITE_MERCHANT_FLOW]);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+       $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE          => null,
+            UserEntity::EMAIL                   => "banking-pod2969@razorpay.com",
+            UserEntity::NAME                    => '',
+
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantDetails[MerchantDetails::MERCHANT_ID],
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData);
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'live');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $user['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateUserDetailsWithNonUniqueContactNo()
+    {
+        $merchant = $this->fixtures->create('merchant',[
+            Merchant\Entity::ORG_ID             => '100000razorpay',
+            Merchant\Entity::EMAIL              => "banking-pod2969@razorpay.com",
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::MERCHANT_ID        => $merchant->getId(),
+            MerchantDetails::CONTACT_EMAIL      => "banking-pod2969@razorpay.com",
+        ]);
+
+        $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE          => "+912233776658",
+            UserEntity::EMAIL                   => "banking-pod2131@razorpay.com",
+            UserEntity::NAME                    => "Ashok Kumar",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails[MerchantDetails::MERCHANT_ID],
+            [
+                UserEntity::EMAIL => "banking-pod2969@razorpay.com",
+            ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::CUSTOM_INVITE_MERCHANT_FLOW]);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateUserDetailsForExistingUser()
+    {
+        $merchant = $this->fixtures->create('merchant',[
+            Merchant\Entity::ORG_ID             => '100000razorpay',
+            Merchant\Entity::EMAIL              => "banking-pod2969@razorpay.com",
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::MERCHANT_ID        => $merchant->getId(),
+            MerchantDetails::CONTACT_EMAIL      => "banking-pod2969@razorpay.com",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails[MerchantDetails::MERCHANT_ID],
+            [
+                UserEntity::EMAIL                   => "banking-pod2969@razorpay.com",
+                UserEntity::CONTACT_MOBILE          => "+912233776658",
+                UserEntity::NAME                    => "Ashok Kumar",
+            ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::CUSTOM_INVITE_MERCHANT_FLOW]);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $this->startTest();
     }
 
     public function testPutPreSignupDetailsWithUtmParams()
@@ -14504,6 +14650,104 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenMerchantIdIsEmpty(): void
+    {
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS('');
+        $this->assertNull($result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenPGOSResponseIsEmpty(): void
+    {
+        $merchantId = '12345678900';
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andReturn(null);
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenExceptionIsThrownWithDbError(): void
+    {
+        $merchantId = '12345678900';
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andThrow(new \Exception(json_encode([
+                    'code' => 'internal',
+                    'msg' => 'db_error: record_not_found'
+                ])));
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsWorkflowData_WhenPGOSResponseIsValid(): void
+    {
+        $merchantId = '12345678900';
+        $expectedResponse = [
+            'service' => DDConstants::SERVICE_PGOS,
+            'workflow_type' => DDConstants::MODULAR_ONBOARDING,
+            'workflow_details' => [
+                ['workflow_type' => DDConstants::MODULAR_ONBOARDING, 'id' => 'ABCDEFGHI']
+            ]
+        ];
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andReturn([
+                    'merchant_id' => '12345678900',
+                    'workflow_details' => [
+                        'online' => [
+                            'workflow_type' => 'MODULAR_ONBOARDING',
+                            'id' => 'ABCDEFGHI',
+                        ]
+                    ]
+                ]);
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS_ReturnsNull_WhenExceptionIsThrown(): void
+    {
+        $merchantId = '12345678900';
+
+        $this->mock(MerchantOnboardingProxyController::class, function (MockInterface $mock) {
+            $mock->shouldReceive('handlePGOSProxyRequests')
+                ->withAnyArgs()->andThrow(new \Exception(json_encode([
+                    'code' => 'bad_request',
+                    'msg' => 'invalid_inputs'
+                ])));
+        });
+
+        $result = (new DDCore())->fetchOnboardingWorkflowDataFromPGOS($merchantId);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage(json_encode([
+            'code' => 'bad_request',
+            'msg' => 'invalid_inputs'
+        ]));
+    }
+  
     public function testUpdateFieldsForApiSubMerchantsPostActivation()
     {
         $attributes = [

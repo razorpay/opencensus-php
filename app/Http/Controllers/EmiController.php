@@ -27,6 +27,13 @@ class EmiController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchEmiPlanByMid($mid)
+    {
+        $data = $this->service()->fetchByMid($mid);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchEmiPlanById($id)
     {
         $data = $this->service()->fetch($id);

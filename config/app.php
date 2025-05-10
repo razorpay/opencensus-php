@@ -526,6 +526,8 @@ return array(
 
     'under_review_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
 
+    'kyc_qualified_communications_from_api_exp_id' => env('SEND_KYC_QUALIFIED_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
+
     'rejected_communications_from_api_exp_id' => env('SEND_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
 
     'needs_clarification_communications_from_api_exp_id' => env('SEND_NC_MERCHANT_NOTIFICATIONS_FROM_API_EXPERIMENT_ID'),
@@ -1281,6 +1283,8 @@ return array(
 
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
 
+    'enable_rearch_card_recurring_flow_route' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_ROUTE'),
+
     'recurring_through_rupay_card_iin' => env('RECURRING_THROUGH_RUPAY_CARD_IIN_EXP_ID'),
 
     'emandate_async_payment_with_async_balance' => env('EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BALANCE_EXP_ID'),
@@ -1300,7 +1304,7 @@ return array(
     'enabled_rearch_optimizer_recurring_flow' => env('ENABLED_REARCH_OPTIMIZER_RECURRING_FLOW'),
 
     'card_mandate_enable_multiple_frequencies' => env('CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES'),
-    
+
     'validate_offer_via_offer_engine_exp_id' => env('VALIDATE_OFFER_VIA_OFFER_ENGINE_EXP_ID'),
 
     'emit_pgos_consumer_metric_experiment' => env('EMIT_PGOS_CONSUMER_METRIC_EXPERIMENT_ID'),
@@ -1339,6 +1343,10 @@ return array(
 
     'cms_read_override_live_experiment_id' => env('CMS_READ_OVERRIDE_LIVE_EXPERIMENT_ID'),
 
+    'cms_lazy_read_override_test_experiment_id' => env('CMS_LAZY_READ_OVERRIDE_TEST_EXPERIMENT_ID'),
+
+    'cms_lazy_read_override_live_experiment_id' => env('CMS_LAZY_READ_OVERRIDE_LIVE_EXPERIMENT_ID'),
+
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
 
     'read_token_iin_bin_service_primary' => env('READ_TOKEN_IIN_BIN_SERVICE_PRIMARY'),
@@ -1372,8 +1380,6 @@ return array(
     'order_offer_failure_exp_id' => env('ORDER_OFFER_FAILURE_EXP_ID'),
 
     'payments_fetch_multiple_parity_producer' => env('PAYMENTS_FETCH_MULTIPLE_PARITY_PRODUCER'),
-
-    'internal_order_payments_experiment_id' => env('INTERNAL_ORDER_PAYMENTS_EXPERIMENT_ID'),
 
     'reserve_balance_read_experiment_id'    => env('RESERVE_BALANCE_READ_EXPERIMENT_ID'),
 
@@ -1477,4 +1483,7 @@ return array(
     
     'source_request_id_mapping_experiment_id' => env('SOURCE_REQUEST_ID_MAPPING_EXPERIMENT_ID'),
 
+    'pgos_read_for_metadata_enabled' => env('PGOS_READ_FOR_METADATA_ENABLED'),
+
+    'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 );

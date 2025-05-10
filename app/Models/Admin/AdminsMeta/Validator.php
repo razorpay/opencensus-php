@@ -23,7 +23,7 @@ class Validator extends Base\Validator
 
     protected static array $createAdminsMetaRules = [
         Entity::AUTH_MODE                         => 'required|string|in:adfs',
-        Entity::UNIQUE_IDENTIFIER                 => 'required_if:auth_mode,adfs|max:14',
+        Entity::UNIQUE_IDENTIFIER                 => 'required_if:auth_mode,adfs|max:55',
         Entity::ADMIN_ID                          => 'required|string'
     ];
 

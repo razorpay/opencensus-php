@@ -311,6 +311,8 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
         $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
 
         $permissionMapData = [
@@ -349,6 +351,8 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
         $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
 
         $permissionMapData = [
@@ -381,6 +385,8 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_id'     => '100000razorpay',
             'entity_type'   => 'org',
         ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
 
         $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
 
@@ -421,6 +427,8 @@ class MerchantUploadMiqBatchTest extends TestCase
             'entity_id'     => '100000razorpay',
             'entity_type'   => 'org',
         ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
 
         $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
 

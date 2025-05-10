@@ -134,9 +134,13 @@ class Tokens
         return $tokens;
     }
 
-    public function fetchCustomerTokens($input)
+    public function fetchCustomerTokens($input, $skipUsedAt=false)
     {
-        $resp = $this->fetchCustomerTokensInternal($input);
+        if ($skipUsedAt){
+            $resp = $this->fetchCustomerTokensInternalWithoutUsedAtCheck($input);
+        } else {
+            $resp = $this->fetchCustomerTokensInternal($input);
+        }
 
         $tokens = new PublicCollection();
 
@@ -238,6 +242,26 @@ class Tokens
         return $resp;
     }
 
+    public function fetchCustomerTokensInternalWithoutUsedAtCheck($input)
+    {
+        $resp = $this->sendRequest(
+            'customers/'. $input['customer_id'].'/tokens?skip_used_at_check=true',
+            Requests::GET,
+            $input,
+        );
+
+        if (in_array($resp['code'], [200, 201, "200", "201"]) == false)
+        {
+            return new Exception\RuntimeException(
+                'Unexpected response code received from Tokens service.',
+                [
+                    'customer_id'         => $input['customer_id'],
+                ]);
+        }
+
+        return $resp;
+    }
+
     public function updateTokenInternal($input)
     {
         $resp = $this->sendUpdateRequest(
@@ -277,6 +301,13 @@ class Tokens
                 elseif ($response['namespace'] == 'upi')
                 {
                     $response['vpa_id'] = $response['entity_id'];
+                }
+                elseif ($response['namespace'] == 'wallet')
+                {
+                    $response['gateway_token'] = $response['wallet']['access_token'];
+                    $response['gateway_token2'] = $response['wallet']['refresh_token'];
+                    $response['expired_at'] = $response['wallet']['expires_at'];
+                    $response['wallet'] = $response['wallet']['provider'];
                 }
 
                 unset($response['namespace']);
@@ -342,6 +373,11 @@ class Tokens
 
         //the token card is load early during the getCardAttribute which is happen when $token->forcefill() happen
         if (isset($token['card']))
+        {
+            return $token;
+        }
+
+        if (isset($token['wallet']))
         {
             return $token;
         }

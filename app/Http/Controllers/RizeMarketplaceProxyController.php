@@ -77,7 +77,7 @@ class RizeMarketplaceProxyController extends BaseProxyController {
         return ($origin && str_contains($origin, 'dashboard')) ? "external" : null;
     }
 
-    protected function getHeadersForDashboardRequest(array $body = [], string $id = '')
+    protected function getHeadersForDashboardRequest(array $body = [], string $id = '', string $productType = '')
     {
         return [
             'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? $id,
