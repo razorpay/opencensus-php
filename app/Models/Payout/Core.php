@@ -504,7 +504,8 @@ class Core extends Base\Core
 
         try
         {
-            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($payout->getId(), Entity::PAYOUT);
+            // Capture source request ID mapping for payouts
+            $this->captureSourceRequestId($payout);
         }
         catch (\Throwable $ex)
         {
@@ -7808,9 +7809,6 @@ class Core extends Base\Core
                 $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
             }
         }
-
-        // Capture source request ID mapping for payouts
-        $this->captureSourceRequestId($payout);
     }
 
     public function handlePayoutReversedForPayoutService(Entity $payout,
