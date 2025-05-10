@@ -11,12 +11,9 @@ use RZP\Models\Payout\SourceRequestIDMapping\Repository as SourceRequestIDMappin
 
 class Core extends Base
 {
-    protected $awsTraceIdExtractor;
-
     public function __construct()
     {
         parent::__construct();
-        $this->awsTraceIdExtractor = new AwsTraceIdExtractor();
     }
 
     /**
@@ -54,18 +51,16 @@ class Core extends Base
      */
     public function createSourceRequestIdMapping(string $sourceId, string $sourceType): void
     {
-
-        try {
-            $requestId = $this->awsTraceIdExtractor->getAwsTraceId();
-        } catch (\Exception $e) {
-            $this->trace->error(
-                'source_request_id.extraction_error',
-                ['error' => $e->getMessage()]
-            );
-            return;
-        }
-
+            $requestId = $this->extractAWSTraceIDFromHeaders();
         if (empty($requestId)) {
+            $this->trace->info(
+                'aws_trace_id.empty_error',
+                [
+                    Entity::SOURCE_ID => $sourceId,
+                    Entity::SOURCE_TYPE => $sourceType
+                ]
+            );
+
             return;
         }
 
@@ -83,5 +78,20 @@ class Core extends Base
         );
 
         (new SourceRequestIDMappingRepository)->insertSourceRequestIdMapping($data);
+    }
+
+    public function extractAWSTraceIDFromHeaders() {
+        try {
+            return $this->app['request']->headers?->get(RequestHeader::X_AMAZON_TRACE_ID);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                'aws_trace_id.extraction_error',
+                ['error' => $e->getMessage()]
+            );
+
+            return null;
+        }
     }
 }

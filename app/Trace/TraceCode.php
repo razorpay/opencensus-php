@@ -121,6 +121,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_ALREADY_DISABLED_ONLINE_TYPE                 = 'TERMINAL_ALREADY_DISABLED_ONLINE_TYPE';
 
     const FTS_HOLIDAY_DEBUG                                     = "FTS_HOLIDAY_DEBUG";
+    const FTS_AWS_TRACE_ID_EXTRACTION_ERROR                     = "FTS_AWS_TRACE_ID_EXTRACTION_ERROR";
 
     const RAZORX_EXPERIMENT_RESULT = "RAZORX_EXPERIMENT_RESULT";
     const MERCHANT_BVS_BANK_VERIFICATION                        = 'MERCHANT_BVS_BANK_VERIFICATION';

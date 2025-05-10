@@ -14,6 +14,7 @@ use RZP\Http\Request\Requests;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 
 class Base
 {
@@ -157,6 +158,7 @@ class Base
     const ADMIN_EMAIL   = 'admin_email';
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
+    const AWS_TRACE_ID  = 'Amzn-Trace-Id';
 
     const TRANSFER_RETRY = 'transfer_retry';
 
@@ -307,6 +309,12 @@ class Base
 
         $headers[self::ACCEPT]       = 'application/json';
         $headers[self::CONTENT_TYPE] = 'application/json';
+
+        $awsTraceID = (new SourceRequestIDMappingCore())->extractAWSTraceIDFromHeaders();
+        if (empty($awsTraceID) === false)
+        {
+            $headers[self::AWS_TRACE_ID] = $awsTraceID;
+        }
 
         $this->headers = $headers;
     }
