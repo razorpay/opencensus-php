@@ -1883,55 +1883,6 @@ class Processor
 
                 $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
 
-                if ($input[Payment\Entity::METHOD] == Payment\METHOD::CARD)
-                {
-                    $card = $this->repo->card->fetchForToken($token);
-
-                    //check if card is not null
-                    if(empty($card) === true)
-                    {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "token_card_empty",
-                            'merchant_id' => $merchant->getId(),
-                            'flow' => 'optimizer_card_recurring',
-                        ]);
-
-                        return false;
-                    }
-
-                    if ($card->isInternational() === true)
-                    {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "international_card",
-                            'merchant_id' => $merchant->getId(),
-                            'flow' => 'optimizer_card_recurring',
-                        ]);
-                        return false;
-                    }
-
-                    $cardInput = [
-                        Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
-                        Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
-                        Card\Entity::COUNTRY                => $card->getCountry(),
-                        Card\Entity::ISSUER                 => $card->getIssuer(),
-                        Card\Entity::TYPE                   => $card->getType(),
-                        Card\Entity::NETWORK                => $card->getNetwork(),
-                        Card\Entity::SUBTYPE                => $card->getSubType(),
-                        Card\Entity::CATEGORY               => $card->getCategory(),
-                        Card\Entity::INTERNATIONAL          => $card->isInternational(),
-                        Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
-                        Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
-                        Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
-                        Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
-                        Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
-                        Card\Entity::LAST4                  => $card->getLast4(),
-                        Card\Entity::TOKENISED              => true,
-                        Card\Entity::REWARD                 => $input['card']['reward']
-                    ];
-
-                    $input[Payment\Entity::CARD] = $cardInput;
-                }
-
                 // Optimizer mandate details
                 $optimizerNotes = $token->getNotes();
 
