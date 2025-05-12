@@ -93,22 +93,6 @@ class DatabaseEventListener
                                 'time' => $event->time,
                             ]);
                     }
-                    if($table == 'transactions')
-                    {
-                        $this->trace->info(
-                            TraceCode::DB_QUERY_FOR_TRANSACTIONS_TABLE_EXECUTION_LOG,
-                            [
-                                'route' => $this->app['request.ctx']->getRoute() ?? $this->app['worker.ctx']->getJobName(),
-                                'connection' => $event->connectionName,
-                                'table' => $table,
-                                'operation' => $operation,
-                                'query' => $event->sql,
-                                'time' => $event->time,
-                                'bindings' => $event->bindings
-                            ]
-                        );
-                    }
-
                 }
             }
         } catch (\Throwable $e) {
