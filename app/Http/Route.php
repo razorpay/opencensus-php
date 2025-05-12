@@ -18259,6 +18259,7 @@ class Route
             'set_qr_code_device',
             'create_sqr_for_single_stack',
             'acquirer_fetch',
+            'internal_merchant_fetch'
         ],
 
         'spinnaker' => [
