@@ -271,8 +271,6 @@ class Core extends Base\Core
         $appType = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
         $accessRequest = new Base\PublicCollection();
 
-        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
-
         if (isset($input[Entity::APPROVE_TOKEN]) === true)
         {
             if (isset($input[Constants::CREATE_CONSENT]) && $input[Constants::CREATE_CONSENT]) {
