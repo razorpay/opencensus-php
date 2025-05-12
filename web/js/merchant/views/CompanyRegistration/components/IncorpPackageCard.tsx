@@ -13,7 +13,7 @@ const IncorpPackageCard = ({ isSmallDevice }: { isSmallDevice: boolean }) => {
     >
       <Heading
         size={isSmallDevice ? 'large' : 'medium'}
-        marginX={'spacing.7'}
+        marginLeft={isSmallDevice ? 'spacing.0' : 'spacing.7'}
         marginY={'spacing.7'}
       >
         {ICORP_PACKAGE_HEADER}

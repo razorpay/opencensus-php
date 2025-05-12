@@ -3,7 +3,7 @@ import loadable from '@loadable/component';
 import { isBrowser } from './server/utils';
 import { DashboardLoader } from '@libs/shared-ui';
 
-// Load only on client side. Instance of zustand store will be same.
+// Load only on client side. Instance of zustand store will be same..
 const RazorpayDashboard = loadable(
   () => import('./client/components/RazorpayDashboard/RazorpayDashboard'),
   {

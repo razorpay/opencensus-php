@@ -1,26 +1,35 @@
 import React, { useEffect } from 'react';
-import { Box, Text, Alert, AlertProps, Link } from '@razorpay/blade/components';
-import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import { Box, Text, Alert, AlertProps, Link, Spinner } from '@razorpay/blade/components';
 import errorService from '@razorpay/universe-cli/errorService';
+import ErrorBoundary from '@razorpay/universe-cli/errorService/ErrorBoundary';
+import { useQuery } from '@tanstack/react-query';
+import { getUser } from 'merchant/store';
+
+import { trackLandingPageView, trackEventOnUserScreenPageView } from './analytics';
 import CompanyRegisterBanner from './components/CompanyRegisterBanner';
 import IncorpPackageCard from './components/IncorpPackageCard';
 import RazorpayExclusiveOffer from './components/RazorpayExclusiveOffer';
-import { useScreen } from './utils';
-import { trackLandingPageView } from './analytics';
+import UserJourney from './components/UserJourney';
+import UserIncorporationStatus from './components/UserIncorporationStatus';
+import SwitchAccount from './components/SwitchAccount';
+import { getModularOnboardingData } from './services/services';
+import { useScreen, parseWorkflowResponse, getSteps } from './utils';
+import { RIZE_JOURNEY } from './constant';
 
-const ContactRize = () => (
-  <Text
-    marginTop={'spacing.7'}
-    marginLeft={'spacing.7'}
-    size="small"
-    color="surface.text.gray.subtle"
-    display={'flex'}
-  >
-    For support, contact us on
-    <Link size="small" marginLeft={'spacing.1'} href="mailto:rize-registrations@razorpay.com">
-      rize-registrations@razorpay.com
-    </Link>
-  </Text>
+const ContactRize = ({ isSmallDevice }) => (
+  <Box paddingBottom='spacing.7'>
+    <Text
+      size="small"
+      marginLeft={isSmallDevice ? 'spacing.0' : 'spacing.7'}
+      color="surface.text.gray.subtle"
+      display="flex"
+    >
+      For support, contact us on
+      <Link size="small" marginLeft="spacing.1" href="mailto:rize-registrations@razorpay.com">
+        rize-registrations@razorpay.com
+      </Link>
+    </Text>
+  </Box>
 );
 const PageError = ({
   title = 'Something went wrong!',
@@ -43,15 +52,68 @@ const PageError = ({
 const CompanyRegistration = () => {
   const { isMobile, isTablet } = useScreen();
   const isSmallDevice = isMobile || isTablet; // Small Device will be mobile or tablet, else it will be Desktop
+
+  const session = getUser();
+
+  // fetch user data
+  const { data, isLoading } = useQuery({
+    queryKey: ['rizeCompanyRegistration'],
+    queryFn: () => getModularOnboardingData(session?.merchant?.id, session.user?.id),
+    retryDelay: 800,
+    refetchOnWindowFocus: false,
+    cacheTime: 1000 * 60 * 1,
+    refetchOnMount: 'always',
+  });
+
+  const workflow = data?.data;
+  const userProgress = parseWorkflowResponse(workflow);
+  const workflowData = workflow?.workflow_data;
+
   useEffect(() => {
-    trackLandingPageView();
+    if (userProgress?.screen == RIZE_JOURNEY.INITIAL_SCREEN) {
+      trackLandingPageView();
+    } else if (userProgress?.screen == RIZE_JOURNEY.RESUME_SCREEN) {
+      trackEventOnUserScreenPageView();
+    }
   }, []);
+
+  const renderScreen = () => {
+    switch (userProgress?.screen) {
+      case RIZE_JOURNEY.INITIAL_SCREEN:
+        return (
+          <>
+            <IncorpPackageCard isSmallDevice={isSmallDevice} />
+            <RazorpayExclusiveOffer isSmallDevice={isSmallDevice} />
+          </>
+        );
+      case RIZE_JOURNEY.RESUME_SCREEN:
+        return (
+          <UserJourney isSmallDevice={isSmallDevice} userJourney={userProgress.user_journey} />
+        );
+      case RIZE_JOURNEY.STATUS_SCREEN:
+        return (
+          <UserIncorporationStatus
+            isSmallDevice={isSmallDevice}
+            getSteps={() => getSteps(workflowData)}
+          />
+        );
+      case RIZE_JOURNEY.ACCOUNT_SCREEN:
+        return <SwitchAccount />;
+      default:
+        return <></>;
+    }
+  };
   return (
-    <Box marginBottom="spacing.3">
-      <CompanyRegisterBanner isSmallDevice={isSmallDevice} />
-      <IncorpPackageCard isSmallDevice={isSmallDevice} />
-      <RazorpayExclusiveOffer isSmallDevice={isSmallDevice} />
-      <ContactRize />
+    <Box height="100vh" marginBottom="spacing.3" display="flex" flexDirection="column">
+      {isLoading ? (
+        <Spinner accessibilityLabel="Rize Incorporation spinner" size="xlarge" />
+      ) : (
+        <>
+          <CompanyRegisterBanner isSmallDevice={isSmallDevice} screen={userProgress.screen} />
+          {renderScreen()}
+          <ContactRize isSmallDevice={isSmallDevice} />
+        </>
+      )}
     </Box>
   );
 };

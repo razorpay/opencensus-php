@@ -13,24 +13,9 @@ describe('Test RazorpayExclusiveOffer Component', () => {
 
   test('renders offer cards correctly', () => {
     render(<RazorpayExclusiveOffer isSmallDevice />);
-    // Check if title, description, and label are rendered
-    expect(screen.getByText('3 months free')).toBeInTheDocument();
-    expect(screen.getByText('Business Banking+')).toBeInTheDocument();
-    expect(screen.getByText('Visit Razorpay X')).toBeInTheDocument();
-  });
-
-  test('opens the correct URL when clicking on the link', () => {
-    render(<RazorpayExclusiveOffer isSmallDevice={false} />);
-
-    const link = screen.getByText('Visit Razorpay X');
-    window.open = jest.fn(); // Mock window.open
-
-    fireEvent.click(link);
-    expect(window.open).toHaveBeenCalledWith(
-      'https://razorpay.com/x/?utm_source=direct&utm_medium=rize_razorpay_dashboard',
-      '_blank',
-      'noopener',
-    );
+    // Check if title, description are rendered
+    expect(screen.getByText('Legal Protection')).toBeInTheDocument();
+    expect(screen.getByText('Keep your personal assets safe if the business faces issues.')).toBeInTheDocument();
   });
 
   test('renders different layout for small devices', () => {

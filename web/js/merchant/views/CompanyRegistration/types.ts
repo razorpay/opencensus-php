@@ -1,5 +1,8 @@
 import type { IconComponent, IconColors } from '@razorpay/blade/components';
 import type { commonColor } from './components/CompanyRegisterBanner';
+import { AccountType } from './components/MultiAccountBodyFooter';
+import { POST_SALESFORCE_STEPS_STATUS, RIZE_JOURNEY } from './constant';
+
 export interface ApiResponse<T> {
   status_code: number;
   success: boolean;
@@ -78,4 +81,32 @@ export type BannerDataT = {
 export type HeaderSectionT = {
   bannerData: BannerDataT;
   isSmallDevice: boolean;
+  screen: RizeJourneyType;
+};
+export type BannerData = {
+  main: {
+    firstLine: string;
+    secondLine: {
+      subText: string;
+      highlightedText: string;
+    };
+  };
+  midSection?: {
+    isIconContent: boolean;
+    text?: string;
+  };
+  button: {
+    isButtonRequire: boolean;
+    buttonText?: string;
+  };
+};
+export type RizeJourneyType = (typeof RIZE_JOURNEY)[keyof typeof RIZE_JOURNEY];
+
+export type SfStatusType = (typeof POST_SALESFORCE_STEPS_STATUS)[keyof typeof POST_SALESFORCE_STEPS_STATUS];
+export type AccountT = (typeof AccountType)[keyof typeof AccountType];
+
+export type StatusStepsType = {
+  icon: IconComponent;
+  title: string;
+  status: SfStatusType;
 };

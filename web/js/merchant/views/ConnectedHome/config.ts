@@ -10,7 +10,7 @@ export const productConfigMap = {
     defaultPath: '/company-registration',
     productAlias: 'company_registration_top_navigation_item',
     title: 'Company Registration',
-    description: "India's most comprehensive company registration",
+    description: 'Simplify your Business Incorporation Journey',
     imageSrc: require('merchant/views/CompanyRegistration/assets/RizeincorpConnDash.png'),
   },
   banking_top_navigation_item: {
