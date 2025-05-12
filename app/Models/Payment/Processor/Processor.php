@@ -5521,6 +5521,10 @@ class Processor
             }
             else
             {
+                // for non-rearch payments, user_risk_providers_token is not expected hence unsetting it
+                if(empty($input['user_risk_providers_token']) === false) {
+                    unset($input['user_risk_providers_token']);
+                }
                 // for non-rearch juspay payments, application_id is not expected in input hence unsetting it
                 if(empty($input['application_id']) === false) {
                     unset($input['application_id']);
