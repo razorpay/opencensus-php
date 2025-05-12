@@ -18235,7 +18235,8 @@ class Route
             'merchant_edit_all_methods_internal',
             'internal_merchant_fetch',
             'merchant_methods_offers_checkout_internal',
-            'emi_plan_fetch_by_mid_internal'
+            'emi_plan_fetch_by_mid_internal',
+            'merchant_integration_get_by_param',
         ],
 
         'pos_app' => [
