@@ -7551,9 +7551,9 @@ class Core extends Base\Core
     {
         $applicableActivationStatus = $this->getApplicableActivationStatusForMerchant($merchantDetails);
 
-        if ($applicableActivationStatus === Status::ACTIVATED_MCC_PENDING && $this->mcore->isRegularMerchant($merchantDetails->merchant) === false)
+        if ($applicableActivationStatus === Status::ACTIVATED_MCC_PENDING )
         {
-            $splitzVariant = $this->getSplitzResponse($merchantDetails->getId(), 'non_regular_merchant_to_under_review');
+            $splitzVariant = $this->getSplitzResponse($merchantDetails->getId(), 'amp_merchant_to_under_review');
 
             $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
                 'merchant_id'                   => $merchantDetails->getId(),

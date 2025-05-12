@@ -882,7 +882,7 @@ return array(
 
     'amp_deprecation_exp_id' => env('AMP_DEPRECATION_EXP_ID'),
 
-    'non_regular_merchant_to_under_review' => env('NON_REGULAR_MERCHANT_TO_UNDER_REVIEW'),
+    'amp_merchant_to_under_review' => env('AMP_MERCHANT_TO_UNDER_REVIEW'),
 
     'ignore_signature_error_exp_id' => env('IGNORE_SIGNATURE_ERROR_EXP_ID'),
 
