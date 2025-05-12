@@ -1609,6 +1609,25 @@ trait Authorize
 
         $this->segment->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
 
+        if ($payment->getMethod() === Method::CARD &&
+            $payment->getRecurringType() === Payment\RecurringType::AUTO) {
+            $properties = [
+                "id" => $payment->getMerchantId(),
+                'experiment_name' => 'card_auto_recurring_retry',
+                'request_data' => json_encode(['merchant_id' => $payment->getMerchantId()])
+            ];
+            $splitzResponse = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true ;
+
+            $this->trace->info(TraceCode::CARD_RECURRING_CASCADING_RETRY, [
+                'payment_id' => $payment->getId(),
+                'splitzResponse' => $splitzResponse,
+                'exception' =>$e->getDataAsString()
+            ]);
+            if($splitzResponse){
+               return true;
+            }
+        }
+
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
                 ($e->getSafeRetry() === true));
