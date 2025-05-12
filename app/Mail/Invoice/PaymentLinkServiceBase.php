@@ -7,7 +7,6 @@ use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Preferences;
-use RZP\Trace\TraceCode;
 
 class PaymentLinkServiceBase extends Mailable
 {
@@ -108,17 +107,7 @@ class PaymentLinkServiceBase extends Mailable
                 return false;
         }
 
-        $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($merchantId, $this->view);
-
-        $traceData = [
-            'merchant_id' => $merchantId,
-            'should_create_via_stork' => $isStorkEmailVIAEnabled,
-            'template_view' => $this->view,
-        ];
-
-        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ , $traceData);
-
-        return ($isStorkEmailVIAEnabled);
+        return true;
     }
 
     protected function getParamsForStork(): array
@@ -149,32 +138,5 @@ class PaymentLinkServiceBase extends Mailable
             'org_id' => $this->data['org']['id'],
             'params' => $this->data
         ];
-    }
-
-    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
-        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK;
-
-        $experimentId = 'app.send_payment_link_emails_via_stork';
-
-        try {
-            $app = \App::getFacadeRoot();
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
-            ];
-            $response = $app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $app['trace']->info($traceCode, [
-                'splitzUserResult' => $response,
-            ]);
-
-            return  $variant == "enable";
-
-        } catch (\Exception $e) {
-            $app['trace']->traceException($e, null, $traceCode);
-        }
-        return false;
     }
 }

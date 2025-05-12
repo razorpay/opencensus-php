@@ -1429,17 +1429,9 @@ return array(
 
     'payouts_to_phone_number_name_match_threshold' => env('PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD'),
 
-    'send_payment_link_emails_via_stork' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK'),
-
     'send_payment_link_emails_via_stork_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_ISSUED'),
 
-    'send_payment_link_emails_via_stork_failed'  => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_FAILED'),
-
-    'send_payment_link_emails_via_stork_captured'  => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_CAPTURED'),
-
     'send_payment_link_emails_via_stork_merchant_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_MERCHANT_ISSUED'),
-
-    'send_payment_link_emails_via_stork_payment_authorized' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_PAYMENT_AUTHORIZED'),
 
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 
@@ -1450,7 +1442,6 @@ return array(
     'appending_userid_in_sendsms_payload' => env('APPENDING_USERID_IN_SENDSMS_PAYLOAD'),
 
     'ab_user_id_experiment' => env('AB_USER_ID_EXPERIMENT'),
-
 
     'payment_status_revert_api_via_scrooge_experiment' => env('PAYMENT_STATUS_REFUND_VIA_SCROOGE_EXPERIMENT'),
     'enable_fee_check_before_registration' => env('ENABLE_FEE_CHECK_BEFORE_REGISTER'),
