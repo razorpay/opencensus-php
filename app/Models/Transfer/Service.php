@@ -313,7 +313,7 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $isExpEnabled = $this->isPatchTransferExpEnabled($merchantId, $input);
-        
+
         $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $this->merchant);
 
         if ($isExpEnabled && $transfer->isExternal())
@@ -2642,6 +2642,15 @@ class Service extends Base\Service
 
     public function createTransactionForTransfer(array $input)
     {
+        $action = $input['action'] ?? '';
+
+        // Reusing the transaction create endpoint as a temporary solution for
+        // pushing the rearch transfers to ES
+        if ($action === 'sync_to_es')
+        {
+            return $this->core->syncRearchTransfersToEs($input);
+        }
+
         return $this->core->createInternalTransactionForTransfer($input);
     }
 
