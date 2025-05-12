@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Models\Merchant\Methods\PaymentMethodsService;
 use RZP\Services\WorkflowGuard;
 use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
@@ -754,6 +755,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerTerminalsService();
 
+        $this->registerPaymentMethodsService();
+
         $this->registerStorkService();
 
         $this->registerWorkflowsService();
@@ -976,6 +979,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new RZP\Models\Payment\Store\Api($app);
         });
+
+        $this->app->singleton('payment_methods_service', function ($app) {
+            return new \RZP\Models\Merchant\Methods\PaymentMethodsService();
+        });
     }
 
     protected function registerCacheManager()
@@ -1046,6 +1053,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'freshdesk_client',
             'token_service',
             'terminals_service',
+            'payment_methods_service',
             'nocodeappsservice',
             'paymentlinkservice',
             'credcase_http_client',
@@ -1982,6 +1990,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new TerminalsService($app);
         });
 
+    }
+
+    protected function registerPaymentMethodsService()
+    {
+        $this->app->singleton('payment_methods_service', function ($app)
+        {
+            return new PaymentMethodsService($app);
+        });
     }
 
     protected function registerStorkService()

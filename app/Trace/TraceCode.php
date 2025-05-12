@@ -13195,6 +13195,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DUPLICATE_TOKEN_DELETE_ERROR = 'DUPLICATE_TOKEN_DELETE_ERROR';
     const GET_VALUE_FROM_METADATA = 'GET_VALUE_FROM_METADATA';
 
+    const PAYMENT_METHODS_SERVICE_COMPARE_RESULT                 = 'PAYMENT_METHODS_SERVICE_COMPARE_RESULT';
+    const PAYMENT_METHODS_SERVICE_FETCH_COMPARE_DATA             = 'PAYMENT_METHODS_SERVICE_FETCH_COMPARE_DATA';
+    const PAYMENT_METHODS_SERVICE_FETCH_COMPARE_JSON_ERROR       = 'PAYMENT_METHODS_SERVICE_FETCH_COMPARE_JSON_ERROR';
+    const PAYMENT_METHODS_SERVICE_FETCH_COMPARE_REQUEST          = 'PAYMENT_METHODS_SERVICE_FETCH_COMPARE_REQUEST';
+    const PAYMENT_METHODS_SERVICE_FETCH_REQUEST = 'PAYMENT_METHODS_SERVICE_FETCH_REQUEST';
+    const PAYMENT_METHODS_SERVICE_FETCH_SUCCESS = 'PAYMENT_METHODS_SERVICE_FETCH_SUCCESS';
+    const PAYMENT_METHODS_USING_SERVICE_DATA = 'PAYMENT_METHODS_USING_SERVICE_DATA';
+    const PAYMENT_METHODS_DIFF_FOUND = 'PAYMENT_METHODS_DIFF_FOUND';
+    const PAYMENT_METHODS_SERVICE_CALL_FAILED = 'PAYMENT_METHODS_SERVICE_CALL_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -13415,6 +13425,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTION_CREATED_WEBHOOK_SYNC_FIRE                          => 'Firing Transaction.Created Webhook synchronously',
         self:: TRANSACTION_CREATED_WEBHOOK_ASYNC_FIRE                        => 'Firing Transaction.Created Webhook Asynchronously',
         self:: ORG_ID_VERIFICATION_FAILED                                    => 'Org Id verify and strip sign failure '
+
     ];
 
     // IRCTC RDS balance update trace codes

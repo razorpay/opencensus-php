@@ -1484,4 +1484,5 @@ return array(
     'pgos_read_for_metadata_enabled' => env('PGOS_READ_FOR_METADATA_ENABLED'),
 
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
+
 );

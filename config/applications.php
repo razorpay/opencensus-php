@@ -1524,6 +1524,21 @@ return [
         'secret'        => env('PAYMENT_METHODS_API_SECRET'),
     ],
 
+    'payment_methods_service' => [
+        'live'          => [
+            'password'      => env('PAYMENT_METHODS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('PAYMENT_METHODS_SERVICE_LIVE_URL'),
+            'user'          => env('PAYMENT_METHODS_SERVICE_LIVE_USER'),
+        ],
+        'test'          => [
+            'password'      => env('PAYMENT_METHODS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('PAYMENT_METHODS_SERVICE_TEST_URL'),
+            'user'          => env('PAYMENT_METHODS_SERVICE_TEST_USER'),
+        ],
+        'read_experiment' => env('PAYMENT_METHODS_SERVICE_READ_EXPERIMENT'),
+        'timeout'         => env('PAYMENT_METHODS_SERVICE_TIMEOUT', 100)
+    ],
+
     'pos_app' => [
       'secret' => env('POS_APP_SECRET'),
     ],
@@ -2208,7 +2223,7 @@ return [
             'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
         ],
     ],
-    
+
     'identity_provider' => [
         'secret' => env('APP_IDP_SECRET'),
     ]
