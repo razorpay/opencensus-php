@@ -510,6 +510,7 @@ class Type
             self::ICICI_DEBIT_EMI_REFUND_FILE,
             self::IDFC_EMI_FILE,
             self::AUBL_EMI_FILE,
+            self::AUBL_EMI_REFUND_FILE,
             self::AUTO_CLOSURE_MF_MERCHANTS,
 
         ],
@@ -725,6 +726,7 @@ class Type
         self::ICICI_DEBIT_EMI_REFUND_FILE,
         self::IDFC_EMI_FILE,
         self::AUBL_EMI_FILE,
+        self::AUBL_EMI_REFUND_FILE,
 
     ];
 
@@ -803,7 +805,8 @@ class Type
             self::FEDERAL_EMI_FILE,
             self::ICICI_DEBIT_EMI_FILE,
             self::ICICI_DEBIT_EMI_REFUND_FILE,
-            self::AUBL_EMI_FILE
+            self::AUBL_EMI_FILE,
+            self::AUBL_EMI_REFUND_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [

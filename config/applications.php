@@ -89,6 +89,7 @@ return [
     'emi' => [
         'password'            => env('EMI_FILE_PASSWORD'),
         'yesb_encryption_key' => env('YESB_ENCRYPTION_KEY'),
+        'aubl_cc_emi_file_password'=>env('AUBL_CC_EMI_FILE_PASSWORD')
     ],
 
     'cardsettlement' => [
