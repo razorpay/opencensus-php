@@ -1932,7 +1932,7 @@ class Service extends Base\Service
         if ($funding_accounts == null) {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
                 [
-                    'error_data' => $ex->getData() ?? [],
+                    'error_msg' => "Funding Account is Null Despite Multiple Retries",
                 ]);
         }
 
