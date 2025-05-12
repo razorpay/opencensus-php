@@ -225,6 +225,8 @@ trait Authorize
 
         $this->pushCardMetaDataEvent($input, $payment);
 
+        $this->pushOfferMetrics($input, $payment);
+
         $authPaymentData = $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
 
         // creating invoice entity for opgsp payment requires payment entity
@@ -12702,7 +12704,7 @@ trait Authorize
                     [
                         'payment_id'        => $payment->getId(),
                         'late_authorize'    => $wasFailed,
-                ]);
+                    ]);
 
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
@@ -14524,6 +14526,13 @@ trait Authorize
         else
         {
             (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
+        }
+    }
+    protected function pushOfferMetrics($input, Payment\Entity $payment)
+    {
+        if (empty($input['offer_id']) === false)
+        {
+            (new Payment\Metric)->pushOfferMetrics($payment,$input);
         }
     }
 

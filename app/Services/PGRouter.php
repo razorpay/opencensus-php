@@ -577,6 +577,7 @@ class PGRouter
 
         $card = null;
         $emiPlan = null;
+        $discount = null;
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
 
@@ -674,6 +675,20 @@ class PGRouter
                 }
             }
 
+            if (isset($response['body']['data']['payment']['offers']))
+            {
+                $discountArray = [
+                    'payment_id' => $response['body']['data']['payment']['id'],
+                    'offer_id' => $response['body']['data']['payment']['offer']['offer_id'],
+                    'amount' => $response['body']['data']['payment']['offer']['discount'],
+                    // this is only to maintain backward compatibility with api code,
+                    // these values should not be used anywhere
+                    'id' => $response['body']['data']['payment']['id'],
+                    'order_id' => $response['body']['data']['payment']['id'],
+                ];
+
+                $discount= (new \RZP\Models\Discount\Entity)->forcefill($discountArray);
+            }
 
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
@@ -711,6 +726,11 @@ class PGRouter
             if ($payment->isFailed() === false)
             {
                 $payment->setErrorNull();
+            }
+
+            if ($discount !== null)
+            {
+                $payment->discount = $discount;
             }
 
             return $payment;

@@ -153,6 +153,8 @@ class Metric extends Base\Core
 
     const AUTO_CAPTURE_RESULT                              = 'auto_capture_result';
 
+    const PAYMENT_CREATE_REQUEST_WITH_OFFER = 'payment_create_request_with_offer';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);
@@ -834,6 +836,19 @@ class Metric extends Base\Core
         $dimensions = array_merge($dimensions, $extraDimensions);
 
         $this->trace->count(self::AUTO_CAPTURE_RESULT, $dimensions);
+    }
+
+    public function pushOfferMetrics(Entity $payment,array $input)
+    {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        $dimensions = $this->getDefaultDimentions($payment);
+
+        $dimensions += [
+            self::PAYMENT_REQUEST_ROUTE => $route,
+        ];
+
+        $this->trace->count(self::PAYMENT_CREATE_REQUEST_WITH_OFFER, $dimensions);
     }
 
 }
