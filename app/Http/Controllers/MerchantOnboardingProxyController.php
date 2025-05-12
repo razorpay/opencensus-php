@@ -445,6 +445,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_POS_FETCH_LATEST_ORDER,
     ];
 
+    const MUTEX_LOCK_ACQUIRED = 'mutex_lock_acquired';
+
     protected $mutex;
 
     public function __construct()
@@ -1380,6 +1382,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
             !empty($merchantId) &&
             $core->shouldApplyMutexOnOnboardingSave($merchantId)
         ) {
+
+            $body[self::MUTEX_LOCK_ACQUIRED] = true;
+
+            $this->trace->info(TraceCode::MUTEX_LOCK_ACQUIRED_FOR_ONBOARDING_SAVE, [
+                'merchant_id'               => $merchantId,
+            ]);
 
             return $this->mutex->acquireAndRelease(
                 $merchantId,

@@ -146,6 +146,8 @@ class Service extends Base\Service
     const BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const SHARED_MERCHANT_ID = '100000Razorpay';
 
+    const MUTEX_LOCK_ACQUIRED = 'mutex_lock_acquired';
+
     protected $core;
 
     protected $methodsCore;
@@ -5482,6 +5484,20 @@ class Service extends Base\Service
      */
     public function submitMerchantInternal($merchantId, $input)
     {
+        // mutex lock is added for both onboarding save and submit merchant internal.
+        // due to following flow: onboarding_save (API) -> onboarding_save (PGOS) -> submit_merchant_internal (API),
+        // it is possible that submit_merchant_internal throws an error due to mutex already acquired by onboarding_save
+        // we are passing a boolean flow to skip mutex lock acquire.
+        if ($input[self::MUTEX_LOCK_ACQUIRED] === true)
+        {
+            $this->trace->info(TraceCode::MUTEX_ACQUIRE_SKIPPED_FOR_SUBMIT_MERCHANT_INTERNAL, [
+                'merchant_id'               => $merchantId,
+                'reason'                    => 'mutex acquired by onboarding_save',
+            ]);
+
+            return $this->handleSubmitMerchantInternal($merchantId, $input);
+        }
+
         if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
 
             return $this->mutex->acquireAndRelease(
