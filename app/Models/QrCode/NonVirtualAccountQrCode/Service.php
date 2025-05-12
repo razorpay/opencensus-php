@@ -1770,6 +1770,11 @@ class Service extends QrCode\Service
             return;
         }
 
+        if (($qrCode->getRequestSource() !== RequestSource::EZETAP)){
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_IGNORED_FOR_NON_EZETAP_QR_CODE, ['id' => $id]);
+            return;
+        }
+
         // If it has not yet been 3 minutes between QR Code create and now, don't dispatch for status check
         // for ezetap Request, we will skip below restriction, as ezetap will call fetch api after around 30 sec of QR Generation
         if (($qrCode->getRequestSource() !== RequestSource::EZETAP) and
