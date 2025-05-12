@@ -542,6 +542,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SOURCE_ID, $sourceId);
     }
 
+    public function setCustomerName($customerName)
+    {
+        $this->setAttribute(self::CUSTOMER_NAME, $customerName);
+    }
+
     // ------------- End Setters -------------
 
     // --------------- Helpers ---------------

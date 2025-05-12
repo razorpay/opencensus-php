@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\DualWrite;
 use App;
 
 use Carbon\Carbon;
+use RZP\Models\Payout\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
@@ -57,6 +58,24 @@ class Payout extends Base
         );
 
         return $payout;
+    }
+
+    public function getMerchantSettingsForThresholdFromPayoutService(string $merchantId): int
+    {
+        try {
+            $merchantSettings = $this->repo->payout->getPayoutServiceSettings($merchantId, Constants::PHONE_NUMBER_PAYOUTS);
+
+            if (empty($merchantSettings) === true) {
+                return Constants::NAME_MATCHING_THRESHOLD_DEFAULT;
+            }
+
+            $threshold = get_object_vars($merchantSettings[0])[Constants::CONFIG_VALUE_SETTINGS]
+                ?? Constants::NAME_MATCHING_THRESHOLD_DEFAULT;
+
+            return (int) $threshold;
+        } catch(\Throwable $ex) {
+            return Constants::NAME_MATCHING_THRESHOLD_DEFAULT;
+        }
     }
 
     public function getAPIPayoutFromPayoutService(string $id, bool $sync = false)

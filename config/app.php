@@ -1427,8 +1427,6 @@ return array(
 
     'payouts_to_phone_number_splitz_experiment' => env('PAYOUTS_TO_PHONE_NUMBER_SPLITZ_EXPERIMENT_ID'),
 
-    'payouts_to_phone_number_name_match_threshold' => env('PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD'),
-
     'send_payment_link_emails_via_stork_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_ISSUED'),
 
     'send_payment_link_emails_via_stork_merchant_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_MERCHANT_ISSUED'),
