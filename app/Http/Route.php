@@ -849,6 +849,7 @@ class Route
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
+        'fetch_qr_code_from_device_id'             => ['post',     'payments/qr_codes/device/fetch',                 'QrCodeController@fetchQRFromDeviceId'                                ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_create_for_internal'      => ['post',     'virtual_accounts/internal',                      'VirtualAccountController@createForInternal'                        ],
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
@@ -7009,6 +7010,7 @@ class Route
         'qr_code_merchant_create',
         'set_qr_code_device',
         'qr_code_device_id_unmap',
+        'fetch_qr_code_from_device_id',
 
         // NoCodeApps
         'payment_page_dual_write_internal',
@@ -18256,6 +18258,7 @@ class Route
             'internal_merchant_details_fetch',
             'payment_fetch_by_id_internal',
             'qr_code_device_id_unmap',
+            'fetch_qr_code_from_device_id',
             'set_qr_code_device',
             'create_sqr_for_single_stack',
             'acquirer_fetch',
