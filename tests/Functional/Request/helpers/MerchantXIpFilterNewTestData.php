@@ -209,4 +209,88 @@ return [
             'status_code' => 200
         ],
     ],
+    'testCreatePayoutLinksGetsErrorForNoWhitelistedIps' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_email' => 1,
+                'send_sms' => 1
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'This transaction is prohibited. Contact Support for help.'
+                ],
+            ],
+            'status_code' => 400,
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_IP_NOT_WHITELISTED,
+            ],
+        ],
+    ],
+    'testCreatePayoutLinksGetsExpectedResponseForWhitelistedIps' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_email' => 1,
+                'send_sms' => 1
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+        ],
+    ],
+    'testCreatePayoutLinksGetsExpectedResponseWhenMerchantIsNotBehindExperiment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_email' => 1,
+                'send_sms' => 1
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+        ],
+    ],
 ];
+

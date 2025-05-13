@@ -19344,7 +19344,8 @@ class Route
 
     public static $serviceEligibleForIPWhitelist = [
         'api_payouts',
-        'api_fund_account_validation'
+        'api_fund_account_validation',
+        'api_payout_links'
     ];
 
     public static $routeServiceMappingForIpWhitelisting = [
@@ -19366,7 +19367,9 @@ class Route
 
         'fund_account_validate'             => 'api_fund_account_validation',
         'fund_account_validate_fetch'       => 'api_fund_account_validation',
-        'fund_account_validate_fetch_by_id' => 'api_fund_account_validation'
+        'fund_account_validate_fetch_by_id' => 'api_fund_account_validation',
+
+        'payout_links_create'               => 'api_payout_links'
     ];
 
     public static $routeEnabledForBankingSmartRouting = [

@@ -79,6 +79,8 @@ final class RazorxTreatment
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
+    const PAYOUT_LINKS_IP_WHITELIST = 'payout_links_ip_whitelist';
+
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
