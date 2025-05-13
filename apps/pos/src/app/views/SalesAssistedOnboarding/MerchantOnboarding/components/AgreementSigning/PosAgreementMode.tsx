@@ -62,7 +62,7 @@ import {
   L2_FUNNEL_STAGE,
   PAGE_TYPES,
 } from 'apps/pos/src/services/analytics/types';
-import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
+import { isKycActivatedOrRejected } from 'apps/pos/src/app/utils/merchantActivation';
 
 interface PosAgreementModeProps {
   modularConfig: MerchantModularOnboardingDetailsSuccessResponse;
@@ -106,7 +106,7 @@ export const PosAgreementMode = ({
     getAgreementSatusValue(modularConfig) === COMPLETED;
   const isOfflineAgreementExecuted =
     getAgreementMode(modularConfig) === OFFLINE && getAgreementComponentStatus(modularConfig);
-  const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
+  const isFormDisabled = isKycActivatedOrRejected(merchantDetails?.activation?.posActivationStatus);
 
   const handleOnlineAgreement = (data: MerchantModularOnboardingDetailsSuccessResponse) => {
     const agreementStatus = getAgreementSatusValue(data);

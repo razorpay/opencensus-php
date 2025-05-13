@@ -27,7 +27,7 @@ import { isStringValue } from 'apps/pos/src/app/utils/modularTypeResolvers';
 import { MODULAR_ADDITIONAL_DETAILS_FIELDS } from 'apps/pos/src/app/types/MerchantAdditionalDetails';
 import { DashboardGraphQLMerchantPosActivationStatusEnum } from '@libs/shared-types';
 import { trackEvent, analyticsTypes } from 'apps/pos/src/services/analytics';
-import { isKycQualified } from 'apps/pos/src/app/utils/merchantActivation';
+import { isKycActivatedOrRejected } from 'apps/pos/src/app/utils/merchantActivation';
 
 const ContinueButton = ({ isDisabled, isFullWidth, isLoading }) => {
   return (
@@ -61,7 +61,7 @@ const MerchantAdditionalDetails = (): JSX.Element | null => {
   const { modularConfig, isUpdateModularLoading, isModularLoading, merchantDetails } = states;
   const { isMobile } = useScreen();
   const { updateModularConfig } = handlers;
-  const isFormDisabled = isKycQualified(merchantDetails?.activation?.posActivationStatus);
+  const isFormDisabled = isKycActivatedOrRejected(merchantDetails?.activation?.posActivationStatus);
 
   const defaultValues = getInitialMerchantAdditionalDetails({ modularConfig });
 

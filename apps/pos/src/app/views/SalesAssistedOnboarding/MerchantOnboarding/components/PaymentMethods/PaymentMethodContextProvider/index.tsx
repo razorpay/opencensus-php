@@ -58,7 +58,7 @@ import {
   updateValuesForUncheckedRates,
   validatePricingRates,
 } from 'apps/pos/src/app/utils/paymentsAndServices';
-import { isPricingFormDisabled } from 'apps/pos/src/app/utils/merchantActivation';
+import { isKycActivatedOrRejected } from 'apps/pos/src/app/utils/merchantActivation';
 import {
   AggregatorModelFormKeys,
   CheckboxEnabledFormKeys,
@@ -383,7 +383,7 @@ const PaymentMethodContextProvider = ({ component, nach, brandEmi, addedBrands }
   const { states, handlers } = useOnboardingContext();
   const { isModularLoading, isRefetching, isUpdateModularLoading, modularConfig, merchantDetails } =
     states;
-  const isFormDisabled = isPricingFormDisabled(merchantDetails?.activation?.posActivationStatus);
+  const isFormDisabled = isKycActivatedOrRejected(merchantDetails?.activation?.posActivationStatus);
   const isPricingNcRaised =
     merchantDetails?.activation?.posPricingNcStatus?.toLowerCase() ===
     pricingNcStatusMap.pending_agent_action;

@@ -5,7 +5,7 @@ import PageError from 'apps/pos/src/app/components/PageError';
 import { processFilesForModularSave } from 'apps/pos/src/app/components/SalesFileUpload/helper';
 import { MODULES } from 'apps/pos/src/app/types/common';
 import { FileItem } from 'apps/pos/src/app/types/fileUpload';
-import { isPricingFormDisabled } from 'apps/pos/src/app/utils/merchantActivation';
+import { isKycActivatedOrRejected } from 'apps/pos/src/app/utils/merchantActivation';
 import {
   populateNACHFormWithModularConfigData,
   checkIfNACHIsMandatory,
@@ -28,9 +28,8 @@ const NACHFormEkycContainer = (): JSX.Element | null => {
   const { isUpdateModularLoading, isModularLoading, merchantDetails, modularConfig } = states;
   const initialNachData = populateNACHFormWithModularConfigData(modularConfig);
   const [nachForm, setNachForm] = useState<NachFormObject>(initialNachData);
-  const isFormDisabled = isPricingFormDisabled(merchantDetails?.activation?.posActivationStatus);
+  const isFormDisabled = isKycActivatedOrRejected(merchantDetails?.activation?.posActivationStatus);
   const isNACHMandatory = checkIfNACHIsMandatory(modularConfig);
-
   const onNachTextAreaChange = (event: TextChange) => {
     setNachForm((prev) => {
       const newNACHForm: NachFormObject = JSON.parse(JSON.stringify(prev));

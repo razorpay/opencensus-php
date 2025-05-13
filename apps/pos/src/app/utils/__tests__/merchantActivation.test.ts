@@ -1,5 +1,5 @@
 import { DashboardGraphQLMerchant } from '@libs/shared-types';
-import { checkIfKycComplete, isKycQualified, isPricingFormDisabled } from '../merchantActivation';
+import { checkIfKycComplete, isKycActivatedOrRejected } from '../merchantActivation';
 
 const COMMON_PAYMENT_ACCEPTANCE_CHANNELS = {
   websites: {
@@ -103,74 +103,36 @@ describe('checkIfKycComplete', () => {
   });
 });
 
-describe('isKycQualified', () => {
+describe('isKycActivatedOrRejected', () => {
   test('returns true for "ACTIVATED"', () => {
-    expect(isKycQualified('ACTIVATED')).toBe(true);
+    expect(isKycActivatedOrRejected('ACTIVATED')).toBe(true);
   });
 
   test('returns true for "REJECTED"', () => {
-    expect(isKycQualified('REJECTED')).toBe(true);
-  });
-
-  test('returns true for "KYC_QUALIFIED_STB"', () => {
-    expect(isKycQualified('KYC_QUALIFIED_STB')).toBe(true);
-  });
-
-  test('returns true for "NEEDS_CLARIFICATION"', () => {
-    expect(isKycQualified('NEEDS_CLARIFICATION')).toBe(false);
-  });
-
-  test('returns false for an unknown status', () => {
-    expect(isKycQualified('UNKNOWN_STATUS')).toBe(false);
-  });
-
-  test('returns false for an empty string', () => {
-    expect(isKycQualified('')).toBe(false);
-  });
-
-  test('returns false for undefined input', () => {
-    expect(isKycQualified(undefined)).toBe(false);
-  });
-
-  test('returns false for null input', () => {
-    expect(isKycQualified(null)).toBe(false);
-  });
-
-  test('returns false for non-string input (number)', () => {
-    expect(isKycQualified(123)).toBe(false);
-  });
-});
-
-describe('isPricingFormDisabled', () => {
-  test('returns true for "ACTIVATED"', () => {
-    expect(isPricingFormDisabled('ACTIVATED')).toBe(true);
-  });
-
-  test('returns true for "REJECTED"', () => {
-    expect(isPricingFormDisabled('REJECTED')).toBe(true);
+    expect(isKycActivatedOrRejected('REJECTED')).toBe(true);
   });
 
   test('returns false for "KYC_QUALIFIED_STB"', () => {
-    expect(isPricingFormDisabled('KYC_QUALIFIED_STB')).toBe(false);
+    expect(isKycActivatedOrRejected('KYC_QUALIFIED_STB')).toBe(false);
   });
 
   test('returns false for "NEEDS_CLARIFICATION"', () => {
-    expect(isPricingFormDisabled('NEEDS_CLARIFICATION')).toBe(false);
+    expect(isKycActivatedOrRejected('NEEDS_CLARIFICATION')).toBe(false);
   });
 
   test('returns false for an unknown status', () => {
-    expect(isPricingFormDisabled('UNKNOWN_STATUS')).toBe(false);
+    expect(isKycActivatedOrRejected('UNKNOWN_STATUS')).toBe(false);
   });
 
   test('returns false for an empty string', () => {
-    expect(isPricingFormDisabled('')).toBe(false);
+    expect(isKycActivatedOrRejected('')).toBe(false);
   });
 
   test('returns false for undefined input', () => {
-    expect(isPricingFormDisabled(undefined)).toBe(false);
+    expect(isKycActivatedOrRejected(undefined)).toBe(false);
   });
 
   test('returns false for null input', () => {
-    expect(isPricingFormDisabled(null)).toBe(false);
+    expect(isKycActivatedOrRejected(null)).toBe(false);
   });
 });
