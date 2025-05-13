@@ -7957,7 +7957,7 @@ class Core extends Base\Core
                             {
                                 $eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc] = array('status' => $status);
 
-                                $this->trace->gauge(METRIC::BENE_BANK_DOWN_REDIS_KEY_SET, time(),
+                                $this->trace->gauge(Metric::BENE_BANK_DOWN_REDIS_KEY_SET, time(),
                                     [
                                         'bene_code' => $beneBankIfsc,
                                         'downtime_id' => $input['payload']['id'],
