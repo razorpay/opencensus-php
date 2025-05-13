@@ -275,7 +275,7 @@ class TokenDetailsContainer extends Component {
       expireAt = entity.expired_at;
       isDomesticCard = !entity.card.international;
 
-      maxAmount = entity?.subscription_registration?.max_amount || defaultAFAMaxAmount;
+      maxAmount = entity?.subscription_registration?.max_amount ?? entity?.max_amount ?? defaultAFAMaxAmount;
       if (maxAmount <= defaultAFAMaxAmount) {
         defaultAFAMaxAmount = maxAmount;
       }
