@@ -206,3 +206,4 @@ export {
   shouldDisplaySearchBasedOnDeviceType,
   type SearchVisibilityProps,
 } from './searchVisibility';
+export { isBillMeOnlyUser } from './isBillMeOnlyUser';

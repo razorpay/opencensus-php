@@ -45,8 +45,9 @@ function NavigationLayout({
   isRTUXHomepage,
   isConnectedNavigation,
 }): JSX.Element {
-  const { isSideNavOpenOnMobile, setIsSideNavOpenOnMobile } = useConnectedNavigationStore(
-    (state) => state,
+  const isSideNavOpenOnMobile = useConnectedNavigationStore((state) => state.isSideNavOpenOnMobile);
+  const setIsSideNavOpenOnMobile = useConnectedNavigationStore(
+    (state) => state.setIsSideNavOpenOnMobile,
   );
   const userId = window.rzp_user?.user?.id || '';
   const [showFtuxBanner, setShowFtuxBanner] = useState(

@@ -3,7 +3,7 @@ import { useStore } from '@federated/apps/shell/commonStore';
 import { Box, Skeleton, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { matchPath, useLocation } from 'react-router-dom';
-import { shouldDisplaySearchBasedOnDeviceType } from '@libs/shared-utils';
+import { shouldDisplaySearchBasedOnDeviceType, isBillMeOnlyUser } from '@libs/shared-utils';
 
 const UniversalSearch = lazy(() => import('merchant/components/HeaderNav/UniversalSearch'));
 
@@ -26,9 +26,12 @@ const ConnectedUniversalSearchWrapper: React.FC<ConnectedUniversalSearchWrapperP
 
   const isMobile = matchedDeviceType === 'mobile';
 
+  const isBillMeOnlyMerchant = Boolean(window.IS_BILL_ME_ENABLED) && isBillMeOnlyUser(user);
+
   const shouldShowSearch =
     user?.isUniversalSearchEnabled &&
     !isPartnersPathActive &&
+    !isBillMeOnlyMerchant &&
     shouldDisplaySearchBasedOnDeviceType({
       isMobile,
       showOnlyMobileSearch,

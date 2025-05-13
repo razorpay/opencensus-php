@@ -25,7 +25,7 @@ import React, { Suspense, lazy } from 'react';
 import { usePaymentsTopNavLoading } from '../../hooks/usePaymentsTopNavLoading';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { matchPath, useLocation } from 'react-router-dom';
-import { shouldDisplaySearchBasedOnDeviceType } from '@libs/shared-utils';
+import { shouldDisplaySearchBasedOnDeviceType, isBillMeOnlyUser } from '@libs/shared-utils';
 
 const ConnectedUniversalSearchWrapper = lazy(() => import('./ConnectedUniversalSearchWrapper'));
 const EcosystemDowntimes = lazy(() => import('@dashboards/payments/views/EcosystemDowntimes'));
@@ -40,6 +40,7 @@ type SkeletonLoaderProps = {
 };
 
 const SkeletonLoader = ({ showOnlyMobileSearch }: SkeletonLoaderProps) => {
+  const user = useStore((state) => state.session.user);
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
@@ -51,8 +52,11 @@ const SkeletonLoader = ({ showOnlyMobileSearch }: SkeletonLoaderProps) => {
 
   const isMobile = matchedDeviceType === 'mobile';
 
+  const isBillMeOnlyMerchant = Boolean(window.IS_BILL_ME_ENABLED) && isBillMeOnlyUser(user);
+
   const shouldShowSearchSkeleton =
     !isPartnersPathActive &&
+    !isBillMeOnlyMerchant &&
     shouldDisplaySearchBasedOnDeviceType({
       isMobile,
       showOnlyMobileSearch,
@@ -95,8 +99,6 @@ function TopNavActions({ showOnlyMobileSearch }: TopNavActionsProps) {
   const showEcosystemDowntimeButton =
     user?.isOrgRZP && user?.isEcosystemDowntimeEnabled && user.isCountryIndia && !isHomePath;
 
-  const showAnnouncementsButton = !isHomePath;
-
   const getTopNavActionComponents = () => {
     if (isTopNavActionsLoading) {
       return <SkeletonLoader showOnlyMobileSearch={showOnlyMobileSearch} />;
@@ -133,11 +135,11 @@ function TopNavActions({ showOnlyMobileSearch }: TopNavActionsProps) {
             </Suspense>
           </LayerProvider>
         )}
-        {showAnnouncementsButton && (
-          <Suspense fallback={<Skeleton width="32px" height="32px" borderRadius="medium" />}>
-            <ConnectedAnnouncements />
-          </Suspense>
-        )}
+
+        <Suspense fallback={<Skeleton width="32px" height="32px" borderRadius="medium" />}>
+          <ConnectedAnnouncements />
+        </Suspense>
+
         <Suspense fallback={<Skeleton width="32px" height="32px" borderRadius="medium" />}>
           <ConnectedPaymentsProfileDropdownWrapper />
         </Suspense>

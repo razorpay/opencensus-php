@@ -111,4 +111,24 @@ export const shellSplitzConfig: VariantConfigArgs[] = [
     uniqueHashKey: 'create_merchant_cta',
     evaluater: (variables) => variables?.['result'] === 'on',
   },
+  {
+    defaultVariant: {
+      name: 'variables',
+      variables: [
+        {
+          key: 'result',
+          value: 'off',
+        },
+      ],
+    },
+    experimentId: {
+      stage: 'PCozRd6m7HUVNR',
+      beta: 'PCozRd6m7HUVNR',
+      devstack: 'PCozRd6m7HUVNR',
+      production: 'PHumvQHBrGxWmp',
+      canary: 'PHumvQHBrGxWmp',
+    },
+    uniqueHashKey: 'bill_me_enabled',
+    evaluater: (variables) => variables?.['result'] === 'on',
+  },
 ];

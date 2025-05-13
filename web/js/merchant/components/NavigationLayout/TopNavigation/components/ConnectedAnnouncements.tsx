@@ -8,6 +8,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import { withI18Service } from 'common/i18';
+import { useLocation } from 'react-router-dom';
 
 const WhatsNew = lazyLoader(
   () => import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -18,6 +19,8 @@ const ConnectedAnnouncements = ({ i18 }) => {
   const { org } = useStore((state) => state.session);
   const { windowWidth } = useStore((state) => state.app);
   const { products, setShowSearchOnMobile } = useConnectedNavigationStore();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const selectedProductTitle = products.selectedProduct?.title;
 
@@ -27,8 +30,10 @@ const ConnectedAnnouncements = ({ i18 }) => {
   const mobileWidth = user?.isUniversalSearchEnabled ? 1280 : 950;
 
   const showMobileNav = windowWidth < mobileWidth;
+  const isHomePath = currentPath.startsWith('/home');
 
   const showAnnouncementButton =
+    !isHomePath &&
     user.isOrgAllowedFunctionality('external_links') &&
     !isConfigTagEnabled('announcements.announcements');
 
@@ -51,6 +56,7 @@ const ConnectedAnnouncements = ({ i18 }) => {
               showMobileNav={showMobileNav}
               isConnectedNavigation={true}
               selectedProductTitle={selectedProductTitle}
+              setShowSearchOnMobile={setShowSearchOnMobile}
             />
           </SuspenseWithLoader>
         </ShowWhen>
