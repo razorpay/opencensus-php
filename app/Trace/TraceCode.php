@@ -9847,6 +9847,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_BEFORE_SAVE_DETAILS                                                 = 'BANK_TRANSFER_BEFORE_SAVE_DETAILS';
     const FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED                                        = 'FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED';
     const TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED                            = 'TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED';
+    const TPV_SKIP_FOR_PAYROLL_IN_NOTIFICATION_API                                          = 'TPV_SKIP_FOR_PAYROLL_IN_NOTIFICATION_API';
     const NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED            = 'NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED';
 
     // Logs for case where Fund Loading is refunded via the new RX flow
