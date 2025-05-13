@@ -5,7 +5,11 @@ export type NewOffering = {
   description: string;
   image: File;
   ctaLink?: string;
-  knowMoreLink?: string;
-  docLink: (isRCODEnabled: boolean) => string;
+  externalLink?: {
+    href: string;
+    label: string;
+  };
+  docLink?: (isRCODEnabled: boolean) => string;
   condition: (platorm: Platform, isRCODEnabled: boolean) => boolean;
+  joinEarlyAccess?: string;
 };

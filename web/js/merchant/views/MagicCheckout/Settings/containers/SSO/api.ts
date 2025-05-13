@@ -32,6 +32,7 @@ export const updateMerchantTheme = (
     merchant_id: payload.merchant_id,
     app_type: dashboardView === 'sopc' || dashboardView === 'rcod' ? 'sopc' : '',
     mode: mode || 'live',
+    sso_enabled: payload.configs?.sso_config?.sso_enabled || false,
   };
 
   if (!payload.merchant_id) {

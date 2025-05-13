@@ -1,7 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { Heading, Box, Text, Spinner, useToast, Alert } from '@razorpay/blade/components';
+import {
+  Heading,
+  Box,
+  Text,
+  Spinner,
+  useToast,
+  Alert,
+  Avatar,
+  CloseIcon,
+} from '@razorpay/blade/components';
 import VideoGuide from 'merchant/views/MagicCheckout/Settings/containers/SSO/components/VideoGuide';
 import { fetchSSOStatus } from 'merchant/views/MagicCheckout/Settings/containers/SSO/api';
 import { useSSOContext } from 'merchant/views/MagicCheckout/Settings/containers/SSO/context/index';
@@ -23,6 +32,8 @@ const SSOHome: React.FC<{
   fetchKeys: (payload: { mode: string }, hasKeyAccess: boolean) => void;
 }> = ({ apiKey, mode, user, merchantId, dashboardView, fetchKeys }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isError, setIsError] = useState<boolean>(false);
+
   const ssoContext = useSSOContext();
   const { isSSOEnabled, updateIsSSOEnabled, setApiKey, setMerchantId, setDashboardView, setMode } =
     ssoContext;
@@ -42,6 +53,7 @@ const SSOHome: React.FC<{
       }
       return res;
     } catch (error) {
+      setIsError(true);
       show({
         type: 'informational',
         content: 'sso config fetch failed',
@@ -81,7 +93,9 @@ const SSOHome: React.FC<{
     fetchSSOSettings()
       .then((response) => {
         const updatedConfig = (
-          response?.success && response?.data?.configs?.sso_config  ? response.data?.configs?.sso_config : SSO_FIRST_TIME_USER_CONFIG
+          response?.success && response?.data?.configs?.sso_config
+            ? response.data?.configs?.sso_config
+            : SSO_FIRST_TIME_USER_CONFIG
         ) as SSOConfigs;
         updateSSOStore(updatedConfig, ssoContext);
       })
@@ -94,9 +108,9 @@ const SSOHome: React.FC<{
       });
   }, []);
 
-  return (
-    <SSOContainer>
-      {isLoading ? (
+  const renderContent = () => {
+    if (isLoading) {
+      return (
         <Box
           as="section"
           height="90vh"
@@ -107,31 +121,60 @@ const SSOHome: React.FC<{
         >
           <Spinner color="primary" accessibilityLabel="sso-loader" />
         </Box>
-      ) : (
-        <>
-          <Alert
-            position="top"
-            color="notice"
-            description={<HeaderDescriptions />}
-            emphasis="subtle"
-            isDismissible={false}
-            title="Mandatory Configs on Shopify"
-            isFullWidth
-          />
-          <Box padding="spacing.6" paddingBottom="spacing.0" marginBottom="spacing.0">
-            <Heading size="medium">Login with Razorpay Setup</Heading>
-            <Text color="surface.text.gray.muted" marginTop="spacing.4">
-              Set up easy & secure login into your store with single sign-in for your customers
-              across the Razorpay network
+      );
+    }
+    if (isError) {
+      return (
+        <Box
+          flexDirection="column"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          width="100%"
+          gap="spacing.2"
+        >
+          <Avatar size="large" icon={CloseIcon} color="negative" />
+          <Box
+            flexDirection="column"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            width="100%"
+          >
+            <Heading>We are facing some technical issues</Heading>
+            <Text color="surface.text.gray.muted" size="small">
+              Please try again
             </Text>
-            <Toggle />
           </Box>
+        </Box>
+      );
+    }
+    return (
+      <>
+        <Alert
+          position="top"
+          color="notice"
+          description={<HeaderDescriptions />}
+          emphasis="subtle"
+          isDismissible={false}
+          title="Mandatory Configs on Shopify"
+          isFullWidth
+        />
+        <Box padding="spacing.6" paddingBottom="spacing.0" marginBottom="spacing.0">
+          <Heading size="medium">Login with Razorpay Setup</Heading>
+          <Text color="surface.text.gray.muted" marginTop="spacing.4">
+            Set up easy & secure login into your store with single sign-in for your customers across
+            the Razorpay network
+          </Text>
+          <Toggle />
+        </Box>
 
-          {isSSOEnabled ? <SSO /> : <VideoGuide />}
-        </>
-      )}
-    </SSOContainer>
-  );
+        {isSSOEnabled ? <SSO /> : <VideoGuide />}
+      </>
+    );
+  };
+
+  return <SSOContainer>{renderContent()}</SSOContainer>;
 };
 
 const mapActionsToProps = {

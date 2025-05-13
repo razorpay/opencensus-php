@@ -3,6 +3,7 @@ import { NewOffering } from 'merchant/views/MagicCheckout/MagicDashboard/WhatsNe
 
 import Coupons from 'assets/magic_checkout/whatsnew/coupons.png';
 import QuickBuy from 'assets/magic_checkout/whatsnew/quickbuy.png';
+import RazorpayLogin from 'assets/magic_checkout/whatsnew/razorpay_login.png';
 
 export const NEW_OFFERINGS: NewOffering[] = [
   {
@@ -22,9 +23,23 @@ export const NEW_OFFERINGS: NewOffering[] = [
     description:
       'QuickBuy accelerates online shopping with 1-click checkout, minimising steps for a lightning-fast, frictionless customer experience',
     image: QuickBuy,
-    knowMoreLink: 'https://razorpay.com/blog/quickbuy-the-future-is-now/',
+    externalLink: {
+      href: 'https://razorpay.com/blog/quickbuy-the-future-is-now/',
+      label: 'Know More',
+    },
     docLink: (_isRCODEnabled: boolean) =>
       'https://razorpay.com/docs/payments/magic-checkout/features/quickbuy?search-string=quickbuy',
     condition: (_platform, isRCODEnabled) => !isRCODEnabled,
+  },
+  {
+    title: 'Login with Razorpay: One Identity Across Stores',
+    description:
+      'Eliminate friction with seamless 1-click authentication that recognizes shoppers across the Razorpay merchant network. Increase logged-in users by up to 40% and reduce re-targeting costs while turning anonymous browsers into identified customers ready to purchase.',
+    image: RazorpayLogin,
+    externalLink: {
+      href: 'https://razorpay.typeform.com/to/n5cuHwfz?utm_source=dashboard&utm_medium=form&utm_campaign=whatsnew;',
+      label: 'Join Early Access Program',
+    },
+    condition: (platform, _isRCODEnabled) => platform === PLATFORMS.SHOPIFY,
   },
 ];

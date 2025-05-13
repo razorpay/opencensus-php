@@ -1,59 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { Box, Text, Switch, useToast } from '@razorpay/blade/components';
+import { Box, Switch, Text } from '@razorpay/blade/components';
 import { useSSOContext } from 'merchant/views/MagicCheckout/Settings/containers/SSO/context/index';
-import { getSSOConfigPayload } from 'merchant/views/MagicCheckout/Settings/containers/SSO/context/helpers';
-import {
-  saveSSOSettings,
-  updateMerchantTheme,
-} from 'merchant/views/MagicCheckout/Settings/containers/SSO/api';
-import { updateThemeResponseType } from 'merchant/views/MagicCheckout/Settings/containers/SSO/types';
-import debounce from 'lodash/debounce';
+import SSOToggleModal from './SSOToggleModal';
 
 const SSOToggle = () => {
-  const { show } = useToast();
-  const {
-    isSSOEnabled,
-    updateIsSSOEnabled,
-    ssoSettings,
-    ssoWidget,
-    merchantId,
-    dashboardView,
-    mode,
-  } = useSSOContext();
+  const { isSSOEnabled } = useSSOContext();
+  const [showModal, setShowModal] = useState(false);
 
-  const handleToggle = async () => {
-    try {
-      const payload = getSSOConfigPayload(
-        { isSSOEnabled: !isSSOEnabled, ssoSettings, ssoWidget },
-        merchantId,
-      );
-      
-      // save sso inital configs
-      await saveSSOSettings(payload);
-      
-      // inject sso snippet in merchant theme
-      const res: updateThemeResponseType = await updateMerchantTheme(payload, dashboardView, mode);
-      
-      if (res?.data?.status === 'success') {
-        updateIsSSOEnabled(!isSSOEnabled);
-        show({
-          type: 'informational',
-          content: 'SSO configs updated successfully',
-          color: 'positive',
-        });
-      } else {
-        throw new Error('SSO configs update failed');
-      }
-    } catch (error) {
-      show({
-        type: 'informational',
-        content: 'SSO configs update failed',
-        color: 'negative',
-      });
-    }
+  const handleToggle = () => {
+    setShowModal(true);
   };
-  const handleChange = debounce(handleToggle, 1000);
 
   return (
     <Box width="320px" marginBottom="spacing.6">
@@ -79,9 +36,10 @@ const SSOToggle = () => {
           accessibilityLabel="Enable Razorpay SSO"
           marginX="spacing.3"
           isChecked={isSSOEnabled}
-          onChange={handleChange}
+          onChange={handleToggle}
           name="ssoToggle"
         />
+        <SSOToggleModal isOpen={showModal} onDismiss={() => setShowModal(false)} />
       </Box>
     </Box>
   );

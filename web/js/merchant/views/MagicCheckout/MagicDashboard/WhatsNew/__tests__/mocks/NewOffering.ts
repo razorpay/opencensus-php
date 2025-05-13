@@ -4,7 +4,10 @@ export const newOffering = {
   condition: () => true,
   image: new File(['dummy content'], 'example.png', { type: 'image/png' }),
   ctaLink: '/cta-link',
-  knowMoreLink: 'https://example.com/know-more',
+  externalLink: {
+    href: 'https://example.com/know-more',
+    label: 'Know More',
+  },
   docLink: jest.fn().mockReturnValue('https://example.com/doc-link'),
 };
 

@@ -52,18 +52,18 @@ export const WhatsNewCard = ({
               Check it out
             </Button>
           )}
-          {item.knowMoreLink && (
+          {item.externalLink && (
             <Link
               icon={ExternalLinkIcon}
               variant="anchor"
               color="primary"
               size="medium"
               iconPosition="left"
-              href={item.knowMoreLink}
+              href={item.externalLink.href}
               target="_blank"
               rel="noopener noreferer"
             >
-              Know More
+              {item.externalLink.label}
             </Link>
           )}
 

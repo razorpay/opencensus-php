@@ -29,10 +29,11 @@ export type UpdatePayload = {
 };
 
 export type updateThemeResponseType = {
-  success: boolean;
   data: {
-    status: string;
+    activation_link: string;
   };
+  success: boolean;
+  status_code: number;
 };
 
 export type SSOConfigs = {
