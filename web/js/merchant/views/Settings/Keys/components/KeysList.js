@@ -15,6 +15,7 @@ import { useSplitzService } from 'common/splitz';
 import { shouldShowBusinessWebsiteV2 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { isExperimentEnabled } from '@libs/shared-utils';
 
 const KeysListItem = (props) => {
   const mode = props.mode;
@@ -49,6 +50,9 @@ const KeysListItem = (props) => {
         },
       });
     } else {
+      if (props.isSkip2FAEnabled) {
+        return props.showRollKeyModal({ id });
+      }
       return context.criticalFlow({
         modes: ['live'],
         onUserTwoFaVerified: () => {
@@ -98,8 +102,10 @@ export default connect(null, { openModal, closeModal })((props) => {
   const shouldTrigger2Fa = useTrigger2Fa();
   const { criticalFlow } = useTwoFactorVerificationContext();
   const {
-    abExperiments: { business_website_v2_automation },
+    abExperiments: { business_website_v2_automation, skip_2fa_for_protected_flows },
   } = useSplitzService();
+  const isSkip2FAEnabled = isExperimentEnabled(skip_2fa_for_protected_flows);
+
   const navigate = useNavigate();
 
   const shouldShowV2 = shouldShowBusinessWebsiteV2(business_website_v2_automation, user);
@@ -196,6 +202,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                 mode={mode}
                 showRollKeyModal={showRollKeyModal}
                 shouldTrigger2Fa={shouldTrigger2Fa}
+                isSkip2FAEnabled={isSkip2FAEnabled}
               />
             ))}
           </TableBody>
