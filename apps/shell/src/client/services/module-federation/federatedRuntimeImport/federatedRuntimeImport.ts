@@ -7,7 +7,7 @@ init({
   remotes: [
     {
       alias: '@federated/cross-repo/x',
-      entry: 'https://localhost:8880/dist/x.remoteEntry.js',
+      entry: window.X_BANKING_REMOTE_ENTRY,
       name: 'x',
     },
   ],

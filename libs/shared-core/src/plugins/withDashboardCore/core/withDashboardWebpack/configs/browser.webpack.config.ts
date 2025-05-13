@@ -272,6 +272,7 @@ export const withDashboardBrowserWebpackConfig: withDashboardBrowserWebpackConfi
           new MiniCssExtractPlugin({
             filename: 'css/[name].[contenthash].css',
             chunkFilename: 'css/[id].[contenthash].css',
+            attributes: { 'data-project': options.moduleName },
           }),
         isSentryEnabled &&
           dashboardSentryPlugin({

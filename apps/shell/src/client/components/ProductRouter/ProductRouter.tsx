@@ -2,14 +2,15 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { DashboardLoader } from '@libs/shared-ui';
 import { getItemFromLocalStorage } from '@libs/shared-utils';
+import { loadRemote } from '@apps/shell/src/client/services/module-federation';
 import withNavigationType from '@apps/shell/src/client/components/Navigation/withNavigationType';
 
 const HandleIndexAndPaymentsRoute = lazy(
   () => import('@apps/shell/src/client/components/ProductRouter/HandleIndexAndPaymentsRoute'),
 );
 
+const XDashboard = lazy(() => loadRemote('@federated/cross-repo/x/connectedX'));
 const OneHome = React.lazy(() => import('@federated/apps/one-home/entry'));
-const XDashboard = () => <div>X Dashboard</div>;
 const WrappedXDashboard = withNavigationType(XDashboard);
 
 export const ProductRouter = (): JSX.Element => {

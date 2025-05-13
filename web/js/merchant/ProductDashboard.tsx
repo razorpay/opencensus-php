@@ -26,6 +26,7 @@ import {
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { graphqlRequestQuery, graphqlRequestMutation } from '@federated/apps/shell/graphql';
+import { useFederationCleanup } from '@libs/shared-utils';
 
 const MainApp = lazy(() => import(/* webpackChunkName: "ProductDashboard" */ './containers/App'));
 
@@ -40,8 +41,21 @@ export const queryClient = new QueryClient({
   },
 });
 
-// TODO: seperate
 const ProductDashboard = ({ children }: { children?: JSX.Element }) => {
+  useFederationCleanup(
+    'payments_dashboard',
+    () => {
+      window.rzpTicketSystem = {
+        hostname: window.location.origin,
+      };
+
+      return () => {
+        delete window.rzpTicketSystem;
+      };
+    },
+    [],
+  );
+
   const checkViaBrowserRouter = (child) => {
     return Boolean(window.ONE_DASHBOARD) ? (
       child

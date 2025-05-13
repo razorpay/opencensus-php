@@ -94,7 +94,15 @@ export const getCommonRules = ({
           {
             test: /\.css$/i,
             use: [
-              !isDev ? MiniCssExtractPlugin.loader : externalDeps['style-loader'],
+              !isDev
+                ? MiniCssExtractPlugin.loader
+                : {
+                    loader: externalDeps['style-loader'],
+                    options: {
+                      attributes: { 'data-project': moduleName },
+                    },
+                  },
+              ,
               externalDeps['css-loader'],
             ].filter(Boolean),
           },
@@ -108,7 +116,14 @@ export const getCommonRules = ({
           {
             test: /\.styl$/,
             use: [
-              !isDev ? MiniCssExtractPlugin.loader : externalDeps['style-loader'],
+              !isDev
+                ? MiniCssExtractPlugin.loader
+                : {
+                    loader: externalDeps['style-loader'],
+                    options: {
+                      attributes: { 'data-project': moduleName },
+                    },
+                  },
               {
                 loader: externalDeps['css-loader'],
                 options: {

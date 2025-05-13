@@ -129,6 +129,7 @@ nx.json                                                                  @razorp
 
 # Shell Owners
 apps/shell                                                               @razorpay/dashboard-shell
+apps/shell/src/server/services/generator/scripts/generateXRemoteUrlsScript.tsx @razorpay/dashboard-shell @parichay28
 
 # PHP Critical
 app/Http/Controllers/UserController.php                                  @razorpay/dashboard-shell @shubham25kr07

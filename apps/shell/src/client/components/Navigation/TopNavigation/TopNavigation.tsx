@@ -90,6 +90,7 @@ function TopNavigation() {
     products: productsFromStore,
     setIsSideNavOpenOnMobile,
     showSearchOnMobile,
+    clearSelectedProduct,
   } = useConnectedNavigationStore((state) => state);
   const showNotification = useStore((state) => state.showNotification);
 
@@ -185,6 +186,15 @@ function TopNavigation() {
             const navigationValue = selectedProductAction?.value;
             switch (navigationValue?.type) {
               case 'internal_navigation': {
+                if (productsFromStore.selectedProduct?.alias !== selectedProduct?.alias) {
+                  /**
+                   * check if the selected product is the same as the product in the store
+                   * if not, clear the selected product from store
+                   * this is done to trigger loading state on the new product
+                   */
+                  clearSelectedProduct();
+                }
+
                 navigate(navigationValue.navigateTo);
                 break;
               }

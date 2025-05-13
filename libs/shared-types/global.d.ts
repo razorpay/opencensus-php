@@ -55,6 +55,7 @@ declare global {
     STREAKS_REWARDS?: string;
     ONE_DASHBOARD?: boolean;
     RAZORPAY_ACCOUNTS_URL: string;
+    X_BANKING_REMOTE_ENTRY: string;
     analytics: DashboardSegmentAnalytics;
     razorAnalytics: RazorAnalytics;
     razorAnalyticsPlugins: RazorAnalyticsPlugins;

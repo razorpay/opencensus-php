@@ -88,6 +88,14 @@ export const initRefiner = (user) => {
     user.user &&
     ['activated', 'activated_mcc_pending', 'instantly_activated'].includes(user?.activation_status)
   ) {
+    if (window.ONE_DASHBOARD) {
+      /**
+       * reset user identity when switching between products
+       * @see https://razorpay.slack.com/archives/C06F9MYVBR7/p1747058951156919
+       */
+      _refiner('resetUser');
+    }
+
     _refiner('setProject', window.REFINER_PROJECT_ID);
     _refiner('identifyUser', {
       id: user.user?.id,

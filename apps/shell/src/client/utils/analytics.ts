@@ -18,6 +18,12 @@ export const initOneDashboardAnalytics = () => {
           id: userId,
           userId,
           app: 'ConnectedDashboard',
+          /* identify traits for x in one-dashboard */
+          mid: window.rzp_user?.current ?? '',
+          email: window.rzp_user?.email ?? '',
+          name: window.rzp_user?.name ?? '',
+          phone: window.rzp_user?.contact_mobile ?? '',
+          business_category: window.rzp_user?.business_category ?? '',
         });
       }
     }

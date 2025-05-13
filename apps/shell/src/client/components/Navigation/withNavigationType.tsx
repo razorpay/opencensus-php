@@ -50,8 +50,6 @@ const withNavigationType = (DashboardEntry: React.ComponentType) => {
     const product = (products as any)?.selectedProduct || {};
     const type = product?.selectAction?.actionType;
 
-    const Component = componentMap[type] || DashboardEntry;
-
     if (!type) {
       return (
         <DashboardLoader
@@ -62,6 +60,8 @@ const withNavigationType = (DashboardEntry: React.ComponentType) => {
       );
     }
 
+    const Component = componentMap[type] || DashboardEntry;
+    
     return <Component {...props} />;
   };
 };

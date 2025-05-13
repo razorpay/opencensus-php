@@ -44,7 +44,7 @@ export const EASY_ONBOARDING_URL = process.env['EASY_ONBOARDING_URL'];
 export const EASY_DASHBOARD_SG_URL = process.env['EASY_DASHBOARD_SG_URL'];
 export const EASY_DASHBOARD_CURLEC_URL = process.env['EASY_DASHBOARD_CURLEC_URL'];
 export const PP_ECOMMERCE_URL = process.env['PP_ECOMMERCE_URL'];
-export const INSIGHTS_SUPERSET_URL=process.env['INSIGHTS_SUPERSET_URL'];
+export const INSIGHTS_SUPERSET_URL = process.env['INSIGHTS_SUPERSET_URL'];
 export const BANK_DETAILS_URL = process.env['BANK_DETAILS_URL'];
 export const APP_NAME = process.env['APP_NAME'];
 export const LUMBERJACK_METRICS_API_URL = process.env['LUMBERJACK_METRICS_API_URL'];
@@ -65,7 +65,9 @@ export const SPLITZ_INTERNAL_AUTH_TOKEN = process.env['SPLITZ_AUTH_DASHBOARDSHEL
 export const CURLEC_LINKED_ACCOUNT_ONBOARDING_URL =
   process.env['CURLEC_LINKED_ACCOUNT_ONBOARDING_URL'];
 
-
 // Available only in development
 export const LOCAL_DEV_REMOTES = process.env['LOCAL_DEV_REMOTES'];
 export const RAZORPAY_ACCOUNTS_URL = process.env['RAZORPAY_ACCOUNTS_URL'];
+
+// federated cross-repo remote entry
+export const X_BANKING_REMOTE_ENTRY = process.env['X_BANKING_REMOTE_ENTRY'];

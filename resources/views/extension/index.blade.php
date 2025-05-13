@@ -33,7 +33,7 @@
 </head>
 <body>
   <div id="ext-root"></div>
-  <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer onload="initAnalytics()"></script>
+  <script id="rzp_analytics" src="https://cdn.razorpay.com/static/analytics/bundle.js" defer onload="initAnalytics()"></script>
   <script src="{{$cdnUrl}}/static/extension/app.js" async defer onload="renderApp()"></script>
 
   <!-- Hotjar Tracking Code for dashboard.razorpay.com -->

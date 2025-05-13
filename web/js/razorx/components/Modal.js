@@ -92,7 +92,11 @@ class ModalStore {
 const store = new ModalStore();
 
 observe(store.modals, (e) => {
-  document.body.className = store.modals.length ? 'noscroll' : '';
+  if (store.modals.length > 0) {
+    document.body.classList.add('noscroll');
+  } else {
+    document.body.classList.remove('noscroll');
+  }
 });
 
 @observer

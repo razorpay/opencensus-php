@@ -29,6 +29,7 @@ import {
   generateMountRemoteSafelyFnScriptElement,
   generateSplitzExperimentsScriptElement,
   generateRazorAnalyticsScriptElement,
+  generateXRemoteUrlsScript,
 } from '@apps/shell/src/server/services/generator';
 import { ShellServerProvider } from '@apps/shell/src/server/contexts/ShellServerProvider';
 import { IS_PRODUCTION } from '@apps/shell/src/env';
@@ -124,7 +125,7 @@ export const generateOneDashboardTemplate = async (
     generateRzpUserScriptElement(appLocals.user),
     generateSplitzExperimentsScriptElement(appLocals),
     generateDCSScriptElement(),
-    generateBankingServicePGClientScript(),
+    generateBankingServicePGClientScript(appLocals.clientTemplate),
     generateInterfaceInitializerScript(),
     generateAnalyticsScriptElement(),
     generateSignUpRedirectScript(),
@@ -142,6 +143,10 @@ export const generateOneDashboardTemplate = async (
     !isRequestOriginViaWebsiteHompage
   ) {
     scriptTags.push(generateRzpBEControllerScripts(req, appLocals));
+  }
+
+  if (appLocals.clientTemplate === 'one-dashboard') {
+    scriptTags.push(generateXRemoteUrlsScript());
   }
 
   if (IS_PRODUCTION) {

@@ -57,7 +57,7 @@ export const generateMerchantTemplate = async (
     generateMountRemoteSafelyFnScriptElement(),
     generateRzpUserScriptElement(appLocals.user),
     generateDCSScriptElement(),
-    generateBankingServicePGClientScript(),
+    generateBankingServicePGClientScript(appLocals.clientTemplate),
     generateInterfaceInitializerScript(),
     generateAnalyticsScriptElement(),
     generateSignUpRedirectScript(),

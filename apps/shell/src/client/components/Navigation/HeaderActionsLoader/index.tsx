@@ -4,6 +4,7 @@ import { useGetActiveProduct } from '../hooks';
 import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { shouldDisplaySearchBasedOnDeviceType } from '@libs/shared-utils';
+import { loadRemote } from '@apps/shell/src/client/services/module-federation';
 
 type NavActionsSkeletonLoaderProps = {
   showOnlyMobileSearch?: boolean;
@@ -85,6 +86,7 @@ export const withTopNavActions = (WrappedComponent: React.ComponentType<any>) =>
   };
 };
 
+const BankingActions = React.lazy(() => loadRemote('@federated/cross-repo/x/BankingTopNavItems'));
 const PaymentsAndPartnersActions = React.lazy(
   () => import('@federated/dashboards/payments/connected-navigation/PaymentsTopNavActions'),
 );
@@ -92,8 +94,6 @@ const PaymentsAndPartnersActions = React.lazy(
 const HomeActions = React.lazy(
   () => import('@federated/apps/one-home/TopNavActions/OneHomeTopNavActions'),
 );
-
-const BankingActions = () => null;
 
 const PaymentsTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
 const PartnersTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
@@ -112,6 +112,10 @@ export const HeaderActionsLoader = (props: HeaderActionsLoaderProps): JSX.Elemen
   const actionType = products?.selectedProduct?.selectAction?.actionType;
   const excludedActionTypes = ['growth_page', 'access_denied_page'];
   const shouldHideHeaderActions = excludedActionTypes.includes(actionType);
+
+  if (!actionType) {
+    return <NavActionsSkeletonLoader />;
+  }
 
   if (shouldHideHeaderActions) {
     return null;

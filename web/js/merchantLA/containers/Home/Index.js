@@ -41,7 +41,7 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const bodyClass = ' analytics-v2-active';
+const bodyClass = 'analytics-v2-active';
 
 // used to show titles for sections and also GA
 const keymetricsSectionTitle = 'Transactions Overview';
@@ -358,14 +358,14 @@ class HomeContainer extends Component {
 
   UNSAFE_componentWillMount() {
     // to style react-power-selct specific to this tab
-    document.body.className += bodyClass;
+    document.body.classList.add(bodyClass);
 
     this.fetchOldestTransactionDate();
     this.fetchTxnsGroupedByPlatform();
   }
 
   componentWillUnmount() {
-    document.body.className = document.body.className.replace(bodyClass, '');
+    document.body.classList.remove(bodyClass);
     window.removeEventListener('resize', this.onResize);
   }
 
