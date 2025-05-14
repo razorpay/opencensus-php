@@ -1051,6 +1051,7 @@ class Route
         'buy_pricing_update_plan_rule'             => ['patch',    'buy_pricing/{planId}/rule/{ruleId}',             'PricingController@updateBuyPricingPlanRule'                        ],
         'pricing_hard_delete_plan'                 => ['delete',   'pricing/{planId}/force',                         'PricingController@hardDeletePlan'                                  ],
         'pricing_hard_refresh_plan'                => ['post',     'pricing/{planId}/force/refresh',                 'PricingController@hardRefreshPlan'                                 ],
+        'pricing_create_plan_recon_job_sync'       => ['post',     'pricing/recon/job/sync',                         'PricingController@createPlanReconJobSync'                          ],
 
         //pricing-sdk related routes
         'pricing_get_vas_price'                   =>  ['get',     'pricing/vas/fetch',                              'PricingController@calculateVASPrice'                               ],
@@ -5845,6 +5846,7 @@ class Route
     public static $internal = [
         'pricing_hard_delete_plan',
         'pricing_hard_refresh_plan',
+        'pricing_create_plan_recon_job_sync',
         'pricing_create_plan',
         'internal_order_payments',
         'merchant_info_fetch',
@@ -18682,6 +18684,7 @@ class Route
             'contact_create_internal',
             'pricing_hard_delete_plan',
             'pricing_hard_refresh_plan',
+            'pricing_create_plan_recon_job_sync',
             'pricing_create_plan',
         ],
 

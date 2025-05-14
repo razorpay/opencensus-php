@@ -194,6 +194,14 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
+    public function createPlanReconJobSync($input) {
+        $orgId = '';
+        if (isset($input['rules']) === true && isset($input['rules'][0]['org_id']) === true) {
+            $orgId = $input['rules'][0]['org_id'];
+        }
+        return $this->createPlanLegacy($input, Type::PRICING, null, $orgId);
+    }
+
     public function processBuyPricingCostCalculation($input)
     {
         $startAt = millitime();
