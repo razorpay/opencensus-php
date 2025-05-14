@@ -277,14 +277,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
-    public function findAndSetRequestSource($routeName = null)
+    public function findAndSetRequestSource()
     {
         $app = App::getFacadeRoot();
 
-        if ($routeName === null)
-        {
-            $routeName = $app['api.route']->getCurrentRouteName();
-        }
+        $routeName = $app['api.route']->getCurrentRouteName();
 
         $requestSource = [];
 
