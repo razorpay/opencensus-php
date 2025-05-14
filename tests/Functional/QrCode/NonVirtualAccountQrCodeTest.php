@@ -88,6 +88,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
         $this->config['gateway.mock_upi_mozart'] = true;
+
+        $this->setMockSplitzTreatment();
     }
 
     public function testCreateBharatQrCode()

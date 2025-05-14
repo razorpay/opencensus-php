@@ -81,7 +81,7 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    private function createMerchantQrCode(array $input = [], array $headers = [])
+    private function createMerchantQrCode(array $input = [],$mode = 'test', $merchantId = '10000000000000', array $headers = [])
     {
         $this->ba->appAuth();
 

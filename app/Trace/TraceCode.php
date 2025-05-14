@@ -3290,6 +3290,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED        = 'QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED';
     const QR_CODE_EXTRACTED_TR                                  = 'QR_CODE_EXTRACTED_TR';
     const QR_CODE_ALREADY_EXIST                                 = 'QR_CODE_ALREADY_EXIST';
+    const QR_CODE_ALREADY_EXIST_IN_QR_CONFIG                    = 'QR_CODE_ALREADY_EXIST_IN_QR_CONFIG';
     const POS_QR_CODE_FEATURE_ENABLE_PAYLOAD                    = 'POS_QR_CODE_FEATURE_ENABLE_PAYLOAD';
     const POS_QR_CODE_FEATURE_ENABLE_RESPONSE                   = 'POS_QR_CODE_FEATURE_ENABLE_RESPONSE';
     const REFUND_EVENT_PAYLOAD                                  = 'REFUND_EVENT_PAYLOAD';

@@ -1241,6 +1241,7 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments()
     {
+        $this->markTestSkipped('Merchant trigger status check has been disabled.');
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_icici_terminal',
             [
@@ -1424,6 +1425,7 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquired()
     {
+        $this->markTestSkipped('Merchant trigger status check has been disabled.');
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_icici_terminal',
             [
@@ -1683,6 +1685,7 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgate()
     {
+        $this->markTestSkipped('Merchant trigger status check has been disabled.');
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_mindgate_terminal',
             [
@@ -2320,6 +2323,7 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiAirtel()
     {
+        $this->markTestSkipped('Merchant trigger status check has been disabled.');
         $terminal =  $this->fixtures->create('terminal:dedicated_upi_airtel_terminal');
 
         $remindersCallCount = 0;

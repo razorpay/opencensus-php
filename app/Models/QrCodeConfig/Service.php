@@ -117,7 +117,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::QR_CODE_CONFIG_CREATE_REQUEST,
                            [
                                'merchantId' => $this->merchant->getId(),
-                               'terminalId' => $terminal->getId(),
+                               'terminalId' => $terminal?->getId(),
                                'qrCodeId'   => $qrCode->getId()
                            ]);
 
